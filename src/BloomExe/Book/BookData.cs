@@ -1736,7 +1736,17 @@ namespace Bloom.Book
         // doesn't have them. (ui-suppressHighlight should never get into the DOM at all, but if it somehow sneaks by,
         // at least the next Save should be able to remove it.)
         static HashSet<string> _classesToRemoveIfAbsent = new HashSet<string>(
-            new[] { "bloom-postAudioSplit", "ui-suppressHighlight" }
+            new[]
+            {
+                "bloom-postAudioSplit",
+                "ui-suppressHighlight",
+                // The user's Transparency choice for an image (Opaque/Transparent; Auto is the absence
+                // of both). Changing the choice removes the old class from the img, and the data-div
+                // copy must follow, or the old choice comes back when the cover image is restored from
+                // the data-div on the next open. See _imgClassesToRestoreFromDataDiv and BL-16819.
+                "bloom-opaque",
+                "bloom-transparent",
+            }
         );
 
         private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
@@ -1878,14 +1888,27 @@ namespace Bloom.Book
                     .Cast<SafeXmlElement>()
                     .ToArray();
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same reason as the IsStillInDocument check in the second pass below: an
+                    // earlier update in this very loop could have detached a later one of these.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     UpdateOneElementFromDataSet(data, itemsToDelete, elt);
+                }
 
                 // After restoring custom page content from the data-div, prepare any bloom-editables
                 // for languages that weren't present in the saved version (e.g. a newly-added content
                 // language). Without this, the second pass below that updates e.g. bookTitle would
                 // find no destination elements for newly-added languages on the custom page.
                 foreach (var elt in nodesToProcessFirst)
+                {
+                    // Same guard as the loops either side: an update above may have detached one of
+                    // these. Nothing here walks to the document root, so an orphan would not crash,
+                    // but preparing elements in a page the book no longer has is pointless work.
+                    if (!IsStillInDocument(elt))
+                        continue;
                     TranslationGroupManager.PrepareElementsInPageOrDocument(elt, this);
+                }
 
                 // Run this query AFTER that update, so that we're updating the (possibly modified) set of nodes that
                 // result from doing it.
@@ -1897,10 +1920,17 @@ namespace Bloom.Book
                 {
                     // if we already processed it, we should not do so again,
                     // since doing so might replace some of the nodes in our list with new ones.
-                    if (!nodesToProcessFirst.Contains(elt))
-                    {
-                        UpdateOneElementFromDataSet(data, itemsToDelete, elt);
-                    }
+                    if (nodesToProcessFirst.Contains(elt))
+                        continue;
+                    // Updating one element can replace the entire content of an ancestor of another
+                    // element in this list (for example, restoring a branding html value replaces
+                    // everything inside that element), leaving the descendant orphaned. An orphan is
+                    // no longer part of the book, so there is nothing in it worth updating, and the
+                    // update code rightly assumes it still has the parents it was collected with.
+                    // See BL-16776.
+                    if (!IsStillInDocument(elt))
+                        continue;
+                    UpdateOneElementFromDataSet(data, itemsToDelete, elt);
                 }
             }
             catch (Exception error)
@@ -1913,6 +1943,22 @@ namespace Bloom.Book
                     error
                 );
             }
+        }
+
+        /// <summary>
+        /// True if the node is still attached to its document, that is, we can reach the document's
+        /// root element by following parents. A node we collected earlier may since have been
+        /// detached by an update to one of its ancestors.
+        /// </summary>
+        internal static bool IsStillInDocument(SafeXmlNode node)
+        {
+            var root = node.OwnerDocument.DocumentElement;
+            for (var current = node; current != null; current = current.ParentNode)
+            {
+                if (current == root)
+                    return true;
+            }
+            return false;
         }
 
         private void UpdateOneElementFromDataSet(
@@ -2472,7 +2518,50 @@ namespace Bloom.Book
             {
                 HtmlDom.ReconstructBackgroundImgWrapper(node, backgroundImgValues);
             }
+
+            RestoreImgClassesFromDataDiv(imgOrDivWithBackgroundImage, otherAttributes);
             return true;
+        }
+
+        // The img classes that are user data and so must be restored from the data-div copy when
+        // an image (currently only the cover image) is refilled from it. Classes in general are
+        // deliberately NOT copied back (e.g. bloom-imageLoadError is meant to be re-derived each
+        // time the book is opened), so a class only gets restored by being listed here.
+        // A class listed here should normally also be in _classesToRemoveIfAbsent, so that the
+        // data-div copy follows the img when the class is removed from it.
+        // Currently these are the classes that record the user's Transparency choice for an image
+        // (Auto is the absence of both). See getImageTransparencyMode in bloomImages.ts and
+        // HtmlDom.GetImageTransparencyMode.
+        private static readonly string[] _imgClassesToRestoreFromDataDiv =
+        {
+            "bloom-opaque",
+            "bloom-transparent",
+        };
+
+        /// <summary>
+        /// Make the img's _imgClassesToRestoreFromDataDiv classes match the class attribute saved
+        /// in the data-div. The data-div copy is authoritative: a listed class it lacks is removed
+        /// from the image (so, for the transparency classes, Auto is restored too). Without this,
+        /// the user's choice would be lost every time the xmatter is regenerated from the template.
+        /// See BL-16819.
+        /// </summary>
+        private static void RestoreImgClassesFromDataDiv(
+            SafeXmlElement img,
+            List<Tuple<string, XmlString>> savedAttributes
+        )
+        {
+            var savedClasses =
+                savedAttributes
+                    ?.Find(a => a.Item1 == "class")
+                    ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                ?? new string[0];
+            foreach (var className in _imgClassesToRestoreFromDataDiv)
+            {
+                if (savedClasses.Contains(className))
+                    img.AddClass(className);
+                else
+                    img.RemoveClass(className);
+            }
         }
 
         /// <summary>
