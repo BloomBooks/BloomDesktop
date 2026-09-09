@@ -7,6 +7,10 @@ import {
     retryMsForTests,
     getPageLoadId,
 } from "./pageSnapshot";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "./pageContentDelays";
 
 const posted: Array<{ url: string; body: string }> = [];
 
@@ -320,6 +324,64 @@ describe("pageSnapshot", () => {
             "hello, typed while the page was still loading",
         );
     });
+    it("tells C# what the page is busy with, and says idle only after posting the finished page", async () => {
+        // A save C# makes from the snapshot (leaving the tab, quitting) cannot wait for the delay
+        // register the way a gather here does, so it waits for our idle notice instead. That notice
+        // must therefore come AFTER the snapshot of the finished page, or C# would save the old one.
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        posted.length = 0;
+
+        addRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageBusy",
+        ]);
+        expect(posted[0].body).toBe("sizing an image");
+        expect(posted[0].url).toContain("loadId=" + getPageLoadId());
+
+        // The work changes the page, then finishes.
+        contentToReport = "with the image sized";
+        changeThePage("with the image sized");
+        await Promise.resolve();
+        removeRequestPageContentDelay("sizing an image");
+        await vi.runAllTicks();
+        await Promise.resolve(); // the gather
+        await Promise.resolve(); // the snapshot post
+        await Promise.resolve(); // the idle post
+
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageBusy",
+            "editView/pageSnapshot",
+            "editView/pageIdle",
+        ]);
+        expect(posted[1].body).toBe("with the image sized");
+    });
+
+    it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
+        // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
+        // and this page may simply not have reported itself ready yet.
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        posted.length = 0;
+        postReply = { data: false };
+
+        addRequestPageContentDelay("settling a paste");
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(posted.length, "sanity: the first notice went out").toBe(1);
+
+        vi.advanceTimersByTime(retryMsForTests);
+        await Promise.resolve();
+        expect(posted.length, "refused, so offered again").toBe(2);
+        expect(posted[1].url.split("?")[0]).toBe("editView/pageBusy");
+
+        postReply = { data: true };
+        removeRequestPageContentDelay("settling a paste");
+        await vi.runAllTicks();
+        for (let i = 0; i < 4; i++) await Promise.resolve();
+    });
+
     it("does not treat a failed post as sent, so the content is offered again", async () => {
         // Recording it as sent before the post resolved would mean C# never got this content and
         // we never tried again -- the next save would then write what C# still held, losing

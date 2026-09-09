@@ -478,6 +478,19 @@ not "the page is re-read at close time" — there is no mechanism left that coul
 window is shorter than the hand movement that reaches for the X, and testing has not managed to hit
 it, but it is a trade rather than an oversight.
 
+Asynchronous work is the longer version of the same window, and it is handled. Work whose result
+belongs in the saved page (sizing an image, settling a paste) registers in the delay register
+(`pageContentDelays.ts`), and every gather in the browser waits for the register to empty -- so a
+page click, which carries the content with it, cannot save a half-changed page. A save that uses the
+snapshot could, because the snapshot it holds predates the work. So the browser tells C# when the
+register goes busy, naming the work (`editView/pageBusy`), and when it is idle again
+(`editView/pageIdle`) -- and it says idle only *after* it has posted the finished page. A
+snapshot-based save waits for that, sleeping the UI thread for at most 4 s
+(`PageSnapshot.WaitUntilIdle`); it is a plain sleep rather than another asynchronous protocol, and it
+works because those two notices, like the snapshot itself, arrive on server threads. If the wait runs
+out, the save goes ahead and the log records what the page was still busy with, so a report of a
+lost change can be read against it.
+
 ### Would observing `.bloom-page` instead of the body be better?
 
 It would have hidden the `measureTextDiv` bug rather than exposing it, and it would be unsound:

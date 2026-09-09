@@ -1,5 +1,6 @@
 import { postStringQuietly } from "../../utils/bloomApi";
 import { reportError } from "../../lib/errorHandler";
+import { onDelayRegisterChanged } from "./pageContentDelays";
 
 // Keep C# supplied with the current content of the page being edited, so that a save never has to
 // ask for it and wait.
@@ -26,6 +27,10 @@ import { reportError } from "../../lib/errorHandler";
 //   identical posts.
 
 const kApi = "editView/pageSnapshot";
+// Where we tell C# that asynchronous work belonging in the saved page has begun (the body names
+// it) and that it has finished. See tellCSharpBusy / tellCSharpIdle.
+const kBusyApi = "editView/pageBusy";
+const kIdleApi = "editView/pageIdle";
 
 // Identifies THIS load of THIS page, so C# can tell our snapshots from those of a load it has
 // already moved on from. A module-level constant is exactly the right scope: the page frame gets a
@@ -88,6 +93,13 @@ let baselineTaken = false;
 // True while a gather-and-post is under way. See takeSnapshot: overlapping posts could arrive out
 // of order, which would let an older snapshot overwrite a newer one on the C# side.
 let busy = false;
+// Settles when the gather-and-post under way finishes; see tellCSharpIdle, which has to let the
+// post go out before it says the page is idle.
+let runDone: Promise<void> = Promise.resolve();
+// What the delay register says the page is busy with, or undefined when it is empty. Kept so that
+// a refused busy notice is offered again only while it is still true.
+let busyWith: string | undefined;
+let unsubscribeFromDelayRegister: (() => void) | undefined;
 // Bumped every time a change arrives. The async gather checks it afterwards, so a change that
 // lands while we were gathering schedules another pass instead of being lost.
 let changeCount = 0;
@@ -147,6 +159,10 @@ async function takeSnapshot(): Promise<void> {
     // effect on a slow machine is that snapshots coalesce by themselves rather than piling up.
     if (busy) return;
     busy = true;
+    let markRunDone: () => void = () => {};
+    runDone = new Promise<void>((resolve) => {
+        markRunDone = resolve;
+    });
     const countWhenStarted = changeCount;
     try {
         // Waits for any in-flight work that belongs in the page (see pageContentDelays), then
@@ -159,9 +175,7 @@ async function takeSnapshot(): Promise<void> {
 
         if (content !== lastPosted) {
             const reply = await postStringQuietly(
-                `${kApi}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
-                    pageLoadId,
-                )}`,
+                snapshotUrl(kApi, pageId),
                 content,
             );
             // Two different things can mean C# does not have this content, and both must count as
@@ -235,10 +249,56 @@ async function takeSnapshot(): Promise<void> {
         // each page load is a fresh document with its own module state, but the module claims to
         // be safe to restart and this is what makes that true.
         if (pageIdBeingWatched === pageId) busy = false;
+        markRunDone();
     }
     // Something changed while we were gathering or posting: that change is not in what we just
     // sent, so go round again.
     if (changeCount !== countWhenStarted) scheduleSnapshot();
+}
+
+// The delay register (pageContentDelays.ts) has gone busy or idle. C# needs to know, because a
+// save it makes from the snapshot -- leaving the Edit tab, quitting, a command from a separate
+// dialog -- cannot wait for the register the way a gather here does: the snapshot it holds simply
+// predates the work. So we tell it what the page is busy with, and it waits a bounded time for us
+// to say the page is idle again (PageSnapshot.WaitUntilIdle), logging the culprit if we do not.
+function handleDelayRegisterChange(nowBusyWith: string | undefined): void {
+    const pageId = pageIdBeingWatched;
+    if (!pageId) return;
+    busyWith = nowBusyWith;
+    if (nowBusyWith !== undefined) void tellCSharpBusy(pageId, nowBusyWith);
+    else void tellCSharpIdle(pageId);
+}
+
+function snapshotUrl(api: string, pageId: string): string {
+    return `${api}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
+        pageLoadId,
+    )}`;
+}
+
+// C# refuses a notice about a load it is not showing, exactly as it refuses such a snapshot, and
+// for the same reason the refusal must not be the end of it: this page may simply not have
+// reported itself ready yet. Offer it again while the work is still going.
+async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
+    const reply = await postStringQuietly(snapshotUrl(kBusyApi, pageId), what);
+    const response = reply as { data?: boolean | string } | void;
+    const refused = !!response && response.data === false;
+    if (refused && busyWith === what && pageIdBeingWatched === pageId) {
+        window.setTimeout(() => {
+            if (busyWith === what && pageIdBeingWatched === pageId)
+                void tellCSharpBusy(pageId, what);
+        }, kRetryAfterRefusalMs);
+    }
+}
+
+// Idle means "and you already have the page as it is now", so the snapshot goes first: either
+// the gather that was parked behind the register (see takeSnapshot) finishes and posts, or we
+// take one now, which posts only if the page actually changed. Only then do we say idle, and
+// only if the page has not gone busy again meanwhile -- the next idle will speak for that.
+async function tellCSharpIdle(pageId: string): Promise<void> {
+    if (busy) await runDone;
+    else await takeSnapshot();
+    if (pageIdBeingWatched !== pageId || busyWith !== undefined) return;
+    await postStringQuietly(snapshotUrl(kIdleApi, pageId), "");
 }
 
 function scheduleSnapshot(delayMs: number = kQuietMs): void {
@@ -322,6 +382,10 @@ export function startWatchingPageForSnapshots(
     baselineTaken = false;
     pageWeReportedAFailureFor = undefined;
     consecutiveFailedPosts = 0;
+    busyWith = undefined;
+    unsubscribeFromDelayRegister = onDelayRegisterChanged(
+        handleDelayRegisterChange,
+    );
 
     // Take a baseline of the page as it ends up once it has finished loading, and treat that as
     // "already sent". Without it every page posts a snapshot within a second of being opened, even
@@ -372,6 +436,9 @@ export function stopWatchingPageForSnapshots(): void {
     gatherPageContent = undefined;
     baselineTaken = false;
     busy = false;
+    busyWith = undefined;
+    unsubscribeFromDelayRegister?.();
+    unsubscribeFromDelayRegister = undefined;
 }
 
 /**

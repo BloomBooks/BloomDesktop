@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Threading;
 
 namespace Bloom.Edit
 {
@@ -44,6 +46,15 @@ namespace Bloom.Edit
         // reload built.
         private string _loadWeAccept;
 
+        // What the browser says is still changing the page, or null when nothing is. The browser
+        // keeps a register of asynchronous work whose results belong in the saved page (sizing an
+        // image, settling a paste; see pageContentDelays.ts) and tells us when that register goes
+        // from empty to busy and back, naming the work. While it is busy, the snapshot we hold
+        // predates that work, so a save from it would miss whatever the work is doing. Content the
+        // browser sends WITH a request has already waited for the register, so only snapshot-based
+        // saves need to care; see WaitUntilIdle.
+        private string _busyWith;
+
         /// <summary>
         /// Record what the browser says the page currently contains. Called from the API handler,
         /// which deliberately does not take the server's sync lock — this only stores a string, and
@@ -73,6 +84,68 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// The browser says the page is busy with some asynchronous work (named by busyWith) whose
+        /// result belongs in the saved page. Ignored, and answered false so the browser offers it
+        /// again, unless it is about the load we are showing -- the same rule as Set.
+        /// </summary>
+        public bool SetBusy(string loadId, string busyWith)
+        {
+            lock (_lock)
+            {
+                if (_loadWeAccept == null || loadId != _loadWeAccept)
+                    return false;
+                _busyWith = busyWith;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// The browser says that work has finished and, having already sent us the page as it is
+        /// after it, that we are free to save.
+        /// </summary>
+        public bool SetIdle(string loadId)
+        {
+            lock (_lock)
+            {
+                if (_loadWeAccept == null || loadId != _loadWeAccept)
+                    return false;
+                _busyWith = null;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block the calling thread until the browser says the page is idle, or maxMs has passed.
+        /// Returns false, naming what the page was busy with, if we gave up waiting; the caller
+        /// should then log that it is saving a page the browser still considers half-changed.
+        ///
+        /// Sleeping the UI thread is deliberate: the alternative is another asynchronous protocol
+        /// for the callers that used to have one and were glad to lose it. It works because the
+        /// notices that end the wait arrive on server threads, not the UI thread.
+        /// </summary>
+        public bool WaitUntilIdle(int maxMs, out string busyWith)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (true)
+            {
+                lock (_lock)
+                {
+                    if (_busyWith == null)
+                    {
+                        busyWith = null;
+                        return true;
+                    }
+                    if (stopwatch.ElapsedMilliseconds >= maxMs)
+                    {
+                        busyWith = _busyWith;
+                        return false;
+                    }
+                }
+                Thread.Sleep(20);
+            }
+        }
+
+        /// <summary>
         /// Believe snapshots from this page load, and no other, until the next navigation or the
         /// next call here.
         ///
@@ -89,6 +162,7 @@ namespace Bloom.Edit
             lock (_lock)
             {
                 _loadWeAccept = loadId;
+                _busyWith = null;
             }
         }
 
@@ -119,6 +193,7 @@ namespace Bloom.Edit
             {
                 _pageId = null;
                 _content = null;
+                _busyWith = null;
                 // Forgetting which load we believe is what makes the clearing stick: until the
                 // incoming page reports itself ready, every snapshot that arrives belongs to the
                 // load we are leaving, and is refused rather than quietly refilling what we just

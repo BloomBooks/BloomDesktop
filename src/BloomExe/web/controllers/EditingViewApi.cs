@@ -65,6 +65,32 @@ namespace Bloom.web.controllers
                 false,
                 false
             );
+            // The browser saying that asynchronous work which belongs in the saved page has begun
+            // (the body names it) or has finished. A save that has to use the snapshot waits, for
+            // a bounded time, for the idle notice; see PageSnapshot.WaitUntilIdle. Like the
+            // snapshot endpoint these are off the UI thread and unsynchronised -- they MUST be,
+            // because the UI thread may be asleep in that wait when the idle notice arrives.
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageBusy",
+                request =>
+                {
+                    var loadId = request.GetParamOrNull("loadId");
+                    var busyWith = request.RequiredPostString();
+                    request.ReplyWithBoolean(View.Model.ReceivePageBusy(loadId, busyWith));
+                },
+                false,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/pageIdle",
+                request =>
+                {
+                    var loadId = request.GetParamOrNull("loadId");
+                    request.ReplyWithBoolean(View.Model.ReceivePageIdle(loadId));
+                },
+                false,
+                false
+            );
             apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
             apiHandler.RegisterEndpointHandler(
                 "editView/isTextSelected",

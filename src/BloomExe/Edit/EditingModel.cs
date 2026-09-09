@@ -1685,7 +1685,7 @@ namespace Bloom.Edit
                 return;
             }
             var outcome = _stateMachine.SaveThenNavigate(
-                pageContent ?? CurrentPageSnapshotOrNull,
+                pageContent ?? TakeCurrentPageSnapshot(),
                 () =>
                 {
                     if (actionChangesTheBook)
@@ -1719,12 +1719,54 @@ namespace Bloom.Edit
         }
 
         /// <summary>
+        /// Called by the editView/pageBusy API: the browser has begun asynchronous work, named by
+        /// busyWith, whose result belongs in the saved page. See PageSnapshot.SetBusy.
+        /// </summary>
+        public bool ReceivePageBusy(string loadId, string busyWith)
+        {
+            return _pageSnapshot.SetBusy(loadId, busyWith);
+        }
+
+        /// <summary>
+        /// Called by the editView/pageIdle API: that work has finished and the page as it is after
+        /// it has been sent. See PageSnapshot.SetIdle.
+        /// </summary>
+        public bool ReceivePageIdle(string loadId)
+        {
+            return _pageSnapshot.SetIdle(loadId);
+        }
+
+        // How long a snapshot-based save will wait for the browser to finish work that belongs in
+        // the page. The same as the browser's own cap on waiting for that work before gathering
+        // anyway (kMaxWaitTimeMs in pageContentDelays.ts).
+        private const int kMaxWaitForBusyPageMs = 4000;
+
+        /// <summary>
         /// The current page's content as the browser last reported it, or null if the page has not
         /// been changed since it loaded. Null genuinely means "nothing to save" rather than "ask the
         /// browser"; see PageSnapshot.
+        ///
+        /// If the browser has said the page is busy with asynchronous work whose result belongs in
+        /// the saved page, this first waits (sleeping the UI thread, for at most
+        /// kMaxWaitForBusyPageMs) for it to say the work is done and the finished page has been
+        /// sent. Only saves that use the snapshot need this: content that came with a request has
+        /// already waited, in the browser. If we have to go ahead anyway, we log what the page was
+        /// busy with, so that a report of a save that lost something can be read against it.
         /// </summary>
-        public string CurrentPageSnapshotOrNull =>
-            _pageSnapshot.GetFor(_pageSelection?.CurrentSelection?.Id);
+        private string TakeCurrentPageSnapshot()
+        {
+            var pageId = _pageSelection?.CurrentSelection?.Id;
+            if (!_pageSnapshot.WaitUntilIdle(kMaxWaitForBusyPageMs, out var busyWith))
+            {
+                Logger.WriteEvent(
+                    "Saving page {0} from the last snapshot although the browser still reports it busy with '{1}' after waiting {2}ms. Whatever that work was doing to the page may be missing from the book.",
+                    pageId,
+                    busyWith,
+                    kMaxWaitForBusyPageMs
+                );
+            }
+            return _pageSnapshot.GetFor(pageId);
+        }
 
         /// <summary>
         /// Save the current page and the book, synchronously, and stay on the page. This is what
@@ -1754,7 +1796,7 @@ namespace Bloom.Edit
             if (CannotSavePage() || !_havePageToSave)
                 return false;
             if (_stateMachine.Editing)
-                pageContent = pageContent ?? CurrentPageSnapshotOrNull;
+                pageContent = pageContent ?? TakeCurrentPageSnapshot();
             else
                 pageContent = null;
             UpdateBookDomFromBrowserPageContent(pageContent);

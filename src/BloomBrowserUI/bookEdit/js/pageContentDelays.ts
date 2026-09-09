@@ -27,11 +27,32 @@ const activeDelays: string[] = [];
 // Callbacks waiting for activeDelays to empty; see whenNoActiveDelays().
 const delayWaiters: (() => void)[] = [];
 
+// Told when the register goes from empty to busy (with what it is busy with) and back to empty
+// (with undefined). See onDelayRegisterChanged.
+const registerListeners: ((busyWith: string | undefined) => void)[] = [];
+
+// Be told when the register becomes busy -- with the id of the work, or the ids if several
+// started together -- and when it empties again. Only the transitions, not every add and remove.
+// The page snapshot uses this to tell C# that a snapshot-based save should wait, and what for.
+// Returns a function that unsubscribes.
+export function onDelayRegisterChanged(
+    listener: (busyWith: string | undefined) => void,
+): () => void {
+    registerListeners.push(listener);
+    return () => {
+        const index = registerListeners.indexOf(listener);
+        if (index >= 0) registerListeners.splice(index, 1);
+    };
+}
+
 // Register asynchronous work whose results belong in the saved page. The caller must pass the same
 // id to removeRequestPageContentDelay when the work finishes -- see wrapWithRequestPageContentDelay,
 // which does that for you. IDs do not need to be unique; the same ID can be added multiple times.
 export function addRequestPageContentDelay(id: string): void {
     activeDelays.push(id);
+    if (activeDelays.length === 1) {
+        registerListeners.forEach((listener) => listener(id));
+    }
 }
 
 // Deregister work, releasing anyone waiting if this was the last of it.
@@ -51,6 +72,7 @@ export function removeRequestPageContentDelay(id: string): void {
         // Take the list before calling anyone, so that a waiter which starts new work (and so
         // registers a new delay) does not get released a second time by that work finishing.
         delayWaiters.splice(0).forEach((release) => release());
+        registerListeners.forEach((listener) => listener(undefined));
     }
 }
 

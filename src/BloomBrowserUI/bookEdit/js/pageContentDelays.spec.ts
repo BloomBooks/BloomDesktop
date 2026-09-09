@@ -3,6 +3,7 @@ import {
     addRequestPageContentDelay,
     getActiveDelayIdsForTesting,
     kMaxWaitTimeMs,
+    onDelayRegisterChanged,
     removeRequestPageContentDelay,
     whenNoActiveDelays,
     wrapWithRequestPageContentDelay,
@@ -141,6 +142,31 @@ describe("pageContentDelays", () => {
         expect(await isResolved(whenNoActiveDelays())).toBe(true);
     });
 
+    it("tells a listener when the register becomes busy, and when it empties, but not in between", () => {
+        // The page snapshot relays these to C#, which waits for the idle one before a save that
+        // uses the snapshot. Every add and remove would be noise; the transitions are the signal.
+        const heard: (string | undefined)[] = [];
+        const unsubscribe = onDelayRegisterChanged((busyWith) =>
+            heard.push(busyWith),
+        );
+
+        addRequestPageContentDelay("sizing an image");
+        addRequestPageContentDelay("settling a paste");
+        expect(heard).toEqual(["sizing an image"]);
+
+        removeRequestPageContentDelay("sizing an image");
+        expect(heard, "still busy with the paste").toEqual(["sizing an image"]);
+        removeRequestPageContentDelay("settling a paste");
+        expect(heard).toEqual(["sizing an image", undefined]);
+
+        unsubscribe();
+        addRequestPageContentDelay("later work");
+        removeRequestPageContentDelay("later work");
+        expect(heard, "nothing more after unsubscribing").toEqual([
+            "sizing an image",
+            undefined,
+        ]);
+    });
     it("complains about, and ignores, a removal of something never registered", () => {
         const error = vi.spyOn(console, "error").mockImplementation(() => {});
         addRequestPageContentDelay("realWork");

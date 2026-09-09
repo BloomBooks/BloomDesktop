@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Edit;
 using NUnit.Framework;
 
@@ -132,6 +134,79 @@ namespace BloomTests.Edit
                 Is.False,
                 "after a navigation we believe nothing until the next page reports ready"
             );
+        }
+
+        // The browser tells us when asynchronous work whose result belongs in the saved page has
+        // begun and ended (see pageContentDelays.ts). A save that uses the snapshot waits for the
+        // end, for a bounded time, because the snapshot it holds predates the work.
+
+        [Test]
+        public void WaitUntilIdle_WhileBusy_GivesUpAfterTheLimitAndNamesTheWork()
+        {
+            ArriveAtPage("load-1");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
+
+            var idle = _snapshot.WaitUntilIdle(60, out var busyWith);
+
+            Assert.That(idle, Is.False, "the browser never said it had finished");
+            Assert.That(
+                busyWith,
+                Is.EqualTo("sizing an image"),
+                "so the log can say what held us up"
+            );
+        }
+
+        [Test]
+        public void WaitUntilIdle_WhenTheBrowserSaysIdle_Returns()
+        {
+            ArriveAtPage("load-1");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
+            // The idle notice arrives on a server thread while the UI thread is asleep in the wait.
+            Task.Run(() =>
+            {
+                Thread.Sleep(40);
+                _snapshot.SetIdle("load-1");
+            });
+
+            var idle = _snapshot.WaitUntilIdle(5000, out var busyWith);
+
+            Assert.That(idle, Is.True);
+            Assert.That(busyWith, Is.Null);
+        }
+
+        [Test]
+        public void WaitUntilIdle_WhenNothingIsBusy_ReturnsAtOnce()
+        {
+            ArriveAtPage("load-1");
+
+            Assert.That(_snapshot.WaitUntilIdle(5000, out var busyWith), Is.True);
+            Assert.That(busyWith, Is.Null);
+        }
+
+        [Test]
+        public void SetBusy_FromALoadWeAreNotShowing_IsRefusedAndDoesNotMakeUsWait()
+        {
+            ArriveAtPage("load-1");
+
+            Assert.That(_snapshot.SetBusy("load-0", "sizing an image"), Is.False);
+            Assert.That(
+                _snapshot.WaitUntilIdle(5000, out _),
+                Is.True,
+                "a stale notice must not hold up a save"
+            );
+        }
+
+        [Test]
+        public void Clear_ForgetsThatThePageWasBusy()
+        {
+            // Navigating away: whatever the page we left was busy with is no longer our concern,
+            // and must not delay the next save on the page we are going to.
+            ArriveAtPage("load-1");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
+
+            _snapshot.Clear();
+
+            Assert.That(_snapshot.WaitUntilIdle(5000, out _), Is.True);
         }
     }
 }
