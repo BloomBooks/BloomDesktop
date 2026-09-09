@@ -144,37 +144,51 @@ namespace Bloom.TeamCollection
                 _writeBookInProgress = true;
             }
 
+            // The finally is what guarantees _writeBookInProgress gets cleared even when the zip
+            // or the Replace throws. Without it a single failed write left the flag set for the
+            // rest of the session, which permanently suppressed change notifications for this
+            // book and (since BL-16729) would have silently killed the periodic connection
+            // check -- in exactly the flaky-share situation that check exists to catch.
             try
             {
-                var zipFile = new BloomZipFile(pathToWrite);
-                zipFile.AddDirectory(
-                    sourceBookFolderPath,
-                    sourceBookFolderPath.Length + 1,
-                    null,
-                    progressCallback
-                );
-                zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
-                zipFile.Save();
-                // If by any chance we've previously created a tombstone for this book, get rid of it.
-                var pathForTombstone = GetPathForTombstone(bookFolderName);
-                if (pathForTombstone != null)
-                    RobustFile.Delete(pathForTombstone);
-            }
-            catch (Exception)
-            {
-                RobustFile.Delete(pathToWrite); // try to clean up
-                throw;
-            }
+                try
+                {
+                    var zipFile = new BloomZipFile(pathToWrite);
+                    zipFile.AddDirectory(
+                        sourceBookFolderPath,
+                        sourceBookFolderPath.Length + 1,
+                        null,
+                        progressCallback
+                    );
+                    zipFile.SetComment(status.WithCollectionId(CollectionId).ToJson());
+                    zipFile.Save();
+                    // If by any chance we've previously created a tombstone for this book, get rid of it.
+                    var pathForTombstone = GetPathForTombstone(bookFolderName);
+                    if (pathForTombstone != null)
+                        RobustFile.Delete(pathForTombstone);
+                }
+                catch (Exception)
+                {
+                    RobustFile.Delete(pathToWrite); // try to clean up
+                    throw;
+                }
 
-            if (pathToWrite != bookPath)
-            {
-                RobustFile.Replace(pathToWrite, bookPath, null);
-            }
+                if (pathToWrite != bookPath)
+                {
+                    RobustFile.Replace(pathToWrite, bookPath, null);
+                }
 
-            lock (_lockObject)
+                lock (_lockObject)
+                {
+                    _lastWriteBookTime = DateTime.Now;
+                }
+            }
+            finally
             {
-                _lastWriteBookTime = DateTime.Now;
-                _writeBookInProgress = false;
+                lock (_lockObject)
+                {
+                    _writeBookInProgress = false;
+                }
             }
         }
 
@@ -647,6 +661,20 @@ namespace Bloom.TeamCollection
 
         public override string RepoDescription => _repoFolderPath;
 
+        /// <summary>
+        /// As well as a sync, a book write in progress counts as "busy with the repo".
+        /// </summary>
+        protected internal override bool IsWritingToRepo
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    return base.IsWritingToRepo || _writeBookInProgress;
+                }
+            }
+        }
+
         // The standard place where we store zip files for a collection-level folder.
         private static string GetZipFileForFolder(string folderName, string repoFolderPath)
         {
@@ -989,14 +1017,29 @@ namespace Bloom.TeamCollection
             // the renaming of files or directories.
             _booksWatcher.NotifyFilter =
                 NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            // A Dropbox sync can land a whole batch of books at once, which is just the sort of
+            // burst that overflows the default 8KB buffer and silently loses notifications.
+            _booksWatcher.InternalBufferSize = kWatcherBufferSize;
 
             _booksWatcher.DebounceChanged(OnChanged, kDebouncePeriodInMs);
             _booksWatcher.DebounceCreated(OnCreated, kDebouncePeriodInMs);
             _booksWatcher.DebounceRenamed(OnRenamed, kDebouncePeriodInMs);
             _booksWatcher.DebounceDeleted(OnDeleted, kDebouncePeriodInMs);
+            // BL-16729: without this, a share that goes away mid-session kills the watch and
+            // nobody ever finds out.
+            _booksWatcher.Error += (sender, args) =>
+                HandleRepoWatcherError(booksPath, args.GetException());
 
             // Begin watching.
-            _booksWatcher.EnableRaisingEvents = true;
+            if (!TryStartWatching(_booksWatcher, booksPath))
+            {
+                // We just reported the failure, which (when there is no window to marshal to,
+                // e.g. at startup) disconnects us synchronously and calls StopMonitoring under
+                // us. Carrying on to create the Other watcher would leave a live watcher on a
+                // collection we have already given up on, which StopMonitoring has finished
+                // with and Dispose will not revisit.
+                return;
+            }
 
             var otherFilesDirPath = Path.Combine(_repoFolderPath, "Other");
             // If it doesn't exist we can't watch it. Rather bizarre since we normally create
@@ -1009,8 +1052,11 @@ namespace Bloom.TeamCollection
             {
                 _otherWatcher = new FileSystemWatcherWrapper(otherFilesDirPath);
                 _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                _otherWatcher.InternalBufferSize = kWatcherBufferSize;
                 _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
-                _otherWatcher.EnableRaisingEvents = true;
+                _otherWatcher.Error += (sender, args) =>
+                    HandleRepoWatcherError(otherFilesDirPath, args.GetException());
+                TryStartWatching(_otherWatcher, otherFilesDirPath);
             }
         }
 
@@ -1319,13 +1365,21 @@ namespace Bloom.TeamCollection
                 _lastWriteBookTime = DateTime.Now;
             }
 
-            // We've had some failures on very fast clicking of Checkin/Checkout.
-            // Not clear how they come to overlap, but it's worth just trying again
-            // as a recovery strategy.
-            RobustZip.WriteZipComment(status, bookPath);
-            lock (_lockObject)
+            try
             {
-                _writeBookInProgress = false;
+                // We've had some failures on very fast clicking of Checkin/Checkout.
+                // Not clear how they come to overlap, but it's worth just trying again
+                // as a recovery strategy.
+                RobustZip.WriteZipComment(status, bookPath);
+            }
+            finally
+            {
+                // See the note on the same pattern in PutBookInRepo: a throw here used to leave
+                // the flag set for the rest of the session.
+                lock (_lockObject)
+                {
+                    _writeBookInProgress = false;
+                }
             }
         }
 
@@ -1616,7 +1670,7 @@ namespace Bloom.TeamCollection
         /// <summary>
         /// Returns null if connection is fine, otherwise, a message describing the problem.
         /// </summary>
-        public override TeamCollectionMessage CheckConnection()
+        public override TeamCollectionMessage CheckConnection(bool writeHistoryMessages)
         {
             if (!Directory.Exists(_repoFolderPath))
             {
@@ -1643,11 +1697,14 @@ namespace Bloom.TeamCollection
                 if (!DropboxUtils.IsDropboxProcessRunning())
                 {
                     if (isOnLocalNetwork)
-                        _tcManager.MessageLog.WriteMessage(
-                            MessageAndMilestoneType.History,
-                            "TeamCollection.NeedDropboxRunningButLANOK",
-                            "Dropbox does not appear to be running, but the folder has also been shared locally which appears to be okay."
-                        );
+                    {
+                        if (writeHistoryMessages)
+                            _tcManager.MessageLog.WriteMessage(
+                                MessageAndMilestoneType.History,
+                                "TeamCollection.NeedDropboxRunningButLANOK",
+                                "Dropbox does not appear to be running, but the folder has also been shared locally which appears to be okay."
+                            );
+                    }
                     else
                         return new TeamCollectionMessage(
                             MessageAndMilestoneType.Error,
@@ -1659,11 +1716,14 @@ namespace Bloom.TeamCollection
                 if (!DropboxUtils.CanAccessDropbox())
                 {
                     if (isOnLocalNetwork)
-                        _tcManager.MessageLog.WriteMessage(
-                            MessageAndMilestoneType.History,
-                            "TeamCollection.NeedDropboxAccessButLANOK",
-                            "Bloom cannot reach Dropbox.com, but the folder has also been shared locally which appears to be okay."
-                        );
+                    {
+                        if (writeHistoryMessages)
+                            _tcManager.MessageLog.WriteMessage(
+                                MessageAndMilestoneType.History,
+                                "TeamCollection.NeedDropboxAccessButLANOK",
+                                "Bloom cannot reach Dropbox.com, but the folder has also been shared locally which appears to be okay."
+                            );
+                    }
                     else
                         return new TeamCollectionMessage(
                             MessageAndMilestoneType.Error,
