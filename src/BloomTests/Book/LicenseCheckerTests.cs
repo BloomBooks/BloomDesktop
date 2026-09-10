@@ -27,11 +27,11 @@ namespace BloomTests.Book
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null);
             LicenseChecker.SetHttpClientForTests(new HttpClient());
-            LicenseChecker.RetryDelayForTests = s_defaultRetryDelay;
+            LicenseChecker.RetryDelayMs = s_defaultRetryDelayMs;
         }
 
         // The production retry delay, captured before any test changes it, so TearDown can restore it.
-        private static readonly TimeSpan s_defaultRetryDelay = LicenseChecker.RetryDelayForTests;
+        private static readonly int s_defaultRetryDelayMs = LicenseChecker.RetryDelayMs;
 
         // An HttpClient handler that always fails, to simulate the license server being unreachable.
         private sealed class FailingHttpMessageHandler : HttpMessageHandler
@@ -166,7 +166,7 @@ namespace BloomTests.Book
         {
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null); // no offline cache available
-            LicenseChecker.RetryDelayForTests = TimeSpan.Zero;
+            LicenseChecker.RetryDelayMs = 0;
             LicenseChecker.SetHttpClientForTests(new HttpClient(new FailingHttpMessageHandler()));
             var checker = new LicenseChecker();
             var inputLangs = new[] { "en", "bjn" };
@@ -197,7 +197,7 @@ namespace BloomTests.Book
                 // SetupDefaultOfflineLicenseInfo disables internet access; re-enable it so we take the
                 // online path, hit the failing client, and fall back to the cache it wrote.
                 LicenseChecker.SetAllowInternetAccess(true);
-                LicenseChecker.RetryDelayForTests = TimeSpan.Zero;
+                LicenseChecker.RetryDelayMs = 0;
                 LicenseChecker.SetHttpClientForTests(
                     new HttpClient(new FailingHttpMessageHandler())
                 );
@@ -306,7 +306,7 @@ namespace BloomTests.Book
         {
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null); // no cache, so only a successful fetch can give didCheck
-            LicenseChecker.RetryDelayForTests = TimeSpan.Zero;
+            LicenseChecker.RetryDelayMs = 0;
             var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 2);
             LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
             var checker = new LicenseChecker();
@@ -338,7 +338,7 @@ namespace BloomTests.Book
         {
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null);
-            LicenseChecker.RetryDelayForTests = TimeSpan.Zero;
+            LicenseChecker.RetryDelayMs = 0;
             var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
             LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
             var checker = new LicenseChecker();
@@ -370,7 +370,7 @@ namespace BloomTests.Book
             using (var folder = SetupDefaultOfflineLicenseInfo())
             {
                 LicenseChecker.SetAllowInternetAccess(true);
-                LicenseChecker.RetryDelayForTests = TimeSpan.Zero;
+                LicenseChecker.RetryDelayMs = 0;
                 var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
                 LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
                 var checker = new LicenseChecker();
