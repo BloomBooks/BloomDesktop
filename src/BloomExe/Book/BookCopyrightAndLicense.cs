@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Web;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
@@ -173,7 +174,8 @@ namespace Bloom.Book
             HtmlDom dom,
             string bookFolderPath,
             BookData bookData,
-            bool useOriginalCopyright
+            bool useOriginalCopyright,
+            bool userEditsOriginalCopyrightNotice = false
         )
         {
             dom.SetBookSetting(
@@ -241,7 +243,13 @@ namespace Bloom.Book
                 dom.RemoveBookSetting("licenseImage");
             }
 
-            UpdateDomFromDataDiv(dom, bookFolderPath, bookData, useOriginalCopyright);
+            UpdateDomFromDataDiv(
+                dom,
+                bookFolderPath,
+                bookData,
+                useOriginalCopyright,
+                userEditsOriginalCopyrightNotice
+            );
         }
 
         private static string ConvertNewLinesToHtmlBreaks(string s)
@@ -258,7 +266,8 @@ namespace Bloom.Book
             HtmlDom dom,
             string bookFolderPath,
             BookData bookData,
-            bool useOriginalCopyright
+            bool useOriginalCopyright,
+            bool userEditsOriginalCopyrightNotice = false
         )
         {
             CopyItemToFieldsInPages(dom, "copyright");
@@ -272,43 +281,258 @@ namespace Bloom.Book
             );
             CopyItemToFieldsInPages(dom, "licenseNotes");
             CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute: "src");
-            // If we're using the original copyright, we don't need to show it separately.
-            // See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
-            CopyStringToFieldsInPages(
+            // The sentence about the original book. Bloom generates it, unless the user has
+            // taken it over, in which case their wording is in the data div. Either way the
+            // book's own copy of the page holds it locked; the editable form exists only in the
+            // copy of the page sent to the editor, and only for one rendering, so that leaving
+            // the page or refreshing it locks the sentence again.
+            string originalCopyrightNotice;
+            if (userEditsOriginalCopyrightNotice)
+            {
+                originalCopyrightNotice = bookData
+                    .GetVariableOrNull(kOriginalCopyrightAndLicense, "*")
+                    ?.Xml;
+            }
+            else
+            {
+                // If we're using the original copyright, we don't need to show it separately.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
+                originalCopyrightNotice = useOriginalCopyright
+                    ? null
+                    : GetOriginalCopyrightAndLicenseNotice(bookData, dom);
+            }
+            ShowOriginalCopyrightNoticeLocked(
                 dom,
-                "originalCopyrightAndLicense",
-                useOriginalCopyright ? null : GetOriginalCopyrightAndLicenseNotice(bookData, dom),
-                "*"
+                originalCopyrightNotice,
+                userEditsOriginalCopyrightNotice
             );
 
             if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
                 UpdateBookLicenseIcon(GetMetadata(dom, bookData), bookFolderPath);
         }
 
-        private static void CopyStringToFieldsInPages(
-            HtmlDom dom,
-            string key,
-            string val,
-            string lang
+        internal const string kOriginalCopyrightAndLicense = "originalCopyrightAndLicense";
+
+        // The English here must exactly match what RuntimeInformationInjector registers for this
+        // key; that dictionary is keyed by the English, not by the l10n id.
+        internal const string kOriginalCopyrightNoticeHint = "Original copyright & license";
+
+        // Likewise keyed by the English. The open padlock gets no tooltip: by then the user has
+        // just clicked the closed one and the field is waiting for them.
+        internal const string kUnlockOriginalCopyrightNoticeTooltip = "Unlock to edit";
+
+        /// <summary>
+        /// The place on the credits page where the sentence about the original book goes, in
+        /// whichever of its two shapes it is currently in: the plain div Bloom writes the
+        /// generated sentence into, or the translation group it becomes while the user is
+        /// editing it. The data div holds the user's wording under the same key, so it is
+        /// excluded here.
+        /// </summary>
+        private static IEnumerable<SafeXmlElement> GetOriginalCopyrightNoticeSpots(
+            SafeXmlNode pageOrDom
         )
         {
-            foreach (
-                SafeXmlElement target in dom.SafeSelectNodes("//*[@data-derived='" + key + "']")
-            )
+            return pageOrDom
+                .SafeSelectNodes(
+                    ".//*[@data-derived='"
+                        + kOriginalCopyrightAndLicense
+                        + "']"
+                        + " | .//*[div[@data-book='"
+                        + kOriginalCopyrightAndLicense
+                        + "']][not(ancestor-or-self::div[@id='bloomDataDiv'])]"
+                )
+                .OfType<SafeXmlElement>();
+        }
+
+        /// <summary>
+        /// Show the sentence about the original book as text the user cannot type in, which is
+        /// how it looks whenever they are not actively editing it, with the hint bubble that
+        /// offers to hand it over. An empty sentence means the line is not there at all.
+        /// </summary>
+        /// <param name="noticeIsMarkup">True when the sentence is the user's own, which comes
+        /// out of the data div as markup and goes back in as it is. The sentence Bloom generates
+        /// instead goes through the filter that lets only a few tags through.</param>
+        private static void ShowOriginalCopyrightNoticeLocked(
+            HtmlDom dom,
+            string notice,
+            bool noticeIsMarkup
+        )
+        {
+            foreach (var spot in GetOriginalCopyrightNoticeSpots(dom.RawDom))
+                LockOriginalCopyrightNoticeSpot(spot, notice, noticeIsMarkup);
+        }
+
+        /// <summary>
+        /// Put the sentence about the original book back under Bloom's control on a page the user
+        /// has been editing it on, keeping the words they typed. The page is on its way either to
+        /// the book's own copy or to a fresh look at it, and neither should hold the editable
+        /// shape: that is what makes leaving the page or refreshing it lock the sentence again.
+        /// </summary>
+        internal static void LockOriginalCopyrightNotice(SafeXmlNode page)
+        {
+            foreach (var spot in GetOriginalCopyrightNoticeSpots(page))
             {
-                if (target == null) // don't think this can happen, but something like it seemed to in one test...
-                    continue;
-                if (string.IsNullOrEmpty(val))
-                {
-                    target.RemoveAttribute("lang");
-                    target.InnerText = "";
-                }
-                else
-                {
-                    HtmlDom.SetElementFromUserStringSafely(target, val);
-                    target.SetAttribute("lang", lang);
-                }
+                if (!spot.HasClass("bloom-translationGroup"))
+                    continue; // already locked
+                // The value the user sees and edits is the one with no language of its own; the
+                // others are the empty ones Bloom makes for every language in the book.
+                var editable =
+                    spot.SelectSingleNode(
+                        "div[@data-book='" + kOriginalCopyrightAndLicense + "' and @lang='*']"
+                    ) as SafeXmlElement;
+                LockOriginalCopyrightNoticeSpot(spot, editable?.InnerXml ?? "", true);
             }
+        }
+
+        /// <summary>
+        /// Show the sentence about the original book as text the user cannot type in, which is
+        /// how it looks whenever they are not actively editing it, with the hint bubble that
+        /// offers to hand it over. An empty sentence means the line is not there at all.
+        /// </summary>
+        /// <param name="noticeIsMarkup">True when the sentence is the user's own, which is kept
+        /// as markup and goes back onto the page as it is. The sentence Bloom generates instead
+        /// goes through the filter that lets only a few tags through.</param>
+        private static void LockOriginalCopyrightNoticeSpot(
+            SafeXmlElement spot,
+            string notice,
+            bool noticeIsMarkup
+        )
+        {
+            // Undo the editable shape, in case the user was editing the sentence.
+            spot.RemoveClass("bloom-translationGroup");
+            spot.RemoveAttribute("data-default-languages");
+            spot.AddClass("Credits-Page-style");
+            spot.SetAttribute("data-derived", kOriginalCopyrightAndLicense);
+
+            if (string.IsNullOrEmpty(notice))
+            {
+                spot.RemoveAttribute("lang");
+                spot.InnerText = "";
+            }
+            else
+            {
+                if (noticeIsMarkup)
+                    spot.InnerXml = notice;
+                else
+                    HtmlDom.SetElementFromUserStringSafely(spot, notice);
+                spot.SetAttribute("lang", "*");
+            }
+            SetOriginalCopyrightNoticeHint(spot, !string.IsNullOrEmpty(notice));
+        }
+
+        /// <summary>
+        /// Turn the sentence about the original book into an ordinary editable field, so the user
+        /// can reword it. Call this only on the copy of the page being sent to the editor: the
+        /// book's own copy stays locked, which is what makes the unlock last for one look at the
+        /// page rather than for good.
+        /// The shape mirrors the ISBN field: a translation group whose only default language is
+        /// "*", so there is a single value rather than one per language. We do it here rather
+        /// than in the xmatter templates so that every xmatter gets it without being edited.
+        /// </summary>
+        internal static void MakeOriginalCopyrightNoticeEditable(HtmlDom pageDom)
+        {
+            foreach (var spot in GetOriginalCopyrightNoticeSpots(pageDom.RawDom))
+            {
+                if (spot.HasClass("bloom-translationGroup"))
+                    continue; // already editable
+                if (string.IsNullOrWhiteSpace(spot.InnerText))
+                    continue; // no sentence here to hand over
+                var notice = spot.InnerXml;
+
+                spot.RemoveAttribute("data-derived");
+                // The generated sentence carried lang="*" on this element; the language now
+                // belongs to the editable child instead.
+                spot.RemoveAttribute("lang");
+                spot.InnerXml = "";
+                // A style class belongs on the editable, not on the group that now wraps it.
+                spot.RemoveClass("Credits-Page-style");
+                spot.AddClass("bloom-translationGroup");
+                spot.SetAttribute("data-default-languages", "*");
+
+                var editable = spot.AppendChild("div");
+                editable.SetAttribute(
+                    "class",
+                    "bloom-editable Credits-Page-style bloom-visibility-code-on"
+                );
+                editable.SetAttribute("data-book", kOriginalCopyrightAndLicense);
+                editable.SetAttribute("lang", "*");
+                editable.InnerXml = notice;
+                // The bubble stays on the group rather than moving to the editable: anything on
+                // the editable is harvested into the data div along with the text.
+                SetOriginalCopyrightNoticeHint(spot, true, unlocked: true);
+                // The user clicked to get here, so put their cursor in it. The editing code
+                // takes this off again once it has done so.
+                editable.SetAttribute("data-bloom-focus-when-shown", "true");
+            }
+        }
+
+        /// <summary>
+        /// Give the sentence a hint bubble offering to hand the text over to the user, or take
+        /// that bubble away when there is no sentence to offer.
+        /// We do this here rather than in the xmatter templates so that the bubble exists exactly
+        /// when the sentence does, and so that every xmatter gets it without being edited.
+        /// </summary>
+        private static void SetOriginalCopyrightNoticeHint(
+            SafeXmlElement target,
+            bool wantHint,
+            bool unlocked = false
+        )
+        {
+            target.RemoveAttribute("data-hint");
+            target.RemoveAttribute("data-link-icon");
+            target.RemoveAttribute("data-link-icon-tooltip");
+            target.RemoveAttribute("data-link-target");
+            if (!wantHint)
+                return;
+            target.SetAttribute("data-hint", kOriginalCopyrightNoticeHint);
+            // A closed padlock opens the text for editing; the open one closes it again.
+            target.SetAttribute("data-link-icon", unlocked ? "unlock" : "lock");
+            target.SetAttribute(
+                "data-link-target",
+                unlocked ? "RelockOriginalCredits()" : "UnlockOriginalCredits()"
+            );
+            if (!unlocked)
+                target.SetAttribute(
+                    "data-link-icon-tooltip",
+                    kUnlockOriginalCopyrightNoticeTooltip
+                );
+        }
+
+        /// <summary>
+        /// Hand the generated original copyright and license sentence over to the user: put the
+        /// wording Bloom is currently showing into the data div, which is where the editable
+        /// field that replaces it reads its text from.
+        /// Call this before setting BookInfo.MetaData.UserEditsOriginalCopyrightNotice, while
+        /// Bloom is still generating the sentence.
+        /// </summary>
+        internal static void SeedUserEditableOriginalCopyrightNotice(HtmlDom dom, BookData bookData)
+        {
+            var notice = FlattenOriginalTitleCitation(
+                GetOriginalCopyrightAndLicenseNotice(bookData, dom) ?? ""
+            );
+            // Wrap it in a paragraph, because that is the shape the editing code keeps text in.
+            // Handed a bare run of text and markup, it wraps only the text nodes, which would
+            // strand the italicized title on a line of its own.
+            if (!string.IsNullOrEmpty(notice))
+                notice = "<p>" + notice + "</p>";
+            bookData.Set(kOriginalCopyrightAndLicense, XmlString.FromXml(notice), "*");
+        }
+
+        /// <summary>
+        /// The generated sentence names the original title in a &lt;cite data-book="originalTitle"&gt;,
+        /// which Bloom keeps in step with the book's originalTitle setting and which the user edits
+        /// through a dialog. Once the sentence is the user's own text, it is just words they can
+        /// type over, so the citation becomes plain italics. Leaving the data-book attribute there
+        /// would also nest one data-book field inside another.
+        /// </summary>
+        private static string FlattenOriginalTitleCitation(string noticeHtml)
+        {
+            return Regex.Replace(
+                noticeHtml,
+                @"<cite\b[^>]*>(.*?)</cite>",
+                "<em>$1</em>",
+                RegexOptions.Singleline
+            );
         }
 
         private static void CopyItemToFieldsInPages(

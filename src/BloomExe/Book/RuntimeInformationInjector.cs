@@ -222,6 +222,16 @@ namespace Bloom.Book
             );
             AddTranslationToDictionaryUsingEnglishAsKey(
                 d,
+                "EditTab.FrontMatter.OriginalCopyrightAndLicenseHint",
+                BookCopyrightAndLicense.kOriginalCopyrightNoticeHint
+            );
+            AddTranslationToDictionaryUsingEnglishAsKey(
+                d,
+                "EditTab.FrontMatter.UnlockOriginalCopyrightAndLicenseTooltip",
+                BookCopyrightAndLicense.kUnlockOriginalCopyrightNoticeTooltip
+            );
+            AddTranslationToDictionaryUsingEnglishAsKey(
+                d,
                 "EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt",
                 "Acknowledgments for translated version, in {lang}"
             );

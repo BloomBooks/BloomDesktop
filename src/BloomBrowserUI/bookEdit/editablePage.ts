@@ -370,6 +370,16 @@ window["PasteImageCredits"] = () => {
     EditableDivUtils.pasteImageCredits();
 };
 
+//UnlockOriginalCredits() is called from the hint bubble on the credits page's
+//generated original-copyright sentence. See BookCopyrightAndLicense.SetOriginalCopyrightNoticeHint().
+window["UnlockOriginalCredits"] = () => {
+    EditableDivUtils.unlockOriginalCredits();
+};
+
+window["RelockOriginalCredits"] = () => {
+    EditableDivUtils.relockOriginalCredits();
+};
+
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();

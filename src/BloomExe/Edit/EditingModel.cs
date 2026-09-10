@@ -1349,6 +1349,17 @@ namespace Bloom.Edit
         public static HtmlDom GetEditPageIframeDom(Book.Book book, IPage page)
         {
             var dom = book.GetEditableHtmlDomForPage(page);
+            // The user's permission to edit the sentence about the original book lasts for one
+            // rendering, so spend it here rather than in the book's own copy of the page.
+            if (book.OriginalCopyrightNoticeIsUnlockedForOneRendering)
+            {
+                book.OriginalCopyrightNoticeIsUnlockedForOneRendering = false;
+                BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(dom);
+            }
+            else
+            {
+                BookCopyrightAndLicense.LockOriginalCopyrightNotice(dom.RawDom);
+            }
             AddMissingCopyrightNoticeIfNeeded(book, dom);
             SetupPageZoom(dom);
             book.InsertFullBleedMarkup(dom.Body);
@@ -1714,6 +1725,28 @@ namespace Bloom.Edit
                 return;
             _nextSaveMustBeFull |= forceFullSave;
             SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
+        }
+
+        /// <summary>
+        /// The user has asked to edit the sentence Bloom generates on the credits page about the
+        /// original book's copyright and license. We save the page first, then hand the sentence
+        /// over and reload, so the page comes back with an editable field in its place.
+        /// </summary>
+        internal void UserEditsOriginalCopyrightNotice()
+        {
+            if (CannotSavePage())
+                return;
+            // The sentence lives in the data div rather than in the page's own markup, so the
+            // save has to be a full one to notice that it changed.
+            _pageHasUnsavedDataDerivedChange = true;
+            SaveThen(
+                () =>
+                {
+                    CurrentBook.LetUserEditOriginalCopyrightNotice();
+                    return _pageSelection.CurrentSelection.Id;
+                },
+                () => { } // wrong state, do nothing
+            );
         }
 
         //invoked from TopicChooserDialog.tsx via API
