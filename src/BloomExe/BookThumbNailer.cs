@@ -263,12 +263,15 @@ namespace Bloom
                 // Writing a transparent image to a file, then reading it in again appears to be the only
                 // way to get the thumbnail image to draw with the book's cover color background reliably.
                 // It is always a .png, whatever the cover image is: only a PNG can carry the alpha
-                // channel, and ImageUtils.MakeTransparentBackground needs a .png destination.
+                // channel, and ImageUtils.MakeTransparentBackground needs a .png destination. The name
+                // is random rather than the cover image's own, so thumbnails being made at the same time
+                // (two books whose covers are both "cover.jpg", say) cannot overwrite or delete each
+                // other's file.
                 transparentImageFile = Path.Combine(
                     Path.GetTempPath(),
                     "Bloom",
                     "Transparent",
-                    Path.ChangeExtension(Path.GetFileName(imageSrc), ".png")
+                    Path.GetRandomFileName() + ".png"
                 );
                 Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
 
