@@ -1693,6 +1693,10 @@ namespace Bloom.Book
                 "spellcheck",
                 "data-hasqtip",
                 "data-languagetipcontent",
+                // Asks the editing code to put the cursor in a field the server has just opened;
+                // it takes the attribute off again, but if the page is shown with focus
+                // suppressed it is still there at save time.
+                "data-bloom-focus-when-shown",
                 // These are the keys that are used to match the copy-from and copy-to elements.
                 // They are already on both so no point in copying.
                 "data-book",
