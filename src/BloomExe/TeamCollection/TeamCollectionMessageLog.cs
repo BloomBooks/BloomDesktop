@@ -238,6 +238,7 @@ namespace Bloom.TeamCollection
                 if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
                     return;
                 _messages.Add(msg);
+                Persist(msg);
             }
             AfterMessageAdded(msg);
         }
@@ -247,19 +248,19 @@ namespace Bloom.TeamCollection
             lock (_messagesLock)
             {
                 _messages.Add(message);
+                Persist(message);
             }
             AfterMessageAdded(message);
         }
 
         /// <summary>
-        /// Deliberately called with the lock released: raising the status-changed event reaches
-        /// WinForms and the websocket server, and holding a lock across that is how deadlocks
-        /// happen. Everything here reads only the message it was handed.
+        /// Append one message to the log file. Called with _messagesLock held, so that the file
+        /// ends up in the same order as the in-memory list and two threads writing at the same
+        /// moment cannot collide over the file. It is a short append, so holding the lock across
+        /// it costs little -- unlike the status-changed event, which must stay outside it.
         /// </summary>
-        private void AfterMessageAdded(TeamCollectionMessage message)
+        private void Persist(TeamCollectionMessage message)
         {
-            SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
-            TeamCollectionManager.RaiseTeamCollectionStatusChanged();
             // Using Environment.NewLine here means the format of the file will be appropriate for the
             // computer we are running on. It's possible a shared collection might be used by both
             // Linux and Windows. But that's OK, because .NET line reading accepts either line
@@ -271,17 +272,29 @@ namespace Bloom.TeamCollection
             }
             catch (Exception ex)
             {
-                // The message is already in Messages (so the current session still shows it) and in
-                // the Logger above; it just won't survive a restart. Not being able to write it must
-                // not take Bloom down: this very method is called while reporting a TC initialization
-                // failure, and when the underlying problem is an unwritable collection folder
-                // (e.g. read-only files, BL-16772), throwing here turned a degraded-but-working
-                // Team Collection into a collection that could not open at all.
+                // The message is already in Messages, so the current session still shows it, and
+                // AfterMessageAdded is about to write it to the ordinary log; it just won't
+                // survive a restart. Not being able to write it must not take Bloom down: this
+                // path is used while reporting a TC initialization failure, and when the
+                // underlying problem is an unwritable collection folder (e.g. read-only files,
+                // BL-16772), throwing here turned a degraded-but-working Team Collection into a
+                // collection that could not open at all.
                 SIL.Reporting.Logger.WriteError(
                     $"Could not persist Team Collection message to {_logFilePath}",
                     ex
                 );
             }
+        }
+
+        /// <summary>
+        /// Deliberately called with the lock released: raising the status-changed event reaches
+        /// WinForms and the websocket server, and holding a lock across that is how deadlocks
+        /// happen. Everything here reads only the message it was handed.
+        /// </summary>
+        private void AfterMessageAdded(TeamCollectionMessage message)
+        {
+            SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
+            TeamCollectionManager.RaiseTeamCollectionStatusChanged();
         }
 
         private bool MatchParams(string p1, string p2)
