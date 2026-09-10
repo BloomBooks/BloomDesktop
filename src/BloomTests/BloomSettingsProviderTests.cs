@@ -34,14 +34,14 @@ namespace BloomTests
         [TearDown]
         public void TearDown()
         {
-            BloomSettingsProvider.UserSettingsFolder = null;
+            BloomSettingsProvider.SetUserSettingsFolder(null);
             _folder.Dispose();
         }
 
         [Test]
         public void GetUserSettingsFolder_NoFolderNamed_IsThePerVersionFolderUnderLocalAppData()
         {
-            BloomSettingsProvider.UserSettingsFolder = null;
+            BloomSettingsProvider.SetUserSettingsFolder(null);
 
             var folder = BloomSettingsProvider.GetUserSettingsFolder();
 
@@ -63,7 +63,7 @@ namespace BloomTests
         [Test]
         public void GetUserSettingsFolder_FolderNamed_IsThatFolder()
         {
-            BloomSettingsProvider.UserSettingsFolder = _folder.Path;
+            BloomSettingsProvider.SetUserSettingsFolder(_folder.Path);
 
             Assert.That(BloomSettingsProvider.GetUserSettingsFolder(), Is.EqualTo(_folder.Path));
             Assert.That(
@@ -73,19 +73,33 @@ namespace BloomTests
         }
 
         [Test]
+        public void CommandLineArgumentsForChildBloom_NoFolderNamed_IsEmpty()
+        {
+            BloomSettingsProvider.SetUserSettingsFolder(null);
+
+            Assert.That(BloomSettingsProvider.CommandLineArgumentsForChildBloom, Is.Empty);
+        }
+
+        [Test]
+        public void CommandLineArgumentsForChildBloom_FolderNamed_NamesItForTheChild()
+        {
+            BloomSettingsProvider.SetUserSettingsFolder(_folder.Path);
+
+            Assert.That(
+                BloomSettingsProvider.CommandLineArgumentsForChildBloom,
+                Is.EqualTo($"--user-settings-folder \"{_folder.Path}\"")
+            );
+        }
+
+        [Test]
         public void SetPropertyValues_FolderNamed_WritesUserConfigThereAndReadsItBack()
         {
-            BloomSettingsProvider.UserSettingsFolder = _folder.Path;
+            BloomSettingsProvider.SetUserSettingsFolder(_folder.Path);
             var userConfig = Path.Combine(_folder.Path, "user.config");
             Assert.That(File.Exists(userConfig), Is.False, "test setup: the folder starts empty");
 
-            var property = new SettingsProperty("UserInterfaceLanguage")
-            {
-                PropertyType = typeof(string),
-                SerializeAs = SettingsSerializeAs.String,
-                DefaultValue = "",
-            };
-            var context = new SettingsContext { ["GroupName"] = kGroupName };
+            var property = MakeStringProperty();
+            var context = MakeContext();
 
             var writer = new BloomSettingsProvider();
             writer.Initialize(null, null);
@@ -115,6 +129,52 @@ namespace BloomTests
                 new SettingsPropertyCollection { property }
             );
             Assert.That(values["UserInterfaceLanguage"].SerializedValue, Is.EqualTo("fr"));
+        }
+
+        [Test]
+        public void Upgrade_FolderNamed_BringsNothingIn()
+        {
+            // A named folder holds exactly the settings its owner put there, so upgrading (which
+            // ApplicationSettingsBase does through IApplicationSettingsProvider) must not copy a
+            // previous version's user.config into it. On a machine with no earlier Bloom version
+            // there is nothing to copy anyway; on a developer's machine there usually is, which is
+            // exactly the case an automated run must be protected from.
+            BloomSettingsProvider.SetUserSettingsFolder(_folder.Path);
+            var userConfig = Path.Combine(_folder.Path, "user.config");
+            Assert.That(File.Exists(userConfig), Is.False, "test setup: the folder starts empty");
+
+            var provider = new BloomSettingsProvider();
+            provider.Initialize(null, null);
+            var property = MakeStringProperty();
+            var asSettingsProvider = (IApplicationSettingsProvider)provider;
+
+            asSettingsProvider.Upgrade(MakeContext(), new SettingsPropertyCollection { property });
+
+            Assert.That(
+                File.Exists(userConfig),
+                Is.False,
+                "Upgrade copied a previous version's user.config into the named folder"
+            );
+            Assert.That(
+                asSettingsProvider.GetPreviousVersion(MakeContext(), property),
+                Is.Null,
+                "a named folder has no previous version"
+            );
+        }
+
+        private static SettingsProperty MakeStringProperty()
+        {
+            return new SettingsProperty("UserInterfaceLanguage")
+            {
+                PropertyType = typeof(string),
+                SerializeAs = SettingsSerializeAs.String,
+                DefaultValue = "",
+            };
+        }
+
+        private static SettingsContext MakeContext()
+        {
+            return new SettingsContext { ["GroupName"] = kGroupName };
         }
     }
 }

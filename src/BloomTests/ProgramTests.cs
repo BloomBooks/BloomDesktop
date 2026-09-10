@@ -201,8 +201,13 @@ namespace BloomTests
 
             Assert.That(errorMessage, Is.Null);
             Assert.That(
-                BloomSettingsProvider.UserSettingsFolder,
+                Program.StartupUserSettingsFolder,
                 Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings")
+            );
+            Assert.That(
+                BloomSettingsProvider.GetUserSettingsFolder(),
+                Is.EqualTo(@"C:\Temp\bloom-e2e-abc\user-settings"),
+                "the parser did not hand the folder to the settings provider"
             );
             Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
             Assert.That(
@@ -223,7 +228,7 @@ namespace BloomTests
 
             Assert.That(errorMessage, Is.Null);
             Assert.That(
-                BloomSettingsProvider.UserSettingsFolder,
+                BloomSettingsProvider.GetUserSettingsFolder(),
                 Is.EqualTo(
                     System.IO.Path.Combine(
                         System.IO.Directory.GetCurrentDirectory(),
@@ -234,7 +239,7 @@ namespace BloomTests
         }
 
         [Test]
-        public void ParseStartupPortArguments_LeavesUserSettingsFolderNullWithoutArgument()
+        public void ParseStartupPortArguments_LeavesTheUsualUserSettingsFolderWithoutArgument()
         {
             Program.ParseStartupPortArguments(
                 new[] { @"C:\Temp\Example.bloomcollection" },
@@ -242,7 +247,24 @@ namespace BloomTests
             );
 
             Assert.That(errorMessage, Is.Null);
-            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
+        }
+
+        /// <summary>
+        /// The settings provider is keeping user.config in libpalaso's per-version folder under
+        /// %LOCALAPPDATA%, not in any folder a command line named.
+        /// </summary>
+        private static void AssertProviderIsOnTheUsualFolder()
+        {
+            Assert.That(
+                BloomSettingsProvider.GetUserSettingsFolder(),
+                Does.StartWith(
+                    System.Environment.GetFolderPath(
+                        System.Environment.SpecialFolder.LocalApplicationData
+                    )
+                )
+            );
         }
 
         [Test]
@@ -257,7 +279,8 @@ namespace BloomTests
                 errorMessage,
                 Is.EqualTo("Bloom requires a value after --user-settings-folder.")
             );
-            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
             Assert.That(remainingArgs, Is.Empty);
         }
 
@@ -273,7 +296,8 @@ namespace BloomTests
                 errorMessage,
                 Does.StartWith("Bloom cannot use \"\" as the --user-settings-folder")
             );
-            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
             Assert.That(remainingArgs, Is.Empty);
         }
 
@@ -289,28 +313,32 @@ namespace BloomTests
                 errorMessage,
                 Is.EqualTo("Bloom only accepts one --user-settings-folder argument.")
             );
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
             Assert.That(remainingArgs, Is.Empty);
         }
 
         [Test]
-        public void ParseStartupPortArguments_ClearsUserSettingsFolderWhenALaterArgumentIsBad()
+        public void ParseStartupPortArguments_GivesTheProviderNoFolderWhenALaterArgumentIsBad()
         {
-            // A valid folder set before a bad argument must not survive: the launch is rejected, and
-            // startup must not open that folder's user.config before reporting the error.
+            // A valid folder before a bad argument must not reach the settings provider: the launch
+            // is rejected, and startup must not open that folder's user.config before reporting the
+            // error.
             Program.ParseStartupPortArguments(
                 new[] { @"--user-settings-folder=C:\valid", "--vite-port", "70000" },
                 out var errorMessage
             );
 
             Assert.That(errorMessage, Is.Not.Null);
-            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
         }
 
         [Test]
-        public void ParseStartupPortArguments_ClearsUserSettingsFolderWhenExperimentalFeaturesLackE2e()
+        public void ParseStartupPortArguments_GivesTheProviderNoFolderWhenExperimentalFeaturesLackE2e()
         {
-            // The experimental-features check rejects the launch after the loop, so it has to clear
-            // the folder the loop already accepted, the same as a rejection inside the loop does.
+            // The experimental-features check rejects the launch after the loop, so a folder the
+            // loop already accepted must not reach the provider either.
             Program.ParseStartupPortArguments(
                 new[]
                 {
@@ -325,7 +353,8 @@ namespace BloomTests
                 errorMessage,
                 Is.EqualTo("Bloom only accepts --experimental-features together with --e2e.")
             );
-            Assert.That(BloomSettingsProvider.UserSettingsFolder, Is.Null);
+            Assert.That(Program.StartupUserSettingsFolder, Is.Null);
+            AssertProviderIsOnTheUsualFolder();
         }
 
         // --- IsBenignUnobservedTaskSocketNoise: the Sentry BeforeSend filter for

@@ -656,14 +656,11 @@ namespace Bloom.Publish.BloomLibrary
                 : UploadDestination.Production;
 
             var bloomExePath = Program.BloomExePath;
-            var arguments = $"upload \"{rootFolderPath}\" -u {WebUserId} -d {target}";
             // The upload runs in a second Bloom, which signs in with the login this one saved in
-            // its user settings. When this Bloom keeps its settings in a folder of its own (see
-            // BloomSettingsProvider), the second one has to read the same folder, or it finds no
-            // login at all, or somebody else's.
-            if (BloomSettingsProvider.UserSettingsFolder != null)
-                arguments +=
-                    $" --user-settings-folder \"{BloomSettingsProvider.UserSettingsFolder}\"";
+            // its user settings, so the second one has to read the same settings as this one, or
+            // it finds no login at all, or somebody else's.
+            var arguments =
+                $"upload \"{rootFolderPath}\" -u {WebUserId} -d {target} {BloomSettingsProvider.CommandLineArgumentsForChildBloom}";
             // An automated run wants the second Bloom to behave as this one does: no modal dialogs.
             if (Program.RunningE2eTests)
                 arguments += " --e2e";
