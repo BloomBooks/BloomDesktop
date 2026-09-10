@@ -541,49 +541,41 @@ namespace Bloom.TeamCollection
             "Bloom can no longer see the Team Collection folder, so you will not see changes made by your teammates.";
 
         /// <summary>
-        /// Run the action on the UI thread on a LATER turn of the message pump. Two reasons it
-        /// is BeginInvoke rather than SafeInvoke, which runs the action inline when we are
-        /// already on the UI thread:
-        /// - one caller is TryStartWatching, in the middle of StartMonitoring, and disconnecting
-        ///   inline there would tear the watchers down while that method is still setting them up;
-        /// - other callers are on a watcher's thread or a background timer, where a synchronous
-        ///   invoke can deadlock against a UI thread waiting on the BloomServer.
+        /// Run the action on the UI thread on a LATER turn of the message pump.
+        ///
+        /// It must be later, not inline, because one caller is TryStartWatching in the middle of
+        /// StartMonitoring: disconnecting inline there would tear the watchers down while that
+        /// method is still setting them up. And it must not block, because the other callers are
+        /// on a file system watcher's thread or the heartbeat's, where a synchronous invoke can
+        /// deadlock against a UI thread waiting on the BloomServer.
+        ///
+        /// Program.MainContext is the WinForms synchronization context, captured once at startup.
+        /// Post satisfies both requirements, is safe to call from any thread, and -- unlike
+        /// looking a form up -- never enumerates Application.OpenForms, which is not thread-safe
+        /// and which every caller here would be enumerating from a background thread.
         /// </summary>
         internal static void RunOnUiThreadLater(Action action)
         {
-            System.Windows.Forms.Form form;
-            try
+            var uiContext = Program.MainContext;
+            if (uiContext == null)
             {
-                // Deliberately inside the try: this reaches Application.OpenForms, which is not
-                // thread-safe, and we are typically on a watcher's thread or the heartbeat's.
-                // If it throws, the exception used to unwind all the way to the heartbeat's
-                // catch, which reports to Sentry and moves on -- silently swallowing the
-                // disconnect and leaving Bloom looking connected forever.
-                form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
-            }
-            catch (Exception ex)
-            {
-                NonFatalProblem.ReportSentryOnly(ex);
-                form = null;
-            }
-            if (form == null || form.IsDisposed || !form.IsHandleCreated)
-            {
-                // Startup (no Shell yet; the constructor above already disconnects this way),
-                // unit tests, shutdown, or the case just above. There is no UI to notify, and
-                // the state change matters more than the notification.
+                // No UI thread exists: unit tests, or startup before Application.Run. Nobody can
+                // be racing us, and the state change matters more than the notification, so just
+                // do it here.
                 action();
                 return;
             }
             try
             {
-                form.BeginInvoke(action);
+                uiContext.Post(_ => action(), null);
             }
             catch (Exception ex)
             {
-                // e.g. the form was disposed between the check above and here. We're going down
-                // anyway, but do the state change so nothing carries on thinking we're connected.
+                // The context is torn down, i.e. we are shutting down. Deliberately NOT falling
+                // back to running inline: this work exists to be done on the UI thread, and
+                // doing it on a watcher thread instead would trade a missed notification for a
+                // data race. At this point there is nobody left to notify anyway.
                 NonFatalProblem.ReportSentryOnly(ex);
-                action();
             }
         }
 
