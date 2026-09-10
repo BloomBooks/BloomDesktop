@@ -1856,11 +1856,17 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Add to the attribute list already saved for key/lang any page-dependent attribute variants
-        /// (e.g. data-style-frontcover) that this node contributes and the list does not have yet.
-        /// Nothing else about the saved list changes: for ordinary attributes the first element found
-        /// for a key/lang still wins. Without this, saving the whole book (where the data-div is found
-        /// first and wins) would throw away the variants the individual pages carry. See BL-16811.
+        /// Fill gaps in the attribute list already saved for key/lang from this node: a page-dependent
+        /// attribute variant (e.g. data-style-frontcover) the list has no entry for, and the plain
+        /// attribute it is a variant of if that too is missing. Without this, reading the whole book
+        /// (where the data-div is found first and wins) would throw away the variants the individual
+        /// pages carry, and could leave the data-div with variants but no plain value for anything that
+        /// is not on an xmatter page to fall back on. See BL-16811.
+        ///
+        /// It only fills gaps: a name the list already has keeps its value, because the first element
+        /// found for a key/lang wins and, when we are reading the whole book, that is deliberately the
+        /// data-div (see the comment in GatherDataItemsFromXElement, and BL-10739). A page's own edited
+        /// value reaches the data-div through the single-page read instead.
         /// </summary>
         private void MergePageDependentVariants(
             DataSetElementValue dsv,
@@ -1879,8 +1885,14 @@ namespace Bloom.Book
             {
                 if (existingNames.Contains(tuple.Item1))
                     continue;
-                if (IsPageDependentVariantName(key, tuple.Item1, out _))
+                if (
+                    IsPageDependentVariantName(key, tuple.Item1, out _)
+                    || _pageDependentAttributes.Contains((key, tuple.Item1))
+                )
+                {
                     existing.Add(tuple);
+                    existingNames.Add(tuple.Item1);
+                }
             }
         }
 

@@ -3773,6 +3773,14 @@ namespace BloomTests.Book
                 dataDivTitle.GetAttribute("data-style-titlepage"),
                 Is.EqualTo("padding-bottom: 0px")
             );
+            // The plain attribute must be filled in too, so that anything without a variant of its
+            // own - an element on an ordinary page, or an older Bloom opening the book - still has a
+            // value to fall back on.
+            Assert.That(
+                dataDivTitle.GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px"),
+                "the data-div should also gain the plain style attribute it was missing"
+            );
         }
 
         /// <summary>
