@@ -100,6 +100,11 @@ let runDone: Promise<void> = Promise.resolve();
 // a refused busy notice is offered again only while it is still true.
 let busyWith: string | undefined;
 let unsubscribeFromDelayRegister: (() => void) | undefined;
+// Numbers the busy and idle notices, so that C# can ignore one that arrives after a later one.
+// The two are separate HTTP requests and HTTP does not promise to deliver them in order, so an
+// idle notice (or its retry) can land after the busy notice for work that began afterwards; taken
+// at face value, that would let a save go ahead in the middle of the work.
+let noticeSequence = 0;
 // Bumped every time a change arrives. The async gather checks it afterwards, so a change that
 // lands while we were gathering schedules another pass instead of being lost.
 let changeCount = 0;
@@ -275,13 +280,18 @@ function snapshotUrl(api: string, pageId: string): string {
     )}`;
 }
 
+// The url for a busy or idle notice: a snapshot url plus this notice's place in the sequence.
+function noticeUrl(api: string, pageId: string): string {
+    return `${snapshotUrl(api, pageId)}&seq=${++noticeSequence}`;
+}
+
 // C# refuses a notice about a load it is not showing, exactly as it refuses such a snapshot, and
 // for the same reason the refusal must not be the end of it: this page may simply not have
 // reported itself ready yet. A post that fails outright (no reply at all; see takeSnapshot for
 // why that looks the way it does) has not reached C# either. In both cases, offer it again while
 // the work is still going -- a save made meanwhile would otherwise not know to wait.
 async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
-    const reply = await postStringQuietly(snapshotUrl(kBusyApi, pageId), what);
+    const reply = await postStringQuietly(noticeUrl(kBusyApi, pageId), what);
     if (wasTaken(reply)) return;
     if (busyWith === what && pageIdBeingWatched === pageId) {
         window.setTimeout(() => {
@@ -318,7 +328,7 @@ async function tellCSharpIdle(pageId: string): Promise<void> {
 // in between would sit out the whole wait.
 async function postIdleNotice(pageId: string): Promise<void> {
     if (pageIdBeingWatched !== pageId || busyWith !== undefined) return;
-    const reply = await postStringQuietly(snapshotUrl(kIdleApi, pageId), "");
+    const reply = await postStringQuietly(noticeUrl(kIdleApi, pageId), "");
     if (wasTaken(reply)) return;
     window.setTimeout(() => {
         void postIdleNotice(pageId);

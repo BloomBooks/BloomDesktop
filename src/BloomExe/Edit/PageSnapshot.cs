@@ -55,6 +55,13 @@ namespace Bloom.Edit
         // saves need to care; see WaitUntilIdle.
         private string _busyWith;
 
+        // The sequence number of the latest busy or idle notice we have acted on. The browser
+        // numbers them because they are separate requests and can arrive out of order; an idle
+        // notice from before the busy notice we hold must not clear it, or a save would go ahead
+        // in the middle of the work. Reset with the load, since the browser's numbering restarts
+        // with each page load.
+        private long _latestNoticeSequence = -1;
+
         /// <summary>
         /// Record what the browser says the page currently contains. Called from the API handler,
         /// which deliberately does not take the server's sync lock — this only stores a string, and
@@ -88,12 +95,15 @@ namespace Bloom.Edit
         /// result belongs in the saved page. Ignored, and answered false so the browser offers it
         /// again, unless it is about the load we are showing -- the same rule as Set.
         /// </summary>
-        public bool SetBusy(string loadId, string busyWith)
+        public bool SetBusy(string loadId, long sequence, string busyWith)
         {
             lock (_lock)
             {
                 if (_loadWeAccept == null || loadId != _loadWeAccept)
                     return false;
+                if (sequence <= _latestNoticeSequence)
+                    return true; // a later notice has already superseded this one
+                _latestNoticeSequence = sequence;
                 _busyWith = busyWith;
                 return true;
             }
@@ -103,12 +113,15 @@ namespace Bloom.Edit
         /// The browser says that work has finished and, having already sent us the page as it is
         /// after it, that we are free to save.
         /// </summary>
-        public bool SetIdle(string loadId)
+        public bool SetIdle(string loadId, long sequence)
         {
             lock (_lock)
             {
                 if (_loadWeAccept == null || loadId != _loadWeAccept)
                     return false;
+                if (sequence <= _latestNoticeSequence)
+                    return true; // a later notice has already superseded this one
+                _latestNoticeSequence = sequence;
                 _busyWith = null;
                 return true;
             }
@@ -173,6 +186,7 @@ namespace Bloom.Edit
             {
                 _loadWeAccept = loadId;
                 _busyWith = null;
+                _latestNoticeSequence = -1;
             }
         }
 
@@ -204,6 +218,7 @@ namespace Bloom.Edit
                 _pageId = null;
                 _content = null;
                 _busyWith = null;
+                _latestNoticeSequence = -1;
                 // Forgetting which load we believe is what makes the clearing stick: until the
                 // incoming page reports itself ready, every snapshot that arrives belongs to the
                 // load we are leaving, and is refused rather than quietly refilling what we just

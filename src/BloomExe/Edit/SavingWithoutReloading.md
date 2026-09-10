@@ -488,8 +488,11 @@ register goes busy, naming the work (`editView/pageBusy`), and when it is idle a
 snapshot-based save waits for that, sleeping the UI thread for at most 2 s
 (`PageSnapshot.WaitUntilIdle`); it is a plain sleep rather than another asynchronous protocol, and
 the two notices, like the snapshot itself, arrive on server threads, so the sleep does not stop
-them. If the wait runs out, the save goes ahead and the log records what the page was still busy
-with, so a report of a lost change can be read against it.
+them. The notices are numbered, because two unsynchronised requests can be processed out of order
+and an idle notice landing after the busy notice for newer work must not clear it; and a notice C#
+does not take (a refused or failed post) is offered again while it is still true. If the wait runs
+out, the save goes ahead and the log records what the page was still busy with, so a report of a
+lost change can be read against it.
 
 The sleep has a known limit. Work that runs entirely in the browser finishes and releases the wait.
 Work that calls a C# API on the UI thread cannot finish while the UI thread sleeps; and when the

@@ -69,14 +69,19 @@ namespace Bloom.web.controllers
             // (the body names it) or has finished. A save that has to use the snapshot waits, for
             // a bounded time, for the idle notice; see PageSnapshot.WaitUntilIdle. Like the
             // snapshot endpoint these are off the UI thread and unsynchronised -- they MUST be,
-            // because the UI thread may be asleep in that wait when the idle notice arrives.
+            // because the UI thread may be asleep in that wait when the idle notice arrives. Being
+            // unsynchronised, they can be processed out of order, which is what the sequence number
+            // is for.
             apiHandler.RegisterEndpointHandler(
                 "editView/pageBusy",
                 request =>
                 {
                     var loadId = request.GetParamOrNull("loadId");
+                    var sequence = long.Parse(request.RequiredParam("seq"));
                     var busyWith = request.RequiredPostString();
-                    request.ReplyWithBoolean(View.Model.ReceivePageBusy(loadId, busyWith));
+                    request.ReplyWithBoolean(
+                        View.Model.ReceivePageBusy(loadId, sequence, busyWith)
+                    );
                 },
                 false,
                 false
@@ -86,7 +91,8 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     var loadId = request.GetParamOrNull("loadId");
-                    request.ReplyWithBoolean(View.Model.ReceivePageIdle(loadId));
+                    var sequence = long.Parse(request.RequiredParam("seq"));
+                    request.ReplyWithBoolean(View.Model.ReceivePageIdle(loadId, sequence));
                 },
                 false,
                 false

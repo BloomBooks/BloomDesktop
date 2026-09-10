@@ -1722,18 +1722,18 @@ namespace Bloom.Edit
         /// Called by the editView/pageBusy API: the browser has begun asynchronous work, named by
         /// busyWith, whose result belongs in the saved page. See PageSnapshot.SetBusy.
         /// </summary>
-        public bool ReceivePageBusy(string loadId, string busyWith)
+        public bool ReceivePageBusy(string loadId, long sequence, string busyWith)
         {
-            return _pageSnapshot.SetBusy(loadId, busyWith);
+            return _pageSnapshot.SetBusy(loadId, sequence, busyWith);
         }
 
         /// <summary>
         /// Called by the editView/pageIdle API: that work has finished and the page as it is after
         /// it has been sent. See PageSnapshot.SetIdle.
         /// </summary>
-        public bool ReceivePageIdle(string loadId)
+        public bool ReceivePageIdle(string loadId, long sequence)
         {
-            return _pageSnapshot.SetIdle(loadId);
+            return _pageSnapshot.SetIdle(loadId, sequence);
         }
 
         // How long a snapshot-based save will wait for the browser to finish work that belongs in

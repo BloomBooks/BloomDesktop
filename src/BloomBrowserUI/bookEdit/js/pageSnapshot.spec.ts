@@ -473,6 +473,30 @@ describe("pageSnapshot", () => {
         ]);
     });
 
+    it("numbers the busy and idle notices in the order they are sent", async () => {
+        // They travel as separate requests, and C# uses the numbers to ignore one that arrives
+        // after a later one -- an idle notice landing after the busy notice for newer work.
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        posted.length = 0;
+
+        addRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+        removeRequestPageContentDelay("sizing an image");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+
+        const notices = posted.filter(
+            (p) => !p.url.startsWith("editView/pageSnapshot"),
+        );
+        expect(notices.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageBusy",
+            "editView/pageIdle",
+        ]);
+        const seqOf = (url: string) => Number(/[?&]seq=(\d+)/.exec(url)![1]);
+        expect(seqOf(notices[1].url)).toBeGreaterThan(seqOf(notices[0].url));
+    });
+
     it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.
