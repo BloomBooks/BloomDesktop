@@ -916,10 +916,16 @@ public sealed class YouTrackSubmitter : IReportSubmitter
         }
     }
 
-    private static string Describe(TimeSpan age) =>
-        age.TotalDays >= 1 ? $"{age.TotalDays:F0} day(s)"
-        : age.TotalHours >= 1 ? $"{age.TotalHours:F0} hour(s)"
-        : $"{age.TotalMinutes:F0} minute(s)";
+    private static string Describe(TimeSpan age)
+    {
+        if (age.TotalDays >= 1)
+            return $"{age.TotalDays:F0} day(s)";
+
+        if (age.TotalHours >= 1)
+            return $"{age.TotalHours:F0} hour(s)";
+
+        return $"{age.TotalMinutes:F0} minute(s)";
+    }
 
     private static string Trim(string value) =>
         value.Length <= 300 ? value : value.Substring(0, 299) + "…";
