@@ -139,6 +139,15 @@ export function applyAiImageEditorReplacements(
             // offers the undo while an image container is active, and after the launch
             // saved and reloaded this page nothing is — so without this, Ctrl+Z right
             // after the editor closes would do nothing until the user clicked the image.
+            //
+            // It does a second job, which matters on a Bloom Games page: a draggable's
+            // target holds a copy of the draggable's content, and activating the draggable
+            // is what makes Bloom rebuild that copy. changeImageByElement above does NOT
+            // (verified against a running Bloom: without this line the target went on
+            // showing the replaced picture), so the target would otherwise keep a picture
+            // we no longer offer any way to edit (BL-16793). An off-page slot has no
+            // active element to rely on, so C# repoints those copies itself — see
+            // GetGameTargetImageCopiesOfSlot in AiImageEditorApi.cs.
             theOneCanvasElementManager.setActiveElementToClosest(target);
             applied++;
         });

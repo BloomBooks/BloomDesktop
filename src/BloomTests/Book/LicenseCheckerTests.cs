@@ -159,9 +159,16 @@ namespace BloomTests.Book
             }
         }
 
-        private TemporaryFolder SetupDefaultOfflineLicenseInfo()
+        /// <summary>
+        /// Points LicenseChecker at an offline cache (no internet) in which the kingstone.superbible.* books
+        /// are licensed for a handful of languages, notably NOT English or French. Callers must dispose the
+        /// folder and reset LicenseChecker (SetOfflineFolder(null), SetAllowInternetAccess(true)) afterwards.
+        /// </summary>
+        internal static TemporaryFolder SetupDefaultOfflineLicenseInfo(
+            string folderName = "DefaultOfflineLicenseTest"
+        )
         {
-            var folder = new TemporaryFolder("DefaultOfflineLicenseTest");
+            var folder = new TemporaryFolder(folderName);
             LicenseChecker.SetOfflineFolder(folder.FolderPath);
             LicenseChecker.SetAllowInternetAccess(false);
             LicenseChecker.WriteObfuscatedFile(
