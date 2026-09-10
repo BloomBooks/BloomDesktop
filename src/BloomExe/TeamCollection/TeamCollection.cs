@@ -486,6 +486,14 @@ namespace Bloom.TeamCollection
         protected internal virtual bool IsLiveCollection => TCManager?.CurrentCollection == this;
 
         /// <summary>
+        /// Called periodically by ConnectionHeartbeat. If some part of the repo could not be
+        /// watched when monitoring started -- for a joiner, the Books folder that Dropbox has
+        /// not delivered yet -- this is the chance to try again. Does nothing by default.
+        /// See BL-16729.
+        /// </summary>
+        protected internal virtual void RetryDeferredWatching() { }
+
+        /// <summary>
         /// Tell the manager we have noticed we can no longer reach the repo. Goes through the
         /// ITeamCollectionManager interface (rather than the concrete TCManager) so it is
         /// mockable in tests.

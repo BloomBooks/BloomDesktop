@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -1983,6 +1984,174 @@ namespace BloomTests.TeamCollection
                         Is.EqualTo(1),
                         "a storm of overflows should not fill the log with identical messages"
                     );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A joiner's Dropbox may not have delivered the repo's Books folder by the time Bloom
+        /// starts watching. That used to mean no book watcher for the rest of the session --
+        /// and, because of an early return, no Other watcher either. See BL-16729.
+        /// </summary>
+        [Test]
+        public void StartMonitoring_NoBooksFolderYet_StillWatchesTheOtherFolder()
+        {
+            using (var collectionFolder = new TemporaryFolder("NoBooksYet_Collection"))
+            using (var repoFolder = new TemporaryFolder("NoBooksYet_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                    File.WriteAllText(settingsPath, "This is the initial value");
+                    // Creates the repo's Other folder, but deliberately NOT Books.
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    Assert.That(
+                        Directory.Exists(Path.Combine(repoFolder.FolderPath, "Books")),
+                        Is.False,
+                        "setup problem: this test is about the Books folder being absent"
+                    );
+
+                    tc.SetupMonitoringBehavior();
+                    var collectionChangedRaised = new ManualResetEvent(false);
+                    EventHandler<EventArgs> monitorFunction = (sender, args) =>
+                        collectionChangedRaised.Set();
+                    tc.RepoCollectionFilesChanged += monitorFunction;
+
+                    // sut: change a collection file, which only the Other watcher can see
+                    Thread.Sleep(10);
+                    RobustFile.WriteAllText(
+                        FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath),
+                        @"This is changed"
+                    );
+                    var raised = collectionChangedRaised.WaitOne(1000);
+
+                    tc.RepoCollectionFilesChanged -= monitorFunction;
+                    tc.StopMonitoring();
+
+                    Assert.That(
+                        raised,
+                        Is.True,
+                        "a missing Books folder should not stop us watching collection files"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Once Dropbox delivers the Books folder, the periodic check should start watching it
+        /// and announce whatever is already sitting there -- from the watcher's point of view
+        /// those books are all new since Bloom started. See BL-16729.
+        /// </summary>
+        [Test]
+        public void RetryDeferredWatching_BooksFolderHasArrived_AnnouncesTheBooksAlreadyInIt()
+        {
+            using (var collectionFolder = new TemporaryFolder("BooksArrive_Collection"))
+            using (var repoFolder = new TemporaryFolder("BooksArrive_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder yet, so watching is deferred
+
+                    var newBooks = new List<string>();
+                    EventHandler<NewBookEventArgs> handler = (sender, args) =>
+                        newBooks.Add(args.BookFileName);
+                    tc.NewBook += handler;
+                    try
+                    {
+                        // Nothing to find while the folder is still absent.
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "setup problem: there is no Books folder yet, so nothing to announce"
+                        );
+
+                        // Dropbox delivers the folder, with a book already in it.
+                        var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                        Directory.CreateDirectory(booksPath);
+                        RobustFile.WriteAllText(
+                            Path.Combine(booksPath, "Arrived book.bloom"),
+                            "not really a zip"
+                        );
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(newBooks, Is.EqualTo(new[] { "Arrived book.bloom" }));
+
+                        // And it is idempotent: a second tick must not announce it again.
+                        newBooks.Clear();
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "having started watching, later ticks should do nothing"
+                        );
+                    }
+                    finally
+                    {
+                        tc.NewBook -= handler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void RetryDeferredWatching_BooksFolderWasThereAllAlong_DoesNothing()
+        {
+            WithMockManagedCollection(
+                "BooksWereThere",
+                (tc, mockTcManager) =>
+                {
+                    var booksPath = Path.Combine(tc.RepoDescription, "Books");
+                    Directory.CreateDirectory(booksPath);
+                    RobustFile.WriteAllText(
+                        Path.Combine(booksPath, "Existing book.bloom"),
+                        "not really a zip"
+                    );
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // watcher starts normally; nothing is deferred
+
+                    var newBooks = new List<string>();
+                    EventHandler<NewBookEventArgs> handler = (sender, args) =>
+                        newBooks.Add(args.BookFileName);
+                    tc.NewBook += handler;
+                    try
+                    {
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "a collection that was watched from the start must not have its "
+                                + "existing books re-announced every minute"
+                        );
+                    }
+                    finally
+                    {
+                        tc.NewBook -= handler;
+                        tc.StopMonitoring();
+                    }
                 }
             );
         }
