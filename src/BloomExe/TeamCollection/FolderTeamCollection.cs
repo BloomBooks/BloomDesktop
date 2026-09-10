@@ -1004,11 +1004,65 @@ namespace Bloom.TeamCollection
         protected internal override void StartMonitoring()
         {
             base.StartMonitoring();
-            _booksWatcher = new FileSystemWatcherWrapper();
 
             var booksPath = Path.Combine(_repoFolderPath, "Books");
-            if (!Directory.Exists(booksPath))
-                return; // probably joining a TC and didn't get it synced properly.
+            if (Directory.Exists(booksPath))
+            {
+                if (!StartBooksWatcher(booksPath))
+                {
+                    // StartBooksWatcher reported the failure, which (when there is no window to
+                    // marshal to, e.g. at startup) disconnects us synchronously and calls
+                    // StopMonitoring under us. Carrying on to create the Other watcher would
+                    // leave a live watcher on a collection we have already given up on, which
+                    // StopMonitoring has finished with and Dispose will not revisit.
+                    return;
+                }
+            }
+            else
+            {
+                // BL-16729: a Team Collection's Books folder is created when the collection is
+                // set up, so the only way to be missing it is to be a joiner whose Dropbox has
+                // not delivered it yet. That folder can arrive minutes into the session; this
+                // used to give up on watching for books for good (and, as a side effect, skip
+                // the Other watcher below too). Instead, remember to try again -- the periodic
+                // connection check calls RetryDeferredWatching.
+                // Note we do NOT treat this as a disconnection: if the folder is not here, no
+                // teammate has checked a book in yet, so there is nothing to miss *yet*.
+                _booksWatcherDeferred = true;
+                Logger.WriteEvent(
+                    $"Team Collection: \"{booksPath}\" does not exist yet, so book changes cannot be watched. Will retry."
+                );
+            }
+
+            var otherFilesDirPath = Path.Combine(_repoFolderPath, "Other");
+            // If it doesn't exist we can't watch it. Rather bizarre since we normally create
+            // it if it doesn't exist as part of syncing. But BL-15838 seems to have been
+            // caused by not checking. If we can't set it up, unfortunately we won't find
+            // out immediately if some remote user modifies something in the collection.
+            // But we should find out on the next startup, and from then on we'll be able to
+            // monitor it, so I don't think it's very serious.
+            if (Directory.Exists(otherFilesDirPath))
+            {
+                _otherWatcher = new FileSystemWatcherWrapper(otherFilesDirPath);
+                _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
+                _otherWatcher.InternalBufferSize = kWatcherBufferSize;
+                _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
+                _otherWatcher.Error += (sender, args) =>
+                    HandleRepoWatcherError(otherFilesDirPath, args.GetException());
+                TryStartWatching(_otherWatcher, otherFilesDirPath);
+            }
+        }
+
+        // True when StartMonitoring found no Books folder to watch. See BL-16729.
+        private bool _booksWatcherDeferred;
+
+        /// <summary>
+        /// Set up and start the watcher on the repo's Books folder. Returns false if we could
+        /// not start watching (which will already have been reported).
+        /// </summary>
+        private bool StartBooksWatcher(string booksPath)
+        {
+            _booksWatcher = new FileSystemWatcherWrapper();
             _booksWatcher.Path = booksPath;
 
             // Enhance: maybe one day we want to watch collection files too?
@@ -1030,33 +1084,70 @@ namespace Bloom.TeamCollection
             _booksWatcher.Error += (sender, args) =>
                 HandleRepoWatcherError(booksPath, args.GetException());
 
-            // Begin watching.
-            if (!TryStartWatching(_booksWatcher, booksPath))
+            return TryStartWatching(_booksWatcher, booksPath);
+        }
+
+        /// <summary>
+        /// The Books folder was not there when we started monitoring, so we have no watcher for
+        /// book changes. Called from the periodic connection check: if Dropbox has delivered the
+        /// folder since, start watching it now. See BL-16729.
+        /// </summary>
+        protected internal override void RetryDeferredWatching()
+        {
+            // Cheap tests first: this runs on the heartbeat's thread every minute, and for
+            // almost every collection there is nothing deferred.
+            if (!_booksWatcherDeferred || !IsMonitoring)
+                return;
+            var booksPath = Path.Combine(_repoFolderPath, "Books");
+            if (!Directory.Exists(booksPath))
+                return;
+
+            // Starting the watcher and announcing the books we find raises the same events the
+            // watcher itself raises, which reach the UI, so hand the work to the UI thread
+            // rather than doing it on the heartbeat's thread-pool thread.
+            TeamCollectionManager.RunOnUiThreadLater(() =>
             {
-                // We just reported the failure, which (when there is no window to marshal to,
-                // e.g. at startup) disconnects us synchronously and calls StopMonitoring under
-                // us. Carrying on to create the Other watcher would leave a live watcher on a
-                // collection we have already given up on, which StopMonitoring has finished
-                // with and Dispose will not revisit.
+                // Re-check: we may have been stopped or disconnected while this was queued.
+                if (!_booksWatcherDeferred || !IsMonitoring || !IsLiveCollection)
+                    return;
+                _booksWatcherDeferred = false;
+                if (!StartBooksWatcher(booksPath))
+                    return;
+                Logger.WriteEvent(
+                    $"Team Collection: \"{booksPath}\" has appeared; now watching it for book changes."
+                );
+                NoticeBooksThatArrivedBeforeWeStartedWatching();
+            });
+        }
+
+        /// <summary>
+        /// Whatever is in the Books folder now got there while we had no watcher on it, so no
+        /// Created event was ever raised for any of it. From the point of view of watching that
+        /// folder these books are all new since Bloom started, so tell the rest of Bloom about
+        /// them exactly as the watcher would have.
+        /// </summary>
+        private void NoticeBooksThatArrivedBeforeWeStartedWatching()
+        {
+            string[] bookNames;
+            try
+            {
+                bookNames = GetBookList();
+            }
+            catch (Exception ex)
+            {
+                // The folder existed a moment ago; if it has gone again there is nothing to
+                // announce, and the watcher's own Error handling covers a real loss of contact.
+                NonFatalProblem.ReportSentryOnly(ex);
                 return;
             }
-
-            var otherFilesDirPath = Path.Combine(_repoFolderPath, "Other");
-            // If it doesn't exist we can't watch it. Rather bizarre since we normally create
-            // it if it doesn't exist as part of syncing. But BL-15838 seems to have been
-            // caused by not checking. If we can't set it up, unfortunately we won't find
-            // out immediately if some remote user modifies something in the collection.
-            // But we should find out on the next startup, and from then on we'll be able to
-            // monitor it, so I don't think it's very serious.
-            if (Directory.Exists(otherFilesDirPath))
+            foreach (var bookName in bookNames)
             {
-                _otherWatcher = new FileSystemWatcherWrapper(otherFilesDirPath);
-                _otherWatcher.NotifyFilter = NotifyFilters.LastWrite;
-                _otherWatcher.InternalBufferSize = kWatcherBufferSize;
-                _otherWatcher.DebounceChanged(OnCollectionFilesChanged, kDebouncePeriodInMs);
-                _otherWatcher.Error += (sender, args) =>
-                    HandleRepoWatcherError(otherFilesDirPath, args.GetException());
-                TryStartWatching(_otherWatcher, otherFilesDirPath);
+                if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
+                    RaiseNewBook(bookName + ".bloom");
+                else if (HasBeenChangedRemotely(bookName))
+                    HandleModifiedFile(
+                        new BookRepoChangeEventArgs { BookFileName = bookName + ".bloom" }
+                    );
             }
         }
 
@@ -1243,6 +1334,9 @@ namespace Bloom.TeamCollection
 
         protected internal override void StopMonitoring()
         {
+            // Whatever we were waiting to start watching, we are not waiting any more.
+            _booksWatcherDeferred = false;
+
             if (_booksWatcher != null)
             {
                 _booksWatcher.EnableRaisingEvents = false;

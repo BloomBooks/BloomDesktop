@@ -78,6 +78,11 @@ namespace Bloom.TeamCollection
                 }
                 else
                 {
+                    // A joiner's Books folder can arrive minutes after Bloom starts, once
+                    // Dropbox delivers it. If we could not watch it then, this is where we
+                    // notice it has turned up. See BL-16729.
+                    _teamCollection.RetryDeferredWatching();
+
                     // Deliberately the quiet overload: History messages are not de-duplicated,
                     // so a probe that wrote them would fill log.txt and raise a status-changed
                     // event on every tick of a perfectly healthy session.
