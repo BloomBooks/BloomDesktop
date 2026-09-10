@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
@@ -551,12 +551,26 @@ namespace Bloom.TeamCollection
         /// </summary>
         internal static void RunOnUiThreadLater(Action action)
         {
-            var form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
+            System.Windows.Forms.Form form;
+            try
+            {
+                // Deliberately inside the try: this reaches Application.OpenForms, which is not
+                // thread-safe, and we are typically on a watcher's thread or the heartbeat's.
+                // If it throws, the exception used to unwind all the way to the heartbeat's
+                // catch, which reports to Sentry and moves on -- silently swallowing the
+                // disconnect and leaving Bloom looking connected forever.
+                form = Shell.GetShellOrOtherOpenForm(); // Form.ActiveForm is null when a browser is active
+            }
+            catch (Exception ex)
+            {
+                NonFatalProblem.ReportSentryOnly(ex);
+                form = null;
+            }
             if (form == null || form.IsDisposed || !form.IsHandleCreated)
             {
                 // Startup (no Shell yet; the constructor above already disconnects this way),
-                // unit tests, or shutdown. There is no UI to notify, and the state change
-                // matters more than the notification.
+                // unit tests, shutdown, or the case just above. There is no UI to notify, and
+                // the state change matters more than the notification.
                 action();
                 return;
             }
