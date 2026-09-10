@@ -130,15 +130,13 @@ namespace BloomTests
             }
         }
 
-        [
-            Test,
-            Ignore(
-                "Real bug, fix with BL-16858: the indenting writer separates inline-only children."
-            )
-        ]
+        [Test]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
         {
             var dom = SafeXmlDocument.Create();
+            // Every real book DOM is loaded with PreserveWhitespace on (BookStorage, BL-2484),
+            // which also keeps the indenting writer from separating inline-only children.
+            dom.PreserveWhitespace = true;
             var original = "<p><em>one</em><strong>two</strong></p>";
             dom.LoadXml(XmlHtmlConverter.CreateHtmlString("<div data-book='test'/>" + original));
             using (var temp = new TempFile())
