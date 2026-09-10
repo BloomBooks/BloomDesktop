@@ -329,3 +329,23 @@ want first in `MruProjects`, or delete the entries so Bloom shows the collection
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## 2026-09-10 — `vitest run` finishes every test and then never exits
+
+In a fresh worktree (`pnpm install` run today, vitest 4.0.8), `pnpm exec vitest run` prints all
+its ✓ lines and then hangs forever instead of printing the summary and exiting. Nothing has
+failed — the tests are done — but there is no summary line, no exit code, and no way to tell
+"still running" from "wedged". `--no-file-parallelism` (which AGENTS.md recommends for the older
+worker-pool hang) and `--pool=forks` both hang the same way.
+
+It reads exactly like a hung test, so the reflex is to go hunting for the file that hangs. There
+isn't one: run any single directory and its files all pass, then that run hangs too. Something
+keeps the event loop alive after teardown.
+
+**Workaround:** run a directory at a time under `timeout`, and read the results out of the ✓
+lines rather than the summary — e.g.
+`timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`. Note that
+`timeout` does not kill the pnpm child, so a loop over directories has to be watched.
+
+**Context:** preflight on BL-16859. Whole front-end suite green this way (~350 tests), but it
+took an hour of wall-clock to establish.
