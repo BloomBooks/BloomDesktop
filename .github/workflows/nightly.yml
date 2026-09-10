@@ -323,7 +323,11 @@ jobs:
               run: pnpm test --reporter=list,junit,html
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
-            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure).
+            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
+            # and what the fixture keeps beside them for a failed test (fixtures/bloomTest.ts,
+            # keepEvidenceOnFailure): Bloom's Log.txt and a copy of the collection folder as Bloom
+            # left it. Not the user-settings folder: this artifact is public, and user.config holds
+            # the Bloom Library login of a Bloom that signed in for real.
             # On failure only: a green run's report says nothing a green check has not already said,
             # the same reason the visual-regression screenshots below go up only on failure.
             #

@@ -42,7 +42,10 @@ test.describe("a test's Bloom keeps its user settings to itself", () => {
         // Bloom accepted the license for us at startup (there is nobody to click Accept) and saved
         // that, so the folder already holds a user.config, and this is what is in it.
         expect(
-            readSavedUserSetting(bloomApp.userSettingsDir, "LicenseAccepted"),
+            await readSavedUserSetting(
+                bloomApp.userSettingsDir,
+                "LicenseAccepted",
+            ),
         ).toBe("True");
     });
 
@@ -79,7 +82,7 @@ test.describe("a test's Bloom keeps its user settings to itself", () => {
         bloomApp,
     }) => {
         test.setTimeout(300000);
-        const savedZoom = readSavedUserSetting(
+        const savedZoom = await readSavedUserSetting(
             bloomApp.userSettingsDir,
             "PageZoom",
         );
@@ -96,8 +99,8 @@ test.describe("a test's Bloom keeps its user settings to itself", () => {
                 bloomApp.userSettingsDir,
             ),
         ).toBe(true);
-        expect(readSavedUserSetting(bloomApp.userSettingsDir, "PageZoom")).toBe(
-            savedZoom,
-        );
+        expect(
+            await readSavedUserSetting(bloomApp.userSettingsDir, "PageZoom"),
+        ).toBe(savedZoom);
     });
 });
