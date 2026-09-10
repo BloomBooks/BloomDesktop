@@ -59,7 +59,7 @@ public static class DoctorSignals
     /// Polling stays as the backstop, and must: a Bloom too old to know about any of this cannot announce
     /// itself, and those are the Blooms most worth watching.
     /// </summary>
-    public static string BloomStartedName() => @"LocalBloomFreezeDoctor.bloomstarted";
+    public static string BloomStartedName() => @"Local\BloomFreezeDoctor.bloomstarted";
 
     /// <summary>Set by Bloom as it dies, to ask for a dump while the process still exists.</summary>
     public static string DumpRequestName(int processId) =>
