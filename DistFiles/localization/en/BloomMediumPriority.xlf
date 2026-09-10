@@ -1504,7 +1504,7 @@
         <note>ID: ImageLibrary.FailedToAddImage</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.AboutOpenVerse">
-        <source xml:lang="en">About OpenVerse</source>
+        <source xml:lang="en">About Openverse</source>
         <note>ID: ImageLibrary.AboutOpenVerse</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.Disclaimer">
@@ -1514,7 +1514,7 @@
       <trans-unit id="ImageLibrary.MoreInfo">
         <source xml:lang="en">More info</source>
         <note>ID: ImageLibrary.MoreInfo</note>
-        <note>Link text that opens the OpenVerse about page, shown in the "About OpenVerse" section of the image library.</note>
+        <note>Link text that opens the Openverse about page, shown in the "About Openverse" section of the image library.</note>
       </trans-unit>
       <trans-unit id="ImageLibrary.OpenVerseDescription">
         <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
