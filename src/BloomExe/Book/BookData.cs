@@ -1655,7 +1655,17 @@ namespace Bloom.Book
                                     KeysOfVariablesThatAreUrlEncoded.Add(key);
                                 }
 
-                                dsv.SetAttributeList(lang, GetAttributesToSave(nodeToUse));
+                                var attrsToSave = GetAttributesToSave(nodeToUse, key);
+                                AddPageDependentVariantsFromDataDiv(key, lang, attrsToSave);
+                                dsv.SetAttributeList(lang, attrsToSave);
+                            }
+                            else
+                            {
+                                // We already have a value for this key/lang, and the first one found
+                                // wins. But the page-dependent attributes are the exception: each
+                                // xmatter page holds its own value, so we must collect this page's
+                                // too instead of letting the first element found decide for them all.
+                                MergePageDependentVariants(dsv, lang, nodeToUse, key);
                             }
                         }
                     }
@@ -1680,6 +1690,23 @@ namespace Bloom.Book
                 );
             }
         }
+
+        // (data-book key, attribute) pairs whose value legitimately differs from one xmatter page to
+        // another. The book title, for example, appears on both the front cover and the title page,
+        // and each is padded to fit its own font size by OverflowChecker, so a single saved
+        // padding-bottom would clip the descenders on one of them.
+        // The value is saved in the data-div once per page type, as data-<attr>-<pagetype> (page type
+        // is the page's data-xmatter-page value, lower-cased, e.g. data-style-frontcover,
+        // data-style-titlepage), and each page gets back its own value. The plain attribute is still
+        // written too, holding the most recently saved value, so older Bloom versions and books with
+        // no variant yet behave as before. See BL-16811.
+        static readonly HashSet<(string key, string attr)> _pageDependentAttributes = new HashSet<(
+            string,
+            string
+        )>
+        {
+            ("bookTitle", "style"),
+        };
 
         // Attributes not to copy when saving element attribute data in a DataSetElementValue.
         static HashSet<string> _attributesNotToCopy = new HashSet<string>(
@@ -1749,9 +1776,212 @@ namespace Bloom.Book
             }
         );
 
-        private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node)
+        /// <summary>
+        /// The name under which a page-dependent attribute value is saved for one kind of xmatter
+        /// page, e.g. "data-style-frontcover" for the style attribute on a front cover page.
+        /// </summary>
+        private static string PageDependentVariantName(string attr, string pageType)
+        {
+            return "data-" + attr + "-" + pageType;
+        }
+
+        /// <summary>
+        /// The kind of xmatter page the given node belongs to: the lower-cased data-xmatter-page
+        /// value of its bloom-page ancestor. Null if it is not on an xmatter page, which includes
+        /// elements in the data-div (they have no bloom-page ancestor at all) and elements on
+        /// ordinary content pages.
+        /// </summary>
+        private static string GetXmatterPageType(SafeXmlElement node)
+        {
+            var page = node.ParentOrSelfWithClass("bloom-page");
+            if (page == null)
+                return null;
+            var pageType = page.GetAttribute(kDataXmatterPage).Trim();
+            if (pageType == string.Empty)
+                return null;
+            return pageType.ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// True if the node is the data-div itself or somewhere inside it. The data-div is where the
+        /// page-dependent attribute variants are stored, so they must reach it verbatim.
+        /// </summary>
+        private static bool IsInDataDiv(SafeXmlElement node)
+        {
+            for (
+                var current = node;
+                current != null;
+                current = current.ParentNode as SafeXmlElement
+            )
+            {
+                if (current.GetAttribute("id") == "bloomDataDiv")
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// True if the given data-book key has any page-dependent attributes at all. Used to leave
+        /// every other key untouched by this mechanism.
+        /// </summary>
+        private static bool HasPageDependentAttributes(string key)
+        {
+            return _pageDependentAttributes.Any(pair => pair.key == key);
+        }
+
+        /// <summary>
+        /// True if attrName is the name under which some kind of xmatter page's variant of one of
+        /// this key's page-dependent attributes is saved, e.g. "data-style-titlepage" when the key
+        /// is "bookTitle". baseAttr is then the attribute it is a variant of, e.g. "style".
+        /// </summary>
+        private static bool IsPageDependentVariantName(
+            string key,
+            string attrName,
+            out string baseAttr
+        )
+        {
+            baseAttr = null;
+            foreach (var pair in _pageDependentAttributes)
+            {
+                if (pair.key != key)
+                    continue;
+                var prefix = PageDependentVariantName(pair.attr, "");
+                if (attrName.Length > prefix.Length && attrName.StartsWith(prefix))
+                {
+                    baseAttr = pair.attr;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Add to the attribute list already saved for key/lang any page-dependent attribute variants
+        /// (e.g. data-style-frontcover) that this node contributes and the list does not have yet.
+        /// Nothing else about the saved list changes: for ordinary attributes the first element found
+        /// for a key/lang still wins. Without this, saving the whole book (where the data-div is found
+        /// first and wins) would throw away the variants the individual pages carry. See BL-16811.
+        /// </summary>
+        private void MergePageDependentVariants(
+            DataSetElementValue dsv,
+            string lang,
+            SafeXmlElement node,
+            string key
+        )
+        {
+            if (!HasPageDependentAttributes(key))
+                return;
+            var existing = dsv.GetAttributeList(lang);
+            if (existing == null)
+                return;
+            var existingNames = new HashSet<string>(existing.Select(t => t.Item1));
+            foreach (var tuple in GetAttributesToSave(node, key))
+            {
+                if (existingNames.Contains(tuple.Item1))
+                    continue;
+                if (IsPageDependentVariantName(key, tuple.Item1, out _))
+                    existing.Add(tuple);
+            }
+        }
+
+        /// <summary>
+        /// When we gather from a single edited page, the data-div is not part of what we read, so the
+        /// page-dependent attribute variants belonging to the OTHER xmatter pages are missing from the
+        /// data we gathered. Pushing that data back into the book would then give every other xmatter
+        /// page the value from the page we just read, which is the very thing this mechanism exists to
+        /// prevent. So copy any variant the data-div already has, unless the page we read from supplied
+        /// one of the same name (that one is newer). See BL-16811.
+        /// </summary>
+        private void AddPageDependentVariantsFromDataDiv(
+            string key,
+            string lang,
+            List<Tuple<string, XmlString>> attrs
+        )
+        {
+            if (!HasPageDependentAttributes(key))
+                return;
+            var dataDivElement =
+                _dataDiv?.SelectSingleNode($"div[@data-book='{key}' and @lang='{lang}']")
+                as SafeXmlElement;
+            if (dataDivElement == null)
+                return;
+            var existingNames = new HashSet<string>(attrs.Select(t => t.Item1));
+            foreach (var attr in dataDivElement.AttributePairs)
+            {
+                if (existingNames.Contains(attr.Name))
+                    continue;
+                if (IsPageDependentVariantName(key, attr.Name, out _))
+                    attrs.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
+            }
+        }
+
+        /// <summary>
+        /// Turn the attribute list saved for a data-book key into the list to apply to one particular
+        /// element of the book. Page-dependent attributes (see _pageDependentAttributes) are saved
+        /// under names like data-style-frontcover; the element on the front cover must get that value
+        /// as its plain style attribute, and must not get the title page's. An element that is not on
+        /// an xmatter page (including the data-div copy) gets none of the variants, just the plain
+        /// attribute, which is also what a book saved by an older Bloom has. Everything not part of
+        /// this mechanism passes through unchanged. See BL-16811.
+        /// </summary>
+        private List<Tuple<string, XmlString>> ResolvePageDependentAttributes(
+            string key,
+            List<Tuple<string, XmlString>> attrs,
+            SafeXmlElement targetNode
+        )
+        {
+            if (attrs == null || !HasPageDependentAttributes(key))
+                return attrs;
+            // The data-div is where the variants are kept, so it gets them exactly as saved. (That is
+            // also how a whole-book synchronize teaches the data-div the variants of a book that was
+            // last saved by a Bloom which knew nothing about them.)
+            if (IsInDataDiv(targetNode))
+                return attrs;
+            var pageType = GetXmatterPageType(targetNode);
+            // The base attributes for which this target has a variant of its own. Such a variant wins
+            // over the plain attribute, which holds whatever was saved most recently from any page.
+            var baseAttrsWithVariant = new HashSet<string>();
+            if (pageType != null)
+            {
+                foreach (var tuple in attrs)
+                {
+                    if (
+                        IsPageDependentVariantName(key, tuple.Item1, out var baseAttr)
+                        && tuple.Item1 == PageDependentVariantName(baseAttr, pageType)
+                    )
+                        baseAttrsWithVariant.Add(baseAttr);
+                }
+            }
+            var result = new List<Tuple<string, XmlString>>();
+            foreach (var tuple in attrs)
+            {
+                if (IsPageDependentVariantName(key, tuple.Item1, out var baseAttr))
+                {
+                    // A variant belongs only to its own kind of page, where it arrives under the name
+                    // of the attribute it is a variant of.
+                    if (
+                        pageType != null
+                        && tuple.Item1 == PageDependentVariantName(baseAttr, pageType)
+                    )
+                        result.Add(Tuple.Create(baseAttr, tuple.Item2));
+                    continue;
+                }
+                if (baseAttrsWithVariant.Contains(tuple.Item1))
+                    continue;
+                result.Add(tuple);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Collect the attributes of the given element that we want to save in the data-div (and hence
+        /// copy to the other elements with the same data-book key). The key is needed because a few
+        /// attributes are saved once per kind of xmatter page rather than once per book.
+        /// </summary>
+        private List<Tuple<string, XmlString>> GetAttributesToSave(SafeXmlElement node, string key)
         {
             var result = new List<Tuple<string, XmlString>>();
+            var pageType = GetXmatterPageType(node);
             var isInCustomLayoutPage = HtmlDom.IsInCustomLayoutPage(node);
             if (node.Name == "img" && isInCustomLayoutPage)
             {
@@ -1798,6 +2028,19 @@ namespace Bloom.Book
                     continue;
                 }
                 result.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
+                if (pageType != null && _pageDependentAttributes.Contains((key, attr.Name)))
+                {
+                    // Save the value a second time under a name specific to this kind of xmatter page,
+                    // so that each page can get its own value back rather than the last one saved from
+                    // anywhere in the book. (Only attributes that reach this general case can have
+                    // variants; class, and style on a custom layout page, are handled above.)
+                    result.Add(
+                        Tuple.Create(
+                            PageDependentVariantName(attr.Name, pageType),
+                            XmlString.FromUnencoded(attr.Value)
+                        )
+                    );
+                }
             }
             // if the node is an img, save some extra data
             if (node.Name == "img")
@@ -2094,7 +2337,10 @@ namespace Bloom.Book
                         // data-div; but that is prevented by renaming the key attribute in that copy.
                         if (attrs != null && !HtmlDom.IsInCustomLayoutPage(node))
                         {
-                            MergeAttrsIntoElement(attrs, node);
+                            MergeAttrsIntoElement(
+                                ResolvePageDependentAttributes(key, attrs, node),
+                                node
+                            );
                         }
                     }
                 }
@@ -2430,7 +2676,11 @@ namespace Bloom.Book
                 return false;
             var variable = data.TextVariables[key];
             var getFirstAlt = variable.TextAlternatives.GetFirstAlternative();
-            var otherAttributes = variable.GetAttributeList("*");
+            var otherAttributes = ResolvePageDependentAttributes(
+                key,
+                variable.GetAttributeList("*"),
+                node
+            );
             // Make sure we don't re-encode the new image url.
             var newImageUrl = KeysOfVariablesThatAreUrlEncoded.Contains(key)
                 ? UrlPathString.CreateFromUrlEncodedString(getFirstAlt)

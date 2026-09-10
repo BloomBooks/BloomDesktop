@@ -3560,6 +3560,303 @@ namespace BloomTests.Book
             Assert.That(style, Does.Contain("font-weight:bold"));
         }
 
+        // The title appears on both the front cover and the title page, in different styles, so
+        // OverflowChecker pads each of them by a different amount. BL-16811: the two padding values
+        // must not overwrite each other through the data-div.
+        private const string kTitleOnTwoXmatterPagesTemplate =
+            @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='bookTitle' lang='xyz' {0}><p>My Title</p></div>
+				</div>
+				<div class='bloom-page' data-xmatter-page='frontCover' id='coverPage'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable bloom-visibility-code-on Title-On-Cover-style' data-book='bookTitle' lang='xyz' {1}><p>My Title</p></div>
+					</div>
+				</div>
+				<div class='bloom-page' data-xmatter-page='titlePage' id='titlePage'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable bloom-visibility-code-on Title-On-Title-Page-style' data-book='bookTitle' lang='xyz' {2}><p>My Title</p></div>
+					</div>
+				</div>
+				</body></html>";
+
+        /// <summary>
+        /// The title on the given kind of xmatter page (frontCover, titlePage).
+        /// </summary>
+        private static SafeXmlElement GetTitleOnXmatterPage(HtmlDom dom, string xmatterPage)
+        {
+            var result =
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    $"//div[@data-xmatter-page='{xmatterPage}']//div[@data-book='bookTitle']"
+                ) as SafeXmlElement;
+            if (result == null)
+                Assert.Fail($"test setup problem: no bookTitle on the {xmatterPage} page");
+            return result;
+        }
+
+        /// <summary>
+        /// The page div for the given kind of xmatter page (frontCover, titlePage), as the editing
+        /// code would pass it to SuckInDataFromEditedDom after the user edited that page.
+        /// </summary>
+        private static SafeXmlElement GetXmatterPageElement(HtmlDom dom, string xmatterPage)
+        {
+            var result =
+                dom.SelectSingleNodeHonoringDefaultNS($"//div[@data-xmatter-page='{xmatterPage}']")
+                as SafeXmlElement;
+            if (result == null)
+                Assert.Fail($"test setup problem: no {xmatterPage} page");
+            return result;
+        }
+
+        /// <summary>
+        /// The data-div copy of the title.
+        /// </summary>
+        private static SafeXmlElement GetTitleInDataDiv(HtmlDom dom)
+        {
+            var result =
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='bookTitle']"
+                ) as SafeXmlElement;
+            if (result == null)
+                Assert.Fail("test setup problem: no bookTitle in the data-div");
+            return result;
+        }
+
+        /// <summary>
+        /// BL-16811: saving the front cover must not push the cover's padding-bottom onto the title
+        /// page, which has its own (recorded in the data-div as data-style-titlepage).
+        /// </summary>
+        [Test]
+        public void SuckInDataFromEditedDom_CoverTitleSaved_TitlePageKeepsItsOwnStyle()
+        {
+            var dom = new HtmlDom(
+                string.Format(
+                    kTitleOnTwoXmatterPagesTemplate,
+                    "data-style-titlepage='padding-bottom: 0px' style='padding-bottom: 0px'",
+                    "style='padding-bottom: 3px'",
+                    "style='padding-bottom: 0px'"
+                )
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            // Sanity checks on the starting state: the data-div knows only the title page's value,
+            // and each page has its own.
+            Assert.That(
+                GetTitleInDataDiv(dom).GetAttribute("data-style-frontcover"),
+                Is.Empty,
+                "sanity check: the data-div should not yet have a front cover variant"
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px")
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "titlePage").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+
+            data.SuckInDataFromEditedDom(GetXmatterPageElement(dom, "frontCover"));
+
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px"),
+                "the cover keeps the value we just saved from it"
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "titlePage").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 0px"),
+                "the title page must keep its own value, not get the cover's"
+            );
+            var dataDivTitle = GetTitleInDataDiv(dom);
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-frontcover"),
+                Is.EqualTo("padding-bottom: 3px")
+            );
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-titlepage"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+            Assert.That(
+                dataDivTitle.GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px"),
+                "the plain attribute holds the most recently saved value"
+            );
+        }
+
+        /// <summary>
+        /// BL-16811: the same in the other direction. Saving the title page must not push its
+        /// padding-bottom onto the front cover, whose descenders would then be clipped.
+        /// </summary>
+        [Test]
+        public void SuckInDataFromEditedDom_TitlePageTitleSaved_CoverKeepsItsOwnStyle()
+        {
+            var dom = new HtmlDom(
+                string.Format(
+                    kTitleOnTwoXmatterPagesTemplate,
+                    "data-style-frontcover='padding-bottom: 3px' style='padding-bottom: 3px'",
+                    "style='padding-bottom: 3px'",
+                    "style='padding-bottom: 0px'"
+                )
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            Assert.That(
+                GetTitleInDataDiv(dom).GetAttribute("data-style-titlepage"),
+                Is.Empty,
+                "sanity check: the data-div should not yet have a title page variant"
+            );
+
+            data.SuckInDataFromEditedDom(GetXmatterPageElement(dom, "titlePage"));
+
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px"),
+                "the cover must keep its own value, not get the title page's"
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "titlePage").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+            var dataDivTitle = GetTitleInDataDiv(dom);
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-frontcover"),
+                Is.EqualTo("padding-bottom: 3px")
+            );
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-titlepage"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+            Assert.That(
+                dataDivTitle.GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 0px"),
+                "the plain attribute holds the most recently saved value"
+            );
+        }
+
+        /// <summary>
+        /// BL-16811: a book whose data-div has no variants yet (saved by an older Bloom) but whose
+        /// two xmatter pages carry different styles. A whole-book synchronize must record a variant
+        /// for each page rather than making them agree.
+        /// </summary>
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_XmatterPageStylesDiffer_EachPageKeepsItsOwn()
+        {
+            var dom = new HtmlDom(
+                string.Format(
+                    kTitleOnTwoXmatterPagesTemplate,
+                    "",
+                    "style='padding-bottom: 3px'",
+                    "style='padding-bottom: 0px'"
+                )
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            Assert.That(
+                GetTitleInDataDiv(dom).GetAttribute("style"),
+                Is.Empty,
+                "sanity check: the data-div entry should start with no style at all"
+            );
+
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 3px")
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "titlePage").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+            var dataDivTitle = GetTitleInDataDiv(dom);
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-frontcover"),
+                Is.EqualTo("padding-bottom: 3px")
+            );
+            Assert.That(
+                dataDivTitle.GetAttribute("data-style-titlepage"),
+                Is.EqualTo("padding-bottom: 0px")
+            );
+        }
+
+        /// <summary>
+        /// BL-16811: a book saved by a Bloom that knew nothing about the variants (the data-div has
+        /// only the plain style, and the xmatter pages, freshly regenerated, have none). Both pages
+        /// must get the plain value, exactly as before.
+        /// </summary>
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_NoVariantsSaved_BothXmatterPagesGetPlainStyle()
+        {
+            var dom = new HtmlDom(
+                string.Format(
+                    kTitleOnTwoXmatterPagesTemplate,
+                    "style='padding-bottom: 4px'",
+                    "",
+                    ""
+                )
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.Empty,
+                "sanity check: the pages should start with no style at all"
+            );
+
+            data.SynchronizeDataItemsThroughoutDOM();
+
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "frontCover").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 4px")
+            );
+            Assert.That(
+                GetTitleOnXmatterPage(dom, "titlePage").GetAttribute("style"),
+                Is.EqualTo("padding-bottom: 4px")
+            );
+        }
+
+        /// <summary>
+        /// BL-16811: the per-page mechanism only applies to xmatter pages. A title on an ordinary
+        /// page round-trips its plain style attribute and gets no variant.
+        /// </summary>
+        [Test]
+        public void SuckInDataFromEditedDom_TitleOnOrdinaryPage_PlainStyleWithNoVariant()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					 <div data-book='bookTitle' lang='xyz'><p>My Title</p></div>
+				</div>
+				<div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable bloom-visibility-code-on' data-book='bookTitle' lang='xyz' style='padding-bottom: 3px'><p>My Title</p></div>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            Assert.That(
+                GetTitleInDataDiv(dom).GetAttribute("style"),
+                Is.Empty,
+                "sanity check: the data-div entry should start with no style at all"
+            );
+
+            var page =
+                dom.SelectSingleNodeHonoringDefaultNS("//div[@id='page1']") as SafeXmlElement;
+            data.SuckInDataFromEditedDom(page);
+
+            var dataDivTitle = GetTitleInDataDiv(dom);
+            Assert.That(dataDivTitle.GetAttribute("style"), Is.EqualTo("padding-bottom: 3px"));
+            foreach (var attr in dataDivTitle.AttributePairs)
+            {
+                Assert.That(
+                    attr.Name,
+                    Does.Not.StartWith("data-style-"),
+                    "a page with no data-xmatter-page should produce no page-dependent variant"
+                );
+            }
+            var pageTitle =
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='page1']//div[@data-book='bookTitle']"
+                ) as SafeXmlElement;
+            Assert.That(pageTitle.GetAttribute("style"), Is.EqualTo("padding-bottom: 3px"));
+        }
+
         [Test]
         public void GatherDataItemsFromXElement_BloomEditableTrailingEmptyDiv_NormalizesStoredValue()
         {
