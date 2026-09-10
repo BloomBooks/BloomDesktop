@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 
 namespace Bloom.TeamCollection
@@ -97,10 +97,20 @@ namespace Bloom.TeamCollection
                     }
                     else if (_tracker.RecordResult(problem))
                     {
+                        // Logged as well as acted on: without this, someone testing a real
+                        // outage has no way to tell "the check ran and decided" from "the
+                        // check never ran".
+                        SIL.Reporting.Logger.WriteEvent(
+                            $"Team Collection periodic check confirmed a problem ({problem.L10NId}); disconnecting."
+                        );
                         _teamCollection.ReportConnectionProblem(problem);
                     }
                     else if (problem != null)
                     {
+                        SIL.Reporting.Logger.WriteEvent(
+                            $"Team Collection periodic check found a problem ({problem.L10NId}); "
+                                + $"looking again in {kConfirmIntervalMs / 1000}s before believing it."
+                        );
                         delayUntilNextTick = kConfirmIntervalMs; // suspicious; confirm sooner
                     }
                 }
