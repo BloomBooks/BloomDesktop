@@ -53,6 +53,30 @@ namespace BloomTests.Book
                 ) as SafeXmlElement;
         }
 
+        private static SafeXmlElement EditableOfLang(HtmlDom dom, string pageId, string lang)
+        {
+            return dom.RawDom.SelectSingleNode(
+                    $"//div[@id='{pageId}']//div[contains(@class,'bloom-editable')][@lang='{lang}']"
+                ) as SafeXmlElement;
+        }
+
+        private static SafeXmlElement PageElement(HtmlDom dom, string pageId)
+        {
+            return dom.RawDom.SelectSingleNode($"//div[@id='{pageId}']") as SafeXmlElement;
+        }
+
+        private static string[] ParagraphTexts(SafeXmlElement editable)
+        {
+            return FlowTextChains
+                .GetTopLevelParagraphs(editable)
+                .Select(paragraph => paragraph.InnerText)
+                .ToArray();
+        }
+
+        private static readonly string kContinues =
+            $" {FlowTextChains.kContinuationAttrName}='true'";
+        private static readonly string kSeam = $" {FlowTextChains.kSeamSpaceAttrName}='true'";
+
         [Test]
         public void GetChainGroups_ReturnsGroupsInPageThenDocumentOrder()
         {
@@ -506,6 +530,224 @@ namespace BloomTests.Book
             var book = CreateBook();
 
             Assert.That(FlowTextChains.ContinueInto(book, "p1", 0, "nosuchpage", 0, "en"), Is.Null);
+        }
+
+        /// <summary>
+        /// A three-page chain in the state a settled chain is in: only the last box carries the
+        /// mark that says where its text ran out, and each box after the first begins with the
+        /// tail of the paragraph the box before it started.
+        /// </summary>
+        private static HtmlDom MakeThreePageChain()
+        {
+            return MakeBookDom(
+                Page("p1", Group(Editable("<p>Alpha one.</p>"), "chain"))
+                    + Page(
+                        "p2",
+                        Group(
+                            Editable($"<p{kContinues}{kSeam}>Beta two.</p><p>Gamma three.</p>"),
+                            "chain"
+                        )
+                    )
+                    + Page(
+                        "p3",
+                        Group(
+                            Editable(
+                                $"<p{kContinues}{kSeam}>Delta four.{kMarker} Epsilon five.</p>"
+                            ),
+                            "chain"
+                        )
+                    )
+            );
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_MiddlePage_PrependsIntoTheNextBoxAndJoinsTheContinuation()
+        {
+            var dom = MakeThreePageChain();
+            // Sanity check the starting point: the last box holds only its own half of the run,
+            // and it holds the mark that says where its text ran out.
+            Assert.That(ParagraphTexts(FirstEditable(dom, "p3")).Length, Is.EqualTo(1), "setup");
+            Assert.That(
+                FlowTextChains.FindOverflowMarker(FirstEditable(dom, "p3")),
+                Is.Not.Null,
+                "setup"
+            );
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p2"));
+
+            var target = FirstEditable(dom, "p3");
+            // The middle box's own two paragraphs come first, and the paragraph the last box
+            // began with carried on the middle box's last paragraph, so the two are one again.
+            Assert.That(
+                ParagraphTexts(target),
+                Is.EqualTo(new[] { "Beta two.", "Gamma three. Delta four. Epsilon five." })
+            );
+            var paragraphs = FlowTextChains.GetTopLevelParagraphs(target);
+            // The first paragraph still carries on "Alpha one." on the page before it.
+            Assert.That(
+                paragraphs[0].GetAttribute(FlowTextChains.kContinuationAttrName),
+                Is.EqualTo("true")
+            );
+            Assert.That(
+                paragraphs[1].HasAttribute(FlowTextChains.kContinuationAttrName),
+                Is.False,
+                "The joined paragraph continues nothing: it is whole again."
+            );
+            Assert.That(
+                FlowTextChains.FindOverflowMarker(target),
+                Is.Null,
+                "The mark described a fit of text that has changed; a walk puts it back."
+            );
+            Assert.That(moves.Count, Is.EqualTo(1));
+            Assert.That(moves[0].ChainId, Is.EqualTo("chain"));
+            Assert.That(moves[0].WalkFromPageId, Is.EqualTo("p3"));
+            Assert.That(moves[0].Langs, Is.EqualTo(new[] { "en" }));
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_LastPage_AppendsToThePreviousBox()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>Alpha one.</p>"), "chain"))
+                    + Page(
+                        "p2",
+                        Group(
+                            Editable($"<p{kContinues}>Beta two.</p><p>Gamma three.{kMarker}</p>"),
+                            "chain"
+                        )
+                    )
+                    + Page(
+                        "p3",
+                        Group(
+                            Editable($"<p{kContinues}{kSeam}>Delta four.</p><p>Epsilon five.</p>"),
+                            "chain"
+                        )
+                    )
+            );
+            // Sanity check the starting point: the box that will receive the text holds two
+            // paragraphs of its own.
+            Assert.That(ParagraphTexts(FirstEditable(dom, "p2")).Length, Is.EqualTo(2), "setup");
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p3"));
+
+            var target = FirstEditable(dom, "p2");
+            Assert.That(
+                ParagraphTexts(target),
+                Is.EqualTo(new[] { "Beta two.", "Gamma three. Delta four.", "Epsilon five." })
+            );
+            Assert.That(FlowTextChains.FindOverflowMarker(target), Is.Null);
+            Assert.That(moves[0].WalkFromPageId, Is.EqualTo("p2"));
+            Assert.That(moves[0].Langs, Is.EqualTo(new[] { "en" }));
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_OnlyBoxOfTheChain_MovesNothing()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>Alpha one.</p>"), "lonelyChain"))
+                    + Page("p2", Group(Editable("<p>Not in a chain.</p>")))
+            );
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p1"));
+
+            // There is nowhere to put the text, so it goes with the page, as it did before flow
+            // text existed.
+            Assert.That(
+                ParagraphTexts(FirstEditable(dom, "p2")),
+                Is.EqualTo(new[] { "Not in a chain." })
+            );
+            Assert.That(
+                ParagraphTexts(FirstEditable(dom, "p1")),
+                Is.EqualTo(new[] { "Alpha one." })
+            );
+            Assert.That(moves.Count, Is.EqualTo(1));
+            Assert.That(moves[0].WalkFromPageId, Is.Null);
+            Assert.That(moves[0].Langs, Is.Empty);
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_LeavingOneBoxBehind_UnlinksItAndAsksForNoWalk()
+        {
+            // A chain needs two boxes to be a chain: one box on its own has nowhere to send its
+            // extra text and nothing to refit.
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable($"<p>Alpha one.</p>"), "chain"))
+                    + Page("p2", Group(Editable($"<p{kContinues}{kSeam}>Beta two.</p>"), "chain"))
+            );
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p2"));
+
+            Assert.That(
+                ParagraphTexts(FirstEditable(dom, "p1")),
+                Is.EqualTo(new[] { "Alpha one. Beta two." })
+            );
+            // The page being deleted still carries the attribute, and goes with it; the box that
+            // stays behind is on its own now, so it is no longer part of a chain.
+            Assert.That(
+                FlowTextChains.GetChainGroups(dom, "chain").Select(group => group.PageId),
+                Is.EqualTo(new[] { "p2" })
+            );
+            Assert.That(moves[0].WalkFromPageId, Is.Null);
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_MovesEveryLanguageOfTheGroup()
+        {
+            // Each language's text flows through its own boxes. A language left behind would lose
+            // its text while another kept it.
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    Group(
+                        Editable("<p>Alpha one.</p>") + Editable("<p>Alpha un.</p>", "fr"),
+                        "chain"
+                    )
+                )
+                    + Page(
+                        "p2",
+                        Group(
+                            Editable($"<p{kContinues}{kSeam}>Beta two.</p>")
+                                + Editable($"<p{kContinues}{kSeam}>Beta deux.</p>", "fr"),
+                            "chain"
+                        )
+                    )
+                    + Page(
+                        "p3",
+                        Group(
+                            Editable($"<p{kContinues}{kSeam}>Gamma three.</p>")
+                                + Editable($"<p{kContinues}{kSeam}>Gamma trois.</p>", "fr"),
+                            "chain"
+                        )
+                    )
+            );
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p2"));
+
+            Assert.That(
+                ParagraphTexts(EditableOfLang(dom, "p3", "en")),
+                Is.EqualTo(new[] { "Beta two. Gamma three." })
+            );
+            Assert.That(
+                ParagraphTexts(EditableOfLang(dom, "p3", "fr")),
+                Is.EqualTo(new[] { "Beta deux. Gamma trois." })
+            );
+            Assert.That(moves[0].Langs, Is.EquivalentTo(new[] { "en", "fr" }));
+        }
+
+        [Test]
+        public void MoveChainedTextOffPage_PageWithNoChainedGroup_ChangesNothing()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>Alpha one.</p>"), "chain"))
+                    + Page("p2", Group(Editable("<p>On its own.</p>")))
+                    + Page("p3", Group(Editable($"<p{kContinues}>Beta two.</p>"), "chain"))
+            );
+            var before = dom.RawDom.OuterXml;
+
+            var moves = FlowTextChains.MoveChainedTextOffPage(dom, PageElement(dom, "p2"));
+
+            Assert.That(moves, Is.Empty);
+            Assert.That(dom.RawDom.OuterXml, Is.EqualTo(before));
         }
     }
 }

@@ -269,4 +269,20 @@ describe("flowTrigger", () => {
 
         expect(marked).toEqual([boxes[1]]);
     });
+
+    it("asks for the overflow warning on the last box of the page even when no text moves", async () => {
+        // The box's extra text has already gone to a later page, so the box fits and its page
+        // is not overflowing. Nothing measures that unless we ask: the boundary settles without
+        // moving anything, and the overflow checker waits for the user's next keystroke.
+        const { page, boxes } = makePage(2);
+        const marked: HTMLElement[] = [];
+        setupFlowText(page, {
+            ...makeOptions(),
+            markOverflow: (editable) => marked.push(editable),
+        });
+
+        await waitForBoundaryWork();
+
+        expect(marked).toEqual([boxes[1]]);
+    });
 });

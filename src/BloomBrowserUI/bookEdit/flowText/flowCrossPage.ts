@@ -26,11 +26,12 @@ import {
     jumpToPage,
     peekNext,
     postPendingCaret,
+    requestWalk,
     setNextContent,
 } from "./flowBoundaryClient";
 import { getLanguageChainOnPage } from "./flowChain";
 import { waitForEditorReady } from "./flowEditorReady";
-import { kFlowChainAttr } from "./flowConstants";
+import { kChainedGroupSelector, kFlowChainAttr } from "./flowConstants";
 import {
     getCombinedTextAcrossPages,
     splitCombinedAcrossPages,
@@ -45,6 +46,7 @@ import {
     findFitOffsetInBox,
     getOverflowMarkerOffset,
     MarkerFitProbe,
+    removeOverflowMarker,
 } from "./flowOverflowMarker";
 import { OverflowMeasurer } from "./flowVerify";
 
@@ -79,9 +81,91 @@ const nextBoxByChainAndPage = new Map<string, INextBox | undefined>();
 // and the other page after, sends text that is already there.
 const settledThisRun = new Set<string>();
 
+// The chains whose later pages need refitting because text has crossed the boundary. The
+// request goes in once the text on this page has stopped moving, not at each boundary: one walk
+// settles everything from there to the end of the chain, a walk asked for in the middle of a
+// pass would refuse the pass's own next move, and a walk costs seconds. So this outlives a
+// single pass: a burst of passes, which is what moving a page's worth of text is, asks once.
+const walksWanted = new Map<
+    string,
+    {
+        chainId: string;
+        pageId: string;
+        lang: string;
+        /**
+         * True when pageId is the page being edited, which asks for everything after that page.
+         * That covers whatever a single boundary could ask for, so such an entry is not replaced.
+         */
+        fromPageBeingEdited: boolean;
+    }
+>();
+
 /** Start a new pass over the boundaries. Every boundary may move text again. */
 export function beginCrossPageRun(): void {
     settledThisRun.clear();
+}
+
+/** Is a refit of the pages after this one still to be asked for? */
+export function areWalksWanted(): boolean {
+    return walksWanted.size > 0;
+}
+
+/**
+ * Ask Bloom to refit the pages after the ones this pass moved text onto. Text that arrived on
+ * the next page has to go on breaking correctly all the way to the end of the chain, and only
+ * Bloom can measure the pages the browser is not editing.
+ */
+export async function requestQueuedWalks(): Promise<void> {
+    const wanted = Array.from(walksWanted.values());
+    walksWanted.clear();
+    for (const walk of wanted) {
+        forgetNextBoxesOfChain(walk.chainId);
+        await requestWalk(walk.chainId, walk.pageId, walk.lang);
+    }
+}
+
+// Bloom writes the boxes of the chain on the later pages while it refits them, so what we
+// remember about the next box is no longer what it holds. A pass that went on believing it
+// would combine this page's text with text that has moved on, and write it back.
+function forgetNextBoxesOfChain(chainId: string): void {
+    for (const key of Array.from(nextBoxByChainAndPage.keys())) {
+        if (key.startsWith(`${chainId}|`)) {
+            nextBoxByChainAndPage.delete(key);
+        }
+    }
+}
+
+/**
+ * Want a refit of the pages after this one, for every chain with a box on this page. This is for
+ * a change that alters where the text breaks without moving any of it, such as a new style: this
+ * page settles itself, and the pages after it are Bloom's to measure.
+ *
+ * This only says what is wanted. requestQueuedWalks sends it, once this page has stopped moving
+ * text: a walk asked for while the browser still has text to hand to the next page would refuse
+ * that move, and the page being edited would keep text that no longer fits it.
+ */
+export function queueWalksForChainsOnPage(root: ParentNode = document): void {
+    const page = getPage(root);
+    if (!page?.id) {
+        return;
+    }
+
+    page.querySelectorAll<HTMLElement>(
+        `${kChainedGroupSelector} > ${kVisibleEditableSelector}`,
+    ).forEach((editable) => {
+        const chainId = editable
+            .closest<HTMLElement>(".bloom-translationGroup")
+            ?.getAttribute(kFlowChainAttr);
+        const lang = editable.getAttribute("lang");
+        if (chainId && lang) {
+            walksWanted.set(`${chainId}|${lang}`, {
+                chainId,
+                pageId: page.id,
+                lang,
+                fromPageBeingEdited: true,
+            });
+        }
+    });
 }
 
 /** Forget what the boxes on the later pages hold. Call this when the page being edited changes. */
@@ -133,8 +217,19 @@ export async function settleCrossPageBoundary(
     }
 
     const caretOffset = getCollapsedSelectionOffsetInEditable(last);
-    const markerOffset = getOverflowMarkerOffset(last);
+    let markerOffset = getOverflowMarkerOffset(last);
     const lengthHere = getComparableEditableLength(last);
+    // The marker can be older than the layout: the overflow checker places it before the
+    // fonts arrive, and the text that then overflowed may fit once they have. Pushing at
+    // such a marker would move text that fits, so the real layout has the last word.
+    if (
+        markerOffset !== undefined &&
+        options.fitProbe &&
+        options.fitProbe(last, lengthHere)
+    ) {
+        removeOverflowMarker(last);
+        markerOffset = undefined;
+    }
     const combinedText = getCombinedTextAcrossPages(last, next.html);
     const isPush = markerOffset !== undefined;
     const originalHtml = last.innerHTML;
@@ -209,8 +304,12 @@ export async function settleCrossPageBoundary(
         page.id,
         lang,
         split.nextHtml,
+        next.html,
     );
     if (!accepted) {
+        // Bloom would not take it, and one reason is that the box holds something else now. So
+        // what we remember about it is worth nothing: the next pass reads it again.
+        forgetNextBoxesOfChain(chainId);
         const typed = carrier?.stop() ?? "";
         apply(last, originalHtml, options);
         restoreCaretHere(last, caretOffset, options);
@@ -225,6 +324,18 @@ export async function settleCrossPageBoundary(
         html: split.nextHtml,
     });
     settledThisRun.add(key);
+    // The next page holds different text now, so whatever follows it in the chain breaks
+    // somewhere else. Only Bloom can measure those pages; requestQueuedWalks asks it to, once
+    // this pass is over.
+    const walkKey = `${chainId}|${lang}`;
+    if (!walksWanted.get(walkKey)?.fromPageBeingEdited) {
+        walksWanted.set(walkKey, {
+            chainId,
+            pageId: next.pageId,
+            lang,
+            fromPageBeingEdited: false,
+        });
+    }
 
     if (carrier) {
         carrier.startPosting();
@@ -239,7 +350,11 @@ export async function settleCrossPageBoundary(
  * The start of the word that offset falls inside, or offset itself when it is at a word start,
  * at whitespace, or at either end of the text.
  */
-function snapToWordStart(text: string, offset: number): number {
+/**
+ * The start of the word this offset falls in, so that text moves a whole word at a time. An
+ * offset already at a word boundary is left where it is.
+ */
+export function snapToWordStart(text: string, offset: number): number {
     if (
         offset <= 0 ||
         offset >= text.length ||

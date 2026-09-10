@@ -1379,6 +1379,29 @@ export function removeRequestPageContentDelay(id: string): void {
     }
 }
 
+/**
+ * Settles once no in-flight async DOM work is left, or after kMaxWaitTimeMs, whichever comes
+ * first — the same wait captureContentForExternalProcessing does before it captures a page.
+ * Off-screen measuring needs it for the same reason: a box measured while an image is still
+ * being sized is measured against a layout that is about to change.
+ */
+export function waitForRequestPageContentDelays(): Promise<void> {
+    return new Promise<void>((resolve) => {
+        const start = Date.now();
+        const check = () => {
+            if (
+                activeDelays.length === 0 ||
+                Date.now() - start > kMaxWaitTimeMs
+            ) {
+                resolve();
+            } else {
+                setTimeout(check, 50);
+            }
+        };
+        check();
+    });
+}
+
 // Wrap a function that returns a promise with delay management.
 // The delay is added before the function is called, and removed when the promise settles (resolves or rejects).
 // This ensures that requestPageContent waits for the async operation to complete before saving the page.

@@ -259,10 +259,12 @@ span.bloom-linebreak {
 // The first paragraph of a box that continues a paragraph from the box before it. The line
 // it continues already started, so it takes neither the first-line indent of its style nor
 // the space a new paragraph would get above it. The attribute alone carries this, so the
-// user's own "No Indent" choice stays their own.
+// user's own "No Indent" choice stays their own. The Format dialog writes a style's indent
+// as "text-indent: 20pt !important" on ".x-style p" (StyleEditor.changeIndent), so this
+// has to be !important too, or the indent wins.
 .bloom-editable p[data-flow-continuation] {
-    text-indent: 0;
-    margin-top: 0;
+    text-indent: 0 !important;
+    margin-top: 0 !important;
 }
 
 // Rules that are shared by both the regular book front matter and the more minimalist epub front matter.

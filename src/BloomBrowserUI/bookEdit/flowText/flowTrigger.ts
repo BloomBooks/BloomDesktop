@@ -15,12 +15,19 @@ import {
 import {
     kChainedGroupSelector,
     kFlowChainAttr,
+    kMeasuringFlowFitAttr,
     kReflowingAttr,
 } from "./flowConstants";
 import {
+    removeCreatePagesButtons,
+    updateCreatePagesButtons,
+} from "./flowCreatePagesButton";
+import {
+    areWalksWanted,
     beginCrossPageRun,
     placePendingCaret,
     resetCrossPageCache,
+    requestQueuedWalks,
     settleCrossPageBoundary,
 } from "./flowCrossPage";
 import { rebalanceChain } from "./flowEngine";
@@ -29,11 +36,17 @@ import {
     resetFlowFromCache,
     updateFlowFromLabels,
 } from "./flowFromLabel";
+import {
+    removeFlowToLabels,
+    resetFlowToCache,
+    updateFlowToLabels,
+} from "./flowToLabel";
 import { LineMeasurer } from "./flowFit";
 import { stripTransientFlowMarkup, updateIndicators } from "./flowIndicators";
 import {
     placeOverflowMarker,
     removeOverflowMarker,
+    textUpToOffsetFitsInBox,
 } from "./flowOverflowMarker";
 import { getPretextMeasurer } from "./flowPretextMeasurer";
 import { handleSeamKey } from "./flowSeamKeys";
@@ -72,6 +85,9 @@ const pendingTriggers = new Set<HTMLElement>();
 const pendingBoundaries = new Set<HTMLElement>();
 let boundaryWork: Promise<void> | undefined;
 let boundaryWorkStarted = false;
+// The wait for the text to stand still before the pages after this one are refitted.
+let walkWait: Promise<void> | undefined;
+let walkWaitStarted = false;
 // A push can leave text that still does not fit, and a pull can free room for more, so the
 // boundary settles again after a move. This caps that, in case the two disagree.
 const kMaxBoundaryRounds = 6;
@@ -89,6 +105,13 @@ export function setupFlowText(
     overrides: FlowTextOptions = {},
 ): void {
     suspendFlowText();
+    if (document.body.hasAttribute(kMeasuringFlowFitAttr)) {
+        // This page is here to be measured, not edited: the box it is being asked about holds
+        // more text than fits it because that is the question. Watching it and settling it
+        // would take that text out of the box before it is measured, and the box on the next
+        // page, which is where it would go, is not in this document at all.
+        return;
+    }
     observedContainer = container;
     activeOptions = overrides;
 
@@ -101,6 +124,7 @@ export function setupFlowText(
     resetCrossPageCache();
     resetPendingOverflowCache();
     resetFlowFromCache();
+    resetFlowToCache();
 
     observer = new MutationObserver(onMutations);
     observer.observe(container, {
@@ -157,9 +181,12 @@ export function suspendFlowText(): void {
     resetCrossPageCache();
     resetPendingOverflowCache();
     resetFlowFromCache();
+    resetFlowToCache();
     isComposing = false;
     removeContinueButtons(document);
+    removeCreatePagesButtons(document);
     removeFlowFromLabels(document);
+    removeFlowToLabels(document);
     stripTransientFlowMarkup(document);
     observedContainer = undefined;
     activeOptions = {};
@@ -376,7 +403,9 @@ async function runBoundaryWork(): Promise<void> {
         const boxes = Array.from(pendingBoundaries);
         pendingBoundaries.clear();
         if (!boxes.length) {
-            return;
+            // Nothing left to settle. Not a return: the walks the rounds asked for are still
+            // to be requested, below.
+            break;
         }
 
         for (const box of boxes) {
@@ -387,6 +416,7 @@ async function runBoundaryWork(): Promise<void> {
             const moved = await settleCrossPageBoundary(box, {
                 measurer: getMeasurer(),
                 measureOverflow: activeOptions.measureOverflow,
+                fitProbe: textUpToOffsetFitsInBox,
                 applyWithoutPass,
             });
             if (moved) {
@@ -394,12 +424,78 @@ async function runBoundaryWork(): Promise<void> {
                 // the indicators, the overflow warning and the offers on the other boxes are
                 // all out of date.
                 flowTriggers([box], "crossPage");
-                markOverflow(box);
             }
+
+            // A box whose extra text has gone to a later page fits, and its page is not
+            // overflowing either. Only a measurement can say so, and the overflow checker does
+            // not run again until the user's next keystroke, so ask for one whether or not this
+            // pass was the one that moved the text.
+            markOverflow(box);
         }
     }
 
     pendingBoundaries.clear();
+    requestWalksWhenQuiet();
+}
+
+// How long the text has to stand still before the pages after this one are refitted, and how
+// often that is checked.
+const kQuietBeforeWalkMs = 500;
+const kQuietPollMs = 50;
+
+/**
+ * Ask Bloom to refit the pages after this one, once this page has stopped moving text.
+ *
+ * Whatever arrived on the next page has to go on breaking correctly to the end of the chain,
+ * and only Bloom can measure the pages the browser is not editing. Two things make the timing
+ * of the ask matter, so every ask comes through here:
+ *
+ *  - A walk in progress refuses the browser's own move, so a walk asked for while this page is
+ *    still handing text on would leave this page holding text that does not fit it.
+ *  - Moving a page's worth of text is a burst of passes, one boundary each, and a walk reloads
+ *    every page it touches. Asked for after each pass, the walks would queue up behind a page
+ *    that is still moving.
+ *
+ * So the ask waits for the text to stand still, and work that starts while it waits inherits
+ * the wait: what is wanted (walksWanted, in flowCrossPage) outlives a pass.
+ *
+ * This returns at once. While it waits, the page carries the reflowing mark and holds a save
+ * delay, so nothing reads the page as settled before the refits have been asked for.
+ */
+export function requestWalksWhenQuiet(): void {
+    if (walkWaitStarted || !areWalksWanted()) {
+        return;
+    }
+
+    walkWaitStarted = true;
+    addRequestPageContentDelay(kDelayId);
+    updateReflowingAttr();
+    walkWait = waitForQuietThenRequestWalks().finally(() => {
+        walkWait = undefined;
+        walkWaitStarted = false;
+        updateReflowingAttr();
+        removeRequestPageContentDelay(kDelayId);
+    });
+}
+
+/** Settles when the refits this page needs have been asked for. */
+export function waitForWalkRequests(): Promise<void> {
+    return walkWait ?? Promise.resolve();
+}
+
+async function waitForQuietThenRequestWalks(): Promise<void> {
+    let quietFor = 0;
+    while (quietFor < kQuietBeforeWalkMs) {
+        await new Promise((resolve) => setTimeout(resolve, kQuietPollMs));
+        const busy =
+            pendingBoundaries.size > 0 ||
+            pendingTriggers.size > 0 ||
+            passOutstanding ||
+            boundaryWorkStarted;
+        quietFor = busy ? 0 : quietFor + kQuietPollMs;
+    }
+
+    await requestQueuedWalks();
 }
 
 function markOverflow(editable: HTMLElement): void {
@@ -446,9 +542,14 @@ function flowOneChain(trigger: HTMLElement, chain: HTMLElement[]): void {
 function refreshContinueButtons(): void {
     const root = observedContainer ?? document;
     updateContinueButtons(root);
-    // The same changes decide which box, if any, says its text flows in from an earlier page:
-    // a group joins or leaves a chain, or another group of its chain arrives on this page.
+    // The same changes decide which box, if any, is where the run of text ends with more still
+    // to place, and so offers to make the pages the rest of it needs.
+    updateCreatePagesButtons(root);
+    // The same changes decide which box, if any, says its text flows in from an earlier page or
+    // out to a later one: a group joins or leaves a chain, or another group of its chain arrives
+    // on this page.
     updateFlowFromLabels(root);
+    updateFlowToLabels(root);
 }
 
 function getMeasurer(): LineMeasurer {
@@ -485,7 +586,7 @@ function onCompositionEnd(): void {
  * runs: that work is a pass that is waiting for an answer from C#.
  */
 function updateReflowingAttr(): void {
-    setPageReflowing(passOutstanding || boundaryWorkStarted);
+    setPageReflowing(passOutstanding || boundaryWorkStarted || walkWaitStarted);
 }
 
 function setPageReflowing(reflowing: boolean): void {

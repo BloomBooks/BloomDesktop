@@ -324,7 +324,7 @@ export function setFitRangeEnd(range: Range, point: BoundaryPoint): void {
  * a Range give one box per line, so the bottom of the last of them is the bottom of the
  * line the offset falls on.
  */
-function textUpToOffsetFitsInBox(
+export function textUpToOffsetFitsInBox(
     editable: HTMLElement,
     offset: number,
 ): boolean {
@@ -350,11 +350,19 @@ function textUpToOffsetFitsInBox(
         return true;
     }
 
+    // The editor draws the page scaled to fit its pane. Rects are in screen pixels and the
+    // box's height in layout pixels, so the distance has to come back to layout pixels
+    // before the two are compared.
     const computed = window.getComputedStyle(editable);
+    const box = editable.getBoundingClientRect();
+    const scale = editable.offsetHeight
+        ? box.height / editable.offsetHeight
+        : 1;
     const contentTop =
-        editable.getBoundingClientRect().top +
-        (parseFloat(computed.borderTopWidth) || 0) +
-        (parseFloat(computed.paddingTop) || 0);
-    const used = lineBottom - contentTop + editable.scrollTop;
+        box.top +
+        ((parseFloat(computed.borderTopWidth) || 0) +
+            (parseFloat(computed.paddingTop) || 0)) *
+            scale;
+    const used = (lineBottom - contentTop) / scale + editable.scrollTop;
     return used <= getBoxMetrics(editable).height + kFitTolerancePixels;
 }

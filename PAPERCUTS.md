@@ -19,6 +19,28 @@ House rules:
 
 ---
 
+## 2026-09-09 — A Bloom left running by the launcher blocks the e2e fixture's cleanup for 45 minutes
+
+- **Cut:** `flow-text-whole-chain.spec.ts` passed all four tests in two and a half minutes, then
+  the worker sat for another forty-five in `fs.rmSync` at `fixtures/launchBloom.ts:819` and
+  reported `Error: EBUSY ... unlink ...flow-text-whole-chain.bloomCollection`, with "Failed worker
+  ran 4 tests" listing every passing test. The launcher's own Bloom had restarted (a build changed
+  `Bloom.exe`) and reopened the most recently used collection, which was the run's temp copy.
+- **Idea:** before deleting `tempRoot`, look for any Bloom holding it (`common/instanceInfo`
+  already reports each instance's `editableCollectionFolder`) and say which process is holding the
+  folder instead of retrying blind; cap the retries at something short.
+- **Context:** wiring the Edit tab's progress dialog into the flow-text work.
+
+## 2026-09-09 — csharpier rewrites CRLF files as LF
+
+- **Cut:** `dotnet csharpier format <file>` writes LF line endings over this repo's CRLF C#
+  sources, so `git diff --stat` reports the whole file as changed and warns "LF will be replaced
+  by CRLF the next time Git touches it". The real edit becomes unreviewable until the endings are
+  put back.
+- **Idea:** set the line ending in a `.csharpierrc` (it has an `endOfLine` option) so formatting a
+  file leaves its endings alone.
+- **Context:** formatting `FlowTextWalk.cs` and `FlowTextApi.cs` after editing them.
+
 ## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
 
 - **Cut:** `findBloomExe` in `src/BloomE2E/fixtures/launchBloom.ts` tries `Debug/x64` before
@@ -340,3 +362,20 @@ lost the placeholder.
 
 **Context:** Phase 4 of the flow-text work, labelling the button that offers to continue the text
 of an earlier page.
+
+## A C# compile error during `launcherControl.mjs --restart` kills the launcher, and the Vite port then changes
+
+**What happened:** a `--restart` issued while the C# would not compile left no launcher at all:
+the next `--status`/`--restart` answered `"launcherFound": false`, and `--ensure-running` started
+a new one on a *different* Vite port. Any e2e command still passing the old
+`BLOOM_E2E_VITE_PORT` then fails with "BloomE2E refuses to test a stale build", which reads as a
+build problem rather than a wrong port.
+
+**Workaround:** build first (`build/agent-dotnet.sh build src/BloomExe/BloomExe.csproj`) and only
+restart once it succeeds; after any `--ensure-running`, read `vitePort` out of the JSON and use
+that.
+
+**Idea:** have `--restart` refuse to stop Bloom when the build fails, and have BloomE2E read the
+port from `output/bloom-launcher.json` rather than an environment variable.
+
+**Context:** Phase 5 of the flow-text work, the e2e spec for making pages for the rest of a run.

@@ -136,6 +136,22 @@ describe("flowFromLabel", () => {
         );
     });
 
+    it("puts the label above the box, clear of its text", async () => {
+        previousBox = { pageId: "page-1", pageNumber: "3" };
+        const page = makePage([
+            { text: { en: "arrived text" }, chainId: "c1" },
+        ]);
+
+        updateFlowFromLabels(page);
+        await flushAnswers();
+
+        // jsdom lays nothing out, so every offset is zero; what the placement can be held to
+        // here is that the label's top is above the box's own top.
+        expect(parseFloat(labelsOn(page)[0].style.top)).toBeLessThan(
+            box(page, 0).offsetTop,
+        );
+    });
+
     it("labels nothing when C# says the chain starts on this page", async () => {
         previousBox = undefined;
         const page = makePage([{ text: { en: "own text" }, chainId: "c1" }]);

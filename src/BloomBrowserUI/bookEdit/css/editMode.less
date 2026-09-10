@@ -1884,62 +1884,137 @@ svg.bloom-videoControl {
 
 // Flow text: the offer an empty box makes to take the text that does not fit in an earlier
 // box (flowContinueButton.ts). It is a bloom-ui element inside the translation group, placed
-// over the middle of its own box, so it must stay out of the text's own flow.
+// at the top left of its own box, so it must stay out of the text's own flow. It is drawn like
+// a filled Material button, because it is a control, unlike the flow labels below.
 .bloom-page .bloom-translationGroup > .bloom-flow-continue {
     position: absolute;
-    transform: translate(-50%, -50%);
     z-index: 1000;
     max-width: 90%;
-    padding: 4px 8px;
-    border: 1px solid @bloom-blue;
-    border-radius: 3px;
-    background-color: white;
-    color: @bloom-blue;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: @bloom-blue;
+    color: white;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        0 2px 1px -1px rgba(0, 0, 0, 0.12);
     font-family: @UIFontStack;
-    font-size: 10px;
-    line-height: 1.2;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
     text-align: center;
     text-indent: 0;
     cursor: pointer;
     pointer-events: auto;
 
+    // U+2192 RIGHTWARDS ARROW, pointing into the box the text would flow into. Drawn here rather
+    // than written into the label's words, so that it is not part of what a translator is given.
+    &::before {
+        content: "\2192 ";
+    }
+
     &:hover {
-        background-color: @bloom-blue;
-        color: white;
+        background-color: darken(@bloom-blue, 8%);
     }
 }
 
-// Flow text: the label saying that this box's text continues from a box on an earlier page
-// (flowFromLabel.ts). It is a bloom-ui element inside the translation group, placed at the top
-// right of its own box, so it must stay out of the text's own flow; the group is its positioning
-// context. It is a label and not a control, so it takes no clicks.
-.bloom-page .bloom-translationGroup > .bloom-flow-from {
+// Flow text: the labels saying that this box's text continues from a box on an earlier page
+// (flowFromLabel.ts, above the box's top left corner) and that it continues into a box on a later
+// page (flowToLabel.ts, below the box's bottom right corner). Each is a bloom-ui element inside the
+// translation group, placed just outside its own box, so it must stay out of the text's own flow;
+// the group is its positioning context. They are labels and not controls, so they take no clicks
+// and wear no border that would make them look like buttons.
+.bloom-page .bloom-translationGroup > .bloom-flow-from,
+.bloom-page .bloom-translationGroup > .bloom-flow-to {
     position: absolute;
-    transform: translateX(-100%);
     z-index: 1000;
     max-width: 90%;
-    padding: 0 2px;
+    padding: 0 3px;
+    border-radius: 3px;
+    background-color: white;
     color: @bloom-blue;
     font-family: @UIFontStack;
     font-size: 10px;
-    line-height: 1.2;
-    text-align: right;
+    line-height: 1.4;
+    white-space: nowrap;
     text-indent: 0;
-    opacity: 0.7;
     pointer-events: none;
+    // The labels tell the user about the box the pointer is on, so they are there for the
+    // pointer and nothing else: hidden rather than absent, because the modules measure the
+    // label's own height to place it clear of the text.
+    visibility: hidden;
+}
+
+// flowToLabel.ts gives the label the box's right edge as its left; pulling the label's own
+// width back makes it end flush with that edge.
+.bloom-page .bloom-translationGroup > .bloom-flow-to {
+    transform: translateX(-100%);
+    text-align: right;
+}
+
+.bloom-page:hover .bloom-translationGroup > .bloom-flow-from,
+.bloom-page:hover .bloom-translationGroup > .bloom-flow-to {
+    visibility: visible;
+}
+
+// U+2192 RIGHTWARDS ARROW, pointing into the box whose text arrived and out of the box whose text
+// carries on. The arrow is drawn here rather than written into the label's words, so that it is
+// not part of what a translator is given.
+.bloom-page .bloom-translationGroup > .bloom-flow-from::before,
+.bloom-page .bloom-translationGroup > .bloom-flow-to::after {
+    content: "\2192";
+}
+
+// Flow text: the offer the end of a run of text makes when the text still does not fit and there
+// is nowhere for the rest of it to go (flowCreatePagesButton.ts). It is drawn like the offer
+// above, because it is the same kind of thing: a control on a box. It sits BELOW the box, clear
+// of the text, because the box it is on is full to the bottom; the module gives it the box's
+// right edge as its left, and the translate here pulls its own width back from that edge so it
+// ends flush with it.
+.bloom-page .bloom-translationGroup > .bloom-flow-createPages {
+    position: absolute;
+    z-index: 1000;
+    max-width: 90%;
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: @bloom-blue;
+    color: white;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        0 2px 1px -1px rgba(0, 0, 0, 0.12);
+    font-family: @UIFontStack;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-align: center;
+    text-indent: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    transform: translateX(-100%);
+
+    &:hover {
+        background-color: darken(@bloom-blue, 8%);
+    }
 }
 
 // The absolutely positioned label is placed against its group, so the group has to be the
-// positioning context. The group carrying the label is the first of its chain on the page, so it
-// wears none of the flow classes above: the label itself is what says it needs this.
-.bloom-page .bloom-translationGroup:has(> .bloom-flow-from) {
+// positioning context. A group carrying one of these labels is the first or the last of its chain
+// on the page, so it may wear none of the flow classes above: the label itself is what says it
+// needs this.
+.bloom-page .bloom-translationGroup:has(> .bloom-flow-from),
+.bloom-page .bloom-translationGroup:has(> .bloom-flow-to),
+.bloom-page .bloom-translationGroup:has(> .bloom-flow-createPages) {
     position: relative;
 }
 
-// While a pass is moving text, what does not fit is about to change, so the offer would be
+// While a pass is moving text, what does not fit is about to change, so either offer would be
 // about a state that is on its way out.
+.bloom-page[data-flow-reflowing] .bloom-translationGroup > .bloom-flow-continue,
 .bloom-page[data-flow-reflowing]
     .bloom-translationGroup
-    > .bloom-flow-continue {
+    > .bloom-flow-createPages {
     display: none;
 }

@@ -549,10 +549,26 @@ export async function hasOverflowWarning(
     language = "en",
 ): Promise<boolean> {
     await waitForReflowIdle(page);
-    return flowBox(page, boxIndex, language).evaluate((box) =>
-        box.classList.contains("overflow"),
-    );
+    // OverflowChecker puts the warning on after the flow has moved the text, and it does not
+    // announce itself the way the flow does, so a reading taken the instant the flow goes quiet
+    // can be a moment too early. Give the warning a little while to appear; a box that is not
+    // going to be marked costs that whole while, which is why the wait is short.
+    const box = flowBox(page, boxIndex, language);
+    const giveUpAt = Date.now() + kWaitForOverflowWarningMs;
+    for (;;) {
+        const marked = await box.evaluate((element) =>
+            element.classList.contains("overflow"),
+        );
+        if (marked || Date.now() >= giveUpAt) {
+            return marked;
+        }
+
+        await page.waitForTimeout(100);
+    }
 }
+
+/** How long hasOverflowWarning waits for Bloom's own overflow warning to appear. */
+const kWaitForOverflowWarningMs = 2000;
 
 /**
  * Does this box's first paragraph carry on from a paragraph that began in the box before it?
@@ -623,6 +639,60 @@ export async function clickContinueText(
         button,
         "The box still offers to continue the text after the offer was taken.",
     ).toHaveCount(0, { timeout: 30000 });
+    await waitForReflowIdle(page);
+}
+
+/**
+ * Is this box offering to have Bloom make the pages the rest of its text needs? The offer is a
+ * button at the bottom right inside the box, and it appears only where a run of text ends with
+ * more text still to place.
+ */
+export async function isCreatePagesButtonShown(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<boolean> {
+    await waitForReflowIdle(page);
+    return createPagesButton(page, boxIndex, language).isVisible();
+}
+
+/**
+ * The words on this box's offer to make pages for the rest of its text, or undefined when it
+ * makes none.
+ */
+export async function getCreatePagesButtonLabel(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<string | undefined> {
+    await waitForReflowIdle(page);
+    const button = createPagesButton(page, boxIndex, language);
+    if ((await button.count()) === 0) {
+        return undefined;
+    }
+
+    return (await button.textContent()) ?? undefined;
+}
+
+/**
+ * Take the offer: click the button that has Bloom make the pages the rest of this box's text
+ * needs, and wait until every page has been made and filled and the flow has settled.
+ *
+ * Bloom lays each new page out off-screen to find where its text stops fitting, which takes a
+ * second or so per page, so the wait here is long by the standards of the other helpers.
+ */
+export async function clickCreatePagesAndContinue(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<void> {
+    const button = createPagesButton(page, boxIndex, language);
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await button.click();
+    await expect(
+        button,
+        "The box still offers to make pages after the offer was taken.",
+    ).toHaveCount(0, { timeout: 120000 });
     await waitForReflowIdle(page);
 }
 
@@ -796,16 +866,25 @@ export async function doubleFontSizeOfBox(
 
 /**
  * Click a box to give it the focus. An empty box that could take an earlier box's text carries
- * its offer as a button in its centre, and a click there would take the offer, so such a box is
- * clicked near its top left corner instead. Any other box is clicked in the centre: the top edge
- * of a linked box carries the band that says its text flows in, which is not the box.
+ * its offer as a button at its top left corner, and a click there would take the offer, so such
+ * a box is clicked at the middle of its bottom edge instead (its bottom left corner holds the
+ * Format cog). Any other box is clicked in the centre: the top edge of a linked box carries the
+ * band that says its text flows in, which is not the box.
  */
 async function clickIntoBox(box: Locator): Promise<void> {
     const offer = box
         .locator("xpath=..")
         .locator(":scope > .bloom-flow-continue");
     if ((await offer.count()) > 0) {
-        await box.click({ position: { x: 6, y: 6 } });
+        const bounds = await box.boundingBox();
+        if (!bounds) {
+            throw new Error(
+                "The box to click has no bounds, so it is not on screen.",
+            );
+        }
+        await box.click({
+            position: { x: bounds.width / 2, y: bounds.height - 6 },
+        });
     } else {
         await box.click();
     }
@@ -945,6 +1024,99 @@ export async function getFlowsFromLabel(
     return (await label.textContent()) ?? undefined;
 }
 
+/**
+ * The words on this box's label saying that its text continues into a linked box on a later
+ * page, or undefined when it wears none.
+ */
+export async function getFlowsToLabel(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<string | undefined> {
+    await waitForReflowIdle(page);
+    const label = flowsToLabel(page, boxIndex, language);
+    if ((await label.count()) === 0) {
+        return undefined;
+    }
+
+    return (await label.textContent()) ?? undefined;
+}
+
+/**
+ * Put the pointer on the page being edited, which is what makes the flow labels show. The
+ * corner is used rather than the middle, so that the pointer is on the page and on nothing that
+ * answers to it.
+ */
+export async function hoverPageBeingEdited(page: Page): Promise<void> {
+    await editablePageFrame(page)
+        .locator(".bloom-page")
+        .first()
+        .hover({ position: { x: 4, y: 4 } });
+}
+
+/** Whether the pointer being on the page is what decides that this box's labels are showing. */
+export async function areFlowLabelsShown(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<boolean> {
+    await waitForReflowIdle(page);
+    const labels = [
+        flowsFromLabel(page, boxIndex, language),
+        flowsToLabel(page, boxIndex, language),
+    ];
+    const shown = await Promise.all(
+        labels.map(async (label) =>
+            (await label.count()) > 0 ? label.isVisible() : false,
+        ),
+    );
+    return shown.some((one) => one);
+}
+
+/**
+ * Which of this box's flow labels are drawn over a line of its text. The answer is the labels'
+ * test ids, so a failure names the label that is in the way; an empty list is what the labels
+ * are for, since a label over the text hides the words the person is editing.
+ *
+ * The lines are measured with a Range over each paragraph rather than from the paragraph's own
+ * box, because a paragraph's box is as wide as the column while its last line may be much
+ * shorter, and a label beside that short line is not over any text.
+ */
+export async function getFlowLabelsOverText(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<string[]> {
+    await waitForReflowIdle(page);
+    return flowBox(page, boxIndex, language).evaluate((editable) => {
+        const group = editable.closest(".bloom-translationGroup")!;
+        const lines: DOMRect[] = [];
+        Array.from(editable.querySelectorAll("p")).forEach((paragraph) => {
+            const range = paragraph.ownerDocument.createRange();
+            range.selectNodeContents(paragraph);
+            lines.push(...Array.from(range.getClientRects()));
+        });
+
+        const labels = Array.from(
+            group.querySelectorAll<HTMLElement>(
+                '[data-testid="flow-text-flows-from"], [data-testid="flow-text-flows-to"]',
+            ),
+        );
+        return labels
+            .filter((label) => {
+                const box = label.getBoundingClientRect();
+                return lines.some(
+                    (line) =>
+                        box.left < line.right &&
+                        box.right > line.left &&
+                        box.top < line.bottom &&
+                        box.bottom > line.top,
+                );
+            })
+            .map((label) => label.getAttribute("data-testid")!);
+    });
+}
+
 function flowsFromLabel(
     page: Page,
     boxIndex: number,
@@ -955,6 +1127,16 @@ function flowsFromLabel(
     return flowBox(page, boxIndex, language)
         .locator(
             `xpath=following-sibling::*[@data-testid="flow-text-flows-from" and @data-flow-from-lang="${language}"]`,
+        )
+        .first();
+}
+
+function flowsToLabel(page: Page, boxIndex: number, language: string): Locator {
+    // The label is a sibling of the box inside the translation group, and it says which
+    // language's box it belongs to, because a group can hold one box per language.
+    return flowBox(page, boxIndex, language)
+        .locator(
+            `xpath=following-sibling::*[@data-testid="flow-text-flows-to" and @data-flow-to-lang="${language}"]`,
         )
         .first();
 }
@@ -971,4 +1153,34 @@ function continueButton(
             `xpath=following-sibling::*[@data-testid="flow-text-continue" and @data-flow-continue-lang="${language}"]`,
         )
         .first();
+}
+
+function createPagesButton(
+    page: Page,
+    boxIndex: number,
+    language: string,
+): Locator {
+    // The button is a sibling of the box inside the translation group, and it says which
+    // language's box it belongs to, because a group can hold one box per language.
+    return flowBox(page, boxIndex, language)
+        .locator(
+            `xpath=following-sibling::*[@data-testid="flow-text-create-pages" and @data-flow-create-pages-lang="${language}"]`,
+        )
+        .first();
+}
+
+/** The titles of the progress dialogs the flow-text work shows; see BloomMediumPriority.xlf. */
+const kFlowProgressDialogTitles =
+    /Flowing text across pages|Creating pages and flowing text/;
+
+/**
+ * Whether the Edit tab's progress dialog is showing one of the flow-text titles. The dialog is
+ * rendered in the top document (App.tsx mounts it), not in the page iframe.
+ */
+export async function isProgressDialogOpen(page: Page): Promise<boolean> {
+    return await page
+        .getByRole("dialog")
+        .filter({ hasText: kFlowProgressDialogTitles })
+        .first()
+        .isVisible();
 }

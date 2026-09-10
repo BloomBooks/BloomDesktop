@@ -13,12 +13,14 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
 import {
+    getPageNumberLabel,
     getShownPageId,
     goToPage,
     makeBookFromTemplate,
 } from "../helpers/bookMaking";
 import {
     addJustTextPage,
+    areFlowLabelsShown,
     assertNoWordAppearsTwice,
     assertRunIsIntact,
     clearBox,
@@ -27,8 +29,12 @@ import {
     getBoxTexts,
     getCaretOwner,
     getChainId,
+    getFlowLabelsOverText,
+    getFlowsFromLabel,
+    getFlowsToLabel,
     getRunTexts,
     hasOverflowWarning,
+    hoverPageBeingEdited,
     kTextForSeveralPages,
     makeTwoLinkedJustTextPages,
     pasteText,
@@ -67,6 +73,42 @@ test.describe("editing a run of text that crosses pages", () => {
 
         expect(await getChainId(page, 0)).toBeTruthy();
         expect((await getBoxTexts(page))[0].length).toBeGreaterThan(0);
+    });
+
+    test("the labels name the pages the text comes from and goes to, and keep off the text [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        const firstNumber = await getPageNumberLabel(page, firstPageId);
+        const secondNumber = await getPageNumberLabel(page, secondPageId);
+
+        await goToPage(page, firstPageId);
+
+        // Sanity check: the labels are for the pointer, so with the pointer off the page there
+        // is nothing to see.
+        await page.mouse.move(0, 0);
+        expect(await areFlowLabelsShown(page, 0)).toBe(false);
+
+        // THE ACTION UNDER TEST: put the pointer on the page.
+        await hoverPageBeingEdited(page);
+
+        expect(await areFlowLabelsShown(page, 0)).toBe(true);
+        // The chain starts on this page, so the box says only where its text goes.
+        expect(await getFlowsToLabel(page, 0)).toBe(
+            `flows to page ${secondNumber}`,
+        );
+        expect(await getFlowsFromLabel(page, 0)).toBeUndefined();
+        expect(await getFlowLabelsOverText(page, 0)).toEqual([]);
+
+        await goToPage(page, secondPageId);
+        await hoverPageBeingEdited(page);
+
+        // The chain ends on this page, so the box says only where its text came from.
+        expect(await getFlowsFromLabel(page, 0)).toBe(
+            `flows from page ${firstNumber}`,
+        );
+        expect(await getFlowsToLabel(page, 0)).toBeUndefined();
+        expect(await getFlowLabelsOverText(page, 0)).toEqual([]);
     });
 
     test("text comes back from the next page when this one is given room [Test Case ID TBD]", async ({

@@ -44,6 +44,8 @@ export interface IPreviousBox {
 /** The next box of a chain, on a later page, and what it holds now. */
 export interface INextBox {
     pageId: string;
+    /** What the reader calls that page, e.g. "6". It can be empty: not every page has one. */
+    pageNumber: string;
     indexInPage: number;
     html: string;
 }
@@ -156,12 +158,19 @@ export function peekNext(
     });
 }
 
-/** Put this content in the next box of the chain, on a later page, and save that page. */
+/**
+ * Put this content in the next box of the chain, on a later page, and save that page.
+ *
+ * expectedHtml is what that box held when the browser read it. Bloom refuses the write if the
+ * box holds something else now, because then a refit has moved that text on and this content was
+ * worked out from where it used to be. A refusal is reported, not thrown.
+ */
 export function setNextContent(
     chainId: string,
     afterPageId: string,
     lang: string,
     html: string,
+    expectedHtml: string,
 ): Promise<boolean> {
     return enqueue(async () => {
         await postJsonAsync("flowText/setNextContent", {
@@ -169,12 +178,101 @@ export function setNextContent(
             afterPageId,
             lang,
             html,
+            expectedHtml,
         });
         return true;
     }).then(
         (done) => done === true,
         // A refusal is not a failure of the pass: the caller keeps the text where it is.
         () => false,
+    );
+}
+
+/** What making pages for the rest of a box's text left the book holding. */
+export interface ICreatePagesResult {
+    /** The chain the source group now carries, made here when the box was not linked before. */
+    chainId: string;
+    /**
+     * The new content of the source box: what fits in it, its tail taken out. The browser puts
+     * this in place itself, because it owns the page it is editing.
+     */
+    sourceHtml: string;
+    /** How many pages Bloom made. */
+    pagesCreated: number;
+    /** The last page Bloom made, which is where the run of text now ends. */
+    lastPageId: string;
+}
+
+/**
+ * Make the pages the rest of this box's text needs and flow the text into them.
+ *
+ * html is what the box holds in the browser, mark and all. The box is on the page being edited,
+ * so the book's own copy of it is behind the browser's, and Bloom cannot ask the browser for the
+ * page from inside this call: the browser is waiting for the answer. So the content comes with
+ * the request, and the new content of the box comes back for the browser to put in place, the
+ * same division of labour continueInto uses.
+ *
+ * This does not return until every page has been made and filled, which takes a second or so per
+ * page: Bloom lays each new page out off-screen to find where its text stops fitting. The
+ * external-processing overlay is up for as long as it runs.
+ */
+export function createPagesAndContinue(args: {
+    pageId: string;
+    indexInPage: number;
+    lang: string;
+    chainId?: string;
+    html: string;
+}): Promise<ICreatePagesResult | undefined> {
+    return enqueue(() =>
+        postForJson<ICreatePagesResult>("flowText/createPagesAndContinue", {
+            ...args,
+            chainId: args.chainId ?? "",
+            // Measured with the older rules the book holds, the new pages would break their
+            // text where nothing breaks it any more. See requestWalk below.
+            styles: getUserModifiedStyles(),
+        }),
+    );
+}
+
+/**
+ * Ask Bloom to refit this chain from this page on, off-screen, so that the pages the browser
+ * cannot see hold what they would hold if the user had opened each of them.
+ *
+ * fromPageId may be the page being edited: Bloom starts at the first page of the chain AFTER
+ * that one, because the browser owns the page it is editing and settles it itself.
+ *
+ * This does not wait for the refit, only for Bloom to take the request. The work runs on a
+ * background thread and counts as work in progress while it does, so a test can wait for it.
+ */
+export function requestWalk(
+    chainId: string,
+    fromPageId: string,
+    lang: string,
+): Promise<void> {
+    return enqueue(async () => {
+        await postJsonAsync("flowText/walk", {
+            chainId,
+            fromPageId,
+            lang,
+            // A style the user has just changed is in this page and nowhere else until the page
+            // is saved, and Bloom lays the other pages out to measure them. So it goes with the
+            // request: measured with the older rules the book holds, the other pages would
+            // break their text where nothing breaks it any more.
+            styles: getUserModifiedStyles(),
+        });
+    }).then(
+        () => undefined,
+        // A refusal is not a failure of the pass: the text is where the browser put it, and
+        // the later pages are no worse off than before.
+        () => undefined,
+    );
+}
+
+/** The style rules of the page being edited, as they stand in the browser. */
+function getUserModifiedStyles(): string {
+    return (
+        document.querySelector("style[title='userModifiedStyles']")
+            ?.textContent ?? ""
     );
 }
 

@@ -13,6 +13,7 @@ import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { updateContinueButtons } from "../flowText/flowContinueButton";
+import { updateCreatePagesButtons } from "../flowText/flowCreatePagesButton";
 import { suppressesOverflowMarking } from "../flowText/flowIndicators";
 import {
     placeOverflowMarker,
@@ -608,6 +609,9 @@ export default class OverflowChecker {
         const pageOfEditable = editable.closest(".bloom-page");
         if (pageOfEditable) {
             updateContinueButtons(pageOfEditable);
+            // And which box, if any, is where the run of text ends with more still to place,
+            // and so offers to make the pages the rest of it needs.
+            updateCreatePagesButtons(pageOfEditable);
         }
     }
 

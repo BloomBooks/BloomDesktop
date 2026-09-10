@@ -114,6 +114,26 @@ describe("flowBoundaryClient", () => {
         expect(await peekNext("chain-1", "page2", "en")).toBeUndefined();
     });
 
+    it("hands back what the reader calls the page the next box is on", async () => {
+        // The label saying where the text goes needs that, and only C# knows it.
+        answers["flowText/peekNext"] = () =>
+            Promise.resolve({
+                data: {
+                    pageId: "page3",
+                    pageNumber: "6",
+                    indexInPage: 1,
+                    html: "<p>tail</p>",
+                },
+            });
+
+        const next = await peekNext("chain-1", "page2", "en");
+
+        expect(next?.pageNumber).toBe("6");
+        expect(next?.pageId).toBe("page3");
+        expect(next?.indexInPage).toBe(1);
+        expect(next?.html).toBe("<p>tail</p>");
+    });
+
     it("runs one round trip at a time, in the order it was asked", async () => {
         // Two round trips in flight at once would each work from the state before the other, and
         // the second answer would undo the first.
@@ -132,7 +152,13 @@ describe("flowBoundaryClient", () => {
         };
 
         const first = peekNext("chain-1", "page2", "en");
-        const second = setNextContent("chain-1", "page2", "en", "<p>x</p>");
+        const second = setNextContent(
+            "chain-1",
+            "page2",
+            "en",
+            "<p>x</p>",
+            "<p>old</p>",
+        );
         // Each call starts on a microtask of its own, so let the queue get going.
         await flushMicrotasks();
 
@@ -193,8 +219,14 @@ describe("flowBoundaryClient", () => {
                 new Error("the next box is on the page being edited"),
             );
 
-        expect(await setNextContent("chain-1", "page2", "en", "<p>x</p>")).toBe(
-            false,
-        );
+        expect(
+            await setNextContent(
+                "chain-1",
+                "page2",
+                "en",
+                "<p>x</p>",
+                "<p>old</p>",
+            ),
+        ).toBe(false);
     });
 });

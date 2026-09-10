@@ -670,12 +670,26 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
+            // What the text of a chain of linked text boxes did when the page went, filled in
+            // before the page is removed and used after the book is on disk.
+            var flowMoves = new List<FlowTextChains.PageDeletionMove>();
             SaveThen(
                 () =>
                 {
                     try
                     {
                         var pageToShowNext = GetPageToShowAfterDeletion(page);
+                        // The text a chained box on this page holds belongs to a run of text that
+                        // carries on in other boxes, so it moves to the box beside it in the chain
+                        // rather than going with the page. The page is still in the DOM here, and
+                        // the browser has already handed over what it holds (this runs inside a
+                        // save), so nothing in the edit iframe has to take part.
+                        flowMoves.AddRange(
+                            FlowTextChains.MoveChainedTextOffPage(
+                                _currentlyDisplayedBook.OurHtmlDom,
+                                page.GetDivNodeForThisPage()
+                            )
+                        );
                         _currentlyDisplayedBook.DeletePage(page);
                         //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                         Logger.WriteEvent("Delete Page");
@@ -692,7 +706,27 @@ namespace Bloom.Edit
                     }
                 },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                doAfterSaveToDisk: () =>
+                {
+                    // The run of text is now longer in the box it moved into than fits there, so
+                    // the whole chain from that box on has to be divided again. A walk does that
+                    // off-screen; each language flows through its own boxes, so each one is asked
+                    // for separately.
+                    foreach (var move in flowMoves)
+                    {
+                        if (string.IsNullOrEmpty(move.WalkFromPageId))
+                            continue;
+                        foreach (var lang in move.Langs)
+                            FlowTextWalk.Request(
+                                this,
+                                move.ChainId,
+                                move.WalkFromPageId,
+                                lang,
+                                null
+                            );
+                    }
+                }
             );
         }
 
@@ -945,7 +979,13 @@ namespace Bloom.Edit
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
                     return pageId;
                 },
-                () => { } // wrong state, do nothing
+                () => { }, // wrong state, do nothing
+                doAfterSaveToDisk: () =>
+                    // Every page is a different size now, so a run of text carried through
+                    // linked text boxes breaks in different places on every page of its chain.
+                    // The page being edited settles itself when it reloads; this refits the
+                    // pages of every chain that the browser cannot see.
+                    FlowTextWalk.RequestEveryChain(this)
             );
         }
 

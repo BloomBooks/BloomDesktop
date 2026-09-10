@@ -86,7 +86,7 @@ test.describe("carrying one run of text over several pages", () => {
 
         expect(await isContinueButtonShown(page, 0)).toBe(true);
         expect(await getContinueButtonLabel(page, 0)).toBe(
-            `Continue text from page ${await getPageNumberLabel(page, firstPageId)}`,
+            `flow text here from page ${await getPageNumberLabel(page, firstPageId)}`,
         );
     });
 
@@ -131,7 +131,7 @@ test.describe("carrying one run of text over several pages", () => {
         // The box also says in words where its text comes from, because the box it continues is
         // on another page and so there is nothing on this page to see.
         expect(await getFlowsFromLabel(page, 0)).toBe(
-            `Text flows here from page ${await getPageNumberLabel(page, firstPageId)}`,
+            `flows from page ${await getPageNumberLabel(page, firstPageId)}`,
         );
 
         // The first page starts the chain, so its box wears no such label.
@@ -182,7 +182,7 @@ test.describe("carrying one run of text over several pages", () => {
         // THE ACTION UNDER TEST: add a third page and take its offer.
         thirdPageId = await addJustTextPage(page);
         expect(await getContinueButtonLabel(page, 0)).toBe(
-            `Continue text from page ${await getPageNumberLabel(page, secondPageId)}`,
+            `flow text here from page ${await getPageNumberLabel(page, secondPageId)}`,
         );
         await clickContinueText(page, 0);
 

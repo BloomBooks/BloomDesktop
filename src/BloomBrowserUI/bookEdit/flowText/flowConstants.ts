@@ -61,22 +61,53 @@ export const kReflowingAttr = "data-flow-reflowing";
 export const kContinueButtonClass = "bloom-flow-continue";
 export const kContinueButtonTestId = "flow-text-continue";
 export const kContinueButtonL10nId = "EditTab.FlowText.ContinueFromBoxAbove";
-export const kContinueButtonEnglish = "Continue text from the box above";
+export const kContinueButtonEnglish = "flow text here from the box above";
 
 // The same offer, when the box whose text does not fit is on an earlier page. {0} is what the
 // reader calls that page, which C# works out (FlowTextChains.FindPendingOverflowBefore).
 export const kContinueFromPageL10nId = "EditTab.FlowText.ContinueFromPage";
-export const kContinueFromPageEnglish = "Continue text from page {0}";
+export const kContinueFromPageEnglish = "flow text here from page {0}";
 
 // The label a box wears when its text continues from a linked box on an EARLIER PAGE. A box
 // whose previous linked box is on this page carries kHasPrevClass instead, which the reader can
 // see for themselves. It is a bloom-ui element, so HtmlDom takes it out of the page Bloom saves.
 // {0} is what the reader calls the earlier page, which C# works out (FlowTextApi previous).
+//
+// The arrow the label starts with is drawn by editMode.less, so that it is not part of anything a
+// translator is given and cannot be lost or reordered in a translation.
 export const kFlowFromClass = "bloom-flow-from";
 export const kFlowFromTestId = "flow-text-flows-from";
 export const kFlowFromPageL10nId = "EditTab.FlowText.FlowsFromPage";
-export const kFlowFromPageEnglish = "Text flows here from page {0}";
+export const kFlowFromPageEnglish = "flows from page {0}";
 export const kFlowFromPreviousPageL10nId =
     "EditTab.FlowText.FlowsFromPreviousPage";
-export const kFlowFromPreviousPageEnglish =
-    "Text flows here from the previous page";
+export const kFlowFromPreviousPageEnglish = "flows from the previous page";
+
+// The label a box wears when its text continues into a linked box on a LATER PAGE. A box whose
+// next linked box is on this page carries kHasNextClass instead, whose arrow the reader can
+// follow to the box below. It is a bloom-ui element, so HtmlDom takes it out of the page Bloom
+// saves. {0} is what the reader calls the later page, which C# works out (FlowTextApi peekNext).
+//
+// As with the label above, the arrow it ends with is drawn by editMode.less.
+export const kFlowToClass = "bloom-flow-to";
+export const kFlowToTestId = "flow-text-flows-to";
+export const kFlowToPageL10nId = "EditTab.FlowText.FlowsToPage";
+export const kFlowToPageEnglish = "flows to page {0}";
+export const kFlowToNextPageL10nId = "EditTab.FlowText.FlowsToNextPage";
+export const kFlowToNextPageEnglish = "flows to the next page";
+
+// The button the LAST box of a flow offers when its text still does not fit and there is no box
+// after it to take the rest: it makes the pages the rest of the text needs and flows into them.
+// It is a bloom-ui element, so HtmlDom takes it out of the page Bloom saves.
+export const kCreatePagesButtonClass = "bloom-flow-createPages";
+export const kCreatePagesButtonTestId = "flow-text-create-pages";
+export const kCreatePagesButtonL10nId =
+    "EditTab.FlowText.CreatePagesAndContinue";
+export const kCreatePagesButtonEnglish = "Create pages and flow text";
+
+// Set on the body of a page C# has loaded into a browser nobody is looking at, only to ask
+// where one box's text stops fitting (FlowTextWalk.AskBrowserForFit, captureFlowFit). Such a
+// page holds the whole of the run that is left in one box, which is more text than fits it on
+// purpose, so the passes that settle a page must not run: they would move that text out of the
+// box, and off-screen there is nowhere for it to go.
+export const kMeasuringFlowFitAttr = "data-bloom-measuring-flow-fit";

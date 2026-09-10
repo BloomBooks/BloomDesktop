@@ -13,8 +13,12 @@ import {
 } from "./flowConstants";
 
 const kTranslationGroupSelector = ".bloom-translationGroup";
+const kPageSelector = ".bloom-page";
 // OverflowChecker's own class for a box holding more text than fits.
 const kOverflowClass = "overflow";
+// OverflowChecker's class for a page holding such a box. The page thumbnail shows its warning
+// triangle for this class, reading it out of the page's saved HTML.
+const kPageOverflowsClass = "pageOverflows";
 
 /**
  * Show, on each group of the chain, whether its text carries on into a following box and
@@ -39,6 +43,32 @@ export function updateIndicators(chain: HTMLElement[]): void {
         setClass(group, kHasNextClass, hasNext);
         setClass(group, kHasPrevClass, index > 0);
     });
+
+    // Clearing a box's warning above leaves the page's own warning to be settled, and the page
+    // is what the thumbnail shows a triangle for. OverflowChecker settles it only on its own
+    // paths, which do not run again until the user's next keystroke.
+    clearPageOverflowsIfNoBoxOverflows(chain[0]?.closest(kPageSelector));
+}
+
+/**
+ * Take the page's overflow warning off when no box on the page holds more text than fits it
+ * any more. Adding the warning is OverflowChecker's: it measures the page, and it knows which
+ * page sizes scroll rather than report an overflow.
+ */
+export function clearPageOverflowsIfNoBoxOverflows(
+    page: Element | null | undefined,
+): void {
+    if (!page) {
+        return;
+    }
+
+    // The same two classes OverflowChecker.UpdatePageOverflow reads: a box that holds more than
+    // fits it, and a box pushed outside its container.
+    if (page.querySelector(`.${kOverflowClass}, .thisOverflowingParent`)) {
+        return;
+    }
+
+    page.classList.remove(kPageOverflowsClass);
 }
 
 /**

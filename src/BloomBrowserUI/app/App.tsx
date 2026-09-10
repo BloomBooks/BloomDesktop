@@ -15,6 +15,11 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
+
+// The id of the Edit tab's one EmbeddedProgressDialog. C# addresses it by this string: it is
+// the "which" prop that BrowserProgressDialog sends in its open-progress bundle.
+export const kEditViewProgressDialogId = "editView";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -65,6 +70,12 @@ export const App: React.FunctionComponent = () => {
                 {renderActiveTab()}
             </div>
             <div id="modal-dialog-container" />
+            {/* Every C# task on the Edit tab that wants to show progress shows it through
+                this one dialog: BrowserProgressDialog opens it, feeds it and closes it over
+                the "progress" websocket, addressing it by this id. It takes up no space and
+                stays invisible until something opens it. It lives here, above the tabs, so
+                that switching tabs does not unmount it mid-task. */}
+            <EmbeddedProgressDialog id={kEditViewProgressDialogId} />
             <ToastHost />
         </div>
     );

@@ -44,7 +44,11 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
-import { reflowAllChainsOnPage } from "../flowText/flowTrigger";
+import { queueWalksForChainsOnPage } from "../flowText/flowCrossPage";
+import {
+    reflowAllChainsOnPage,
+    requestWalksWhenQuiet,
+} from "../flowText/flowTrigger";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -2295,9 +2299,15 @@ export default class StyleEditor {
         // anything, and again once a font the style asked for has arrived.
         reflowAllChainsOnPage("styleChange");
         const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-        fonts?.ready?.then(() =>
-            reflowAllChainsOnPage("styleChangeFontsReady"),
-        );
+        fonts?.ready?.then(() => {
+            reflowAllChainsOnPage("styleChangeFontsReady");
+            // The style breaks the text somewhere else on every page of a chain, not just this
+            // one, so the pages the browser cannot see have to be refitted too. The ask waits
+            // for this page to finish handing text to the next one: a refit and a pass would
+            // otherwise be writing the same box at the same time.
+            queueWalksForChainsOnPage();
+            requestWalksWhenQuiet();
+        });
 
         const editable = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(editable);

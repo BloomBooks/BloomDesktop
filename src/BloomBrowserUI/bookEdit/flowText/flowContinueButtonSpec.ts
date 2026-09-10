@@ -417,7 +417,7 @@ describe("flowContinueButton", () => {
 
             expect(buttonsOn(page).length).toBe(1);
             expect(getContinueButtonLabel(box(page, 0))).toBe(
-                "Continue text from page 3",
+                "flow text here from page 3",
             );
         });
 

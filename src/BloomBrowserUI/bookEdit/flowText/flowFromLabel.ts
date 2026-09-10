@@ -31,6 +31,8 @@ const kLabelSelector = `.${kFlowFromClass}`;
 // Which language's box the label belongs to. A group can hold a box per language, and each
 // language's text flows through its own boxes, so each one gets its own label.
 const kLabelLanguageAttr = "data-flow-from-lang";
+// How far the label sits clear of the box's edge, in pixels.
+const kGapFromBox = 2;
 
 // What C# said about the box before this page, per page, chain and language, so that a pass does
 // not cost a round trip. The answer can only change when the chain itself changes, and the pass
@@ -159,7 +161,7 @@ function addLabel(editable: HTMLElement, previous: IPreviousBox): void {
         group.appendChild(label);
     }
 
-    placeOverBox(label, editable);
+    placeAboveBox(label, editable);
 }
 
 function makeLabel(document: Document, language: string): HTMLElement {
@@ -172,14 +174,24 @@ function makeLabel(document: Document, language: string): HTMLElement {
 }
 
 /**
- * Put the label at the top right of the box it belongs to. The label sits in the translation
- * group rather than in the box, because a box is a contenteditable and everything in it is
- * content, and a group can hold a box per language; so where the box is has to be measured.
- * The group is a positioning context already: Bloom's stylesheet makes every element one.
+ * Put the label just above the top left corner of the box it belongs to, clear of the box's
+ * text. The label sits in the translation group rather than in the box, because a box is a
+ * contenteditable and everything in it is content, and a group can hold a box per language; so
+ * where the box is has to be measured. editMode.less makes the group the positioning context.
+ *
+ * A box near the top of the page has no room above it. There the label goes at the box's own top
+ * instead, because staying inside the page matters more than clearing the first line of text.
  */
-function placeOverBox(label: HTMLElement, editable: HTMLElement): void {
-    label.style.top = `${editable.offsetTop}px`;
-    label.style.left = `${editable.offsetLeft + editable.offsetWidth}px`;
+function placeAboveBox(label: HTMLElement, editable: HTMLElement): void {
+    label.style.left = `${editable.offsetLeft}px`;
+    label.style.top = `${
+        editable.offsetTop - label.offsetHeight - kGapFromBox
+    }px`;
+
+    const page = editable.closest<HTMLElement>(kPageSelector)!;
+    if (label.getBoundingClientRect().top < page.getBoundingClientRect().top) {
+        label.style.top = `${editable.offsetTop}px`;
+    }
 }
 
 /**

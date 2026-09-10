@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BoxMetrics, LineMeasurer } from "./flowFit";
-import { MarkerFitProbe } from "./flowOverflowMarker";
+import { hasOverflowMarker, MarkerFitProbe } from "./flowOverflowMarker";
 import { kOverflowMarkerContent } from "./flowConstants";
 
 // What C# would answer, and what it was asked. The next box lives on a page the browser cannot
@@ -348,6 +348,23 @@ describe("flowCrossPage", () => {
         expect(editable.textContent).toBe("abcde");
         expect(sentContent[0].html).toContain("fghij");
         expect(sentContent[0].html).not.toContain("de");
+    });
+
+    it("removes a marker the real layout contradicts, and moves nothing", async () => {
+        const { editable } = makeMarkedPage();
+        expect(hasOverflowMarker(editable)).toBe(true);
+
+        // The layout says the whole text fits, so the marker is stale.
+        expect(
+            await settleCrossPageBoundary(editable, {
+                measurer: makeMeasurer(8),
+                fitProbe: makeFitProbe(500),
+            }),
+        ).toBe(false);
+
+        expect(hasOverflowMarker(editable)).toBe(false);
+        expect(editable.textContent).toBe("keep tail text");
+        expect(sentContent).toHaveLength(0);
     });
 
     it("pulls back nothing when the box is already full", async () => {

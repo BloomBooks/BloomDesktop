@@ -420,6 +420,11 @@ interface IEmbeddedProgressDialogConfig {
     // defaults means "never"
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
+    // These four are passed straight on to ProgressDialog; see IProgressDialogProps.
+    determinate?: boolean;
+    linearProgress?: boolean;
+    noMessages?: boolean;
+    size?: "small";
 }
 
 // Simply render one of these, with no props, at the top level of any document where the

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+    clearPageOverflowsIfNoBoxOverflows,
     stripTransientFlowMarkup,
     suppressesOverflowMarking,
     updateIndicators,
@@ -65,6 +66,56 @@ describe("updateIndicators", () => {
         updateIndicators(chain.slice(0, 2));
 
         expect(classesOf(chain[1])).toEqual(["bloom-flow-hasPrev"]);
+    });
+});
+
+describe("the page's own overflow warning", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    it("comes off when the only overflowing box hands its text to the box after it", () => {
+        const chain = makeChainedPage(2);
+        const page = chain[0].closest(".bloom-page") as HTMLElement;
+        chain[0].classList.add("overflow");
+        page.classList.add("pageOverflows");
+
+        updateIndicators(chain);
+
+        expect(chain[0].classList.contains("overflow")).toBe(false);
+        expect(page.classList.contains("pageOverflows")).toBe(false);
+    });
+
+    it("stays while the last box of the chain on the page overflows", () => {
+        const chain = makeChainedPage(2);
+        const page = chain[0].closest(".bloom-page") as HTMLElement;
+        chain[1].classList.add("overflow");
+        page.classList.add("pageOverflows");
+
+        updateIndicators(chain);
+
+        expect(chain[1].classList.contains("overflow")).toBe(true);
+        expect(page.classList.contains("pageOverflows")).toBe(true);
+    });
+
+    it("stays while a box outside the chain is pushed past its container", () => {
+        const chain = makeChainedPage(2);
+        const page = chain[0].closest(".bloom-page") as HTMLElement;
+        chain[0].classList.add("overflow");
+        const other = document.createElement("div");
+        other.className = "bloom-editable thisOverflowingParent";
+        page.appendChild(other);
+        page.classList.add("pageOverflows");
+
+        updateIndicators(chain);
+
+        expect(page.classList.contains("pageOverflows")).toBe(true);
+    });
+
+    it("is left alone when there is no page to clear it on", () => {
+        // Nothing to assert but that it does not throw: a box can be settled after its page
+        // has gone, when the user has switched pages.
+        clearPageOverflowsIfNoBoxOverflows(null);
     });
 });
 

@@ -1,7 +1,15 @@
+using System;
 using System.Linq;
+using System.Runtime.ExceptionServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.MiscUI;
+using Bloom.Publish;
+using L10NSharp;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -11,8 +19,9 @@ namespace Bloom.web.controllers
     ///
     /// The browser owns the page it is editing. It measures, moves text between the boxes of that
     /// page, and records with a span where the text of the last box stops fitting. Only the boxes
-    /// on OTHER pages are out of its reach, and that is all these endpoints do: they read and write
-    /// the text of a box on a page nobody is editing, and they save that page.
+    /// on OTHER pages are out of its reach, and that is what these endpoints are for: they read
+    /// and write the text of a box on a page nobody is editing, and they save that page.
+    /// createPagesAndContinue goes one step further and makes the pages a run of text needs.
     ///
     /// Two rules hold everywhere here:
     ///  - Never touch the page the user is editing. The browser holds the live version of it, so
@@ -29,6 +38,8 @@ namespace Bloom.web.controllers
 
         private readonly BookSelection _bookSelection;
         private readonly EditingModel _editingModel;
+        private readonly PageTemplatesApi _pageTemplatesApi;
+        private readonly ITemplateFinder _sourceCollectionsList;
 
         /// <summary>
         /// Where the caret should go when the next page loads, when the text the user was typing
@@ -39,17 +50,29 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// How many of these handlers are running. e2e/flowText/isIdle reports on it, so that a
-        /// test can wait for the cross-page work it cannot see from the page. Handlers run on the
-        /// UI thread one at a time, but a test may ask between two of them.
+        /// test can wait for the cross-page work it cannot see from the page. Most of these
+        /// handlers run on the UI thread one at a time, but createPagesAndContinue does not, and
+        /// a test may ask between any two of them.
         /// </summary>
         private static int _busyCount;
 
-        public static bool IsIdle => _busyCount == 0;
+        /// <summary>
+        /// Nothing anywhere in Bloom is moving text between the boxes of a chain: no handler is
+        /// running, and no whole-chain walk is running or waiting.
+        /// </summary>
+        public static bool IsIdle => _busyCount == 0 && !Book.FlowTextWalk.IsBusy;
 
-        public FlowTextApi(BookSelection bookSelection, EditingModel editingModel)
+        public FlowTextApi(
+            BookSelection bookSelection,
+            EditingModel editingModel,
+            PageTemplatesApi pageTemplatesApi,
+            ITemplateFinder sourceCollectionsList
+        )
         {
             _bookSelection = bookSelection;
             _editingModel = editingModel;
+            _pageTemplatesApi = pageTemplatesApi;
+            _sourceCollectionsList = sourceCollectionsList;
             // A caret waiting for a page of one book means nothing in another.
             _bookSelection.SelectionChanged += (unused1, unused2) => _pendingCaret = null;
         }
@@ -84,6 +107,56 @@ namespace Bloom.web.controllers
             public string afterPageId { get; set; }
             public string lang { get; set; }
             public string html { get; set; }
+
+            /// <summary>
+            /// What the browser read out of that box before it worked out this content, so that
+            /// the write can be refused if the box has changed since. The content sent is this
+            /// page's text and that box's text divided afresh, so writing it over a box that
+            /// something else has since refitted would put text back that has moved on.
+            /// </summary>
+            public string expectedHtml { get; set; }
+        }
+
+        public class CreatePagesRequest
+        {
+            /// <summary>The page being edited, which holds the box the text runs out in.</summary>
+            public string pageId { get; set; }
+            public int indexInPage { get; set; }
+            public string lang { get; set; }
+
+            /// <summary>The chain that box carries, or empty when it is in none yet.</summary>
+            public string chainId { get; set; }
+
+            /// <summary>
+            /// What that box holds, mark and all. It comes with the request because the browser
+            /// owns the page being edited and the book's copy of it is older than what the user
+            /// is looking at.
+            /// </summary>
+            public string html { get; set; }
+
+            /// <summary>
+            /// The rules of the browser's userModifiedStyles element, for the pages laid out
+            /// off-screen. See the Styles argument of FlowTextWalk.Request.
+            /// </summary>
+            public string styles { get; set; }
+        }
+
+        public class WalkRequest
+        {
+            /// <summary>
+            /// Which chain to refit. Empty means every chain in the book, each from its first
+            /// page, which is what a change of paper size calls for.
+            /// </summary>
+            public string chainId { get; set; }
+            public string fromPageId { get; set; }
+            public string lang { get; set; }
+
+            /// <summary>
+            /// The rules of the browser's userModifiedStyles element. A style change lives in
+            /// the page being edited until that page is saved, so the walk is told the rules
+            /// rather than reading the older ones the book still holds.
+            /// </summary>
+            public string styles { get; set; }
         }
 
         public class UnlinkFromRequest
@@ -115,11 +188,423 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "unlinkFrom", HandleUnlinkFrom, true);
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "walk", HandleWalk, true);
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingCaret",
                 HandlePendingCaret,
                 true
             );
+
+            // The one endpoint here that does NOT run on the UI thread, and the one that does not
+            // hold the api handler's lock. It makes a page, lays it out off-screen to measure it,
+            // and goes round again, which is seconds of work: on the UI thread nothing would
+            // paint, and holding the lock would shut out the api requests each off-screen page
+            // makes for itself. So it works on the server's own worker thread, which
+            // OffScreenBrowser tells the server about (ReportThreadBlocking) so that a blocked
+            // worker cannot starve the pool.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "createPagesAndContinue",
+                HandleCreatePagesAndContinue,
+                false,
+                false
+            );
+        }
+
+        /// <summary>
+        /// POST flowText/createPagesAndContinue: make as many text-only pages as the rest of this
+        /// box's text needs, link them into its chain, and divide the text among them. Replies
+        /// { chainId, sourceHtml, pagesCreated, lastPageId } once every page is made.
+        ///
+        /// The box is on the page being edited, so its new content goes back for the browser to
+        /// apply; only the pages made here are saved. The page list refreshes itself, because
+        /// Book.InsertPageAfter raises pageListChangedEvent once the request is over.
+        /// </summary>
+        private void HandleCreatePagesAndContinue(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var body = request.RequiredPostObject<CreatePagesRequest>();
+                    var book = _bookSelection.CurrentSelection;
+                    if (book == null)
+                    {
+                        request.Failed("No book is selected.");
+                        return;
+                    }
+
+                    // Nothing else may move this run of text about while the pages are made and
+                    // filled one at a time. A walk that gathered the run while some of the new
+                    // pages were still empty would divide a run with text missing and write that
+                    // over them. The browser leaves the button up when we refuse, so the user can
+                    // ask again once the walk has finished.
+                    if (!FlowTextWalk.TryClaim())
+                    {
+                        request.Failed("A whole-chain refit is in progress.");
+                        return;
+                    }
+
+                    try
+                    {
+                        MakeThePagesAndReply(request, book, body);
+                    }
+                    finally
+                    {
+                        FlowTextWalk.ReleaseClaim(_editingModel);
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// Make the pages and reply, with the sole right to move this run of text already in hand.
+        /// </summary>
+        private void MakeThePagesAndReply(
+            ApiRequest request,
+            Book.Book book,
+            CreatePagesRequest body
+        )
+        {
+            var sourceGroup = FindGroupOnPage(book, body.pageId, body.indexInPage);
+            if (sourceGroup == null)
+            {
+                request.Failed("That text box is no longer there.");
+                return;
+            }
+
+            var sourceEditable = FlowTextChains.GetFlowEditable(sourceGroup.Group, body.lang);
+            if (sourceEditable == null)
+            {
+                request.Failed("That text box has no box of that language.");
+                return;
+            }
+
+            // The browser owns the page being edited, so what the box holds arrives with
+            // the request. The book's own copy is older: it is what was last saved.
+            HtmlDom.SetInnerHtmlFromFragment(sourceEditable, body.html);
+            if (!string.IsNullOrEmpty(body.chainId))
+                sourceGroup.Group.SetAttribute(HtmlDom.kFlowChainAttrName, body.chainId);
+
+            var templatePage = FindJustTextTemplatePage();
+            if (templatePage == null)
+            {
+                request.Failed("Bloom cannot find the Just Text page template.");
+                return;
+            }
+
+            var result = MakeThePages(book, sourceGroup, templatePage, body);
+            if (result == null)
+            {
+                request.Failed("That text box's text all fits, so it needs no pages.");
+                return;
+            }
+
+            request.ReplyWithJson(
+                new
+                {
+                    chainId = result.ChainId,
+                    sourceHtml = result.SourceHtml,
+                    pagesCreated = result.PagesCreated,
+                    // Where the run of text now ends. The browser goes there once it has put
+                    // the source box's own content in place, so that the author sees it.
+                    lastPageId = result.CreatedGroups[result.PagesCreated - 1].PageId,
+                }
+            );
+        }
+
+        /// <summary>
+        /// Lay one page out in a browser nobody is looking at and ask where its box's text stops
+        /// fitting. This runs exactly once for each page made, which makes it the one place that
+        /// knows how far the work has got.
+        ///
+        /// Each page gets a browser of its own: a renderer that has laid out a page once holds
+        /// its scripts and its styles.
+        /// </summary>
+        private FlowTextWalk.FitResult LayOutOnePage(
+            Book.Book book,
+            OffScreenBrowser browser,
+            FlowTextChains.FlowGroup group,
+            CreatePagesRequest body,
+            bool isLast,
+            int pagesLaidOutBefore
+        )
+        {
+            if (pagesLaidOutBefore > 0)
+                browser.StartFreshBrowser();
+            return FlowTextWalk.AskBrowserForFit(
+                book,
+                browser,
+                group,
+                body.lang,
+                body.styles,
+                isLast
+            );
+        }
+
+        /// <summary>
+        /// Make the pages, with the Edit tab's progress dialog up: this is seconds of work, and
+        /// nothing else must be edited while it runs.
+        ///
+        /// The dialog runs the work on its own background thread and returns as soon as it has
+        /// started, but this request has to reply with the pages once they are made, so it waits
+        /// here for the work to finish.
+        /// </summary>
+        private FlowTextCreatePages.Result MakeThePages(
+            Book.Book book,
+            FlowTextChains.FlowGroup sourceGroup,
+            IPage templatePage,
+            CreatePagesRequest body
+        )
+        {
+            var socketServer = BloomWebSocketServer.Instance;
+            var shell = Shell.GetShellOrNull();
+            if (socketServer == null || shell == null || shell.IsDisposed)
+            {
+                // There is no browser to show the dialog in, so just do the work.
+                return RunTheLoop(book, sourceGroup, templatePage, body, null);
+            }
+
+            FlowTextCreatePages.Result result = null;
+            Exception failure = null;
+            var opened = false;
+            using (var finished = new ManualResetEventSlim(false))
+            {
+                // Opening the dialog is a UI-thread job. The delegate below runs on the dialog's
+                // own background thread, not this one.
+                FlowTextWalk.InvokeOnUiThread(() =>
+                {
+                    opened = true;
+                    _ = BrowserProgressDialog.DoWorkWithDeterminateProgressDialogAsync(
+                        socketServer,
+                        BrowserProgressDialog.kEditViewProgressDialogId,
+                        LocalizationManager.GetString(
+                            "EditTab.FlowText.CreatingPagesProgressTitle",
+                            "Creating pages and flowing text"
+                        ),
+                        progress =>
+                        {
+                            try
+                            {
+                                result = RunTheLoop(
+                                    book,
+                                    sourceGroup,
+                                    templatePage,
+                                    body,
+                                    progress
+                                );
+                            }
+                            catch (Exception e)
+                            {
+                                failure = e;
+                            }
+                            finally
+                            {
+                                finished.Set();
+                            }
+                            return Task.CompletedTask;
+                        }
+                    );
+                });
+                if (!opened)
+                {
+                    // Bloom's window went away between the check above and the call, so nothing
+                    // is going to run the work; do it here instead.
+                    return RunTheLoop(book, sourceGroup, templatePage, body, null);
+                }
+                finished.Wait();
+            }
+
+            if (failure != null)
+                ExceptionDispatchInfo.Capture(failure).Throw();
+            return result;
+        }
+
+        /// <summary>
+        /// Add a page, fill it, and go round again until one page holds what is left, then save
+        /// the pages made. Each page made is saved once every page has its share of the text,
+        /// because a run divided among pages is right or wrong as a whole.
+        /// </summary>
+        private FlowTextCreatePages.Result RunTheLoop(
+            Book.Book book,
+            FlowTextChains.FlowGroup sourceGroup,
+            IPage templatePage,
+            CreatePagesRequest body,
+            IWebSocketProgress progress
+        )
+        {
+            using (var browser = new OffScreenBrowser())
+            {
+                var afterPageId = sourceGroup.PageId;
+                var pagesLaidOut = 0;
+                // How much text the first page made held. Nothing knows how many pages the text
+                // needs until the last of them holds what is left, so this stands for how much
+                // each page holds, and it is that estimate that makes the bar move.
+                var heldByFirstPage = 0;
+                var result = FlowTextCreatePages.Run(
+                    sourceGroup,
+                    body.lang,
+                    () =>
+                    {
+                        var added = AddTextOnlyPageAfter(book, afterPageId, templatePage);
+                        afterPageId = added.PageId;
+                        return added;
+                    },
+                    (group, isLast) =>
+                    {
+                        var fitted = LayOutOnePage(
+                            book,
+                            browser,
+                            group,
+                            body,
+                            isLast,
+                            pagesLaidOut++
+                        );
+                        if (heldByFirstPage == 0)
+                            heldByFirstPage = (fitted.head ?? "").Length;
+                        ReportPagesMade(
+                            progress,
+                            pagesLaidOut,
+                            (fitted.tail ?? "").Length,
+                            heldByFirstPage
+                        );
+                        return fitted;
+                    }
+                );
+                if (result == null)
+                    return null;
+
+                SaveCreatedPages(book, result);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Say how far the making of pages has got: the pages made against those made plus the
+        /// ones the text still in hand is estimated to need. Capped below the end, because the
+        /// work is done when the loop ends, not when the estimate is reached.
+        /// </summary>
+        private static void ReportPagesMade(
+            IWebSocketProgress progress,
+            int pagesMade,
+            int charactersLeft,
+            int charactersPerPage
+        )
+        {
+            if (progress == null)
+                return;
+            var pagesLeft =
+                charactersPerPage > 0
+                    ? (charactersLeft + charactersPerPage - 1) / charactersPerPage
+                    : 0;
+            progress.SendPercent(Math.Min(99, pagesMade * 100 / (pagesMade + pagesLeft)));
+        }
+
+        /// <summary>
+        /// Add one text-only page after this one and hand back the group on it that the text
+        /// flows into. This is the Add Page code path: the same InsertPageAfter that the Add Page
+        /// dialog uses, with the same template page, so a page made here is a page the author
+        /// could have added themselves.
+        /// </summary>
+        private static FlowTextChains.FlowGroup AddTextOnlyPageAfter(
+            Book.Book book,
+            string afterPageId,
+            IPage templatePage
+        )
+        {
+            FlowTextChains.FlowGroup added = null;
+            // Inserting a page rebuilds the book's page cache and copies the template's files, so
+            // it belongs on the UI thread with everything else that changes the book's structure.
+            FlowTextWalk.InvokeOnUiThread(() =>
+            {
+                var newPageId = book.InsertPageAfter(
+                    FlowTextChains.FindPage(book, afterPageId),
+                    templatePage
+                );
+                added = FindGroupOnPage(book, newPageId, 0);
+            });
+
+            if (added == null)
+                throw new ApplicationException(
+                    "flow text: the text-only page Bloom just made has no text box on it."
+                );
+
+            return added;
+        }
+
+        /// <summary>
+        /// Save each page made and redraw its thumbnail. The pages are ones nobody is editing, so
+        /// SaveForPageChanged writes them from the book's own DOM, which is what we changed.
+        /// </summary>
+        private void SaveCreatedPages(Book.Book book, FlowTextCreatePages.Result result)
+        {
+            var pageIds = result.CreatedGroups.Select(group => group.PageId).Distinct().ToList();
+            FlowTextWalk.InvokeOnUiThread(() =>
+            {
+                foreach (var pageId in pageIds)
+                {
+                    var page = FlowTextChains.FindPage(book, pageId);
+                    if (page == null)
+                        continue;
+                    SavePage(book, page);
+                    _editingModel.RefreshThumbnail(page);
+                }
+            });
+        }
+
+        /// <summary>
+        /// The template page the Add Page dialog calls "Just Text", from the first template book
+        /// the dialog would offer this book that holds it. Null when no template book on this
+        /// machine has it.
+        /// </summary>
+        private IPage FindJustTextTemplatePage()
+        {
+            IPage found = null;
+            // Finding a template book reads it off the disk and adds it to the collection's list
+            // of source books, so it goes on the UI thread with the rest of that work.
+            FlowTextWalk.InvokeOnUiThread(() =>
+            {
+                foreach (var path in _pageTemplatesApi.GetTemplateBookPathsForAddPage())
+                {
+                    if (!RobustFile.Exists(path))
+                        continue;
+                    var templateBook = _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(
+                        path
+                    );
+                    if (templateBook == null)
+                        continue;
+                    if (
+                        templateBook
+                            .GetTemplatePagesIdDictionary()
+                            .TryGetValue(Book.Book.JustTextGuid, out var page)
+                    )
+                    {
+                        found = page;
+                        return;
+                    }
+                }
+            });
+
+            return found;
+        }
+
+        /// <summary>
+        /// The group at this place on this page of this book, with where it is, or null when the
+        /// page or the group is not there.
+        /// </summary>
+        private static FlowTextChains.FlowGroup FindGroupOnPage(
+            Book.Book book,
+            string pageId,
+            int indexInPage
+        )
+        {
+            var pages = book.GetPages().ToList();
+            var pageIndex = pages.FindIndex(page => page.Id == pageId);
+            if (pageIndex < 0)
+                return null;
+
+            return FlowTextChains
+                .GetFlowGroupsOfPage(pages[pageIndex].GetDivNodeForThisPage(), pageId, pageIndex)
+                .FirstOrDefault(group => group.IndexInPage == indexInPage);
         }
 
         /// <summary>
@@ -247,8 +732,10 @@ namespace Bloom.web.controllers
         /// <summary>
         /// GET flowText/peekNext?chainId=&amp;afterPageId=&amp;lang=: what the next box of the
         /// chain, on a later page, holds at the moment. The browser needs it to work out what that
-        /// box's content becomes once text arrives from, or goes back to, the current page.
-        /// Replies { pageId: null } when the chain ends on this page.
+        /// box's content becomes once text arrives from, or goes back to, the current page, and
+        /// pageNumber, what the reader calls that page, is what the browser's label says. That can
+        /// be empty: not every page has a number. Replies { pageId: null } when the chain ends on
+        /// this page.
         /// </summary>
         private void HandlePeekNext(ApiRequest request)
         {
@@ -259,6 +746,7 @@ namespace Bloom.web.controllers
                     var chainId = request.RequiredParam("chainId");
                     var afterPageId = request.RequiredParam("afterPageId");
                     var lang = request.RequiredParam("lang");
+                    var book = _bookSelection.CurrentSelection;
                     var next = FindNextGroup(chainId, afterPageId);
                     var editable =
                         next == null ? null : FlowTextChains.GetFlowEditable(next.Group, lang);
@@ -272,6 +760,7 @@ namespace Bloom.web.controllers
                         new
                         {
                             pageId = next.PageId,
+                            pageNumber = GetPageLabel(book, next.PageId),
                             indexInPage = next.IndexInPage,
                             html = editable.InnerXml,
                         }
@@ -308,10 +797,30 @@ namespace Bloom.web.controllers
                         return;
                     }
 
+                    if (FlowTextWalk.IsBusy)
+                    {
+                        // A walk is dividing this very run of text among its boxes, off-screen.
+                        // Letting the browser write one of those boxes in the middle of that
+                        // would put the same text in two places. The browser keeps the text
+                        // where it is when we refuse, and settles the boundary again on its
+                        // next pass, once the walk has finished.
+                        request.Failed("A whole-chain refit is in progress.");
+                        return;
+                    }
+
                     var editable = FlowTextChains.GetFlowEditable(next.Group, body.lang);
                     if (editable == null)
                     {
                         request.Failed("The next box of the chain has no box of that language.");
+                        return;
+                    }
+
+                    if (body.expectedHtml != null && editable.InnerXml != body.expectedHtml)
+                    {
+                        // The box holds something else now: a walk has refitted it since the
+                        // browser read it. The content offered was worked out from what it held
+                        // then, so writing it would undo the refit and put text in two places.
+                        request.Failed("That box of the chain has changed since it was read.");
                         return;
                     }
 
@@ -379,6 +888,36 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// POST flowText/walk: refit a whole chain from this page on, off-screen, so that the
+        /// later pages of the chain hold what they would hold if the user had opened each of
+        /// them. With no chainId, refit every chain in the book from its first page.
+        ///
+        /// Returns as soon as the walk is queued; FlowTextWalk does the work on a background
+        /// thread and counts as busy for IsIdle while it does.
+        /// </summary>
+        private void HandleWalk(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var body = request.RequiredPostObject<WalkRequest>();
+                    if (string.IsNullOrEmpty(body.chainId))
+                        FlowTextWalk.RequestEveryChain(_editingModel);
+                    else
+                        FlowTextWalk.Request(
+                            _editingModel,
+                            body.chainId,
+                            body.fromPageId,
+                            body.lang,
+                            body.styles
+                        );
+                    request.PostSucceeded();
+                }
+            );
+        }
+
+        /// <summary>
         /// POST flowText/pendingCaret: remember where the caret should go when a page loads,
         /// because the text the user was typing in has just moved onto it.
         /// GET flowText/pendingCaret?pageId=: hand back what was remembered for this page and
@@ -414,16 +953,18 @@ namespace Bloom.web.controllers
         /// <summary>
         /// Run one handler, counting it as work in progress so that a test can wait for it.
         /// </summary>
-        private static void RunHandler(ApiRequest request, System.Action handler)
+        private static void RunHandler(ApiRequest request, Action handler)
         {
-            _busyCount++;
+            // createPagesAndContinue runs on a server worker thread rather than the UI thread,
+            // so two of these can be counted at once.
+            Interlocked.Increment(ref _busyCount);
             try
             {
                 handler();
             }
             finally
             {
-                _busyCount--;
+                Interlocked.Decrement(ref _busyCount);
             }
         }
 

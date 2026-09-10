@@ -55,25 +55,50 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
-      <trans-unit id="EditTab.FlowText.ContinueFromBoxAbove">
-        <source xml:lang="en">Continue text from the box above</source>
+      <trans-unit id="EditTab.FlowText.ContinueFromBoxAbove" translate="no">
+        <source xml:lang="en">flow text here from the box above</source>
         <note>ID: EditTab.FlowText.ContinueFromBoxAbove</note>
-        <note>Label on the button an empty text box shows in the Edit tab when a text box above it on the same page holds more text than fits. Clicking it links the two boxes, so that the text which does not fit flows down into the empty one.</note>
+        <note>Label on the button an empty text box shows in the Edit tab when a text box above it on the same page holds more text than fits. Clicking it links the two boxes, so that the text which does not fit flows down into the empty one. A right-pointing arrow is drawn before the words, so the whole label reads like an arrow into this box; the words start lowercase for that reason.</note>
       </trans-unit>
       <trans-unit id="EditTab.FlowText.ContinueFromPage" translate="no">
-        <source xml:lang="en">Continue text from page {0}</source>
+        <source xml:lang="en">flow text here from page {0}</source>
         <note>ID: EditTab.FlowText.ContinueFromPage</note>
-        <note>Label on the button an empty text box shows in the Edit tab when a text box on an earlier page holds more text than fits. {0} is the number of that earlier page. Clicking it links the two boxes, so that the text which does not fit flows onto this page.</note>
+        <note>Label on the button an empty text box shows in the Edit tab when a text box on an earlier page holds more text than fits. {0} is the number of that earlier page. Clicking it links the two boxes, so that the text which does not fit flows onto this page. A right-pointing arrow is drawn before the words, so the whole label reads like an arrow into this box; the words start lowercase for that reason.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.CreatePagesAndContinue" translate="no">
+        <source xml:lang="en">Create pages and flow text</source>
+        <note>ID: EditTab.FlowText.CreatePagesAndContinue</note>
+        <note>Label on the button shown in the Edit tab, at the bottom right inside the last text box of a run of linked text boxes, when that box still holds more text than fits and there is no box after it to take the rest. Clicking it makes as many text-only pages as the remaining text needs and flows the text into them. "flow" here is the noun for the run of text that passes from one linked box to the next.</note>
       </trans-unit>
       <trans-unit id="EditTab.FlowText.FlowsFromPage" translate="no">
-        <source xml:lang="en">Text flows here from page {0}</source>
+        <source xml:lang="en">flows from page {0}</source>
         <note>ID: EditTab.FlowText.FlowsFromPage</note>
-        <note>Small label shown in the Edit tab above a text box whose text continues from a linked text box on an earlier page. {0} is that page's number.</note>
+        <note>Small label shown in the Edit tab just above a text box whose text continues from a linked text box on an earlier page. {0} is that page's number. A right-pointing arrow is drawn before the words, so the whole label reads like an arrow into this box; the words start lowercase for that reason.</note>
       </trans-unit>
       <trans-unit id="EditTab.FlowText.FlowsFromPreviousPage" translate="no">
-        <source xml:lang="en">Text flows here from the previous page</source>
+        <source xml:lang="en">flows from the previous page</source>
         <note>ID: EditTab.FlowText.FlowsFromPreviousPage</note>
-        <note>Small label shown in the Edit tab above a text box whose text continues from a linked text box on an earlier page. This wording is used when that page has no page number.</note>
+        <note>Small label shown in the Edit tab just above a text box whose text continues from a linked text box on an earlier page. This wording is used when that page has no page number. A right-pointing arrow is drawn before the words, so the whole label reads like an arrow into this box; the words start lowercase for that reason.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.FlowsToPage" translate="no">
+        <source xml:lang="en">flows to page {0}</source>
+        <note>ID: EditTab.FlowText.FlowsToPage</note>
+        <note>Small label shown in the Edit tab just below a text box whose text continues into a linked text box on a later page. {0} is that page's number. A right-pointing arrow is drawn after the words, so the whole label reads like an arrow out of this box; the words start lowercase for that reason.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.FlowsToNextPage" translate="no">
+        <source xml:lang="en">flows to the next page</source>
+        <note>ID: EditTab.FlowText.FlowsToNextPage</note>
+        <note>Small label shown in the Edit tab just below a text box whose text continues into a linked text box on a later page. This wording is used when that page has no page number. A right-pointing arrow is drawn after the words, so the whole label reads like an arrow out of this box; the words start lowercase for that reason.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.RefittingProgressTitle" translate="no">
+        <source xml:lang="en">Flowing text across pages</source>
+        <note>ID: EditTab.FlowText.RefittingProgressTitle</note>
+        <note>Title of a small progress dialog in the Edit tab, shown with a progress bar while Bloom moves text between the linked text boxes of pages it is not showing. "Flowing" here means text moving on from a full text box into the next one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.CreatingPagesProgressTitle" translate="no">
+        <source xml:lang="en">Creating pages and flowing text</source>
+        <note>ID: EditTab.FlowText.CreatingPagesProgressTitle</note>
+        <note>Title of a small progress dialog in the Edit tab, shown with a progress bar while Bloom adds pages and moves the text that does not fit onto them. "Flowing" here means text moving on from a full text box into the next one.</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>

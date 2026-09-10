@@ -410,7 +410,326 @@ namespace Bloom.Book
                 }
             }
 
+            // The marker sat where the source box's text stopped fitting, so what is left in
+            // the box fits it. The browser's warning that it overflows, saved with the page,
+            // would go on showing on the page's thumbnail until someone opened the page.
+            FlowTextWalk.ClearOverflowMarking(sourceEditable);
+
             return true;
+        }
+
+        /// <summary>
+        /// What deleting one page did to one chain that ran through it.
+        /// </summary>
+        public class PageDeletionMove
+        {
+            public string ChainId;
+
+            /// <summary>
+            /// The page holding the box the text moved into, which is where a walk of the chain
+            /// starts. Null when the chain has no box left on another page, or when only one box
+            /// is left and so the chain is no longer a chain: there is nothing to refit.
+            /// </summary>
+            public string WalkFromPageId;
+
+            /// <summary>
+            /// The languages whose text moved. Each language's text flows through its own boxes,
+            /// so each one needs its own walk.
+            /// </summary>
+            public List<string> Langs = new List<string>();
+        }
+
+        /// <summary>
+        /// Move the text of every chained box on this page into the box beside it in its chain,
+        /// so that deleting the page loses none of the text the chain carries. Call this while
+        /// the page is still in the DOM; the caller removes the page afterwards and asks for a
+        /// walk of each chain reported here.
+        ///
+        /// The text goes to the next box of the chain, ahead of what that box already holds.
+        /// When the page holds the last box of the chain it goes instead to the end of the
+        /// previous box. Either way the two boxes' text meets at one point, and the paragraph on
+        /// the later side of that point is joined back onto the paragraph it broke off from when
+        /// it carries the continuation attribute.
+        ///
+        /// A chain with only one box left afterwards stops being a chain, for the same reason
+        /// UnlinkFrom applies: one box on its own has nowhere to send its extra text.
+        ///
+        /// A page holding the only box of a chain has nowhere to put its text, so nothing moves
+        /// and the text goes with the page.
+        /// </summary>
+        public static List<PageDeletionMove> MoveChainedTextOffPage(
+            HtmlDom dom,
+            SafeXmlElement pageElement
+        )
+        {
+            var moves = new List<PageDeletionMove>();
+            if (dom == null || pageElement == null)
+                return moves;
+
+            var pageId = pageElement.GetAttribute("id");
+            if (string.IsNullOrEmpty(pageId))
+                return moves;
+
+            var chainIds = GetFlowGroupsOfPage(pageElement, pageId, 0)
+                .Select(group => group.Group.GetAttribute(HtmlDom.kFlowChainAttrName))
+                .Where(chainId => !string.IsNullOrEmpty(chainId))
+                .Distinct()
+                .ToList();
+
+            foreach (var chainId in chainIds)
+            {
+                var groups = GetChainGroups(dom, chainId);
+                // The groups of a chain are in page order, so the ones on this page are together.
+                var firstOnPage = groups.FindIndex(group => group.PageId == pageId);
+                var lastOnPage = groups.FindLastIndex(group => group.PageId == pageId);
+                if (firstOnPage < 0)
+                    continue;
+
+                var move = new PageDeletionMove { ChainId = chainId };
+                var goingOut = Enumerable
+                    .Range(firstOnPage, lastOnPage - firstOnPage + 1)
+                    .Select(index => groups[index])
+                    .ToList();
+
+                FlowGroup target = null;
+                if (lastOnPage + 1 < groups.Count)
+                {
+                    // The text goes to the next box, so the box furthest down the chain moves
+                    // first: each box then lands ahead of the one that followed it.
+                    target = groups[lastOnPage + 1];
+                    goingOut.Reverse();
+                    MoveGroupsInto(goingOut, target, atEnd: false, langs: move.Langs);
+                }
+                else if (firstOnPage - 1 >= 0)
+                {
+                    target = groups[firstOnPage - 1];
+                    MoveGroupsInto(goingOut, target, atEnd: true, langs: move.Langs);
+                }
+
+                var stillLinked = groups.Where(group => group.PageId != pageId).ToList();
+                if (stillLinked.Count == 1)
+                    stillLinked[0].Group.RemoveAttribute(HtmlDom.kFlowChainAttrName);
+                else if (target != null)
+                    move.WalkFromPageId = target.PageId;
+
+                moves.Add(move);
+            }
+
+            return moves;
+        }
+
+        /// <summary>
+        /// Move the content of each of these groups into the target group, box by box for every
+        /// language the group has. Adds each language it moved to langs.
+        /// </summary>
+        private static void MoveGroupsInto(
+            List<FlowGroup> sourceGroups,
+            FlowGroup target,
+            bool atEnd,
+            List<string> langs
+        )
+        {
+            foreach (var source in sourceGroups)
+            {
+                foreach (var lang in GetFlowLanguages(source.Group))
+                {
+                    var sourceEditable = GetFlowEditable(source.Group, lang);
+                    var targetEditable = GetFlowEditable(target.Group, lang);
+                    if (targetEditable == null)
+                    {
+                        // The groups of one chain hold the same languages, so a box with nowhere
+                        // to move to means the book is not what this code can work on. Say so
+                        // rather than dropping the text on the floor.
+                        if (HoldsOnlyPlaceholder(sourceEditable))
+                            continue;
+                        throw new System.ApplicationException(
+                            $"flow text: the chain has no {lang} box on page {target.PageId} to keep the text of page {source.PageId}."
+                        );
+                    }
+
+                    if (
+                        MoveBoxContentInto(sourceEditable, targetEditable, atEnd)
+                        && !langs.Contains(lang)
+                    )
+                        langs.Add(lang);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Every language whose box in this group is one that text flows through: a normal-style
+        /// bloom-editable child with a language of its own.
+        /// </summary>
+        public static List<string> GetFlowLanguages(SafeXmlElement group)
+        {
+            var result = new List<string>();
+            if (group == null)
+                return result;
+
+            foreach (var child in group.ChildNodes.OfType<SafeXmlElement>())
+            {
+                if (!child.HasClass("bloom-editable") || !child.HasClass(kNormalStyleClass))
+                    continue;
+                var lang = child.GetAttribute("lang");
+                if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
+                    continue;
+                result.Add(lang);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Move everything one box holds into another box of the same chain: ahead of what the
+        /// target already holds, or after it when atEnd. Where the two boxes' text meets, the
+        /// paragraph on the later side is joined onto the paragraph it broke off from if it
+        /// carries the continuation attribute. The marks that say where a box's text stopped
+        /// fitting do not survive the move: they described a fit of text that has changed, and a
+        /// walk puts them back where the text now runs out.
+        ///
+        /// Returns false, changing nothing, when the source box holds nothing a reader sees.
+        /// </summary>
+        public static bool MoveBoxContentInto(
+            SafeXmlElement sourceEditable,
+            SafeXmlElement targetEditable,
+            bool atEnd
+        )
+        {
+            if (sourceEditable == null || targetEditable == null)
+                return false;
+            if (HoldsOnlyPlaceholder(sourceEditable))
+                return false;
+
+            RemovePlaceholderParagraph(targetEditable);
+            var targetFirstParagraph = GetTopLevelParagraphs(targetEditable).FirstOrDefault();
+            var targetLastParagraph = GetTopLevelParagraphs(targetEditable).LastOrDefault();
+
+            var moved = new List<SafeXmlNode>();
+            foreach (var child in sourceEditable.ChildNodes)
+            {
+                moved.Add(
+                    targetEditable.OwnerDocument == child.OwnerDocument
+                        ? child
+                        : targetEditable.OwnerDocument.ImportNode(child, true)
+                );
+            }
+
+            if (atEnd)
+            {
+                foreach (var node in moved)
+                    targetEditable.AppendChild(node);
+            }
+            else
+            {
+                SafeXmlNode after = null;
+                foreach (var node in moved)
+                {
+                    if (after == null)
+                        targetEditable.PrependChild(node);
+                    else
+                        targetEditable.InsertAfter(node, after);
+                    after = node;
+                }
+            }
+
+            var movedParagraphs = moved
+                .OfType<SafeXmlElement>()
+                .Where(node => node.Name == "p")
+                .ToList();
+            if (atEnd)
+                JoinContinuationOnto(targetLastParagraph, movedParagraphs.FirstOrDefault());
+            else
+                JoinContinuationOnto(movedParagraphs.LastOrDefault(), targetFirstParagraph);
+
+            RemoveOverflowMarkers(targetEditable);
+            return true;
+        }
+
+        /// <summary>
+        /// Put the text of a paragraph that carries on an earlier one back onto that earlier
+        /// paragraph, and take the paragraph itself out. Does nothing when the later paragraph
+        /// begins a paragraph of its own, which is what no continuation attribute means.
+        ///
+        /// The space that was cut at the join comes back from the seam attribute, the same way
+        /// giveBackSeamSpace does it in the browser.
+        /// </summary>
+        public static void JoinContinuationOnto(
+            SafeXmlElement earlierParagraph,
+            SafeXmlElement laterParagraph
+        )
+        {
+            if (earlierParagraph == null || laterParagraph == null)
+                return;
+            if (!laterParagraph.HasAttribute(kContinuationAttrName))
+                return;
+
+            if (laterParagraph.HasAttribute(kSeamSpaceAttrName))
+                PrependSpace(laterParagraph);
+            TrimInvisibleCharactersAtEnd(earlierParagraph);
+
+            foreach (var node in laterParagraph.ChildNodes)
+            {
+                laterParagraph.RemoveChild(node);
+                earlierParagraph.AppendChild(node);
+            }
+
+            laterParagraph.ParentNode.RemoveChild(laterParagraph);
+        }
+
+        /// <summary>Put the space of a seam back at the head of the paragraph that lost it.</summary>
+        private static void PrependSpace(SafeXmlElement paragraph)
+        {
+            var firstText = FindFirstTextNode(paragraph);
+            if (firstText != null)
+                firstText.Value = " " + firstText.Value;
+            else
+                paragraph.PrependChild(paragraph.OwnerDocument.CreateTextNode(" "));
+        }
+
+        /// <summary>The first text node inside this element, in document order, if it has one.</summary>
+        private static SafeXmlNode FindFirstTextNode(SafeXmlNode node)
+        {
+            if (node.NodeType == System.Xml.XmlNodeType.Text)
+                return node;
+
+            foreach (var child in node.ChildNodes)
+            {
+                var found = FindFirstTextNode(child);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Take the editor's own filler off the end of the paragraph another paragraph is joined
+        /// onto. It is no part of what the reader sees, and it would sit between the last word of
+        /// one half and the first word of the other.
+        /// </summary>
+        private static void TrimInvisibleCharactersAtEnd(SafeXmlElement paragraph)
+        {
+            var last = FindLastTextNode(paragraph);
+            if (last?.Value == null)
+                return;
+
+            last.Value = last.Value.TrimEnd((char)0x200b, (char)0x200c);
+        }
+
+        /// <summary>
+        /// Take out every mark that says where a box's text stopped fitting. The text of the box
+        /// has changed, so the place the mark named is no longer where the text runs out.
+        /// </summary>
+        private static void RemoveOverflowMarkers(SafeXmlElement element)
+        {
+            foreach (
+                var marker in element
+                    .SafeSelectNodes($".//span[contains(@class,'{HtmlDom.kOverflowStartClass}')]")
+                    .OfType<SafeXmlElement>()
+            )
+            {
+                marker.ParentNode.RemoveChild(marker);
+            }
         }
 
         /// <summary>
@@ -725,7 +1044,7 @@ namespace Bloom.Book
         /// Is there anything in here a reader would see? A line break, the zero-width characters
         /// the editor leaves behind, and whitespace are not text.
         /// </summary>
-        private static bool HasVisibleText(SafeXmlElement element)
+        public static bool HasVisibleText(SafeXmlElement element)
         {
             if (element == null)
                 return false;
@@ -740,16 +1059,37 @@ namespace Bloom.Book
         /// An empty text box holds one paragraph with nothing in it but a line break. That is a
         /// placeholder, not content, so text arriving in the box replaces it.
         /// </summary>
-        private static void RemovePlaceholderParagraph(SafeXmlElement editable)
+        public static void RemovePlaceholderParagraph(SafeXmlElement editable)
         {
-            var paragraphs = editable
-                .ChildNodes.OfType<SafeXmlElement>()
-                .Where(child => child.Name == "p")
-                .ToArray();
-            if (paragraphs.Length != 1 || HasVisibleText(paragraphs[0]))
+            if (!HoldsOnlyPlaceholder(editable))
                 return;
 
-            editable.RemoveChild(paragraphs[0]);
+            editable.RemoveChild(GetTopLevelParagraphs(editable)[0]);
+        }
+
+        /// <summary>
+        /// Does this box hold nothing but its placeholder paragraph, so that it contributes no
+        /// text at all? An empty box holds one paragraph with nothing in it a reader would see.
+        /// </summary>
+        public static bool HoldsOnlyPlaceholder(SafeXmlElement editable)
+        {
+            if (editable == null)
+                return false;
+
+            var paragraphs = GetTopLevelParagraphs(editable);
+            return paragraphs.Count == 1 && !HasVisibleText(paragraphs[0]);
+        }
+
+        /// <summary>
+        /// The paragraphs that are children of this element, in document order. A chained box
+        /// holds top-level paragraphs and nothing else, so these are its content.
+        /// </summary>
+        public static List<SafeXmlElement> GetTopLevelParagraphs(SafeXmlElement element)
+        {
+            return element
+                .ChildNodes.OfType<SafeXmlElement>()
+                .Where(child => child.Name == "p")
+                .ToList();
         }
     }
 }

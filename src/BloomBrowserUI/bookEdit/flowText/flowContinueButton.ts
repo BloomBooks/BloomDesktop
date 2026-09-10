@@ -72,6 +72,15 @@ export function setFlowPassRunner(runner?: FlowPassRunner): void {
     passRunner = runner;
 }
 
+/**
+ * The runner the trigger registered, for the other things drawn on a box that have to change the
+ * page and then have it settled (flowCreatePagesButton). It is undefined in a unit test and
+ * before the trigger has started.
+ */
+export function getFlowPassRunner(): FlowPassRunner | undefined {
+    return passRunner;
+}
+
 // What C# said about each page and language, so that a pass does not cost a round trip. The
 // answer can only change when an earlier page's text changes, and that means the user has left
 // this page, which clears the cache.
@@ -385,7 +394,7 @@ function addButton(editable: HTMLElement, source: ContinueSource): void {
         group.appendChild(button);
     }
 
-    centerOverBox(button, editable);
+    placeAtTopLeftOfBox(button, editable);
 }
 
 function makeButton(document: Document, language: string): HTMLElement {
@@ -398,15 +407,18 @@ function makeButton(document: Document, language: string): HTMLElement {
     return button;
 }
 
+// How far in from the box's top left corner the button sits.
+const kButtonInsetPixels = 4;
+
 /**
- * Put the button in the middle of the box it belongs to. The button sits in the translation
+ * Put the button at the top left of the box it belongs to. The button sits in the translation
  * group rather than in the box, because a box is a contenteditable and everything in it is
  * content, and a group can hold a box per language; so where the box is has to be measured.
  * The group is a positioning context already: Bloom's stylesheet makes every element one.
  */
-function centerOverBox(button: HTMLElement, editable: HTMLElement): void {
-    button.style.top = `${editable.offsetTop + editable.offsetHeight / 2}px`;
-    button.style.left = `${editable.offsetLeft + editable.offsetWidth / 2}px`;
+function placeAtTopLeftOfBox(button: HTMLElement, editable: HTMLElement): void {
+    button.style.top = `${editable.offsetTop + kButtonInsetPixels}px`;
+    button.style.left = `${editable.offsetLeft + kButtonInsetPixels}px`;
 }
 
 /**
