@@ -297,6 +297,11 @@ namespace Bloom.web.controllers
                     // Control port of the dev launcher that started us (null when not
                     // launched via go.sh); see .github/skills/bloom-automation.
                     launcherControlPort = Program.StartupLauncherPort,
+                    // Where this instance keeps its user settings (user.config): the folder
+                    // --user-settings-folder named, or the usual per-version one. The e2e launch
+                    // fixture checks this to be sure the Bloom it started is not sharing settings
+                    // with anyone; see BloomSettingsProvider.
+                    userSettingsFolder = BloomSettingsProvider.GetUserSettingsFolder(),
                 }
             );
         }

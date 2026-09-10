@@ -153,3 +153,35 @@ export function bookFileExists(
     const file = relativePath.split("#")[0];
     return fs.existsSync(Path.join(bookFolder, file));
 }
+
+/**
+ * The front/back matter pack a book's HTML carries: the key before "-XMatter" in the one pack
+ * stylesheet its head links, e.g. "Factory" or "Traditional". Bloom links exactly one such
+ * stylesheet per book (XMatterHelper.GetStyleSheetFileName) and swaps it when it brings the book up
+ * to date under a collection whose pack changed, so this says which pack the book was last brought
+ * up to date with. It is the same answer for a book on disk and for the copy an upload sent to
+ * Bloom Library, which is why it takes the HTML rather than a path. Throws, naming the stylesheets
+ * it did find, when the HTML links no pack or more than one.
+ */
+export function xmatterPackInBookHtml(html: string): string {
+    const hrefs = [...html.matchAll(/<link[^>]*\shref="([^"]+)"/g)].map(
+        (match) => match[1],
+    );
+    const packs = hrefs.flatMap((href) => {
+        const match = /^(.+)-XMatter\.css$/.exec(href);
+        return match ? [match[1]] : [];
+    });
+    if (packs.length !== 1)
+        throw new Error(
+            `Expected the book's HTML to link exactly one <Pack>-XMatter.css, found ${packs.length}. ` +
+                `Stylesheets linked: ${hrefs.join(", ")}`,
+        );
+    return packs[0];
+}
+
+/** The front/back matter pack of the book saved in `bookFolder`; see xmatterPackInBookHtml. */
+export function readXmatterPackOfBook(bookFolder: string): string {
+    return xmatterPackInBookHtml(
+        fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
+    );
+}
