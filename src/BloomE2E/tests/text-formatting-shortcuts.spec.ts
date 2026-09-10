@@ -7,10 +7,8 @@
 // one builds the formatted text that the later ones take away and restore.
 //
 // The manual test undoes twice: once with the top bar's Undo button, which the test clicks for
-// real, and once with Ctrl+Z, which is a WinForms accelerator the shell handles before the browser
-// sees it, so no test can press it. For that step the test calls helpers/workspace.ts `undo`, the
-// production undo path with only the key press missing (AUTOMATION-DEBT.md: "WinForms surfaces
-// are invisible to CDP").
+// real, and once with Ctrl+Z, which the test presses for real; CKEditor's own undo plugin handles
+// the key.
 
 import type { Page } from "@playwright/test";
 import { expect, test } from "../fixtures/bloomTest";
@@ -33,7 +31,7 @@ import {
     PLAIN,
     type IFormatting,
 } from "../helpers/textFormatting";
-import { clickUndoButton, undo } from "../helpers/workspace";
+import { clickUndoButton, pressUndoKey } from "../helpers/workspace";
 
 test.use({
     collectionSpec: { name: "text-formatting-shortcuts", languages: ["en"] },
@@ -188,8 +186,7 @@ test.describe("Text formatting shortcuts", () => {
             await expectFormatting(page, TEXT_BOX, LANGUAGE, word, expected);
         await expectTextUnchanged(page);
 
-        // The manual step is Ctrl+Z; see the note at the top of this file.
-        await undo(page);
+        await pressUndoKey(page);
         await expectAllFormattingInPlace(page);
         await expectTextUnchanged(page);
     });

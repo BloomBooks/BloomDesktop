@@ -11,10 +11,8 @@
 // <span style="color: ..."> for text color. getFormattedRuns reads the box back in those terms, so a
 // test asserts "this word is bold and underlined" rather than on markup.
 //
-// Undo is NOT here: it belongs to the top bar, so helpers/workspace.ts has it. `clickUndoButton`
-// clicks the Undo button; `undo` runs the production undo path for the Ctrl+Z step, because Ctrl+Z
-// is a WinForms accelerator no test can press (AUTOMATION-DEBT.md: "WinForms surfaces are
-// invisible to CDP").
+// Undo is NOT here: it belongs to the workspace, so helpers/workspace.ts has it. `clickUndoButton`
+// clicks the top bar's Undo button, `pressUndoKey` presses Ctrl+Z, and `undo` is the setup route.
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import { editablePageFrame, clickInGroup } from "./bookMaking";

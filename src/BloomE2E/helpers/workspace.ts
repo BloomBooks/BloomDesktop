@@ -178,17 +178,25 @@ export async function clickUndoButton(page: Page): Promise<void> {
 }
 
 /**
- * Undo the last change. This returns as soon as the front end has been told to undo; what the undo
- * changes lands asynchronously, so wait for the state you expect (a text, a count, a class)
- * rather than reading the page straight after this.
+ * Press Ctrl+Z, the way a person undoes from the keyboard, into whatever has the focus. In a text
+ * box the key goes to CKEditor's own undo plugin; the shell does not claim it (Shell.ProcessCmdKey
+ * only raises an event and lets the key through, and the C# UndoCommand's implementer is empty).
+ * Like the other undo routes this returns as soon as the key is delivered; wait for the state you
+ * expect rather than reading the page straight after it.
+ */
+export async function pressUndoKey(page: Page): Promise<void> {
+    await page.keyboard.press("Control+z");
+}
+
+/**
+ * Undo the last change through the front end's own undo dispatcher, `workspaceBundle.handleUndo()`,
+ * which is the code the Undo button ends in and which chooses between CKEditor undo, origami undo
+ * and the canvas element manager's undo. This is the SETUP route to an undo; a test whose subject
+ * is undo itself clicks the button (clickUndoButton) or presses the key (pressUndoKey).
  *
- * Ctrl+Z in the Edit tab is a WinForms accelerator: the key press never reaches the browser, so a
- * test cannot send it. What the shell does when the key is pressed is call the front end's
- * `workspaceBundle.handleUndo()`, which is exactly what this calls. So this is the production undo
- * path with only the key press missing, and it covers CKEditor undo and the canvas element
- * manager's undo alike, because handleUndo is the code that chooses between them.
- * (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven".) A test whose subject is the Undo
- * BUTTON clicks it with clickUndoButton instead.
+ * Returns as soon as the front end has been told to undo; what the undo changes lands
+ * asynchronously, so wait for the state you expect (a text, a count, a class) rather than reading
+ * the page straight after this.
  */
 export async function undo(page: Page): Promise<void> {
     if (!(await canUndo(page)))

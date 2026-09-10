@@ -76,14 +76,6 @@ Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.
 Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
 settings endpoints it only records a pending change on the open dialog.
 
-seen again 2026-09-08 (Test Case ID 364, `text-formatting-shortcuts.spec.ts`): the manual test undoes
-with the Edit tab's Undo button and with Ctrl+Z. The button is in the React top bar now, so the test
-clicks it (`helpers/workspace.ts clickUndoButton`, by a test id added for it). Ctrl+Z is still a
-WinForms accelerator that the shell handles before the browser sees it, so no test can press it; the
-test calls `undo`, the production path with only the key press missing, for that step. Fix
-direction: an `e2e/` hook that runs the shell's own accelerator handling for a named key, so a test
-can say "press Ctrl+Z" and have the shell answer as it does for a person.
-
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
