@@ -1020,14 +1020,23 @@ namespace Bloom.TeamCollection
             }
             else
             {
-                // BL-16729: a Team Collection's Books folder is created when the collection is
-                // set up, so the only way to be missing it is to be a joiner whose Dropbox has
-                // not delivered it yet. That folder can arrive minutes into the session; this
-                // used to give up on watching for books for good (and, as a side effect, skip
-                // the Other watcher below too). Instead, remember to try again -- the periodic
-                // connection check calls RetryDeferredWatching.
-                // Note we do NOT treat this as a disconnection: if the folder is not here, no
-                // teammate has checked a book in yet, so there is nothing to miss *yet*.
+                // BL-16729. Note this is a narrow case. The Books folder is created when the
+                // collection is set up, and you cannot *join* a collection without it -- the
+                // join fails earlier, in GetBookList, which throws on the missing folder
+                // (confirmed by testing, 2026-09-10). What remains reachable is opening or
+                // reloading a collection you have already joined at a moment when Books is
+                // absent, e.g. while Dropbox is still restoring the folder onto a new machine.
+                // SyncAtStartup will have failed and told the user; what this avoids is needing
+                // to restart Bloom once the folder finally arrives.
+                //
+                // Previously we gave up on watching for books for the rest of the session, and
+                // as a side effect skipped the Other watcher below as well. Now only the books
+                // watcher is deferred, and the periodic connection check retries it via
+                // RetryDeferredWatching.
+                //
+                // We deliberately do NOT treat this as a disconnection; that was considered and
+                // rejected, because no teammate can have checked a book in while there is
+                // nowhere for a book to be.
                 _booksWatcherDeferred = true;
                 Logger.WriteEvent(
                     $"Team Collection: \"{booksPath}\" does not exist yet, so book changes cannot be watched. Will retry."
