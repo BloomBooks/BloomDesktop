@@ -371,6 +371,21 @@ test.describe("the Text Languages publish list", () => {
     //
     // A local failure of this test is usually something else: it has other steps that time out on
     // a loaded machine, and dies before reaching this assertion.
+    //
+    // Before the skip, this test also failed intermittently on a developer machine (2026-09-01/02),
+    // with a different symptom, kept here for whoever re-enables it:
+    // this test failed once in six full runs on 2026-09-01, and the cause is not
+    // known. The failure was not reproduced, and the log kept only the tail, so the assertion that
+    // failed was not captured. Whoever sees it fail again: keep the whole log. This test does not
+    // change which languages the book shows, so the earlier suspicion about quick successive
+    // calls to editView/topBar/contentLanguageUsageChange does not explain it.
+    // 2026-09-02, seen twice more (full logs kept this time): the failing assertion is the
+    // expectTextLanguageRowsInAnyOrder below - French comes back disabled: true, i.e. after the
+    // restart Bloom treats French as shown by the book. That points at the previous test's
+    // closing setContentLanguages(page, ["en"]) not being persisted to disk before restart()'s
+    // hard kill, so the reopened book still shows English+French and French stays required. If
+    // that is right, the fix is for the previous test (or restart itself) to wait for the
+    // content-language change to reach the book file before Bloom dies.
     test.skip("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
         bloomApp,
     }) => {

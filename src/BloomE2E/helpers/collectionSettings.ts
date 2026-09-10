@@ -11,7 +11,7 @@
 import * as fs from "node:fs";
 import * as Path from "node:path";
 import type { Page } from "@playwright/test";
-import type { IBloomApp } from "../fixtures/bloomTest";
+import type { ICollectionBloomApp } from "../fixtures/bloomTest";
 import { makeCollectionXml } from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
 
@@ -46,7 +46,7 @@ export interface ICollectionSettings {
  * or what was typed on it is lost (see goToPage). Each call costs about six seconds.
  */
 export async function restartWithCollectionSettings(
-    bloomApp: IBloomApp,
+    bloomApp: ICollectionBloomApp,
     settings: ICollectionSettings,
 ): Promise<Page> {
     // Read the file name rather than assuming it matches the folder name, so a collection whose

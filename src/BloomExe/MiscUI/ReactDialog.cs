@@ -21,6 +21,11 @@ namespace Bloom.MiscUI
     {
         public string CloseSource { get; set; } = null;
 
+        // During an automation run (--automation, e.g. the Playwright suites) a dialog must not
+        // steal the user's keyboard focus when it is shown, the same rule Shell and SplashScreen
+        // follow. The tests drive the dialog over CDP, which needs no focus.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
         private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
         public ReactDialog(
