@@ -674,6 +674,52 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// When the book carries the original copyright as its own, saying it again in a
+        /// sentence about the original book prints it twice. That holds for the user's own
+        /// wording as much as for Bloom's, and their wording waits in the data div in case
+        /// they turn the option off again. See BL-7381.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_UsingOriginalCopyright_HidesTheUsersOwnNoticeToo()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+								<div data-book='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+
+            // Sanity check: without the option, the user's wording is what shows.
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, true);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[contains(., 'My own words about the original')]",
+                    1
+                );
+
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, true, true);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@class='test']//*[contains(., 'My own words about the original')]"
+                );
+            AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//*[@data-link-icon]");
+            // Their wording is still there for when they turn the option off again.
+            Assert.That(
+                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                Does.Contain("My own words about the original")
+            );
+        }
+
+        /// <summary>
         /// The copy of the page sent to the editor turns the locked sentence into an ordinary
         /// editable field, with an open padlock in the bubble and the caret waiting in it.
         /// </summary>

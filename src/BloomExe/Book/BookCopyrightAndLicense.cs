@@ -287,7 +287,15 @@ namespace Bloom.Book
             // copy of the page sent to the editor, and only for one rendering, so that leaving
             // the page or refreshing it locks the sentence again.
             string originalCopyrightNotice;
-            if (userEditsOriginalCopyrightNotice)
+            if (useOriginalCopyright)
+            {
+                // The book's own copyright is the original one, so saying it again here would
+                // print it twice. This holds for the user's own wording as well as Bloom's;
+                // theirs stays in the data div and comes back if they turn the option off.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
+                originalCopyrightNotice = null;
+            }
+            else if (userEditsOriginalCopyrightNotice)
             {
                 originalCopyrightNotice = bookData
                     .GetVariableOrNull(kOriginalCopyrightAndLicense, "*")
@@ -295,11 +303,7 @@ namespace Bloom.Book
             }
             else
             {
-                // If we're using the original copyright, we don't need to show it separately.
-                // See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
-                originalCopyrightNotice = useOriginalCopyright
-                    ? null
-                    : GetOriginalCopyrightAndLicenseNotice(bookData, dom);
+                originalCopyrightNotice = GetOriginalCopyrightAndLicenseNotice(bookData, dom);
             }
             ShowOriginalCopyrightNoticeLocked(
                 dom,
