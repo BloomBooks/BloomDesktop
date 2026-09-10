@@ -1737,7 +1737,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // avoiding: even though removing the bookmark and rejoining the text leaves the
                 // DOM exactly as it was, Chromium goes on painting the paragraph's old glyphs
                 // where a ligature straddled the split, so letters the user typed stop being
-                // drawn until something else forces a repaint (BL-16717).
+                // drawn until something else forces a repaint (BL-16717). Restoring the bookmark
+                // is also a ckeditor re-select, which in the Chromium-based WebView2 plants a
+                // zero-width "filling char" (U+200B) whenever the caret sits next to an inline
+                // element such as the bloom-linebreak span; a later rewrite of the box orphans
+                // it and it gets saved (BL-16808).
                 // Nothing below rewrites this box unless a tool is active, or there is actually
                 // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
                 // selection to preserve. So only pay for a bookmark when one of those is true,
@@ -1770,9 +1774,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
+                        if (bookmarks) {
+                            ckeditorOfThisBox
+                                .getSelection()
+                                .selectBookmarks(bookmarks);
+                        }
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
@@ -1915,7 +1921,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
     // even when the string is unchanged, which loses the selection and collapses any Range
     // pointing into the old text nodes -- and the reader tools' highlights and the Talking Book
-    // tool's audio highlights are live Ranges. Almost every keystroke leaves nothing to convert,
+    // tool's audio highlights are live Ranges. It also detaches the text node holding
+    // ckeditor's zero-width "filling char", which ckeditor removes by node reference; once
+    // detached, the U+200B stays in the text and gets saved into the book, where a line break
+    // next to it renders as nothing (BL-16808). Almost every keystroke leaves nothing to convert,
     // so only write when there is something to write.
     let replacedAnNbsp = false;
 
