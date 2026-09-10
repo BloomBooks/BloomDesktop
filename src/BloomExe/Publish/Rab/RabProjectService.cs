@@ -413,6 +413,11 @@ namespace Bloom.Publish.Rab
                 RabRoot = paths.RabRoot,
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
+                // The Apps screen disables Prepare and Build while any of these exist (BL-16855).
+                PlaygroundBookTitles = trackedBooks
+                    .Where(book => TryFindTrackedBookInfo(book)?.IsPlayground ?? false)
+                    .Select(book => book.Title)
+                    .ToArray(),
                 PrepareSteps = prepareSteps,
                 ActiveAction = activeAction,
                 ActiveActionProgressStage = activeAction != null ? _lastLoggedProgressStage : null,
@@ -1415,6 +1420,14 @@ namespace Bloom.Publish.Rab
             var booksToExport = bookInfos.ToList();
             var bloomPubPathsToKeep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            // Playground books are never publishable (BL-16855). The Apps screen disables Prepare and
+            // Build for a Playground current book, but Choose Books can add one from the collection.
+            EnsureNoPlaygroundBooks(
+                booksToExport,
+                bookInfo =>
+                    GetBookTitleForRab(_collectionModel.GetBookFromBookInfo(bookInfo), bookInfo)
+            );
+
             // Like the other publish paths, refuse to publish a book in a language its copyright holder
             // has not licensed (BL-16833). Check every book, including ones whose BloomPUB we would
             // merely reuse, before touching anything on disk.
@@ -1520,6 +1533,31 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        /// <summary>
+        /// Stops Prepare/Build when any book headed into the app was made from the Playground template,
+        /// which (like every other publish path) we refuse to publish. Throws naming each such book.
+        /// </summary>
+        /// <remarks>
+        /// Only the offending books have their title looked up, so the common case costs no Book load.
+        /// </remarks>
+        internal static void EnsureNoPlaygroundBooks(
+            IEnumerable<BookInfo> bookInfos,
+            Func<BookInfo, string> getTitle
+        )
+        {
+            var playgroundTitles = bookInfos
+                .Where(bookInfo => bookInfo.IsPlayground)
+                .Select(getTitle)
+                .ToList();
+            if (playgroundTitles.Count == 0)
+                return;
+
+            throw new ApplicationException(
+                "Books made from the Playground template cannot be published: "
+                    + string.Join(", ", playgroundTitles)
+            );
         }
 
         /// <summary>
@@ -3613,8 +3651,33 @@ namespace Bloom.Publish.Rab
             return book?.ThumbnailFileName;
         }
 
+        /// <summary>
+        /// Finds the collection book a tracked entry refers to, throwing if it is no longer there.
+        /// Use this on the Prepare/Build paths, where a missing book must fail the action.
+        /// </summary>
         private BookInfo FindTrackedBookInfo(RabTrackedBookInfo trackedBook)
         {
+            var matchingBookInfo = TryFindTrackedBookInfo(trackedBook);
+            if (matchingBookInfo == null)
+            {
+                throw new ApplicationException(
+                    $"Bloom could not find the selected book '{trackedBook.Title}' in this collection anymore."
+                );
+            }
+
+            return matchingBookInfo;
+        }
+
+        /// <summary>
+        /// Like FindTrackedBookInfo, but returns null when the book is no longer in the collection.
+        /// GetStatus uses this so a stale tracked entry cannot stop the Apps screen from loading.
+        /// </summary>
+        private BookInfo TryFindTrackedBookInfo(RabTrackedBookInfo trackedBook)
+        {
+            // Unit tests, and Bloom before a collection is loaded, have no collection model.
+            if (_collectionModel?.TheOneEditableCollection == null)
+                return null;
+
             var bookInfos = _collectionModel.TheOneEditableCollection.GetBookInfos();
             var matchingBookInfo = !string.IsNullOrWhiteSpace(trackedBook.BookId)
                 ? bookInfos.FirstOrDefault(info =>
@@ -3672,13 +3735,6 @@ namespace Bloom.Publish.Rab
                     .ToList();
                 if (titleMatches.Count == 1)
                     matchingBookInfo = titleMatches[0];
-            }
-
-            if (matchingBookInfo == null)
-            {
-                throw new ApplicationException(
-                    $"Bloom could not find the selected book '{trackedBook.Title}' in this collection anymore."
-                );
             }
 
             return matchingBookInfo;

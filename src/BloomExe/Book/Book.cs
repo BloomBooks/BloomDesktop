@@ -6209,13 +6209,6 @@ namespace Bloom.Book
             return Storage.Dom.GetMetaValue("defaultTemplatePageId", null);
         }
 
-        public bool IsPlayground
-        {
-            get
-            {
-                return BookInfo.BookLineage?.Contains("aeb176bc-76fa-44e2-bb9d-6350698fce47")
-                    ?? false;
-            }
-        }
+        public bool IsPlayground => BookInfo.IsPlayground;
     }
 }
