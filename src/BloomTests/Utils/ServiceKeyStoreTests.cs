@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -390,10 +390,6 @@ namespace BloomTests.Utils
             );
         }
 
-        /// <summary>
-        /// Writes the file as given, so a test can set up content Bloom itself would not
-        /// write. Single quotes stand in for double quotes, to keep the test strings readable.
-        /// </summary>
         [Test]
         public void Get_FileFromANewerFormatVersion_StillReadsAKeyWhoseMethodIsKnown()
         {
@@ -462,6 +458,10 @@ namespace BloomTests.Utils
             );
         }
 
+        /// <summary>
+        /// Writes the file as given, so a test can set up content Bloom itself would not
+        /// write. Single quotes stand in for double quotes, to keep the test strings readable.
+        /// </summary>
         private void WriteRawFile(string contentWithSingleQuotes)
         {
             RobustFile.WriteAllText(
