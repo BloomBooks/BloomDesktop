@@ -3662,10 +3662,23 @@ namespace Bloom.ImageProcessing
         /// Like <see cref="MakeTransparentBackgroundIfNeeded"/> but always applies the
         /// transparency algorithm, bypassing the line-art detection check.
         /// Used when an image has the <c>bloom-transparent</c> class (<c>transparent=force</c>).
+        /// The destination must be a .png path: only a PNG can carry the alpha channel, and
+        /// ApplyBloomTransparencyToFile does nothing to any other extension. A source that is not
+        /// itself a PNG (a JPEG cover, say) is re-saved as PNG there rather than copied.
         /// </summary>
         internal static bool MakeTransparentBackground(string sourcePath, string destinationPath)
         {
-            RobustFile.Copy(sourcePath, destinationPath, true);
+            if (sourcePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+            {
+                RobustFile.Copy(sourcePath, destinationPath, true);
+            }
+            else
+            {
+                using (var imageInfo = PalasoImage.FromFileRobustly(sourcePath))
+                {
+                    RobustImageIO.SaveImage(imageInfo.Image, destinationPath, ImageFormat.Png);
+                }
+            }
             ApplyBloomTransparencyToFile(destinationPath);
             return true;
         }

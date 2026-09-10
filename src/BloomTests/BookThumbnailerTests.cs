@@ -47,6 +47,100 @@ namespace BloomTests
             return book;
         }
 
+        /// <summary>
+        /// BL-16819: the book thumbnail is composed directly from the cover image file, and it must
+        /// honor the user's Transparency choice for that image just as the browser does: Auto makes
+        /// the background of line art transparent (so the cover color shows behind the drawing),
+        /// Transparent always does, and Opaque never does.
+        /// </summary>
+        [TestCase("", true, "png")]
+        [TestCase("bloom-transparent", true, "png")]
+        [TestCase("bloom-opaque", false, "png")]
+        // A JPEG cannot carry transparency itself, so Transparent has to go through a PNG copy.
+        [TestCase("bloom-transparent", true, "jpg")]
+        [TestCase("bloom-opaque", false, "jpg")]
+        public void CreateThumbnailOfCoverImage_HonorsTransparencyChoice(
+            string transparencyClass,
+            bool expectCoverColorBehindImage,
+            string imageExtension
+        )
+        {
+            var coverImageFilename = "lineArt." + imageExtension;
+            SetDom(
+                @"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*'>"
+                    + coverImageFilename
+                    + @"</div>
+					</div>
+					<div class='bloom-page bloom-frontMatter frontCover outsideFrontCover coverColor'>
+						<div class='marginBox'>
+							<div class='bloom-canvas' data-book='coverImage'>
+							</div>
+						</div>
+					</div>"
+            );
+            var book = CreateBook();
+            // Black lines on a white background: the line-art detection treats this as line art.
+            using (var bitmap = new Bitmap(100, 100))
+            {
+                using (var gfx = Graphics.FromImage(bitmap))
+                using (var pen = new Pen(Color.Black, 6))
+                {
+                    gfx.Clear(Color.White);
+                    gfx.DrawEllipse(pen, 25, 25, 50, 50);
+                    gfx.DrawLine(pen, 20, 80, 80, 20);
+                }
+                RobustImageIO.SaveImage(
+                    bitmap,
+                    book.FolderPath.CombineForPath(coverImageFilename),
+                    imageExtension == "png"
+                        ? System.Drawing.Imaging.ImageFormat.Png
+                        : System.Drawing.Imaging.ImageFormat.Jpeg
+                );
+            }
+            book.BringBookUpToDate(new NullProgress());
+            book.SetCoverColor("#FF0000");
+            var coverImg = (Bloom.SafeXml.SafeXmlElement)
+                book.RawDom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[contains(@class,'bloom-page')]//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                coverImg,
+                Is.Not.Null,
+                "sanity check: the cover image should be on the page"
+            );
+            if (transparencyClass != "")
+                coverImg.AddClass(transparencyClass);
+
+            var options = BookThumbNailer.GetCoverThumbnailOptions(-1, Guid.Empty);
+            var made = BookThumbNailer.CreateThumbnailOfCoverImage(book, options);
+            Assert.That(made, Is.True, "sanity check: the thumbnail should be created");
+
+            var thumbnailPath = book.FolderPath.CombineForPath(options.FileName);
+            Assert.That(RobustFile.Exists(thumbnailPath), Is.True, "sanity check: thumbnail file");
+            using (var thumbnail = new Bitmap(thumbnailPath))
+            {
+                // A pixel of the white background, well away from the drawing and from the edges
+                // that resizing may blur.
+                var background = thumbnail.GetPixel(3, 3);
+                Assert.That(background.A, Is.EqualTo(255), "the thumbnail itself should be opaque");
+                var isCoverColor = background.R > 200 && background.G < 60 && background.B < 60;
+                var isWhite = background.R > 200 && background.G > 200 && background.B > 200;
+                Assert.That(
+                    isCoverColor || isWhite,
+                    Is.True,
+                    $"expected the cover color or white behind the drawing but got {background}"
+                );
+                Assert.That(
+                    isCoverColor,
+                    Is.EqualTo(expectCoverColorBehindImage),
+                    expectCoverColorBehindImage
+                        ? $"with '{transparencyClass}' the image background should be transparent, showing the cover color; got {background}"
+                        : $"with '{transparencyClass}' the image background should stay white; got {background}"
+                );
+            }
+        }
+
         // Bigger images
         [TestCase(70, 1024, 768, 70, 52)]
         [TestCase(256, 1024, 768, 256, 192)]

@@ -3408,6 +3408,100 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// BL-16819: UpdateDomFromDataset() pushes the member data set, gathered when the BookData
+        /// was constructed, back to the pages. That must not disturb the cover image's Transparency
+        /// choice when the data set agrees with the page.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataset_CoverImageOpaque_KeepsClass()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='aor.png' class=' bloom-imageLoadError bloom-opaque'>aor.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='aor.png' class='bloom-opaque'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.UpdateDomFromDataset();
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "class attribute is '" + pageImage.GetAttribute("class") + "'"
+            );
+        }
+
+        /// <summary>
+        /// BL-16819: after a page save, the member data set's entry for the cover image has been
+        /// recreated with the new value but without any attribute list. UpdateDomFromDataset() (which
+        /// Book.SetMultilingualContentLanguages runs every time the Edit tab is entered) must then
+        /// leave the image's Transparency choice alone rather than treating the missing attribute
+        /// list as "no classes" and stripping the choice the user just saved.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataset_AfterSavingOpaqueChoice_KeepsClass()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='aor.png' class='bloom-imageLoadError'>aor.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='aor.png'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            var editedPageDom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='new.png' class='bloom-opaque'></img>
+					</div>
+				</div>
+				 </body></html>"
+            );
+            data.SuckInDataFromEditedDom(editedPageDom);
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "sanity: save should put the class on the page image"
+            );
+            data.UpdateDomFromDataset();
+            pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.GetAttribute("src"),
+                Is.EqualTo("new.png"),
+                "the saved image url should be kept"
+            );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the saved Opaque choice should be kept; class attribute is '"
+                    + pageImage.GetAttribute("class")
+                    + "'"
+            );
+        }
+
+        /// <summary>
         /// BL-16819: the data-div is authoritative, so if it says the cover image is on Auto (no
         /// transparency class), a stale override on the page image must be removed. And copying the
         /// transparency classes must not start copying other classes; in particular
