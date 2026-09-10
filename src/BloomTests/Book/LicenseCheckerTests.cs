@@ -33,20 +33,8 @@ namespace BloomTests.Book
         // The production retry delay, captured before any test changes it, so TearDown can restore it.
         private static readonly int s_defaultRetryDelayMs = LicenseChecker.RetryDelayMs;
 
-        // An HttpClient handler that always fails, to simulate the license server being unreachable.
-        private sealed class FailingHttpMessageHandler : HttpMessageHandler
-        {
-            protected override Task<HttpResponseMessage> SendAsync(
-                HttpRequestMessage request,
-                CancellationToken cancellationToken
-            )
-            {
-                throw new HttpRequestException("simulated network failure");
-            }
-        }
-
         // An HttpClient handler that fails the first N requests and then succeeds with the default
-        // offline license JSON, to exercise the retry in LicenseChecker. Counts the attempts made.
+        // offline license JSON. Counts the attempts made, so tests can check the retry in LicenseChecker.
         private sealed class FailThenSucceedHttpMessageHandler : HttpMessageHandler
         {
             private readonly int _failuresBeforeSuccess;
@@ -74,34 +62,6 @@ namespace BloomTests.Book
                     }
                 );
             }
-        }
-
-        // Describes why the last live fetch failed (type, message, and HTTP status if any), for use in
-        // assertion messages so a failing Integration test tells us what the server actually said.
-        private static string DescribeLastFetchFailure()
-        {
-            var e = LicenseChecker.LastFetchExceptionForTests;
-            if (e == null)
-                return "didCheck was false but no fetch exception was recorded";
-            var description = $"last fetch failed with {e.GetType().Name}: {e.Message}";
-            if (e is HttpRequestException httpException && httpException.StatusCode != null)
-                description +=
-                    $" (status {(int)httpException.StatusCode} {httpException.StatusCode})";
-            if (e.InnerException != null)
-                description +=
-                    $"; inner {e.InnerException.GetType().Name}: {e.InnerException.Message}";
-            return description;
-        }
-
-        // Asserts that the live license check succeeded, and if not, reports the fetch failure both in
-        // the assertion message and on Console.Error (the only channel dotnet test shows by default).
-        private static void AssertLiveCheckSucceeded(bool didCheck)
-        {
-            if (didCheck)
-                return;
-            var failure = DescribeLastFetchFailure();
-            Console.Error.WriteLine("LicenseCheckerTests: " + failure);
-            Assert.That(didCheck, Is.True, failure);
         }
 
         [Test]
@@ -132,10 +92,11 @@ namespace BloomTests.Book
             var key = "kingstone.superbible.ruth";
             bool didCheck;
             IEnumerable<string> result = checker.GetProblemLanguages(inputLangs, key, out didCheck);
-            if (expectCheck)
-                AssertLiveCheckSucceeded(didCheck);
-            else
-                Assert.That(didCheck, Is.False);
+            Assert.That(
+                didCheck,
+                Is.EqualTo(expectCheck),
+                "last fetch exception: " + LicenseChecker.LastFetchExceptionForTests
+            );
             if (didCheck)
             {
                 Assert.That(result, Does.Contain("en"));
@@ -154,7 +115,11 @@ namespace BloomTests.Book
             var key = "kingstone.superbible.ruth";
             bool didCheck;
             IEnumerable<string> result = checker.GetProblemLanguages(inputLangs, key, out didCheck);
-            AssertLiveCheckSucceeded(didCheck);
+            Assert.That(
+                didCheck,
+                Is.True,
+                "last fetch exception: " + LicenseChecker.LastFetchExceptionForTests
+            );
             Assert.That(result, Does.Contain("en"));
             Assert.That(result, Does.Contain("fr"));
             Assert.That(result, Does.Not.Contain("ru"));
@@ -167,7 +132,8 @@ namespace BloomTests.Book
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null); // no offline cache available
             LicenseChecker.RetryDelayMs = 0;
-            LicenseChecker.SetHttpClientForTests(new HttpClient(new FailingHttpMessageHandler()));
+            var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
+            LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
             var checker = new LicenseChecker();
             var inputLangs = new[] { "en", "bjn" };
 
@@ -177,10 +143,16 @@ namespace BloomTests.Book
                 out bool didCheck
             );
 
+            Assert.That(handler.Attempts, Is.EqualTo(3), "we try three times, then give up");
             Assert.That(
                 didCheck,
                 Is.False,
                 "a network failure with no cache means we could not check the license"
+            );
+            Assert.That(
+                LicenseChecker.LastFetchExceptionForTests,
+                Is.InstanceOf<HttpRequestException>(),
+                "the failure that made us give up is recorded"
             );
             Assert.That(
                 result,
@@ -199,7 +171,7 @@ namespace BloomTests.Book
                 LicenseChecker.SetAllowInternetAccess(true);
                 LicenseChecker.RetryDelayMs = 0;
                 LicenseChecker.SetHttpClientForTests(
-                    new HttpClient(new FailingHttpMessageHandler())
+                    new HttpClient(new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3))
                 );
                 var checker = new LicenseChecker();
                 var inputLangs = new[] { "en", "bjn" };
@@ -331,61 +303,6 @@ namespace BloomTests.Book
             );
             Assert.That(result, Does.Contain("en"), "en is not licensed per the fetched data");
             Assert.That(result, Does.Not.Contain("bjn"), "bjn is licensed per the fetched data");
-        }
-
-        [Test]
-        public void GetProblemLanguages_ThreeFailuresAndNoCache_GivesUpAndRecordsFailure()
-        {
-            LicenseChecker.SetAllowInternetAccess(true);
-            LicenseChecker.SetOfflineFolder(null);
-            LicenseChecker.RetryDelayMs = 0;
-            var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
-            LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
-            var checker = new LicenseChecker();
-            var inputLangs = new[] { "en", "bjn" };
-
-            var result = checker.GetProblemLanguages(
-                inputLangs,
-                "kingstone.superbible.ruth",
-                out bool didCheck
-            );
-
-            Assert.That(handler.Attempts, Is.EqualTo(3), "we try three times, then give up");
-            Assert.That(didCheck, Is.False, "all attempts failed and there is no cache");
-            Assert.That(result, Is.EquivalentTo(inputLangs));
-            Assert.That(
-                LicenseChecker.LastFetchExceptionForTests,
-                Is.InstanceOf<HttpRequestException>()
-            );
-            Assert.That(
-                LicenseChecker.LastFetchExceptionForTests.Message,
-                Does.Contain("attempt 3"),
-                "the recorded exception is from the last attempt"
-            );
-        }
-
-        [Test]
-        public void GetProblemLanguages_ThreeFailuresButCacheExists_FallsBackToCache()
-        {
-            using (var folder = SetupDefaultOfflineLicenseInfo())
-            {
-                LicenseChecker.SetAllowInternetAccess(true);
-                LicenseChecker.RetryDelayMs = 0;
-                var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
-                LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
-                var checker = new LicenseChecker();
-
-                var result = checker.GetProblemLanguages(
-                    new[] { "en", "bjn" },
-                    "kingstone.superbible.ruth",
-                    out bool didCheck
-                );
-
-                Assert.That(handler.Attempts, Is.EqualTo(3), "we try three times, then give up");
-                Assert.That(didCheck, Is.True, "after the retries fail we use the offline cache");
-                Assert.That(result, Does.Contain("en"));
-                Assert.That(result, Does.Not.Contain("bjn"));
-            }
         }
 
         [Test]
