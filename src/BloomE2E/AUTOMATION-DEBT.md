@@ -68,6 +68,13 @@ journey of picking a pack in Settings stays untested. Story Producer is worse of
 not in the dialog's list at all, only forced by its branding, so the test sets the branding
 through the `e2e/setBranding` hook.
 
+seen again 2026-09-03 (Test Case ID 358, `font-chooser.spec.ts`): the manual test reaches the
+font chooser through Settings, on the Book Making tab ("Default Font for English"), which is
+the same WinForms dialog. The chooser is the same React component there as in the Edit tab's
+Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.ts`) and the
+Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
+settings endpoints it only records a pending change on the open dialog.
+
 ## Native OS dialogs hang automation
 
 File pickers, the Image Toolbox, and video capture open native windows Playwright
@@ -510,3 +517,25 @@ creates one `_workspaceReactControl`. Worth finding, because the duplicate is wh
 the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
+
+## A title typed on the cover of a new book can fail to reach the collection
+
+`import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
+then `makeBookFromTemplate`), typed a title on the cover as soon as the Edit tab reported
+`Editing`, and added a page, which saves the cover. Locally the collection then lists the
+book under that title, its folder renamed to match. On the CI runner, in the first nightly
+run that had the test (2026-09-05), the collection went on listing the book under the name
+Bloom made up for it (`Book-3d943766`) for the whole 30 seconds `findBookFolder` waited, and
+the cover thumbnail showed no title. The typing itself was confirmed: `typeInGroup` saw the
+title in the box. Every other spec that types a cover title the same way passes on that
+runner; none of them makes the book under a branding. So something between the typing and
+the save loses the text, or the save does not carry it, only when the book is new under a
+branding and the machine is slow. Not reproduced locally.
+
+Worked around in the test, 2026-09-05: it no longer types a title, and keeps the folder
+`makeBookFromTemplate` returns, which is stable as long as the book has no title. A test
+whose subject is the title, or the folder rename, cannot take that route. Fix direction:
+find what reloads or re-saves the cover of a new book under a branding, or make
+`findBookFolder` able to find a book by its id (`collections/books` reports one) so a test
+does not depend on the rename at all.
+(Found 2026-09-05 in the nightly run.)

@@ -101,6 +101,9 @@
     <Setting Name="AlwaysMeasurePerformance" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="RunFreezeDoctor" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="AutoUpdate" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>

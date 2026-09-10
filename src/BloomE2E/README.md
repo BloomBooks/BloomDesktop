@@ -264,6 +264,16 @@ BLOOM_TESTING_INPUTS_DIR=D:/bloom-testing-inputs pnpm test
 Either way the fixture copies the collection before Bloom opens it, so a run never modifies your
 inputs.
 
+The same repository carries, under `fonts/`, fonts a test needs installed: `font-chooser.spec.ts`
+wants one font of each verdict Bloom gives, and a clean Windows machine has none that Bloom
+calls "unknown" and none outside Microsoft's that it calls "unsuitable". The nightly workflow
+installs them for its user with `scripts/install-test-fonts.ps1`; if that test tells you your
+machine lacks a kind of font, run the same script:
+
+```powershell
+powershell src/BloomE2E/scripts/install-test-fonts.ps1
+```
+
 ## Testing a front-end change
 
 The launched Bloom serves its React UI from the built `output/browser`, so an edit to a `.tsx`

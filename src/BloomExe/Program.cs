@@ -17,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -27,6 +28,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using BloomFreezeDoctor.Protocol;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
@@ -178,6 +180,15 @@ namespace Bloom
             }
 
             CheckForCorruptUserConfig();
+            // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
+            // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
+            // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
+            // a Doctor is already watching; announced from where the Doctor is launched, much further
+            // down, it would arrive after the sweep had found us anyway.
+            //
+            // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
+            // what makes reading one safe.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
@@ -377,6 +388,11 @@ namespace Bloom
                     Settings.Default.Save();
 
                     StartUpWithFirstOrNewVersionBehavior = true;
+
+                    // The announcement at the top of Main read RunFreezeDoctor before this migration, so on
+                    // the first run of a new version it saw the default (off) and stayed silent. Now that the
+                    // user's real value is in, tell a running Doctor again; a repeat is harmless.
+                    DoctorLauncher.AnnounceToAnyDoctor();
                 }
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
@@ -1576,7 +1592,7 @@ namespace Bloom
                     var shell = _projectContext.ProjectWindow as Shell;
                     if (shell != null)
                     {
-                        shell.Invoke((Action)(() => shell.ReallyComeToFront()));
+                        shell.Invoke((Action)(() => shell.FinishPuttingShellInFront()));
                     }
                 }
             };
@@ -1592,6 +1608,18 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+
+            // Publish our health for the Freeze Doctor. Started here, just before the message loop,
+            // because the UI heartbeat is a WinForms timer: it only ticks while messages are being pumped,
+            // which is exactly what makes its silence meaningful.
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has switched it on, since a diagnostic tool is no use
+            // unless it is already running when the trouble starts.
+            DoctorLauncher.LaunchIfWanted();
+            // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
+            // AND this is a developer build.
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+
             try
             {
                 Application.Run();
@@ -1614,6 +1642,8 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1629,6 +1659,7 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1638,6 +1669,10 @@ namespace Bloom
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
             }
+
+            // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
+            // can say WHERE it stopped rather than only that it did.
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.MessageLoopReturned);
 
             try
             {
@@ -1655,6 +1690,7 @@ namespace Bloom
                 }
             }
 
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1665,9 +1701,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.LogWritten);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.ProjectContextDisposed);
         }
 
         /// <summary>
@@ -2009,6 +2047,16 @@ namespace Bloom
                 _projectContext.ProjectWindow.Show();
 
                 StartupScreenManager.PutSplashAbove(_projectContext.ProjectWindow);
+
+                // At first startup, closing the splash screen brings the main window to the front, and
+                // doing it here as well would put the main window on top of the dialogs that startup
+                // puts up. But every later time we open a collection -- above all when the user switches
+                // collections -- there is no splash screen and nothing else that will do it, and the new
+                // Shell has only Show()'s implicit activation to rely on. Windows refuses that once
+                // another application (Chrome, say) took the foreground as our previous window closed,
+                // and Bloom comes up invisible behind it. BL-16784.
+                if (!StartupScreenManager.WillBringMainWindowToFrontWhenSplashCloses)
+                    (_projectContext.ProjectWindow as Shell)?.FinishPuttingShellInFront();
 
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();
@@ -2646,6 +2694,15 @@ namespace Bloom
 
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
+
+        /// <summary>
+        /// Whether this Bloom holds the single-instance token, which the channels deliberately share, so
+        /// that at most one Bloom is normally running. Published in the Doctor's session file: it is what
+        /// tells the Doctor which running Bloom is actually standing in the way of a restart, as against
+        /// the ones that bypassed the token (an --automation run) or never took it (a Ctrl-held launch
+        /// that was not first).
+        /// </summary>
+        internal static bool OwnsSingleInstanceToken => _ownsSingleInstanceToken;
 
         /// <summary>
         /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
