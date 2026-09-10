@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.Api;
 using L10NSharp;
+using SIL.Code;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Xml;
 
@@ -33,6 +35,23 @@ namespace Bloom.Book
         {
             s_httpClient = client;
         }
+
+        // The license server occasionally rejects a request outright. Without a retry, one such blip
+        // shows the user the "trouble reaching the server" message (when there is no offline cache)
+        // and makes the nightly integration test flake.
+        // We deliberately do not retry a timeout (TaskCanceledException): the caller is blocked for the
+        // whole fetch, and tripling a 100-second timeout would be far worse than the blip we're guarding against.
+        private const int kFetchAttempts = 3;
+        internal const int kDefaultRetryDelayMs = 500;
+        internal static int RetryDelayMs = kDefaultRetryDelayMs; // tests set this to 0
+        private static readonly ISet<Type> kTransientFetchExceptions = new HashSet<Type>
+        {
+            typeof(HttpRequestException),
+        };
+
+        // The exception that made the last fetch fail (null if it succeeded). Lets tests report what the
+        // server actually said when a check fails, rather than just "didCheck was false".
+        internal static Exception LastFetchExceptionForTests { get; private set; }
 
         private static string _offlineFolderPath = ProjectContext.GetBloomAppDataFolder(); // normally stays here except in unit tests
         private static bool _allowInternetAccess = true;
@@ -70,14 +89,24 @@ namespace Bloom.Book
         )
         {
             string permissionsJson;
+            LastFetchExceptionForTests = null;
             if (_allowInternetAccess)
             {
                 try
                 {
                     // RunSync executes on the thread pool so we don't deadlock if called on a
                     // thread with a synchronization context (e.g. the WinForms UI thread).
-                    permissionsJson = Bloom.Utils.AsyncUtil.RunSync(() =>
-                        s_httpClient.GetStringAsync("https://content-licenses.bloomlibrary.org")
+                    permissionsJson = RetryUtility.Retry(
+                        () =>
+                            Bloom.Utils.AsyncUtil.RunSync(() =>
+                                s_httpClient.GetStringAsync(
+                                    "https://content-licenses.bloomlibrary.org"
+                                )
+                            ),
+                        kFetchAttempts,
+                        RetryDelayMs,
+                        kTransientFetchExceptions,
+                        memo: "license server"
                     );
                     if (!string.IsNullOrEmpty(_offlineFolderPath))
                     {
@@ -95,8 +124,10 @@ namespace Bloom.Book
                 }
                 catch (Exception w) when (w is HttpRequestException || w is TaskCanceledException)
                 {
-                    // A network failure (or timeout) reaching the license server: fall back to any cached copy.
-                    Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
+                    // A network failure (or timeout) reaching the license server, even after retrying:
+                    // fall back to any cached copy.
+                    LastFetchExceptionForTests = w;
+                    Logger.WriteError("Could not reach the license server", w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
                         didCheck = false;
