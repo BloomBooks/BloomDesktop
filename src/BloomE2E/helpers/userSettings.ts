@@ -29,14 +29,29 @@ export async function getUserSettingsFolder(page: Page): Promise<string> {
  * This reads the disk rather than asking Bloom, because what a test usually wants to know is what
  * reached the file: that is what the next Bloom to use the folder starts from. Bloom writes some
  * settings a moment after they change (the zoom two seconds after the last change), so poll.
+ *
+ * Bloom holds the file exclusively for a moment while it saves, and reading it then fails with
+ * EBUSY (seen on the nightly runner, 2026-09-10), so a busy file is retried for a few seconds.
  */
-export function readSavedUserSetting(
+export async function readSavedUserSetting(
     folder: string,
     name: string,
-): string | undefined {
+): Promise<string | undefined> {
     const file = Path.join(folder, "user.config");
     if (!fs.existsSync(file)) return undefined;
-    const xml = fs.readFileSync(file, "utf8");
+    let xml = "";
+    const deadline = Date.now() + 5000;
+    for (;;) {
+        try {
+            xml = fs.readFileSync(file, "utf8");
+            break;
+        } catch (error) {
+            const code = (error as NodeJS.ErrnoException).code;
+            if ((code !== "EBUSY" && code !== "EPERM") || Date.now() > deadline)
+                throw error;
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        }
+    }
     const match = new RegExp(
         `<setting name="${name}"[^>]*>\\s*<value>([^<]*)</value>`,
     ).exec(xml);
