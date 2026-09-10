@@ -117,10 +117,11 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the AI Image Editor must disable its
-            // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the AI Image Editor's init payload.
-            demoOnly?: boolean;
+            // Set when the subscription does not cover AI image editing: the AI
+            // Image Editor opens to be looked at, with every run that would reach
+            // OpenRouter disabled. Rides through the `...launchData` spread below
+            // into the AI Image Editor's init payload.
+            playgroundMode?: boolean;
         };
         const hostWindow = window as Window & {
             __bloomAiImageEditorCleanup?: () => void;

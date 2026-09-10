@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -472,6 +473,17 @@ namespace Bloom.web.controllers
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
+            // Whether this collection's subscription actually covers AI image editing. The
+            // book is deliberately left out of the question: a Playground book counts as
+            // Enterprise for every feature, which is what opens the editor there at all.
+            var subscriptionCoversAiImageEditing = FeatureStatus
+                .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.AiImageEditing)
+                .Enabled;
+
+            // A Playground book is a place to look around, and so is a collection whose
+            // subscription does not cover AI image editing.
+            var playgroundMode = !subscriptionCoversAiImageEditing || book.IsPlayground;
+
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it
             // from this reply and posts it to the iframe), so the whole-book image list must
@@ -491,12 +503,15 @@ namespace Bloom.web.controllers
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
                     // obtained key back to Bloom via serviceKeys/key (see ServiceKeysApi).
-                    apiKey = ServiceKeyStore.Get(ServiceKeyStore.kOpenRouterName),
-                    // In a Playground template book all features are unlocked for
-                    // "try it out", so the AI image editor opens — but it's a shared demo
-                    // context, so it must not let the user set/save an OpenRouter API key.
-                    // The AI image editor disables its credential UI when this is true.
-                    demoOnly = book.IsPlayground,
+                    // Nothing that costs money can be run in playground mode, so there the
+                    // key stays here.
+                    apiKey = playgroundMode
+                        ? null
+                        : ServiceKeyStore.Get(ServiceKeyStore.kOpenRouterName),
+                    // In playground mode the editor shows its tools but disables every one
+                    // whose run would reach OpenRouter, and offers no way to connect an
+                    // account.
+                    playgroundMode,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
                     // "Local Dummy (No AI)" model, for cost-free testing). The AI image
                     // editor hides those tools unless the host opts in, so ordinary
