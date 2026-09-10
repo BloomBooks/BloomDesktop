@@ -10,6 +10,7 @@ using Bloom.Api;
 using L10NSharp;
 using SIL.Code;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Xml;
 
@@ -124,6 +125,7 @@ namespace Bloom.Book
                     // A network failure (or timeout) reaching the license server, even after retrying:
                     // fall back to any cached copy.
                     LastFetchExceptionForTests = w;
+                    Logger.WriteError("Could not reach the license server", w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
                         didCheck = false;
