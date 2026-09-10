@@ -52,18 +52,25 @@
 // Use the easel placeholder instead of the usual flower placeholder for the background image whenever there is data-tool-id="canvas"
 // (there are no legacy-style templates that should have the easel icon)
 .bloom-canvas[data-tool-id="canvas"]
-    .bloom-backgroundImage.bloom-canvas-element {
+    > .bloom-backgroundImage.bloom-canvas-element {
     .bloom-imageContainer:has(img[src*="placeHolder.png"]) {
         background-image: @canvas-placeholder;
     }
 }
 
 // In a bloom-canvas that has canvas elements other than the background image, we want to
-// hide the placeholder except for when the background image is active/selected
+// hide the placeholder except for when the background image is active/selected.
+// Both steps are child combinators on purpose: a table cell whose content type is
+// Picture holds a bloom-canvas of its own, so with descendant combinators the page's
+// own canvas elements satisfied the :has() and every picture cell lost its
+// placeholder. A canvas element is always a child of the bloom-canvas it belongs to,
+// except while the Image Description tool has them wrapped in a bloom-describedImage,
+// and that case hides the placeholder anyway (see bloom-describedImage in
+// editMode.less).
 .bloom-canvas.bloom-canvas:has(
-        .bloom-canvas-element:not(.bloom-backgroundImage)
+        > .bloom-canvas-element:not(.bloom-backgroundImage)
     ) {
-    .bloom-canvas-element.bloom-backgroundImage:not(
+    > .bloom-canvas-element.bloom-backgroundImage:not(
             [data-bloom-active="true"]
         ):has(img[src*="placeHolder.png"]) {
         .bloom-imageContainer {

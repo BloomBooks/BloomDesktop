@@ -20,6 +20,8 @@ import {
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
+import { SetupTableEditing, TeardownTableEditing } from "./tableEditing";
+import { removeTableEditingArtifacts } from "bloom-table";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -79,6 +81,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { noteCkeditorChange } from "./undoOrdering";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -330,7 +333,7 @@ function AddEditKeyHandlers(container) {
 // But there may be yet others that are not visible when we run this but which soon will be,
 // such as image descriptions. We don't seem to need the optimization, so let's just do
 // them all.)
-function AddLanguageTags(container) {
+export function AddLanguageTags(container) {
     $(container)
         .find(".bloom-editable[contentEditable=true]")
         .each(function () {
@@ -572,6 +575,7 @@ export function SetupElements(
 
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
+    SetupTableEditing(container);
     initializeCanvasElementManager();
     initChoiceWidgetsForEditing();
 
@@ -1333,6 +1337,8 @@ function removeEditingDebris() {
         textLabels[i].remove();
     }
     removeTransientVideoTimestampParams(document.body);
+    removeTableEditingArtifacts(document);
+    TeardownTableEditing(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
@@ -1667,15 +1673,38 @@ export const copySelection = () => {
     copyImpl();
 };
 
+/**
+ * The editable that a clipboard command acts on in its entirety, when there is no
+ * text selection to act on instead.
+ *
+ * Normally that is the canvas element's own text. A table canvas element has no
+ * such thing: it holds one editable per cell, so the first one found is the
+ * top-left cell whichever cell the user is working in, and a command acting on it
+ * would read or overwrite text the user is not looking at. So inside a table the
+ * cell that holds the caret is what the command acts on.
+ */
+function editableForWholeElementClipboard(
+    activeCanvasElement: HTMLElement | undefined,
+): HTMLElement | undefined {
+    const focusedEditable = (
+        document.activeElement as HTMLElement | null
+    )?.closest<HTMLElement>(".bloom-editable");
+    if (focusedEditable?.closest(".bloom-cell")) {
+        return focusedEditable;
+    }
+    return activeCanvasElement?.getElementsByClassName(
+        "bloom-editable bloom-visibility-code-on",
+    )[0] as HTMLElement | undefined;
+}
+
 async function copyImpl() {
     const sel = document.getSelection();
     if (!sel?.toString()) {
         const activeCanvasElement =
             theOneCanvasElementManager?.getActiveElement();
-        const activeCanvasElementEditable =
-            activeCanvasElement?.getElementsByClassName(
-                "bloom-editable bloom-visibility-code-on",
-            )[0] as HTMLElement;
+        const activeCanvasElementEditable = editableForWholeElementClipboard(
+            activeCanvasElement,
+        ) as HTMLElement;
 
         // No active text selection to copy; copy the canvas element's entire content.
         // There's a slight chance that the user wanted to copy some trailing
@@ -1793,9 +1822,17 @@ async function pasteImpl(imageAvailable: boolean) {
     // Enhance: might there be a case where text should be pasted as a new canvas element?
     // Enhance: we'd like to be able to copy and paste entire canvas overlays (including target if any).
     const activeElement = canvasElementManager?.getActiveElement();
-    const activeCanvasElementEditable = activeElement?.getElementsByClassName(
-        "bloom-editable bloom-visibility-code-on",
-    )[0] as HTMLElement;
+    const activeCanvasElementEditable = editableForWholeElementClipboard(
+        activeElement,
+    ) as HTMLElement;
+    // With the caret in a table cell the paste belongs at the caret, like any other
+    // typing in that cell, so the "replace the element's whole content" branch below
+    // must not claim it. (The Ctrl+V route never reaches here at all: pasteHandler
+    // leaves a paste inside a bloom-editable to the browser. This is the top bar's
+    // Paste button.)
+    const caretIsInTableCell = !!(
+        document.activeElement as HTMLElement | null
+    )?.closest(".bloom-cell");
 
     const textToPaste = await navigator.clipboard.readText();
     if (!textToPaste) {
@@ -1803,6 +1840,7 @@ async function pasteImpl(imageAvailable: boolean) {
     }
     if (
         activeCanvasElementEditable &&
+        !caretIsInTableCell &&
         activeElement !== canvasElementManager.theCanvasElementWeAreTextEditing
     ) {
         // We've issued a paste command on a canvas element that isn't active for editing.
@@ -1967,6 +2005,30 @@ export function attachToCkEditor(element) {
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
 
+    // CKEditor copies the element's content when the instance is created and writes that copy
+    // back into the element when its asynchronous startup finishes, which is typically half a
+    // second later and has been measured at more than a second. The element is contenteditable
+    // the whole time, so anything typed during that window is silently overwritten by the copy.
+    // A table cell hits this every time: the library builds the cell empty, Bloom attaches an
+    // editor to it, and the user can type in it at once. Remember what the element holds just
+    // before the startup write (our "loaded" handler runs before it) and, if the write did
+    // change the content, put it back and give the editor the same content, so what was typed
+    // survives and the editor agrees with the DOM.
+    // The comparison is on the text rather than the markup, because CKEditor's startup write
+    // tidies an empty paragraph (<p></p> becomes <p><br /></p>) even when nothing was typed,
+    // and that is not a loss worth undoing.
+    let contentBeforeStartupWrite = element.innerHTML;
+    let textBeforeStartupWrite = element.textContent;
+    ckedit.on("loaded", () => {
+        contentBeforeStartupWrite = element.innerHTML;
+        textBeforeStartupWrite = element.textContent;
+    });
+    ckedit.on("instanceReady", () => {
+        if (element.textContent !== textBeforeStartupWrite) {
+            ckedit.setData(contentBeforeStartupWrite);
+        }
+    });
+
     // Record the div of the edit box for use later in positioning the format bar.
     mapCkeditDiv[ckedit.id] = element;
 
@@ -2041,6 +2103,14 @@ export function attachToCkEditor(element) {
         if (commandName === "undo" || commandName === "redo") {
             getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
         }
+    });
+
+    // A table's own undo stack is separate from this one, and whichever of the two was written
+    // to last is the one the next Undo belongs to. See undoOrdering.ts. The undoable() test keeps
+    // the changes ckeditor makes while it attaches itself to a box out of the reckoning: only a
+    // change a person could undo counts as a change the person made.
+    ckedit.on("change", () => {
+        if (ckedit.undoManager?.undoable()) noteCkeditorChange();
     });
 
     // hide the toolbar when ckeditor starts
