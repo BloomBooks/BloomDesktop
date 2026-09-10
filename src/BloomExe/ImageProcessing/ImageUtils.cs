@@ -3641,6 +3641,12 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Apply the transparency algorithm to a copy of the image at destinationPath (which must be
+        /// a .png path) if the image looks like line art on a white background; otherwise do nothing
+        /// and return false. Handles a JPEG source the same way the display pipeline does: the
+        /// line-art check accepts JPEGs, and the copy is re-saved as PNG so it can carry the alpha.
+        /// </summary>
         internal static bool MakeTransparentBackgroundIfNeeded(
             string sourcePath,
             string destinationPath
@@ -3648,14 +3654,10 @@ namespace Bloom.ImageProcessing
         {
             using (var imageInfo = PalasoImage.FromFileRobustly(sourcePath))
             {
-                if (ShouldMakeBackgroundTransparent(imageInfo))
-                {
-                    RobustFile.Copy(sourcePath, destinationPath, true);
-                    ApplyBloomTransparencyToFile(destinationPath);
-                    return true;
-                }
+                if (!ShouldMakeBackgroundTransparent(imageInfo))
+                    return false;
             }
-            return false;
+            return MakeTransparentBackground(sourcePath, destinationPath);
         }
 
         /// <summary>

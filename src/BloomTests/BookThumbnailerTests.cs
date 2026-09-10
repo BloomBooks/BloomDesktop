@@ -56,7 +56,8 @@ namespace BloomTests
         [TestCase("", true, "png")]
         [TestCase("bloom-transparent", true, "png")]
         [TestCase("bloom-opaque", false, "png")]
-        // A JPEG cannot carry transparency itself, so Transparent has to go through a PNG copy.
+        // A JPEG cannot carry transparency itself, so Auto and Transparent go through a PNG copy.
+        [TestCase("", true, "jpg")]
         [TestCase("bloom-transparent", true, "jpg")]
         [TestCase("bloom-opaque", false, "jpg")]
         public void CreateThumbnailOfCoverImage_HonorsTransparencyChoice(

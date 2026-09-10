@@ -282,34 +282,31 @@ namespace Bloom
                     coverImgElt == null
                         ? ImageTransparencyMode.Auto
                         : HtmlDom.GetImageTransparencyMode(coverImgElt, pageNeedsTransparent: true);
+                // A problem image should still get a thumbnail, just without the transparency.
                 var madeTransparent = false;
-                switch (transparencyMode)
+                try
                 {
-                    case ImageTransparencyMode.Force:
-                        // Like the Auto path (which swallows its own errors), a problem image
-                        // should still get a thumbnail, just without the transparency.
-                        try
-                        {
+                    switch (transparencyMode)
+                    {
+                        case ImageTransparencyMode.Force:
                             madeTransparent = ImageUtils.MakeTransparentBackground(
                                 imageSrc,
                                 transparentImageFile
                             );
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.WriteEvent(
-                                "Could not make the cover image transparent for the thumbnail: "
-                                    + e.Message
-                            );
-                        }
-                        break;
-                    case ImageTransparencyMode.Auto:
-                        madeTransparent =
-                            RuntimeImageProcessor.MakePngBackgroundTransparentIfDesirable(
+                            break;
+                        case ImageTransparencyMode.Auto:
+                            madeTransparent = ImageUtils.MakeTransparentBackgroundIfNeeded(
                                 imageSrc,
                                 transparentImageFile
                             );
-                        break;
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteEvent(
+                        "Could not make the cover image transparent for the thumbnail: " + e.Message
+                    );
                 }
                 if (madeTransparent)
                     imageSrc = transparentImageFile;
