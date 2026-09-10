@@ -29,15 +29,23 @@ namespace Bloom.Book
     /// (splitCombinedAcrossPages), made by the same code in a browser nobody is looking at, so a
     /// page refitted here holds what it would hold if the user had opened it.
     ///
-    /// A walk never writes the page being edited, for the same reason nothing else in flow text
-    /// does: the browser holds the live version of that page. So a walk covers the groups from
-    /// its start page up to the page being edited, and the browser settles that page itself,
-    /// asking for a walk of what follows whenever its own text crosses the boundary.
+    /// A walk covers every group of the chain from its start page to the end, the page being
+    /// edited included. The book's copy of that page is saved before the walk reads it, so the
+    /// walk divides the text the user can see. A box the walk changes on that page is also kept
+    /// for the browser to put in place (TakeRefitResults), because C# must not navigate the
+    /// editor to reload a page that is being edited.
+    ///
+    /// Nothing starts a walk on its own. A change that calls for one only records it: Request and
+    /// RequestEveryChain add to the queue and return, because a walk puts a progress dialog over
+    /// the page and takes seconds, which is an interruption in the middle of typing. The queue is
+    /// run by RunPending, which the Edit tab calls when the user changes pages (unless the book's
+    /// "Reflow when you change pages" preference is off) and which the Reflow now button calls
+    /// directly.
     ///
     /// One walk runs at a time, on a background thread, with the Edit tab's progress dialog up
-    /// so that nothing is edited underneath it. A request that arrives while a walk is running
-    /// waits, and a second request for a chain already waiting starts from the earlier of the
-    /// two pages, because everything from there on has to be refitted anyway.
+    /// so that nothing is edited underneath it. A second request for a chain already waiting
+    /// starts from the earlier of the two pages, because everything from there on has to be
+    /// refitted anyway.
     /// </summary>
     public static class FlowTextWalk
     {
@@ -357,12 +365,24 @@ namespace Bloom.Book
 
         #region Running a walk
 
-        private class PendingWalk
+        /// <summary>
+        /// Why a walk was asked for, which is what the progress dialog tells the user: a change
+        /// that alters every page of a flow at once (RequestEveryChain), or a change from one
+        /// page on (Request).
+        /// </summary>
+        internal enum WalkKind
+        {
+            WholeFlow,
+            FromPageForward,
+        }
+
+        internal class PendingWalk
         {
             public string ChainId;
             public string FromPageId;
             public int FromPageIndex;
             public string Lang;
+            public WalkKind Kind;
 
             /// <summary>
             /// The style rules the browser has for the page being edited, or null when the
@@ -380,23 +400,117 @@ namespace Bloom.Book
         private static bool _running;
 
         /// <summary>
-        /// Is a walk running or waiting to run? e2e/flowText/isIdle reports on this through
-        /// FlowTextApi.IsIdle, so that a test can wait for pages it cannot see.
+        /// One box on the page being edited that a walk gave new content, for the browser to put
+        /// in place.
+        /// </summary>
+        public class RefitResult
+        {
+            /// <summary>The chain the box belongs to.</summary>
+            public string chainId { get; set; }
+
+            /// <summary>Which language's box of the group this is.</summary>
+            public string lang { get; set; }
+
+            /// <summary>Where the group comes on the page: see FlowGroup.IndexInPage.</summary>
+            public int indexInPage { get; set; }
+
+            /// <summary>What the box holds after the walk.</summary>
+            public string html { get; set; }
+        }
+
+        // What a walk made of the boxes on the page being edited, by page id. The book's copy of
+        // that page is saved like any other, but the browser is showing the older version and C#
+        // must not navigate it to reload the page it is editing, so the new content waits here
+        // for the browser to ask (flowText/refitResult).
+        private static readonly Dictionary<string, List<RefitResult>> _refitResults =
+            new Dictionary<string, List<RefitResult>>();
+
+        /// <summary>
+        /// What a walk made of the boxes on this page, and forget it. The browser applies each
+        /// box once: a second ask, or an ask about any other page, gets nothing.
+        /// </summary>
+        public static List<RefitResult> TakeRefitResults(string pageId)
+        {
+            lock (_lock)
+            {
+                if (pageId == null || !_refitResults.TryGetValue(pageId, out var results))
+                    return new List<RefitResult>();
+                _refitResults.Remove(pageId);
+                return results;
+            }
+        }
+
+        /// <summary>
+        /// Forget every box a walk is holding for the browser. Content worked out for a page of
+        /// one book means nothing in another.
+        /// </summary>
+        public static void ClearRefitResults()
+        {
+            lock (_lock)
+                _refitResults.Clear();
+        }
+
+        /// <summary>
+        /// Keep this box's new content for the browser, because it is on the page being edited.
+        /// </summary>
+        internal static void HoldRefitResult(string pageId, RefitResult result)
+        {
+            lock (_lock)
+            {
+                if (!_refitResults.TryGetValue(pageId, out var results))
+                {
+                    results = new List<RefitResult>();
+                    _refitResults[pageId] = results;
+                }
+
+                results.Add(result);
+            }
+        }
+
+        /// <summary>
+        /// Is a walk running, or is the right to move a chain's text held? e2e/flowText/isIdle
+        /// reports on this through FlowTextApi.IsIdle, so that a test can wait for pages it cannot
+        /// see.
+        ///
+        /// A walk merely waiting in the queue is NOT busy: nothing is going to run it until the
+        /// user changes pages or asks for it, so anything that waited for it would wait for ever.
         /// </summary>
         public static bool IsBusy
         {
             get
             {
                 lock (_lock)
-                    return _running || _pending.Count > 0;
+                    return _running;
+            }
+        }
+
+        /// <summary>Is there a walk waiting to be run?</summary>
+        public static bool HasPending
+        {
+            get
+            {
+                lock (_lock)
+                    return _pending.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// The chains that walks are waiting for, once each. A chain with a walk waiting for each
+        /// of two languages is one chain here.
+        /// </summary>
+        public static List<string> PendingChainIds
+        {
+            get
+            {
+                lock (_lock)
+                    return _pending.Values.Select(walk => walk.ChainId).Distinct().ToList();
             }
         }
 
         /// <summary>
         /// Take the sole right to move a chain's text between its boxes, or return false because
-        /// something else holds it. While it is held no walk starts: a walk asked for in the
-        /// meantime waits, IsBusy says Bloom is busy, and setNextContent refuses the browser's
-        /// own move, exactly as during a walk.
+        /// something else holds it. While it is held no walk starts, IsBusy says Bloom is busy,
+        /// and setNextContent refuses the browser's own move, exactly as during a walk.
         ///
         /// Making the pages a run of text needs (FlowTextCreatePages) holds this for the whole of
         /// its work. It fills the pages it makes one at a time, and a walk that gathered the run
@@ -415,18 +529,52 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Give the claim back, and run whatever walk was asked for while it was held.
+        /// Give the claim back. The chain is free again, and the browser is told so. A walk asked
+        /// for while the claim was held stays in the queue: nothing here runs it, because a walk
+        /// runs only when the user changes pages or asks for one.
         /// </summary>
-        internal static void ReleaseClaim(EditingModel model)
+        internal static void ReleaseClaim()
         {
             lock (_lock)
                 _running = false;
-            StartIfIdle(model);
+            NotifyFinished();
+        }
+
+        // The websocket the browser listens on for walkFinished. flowTrigger.ts uses the same
+        // name, so the two must agree.
+        private const string kWebSocketContext = "flowText";
+
+        /// <summary>
+        /// Tell the browser that nothing holds the chain any more. A move the browser could not
+        /// make while a walk was running is made now: setNextContent refuses such a move, and
+        /// nothing but this brings the browser back to it, so without it the page the user
+        /// emptied would keep its text until the next keystroke.
+        ///
+        /// One call per transition to idle, sent once the pages a walk changed have been saved.
+        /// There is no socket server in a unit test, and then nothing is sent.
+        /// </summary>
+        private static void NotifyFinished()
+        {
+            BloomWebSocketServer.Instance?.SendEvent(kWebSocketContext, "walkFinished");
         }
 
         /// <summary>
-        /// Refit this chain from this page on. Returns at once: the walk runs on a background
-        /// thread, after any walk already running.
+        /// Tell the browser that a walk is waiting to be run, so that it can offer the user the
+        /// Reflow now button. Nothing is going to run it otherwise until the user changes pages,
+        /// so this is the only word the browser gets that some later page is now out of date.
+        ///
+        /// There is no socket server in a unit test, and then nothing is sent.
+        /// </summary>
+        private static void NotifyQueued()
+        {
+            BloomWebSocketServer.Instance?.SendEvent(kWebSocketContext, "walkQueued");
+        }
+
+        /// <summary>
+        /// Ask for this chain to be refitted from this page on. Returns at once, and nothing is
+        /// refitted yet: the walk waits in the queue until the user changes pages or asks for it
+        /// with Reflow now (RunPending). A walk puts a dialog over the page for seconds, which is
+        /// not something to do in the middle of the user's typing.
         ///
         /// styles is the content of the browser's userModifiedStyles element, which the walk
         /// puts into each page it lays out off-screen. The browser writes a style change into
@@ -443,35 +591,57 @@ namespace Bloom.Book
         )
         {
             var book = model?.CurrentBook;
-            if (
-                book == null
-                || string.IsNullOrEmpty(chainId)
-                || string.IsNullOrEmpty(fromPageId)
-                || string.IsNullOrEmpty(lang)
-            )
+            if (book == null)
                 return;
 
-            var groups = FlowTextChains.GetChainGroups(book.OurHtmlDom, chainId);
-            var start = groups.FindIndex(group => group.PageId == fromPageId);
-            if (start < 0)
-                return;
-
-            Enqueue(chainId, fromPageId, groups[start].PageIndex, lang, styles);
-            StartIfIdle(model);
+            if (QueueFromPageForward(book.OurHtmlDom, chainId, fromPageId, lang, styles))
+                NotifyQueued();
         }
 
         /// <summary>
-        /// Refit every chain the browser cannot reach, from its first page, in the book's main
-        /// language. This is for a change that alters where the text breaks on every page at
-        /// once, such as a new paper size: a chain the user is nowhere near still has to be
-        /// refitted.
+        /// Queue the walk that Request asks for. Returns whether there is now a walk waiting for
+        /// that chain. Separate from Request so that what goes into the queue can be tested
+        /// without an EditingModel.
+        /// </summary>
+        internal static bool QueueFromPageForward(
+            HtmlDom dom,
+            string chainId,
+            string fromPageId,
+            string lang,
+            string styles
+        )
+        {
+            if (
+                string.IsNullOrEmpty(chainId)
+                || string.IsNullOrEmpty(fromPageId)
+                || string.IsNullOrEmpty(lang)
+            )
+                return false;
+
+            var groups = FlowTextChains.GetChainGroups(dom, chainId);
+            var start = groups.FindIndex(group => group.PageId == fromPageId);
+            if (start < 0)
+                return false;
+
+            return Enqueue(
+                chainId,
+                fromPageId,
+                groups[start].PageIndex,
+                lang,
+                styles,
+                WalkKind.FromPageForward
+            );
+        }
+
+        /// <summary>
+        /// Ask for every chain in the book to be refitted, each from its first page, in the book's
+        /// main language. This is for a change that alters where the text breaks on every page at
+        /// once, such as a new paper size.
         ///
-        /// A chain with a box on the page being edited is left out. The browser holds that page
-        /// and settles it as soon as it is rebuilt at the new size, and asks for a walk of what
-        /// follows it when its own text crosses the boundary (settleCrossPageBoundary). Walking
-        /// it from here would run at the same time as that, and a walk in progress refuses the
-        /// browser's move, which would leave the page being edited holding text that no longer
-        /// fits it.
+        /// Queuing runs nothing: the walks wait until something calls RunPending. That is what
+        /// keeps this out of the browser's way, so the page being edited settles itself
+        /// undisturbed after such a change. When a walk does run it covers the page being edited
+        /// along with the rest of the chain.
         /// </summary>
         public static void RequestEveryChain(EditingModel model)
         {
@@ -483,19 +653,36 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(lang))
                 return;
 
-            var currentPageId = model.CurrentPage?.Id;
-            foreach (var chainId in GetChainIds(book.OurHtmlDom))
+            if (QueueEveryChain(book.OurHtmlDom, lang))
+                NotifyQueued();
+        }
+
+        /// <summary>
+        /// Queue the walks that RequestEveryChain asks for, one per chain, each starting at the
+        /// chain's first page. Returns whether any chain now has a walk waiting. Separate from
+        /// RequestEveryChain so that what goes into the queue can be tested without an
+        /// EditingModel.
+        /// </summary>
+        internal static bool QueueEveryChain(HtmlDom dom, string lang)
+        {
+            var any = false;
+            foreach (var chainId in GetChainIds(dom))
             {
-                var groups = FlowTextChains.GetChainGroups(book.OurHtmlDom, chainId);
+                var groups = FlowTextChains.GetChainGroups(dom, chainId);
                 // One box on its own is not a chain: it has nowhere to send its extra text.
                 if (groups.Count < 2)
                     continue;
-                if (groups.Any(group => group.PageId == currentPageId))
-                    continue;
-                Enqueue(chainId, groups[0].PageId, groups[0].PageIndex, lang, null);
+                any |= Enqueue(
+                    chainId,
+                    groups[0].PageId,
+                    groups[0].PageIndex,
+                    lang,
+                    null,
+                    WalkKind.WholeFlow
+                );
             }
 
-            StartIfIdle(model);
+            return any;
         }
 
         /// <summary>Every chain id carried by a group of this book, once each.</summary>
@@ -512,12 +699,18 @@ namespace Bloom.Book
                 .ToList();
         }
 
-        private static void Enqueue(
+        /// <summary>
+        /// Put this walk in the queue, or fold it into the one already waiting for that chain and
+        /// language. Returns true either way: there is a walk waiting for that chain when it
+        /// returns.
+        /// </summary>
+        private static bool Enqueue(
             string chainId,
             string pageId,
             int pageIndex,
             string lang,
-            string styles
+            string styles,
+            WalkKind kind
         )
         {
             lock (_lock)
@@ -531,7 +724,11 @@ namespace Bloom.Book
                     // Already going to start at that page or an earlier one. The rules are
                     // still worth having: they are the newest word on how the text is drawn.
                     already.Styles = styles ?? already.Styles;
-                    return;
+                    // The wider reason for a walk is the one to report: a refit of the whole
+                    // flow covers a refit from a page on as well.
+                    if (kind == WalkKind.WholeFlow)
+                        already.Kind = WalkKind.WholeFlow;
+                    return true;
                 }
 
                 _pending[key] = new PendingWalk
@@ -541,16 +738,50 @@ namespace Bloom.Book
                     FromPageIndex = pageIndex,
                     Lang = lang,
                     Styles = styles,
+                    Kind = kind,
                 };
+                return true;
             }
         }
 
-        private static void StartIfIdle(EditingModel model)
+        /// <summary>The walks waiting to run, for tests to read.</summary>
+        internal static List<PendingWalk> QueuedWalksForTests()
+        {
+            lock (_lock)
+                return _pending.Values.ToList();
+        }
+
+        /// <summary>Forget the walks waiting to run, so that one test cannot affect another.</summary>
+        internal static void ClearQueueForTests()
+        {
+            lock (_lock)
+                _pending.Clear();
+        }
+
+        /// <summary>
+        /// Run the walks that are waiting, if any. This is the one way a walk ever starts: the
+        /// Edit tab calls it when the user changes pages (see EditingModel), and the Reflow now
+        /// button calls it through flowText/reflowNow. Returns at once; the work runs on a
+        /// background thread with the Edit tab's progress dialog up.
+        ///
+        /// Does nothing while something else holds the right to move a chain's text, or when
+        /// nothing is queued.
+        /// </summary>
+        public static void RunPending(EditingModel model)
+        {
+            StartIfIdle(model);
+        }
+
+        /// <summary>
+        /// Start the queue running, unless something already holds the chain or there is nothing
+        /// queued. Returns whether a run was started.
+        /// </summary>
+        private static bool StartIfIdle(EditingModel model)
         {
             lock (_lock)
             {
                 if (_running || _pending.Count == 0)
-                    return;
+                    return false;
                 _running = true;
             }
 
@@ -562,7 +793,7 @@ namespace Bloom.Book
                 // unit test driving the queue with no UI at all. The walks still have to run,
                 // or IsBusy would say Bloom was busy for ever.
                 System.Threading.Tasks.Task.Run(() => RunQueue(model, null));
-                return;
+                return true;
             }
 
             // Opening the dialog is a UI-thread job; the work then runs on the dialog's own
@@ -587,6 +818,7 @@ namespace Bloom.Book
                     }
                 );
             });
+            return true;
         }
 
         private static PendingWalk TakeNext()
@@ -646,23 +878,47 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// What the progress dialog says a walk is doing, under its bar.
+        /// </summary>
+        private static string StageText(WalkKind kind)
+        {
+            if (kind == WalkKind.WholeFlow)
+                return LocalizationManager.GetString(
+                    "EditTab.FlowText.RefittingWholeFlow",
+                    "Re-flowing the text of this flow"
+                );
+            return LocalizationManager.GetString(
+                "EditTab.FlowText.RefittingFromPageForward",
+                "Re-flowing from this page forward"
+            );
+        }
+
         private static void RunQueue(EditingModel model, IWebSocketProgress progress)
         {
             var queueProgress = new QueueProgress(progress);
+            // Made when the first box has to be measured, not before: a browser is a WebView2 and
+            // a thread of its own, and a queue whose walks all turn out to have nothing to fit
+            // (every page of the chain is the page being edited, say) needs none.
+            OffScreenBrowser browser = null;
             try
             {
-                using (var browser = new OffScreenBrowser())
+                PendingWalk walk;
+                while ((walk = TakeNext()) != null)
                 {
-                    PendingWalk walk;
-                    while ((walk = TakeNext()) != null)
-                    {
-                        var groups = GroupsToFit(model, walk, out var start);
-                        if (groups == null)
-                            continue;
-                        queueProgress.AddBoxesToFit(groups.Count - start);
-                        RunOneWalk(model, browser, walk, groups, start, queueProgress);
-                    }
+                    var groups = GroupsToFit(model, walk, out var start);
+                    if (groups == null)
+                        continue;
+                    queueProgress.AddBoxesToFit(groups.Count - start);
+                    progress?.SendStage(StageText(walk.Kind));
+                    browser = browser ?? new OffScreenBrowser();
+                    RunOneWalk(model, browser, walk, groups, start, queueProgress);
                 }
+
+                // TakeNext gave the claim back when it found nothing left, and RunOneWalk saved
+                // each page it changed before returning, so the chain is free and the book holds
+                // what the walk made of it.
+                NotifyFinished();
             }
             catch (Exception e)
             {
@@ -674,18 +930,24 @@ namespace Bloom.Book
                     _pending.Clear();
                     _running = false;
                 }
+
+                NotifyFinished();
+            }
+            finally
+            {
+                browser?.Dispose();
             }
         }
 
         /// <summary>
-        /// The run of groups this walk covers, and where in it the walk starts. Null when there
-        /// is nothing for the walk to fit.
+        /// The run of groups this walk covers, and where in it the walk starts: from the walk's
+        /// start page to the end of the chain, the page being edited included. Dividing the run
+        /// afresh needs every box it can reach, because text moves backward as readily as
+        /// forward: a bigger page pulls text back from later pages, and a page the walk stopped
+        /// short of would keep text that belongs earlier.
         ///
-        /// A walk never writes the page being edited: the browser holds the live version of that
-        /// page, so writing it here would either be overwritten or would clobber unsaved typing.
-        /// So the walk covers the run of groups from its start page up to the page being edited,
-        /// and the browser settles that page itself, asking for a walk of what follows it when
-        /// its own text moves (settleCrossPageBoundary).
+        /// Null when the chain has no group on the walk's start page, which is the one case where
+        /// there is nothing to fit.
         /// </summary>
         private static List<FlowTextChains.FlowGroup> GroupsToFit(
             EditingModel model,
@@ -698,22 +960,36 @@ namespace Bloom.Book
             if (book == null)
                 return null;
 
-            var groups = FlowTextChains.GetChainGroups(book.OurHtmlDom, walk.ChainId);
-            var start = groups.FindIndex(group => group.PageId == walk.FromPageId);
-            if (start < 0)
-                return null;
+            return GroupsToFit(
+                FlowTextChains.GetChainGroups(book.OurHtmlDom, walk.ChainId),
+                walk.FromPageId,
+                out startIndex
+            );
+        }
 
-            var currentPageId = model.CurrentPage?.Id;
-            while (start < groups.Count && groups[start].PageId == currentPageId)
-                start++;
-            var end = start;
-            while (end < groups.Count && groups[end].PageId != currentPageId)
-                end++;
-            if (end <= start)
+        /// <summary>
+        /// Which of a chain's groups a walk starting at this page covers, and where in them it
+        /// starts: all of them, from the group on that page. Null, with startIndex zero, when the
+        /// chain has no group on that page.
+        ///
+        /// The groups before the start page come back with the rest because Distribute is given
+        /// the whole chain and the place in it to begin: what precedes the start is read for the
+        /// markers that say a paragraph was divided, and never written.
+        /// </summary>
+        internal static List<FlowTextChains.FlowGroup> GroupsToFit(
+            List<FlowTextChains.FlowGroup> groups,
+            string fromPageId,
+            out int startIndex
+        )
+        {
+            startIndex = groups.FindIndex(group => group.PageId == fromPageId);
+            if (startIndex < 0)
+            {
+                startIndex = 0;
                 return null;
+            }
 
-            startIndex = start;
-            return groups.GetRange(0, end);
+            return groups;
         }
 
         private static void RunOneWalk(
@@ -753,6 +1029,28 @@ namespace Bloom.Book
             var changedPageIds = changed.Select(group => group.PageId).Distinct().ToList();
             InvokeOnUiThread(() =>
             {
+                // The browser is showing the page being edited and will not be navigated to
+                // reload it, so a box the walk changed there is kept for the browser to apply.
+                // Read here rather than earlier, because which page is being edited is a
+                // question about the moment the walk's work lands.
+                var currentPageId = model.CurrentPage?.Id;
+                foreach (var group in changed.Where(group => group.PageId == currentPageId))
+                {
+                    var editable = FlowTextChains.GetFlowEditable(group.Group, walk.Lang);
+                    if (editable == null)
+                        continue;
+                    HoldRefitResult(
+                        currentPageId,
+                        new RefitResult
+                        {
+                            chainId = walk.ChainId,
+                            lang = walk.Lang,
+                            indexInPage = group.IndexInPage,
+                            html = editable.InnerXml,
+                        }
+                    );
+                }
+
                 foreach (var pageId in changedPageIds)
                 {
                     var page = FlowTextChains.FindPage(book, pageId);
@@ -797,14 +1095,29 @@ namespace Bloom.Book
             foreach (var script in dom.SafeSelectNodes("//script[contains(@src,'ckeditor')]"))
                 script.ParentNode?.RemoveChild(script);
 
+            // A classic script in the head runs before any module script, so this is listening
+            // by the time the page's own bundles load: an error that stops one of them loading
+            // is the reason the wait below can time out, and nothing else records it.
+            HtmlDom.AddInlineScript(dom.RawDom, kRecordLoadErrorsScript, false);
+
             browser.NavigateWithoutWaitingForLoad(dom, InMemoryHtmlFileSource.Frame);
-            BookProcessor.WaitForJavascriptResult(
-                browser,
-                "(window.__bloomEditablePageReady && window.editablePageBundle) ? 'ready' : ''",
-                "the editing bundle to initialize",
-                group.PageId,
-                kFitTimeoutMs
-            );
+            try
+            {
+                BookProcessor.WaitForJavascriptResult(
+                    browser,
+                    "(window.__bloomEditablePageReady && window.editablePageBundle) ? 'ready' : ''",
+                    "the editing bundle to initialize",
+                    group.PageId,
+                    kFitTimeoutMs
+                );
+            }
+            catch (ApplicationException timeout)
+            {
+                throw new ApplicationException(
+                    timeout.Message + " Page state: " + DescribePageState(browser),
+                    timeout
+                );
+            }
             browser.RunJavascriptFireAndForget(
                 "window.editablePageBundle.captureFlowFit("
                     + $"{group.IndexInPage}, {JsonConvert.ToString(lang)}, "
@@ -823,6 +1136,74 @@ namespace Bloom.Book
                 );
 
             return JsonConvert.DeserializeObject<FitResult>(answer);
+        }
+
+        // Keeps every error the page reports while it loads, for DescribePageState to hand back
+        // when the page never becomes ready.
+        private const string kRecordLoadErrorsScript =
+            @"
+                window.__bloomFlowLoadErrors = [];
+                window.addEventListener('error', function (event) {
+                    window.__bloomFlowLoadErrors.push({
+                        message: event.message,
+                        filename: event.filename,
+                        lineno: event.lineno
+                    });
+                });
+                window.addEventListener('unhandledrejection', function (event) {
+                    window.__bloomFlowLoadErrors.push({ reason: String(event.reason) });
+                });";
+
+        // Everything that says why the page has not become ready, as a JSON string. It must
+        // answer even when the page is broken, so each part that can throw is guarded.
+        private const string kPageStateScript =
+            @"
+                (function () {
+                    try {
+                        var sources = [];
+                        var scripts = document.querySelectorAll('script');
+                        scripts.forEach(function (script) {
+                            if (script.src) sources.push(script.src);
+                        });
+                        var loading = [];
+                        try {
+                            performance.getEntriesByType('resource').forEach(function (entry) {
+                                if (entry.responseEnd === 0) loading.push(entry.name);
+                            });
+                        } catch (error) {
+                            loading.push('no performance entries: ' + String(error));
+                        }
+                        return JSON.stringify({
+                            readyState: document.readyState,
+                            href: location.href,
+                            scriptCount: scripts.length,
+                            scriptSources: sources,
+                            pageReady: !!window.__bloomEditablePageReady,
+                            bundleType: typeof window.editablePageBundle,
+                            loadErrors: window.__bloomFlowLoadErrors || null,
+                            stillLoadingCount: loading.length,
+                            stillLoading: loading.slice(0, 10)
+                        });
+                    } catch (error) {
+                        return 'the diagnostic script failed: ' + String(error);
+                    }
+                })()";
+
+        /// <summary>
+        /// What the off-screen page has got to: what it has loaded, what it has not, and what it
+        /// reported going wrong. This is all there is to say why a page never became ready, so
+        /// it never throws in place of the failure it is describing.
+        /// </summary>
+        private static string DescribePageState(OffScreenBrowser browser)
+        {
+            try
+            {
+                return browser.RunJavascript(kPageStateScript);
+            }
+            catch (Exception e)
+            {
+                return "the page could not be asked: " + e.Message;
+            }
         }
 
         /// <summary>

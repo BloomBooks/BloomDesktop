@@ -105,6 +105,20 @@ export const kCreatePagesButtonL10nId =
     "EditTab.FlowText.CreatePagesAndContinue";
 export const kCreatePagesButtonEnglish = "Create pages and flow text";
 
+// The panel a chained group wears, beside the page, while a refit of its chain waits to be run
+// (flowReflowBubble.tsx). It is a bloom-ui element, so HtmlDom takes it out of the page Bloom
+// saves.
+export const kReflowBubbleClass = "bloom-flow-reflowBubble";
+export const kReflowBubbleTestId = "flow-reflow-bubble";
+export const kReflowPendingL10nId = "EditTab.FlowText.ReflowPending";
+export const kReflowPendingEnglish = "Reflow pending";
+export const kReflowOnPageChangeTestId = "flow-reflow-on-page-change";
+export const kReflowOnPageChangeL10nId = "EditTab.FlowText.ReflowOnPageChange";
+export const kReflowOnPageChangeEnglish = "Reflow when you change pages";
+export const kReflowNowTestId = "flow-reflow-now";
+export const kReflowNowL10nId = "EditTab.FlowText.ReflowNow";
+export const kReflowNowEnglish = "Reflow now";
+
 // Set on the body of a page C# has loaded into a browser nobody is looking at, only to ask
 // where one box's text stops fitting (FlowTextWalk.AskBrowserForFit, captureFlowFit). Such a
 // page holds the whole of the run that is left in one box, which is more text than fits it on

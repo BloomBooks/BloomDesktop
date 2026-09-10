@@ -12,7 +12,7 @@
 // the page halfway through a move, which is the classic way for one of these tests to be flaky.
 
 import { expect, type Locator, type Page } from "@playwright/test";
-import { apiGet, apiGetJson } from "./api";
+import { apiGet, apiGetJson, apiPost } from "./api";
 import {
     addPageWithId,
     editablePageFrame,
@@ -189,6 +189,12 @@ export interface IFlowChain {
  * cross-page work outstanding, and Bloom is editing the page rather than loading it.
  *
  * Call this after anything that changes the text or the links, before reading the result.
+ *
+ * It waits only for work that is RUNNING. A refit of the pages the browser is not editing that
+ * is merely waiting to be run leaves this function satisfied, because nothing is going to run it
+ * until the user changes pages or asks for it: waiting for that would wait for ever. So a test
+ * that reads a page other than the one it is editing has to run the waiting refit first, with
+ * clickReflowNow or runPendingReflow, or by turning a page.
  */
 export async function waitForReflowIdle(page: Page): Promise<void> {
     await waitForEditablePage(page);
@@ -417,6 +423,11 @@ export async function getRunTexts(
     page: Page,
     language = "en",
 ): Promise<string[]> {
+    // A refit of the pages the browser is not editing that is still waiting to be run would make
+    // this a reading of what those pages held before the change that asked for it. Visiting them
+    // below is a page turn, which is one of the two things that starts such a refit, so the
+    // reading would race it: run it first instead.
+    await runPendingReflow(page);
     // Leaving the page and coming back is what writes it into the book, so that the chain C#
     // reports below includes whatever has just been typed.
     await reloadPageBeingEdited(page);
@@ -854,6 +865,10 @@ export async function doubleFontSizeOfBox(
         box,
         `Clicking box ${boxIndex} did not give it the focus, so it would show no format gear.`,
     ).toBeFocused({ timeout: 15000 });
+    // The caret goes to the start of the box. A bigger font pushes the tail of the text onto
+    // the next page, and a caret in that tail goes with it: Bloom turns to the next page, and
+    // that page turn is what runs a waiting refit. The caller is to stay on this page.
+    await box.press("Control+Home");
 
     // The dialog works in points and the box is drawn in pixels, at 96 dpi in the page frame.
     const pixels = await getRenderedFontSize(box);
@@ -1183,4 +1198,276 @@ export async function isProgressDialogOpen(page: Page): Promise<boolean> {
         .filter({ hasText: kFlowProgressDialogTitles })
         .first()
         .isVisible();
+}
+
+// The bubble a chained box gets while a refit of the pages the browser is not editing waits to be
+// run, and the two things the user can say about it. Text never moves across pages on its own: a
+// change that leaves the later pages of a chain out of date only records that with Bloom, and the
+// refit happens when the user clicks Reflow now or turns a page (see flowReflowBubble.tsx and
+// FlowTextWalk).
+//
+// The bubble is not inside the group it belongs to: it sits beside the page, in the container that
+// carries the page zoom, where the source bubbles go. So it is found by its test id anywhere in
+// the page being edited, and nothing here asks which box a bubble belongs to.
+//
+// A bubble is there only while that group's chain has a refit waiting, and it goes when the refit
+// has run. So the bubble being there is itself the answer to "does the page say a refit is
+// waiting", which is what isReflowPendingShown asks, and its button can always be clicked.
+//
+// The test ids are kReflowBubbleTestId, kReflowOnPageChangeTestId and kReflowNowTestId in
+// bookEdit/flowText/flowConstants.ts.
+const kReflowBubbleTestId = "flow-reflow-bubble";
+const kReflowOnPageChangeTestId = "flow-reflow-on-page-change";
+const kReflowNowTestId = "flow-reflow-now";
+
+/** How long clickReflowNow watches for the refit it asked for to start. */
+const kWaitForReflowToStartMs = 5000;
+
+/** What Bloom is holding, as GET flowText/pendingWalks reports it. */
+export interface IPendingWalks {
+    /** Is there a refit waiting to be run? */
+    pending: boolean;
+    /** The chains, by chain id, that have a refit waiting. */
+    chainIds: string[];
+    /** Whether turning a page runs the waiting refits, which is this book's own setting. */
+    reflowOnPageChange: boolean;
+}
+
+/** What Bloom is holding: the refits waiting to be run, and the setting that governs them. */
+export async function getPendingWalks(page: Page): Promise<IPendingWalks> {
+    return apiGetJson<IPendingWalks>(page, "flowText/pendingWalks");
+}
+
+/**
+ * Is a refit of the pages the browser is not editing waiting to be run? This is what the bubble
+ * is shown for, and what a test asks before reading a page it is not editing: the answer being
+ * true means those pages hold what they held before the change.
+ */
+export async function isWalkPending(page: Page): Promise<boolean> {
+    return (await getPendingWalks(page)).pending;
+}
+
+/** Whether turning a page runs the waiting refits. The book's own setting. */
+export async function getReflowOnPageChange(page: Page): Promise<boolean> {
+    return (
+        await apiGetJson<{ value: boolean }>(
+            page,
+            "flowText/reflowOnPageChange",
+        )
+    ).value;
+}
+
+/**
+ * Say whether turning a page runs the waiting refits, through Bloom's API rather than through the
+ * bubble. This is for a test that needs the setting a particular way to start from, and for
+ * putting it back afterwards; a test about the checkbox itself uses
+ * setReflowOnPageChangeViaBubble.
+ */
+export async function setReflowOnPageChange(
+    page: Page,
+    value: boolean,
+): Promise<void> {
+    await apiPost(
+        page,
+        "flowText/reflowOnPageChange",
+        JSON.stringify({ value }),
+        "application/json",
+    );
+    expect(
+        await getReflowOnPageChange(page),
+        "Bloom did not take the new value of the reflow-on-page-change setting.",
+    ).toBe(value);
+}
+
+/** Every bubble showing beside the page being edited. */
+function reflowBubbles(page: Page): Locator {
+    return editablePageFrame(page).locator(
+        `[data-testid="${kReflowBubbleTestId}"]`,
+    );
+}
+
+/** The first bubble showing beside the page being edited. */
+function reflowBubble(page: Page): Locator {
+    return reflowBubbles(page).first();
+}
+
+function reflowNowButton(page: Page): Locator {
+    return reflowBubble(page).locator(`[data-testid="${kReflowNowTestId}"]`);
+}
+
+function reflowOnPageChangeCheckbox(page: Page): Locator {
+    // Whichever bubble is nearest to hand: the setting is the book's, so every bubble on the page
+    // shows the same value and any of them can be used to change it.
+    return reflowBubble(page).locator(
+        `[data-testid="${kReflowOnPageChangeTestId}"]`,
+    );
+}
+
+/**
+ * Does the page being edited say that a refit of the pages after it is waiting to be run? A
+ * chained group has a bubble while its chain has one waiting, and no bubble once it has run, so
+ * this is the page's own answer; flowText/pendingWalks, through isWalkPending, is Bloom's.
+ */
+export async function isReflowPendingShown(page: Page): Promise<boolean> {
+    await waitForReflowIdle(page);
+    return reflowBubble(page).isVisible();
+}
+
+/** How many bubbles are showing beside the page being edited: one per chained group on it. */
+export async function getReflowBubbleCount(page: Page): Promise<number> {
+    await waitForReflowIdle(page);
+    return reflowBubbles(page).count();
+}
+
+/** The three things the bubble says. */
+export interface IReflowBubbleTexts {
+    /** That a refit is waiting. */
+    pending: string;
+    /** The words beside the checkbox that has every page change run it. */
+    reflowOnPageChange: string;
+    /** The words on the button that runs it now. */
+    reflowNow: string;
+}
+
+/**
+ * What the bubble says, so a test can check the wording an author reads. Throws when the page
+ * being edited shows no bubble, which is what it shows when no refit is waiting.
+ */
+export async function getReflowBubbleTexts(
+    page: Page,
+): Promise<IReflowBubbleTexts> {
+    const bubble = reflowBubble(page);
+    await bubble.waitFor({ state: "visible", timeout: 30000 });
+    return bubble.evaluate(
+        (element, testIds) => {
+            const collapse = (text: string | null | undefined) =>
+                (text ?? "").replace(/\s+/g, " ").trim();
+            const checkbox = element.querySelector(
+                `[data-testid="${testIds.onPageChange}"]`,
+            );
+            return {
+                // The words that say a refit is waiting are the bubble's own first line: they
+                // are the only text in it that belongs to neither the checkbox nor the button.
+                pending: collapse(
+                    element.querySelector(":scope > div > div")?.textContent,
+                ),
+                reflowOnPageChange: collapse(
+                    checkbox?.closest("label")?.textContent,
+                ),
+                reflowNow: collapse(
+                    element.querySelector(`[data-testid="${testIds.now}"]`)
+                        ?.textContent,
+                ),
+            };
+        },
+        { onPageChange: kReflowOnPageChangeTestId, now: kReflowNowTestId },
+    );
+}
+
+/** What was seen of the refit while it ran. */
+export interface IReflowNowObservations {
+    /** Whether the progress dialog that stops the author editing was seen. */
+    sawProgressDialog: boolean;
+    /** Whether Bloom reported itself busy moving text. */
+    sawBusy: boolean;
+}
+
+/**
+ * Click Reflow now in the bubble, and wait until the refit it asks for is over.
+ *
+ * The refit is seconds of work behind a progress dialog, but a chain of two short pages can be
+ * done between two readings, so neither the dialog nor Bloom's own word that it is busy is
+ * waited for: both are watched for and reported, and a refit that was over before either could
+ * be seen is not a failure. What the caller can rely on is that the refit is finished when this
+ * returns.
+ */
+export async function clickReflowNow(
+    page: Page,
+): Promise<IReflowNowObservations> {
+    const button = reflowNowButton(page);
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await button.click();
+
+    const observations: IReflowNowObservations = {
+        sawProgressDialog: false,
+        sawBusy: false,
+    };
+    // The browser lets this page finish its own moves before it asks Bloom to refit the rest
+    // (reflowNow, in flowReflowBubble.tsx), so the work does not start with the click.
+    const watchUntil = Date.now() + kWaitForReflowToStartMs;
+    while (Date.now() < watchUntil) {
+        if (await isProgressDialogOpen(page)) {
+            observations.sawProgressDialog = true;
+        }
+        if ((await apiGet(page, "e2e/flowText/isIdle")).body !== "true") {
+            observations.sawBusy = true;
+        }
+        if (observations.sawProgressDialog || observations.sawBusy) {
+            break;
+        }
+
+        await page.waitForTimeout(100);
+    }
+
+    await waitForReflowIdle(page);
+    return observations;
+}
+
+/**
+ * Run the refit that is waiting, if one is, and return whether there was one.
+ *
+ * This is for the tests that are not about the waiting itself: a test that changes something and
+ * then reads a page it is not editing needs the later pages brought up to date first, whether or
+ * not that particular change is one that leaves a refit waiting. flow-text-reflow-pending.spec.ts
+ * is where the waiting is the thing under test.
+ *
+ * It clicks the button when the page being edited says a refit is waiting, and asks Bloom
+ * directly when it does not: a page with no box of the waiting chain on it has no button it
+ * could offer, and the button of a chain with nothing waiting is disabled. Neither
+ * is the action any of those tests measures, so the API is the fastest reliable path to the state
+ * they read (see the UI-vs-API policy in README.md).
+ */
+export async function runPendingReflow(page: Page): Promise<boolean> {
+    if (!(await isWalkPending(page))) {
+        return false;
+    }
+
+    if (await isReflowPendingShown(page)) {
+        await clickReflowNow(page);
+    } else {
+        await apiPost(page, "flowText/reflowNow", "{}", "application/json");
+        await waitForReflowIdle(page);
+    }
+    return true;
+}
+
+/**
+ * Tick or untick "Reflow when you change pages" in the bubble, the way an author does, and wait
+ * until Bloom holds the new value. Does nothing when the checkbox already says what is wanted.
+ *
+ * The click lands on the label rather than on the checkbox, which is what a person clicks: the
+ * checkbox MUI draws is an input of no opacity over the box it paints.
+ */
+export async function setReflowOnPageChangeViaBubble(
+    page: Page,
+    value: boolean,
+): Promise<void> {
+    const checkbox = reflowOnPageChangeCheckbox(page);
+    await checkbox.waitFor({ state: "attached", timeout: 30000 });
+    if ((await checkbox.isChecked()) !== value) {
+        await checkbox.locator("xpath=ancestor::label[1]").click();
+    }
+
+    await expect
+        .poll(() => getReflowOnPageChange(page), {
+            timeout: 10000,
+            message:
+                "Bloom never reported the reflow-on-page-change setting the checkbox was " +
+                "clicked to give it.",
+        })
+        .toBe(value);
+    expect(
+        await checkbox.isChecked(),
+        "The checkbox does not show the value Bloom now holds.",
+    ).toBe(value);
 }

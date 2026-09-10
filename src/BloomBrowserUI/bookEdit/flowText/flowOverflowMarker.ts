@@ -290,33 +290,67 @@ function getInsertionPoint(
 }
 
 /**
- * End the measuring range at this offset, but on the near side of a marker that already sits
- * there. A marker of the previous pass is laid out at the start of the line that does not
- * fit, and a range that reaches it takes that line's bottom as its own; the measurement then
- * says the box overflows at the very offset the marker records, and each pass moves the
- * marker back a word for the next one to move it forward again.
+ * End the measuring range at this offset, at the last character before it and on the near
+ * side of any marker that sits there.
+ *
+ * Two reasons the end may not be left where the offset's own DOM position puts it:
+ *
+ *  - A marker of the previous pass is laid out at the start of the line that does not fit,
+ *    and a range that reaches it takes that line's bottom as its own; the measurement then
+ *    says the box overflows at the very offset the marker records, and each pass moves the
+ *    marker back a word for the next one to move it forward again.
+ *  - A range end at the edge between two nodes reports a rect on the following line as well
+ *    as on its own, so it measures a line taller than the same text does when it is one text
+ *    node. Where the text divides is not the text's business: a marker put in and taken out
+ *    again leaves the node split at that character, so the box would then measure differently
+ *    from the same text written into it afresh, and a push and the pull back that follows it
+ *    would disagree by a word for ever.
+ *
+ * So the end goes to the last character before the offset, wherever the nodes divide.
  */
 export function setFitRangeEnd(range: Range, point: BoundaryPoint): void {
     let container = point.container;
     let offset = point.offset;
-    if (container.nodeType === Node.TEXT_NODE && offset === 0) {
-        const previous = container.previousSibling;
-        const parent = container.parentNode;
-        if (previous && parent && isOverflowMarkerNode(previous)) {
-            offset = Array.from(parent.childNodes).indexOf(previous);
-            container = parent;
-        }
-    }
 
-    while (
-        container.nodeType === Node.ELEMENT_NODE &&
-        offset > 0 &&
-        isOverflowMarkerNode(container.childNodes[offset - 1])
-    ) {
-        offset--;
+    for (;;) {
+        if (container.nodeType === Node.TEXT_NODE && offset === 0) {
+            const previous = previousSiblingPastMarkers(container);
+            if (!previous || previous.nodeType !== Node.TEXT_NODE) {
+                break;
+            }
+
+            container = previous;
+            offset = (previous as Text).data.length;
+            continue;
+        }
+
+        if (container.nodeType === Node.ELEMENT_NODE && offset > 0) {
+            const child = container.childNodes[offset - 1];
+            if (isOverflowMarkerNode(child)) {
+                offset--;
+                continue;
+            }
+            if (child.nodeType === Node.TEXT_NODE) {
+                container = child;
+                offset = (child as Text).data.length;
+                continue;
+            }
+        }
+
+        break;
     }
 
     range.setEnd(container, offset);
+}
+
+/** The node before this one, looking past markers, which hold no text of their own. */
+function previousSiblingPastMarkers(node: Node): Node | null {
+    let previous = node.previousSibling;
+    while (previous && isOverflowMarkerNode(previous)) {
+        previous = previous.previousSibling;
+    }
+
+    return previous;
 }
 
 /**

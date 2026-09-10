@@ -227,6 +227,39 @@ describe("flowBoundaryClient", () => {
                 "<p>x</p>",
                 "<p>old</p>",
             ),
-        ).toBe(false);
+        ).toEqual({ accepted: false });
+    });
+
+    it("says a refit is what stopped setNextContent when C# says so", async () => {
+        // The caller comes back to this boundary when the refit ends, so the reason matters.
+        answers["flowText/setNextContent"] = () =>
+            Promise.resolve({
+                data: { accepted: false, walkInProgress: true },
+            });
+
+        expect(
+            await setNextContent(
+                "chain-1",
+                "page2",
+                "en",
+                "<p>x</p>",
+                "<p>old</p>",
+            ),
+        ).toEqual({ accepted: false, walkInProgress: true });
+    });
+
+    it("reports that C# took the text", async () => {
+        answers["flowText/setNextContent"] = () =>
+            Promise.resolve({ data: { accepted: true } });
+
+        expect(
+            await setNextContent(
+                "chain-1",
+                "page2",
+                "en",
+                "<p>x</p>",
+                "<p>old</p>",
+            ),
+        ).toEqual({ accepted: true });
     });
 });

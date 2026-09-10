@@ -29,7 +29,8 @@ import {
     requestWalk,
     setNextContent,
 } from "./flowBoundaryClient";
-import { getLanguageChainOnPage } from "./flowChain";
+import { getFlowGroupsOfPage, getLanguageChainOnPage } from "./flowChain";
+import type { IRefitBox } from "./flowReflowClient";
 import { waitForEditorReady } from "./flowEditorReady";
 import { kChainedGroupSelector, kFlowChainAttr } from "./flowConstants";
 import {
@@ -99,6 +100,75 @@ const walksWanted = new Map<
         fromPageBeingEdited: boolean;
     }
 >();
+
+// The boxes whose boundary Bloom would not settle because a refit of the whole chain held it.
+// A refit refuses the browser's move, and only word that the refit has finished brings the
+// browser back to it: without this the page the user has just emptied keeps its text, and the
+// next page keeps its overflow warning, until the user's next keystroke.
+export const boundariesToRetryAfterWalk = new Set<HTMLElement>();
+
+/** Is a boundary waiting for a refit to finish before it can be settled? */
+export function areBoundaryRetriesWaiting(): boolean {
+    return boundariesToRetryAfterWalk.size > 0;
+}
+
+/**
+ * The refit has finished: the boxes whose boundary is to be settled again. What the boxes on
+ * the later pages held is worth nothing now, because the refit rewrote them, so all of it is
+ * read afresh.
+ */
+export function onWalkFinished(): HTMLElement[] {
+    nextBoxByChainAndPage.clear();
+    const boxes = Array.from(boundariesToRetryAfterWalk);
+    boundariesToRetryAfterWalk.clear();
+    return boxes;
+}
+
+/**
+ * Put into the page the content a refit made for the boxes of the page being edited. A refit
+ * measures the pages the browser is not editing, but the chain can reach back into the page on
+ * screen; Bloom saves that page and leaves the editor alone, so this is what brings what the
+ * user is looking at up to date.
+ *
+ * A box is found by the place of its group among the page's flow groups, which is how Bloom
+ * names a group as well, and its chain id has to match: a page whose chains have changed since
+ * the refit began is not the page the content was made for. Returns the boxes it changed, for
+ * the caller to settle.
+ */
+export function applyRefitResult(
+    page: HTMLElement,
+    boxes: IRefitBox[],
+    options: CrossPageOptions,
+): HTMLElement[] {
+    const groups = getFlowGroupsOfPage(page);
+    const changed: HTMLElement[] = [];
+    boxes.forEach((box) => {
+        const group = groups[box.indexInPage];
+        if (!group || group.getAttribute(kFlowChainAttr) !== box.chainId) {
+            return;
+        }
+
+        const editable = group.querySelector<HTMLElement>(
+            `:scope > .bloom-editable[lang="${box.lang}"]`,
+        );
+        if (!editable || editable.innerHTML === box.html) {
+            return;
+        }
+
+        // The caret sits at a character, and the refit has replaced every character in the box,
+        // so there is nowhere in the new text that it belongs: it goes to the start of the box.
+        const hadCaret =
+            getCollapsedSelectionOffsetInEditable(editable) !== undefined;
+        apply(editable, box.html, options);
+        if (hadCaret) {
+            restoreCaretHere(editable, 0, options);
+        }
+
+        changed.push(editable);
+    });
+
+    return changed;
+}
 
 /** Start a new pass over the boundaries. Every boundary may move text again. */
 export function beginCrossPageRun(): void {
@@ -172,6 +242,7 @@ export function queueWalksForChainsOnPage(root: ParentNode = document): void {
 export function resetCrossPageCache(): void {
     nextBoxByChainAndPage.clear();
     settledThisRun.clear();
+    boundariesToRetryAfterWalk.clear();
 }
 
 /**
@@ -279,6 +350,20 @@ export async function settleCrossPageBoundary(
 
     const split = splitCombinedAcrossPages(last, next.html, fitOffset);
     apply(last, split.currentHtml, options);
+    // The linearized text has a separator between the two boxes' text, and a fit offset that
+    // lands on it, or on trailing white space, leaves every character where it was. That is
+    // not a move: asking C# to write the same content would count as one, and the pages after
+    // this one would be refitted for nothing.
+    // A push whose marker has nothing but white space or an empty paragraph after it moves no
+    // characters either, and the next box would be written with what it already holds.
+    const nothingMoved = isPush
+        ? split.nextHtml === next.html
+        : getComparableEditableLength(last) === lengthHere;
+    if (nothingMoved) {
+        apply(last, originalHtml, options);
+        restoreCaretHere(last, caretOffset, options);
+        return false;
+    }
     // The rewrite has dropped the caret, and the box keeps the focus while C# is asked to take
     // the text: a key pressed in that time must land where the caret was, not at the start of
     // the box. So the caret goes back now, before the wait, and stays wherever the typing
@@ -299,17 +384,23 @@ export async function settleCrossPageBoundary(
           })
         : undefined;
 
-    const accepted = await setNextContent(
+    const answer = await setNextContent(
         chainId,
         page.id,
         lang,
         split.nextHtml,
         next.html,
     );
-    if (!accepted) {
+    if (!answer.accepted) {
         // Bloom would not take it, and one reason is that the box holds something else now. So
         // what we remember about it is worth nothing: the next pass reads it again.
         forgetNextBoxesOfChain(chainId);
+        if (answer.walkInProgress) {
+            // A refit holds the chain. Nothing on this page will move the text again on its
+            // own, so this boundary is settled again as soon as the refit reports it is done.
+            boundariesToRetryAfterWalk.add(last);
+        }
+
         const typed = carrier?.stop() ?? "";
         apply(last, originalHtml, options);
         restoreCaretHere(last, caretOffset, options);

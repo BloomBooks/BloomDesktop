@@ -5,6 +5,10 @@
 // (FlowTextChains.MoveChainedTextOffPage, then FlowTextWalk). What this test is about is that
 // nothing of the run is lost or repeated when the page in the middle of it goes.
 //
+// The refit does not run by itself. Moving the text off the page records with Bloom that the rest
+// of the chain is out of date, and the work happens when the author asks for it or turns a page,
+// so this test asks for it (runPendingReflow) before reading the book.
+//
 // The run is read out of the book through C# (getBookChains) rather than off a page, and the Edit
 // tab is parked outside the chain first: Bloom writes the page being edited into the book only
 // when the book moves off it, so the book's copy of that page lags behind the browser's until
@@ -23,6 +27,7 @@ import {
     getBookChains,
     kTextForSeveralPages,
     pasteText,
+    runPendingReflow,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { deletePage } from "../helpers/pageList";
@@ -85,6 +90,11 @@ test.describe("deleting a page that holds part of a flow", () => {
         // THE ACTION UNDER TEST: delete the middle page of the chain.
         await deletePage(page, secondPageId);
         await waitForReflowIdle(page);
+
+        // The text of the deleted page has been moved into the box beside it, so the rest of the
+        // chain has to be divided again. That refit waits for the author: parking below is a page
+        // turn, which would start it while the book was being read, so ask for it here.
+        await runPendingReflow(page);
 
         await parkOffTheChain();
         const after = await getBookChains(page);

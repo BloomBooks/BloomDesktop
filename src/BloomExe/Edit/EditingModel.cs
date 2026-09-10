@@ -983,8 +983,8 @@ namespace Bloom.Edit
                 doAfterSaveToDisk: () =>
                     // Every page is a different size now, so a run of text carried through
                     // linked text boxes breaks in different places on every page of its chain.
-                    // The page being edited settles itself when it reloads; this refits the
-                    // pages of every chain that the browser cannot see.
+                    // This asks for every chain to be refitted; nothing runs until the user
+                    // changes pages or presses Reflow now.
                     FlowTextWalk.RequestEveryChain(this)
             );
         }
@@ -1183,6 +1183,9 @@ namespace Bloom.Edit
                         _view.UpdateThumbnailAsync(_previouslySelectedPage);
                     }
 
+                    // The page the user is leaving, which is what says whether this is a page
+                    // change at all: see RunPendingFlowTextWalks below.
+                    var pageLeft = _previouslySelectedPage;
                     _previouslySelectedPage = _pageSelection.CurrentSelection;
 
                     // BL-2339: remember last edited page
@@ -1200,6 +1203,8 @@ namespace Bloom.Edit
                     CheckForBL8852();
 
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+
+                    RunPendingFlowTextWalks(pageLeft, page);
                 }
             }
             catch (Exception)
@@ -1239,6 +1244,35 @@ namespace Bloom.Edit
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Refit the pages of any flow that a change has left out of date, now that the user has
+        /// changed pages. This is the one moment in editing when refitting does not interrupt
+        /// anything: a walk holds a progress dialog over the window for seconds, which is why
+        /// nothing else starts one (see FlowTextWalk), and the page the user has just left is
+        /// saved and the new one is not yet being typed in.
+        ///
+        /// Nothing here has to save a page first, which reflowNow does: the page the user has
+        /// just left was saved by the navigation, and the page they have arrived at has not been
+        /// typed in yet, so the book's copy of each is what the browser holds.
+        ///
+        /// Only a move from one page of this book to another counts. This same code navigates
+        /// when a different book is opened and when a page is saved and reloaded in place, and
+        /// neither of those is the user turning a page.
+        /// </summary>
+        private void RunPendingFlowTextWalks(IPage pageLeft, IPage pageNow)
+        {
+            if (!Visible || pageLeft == null || pageNow == null)
+                return;
+            if (pageLeft.Id == pageNow.Id || pageLeft.Book != CurrentBook)
+                return;
+            if (!FlowTextWalk.HasPending)
+                return;
+            if (!CurrentBook.UserPrefs.FlowTextReflowOnPageChange)
+                return; // The user would rather ask for it themselves, with Reflow now.
+
+            FlowTextWalk.RunPending(this);
         }
 
         private void CheckForBL8852()

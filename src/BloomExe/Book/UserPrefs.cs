@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
@@ -20,6 +21,9 @@ namespace Bloom.Book
         private bool _includeBackgroundColors;
         private string _spreadsheetFolder;
         private bool _uploadAgreementsAccepted;
+
+        // True unless the book says otherwise: see FlowTextReflowOnPageChange.
+        private bool _flowTextReflowOnPageChange = true;
 
         private UserPrefs() { }
 
@@ -149,6 +153,31 @@ namespace Bloom.Book
             set
             {
                 _uploadAgreementsAccepted = value;
+                Save();
+            }
+        }
+
+        /// <summary>
+        /// When the user changes pages, should the pages of a flow that a change has left out of
+        /// date be refitted then? True unless the user turns it off for this book. Refitting is
+        /// seconds of work behind a progress dialog, so an author who would rather ask for it
+        /// themselves (Reflow now) can say so.
+        ///
+        /// Only the false value is written to the file: DefaultValueHandling.Ignore leaves the
+        /// property out while it holds the default, so a book nobody has changed this for has no
+        /// entry, and reading such a book gets the true the field is initialized to.
+        /// </summary>
+        [DefaultValue(true)]
+        [JsonProperty(
+            "flowTextReflowOnPageChange",
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        )]
+        public bool FlowTextReflowOnPageChange
+        {
+            get { return _flowTextReflowOnPageChange; }
+            set
+            {
+                _flowTextReflowOnPageChange = value;
                 Save();
             }
         }

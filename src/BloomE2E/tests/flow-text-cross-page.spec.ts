@@ -5,6 +5,12 @@
 // is not in the browser while the first page is being edited, so every move here goes through
 // C# (FlowTextApi) rather than through the browser alone.
 //
+// Text that moves onto another page leaves the pages after that one out of date, and that refit
+// does not run by itself: it waits for the author to ask, or for them to turn a page. So a test
+// that reads a page other than the one it is editing runs the waiting refit first
+// (runPendingReflow), or it would read those pages as they were before its own change.
+// flow-text-reflow-pending.spec.ts is the test about the waiting itself.
+//
 // The Test Case IDs in the titles are marked TBD: this feature has no rows in the Notion test
 // inventory yet, and the ids are allocated there when it lands, not by this file.
 //
@@ -39,6 +45,7 @@ import {
     makeTwoLinkedJustTextPages,
     pasteText,
     pressKeyAtStartOfBox,
+    runPendingReflow,
     typeNewParagraphAfter,
     typeParagraphAtEnd,
 } from "../helpers/flowText";
@@ -56,6 +63,10 @@ let secondPageId: string;
 
 /** What the box of one page holds, whichever page is showing at the moment. */
 async function textOfPage(page: Page, pageId: string): Promise<string> {
+    // Any refit still waiting is run first, so that this reads the page as the change that came
+    // before it leaves it rather than as it was. Turning the page below would start that refit,
+    // and the reading would then race it.
+    await runPendingReflow(page);
     await goToPage(page, pageId);
     return (await getBoxTexts(page))[0];
 }
@@ -152,6 +163,9 @@ test.describe("editing a run of text that crosses pages", () => {
 
         expect(await getShownPageId(page)).toBe(secondPageId);
         expect(await getCaretOwner(page)).toBe(0);
+        // The typing left the pages after this one to be refitted, and going back below would
+        // start that off while the reading was in flight, so run it now.
+        await runPendingReflow(page);
         // The page the words came from holds no more than fits, which is a question about that
         // page, so go back to it: the box read above is the one on the page now shown.
         await goToPage(page, firstPageId);
@@ -242,6 +256,10 @@ test.describe("changing a page whose text already runs on to the next page", () 
         const points = await doubleFontSizeOfBox(page, 0);
         expect(points).toBeGreaterThan(0);
 
+        // The style belongs to the book, so the pages this test is not editing break their text
+        // somewhere else now. That refit waits for the author, so ask for it before reading them.
+        await runPendingReflow(page);
+
         // It is still the same run of text, in the same order. This comes first, because a word
         // lost at the join is the failure worth naming.
         assertRunIsIntact(await getRunTexts(page), paragraphs.join(" "));
@@ -271,6 +289,10 @@ test.describe("changing a page whose text already runs on to the next page", () 
         // THE ACTION UNDER TEST: at the end of the second of the page's paragraphs, press Enter
         // and type a paragraph of about 200 characters.
         await typeNewParagraphAfter(page, 0, 1, kTypedParagraph);
+
+        // The paragraph pushed text onto the page after this one, which leaves the rest of the
+        // run to be refitted; the reading below is of the whole run, so run it first.
+        await runPendingReflow(page);
 
         const expected = [
             ...paragraphs.slice(0, 2),

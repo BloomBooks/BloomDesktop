@@ -2000,6 +2000,63 @@ svg.bloom-videoControl {
     }
 }
 
+// Flow text: the panel a chained group shows while a refit of its chain waits to be run
+// (flowReflowBubble.tsx). It sits in the dark area to the right of the page, beside the box it
+// belongs to, and is drawn in the source-bubble palette from sourceBubbles.less because it is
+// one of that family of bubbles. It is NOT a qtip: qtip keeps one bubble per element, so a
+// second one on a group would take the group's source bubble away. flowReflowBubble.tsx puts it
+// in #page-scaling-container, which is where the source bubbles go too, so it shares the page's
+// zoom without being part of the page's content.
+.bloom-flow-reflowBubble {
+    position: absolute;
+    z-index: 15002;
+    // Sized to its content, so the checkbox's label stays on one line. The panel is placed by
+    // its LEFT edge, against the page's right edge, so it grows away from the page and its
+    // width does not enter flowReflowBubble.tsx's placement arithmetic. The maximum stops a
+    // long translation of that label from reaching across the whole dark area.
+    width: max-content;
+    max-width: 260px;
+    padding: 6px 9px;
+    border: 2px solid @BubbleBorder;
+    border-radius: 5px;
+    background-color: @BubbleBackground;
+    color: @BubbleTextColor;
+    font-family: @UIFontStack;
+    font-size: 9pt;
+    line-height: 1.4;
+    text-align: left;
+    text-indent: 0;
+    cursor: default;
+    pointer-events: auto;
+}
+
+// The arrow pointing back at the box the panel belongs to, drawn the size of the source
+// bubbles' own tip. Two triangles, the border's colour behind the background's, so the arrow
+// wears the panel's border on its leading edge.
+.bloom-flow-reflowBubble::before,
+.bloom-flow-reflowBubble::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 10px 8px 0;
+    border-color: transparent;
+}
+
+.bloom-flow-reflowBubble::before {
+    left: -12px;
+    margin-top: -8px;
+    border-right-color: @BubbleBorder;
+}
+
+.bloom-flow-reflowBubble::after {
+    left: -9px;
+    margin-top: -8px;
+    border-right-color: @BubbleBackground;
+}
+
 // The absolutely positioned label is placed against its group, so the group has to be the
 // positioning context. A group carrying one of these labels is the first or the last of its chain
 // on the page, so it may wear none of the flow classes above: the label itself is what says it

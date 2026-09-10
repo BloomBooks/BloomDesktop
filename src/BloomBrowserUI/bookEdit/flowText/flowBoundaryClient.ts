@@ -158,6 +158,17 @@ export function peekNext(
     });
 }
 
+/** What Bloom made of an offer to put text in the next box of the chain. */
+export interface ISetNextContentResult {
+    accepted: boolean;
+    /**
+     * True when a refit of the whole chain is what stopped Bloom taking the text. The move is
+     * worth making again as soon as that refit has finished, and Bloom says so over the
+     * flowText websocket (walkFinished).
+     */
+    walkInProgress?: boolean;
+}
+
 /**
  * Put this content in the next box of the chain, on a later page, and save that page.
  *
@@ -171,20 +182,17 @@ export function setNextContent(
     lang: string,
     html: string,
     expectedHtml: string,
-): Promise<boolean> {
+): Promise<ISetNextContentResult> {
     return enqueue(async () => {
-        await postJsonAsync("flowText/setNextContent", {
-            chainId,
-            afterPageId,
-            lang,
-            html,
-            expectedHtml,
-        });
-        return true;
+        const answer = await postForJson<ISetNextContentResult>(
+            "flowText/setNextContent",
+            { chainId, afterPageId, lang, html, expectedHtml },
+        );
+        return answer ?? { accepted: false };
     }).then(
-        (done) => done === true,
+        (answer) => answer,
         // A refusal is not a failure of the pass: the caller keeps the text where it is.
-        () => false,
+        () => ({ accepted: false }),
     );
 }
 

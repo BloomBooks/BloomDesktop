@@ -1,18 +1,79 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BoxMetrics, LineMeasurer } from "./flowFit";
 import { getFlowPassSamples, kMetricsPropertyName } from "./flowTiming";
-// Nothing here is about the pages the browser cannot see, and a call to C# in a test would
-// hang: the boundary work is exercised in flowCrossPageSpec.
+// What C# would answer. Most of what a boundary does is exercised in flowCrossPageSpec; here
+// the next box exists only for the tests about when a boundary is settled.
+let nextBox: { pageId: string; indexInPage: number; html: string } | undefined;
+let nextContentAnswer: { accepted: boolean; walkInProgress?: boolean } = {
+    accepted: true,
+};
+let setNextContentCount = 0;
+// The content the browser offered C# for the box on the next page, in order.
+const sentContent: string[] = [];
+
 vi.mock("./flowBoundaryClient", () => ({
-    peekNext: () => Promise.resolve(undefined),
-    setNextContent: () => Promise.resolve(true),
+    peekNext: () => Promise.resolve(nextBox),
+    peekPrevious: () => Promise.resolve(undefined),
+    setNextContent: (
+        _chainId: string,
+        _afterPageId: string,
+        _lang: string,
+        html: string,
+    ) => {
+        setNextContentCount++;
+        sentContent.push(html);
+        return Promise.resolve(nextContentAnswer);
+    },
     getPendingCaret: () => Promise.resolve(undefined),
     getPendingOverflow: () => Promise.resolve(undefined),
     postPendingCaret: () => Promise.resolve(),
+    requestWalk: () => Promise.resolve(),
     unlinkFrom: () => Promise.resolve(),
     jumpToPage: () => undefined,
 }));
 
+// What a refit changed in the boxes of the page being edited, which Bloom hands over once, and
+// how many times the browser has asked for it.
+let refitResult: {
+    chainId: string;
+    lang: string;
+    indexInPage: number;
+    html: string;
+}[] = [];
+let refitResultAsks = 0;
+
+vi.mock("./flowReflowClient", () => ({
+    getPendingWalks: () => Promise.resolve(undefined),
+    getRefitResult: () => {
+        refitResultAsks++;
+        const taken = refitResult;
+        refitResult = [];
+        return Promise.resolve(taken);
+    },
+    getReflowOnPageChange: () => Promise.resolve(false),
+    postReflowNow: () => Promise.resolve(),
+    postReflowOnPageChange: () => Promise.resolve(),
+}));
+
+// The listener flowTrigger puts on the flowText websocket, so that a test can send it the
+// event C# sends when a refit finishes.
+let socketListener: ((event: { id: string }) => void) | undefined;
+
+vi.mock("../../utils/WebSocketManager", () => ({
+    default: {
+        addListener: (
+            _context: string,
+            listener: (event: { id: string }) => void,
+        ) => {
+            socketListener = listener;
+        },
+        removeListener: () => {
+            socketListener = undefined;
+        },
+    },
+}));
+
+import { kReflowingAttr } from "./flowConstants";
 import {
     FlowTextOptions,
     reflowAllChainsOnPage,
@@ -22,11 +83,23 @@ import {
     waitForBoundaryWork,
 } from "./flowTrigger";
 
+// The real fit probe asks a Range for its rectangles, and jsdom's Range has no such method.
+// An answer of no rectangles is what jsdom means: nothing is laid out, so all of it "fits".
+(
+    Range.prototype as unknown as { getClientRects: () => DOMRect[] }
+).getClientRects = () => [];
+
 // jsdom lays nothing out, so the real measurer would have nothing to work from. This one
 // fits eight characters in every box, which is enough to make the text move.
 const kFakeMeasurer: LineMeasurer = {
     measureFit: (text: string, _metrics: BoxMetrics) =>
         Math.min(text.length, 8),
+};
+
+// Fits the whole of whatever it is given, so that a pull back across the boundary brings a
+// word back rather than stopping at the separator between the two boxes' text.
+const kRoomForEverythingMeasurer: LineMeasurer = {
+    measureFit: (text: string, _metrics: BoxMetrics) => text.length,
 };
 
 let frameQueue: Array<(() => void) | undefined> = [];
@@ -46,6 +119,14 @@ function runFrames(): void {
     const queued = frameQueue;
     frameQueue = [];
     queued.forEach((callback) => callback?.());
+}
+
+/** Let every round of boundary work, and any retry a refusal asked for, run to a standstill. */
+async function settleAllWork(): Promise<void> {
+    for (let tick = 0; tick < 10; tick++) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await waitForBoundaryWork();
+    }
 }
 
 /** Let the MutationObserver deliver its records. */
@@ -97,6 +178,12 @@ describe("flowTrigger", () => {
         document.body.innerHTML = "";
         frameQueue = [];
         clearSamples();
+        nextBox = undefined;
+        nextContentAnswer = { accepted: true };
+        setNextContentCount = 0;
+        sentContent.length = 0;
+        refitResult = [];
+        refitResultAsks = 0;
     });
 
     afterEach(() => {
@@ -268,6 +355,126 @@ describe("flowTrigger", () => {
         requestPassFor([boxes[1]], "continueInto");
 
         expect(marked).toEqual([boxes[1]]);
+    });
+
+    it("settles the boundary again when Bloom says its refit has finished", async () => {
+        // C# refuses a move while it is refitting the chain off-screen, and nothing on this
+        // page moves the text again on its own: the page would stay as the user emptied it.
+        nextBox = { pageId: "page-3", indexInPage: 0, html: "<p>next</p>" };
+        nextContentAnswer = { accepted: false, walkInProgress: true };
+        const { page } = makePage(2);
+        // The boundary is between this page and the next, so the page has to be one C# can name.
+        page.id = "page-2";
+
+        setupFlowText(page, {
+            ...makeOptions(),
+            measurer: kRoomForEverythingMeasurer,
+        });
+        await settleAllWork();
+        // Sanity check: the move was offered once and refused, and the page says so. Room for
+        // everything means the next page's word comes back here, so this is a real move.
+        expect(setNextContentCount).toBe(1);
+        expect(sentContent[0]).not.toContain("next");
+        expect(page.getAttribute(kReflowingAttr)).toBe("true");
+
+        nextContentAnswer = { accepted: true };
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+
+        expect(setNextContentCount).toBe(2);
+        // The move was taken, so nothing is waiting for the next refit to end.
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+        expect(setNextContentCount).toBe(2);
+    });
+
+    it("leaves a refusal a refit will not mend alone", async () => {
+        nextBox = { pageId: "page-3", indexInPage: 0, html: "<p>next</p>" };
+        nextContentAnswer = { accepted: false };
+        const { page } = makePage(2);
+        page.id = "page-2";
+
+        setupFlowText(page, {
+            ...makeOptions(),
+            measurer: kRoomForEverythingMeasurer,
+        });
+        await settleAllWork();
+        expect(setNextContentCount).toBe(1);
+
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+
+        expect(setNextContentCount).toBe(1);
+    });
+
+    it("puts what a refit changed in a box of this page into that box", async () => {
+        // A refit runs off-screen and saves the pages it changes, but it does not reload the
+        // editor, so the box on screen would go on showing text that is not in the book.
+        const { page, boxes } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+        clearSamples();
+        refitResult = [
+            {
+                chainId: "chain-1",
+                lang: "xkal",
+                indexInPage: 1,
+                html: "<p>fixed</p>",
+            },
+        ];
+
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+
+        expect(boxes[1].innerHTML).toBe("<p>fixed</p>");
+        // The box holds text nothing in the browser has measured, so the page settles around it.
+        expect(reasonsOfPasses()).toContain("refitResult");
+    });
+
+    it("takes what a refit left for this page as the page opens", async () => {
+        // The refit can finish while the page is still loading, and then its word about the box
+        // is waiting for the page rather than on its way to it.
+        refitResult = [
+            {
+                chainId: "chain-1",
+                lang: "xkal",
+                indexInPage: 0,
+                html: "<p>fixed</p>",
+            },
+        ];
+        const { page, boxes } = makePage(1);
+        page.id = "page-2";
+
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+
+        expect(refitResultAsks).toBe(1);
+        expect(boxes[0].innerHTML).toBe("<p>fixed</p>");
+    });
+
+    it("asks for what a refit changed here before settling a boundary it refused", async () => {
+        // The boundary is settled against what the box holds, so the refit's content goes in
+        // first: a box settled against text the refit has replaced would send C# text that is
+        // not in the book.
+        nextBox = { pageId: "page-3", indexInPage: 0, html: "<p>next</p>" };
+        nextContentAnswer = { accepted: false, walkInProgress: true };
+        const { page } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, {
+            ...makeOptions(),
+            measurer: kRoomForEverythingMeasurer,
+        });
+        await settleAllWork();
+        expect(setNextContentCount).toBe(1);
+        const asksBefore = refitResultAsks;
+
+        nextContentAnswer = { accepted: true };
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+
+        expect(refitResultAsks).toBe(asksBefore + 1);
+        expect(setNextContentCount).toBe(2);
     });
 
     it("asks for the overflow warning on the last box of the page even when no text moves", async () => {

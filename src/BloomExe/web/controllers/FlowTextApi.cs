@@ -10,6 +10,7 @@ using Bloom.MiscUI;
 using Bloom.Publish;
 using L10NSharp;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -28,9 +29,10 @@ namespace Bloom.web.controllers
     ///    C# writing to it would either be overwritten or would clobber unsaved typing. Where an
     ///    operation has to change the current page, we hand the new content back and the browser
     ///    applies it.
-    ///  - Save with Book.SaveForPageChanged, never EditingModel.SaveThen. SaveThen collects the
-    ///    page the browser is showing, which is a round trip through the browser and is about the
-    ///    current page, which we are not changing.
+    ///  - Save a page with Book.SaveForPageChanged, not EditingModel.SaveThen: these handlers
+    ///    change pages nobody is editing, and SaveThen is a round trip through the browser for
+    ///    the content of the current page. The exception is reflowNow, which asks for exactly
+    ///    that round trip, because a walk reads the book's copy of the page being edited.
     /// </summary>
     public class FlowTextApi
     {
@@ -58,7 +60,8 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Nothing anywhere in Bloom is moving text between the boxes of a chain: no handler is
-        /// running, and no whole-chain walk is running or waiting.
+        /// running, and no whole-chain walk is running. A walk merely waiting in the queue does
+        /// not count, because nothing will run it until the user changes pages or asks for it.
         /// </summary>
         public static bool IsIdle => _busyCount == 0 && !Book.FlowTextWalk.IsBusy;
 
@@ -73,8 +76,13 @@ namespace Bloom.web.controllers
             _editingModel = editingModel;
             _pageTemplatesApi = pageTemplatesApi;
             _sourceCollectionsList = sourceCollectionsList;
-            // A caret waiting for a page of one book means nothing in another.
-            _bookSelection.SelectionChanged += (unused1, unused2) => _pendingCaret = null;
+            // A caret waiting for a page of one book, or content a walk worked out for a page of
+            // one book, means nothing in another.
+            _bookSelection.SelectionChanged += (unused1, unused2) =>
+            {
+                _pendingCaret = null;
+                FlowTextWalk.ClearRefitResults();
+            };
         }
 
         public class PendingCaret
@@ -159,6 +167,12 @@ namespace Bloom.web.controllers
             public string styles { get; set; }
         }
 
+        public class ReflowOnPageChangeRequest
+        {
+            /// <summary>Whether changing pages should run the refitting that is waiting.</summary>
+            public bool value { get; set; }
+        }
+
         public class UnlinkFromRequest
         {
             public string chainId { get; set; }
@@ -189,6 +203,22 @@ namespace Bloom.web.controllers
             );
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "unlinkFrom", HandleUnlinkFrom, true);
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "walk", HandleWalk, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "pendingWalks",
+                HandleGetPendingWalks,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "refitResult",
+                HandleGetRefitResult,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "reflowNow", HandleReflowNow, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "reflowOnPageChange",
+                HandleReflowOnPageChange,
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingCaret",
                 HandlePendingCaret,
@@ -250,7 +280,7 @@ namespace Bloom.web.controllers
                     }
                     finally
                     {
-                        FlowTextWalk.ReleaseClaim(_editingModel);
+                        FlowTextWalk.ReleaseClaim();
                     }
                 }
             );
@@ -773,6 +803,11 @@ namespace Bloom.web.controllers
         /// POST flowText/setNextContent: put this content in the next box of the chain, on the
         /// page after the current one, and save that page. Refuses when the next box is on the
         /// page being edited: the browser owns that page and settles it itself.
+        ///
+        /// Answers { accepted, walkInProgress }. A refusal that only has to be waited out — a
+        /// walk holds the chain, or has moved this box's text on since the browser read it — is
+        /// an answer rather than a failure, because the browser retries such a move once the
+        /// walk reports it has finished.
         /// </summary>
         private void HandleSetNextContent(ApiRequest request)
         {
@@ -802,9 +837,9 @@ namespace Bloom.web.controllers
                         // A walk is dividing this very run of text among its boxes, off-screen.
                         // Letting the browser write one of those boxes in the middle of that
                         // would put the same text in two places. The browser keeps the text
-                        // where it is when we refuse, and settles the boundary again on its
-                        // next pass, once the walk has finished.
-                        request.Failed("A whole-chain refit is in progress.");
+                        // where it is, and settles the boundary again when the walk reports it
+                        // has finished, so walkInProgress says to wait for that word.
+                        request.ReplyWithJson(new { accepted = false, walkInProgress = true });
                         return;
                     }
 
@@ -820,7 +855,10 @@ namespace Bloom.web.controllers
                         // The box holds something else now: a walk has refitted it since the
                         // browser read it. The content offered was worked out from what it held
                         // then, so writing it would undo the refit and put text in two places.
-                        request.Failed("That box of the chain has changed since it was read.");
+                        // The browser reads the box afresh and tries again.
+                        request.ReplyWithJson(
+                            new { accepted = false, walkInProgress = FlowTextWalk.IsBusy }
+                        );
                         return;
                     }
 
@@ -842,7 +880,7 @@ namespace Bloom.web.controllers
                     }
 
                     _editingModel.RefreshThumbnail(page);
-                    request.PostSucceeded();
+                    request.ReplyWithJson(new { accepted = true });
                 }
             );
         }
@@ -888,12 +926,13 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// POST flowText/walk: refit a whole chain from this page on, off-screen, so that the
-        /// later pages of the chain hold what they would hold if the user had opened each of
-        /// them. With no chainId, refit every chain in the book from its first page.
+        /// POST flowText/walk: ask for a whole chain to be refitted from this page on, so that
+        /// the later pages of the chain hold what they would hold if the user had opened each of
+        /// them. With no chainId, ask for every chain in the book, each from its first page.
         ///
-        /// Returns as soon as the walk is queued; FlowTextWalk does the work on a background
-        /// thread and counts as busy for IsIdle while it does.
+        /// Nothing is refitted yet. The walk waits in the queue until the user changes pages or
+        /// asks for it with Reflow now (flowText/reflowNow), because a walk puts a progress
+        /// dialog over the page for seconds.
         /// </summary>
         private void HandleWalk(ApiRequest request)
         {
@@ -916,6 +955,110 @@ namespace Bloom.web.controllers
                 }
             );
         }
+
+        /// <summary>
+        /// GET flowText/pendingWalks: what refitting is waiting to be done, which is what the
+        /// Reflow now button is offered for. Replies { pending, chainIds, reflowOnPageChange },
+        /// reflowOnPageChange being whether changing pages will run it (the book's own setting).
+        /// </summary>
+        private void HandleGetPendingWalks(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                    request.ReplyWithJson(
+                        new
+                        {
+                            pending = FlowTextWalk.HasPending,
+                            chainIds = FlowTextWalk.PendingChainIds,
+                            reflowOnPageChange = CurrentUserPrefs?.FlowTextReflowOnPageChange
+                                ?? true,
+                        }
+                    )
+            );
+        }
+
+        /// <summary>
+        /// POST flowText/reflowNow: run the refitting that is waiting, now, rather than at the
+        /// next page change. Returns as soon as it has started; the work runs on a background
+        /// thread behind the Edit tab's progress dialog.
+        ///
+        /// The page being edited is saved first, because a walk covers that page and reads the
+        /// book's copy of it, which is otherwise older than what the user is looking at.
+        /// </summary>
+        private void HandleReflowNow(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    _editingModel.SaveThen(
+                        () => _editingModel.CurrentPage.Id,
+                        () =>
+                            // A save or a navigation is already in flight, so the page cannot be
+                            // collected from the browser at this moment. The button stays up for
+                            // the user to press again.
+                            Logger.WriteEvent(
+                                "flow text: reflowNow came while Bloom was not in a state to save the page."
+                            ),
+                        doAfterSaveToDisk: () => FlowTextWalk.RunPending(_editingModel)
+                    );
+                    request.PostSucceeded();
+                }
+            );
+        }
+
+        /// <summary>
+        /// GET flowText/refitResult?pageId=: what a walk made of the boxes on this page, which is
+        /// the page being edited, and forget it. C# saved the page but cannot reload the browser's
+        /// copy of it, so the browser puts this content in place itself when it hears a walk has
+        /// finished. Replies { boxes: [ { chainId, lang, indexInPage, html } ] }, the list empty
+        /// when the walk changed nothing on this page.
+        /// </summary>
+        private void HandleGetRefitResult(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var pageId = request.RequiredParam("pageId");
+                    request.ReplyWithJson(new { boxes = FlowTextWalk.TakeRefitResults(pageId) });
+                }
+            );
+        }
+
+        /// <summary>
+        /// GET flowText/reflowOnPageChange: whether changing pages runs the refitting that is
+        /// waiting, which is this book's own setting. Replies { value }.
+        /// POST flowText/reflowOnPageChange with { value }: set it.
+        /// </summary>
+        private void HandleReflowOnPageChange(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var prefs = CurrentUserPrefs;
+                    if (request.HttpMethod == HttpMethods.Post)
+                    {
+                        var body = request.RequiredPostObject<ReflowOnPageChangeRequest>();
+                        if (prefs != null)
+                            prefs.FlowTextReflowOnPageChange = body.value;
+                        request.PostSucceeded();
+                        return;
+                    }
+
+                    request.ReplyWithJson(
+                        new { value = prefs?.FlowTextReflowOnPageChange ?? true }
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// The selected book's preferences, or null when no book is selected.
+        /// </summary>
+        private UserPrefs CurrentUserPrefs => _bookSelection.CurrentSelection?.UserPrefs;
 
         /// <summary>
         /// POST flowText/pendingCaret: remember where the caret should go when a page loads,

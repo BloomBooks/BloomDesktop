@@ -27,6 +27,7 @@ import {
     clickContinueText,
     kTextForSeveralPages,
     pasteText,
+    runPendingReflow,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { pageListFrame } from "../helpers/pageList";
@@ -85,6 +86,11 @@ async function parkOffTheChain(
     page: Page,
     chainPageIds: string[],
 ): Promise<void> {
+    // A thumbnail is drawn from the page's saved HTML, so a refit still waiting to be run would
+    // leave the thumbnails showing what the pages held before it. Parking is a page turn, which
+    // starts such a refit, so run it here rather than reading thumbnails that are about to be
+    // redrawn.
+    await runPendingReflow(page);
     const parking = (await getPages(page)).find(
         (candidate) => !chainPageIds.includes(candidate.id),
     );

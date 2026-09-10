@@ -408,10 +408,35 @@ describe("flowOverflowMarker", () => {
             offset: 0,
         });
 
-        expect(range.endContainer).toBe(paragraph);
-        expect(range.endOffset).toBe(
-            Array.from(paragraph.childNodes).indexOf(marker),
-        );
+        const before = marker.previousSibling as Text;
+        expect(paragraph.contains(before)).toBe(true);
+        expect(before.data).toBe("One two ");
+        expect(range.endContainer).toBe(before);
+        expect(range.endOffset).toBe(before.data.length);
+    });
+
+    it("measures the same range whether or not the text node is split at the offset", () => {
+        const whole = makeEditable("<p>One two three four</p>");
+        const split = makeEditable("<p>One two three four</p>");
+        const splitParagraph = split.querySelector("p") as HTMLElement;
+        (splitParagraph.firstChild as Text).splitText(8);
+        // Sanity check: the two boxes hold the same text in a different number of nodes.
+        expect(splitParagraph.childNodes.length).toBe(2);
+        expect(split.textContent).toBe(whole.textContent);
+
+        const rangeOfWhole = document.createRange();
+        rangeOfWhole.setStart(whole, 0);
+        setFitRangeEnd(rangeOfWhole, linearizeEditable(whole).points[8]);
+        const rangeOfSplit = document.createRange();
+        rangeOfSplit.setStart(split, 0);
+        setFitRangeEnd(rangeOfSplit, linearizeEditable(split).points[8]);
+
+        // The same characters come before the end in both, and the end is inside a text node
+        // rather than at the edge between two, which is what the layout measures differently.
+        expect(rangeOfSplit.endContainer.nodeType).toBe(Node.TEXT_NODE);
+        expect(rangeOfSplit.toString()).toBe(rangeOfWhole.toString());
+        expect((rangeOfSplit.endContainer as Text).data).toBe("One two ");
+        expect(rangeOfSplit.endOffset).toBe(8);
     });
 
     it("finds the offset of a marker that a saved page already carried", () => {

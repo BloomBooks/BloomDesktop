@@ -36,6 +36,7 @@ import {
     isCreatePagesButtonShown,
     kTextForSeveralPages,
     pasteText,
+    runPendingReflow,
     typeParagraphAtEnd,
     waitForReflowIdle,
 } from "../helpers/flowText";
@@ -59,6 +60,11 @@ let textThatWentIn: string;
  * about the chain is all of a piece. The page parked on carries no box of the chain.
  */
 async function parkOffTheChain(page: Page): Promise<void> {
+    // Opening a page of the run can move text between it and the page beside it, which leaves the
+    // pages after that to be refitted. That refit waits for the author, and parking is a page
+    // turn, which is one of the two things that starts it, so run it here: what the book says
+    // afterwards then has nothing in flight behind it.
+    await runPendingReflow(page);
     const chains = await getBookChains(page);
     const chainPages = chains.flatMap((chain) =>
         chain.groups.map((group) => group.pageId),

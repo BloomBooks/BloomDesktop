@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
@@ -541,6 +542,328 @@ namespace BloomTests.Book
                 Does.Contain("p1"),
                 "The page has to be saved, or the thumbnail goes on showing its triangle."
             );
+        }
+
+        /// <summary>
+        /// Two pages of one chain, which is the least that RequestEveryChain will queue.
+        /// </summary>
+        private static HtmlDom TwoPageChain()
+        {
+            return MakeBookDom(
+                Page("p1", Group(Editable("<p>abcdefghij</p>")))
+                    + Page("p2", Group(Editable("<p><br /></p>")))
+            );
+        }
+
+        [Test]
+        public void QueueFromPageForward_QueuesARefitOfThePagesFromHereOn()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p2", "en", null);
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1), "One chain was asked about, so one walk.");
+            Assert.That(queued[0].FromPageId, Is.EqualTo("p2"));
+            Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.FromPageForward));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_QueuesARefitOfTheWholeFlow()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueEveryChain(dom, "en");
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1));
+            Assert.That(
+                queued[0].FromPageId,
+                Is.EqualTo("p1"),
+                "A refit of the whole flow starts at its first page."
+            );
+            Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_AfterAWalkFromAPageOn_StillReportsTheWholeFlow()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p1", "en", null);
+            var queuedFirst = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(
+                queuedFirst[0].Kind,
+                Is.EqualTo(FlowTextWalk.WalkKind.FromPageForward),
+                "Sanity check: the entry the second request has to merge into."
+            );
+
+            // Both start at the same page, so the second request merges into the first.
+            FlowTextWalk.QueueEveryChain(dom, "en");
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1), "One chain and one language is one walk.");
+            Assert.That(
+                queued[0].Kind,
+                Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow),
+                "The wider reason for the walk is the one to report."
+            );
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueFromPageForward_AfterAWalkOfTheWholeFlow_StillReportsTheWholeFlow()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueEveryChain(dom, "en");
+            // The whole flow is already going to be refitted from page one, so this merges in.
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p2", "en", null);
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1));
+            Assert.That(queued[0].FromPageId, Is.EqualTo("p1"));
+            Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueFromPageForward_QueuesTheWalkButDoesNotRunIt()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+            Assert.That(FlowTextWalk.HasPending, Is.False, "Sanity check: nothing queued yet.");
+
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p1", "en", null);
+
+            Assert.That(FlowTextWalk.HasPending, Is.True, "The walk is waiting to be run.");
+            Assert.That(
+                FlowTextWalk.IsBusy,
+                Is.False,
+                "A walk merely waiting is not work in progress: nothing will run it until the "
+                    + "user changes pages or asks for it, so anything waiting for it would wait "
+                    + "for ever."
+            );
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void PendingChainIds_ReportsEachChainOnce()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    Group(Editable("<p>one</p>") + Editable("<p>uno</p>", "es"))
+                        + Group(Editable("<p>two</p>"), "other")
+                )
+                    + Page(
+                        "p2",
+                        Group(Editable("<p><br /></p>") + Editable("<p><br /></p>", "es"))
+                            + Group(Editable("<p><br /></p>"), "other")
+                    )
+            );
+
+            // Two languages of one chain are two walks, but one chain.
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p1", "en", null);
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p1", "es", null);
+            FlowTextWalk.QueueFromPageForward(dom, "other", "p1", "en", null);
+            Assert.That(
+                FlowTextWalk.QueuedWalksForTests().Count,
+                Is.EqualTo(3),
+                "Sanity check: one walk per chain and language."
+            );
+
+            Assert.That(
+                FlowTextWalk.PendingChainIds.OrderBy(id => id),
+                Is.EqualTo(new[] { "chain", "other" })
+            );
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void RunPending_WithNothingQueued_LeavesNothingRunning()
+        {
+            FlowTextWalk.ClearQueueForTests();
+
+            FlowTextWalk.RunPending(null);
+
+            Assert.That(FlowTextWalk.IsBusy, Is.False);
+            Assert.That(FlowTextWalk.HasPending, Is.False);
+        }
+
+        [Test]
+        public void RunPending_RunsTheQueueOut()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p1", "en", null);
+            Assert.That(FlowTextWalk.HasPending, Is.True, "Sanity check: there is a walk to run.");
+
+            // There is no book here, so each walk finds nothing to fit and is taken off the
+            // queue; what is under test is that RunPending starts the queue at all, and that it
+            // ends with nothing waiting and nothing running.
+            FlowTextWalk.RunPending(null);
+
+            var gaveUpAt = DateTime.Now.AddSeconds(10);
+            while ((FlowTextWalk.HasPending || FlowTextWalk.IsBusy) && DateTime.Now < gaveUpAt)
+                System.Threading.Thread.Sleep(20);
+
+            Assert.That(FlowTextWalk.HasPending, Is.False, "The queue ran out.");
+            Assert.That(FlowTextWalk.IsBusy, Is.False, "Nothing is running any more.");
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_QueuesAChainThatReachesThePageBeingEdited()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueEveryChain(dom, "en");
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(
+                queued.Count,
+                Is.EqualTo(1),
+                "Wherever the user is standing, the chain has to be refitted: the walk covers "
+                    + "the page being edited along with the rest."
+            );
+            var groups = FlowTextWalk.GroupsToFit(Chain(dom), queued[0].FromPageId, out var start);
+            Assert.That(start, Is.EqualTo(0));
+            Assert.That(
+                groups.Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1", "p2" }),
+                "Whichever page the user is on is one of the pages the walk fits."
+            );
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void GroupsToFit_CoversTheChainToItsEndFromTheStartPage()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>one</p>")))
+                    + Page("p2", Group(Editable("<p>two</p>")))
+                    + Page("p3", Group(Editable("<p>three</p>")))
+            );
+            // Sanity check the start state: the chain is those three pages, in book order.
+            Assert.That(
+                Chain(dom).Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1", "p2", "p3" })
+            );
+
+            var groups = FlowTextWalk.GroupsToFit(Chain(dom), "p2", out var start);
+
+            Assert.That(
+                start,
+                Is.EqualTo(1),
+                "The walk begins at the group on the page it was asked to start at."
+            );
+            Assert.That(
+                groups.Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1", "p2", "p3" }),
+                "Everything from the start page to the end of the chain is refitted, and what "
+                    + "comes before the start is read for its markers."
+            );
+        }
+
+        [Test]
+        public void GroupsToFit_WithNoGroupOnTheStartPage_FindsNothingToFit()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>one</p>")))
+                    + Page("p2", Group(Editable("<p>two</p>")))
+            );
+
+            var groups = FlowTextWalk.GroupsToFit(Chain(dom), "pageOfSomeOtherBook", out var start);
+
+            Assert.That(groups, Is.Null);
+            Assert.That(start, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TakeRefitResults_HandsBackThisPagesBoxesOnceEach()
+        {
+            FlowTextWalk.ClearRefitResults();
+            Assert.That(
+                FlowTextWalk.TakeRefitResults("p1"),
+                Is.Empty,
+                "Sanity check: nothing is being held for that page yet."
+            );
+
+            FlowTextWalk.HoldRefitResult(
+                "p1",
+                new FlowTextWalk.RefitResult
+                {
+                    chainId = "chain",
+                    lang = "en",
+                    indexInPage = 0,
+                    html = "<p>abcd</p>",
+                }
+            );
+
+            var held = FlowTextWalk.TakeRefitResults("p1");
+            Assert.That(held.Count, Is.EqualTo(1));
+            Assert.That(held[0].chainId, Is.EqualTo("chain"));
+            Assert.That(held[0].lang, Is.EqualTo("en"));
+            Assert.That(held[0].indexInPage, Is.EqualTo(0));
+            Assert.That(held[0].html, Is.EqualTo("<p>abcd</p>"));
+            Assert.That(
+                FlowTextWalk.TakeRefitResults("p1"),
+                Is.Empty,
+                "The browser puts each box in place once, so reading forgets it."
+            );
+        }
+
+        [Test]
+        public void TakeRefitResults_HandsBackNothingForAnotherPage()
+        {
+            FlowTextWalk.ClearRefitResults();
+            FlowTextWalk.HoldRefitResult(
+                "p1",
+                new FlowTextWalk.RefitResult
+                {
+                    chainId = "chain",
+                    lang = "en",
+                    indexInPage = 0,
+                    html = "<p>abcd</p>",
+                }
+            );
+
+            Assert.That(FlowTextWalk.TakeRefitResults("p2"), Is.Empty);
+            Assert.That(
+                FlowTextWalk.TakeRefitResults("p1").Count,
+                Is.EqualTo(1),
+                "Sanity check: asking about another page did not consume this one's box."
+            );
+            FlowTextWalk.ClearRefitResults();
+        }
+
+        [Test]
+        public void ClearRefitResults_ForgetsWhatWasHeld()
+        {
+            FlowTextWalk.ClearRefitResults();
+            FlowTextWalk.HoldRefitResult(
+                "p1",
+                new FlowTextWalk.RefitResult
+                {
+                    chainId = "chain",
+                    lang = "en",
+                    indexInPage = 0,
+                    html = "<p>abcd</p>",
+                }
+            );
+
+            FlowTextWalk.ClearRefitResults();
+
+            Assert.That(FlowTextWalk.TakeRefitResults("p1"), Is.Empty);
         }
 
         [Test]

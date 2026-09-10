@@ -23,14 +23,23 @@ import {
     updateCreatePagesButtons,
 } from "./flowCreatePagesButton";
 import {
+    applyRefitResult,
+    areBoundaryRetriesWaiting,
     areWalksWanted,
     beginCrossPageRun,
+    onWalkFinished,
     placePendingCaret,
     resetCrossPageCache,
     requestQueuedWalks,
     settleCrossPageBoundary,
 } from "./flowCrossPage";
 import { rebalanceChain } from "./flowEngine";
+import {
+    refreshReflowBubbles,
+    removeReflowBubbles,
+    setFlowSettleWaiter,
+} from "./flowReflowBubble";
+import { getRefitResult } from "./flowReflowClient";
 import {
     removeFlowFromLabels,
     resetFlowFromCache,
@@ -53,6 +62,9 @@ import { handleSeamKey } from "./flowSeamKeys";
 import { markRefusals } from "./flowSupport";
 import { timePass } from "./flowTiming";
 import { OverflowMeasurer, verifyAndNudge } from "./flowVerify";
+import WebSocketManager, {
+    IBloomWebSocketEvent,
+} from "../../utils/WebSocketManager";
 
 export type FlowTextOptions = {
     /** Test seam: decide where the text breaks without a layout engine. */
@@ -88,6 +100,19 @@ let boundaryWorkStarted = false;
 // The wait for the text to stand still before the pages after this one are refitted.
 let walkWait: Promise<void> | undefined;
 let walkWaitStarted = false;
+// True while a boundary Bloom refused during a refit waits for word that the refit is over.
+// The page counts as reflowing and holds a save delay for as long as it does: the text on it
+// is not where it belongs yet.
+let retryWaiting = false;
+let retryTimeout: number | undefined;
+// True while the content a refit made for a box of this page is being taken from Bloom and put
+// in. Bloom hands that content over once, so the page is not settled until it is in.
+let takingRefitResult = false;
+// The websocket Bloom sends walkFinished on. FlowTextWalk.cs uses the same name.
+const kWebSocketContext = "flowText";
+// How long a boundary waits for word that the refit has finished before settling anyway, so
+// that an event that never arrives cannot leave the page marked as reflowing for ever.
+const kMaxWaitForWalkFinishedMs = 60000;
 // A push can leave text that still does not fit, and a pull can free room for more, so the
 // boundary settles again after a move. This caps that, in case the two disagree.
 const kMaxBoundaryRounds = 6;
@@ -118,8 +143,13 @@ export function setupFlowText(
     container.addEventListener("compositionstart", onCompositionStart, true);
     container.addEventListener("compositionend", onCompositionEnd, true);
     container.addEventListener("keydown", handleSeamKey, true);
+    WebSocketManager.addListener<IBloomWebSocketEvent>(
+        kWebSocketContext,
+        onFlowTextEvent,
+    );
 
     setFlowPassRunner({ applyWithoutPass, requestPassFor });
+    setFlowSettleWaiter(waitForThisPageToSettle);
     // What the other pages hold is read afresh for each page the reader edits.
     resetCrossPageCache();
     resetPendingOverflowCache();
@@ -140,6 +170,12 @@ export function setupFlowText(
     // fallback font breaks the text somewhere else.
     reflowAllChainsOnPage("load");
     refreshContinueButtons();
+    // Bloom may already be holding refits for the chains on this page, asked for while another
+    // page was being edited, so the bubble that offers to run them goes up as the page arrives.
+    void refreshReflowBubbles(container);
+    // A refit that changed a box of this page can have finished while the page was loading, so
+    // its word about that box is waiting rather than on its way.
+    void takeAndApplyRefitResult();
     const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
     const watchedObserver = observer;
     fonts?.ready?.then(() => {
@@ -168,6 +204,8 @@ export function suspendFlowText(): void {
         true,
     );
     observedContainer?.removeEventListener("keydown", handleSeamKey, true);
+    WebSocketManager.removeListener(kWebSocketContext, onFlowTextEvent);
+    stopWaitingForWalkFinished();
 
     if (pendingFrame !== undefined) {
         cancelFrame(pendingFrame);
@@ -178,6 +216,7 @@ export function suspendFlowText(): void {
     pendingTriggers.clear();
     pendingBoundaries.clear();
     setFlowPassRunner(undefined);
+    setFlowSettleWaiter(undefined);
     resetCrossPageCache();
     resetPendingOverflowCache();
     resetFlowFromCache();
@@ -187,6 +226,7 @@ export function suspendFlowText(): void {
     removeCreatePagesButtons(document);
     removeFlowFromLabels(document);
     removeFlowToLabels(document);
+    removeReflowBubbles(document);
     stripTransientFlowMarkup(document);
     observedContainer = undefined;
     activeOptions = {};
@@ -426,6 +466,10 @@ async function runBoundaryWork(): Promise<void> {
                 flowTriggers([box], "crossPage");
             }
 
+            // Bloom refuses a move while a refit holds the chain, and says so. That boundary is
+            // settled again when the refit reports it is over.
+            holdForWalkFinished();
+
             // A box whose extra text has gone to a later page fits, and its page is not
             // overflowing either. Only a measurement can say so, and the overflow checker does
             // not run again until the user's next keystroke, so ask for one whether or not this
@@ -436,6 +480,149 @@ async function runBoundaryWork(): Promise<void> {
 
     pendingBoundaries.clear();
     requestWalksWhenQuiet();
+}
+
+/**
+ * Bloom's word about the flow. walkFinished says a refit of a chain has ended, which is what a
+ * boundary Bloom refused during that refit is waiting for.
+ */
+function onFlowTextEvent(event: IBloomWebSocketEvent): void {
+    if (event.id === "walkFinished") {
+        void onWalkFinishedFromBloom();
+    }
+
+    // walkQueued says a refit is now waiting to be run, and walkFinished says the ones that
+    // were waiting have run: either way, what the bubbles say about this page is out of date.
+    if (event.id === "walkQueued" || event.id === "walkFinished") {
+        void refreshReflowBubbles(observedContainer ?? document);
+    }
+}
+
+/**
+ * A refit has ended. What it changed in the boxes of this page goes in first, and the page then
+ * settles around it: everything below works from what the boxes hold, so a box holding text the
+ * refit has replaced would be settled against text that is not in the book.
+ */
+async function onWalkFinishedFromBloom(): Promise<void> {
+    await takeAndApplyRefitResult();
+    await settleRefusedBoundaries();
+}
+
+/**
+ * Take from Bloom whatever a refit made for the boxes of this page, and put it in. The refit
+ * saves the page it changed but leaves the editor alone, so what is on screen is the browser's
+ * to bring up to date, and Bloom hands the content over once: it holds a save delay and the
+ * page's reflowing mark from before it asks until the content is in.
+ */
+async function takeAndApplyRefitResult(): Promise<void> {
+    const page = getPages()[0];
+    if (!(page instanceof HTMLElement) || !page.id) {
+        return;
+    }
+
+    takingRefitResult = true;
+    addRequestPageContentDelay(kDelayId);
+    updateReflowingAttr();
+    try {
+        const boxes = await getRefitResult(page.id);
+        if (!boxes.length || !page.isConnected) {
+            return;
+        }
+
+        const changed = applyRefitResult(page, boxes, {
+            measurer: getMeasurer(),
+            measureOverflow: activeOptions.measureOverflow,
+            fitProbe: textUpToOffsetFitsInBox,
+            applyWithoutPass,
+        });
+        if (changed.length) {
+            // The boxes hold text nothing in the browser has measured, so they are settled the
+            // way a box is after any other move: the marker, the indicators, the overflow
+            // warning and the boundary to the next page are all in question.
+            requestPassFor(changed, "refitResult");
+        }
+    } finally {
+        takingRefitResult = false;
+        removeRequestPageContentDelay(kDelayId);
+        updateReflowingAttr();
+    }
+}
+
+/**
+ * Settles when this page has finished moving its own text and has asked for the refits it
+ * wants. The bubble's "reflow now" waits for this, because a refit that ran while the browser
+ * still had text to hand to the next page would refuse that move.
+ */
+async function waitForThisPageToSettle(): Promise<void> {
+    await waitForBoundaryWork();
+    await waitForWalkRequests();
+}
+
+/**
+ * Take the save delay and the reflowing mark for a boundary that is waiting for a refit to
+ * finish. The text on this page is not where it belongs until that boundary has been settled,
+ * so nothing may read the page as settled in the meantime.
+ */
+function holdForWalkFinished(): void {
+    if (retryWaiting || !areBoundaryRetriesWaiting()) {
+        return;
+    }
+
+    retryWaiting = true;
+    addRequestPageContentDelay(kDelayId);
+    updateReflowingAttr();
+    retryTimeout = window.setTimeout(
+        () => void settleRefusedBoundaries(),
+        kMaxWaitForWalkFinishedMs,
+    );
+}
+
+/** Give up the wait without settling anything, because the page is going away. */
+function stopWaitingForWalkFinished(): void {
+    if (!retryWaiting) {
+        return;
+    }
+
+    if (retryTimeout !== undefined) {
+        clearTimeout(retryTimeout);
+        retryTimeout = undefined;
+    }
+
+    retryWaiting = false;
+    removeRequestPageContentDelay(kDelayId);
+}
+
+/**
+ * Settle the boundaries Bloom refused while a refit held their chain. The refit has finished,
+ * or has taken so long that we have stopped waiting for it.
+ *
+ * Each pass can move text and want another refit, and that is how it converges: a boundary
+ * Bloom refuses again simply waits for the next walkFinished.
+ */
+async function settleRefusedBoundaries(): Promise<void> {
+    if (!retryWaiting) {
+        return;
+    }
+
+    if (retryTimeout !== undefined) {
+        clearTimeout(retryTimeout);
+        retryTimeout = undefined;
+    }
+
+    // A pass that is still running would drop boxes added to it as it finishes, so the retry
+    // goes in after it.
+    await waitForBoundaryWork();
+    onWalkFinished().forEach((box) => {
+        if (box.isConnected) {
+            pendingBoundaries.add(box);
+        }
+    });
+
+    // The delay this wait holds goes back only once the retry pass holds one of its own.
+    retryWaiting = false;
+    startBoundaryWork();
+    removeRequestPageContentDelay(kDelayId);
+    updateReflowingAttr();
 }
 
 // How long the text has to stand still before the pages after this one are refitted, and how
@@ -491,11 +678,18 @@ async function waitForQuietThenRequestWalks(): Promise<void> {
             pendingBoundaries.size > 0 ||
             pendingTriggers.size > 0 ||
             passOutstanding ||
-            boundaryWorkStarted;
+            boundaryWorkStarted ||
+            // A boundary still to be settled is text still to move, and a refit asked for now
+            // would refuse that move.
+            retryWaiting;
         quietFor = busy ? 0 : quietFor + kQuietPollMs;
     }
 
     await requestQueuedWalks();
+    // Those requests are what Bloom now holds as waiting, so the bubbles follow them at once
+    // rather than waiting for Bloom to say so. The event arrives as well, and a second refresh
+    // costs one read and changes nothing.
+    void refreshReflowBubbles(observedContainer ?? document);
 }
 
 function markOverflow(editable: HTMLElement): void {
@@ -583,10 +777,18 @@ function onCompositionEnd(): void {
 
 /**
  * The attribute says a pass is in progress, and it has to stay on while the boundary work
- * runs: that work is a pass that is waiting for an answer from C#.
+ * runs: that work is a pass that is waiting for an answer from C#. A boundary waiting for a
+ * refit to end counts too, because its text is still to move, and so does taking the content a
+ * refit made for a box of this page, which is not in the box until it has been taken.
  */
 function updateReflowingAttr(): void {
-    setPageReflowing(passOutstanding || boundaryWorkStarted || walkWaitStarted);
+    setPageReflowing(
+        passOutstanding ||
+            boundaryWorkStarted ||
+            walkWaitStarted ||
+            retryWaiting ||
+            takingRefitResult,
+    );
 }
 
 function setPageReflowing(reflowing: boolean): void {

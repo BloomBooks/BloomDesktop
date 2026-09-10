@@ -2,6 +2,11 @@
 // or given a different layout. A chain is a claim about particular boxes, so a copy of a page
 // must not join it, and a change of layout must not lose it.
 //
+// Text that moves onto another page leaves the pages after it to be refitted, and that work does
+// not start by itself: it waits for the author to ask for it or to turn a page. So a step here
+// that goes on to another page of the run asks for the waiting refit first (runPendingReflow),
+// rather than turning the page and racing the refit the turn would start.
+//
 // The Test Case IDs in the titles are marked TBD: this feature has no rows in the Notion test
 // inventory yet, and the ids are allocated there when it lands, not by this file.
 //
@@ -23,6 +28,7 @@ import {
     kTextTooLongForOneBox,
     makeLinkedTwoBoxPage,
     pasteText,
+    runPendingReflow,
     typeParagraphAtEnd,
     unlinkTextBox,
 } from "../helpers/flowText";
@@ -190,6 +196,10 @@ test.describe("linked pages and page operations", () => {
         await clearBox(page, 0);
         await goToPage(page, runPageIds[0]);
         await pasteText(page, 0, kTextForSeveralPages + kTextForSeveralPages);
+        // The paste pushed text onto the page after this one, which leaves the rest of the run to
+        // be refitted. Run it here rather than letting the page turn below start it, or the
+        // offer this test then takes would be read while the refit was still moving text.
+        await runPendingReflow(page);
         await goToPage(page, runPageIds[2]);
         await clickContinueText(page, 0);
         expect(
@@ -202,6 +212,12 @@ test.describe("linked pages and page operations", () => {
 
         // THE ACTION UNDER TEST: delete the middle page of the run.
         await deletePage(page, runPageIds[1]);
+
+        // The deleted page's text has moved into the box beside it, so the rest of the run has to
+        // be divided again, and that refit waits for the author. The reading below is of the
+        // chain, which the refit does not change, but the clearBox further down is on a page the
+        // refit would be rewriting.
+        await runPendingReflow(page);
 
         const chain = (await getBookChains(page)).find((candidate) =>
             candidate.groups.some((group) => group.pageId === runPageIds[0]),

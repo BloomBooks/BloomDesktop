@@ -95,10 +95,35 @@
         <note>ID: EditTab.FlowText.RefittingProgressTitle</note>
         <note>Title of a small progress dialog in the Edit tab, shown with a progress bar while Bloom moves text between the linked text boxes of pages it is not showing. "Flowing" here means text moving on from a full text box into the next one.</note>
       </trans-unit>
+      <trans-unit id="EditTab.FlowText.RefittingWholeFlow" translate="no">
+        <source xml:lang="en">Re-flowing the text of this flow</source>
+        <note>ID: EditTab.FlowText.RefittingWholeFlow</note>
+        <note>Line under the progress bar of the small "Flowing text across pages" dialog in the Edit tab, saying what Bloom is doing: a change such as a new paper size means the whole run of linked text boxes is divided up again from its first page. "flow" here is the noun for a run of text that passes from one linked text box to the next.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.RefittingFromPageForward" translate="no">
+        <source xml:lang="en">Re-flowing from this page forward</source>
+        <note>ID: EditTab.FlowText.RefittingFromPageForward</note>
+        <note>Line under the progress bar of the small "Flowing text across pages" dialog in the Edit tab, saying what Bloom is doing: only the pages after the one the user is on need their linked text boxes divided up again. "Re-flowing" means moving text on from a full text box into the next linked one.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FlowText.CreatingPagesProgressTitle" translate="no">
         <source xml:lang="en">Creating pages and flowing text</source>
         <note>ID: EditTab.FlowText.CreatingPagesProgressTitle</note>
         <note>Title of a small progress dialog in the Edit tab, shown with a progress bar while Bloom adds pages and moves the text that does not fit onto them. "Flowing" here means text moving on from a full text box into the next one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.ReflowPending" translate="no">
+        <source xml:lang="en">Reflow pending</source>
+        <note>ID: EditTab.FlowText.ReflowPending</note>
+        <note>Heading of a small bubble shown in the Edit tab on a text box that is part of a run of linked text boxes, saying that Bloom is holding a job to divide that run's text up again over the pages the user cannot see. Bloom waits rather than doing it straight away, because it means loading and saving those pages. The bubble also holds the "Reflow when you change pages" checkbox and the "Reflow now" button. "Reflow" here means moving text on from a full text box into the next linked one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.ReflowOnPageChange" translate="no">
+        <source xml:lang="en">Reflow when you change pages</source>
+        <note>ID: EditTab.FlowText.ReflowOnPageChange</note>
+        <note>Label on a checkbox in the small "Reflow pending" bubble in the Edit tab. When it is ticked, Bloom runs the waiting job as soon as the user moves to another page, instead of waiting to be asked. "you" is the user. "Reflow" here means moving text on from a full text box into the next linked one.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FlowText.ReflowNow" translate="no">
+        <source xml:lang="en">Reflow now</source>
+        <note>ID: EditTab.FlowText.ReflowNow</note>
+        <note>Label on the button in the small "Reflow pending" bubble in the Edit tab that runs the waiting job at once. A progress dialog appears while it runs. "Reflow" here means moving text on from a full text box into the next linked one.</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>

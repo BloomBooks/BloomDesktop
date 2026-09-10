@@ -35,6 +35,7 @@ import {
     isContinueButtonShown,
     kTextForSeveralPages,
     pasteText,
+    runPendingReflow,
     typeParagraphAtEnd,
     waitForReflowIdle,
 } from "../helpers/flowText";
@@ -207,9 +208,11 @@ test.describe("carrying one run of text over several pages", () => {
     }) => {
         test.setTimeout(300000);
         // The restart kills Bloom, which writes nothing on its way out, so leave the page that
-        // was last edited first: that is what writes it into the book file.
+        // was last edited first: that is what writes it into the book file. A refit of the later
+        // pages that was still waiting to be run would be lost with Bloom, so run that too.
         await goToPage(page, firstPageId);
         await waitForReflowIdle(page);
+        await runPendingReflow(page);
         const before = await getBookChains(page);
         // Sanity check the start state: all three pages are in the chain, holding the whole run,
         // before the restart.

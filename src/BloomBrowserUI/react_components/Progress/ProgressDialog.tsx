@@ -65,6 +65,9 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
     const [sawAWarning, setSawAWarning] = useState(false);
     const [sawFatalError, setSawFatalError] = useState(false);
     const [percent, setPercent] = useState(0); // for determinate progress
+    // A line under the progress bar saying what the work is doing just now, sent by C# with
+    // IWebSocketProgress.SendStage. Empty when nothing has said.
+    const [stage, setStage] = useState("");
     const [messagesForErrorReporting, setMessagesForErrorReporting] =
         useState("");
     const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
@@ -132,6 +135,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
             if (e.id === "percent" && e.percent !== undefined) {
                 setPercent(e.percent);
             }
+            if (e.id === "stage") {
+                // SendStage packs the text into the event's message field (SendString).
+                setStage(e.message ?? "");
+            }
             if (e.id === "message" && e.progressKind === "Error") {
                 setSawAnError(true);
             }
@@ -160,6 +167,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
         if (props.open) {
             everOpened.current = true;
             setPercent(0); // always want to start here
+            setStage(""); // whatever the last run was doing is not what this one is doing
         } else {
             // Once the dialog has been open, the only way this effect runs again is if it
             // it's open state changes. But we don't want this to happen on the initial
@@ -311,6 +319,16 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                     >
                         {`${percent}%`}
                     </div>
+                </div>
+            )}
+            {props.determinate && props.linearProgress && stage !== "" && (
+                <div
+                    css={css`
+                        font-size: 12px;
+                        margin-top: 4px;
+                    `}
+                >
+                    {stage}
                 </div>
             )}
             <DialogBottomButtons>

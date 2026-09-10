@@ -10,6 +10,10 @@
 // test that visited the pages could not tell a refit that happened from one that happened only
 // because the test looked.
 //
+// The refit does not start by itself. A change like these records with Bloom that the pages after
+// this one are out of date, and the author says when the work happens: with Reflow now, or by
+// turning a page. So each test here asks for it, which is also the thing an author has to do.
+//
 // One page does have to be left, though: Bloom writes the page being edited into the book only
 // when the book moves off it, so the book's copy of that page lags behind the browser's until
 // then. Each reading therefore parks the Edit tab on a page outside the chain first. Parking
@@ -31,13 +35,17 @@ import {
     addJustTextPage,
     assertRunIsIntact,
     clickContinueText,
+    clickReflowNow,
     doubleFontSizeOfBox,
     getBookChains,
     getBoxTexts,
     hasOverflowWarning,
     isProgressDialogOpen,
+    isReflowPendingShown,
+    isWalkPending,
     kTextForSeveralPages,
     pasteText,
+    runPendingReflow,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
@@ -76,6 +84,10 @@ async function parkOffTheChain(page: Page): Promise<void> {
  * page. Leaves the Edit tab parked outside the chain.
  */
 async function readRun(page: Page): Promise<string[]> {
+    // A refit still waiting to be run would make this a reading of the pages as they were before
+    // the change. Parking is a page turn, which would start it, so run it here instead: what the
+    // book says then has nothing in flight behind it.
+    await runPendingReflow(page);
     await parkOffTheChain(page);
     const chains = await getBookChains(page);
     expect(
@@ -96,7 +108,11 @@ async function editTheFirstPage(page: Page): Promise<void> {
  * larger. The sizes are named A4, A5, A6 and so on, where a bigger number is a smaller page, so
  * the ordering is by paper name rather than by anything we can measure here.
  */
-function findSizes(choiceIds: string[]): { smaller: string; larger: string } {
+function findSizes(choiceIds: string[]): {
+    smaller: string;
+    larger: string;
+    largest: string;
+} {
     const wanted = (name: string) =>
         choiceIds.find((id) => id === name) ??
         (() => {
@@ -104,7 +120,11 @@ function findSizes(choiceIds: string[]): { smaller: string; larger: string } {
                 `This book does not offer "${name}". It offers: ${choiceIds.join(", ")}.`,
             );
         })();
-    return { smaller: wanted("A6Portrait"), larger: wanted("A5Portrait") };
+    return {
+        smaller: wanted("A6Portrait"),
+        larger: wanted("A5Portrait"),
+        largest: wanted("A4Portrait"),
+    };
 }
 
 test.describe("refitting a whole chain without visiting its pages", () => {
@@ -152,16 +172,35 @@ test.describe("refitting a whole chain without visiting its pages", () => {
         // open, so the second and third pages are refitted without anyone going to them.
         await setPageSize(page, sizes.smaller);
 
-        // The refit happens off-screen, so the progress dialog is the only thing that tells the
-        // author Bloom is working and that stops them editing while it does.
-        await expect
-            .poll(() => isProgressDialogOpen(page), { timeout: 10000 })
-            .toBe(true);
-
+        // Nothing has moved beyond the next page: the page being edited settles itself once it
+        // is rebuilt at the new size, hands what no longer fits to the next page, and then asks
+        // Bloom to refit the pages after that. That request waits for the author, and the
+        // bubble on this page is where the author is told so.
         await waitForReflowIdle(page);
+        await expect
+            .poll(() => isWalkPending(page), {
+                timeout: 30000,
+                message:
+                    "A new paper size has to leave a refit of the later pages waiting.",
+            })
+            .toBe(true);
+        expect(await isReflowPendingShown(page)).toBe(true);
+
+        // THE SECOND ACTION UNDER TEST: ask for the refit. It happens off-screen, so the
+        // progress dialog is the only thing that tells the author Bloom is working and that
+        // stops them editing while it does.
+        await clickReflowNow(page);
         expect(
             await isProgressDialogOpen(page),
             "The dialog must go away by itself once the refit is done.",
+        ).toBe(false);
+        expect(
+            await isWalkPending(page),
+            "Reflow now has to leave nothing waiting behind it.",
+        ).toBe(false);
+        expect(
+            await isReflowPendingShown(page),
+            "The bubble is still up, though there is no longer a refit for it to offer.",
         ).toBe(false);
 
         const after = await readRun(page);
@@ -203,6 +242,16 @@ test.describe("refitting a whole chain without visiting its pages", () => {
         await setPageSize(page, sizes.larger);
         await waitForReflowIdle(page);
 
+        expect(
+            await isWalkPending(page),
+            "A new paper size has to leave a refit of the later pages waiting.",
+        ).toBe(true);
+        await clickReflowNow(page);
+        expect(
+            await isReflowPendingShown(page),
+            "The bubble is still up, though there is no longer a refit for it to offer.",
+        ).toBe(false);
+
         const after = await readRun(page);
         expect(
             after[0].length,
@@ -213,6 +262,87 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             "The end of the chain has to be emptier once the pages before it hold more.",
         ).toBeLessThan(before[2].length);
         assertRunIsIntact(after, kTextForSeveralPages);
+    });
+
+    test("a page size change made on the last page refits the page being edited too [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        const before = await readRun(page);
+        const sizes = findSizes(
+            (await getPageSizeChoices(page)).choices.map((c) => c.id),
+        );
+
+        // The last page of the chain is the one being edited. It has no page after it for the
+        // browser to hand text to, so everything about this change is in Bloom's hands: the
+        // pages before it, and the page being edited itself.
+        await goToPage(page, thirdPageId);
+        await waitForReflowIdle(page);
+
+        // THE ACTION UNDER TEST: draw the book smaller while on the last page. The earlier pages
+        // hold less, so text has to arrive here, on the page being edited.
+        await setPageSize(page, sizes.smaller);
+        await waitForReflowIdle(page);
+        await expect
+            .poll(() => isReflowPendingShown(page), {
+                timeout: 30000,
+                message:
+                    "A new paper size has to offer the refit on the last page as on any other.",
+            })
+            .toBe(true);
+        await clickReflowNow(page);
+        await expect
+            .poll(async () => (await getBoxTexts(page))[0].length, {
+                timeout: 30000,
+                message:
+                    "The page being edited has to take the text the smaller earlier pages gave up.",
+            })
+            .toBeGreaterThan(before[2].length);
+        expect(await isWalkPending(page)).toBe(false);
+        expect(await isReflowPendingShown(page)).toBe(false);
+
+        const afterSmaller = await readRun(page);
+        assertRunIsIntact(afterSmaller, kTextForSeveralPages);
+        await goToPage(page, thirdPageId);
+        await waitForReflowIdle(page);
+
+        // THE SECOND ACTION UNDER TEST: draw the book much larger, still on the last page. The
+        // earlier pages take most of the run back, so this page is left with the end of it.
+        await setPageSize(page, sizes.largest);
+        await waitForReflowIdle(page);
+        await expect
+            .poll(() => isReflowPendingShown(page), { timeout: 30000 })
+            .toBe(true);
+        await clickReflowNow(page);
+        const lastWord = kTextForSeveralPages.slice(
+            kTextForSeveralPages.lastIndexOf(" ") + 1,
+        );
+        await expect
+            .poll(async () => (await getBoxTexts(page))[0].trim(), {
+                timeout: 30000,
+                message:
+                    "At this size the earlier pages hold most of the run, so the page being " +
+                    "edited must be left holding only its end.",
+            })
+            .toMatch(new RegExp("^.{0,200}" + lastWord + "$"));
+        expect(await isWalkPending(page)).toBe(false);
+        expect(await isReflowPendingShown(page)).toBe(false);
+
+        // The refit reached the pages before this one, and left nothing waiting on them.
+        const afterLargest = await readRun(page);
+        assertRunIsIntact(afterLargest, kTextForSeveralPages);
+        expect(afterLargest[0].length).toBeGreaterThan(afterSmaller[0].length);
+        await goToPage(page, secondPageId);
+        await waitForReflowIdle(page);
+        expect(await isReflowPendingShown(page)).toBe(false);
+        expect(await hasOverflowWarning(page, 0)).toBe(false);
+        expect((await getBoxTexts(page))[0]).toBe(afterLargest[1]);
+
+        // An A4 page is taller than the Edit tab's viewport, which puts the format gear the
+        // test after this one clicks out of reach. Leave the book at the size it was drawn at.
+        await setPageSize(page, sizes.larger);
+        await waitForReflowIdle(page);
+        await runPendingReflow(page);
     });
 
     test("doubling the font size on the first page moves text on the pages after it [Test Case ID TBD]", async ({
@@ -227,6 +357,19 @@ test.describe("refitting a whole chain without visiting its pages", () => {
         // somewhere else, and only the first page is open.
         await doubleFontSizeOfBox(page, 0);
         await waitForReflowIdle(page);
+
+        await expect
+            .poll(() => isWalkPending(page), {
+                timeout: 30000,
+                message:
+                    "A bigger font has to leave a refit of the later pages waiting.",
+            })
+            .toBe(true);
+        await clickReflowNow(page);
+        expect(
+            await isReflowPendingShown(page),
+            "The bubble is still up, though there is no longer a refit for it to offer.",
+        ).toBe(false);
 
         const after = await readRun(page);
         expect(
