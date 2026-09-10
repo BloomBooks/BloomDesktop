@@ -1415,6 +1415,16 @@ namespace Bloom.Publish.Rab
             var booksToExport = bookInfos.ToList();
             var bloomPubPathsToKeep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            // Playground books are never publishable (BL-16855). The Apps screen disables Prepare and
+            // Build for a Playground current book, but Choose Books can add one from the collection.
+            EnsureNoPlaygroundBooks(
+                booksToExport.Select(bookInfo =>
+                {
+                    var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+                    return (book, GetBookTitleForRab(book, bookInfo));
+                })
+            );
+
             // Like the other publish paths, refuse to publish a book in a language its copyright holder
             // has not licensed (BL-16833). Check every book, including ones whose BloomPUB we would
             // merely reuse, before touching anything on disk.
@@ -1520,6 +1530,27 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        /// <summary>
+        /// Stops Prepare/Build when any book headed into the app was made from the Playground template,
+        /// which (like every other publish path) we refuse to publish. Throws naming each such book.
+        /// </summary>
+        internal static void EnsureNoPlaygroundBooks(
+            IEnumerable<(global::Bloom.Book.Book Book, string Title)> books
+        )
+        {
+            var playgroundTitles = books
+                .Where(book => book.Book.IsPlayground)
+                .Select(book => book.Title)
+                .ToList();
+            if (playgroundTitles.Count == 0)
+                return;
+
+            throw new ApplicationException(
+                "Books made from the Playground template cannot be published: "
+                    + string.Join(", ", playgroundTitles)
+            );
         }
 
         /// <summary>

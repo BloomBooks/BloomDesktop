@@ -40,6 +40,7 @@ import { InlineProgressStatus } from "./InlineProgressStatus";
 import { PrepareAppStepper } from "./PrepareAppStepper";
 import { UsbDebuggingHelpDialog } from "./UsbDebuggingHelpDialog";
 import { useAppBuilderPublisherScreen } from "./useAppBuilderPublisherScreen";
+import { useApiBoolean } from "../../utils/bloomApi";
 
 const apkToPhoneIconUrl = new URL(
     "./ApkToPhone.svg",
@@ -130,6 +131,13 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Run Prepare before building the app.",
         "PublishTab.Apps.Build.NeedsPrepareTooltip",
     );
+    const playgroundBookTooltip = useL10n(
+        "Books made from the Playground template cannot be published.",
+        "PublishTab.Apps.PlaygroundBookTooltip",
+    );
+    // Like every other publish screen, refuse to publish a Playground book (BL-16855).
+    // Default to true so the buttons stay disabled until the server has answered.
+    const [isPlaygroundBook] = useApiBoolean("publish/isPlaygroundBook", true);
     const tryOnPhoneTooltip = useL10n(
         "Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.",
         "PublishTab.Apps.TryOnPhone.Tooltip",
@@ -242,9 +250,12 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const buildIsNeeded = screenState.buildIsNeeded;
     const busyAction = screenState.busyAction;
     const apkIsCurrent = screenState.status.apkExists && !buildIsNeeded;
-    const canRunPrepare = !busyAction && !prepareIsReady;
+    const canRunPrepare = !busyAction && !prepareIsReady && !isPlaygroundBook;
     const canUseConfiguredProject = prepareIsReady && !busyAction;
-    const canRunBuild = !busyAction && screenState.hasRequiredBuildSettings;
+    const canRunBuild =
+        !busyAction &&
+        screenState.hasRequiredBuildSettings &&
+        !isPlaygroundBook;
     const canUseCurrentApk = apkIsCurrent && !busyAction;
     const activePrepareStepId = getPrepareStepIdForStage(
         busyAction,
@@ -294,14 +305,24 @@ const AppPublisherScreenContents: React.FunctionComponent<{
             complete: progressCompleteLabel,
         },
     );
-    const buildTooltipToShow = !prepareIsReady
-        ? buildNeedsPrepareTooltip
-        : buildIsNeeded
-          ? buildTooltip
-          : buildDoneTooltip;
-    const prepareTooltipToShow = prepareIsReady
-        ? prepareDoneTooltip
-        : prepareTooltip;
+    let buildTooltipToShow: string;
+    if (isPlaygroundBook) {
+        buildTooltipToShow = playgroundBookTooltip;
+    } else if (!prepareIsReady) {
+        buildTooltipToShow = buildNeedsPrepareTooltip;
+    } else if (buildIsNeeded) {
+        buildTooltipToShow = buildTooltip;
+    } else {
+        buildTooltipToShow = buildDoneTooltip;
+    }
+    let prepareTooltipToShow: string;
+    if (isPlaygroundBook) {
+        prepareTooltipToShow = playgroundBookTooltip;
+    } else if (prepareIsReady) {
+        prepareTooltipToShow = prepareDoneTooltip;
+    } else {
+        prepareTooltipToShow = prepareTooltip;
+    }
     const validationIssueLabels: string[] = [];
     if (screenState.settingsValidationIssues.appName) {
         validationIssueLabels.push(appNameLabel);
