@@ -32,6 +32,7 @@
 import {
     post,
     postJson,
+    postString,
     trackChangePicture,
     trackEvent,
 } from "../../utils/bloomApi";
@@ -116,10 +117,11 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the AI Image Editor must disable its
-            // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the AI Image Editor's init payload.
-            demoOnly?: boolean;
+            // Set when the subscription does not cover AI image editing: the AI
+            // Image Editor opens to be looked at, with every run that would reach
+            // OpenRouter disabled. Rides through the `...launchData` spread below
+            // into the AI Image Editor's init payload.
+            playgroundMode?: boolean;
         };
         const hostWindow = window as Window & {
             __bloomAiImageEditorCleanup?: () => void;
@@ -634,12 +636,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // Bloom owns the OpenRouter API key. A key the user pastes into the
                     // AI Image Editor is handed up here so Bloom persists it per-user (and
                     // supplies it on the next launch). A null apiKey clears the stored key.
-                    postJson(
-                        "aiImageEditor/saveCredentials?session=" +
-                            encodeURIComponent(launchData.sessionToken),
-                        {
-                            apiKey: data.payload?.apiKey ?? null,
-                        },
+                    // The name must match ServiceKeyStore.kOpenRouterName.
+                    postString(
+                        "serviceKeys/key?name=OR",
+                        data.payload?.apiKey ?? "",
                     );
                     break;
             }
