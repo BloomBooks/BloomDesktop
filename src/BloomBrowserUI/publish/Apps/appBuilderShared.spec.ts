@@ -20,6 +20,14 @@ describe("appBuilderShared prepare steps", () => {
         ]);
     });
 
+    it("normalizes playground book titles and defaults them to empty", () => {
+        expect(
+            normalizeStatus({ PlaygroundBookTitles: ["My Playground"] })
+                .playgroundBookTitles,
+        ).toEqual(["My Playground"]);
+        expect(normalizeStatus({}).playgroundBookTitles).toEqual([]);
+    });
+
     it("maps prepare websocket stages onto prepare step ids", () => {
         expect(getPrepareStepIdForStage("prepare", "running-installer")).toBe(
             "rab-installed",

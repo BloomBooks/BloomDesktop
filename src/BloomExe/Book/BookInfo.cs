@@ -292,6 +292,18 @@ namespace Bloom.Book
             set { MetaData.BookLineage = value; }
         }
 
+        /// <summary>
+        /// The id of the Playground template book. Books derived from it get every feature
+        /// unlocked for experimenting, and in exchange can never be published.
+        /// </summary>
+        public const string kPlaygroundTemplateId = "aeb176bc-76fa-44e2-bb9d-6350698fce47";
+
+        /// <summary>
+        /// True if this book was made from the Playground template (see kPlaygroundTemplateId).
+        /// Cheap: it only reads the lineage from meta.json, so it needs no Book object.
+        /// </summary>
+        public bool IsPlayground => BookLineage?.Contains(kPlaygroundTemplateId) ?? false;
+
         // This indicates the kind of license in use. For Creative Commons licenses, it is the Abbreviation of the CreativeCommonsLicense
         // object, the second-last (before version number) element of the licenseUrl. Other known values are 'ask' (no license granted,
         // ask the copyright holder for permission to use) 'custom' (rights presumably specified in licenseNotes)

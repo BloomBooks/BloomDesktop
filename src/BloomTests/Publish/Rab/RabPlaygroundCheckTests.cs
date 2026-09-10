@@ -1,4 +1,5 @@
 using System;
+using Bloom.Book;
 using Bloom.Publish.Rab;
 using BloomTests.Book;
 using NUnit.Framework;
@@ -12,7 +13,7 @@ namespace BloomTests.Publish.Rab
     [TestFixture]
     public class RabPlaygroundCheckTests : BookTestsBase
     {
-        private const string kPlaygroundTemplateId = "aeb176bc-76fa-44e2-bb9d-6350698fce47";
+        private const string kPlaygroundTemplateId = BookInfo.kPlaygroundTemplateId;
 
         protected override string GetTestFolderName() => "RabPlaygroundCheckTests";
 
@@ -25,7 +26,10 @@ namespace BloomTests.Publish.Rab
             Assert.That(book.IsPlayground, Is.True);
 
             var exception = Assert.Throws<ApplicationException>(() =>
-                RabProjectService.EnsureNoPlaygroundBooks(new[] { (book, "My Playground") })
+                RabProjectService.EnsureNoPlaygroundBooks(
+                    new[] { book.BookInfo },
+                    bookInfo => "My Playground"
+                )
             );
 
             Assert.That(exception.Message, Does.Contain("Playground template"));
@@ -39,7 +43,14 @@ namespace BloomTests.Publish.Rab
             Assert.That(book.IsPlayground, Is.False);
 
             Assert.DoesNotThrow(() =>
-                RabProjectService.EnsureNoPlaygroundBooks(new[] { (book, "Ordinary Book") })
+                RabProjectService.EnsureNoPlaygroundBooks(
+                    new[] { book.BookInfo },
+                    bookInfo =>
+                    {
+                        Assert.Fail("Titles should only be looked up for Playground books.");
+                        return "";
+                    }
+                )
             );
         }
     }

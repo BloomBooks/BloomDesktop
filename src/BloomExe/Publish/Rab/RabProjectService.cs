@@ -413,6 +413,11 @@ namespace Bloom.Publish.Rab
                 RabRoot = paths.RabRoot,
                 TrackedBooks = trackedBooks,
                 TrackedBookTitles = trackedBooks.Select(book => book.Title).ToArray(),
+                // The Apps screen disables Prepare and Build while any of these exist (BL-16855).
+                PlaygroundBookTitles = trackedBooks
+                    .Where(book => FindTrackedBookInfo(book)?.IsPlayground ?? false)
+                    .Select(book => book.Title)
+                    .ToArray(),
                 PrepareSteps = prepareSteps,
                 ActiveAction = activeAction,
                 ActiveActionProgressStage = activeAction != null ? _lastLoggedProgressStage : null,
@@ -1418,11 +1423,9 @@ namespace Bloom.Publish.Rab
             // Playground books are never publishable (BL-16855). The Apps screen disables Prepare and
             // Build for a Playground current book, but Choose Books can add one from the collection.
             EnsureNoPlaygroundBooks(
-                booksToExport.Select(bookInfo =>
-                {
-                    var book = _collectionModel.GetBookFromBookInfo(bookInfo);
-                    return (book, GetBookTitleForRab(book, bookInfo));
-                })
+                booksToExport,
+                bookInfo =>
+                    GetBookTitleForRab(_collectionModel.GetBookFromBookInfo(bookInfo), bookInfo)
             );
 
             // Like the other publish paths, refuse to publish a book in a language its copyright holder
@@ -1536,13 +1539,17 @@ namespace Bloom.Publish.Rab
         /// Stops Prepare/Build when any book headed into the app was made from the Playground template,
         /// which (like every other publish path) we refuse to publish. Throws naming each such book.
         /// </summary>
+        /// <remarks>
+        /// Only the offending books have their title looked up, so the common case costs no Book load.
+        /// </remarks>
         internal static void EnsureNoPlaygroundBooks(
-            IEnumerable<(global::Bloom.Book.Book Book, string Title)> books
+            IEnumerable<BookInfo> bookInfos,
+            Func<BookInfo, string> getTitle
         )
         {
-            var playgroundTitles = books
-                .Where(book => book.Book.IsPlayground)
-                .Select(book => book.Title)
+            var playgroundTitles = bookInfos
+                .Where(bookInfo => bookInfo.IsPlayground)
+                .Select(getTitle)
                 .ToList();
             if (playgroundTitles.Count == 0)
                 return;

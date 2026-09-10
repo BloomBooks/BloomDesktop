@@ -25,6 +25,12 @@ namespace Bloom.Publish.Rab
         public long ApkSizeBytes { get; set; }
         public string RabRoot { get; set; }
         public string[] TrackedBookTitles { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Titles of the books headed into the app that were made from the Playground template.
+        /// Such books can never be published, so the UI blocks Prepare/Build while this is non-empty.
+        /// </summary>
+        public string[] PlaygroundBookTitles { get; set; } = Array.Empty<string>();
         public RabTrackedBookInfo[] TrackedBooks { get; set; } = Array.Empty<RabTrackedBookInfo>();
         public RabPrepareStepStatus[] PrepareSteps { get; set; } =
             Array.Empty<RabPrepareStepStatus>();

@@ -33,6 +33,8 @@ export interface IAppBuilderStatus {
     apkSizeBytes?: number;
     rabRoot?: string;
     trackedBookTitles?: string[];
+    /** Titles of tracked books made from the Playground template; such books cannot be published. */
+    playgroundBookTitles: string[];
     trackedBooks: IAppBuilderTrackedBook[];
     /** The action currently running on the server, or undefined if idle. */
     activeAction?: AppBuilderAction;
@@ -80,6 +82,7 @@ export interface IAppBuilderStatusApi {
     apkSizeBytes?: number;
     rabRoot?: string;
     trackedBookTitles?: string[];
+    playgroundBookTitles?: string[];
     activeAction?: string;
     activeActionProgressStage?: string;
     activeActionProgressPercent?: number;
@@ -98,6 +101,7 @@ export interface IAppBuilderStatusApi {
     ApkSizeBytes?: number;
     RabRoot?: string;
     TrackedBookTitles?: string[];
+    PlaygroundBookTitles?: string[];
     trackedBooks?: IAppBuilderTrackedBookApi[];
     TrackedBooks?: IAppBuilderTrackedBookApi[];
 }
@@ -154,6 +158,7 @@ export const defaultStatus: IAppBuilderStatus = {
     buildNeeded: false,
     prepareSteps: getDefaultPrepareSteps(),
     trackedBookTitles: [],
+    playgroundBookTitles: [],
     trackedBooks: [],
 };
 
@@ -253,6 +258,8 @@ export function normalizeStatus(
         rabRoot: status?.rabRoot ?? status?.RabRoot,
         trackedBookTitles:
             status?.trackedBookTitles ?? status?.TrackedBookTitles ?? [],
+        playgroundBookTitles:
+            status?.playgroundBookTitles ?? status?.PlaygroundBookTitles ?? [],
         trackedBooks: (status?.trackedBooks ?? status?.TrackedBooks ?? []).map(
             normalizeTrackedBook,
         ),

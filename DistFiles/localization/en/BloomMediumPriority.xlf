@@ -1385,9 +1385,9 @@
         <note>Tooltip shown when the user must run Prepare before Build.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.PlaygroundBookTooltip" translate="no">
-        <source xml:lang="en">Books made from the Playground template cannot be published.</source>
+        <source xml:lang="en">Books made from the Playground template cannot be published: %0</source>
         <note>ID: PublishTab.Apps.PlaygroundBookTooltip</note>
-        <note>Tooltip on the disabled Prepare and Build buttons in Publish > Apps when the selected book was made from the Playground template. "Playground" is the name of a Bloom template book.</note>
+        <note>Tooltip on the disabled Prepare and Build buttons in Publish > Apps when a book chosen for the app was made from the Playground template. "Playground" is the name of a Bloom template book. %0 is replaced with the title(s) of the offending book(s).</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.Build.Tooltip">
         <source xml:lang="en">Build a new APK from the current settings and selected books.</source>

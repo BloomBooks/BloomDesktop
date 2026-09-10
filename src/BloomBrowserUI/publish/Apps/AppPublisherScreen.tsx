@@ -40,7 +40,6 @@ import { InlineProgressStatus } from "./InlineProgressStatus";
 import { PrepareAppStepper } from "./PrepareAppStepper";
 import { UsbDebuggingHelpDialog } from "./UsbDebuggingHelpDialog";
 import { useAppBuilderPublisherScreen } from "./useAppBuilderPublisherScreen";
-import { useApiBoolean } from "../../utils/bloomApi";
 
 const apkToPhoneIconUrl = new URL(
     "./ApkToPhone.svg",
@@ -131,13 +130,16 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "Run Prepare before building the app.",
         "PublishTab.Apps.Build.NeedsPrepareTooltip",
     );
+    // Like every other publish screen, refuse to publish a Playground book (BL-16855). Here the
+    // check covers every book headed into the app, not just the current one.
+    const playgroundBookTitles = screenState.status.playgroundBookTitles;
+    const isPlaygroundBook = playgroundBookTitles.length > 0;
     const playgroundBookTooltip = useL10n(
-        "Books made from the Playground template cannot be published.",
+        "Books made from the Playground template cannot be published: %0",
         "PublishTab.Apps.PlaygroundBookTooltip",
+        "%0 is replaced with the title(s) of the offending book(s).",
+        playgroundBookTitles.join(", "),
     );
-    // Like every other publish screen, refuse to publish a Playground book (BL-16855).
-    // Default to true so the buttons stay disabled until the server has answered.
-    const [isPlaygroundBook] = useApiBoolean("publish/isPlaygroundBook", true);
     const tryOnPhoneTooltip = useL10n(
         "Load and run the app on your phone. First enable USB Debugging on the phone and connect it with a USB cable.",
         "PublishTab.Apps.TryOnPhone.Tooltip",
