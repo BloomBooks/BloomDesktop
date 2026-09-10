@@ -167,6 +167,21 @@ describe("pageContentDelays", () => {
             undefined,
         ]);
     });
+    it("tells a listener that subscribes while the register is already busy", () => {
+        // The page snapshot subscribes after bootstrap(), when load-time work has usually already
+        // registered; a listener that heard only transitions would miss all of it.
+        addRequestPageContentDelay("sizing an image");
+        const heard: (string | undefined)[] = [];
+        const unsubscribe = onDelayRegisterChanged((busyWith) =>
+            heard.push(busyWith),
+        );
+
+        expect(heard).toEqual(["sizing an image"]);
+
+        removeRequestPageContentDelay("sizing an image");
+        expect(heard).toEqual(["sizing an image", undefined]);
+        unsubscribe();
+    });
     it("complains about, and ignores, a removal of something never registered", () => {
         const error = vi.spyOn(console, "error").mockImplementation(() => {});
         addRequestPageContentDelay("realWork");

@@ -409,6 +409,70 @@ describe("pageSnapshot", () => {
         ).toBe("after the work");
     });
 
+    it("reports work that was already registered when watching began", async () => {
+        addRequestPageContentDelay("sizing an image");
+        startWatchingPageForSnapshots(gather);
+        await Promise.resolve();
+
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageBusy",
+        ]);
+        expect(posted[0].body).toBe("sizing an image");
+
+        postReply = { data: true };
+        removeRequestPageContentDelay("sizing an image");
+        await letTheBaselineSettle();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+    });
+
+    it("offers the busy notice again when the post fails outright", async () => {
+        // A failed post looks like a successful one apart from the missing reply (wrapAxios
+        // swallows the rejection). C# has not heard, so a save it makes meanwhile would not wait.
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        posted.length = 0;
+        postReply = undefined;
+
+        addRequestPageContentDelay("settling a paste");
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(posted.length, "sanity: the first notice went out").toBe(1);
+
+        vi.advanceTimersByTime(retryMsForTests);
+        await Promise.resolve();
+        expect(posted.length, "not taken, so offered again").toBe(2);
+
+        postReply = { data: true };
+        removeRequestPageContentDelay("settling a paste");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+    });
+
+    it("offers the idle notice again when it is not taken, so C# is not left believing the page busy", async () => {
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        addRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+        posted.length = 0;
+
+        postReply = undefined; // the server drops the idle post
+        removeRequestPageContentDelay("sizing an image");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+        expect(
+            posted.map((p) => p.url.split("?")[0]),
+            "sanity: the idle notice went out once",
+        ).toEqual(["editView/pageIdle"]);
+
+        postReply = { data: true };
+        vi.advanceTimersByTime(retryMsForTests);
+        for (let i = 0; i < 4; i++) await Promise.resolve();
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageIdle",
+            "editView/pageIdle",
+        ]);
+    });
+
     it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.

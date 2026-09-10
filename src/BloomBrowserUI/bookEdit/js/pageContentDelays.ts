@@ -35,10 +35,16 @@ const registerListeners: ((busyWith: string | undefined) => void)[] = [];
 // started together -- and when it empties again. Only the transitions, not every add and remove.
 // The page snapshot uses this to tell C# that a snapshot-based save should wait, and what for.
 // Returns a function that unsubscribes.
+//
+// If the register is already busy when the listener subscribes, it is told so at once: the page
+// snapshot subscribes after bootstrap(), by which time the load-time work (image sizing, CKEditor
+// attaching) has usually registered, and a listener that only heard about transitions would miss
+// all of it.
 export function onDelayRegisterChanged(
     listener: (busyWith: string | undefined) => void,
 ): () => void {
     registerListeners.push(listener);
+    if (activeDelays.length > 0) listener(activeDelays.join(", "));
     return () => {
         const index = registerListeners.indexOf(listener);
         if (index >= 0) registerListeners.splice(index, 1);

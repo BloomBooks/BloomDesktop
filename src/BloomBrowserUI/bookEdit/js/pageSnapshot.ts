@@ -277,17 +277,24 @@ function snapshotUrl(api: string, pageId: string): string {
 
 // C# refuses a notice about a load it is not showing, exactly as it refuses such a snapshot, and
 // for the same reason the refusal must not be the end of it: this page may simply not have
-// reported itself ready yet. Offer it again while the work is still going.
+// reported itself ready yet. A post that fails outright (no reply at all; see takeSnapshot for
+// why that looks the way it does) has not reached C# either. In both cases, offer it again while
+// the work is still going -- a save made meanwhile would otherwise not know to wait.
 async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
     const reply = await postStringQuietly(snapshotUrl(kBusyApi, pageId), what);
-    const response = reply as { data?: boolean | string } | void;
-    const refused = !!response && response.data === false;
-    if (refused && busyWith === what && pageIdBeingWatched === pageId) {
+    if (wasTaken(reply)) return;
+    if (busyWith === what && pageIdBeingWatched === pageId) {
         window.setTimeout(() => {
             if (busyWith === what && pageIdBeingWatched === pageId)
                 void tellCSharpBusy(pageId, what);
         }, kRetryAfterRefusalMs);
     }
+}
+
+// Whether C# took a notice: it answered, and did not answer false.
+function wasTaken(reply: unknown): boolean {
+    const response = reply as { data?: boolean | string } | void;
+    return !!response && response.data !== false;
 }
 
 // Idle means "and you already have the page as it is now", so the snapshot goes first, and only
@@ -302,8 +309,20 @@ async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
 async function tellCSharpIdle(pageId: string): Promise<void> {
     if (busy) await runDone;
     await takeSnapshot();
+    await postIdleNotice(pageId);
+}
+
+// The idle notice itself. If C# does not take it -- the post failed, or C# refused it because it
+// had not yet accepted this load -- it is offered again while the page is still idle. A lost idle
+// would leave C# believing the page busy until the next navigation, and every snapshot-based save
+// in between would sit out the whole wait.
+async function postIdleNotice(pageId: string): Promise<void> {
     if (pageIdBeingWatched !== pageId || busyWith !== undefined) return;
-    await postStringQuietly(snapshotUrl(kIdleApi, pageId), "");
+    const reply = await postStringQuietly(snapshotUrl(kIdleApi, pageId), "");
+    if (wasTaken(reply)) return;
+    window.setTimeout(() => {
+        void postIdleNotice(pageId);
+    }, kRetryAfterRefusalMs);
 }
 
 function scheduleSnapshot(delayMs: number = kQuietMs): void {
