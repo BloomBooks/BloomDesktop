@@ -34,6 +34,22 @@ namespace Bloom.Book
             s_httpClient = client;
         }
 
+        // The license server (content-licenses.bloomlibrary.org) is a Cloudflare redirect to an AWS API
+        // Gateway Lambda, and that hop occasionally rejects a request outright (transient 5xx/429/DNS
+        // blips). Without a retry, one such blip shows the user the "trouble reaching the server"
+        // message (when there is no offline cache) and makes the nightly integration test flake.
+        // So we try up to kFetchAttempts times, pausing kRetryDelay, then double that, between tries.
+        private const int kFetchAttempts = 3;
+        private static readonly TimeSpan kRetryDelay = TimeSpan.FromMilliseconds(500);
+
+        // Test seam: the base delay between retries. Tests set it to zero so the retry tests are fast.
+        internal static TimeSpan RetryDelayForTests = kRetryDelay;
+
+        // The exception from the last failed fetch attempt (null if the most recent fetch succeeded or
+        // no fetch has been made). Lets tests report what the server actually said when a check fails,
+        // rather than just "didCheck was false".
+        internal static Exception LastFetchExceptionForTests { get; private set; }
+
         private static string _offlineFolderPath = ProjectContext.GetBloomAppDataFolder(); // normally stays here except in unit tests
         private static bool _allowInternetAccess = true;
         public static string kUnlicenseLanguageMessage =
@@ -74,11 +90,7 @@ namespace Bloom.Book
             {
                 try
                 {
-                    // RunSync executes on the thread pool so we don't deadlock if called on a
-                    // thread with a synchronization context (e.g. the WinForms UI thread).
-                    permissionsJson = Bloom.Utils.AsyncUtil.RunSync(() =>
-                        s_httpClient.GetStringAsync("https://content-licenses.bloomlibrary.org")
-                    );
+                    permissionsJson = FetchPermissionsJsonWithRetry();
                     if (!string.IsNullOrEmpty(_offlineFolderPath))
                     {
                         try
@@ -95,7 +107,8 @@ namespace Bloom.Book
                 }
                 catch (Exception w) when (w is HttpRequestException || w is TaskCanceledException)
                 {
-                    // A network failure (or timeout) reaching the license server: fall back to any cached copy.
+                    // A network failure (or timeout) reaching the license server, even after retrying:
+                    // fall back to any cached copy.
                     Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {
@@ -117,6 +130,40 @@ namespace Bloom.Book
 
             didCheck = true;
             return inputLangs.Where(c => !allowed.Contains(c));
+        }
+
+        /// <summary>
+        /// Downloads the permissions JSON from the license server, retrying transient failures
+        /// (see the comment on kFetchAttempts). Throws the last HttpRequestException or
+        /// TaskCanceledException if every attempt fails; the caller falls back to the offline cache.
+        /// Records the last failure in LastFetchExceptionForTests (null on success).
+        /// </summary>
+        private static string FetchPermissionsJsonWithRetry()
+        {
+            LastFetchExceptionForTests = null;
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    // RunSync executes on the thread pool so we don't deadlock if called on a
+                    // thread with a synchronization context (e.g. the WinForms UI thread).
+                    var json = Bloom.Utils.AsyncUtil.RunSync(() =>
+                        s_httpClient.GetStringAsync("https://content-licenses.bloomlibrary.org")
+                    );
+                    LastFetchExceptionForTests = null;
+                    return json;
+                }
+                catch (Exception e) when (e is HttpRequestException || e is TaskCanceledException)
+                {
+                    LastFetchExceptionForTests = e;
+                    if (attempt >= kFetchAttempts)
+                        throw;
+                    // Back off a little more each time: 1x the delay, then 2x, ...
+                    var delay = TimeSpan.FromTicks(RetryDelayForTests.Ticks * attempt);
+                    if (delay > TimeSpan.Zero)
+                        System.Threading.Thread.Sleep(delay);
+                }
+            }
         }
 
         // Parses the permissions JSON and returns the set of language codes that match the given contentId key
