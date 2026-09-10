@@ -133,7 +133,7 @@ namespace BloomTests
         [
             Test,
             Ignore(
-                "Fails because the indenting XmlWriter puts inline-only children of a block on separate lines, which HTML renders as a space. BL-2558 was closed as not reproducible; needs a decision to fix the writer or delete this test."
+                "Real bug, fix with BL-16858: the indenting writer separates inline-only children."
             )
         ]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
