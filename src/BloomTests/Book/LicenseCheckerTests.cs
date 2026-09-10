@@ -27,11 +27,8 @@ namespace BloomTests.Book
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null);
             LicenseChecker.SetHttpClientForTests(new HttpClient());
-            LicenseChecker.RetryDelayMs = s_defaultRetryDelayMs;
+            LicenseChecker.RetryDelayMs = LicenseChecker.kDefaultRetryDelayMs;
         }
-
-        // The production retry delay, captured before any test changes it, so TearDown can restore it.
-        private static readonly int s_defaultRetryDelayMs = LicenseChecker.RetryDelayMs;
 
         // An HttpClient handler that fails the first N requests and then succeeds with the default
         // offline license JSON. Counts the attempts made, so tests can check the retry in LicenseChecker.

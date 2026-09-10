@@ -39,12 +39,14 @@ namespace Bloom.Book
         // The license server occasionally rejects a request outright. Without a retry, one such blip
         // shows the user the "trouble reaching the server" message (when there is no offline cache)
         // and makes the nightly integration test flake.
+        // We deliberately do not retry a timeout (TaskCanceledException): the caller is blocked for the
+        // whole fetch, and tripling a 100-second timeout would be far worse than the blip we're guarding against.
         private const int kFetchAttempts = 3;
-        internal static int RetryDelayMs = 500; // tests set this to 0
+        internal const int kDefaultRetryDelayMs = 500;
+        internal static int RetryDelayMs = kDefaultRetryDelayMs; // tests set this to 0
         private static readonly ISet<Type> kTransientFetchExceptions = new HashSet<Type>
         {
             typeof(HttpRequestException),
-            typeof(TaskCanceledException),
         };
 
         // The exception that made the last fetch fail (null if it succeeded). Lets tests report what the
@@ -87,11 +89,11 @@ namespace Bloom.Book
         )
         {
             string permissionsJson;
+            LastFetchExceptionForTests = null;
             if (_allowInternetAccess)
             {
                 try
                 {
-                    LastFetchExceptionForTests = null;
                     // RunSync executes on the thread pool so we don't deadlock if called on a
                     // thread with a synchronization context (e.g. the WinForms UI thread).
                     permissionsJson = RetryUtility.Retry(
