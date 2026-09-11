@@ -20,6 +20,7 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
+import { useL10n } from "../l10nHooks";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
 // The shape of what C# returns from imageGallery/imageGalleryResult
@@ -205,6 +206,8 @@ const ImageGalleryDialog: React.FunctionComponent<{
         };
     };
 
+    const dialogTitle = useL10n("Image Chooser", "ImageLibrary.ImageChooser");
+
     const localCollectionsBaseUrl = getBloomApiPrefix() + "imageGallery";
 
     return (
@@ -222,7 +225,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 }
             `}
         >
-            <DialogTitle title="Image Chooser" />
+            <DialogTitle title={dialogTitle} />
             <div
                 css={css`
                     flex: 1;

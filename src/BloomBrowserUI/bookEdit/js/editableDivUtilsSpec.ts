@@ -195,26 +195,16 @@ describe("EditableDivUtils Tests", () => {
         }
     });
 
-    it("removeCkEditorFillingChars removes U+200B but preserves U+200C and U+200D", () => {
-        const zwsp = String.fromCharCode(0x200b); // filling char we want gone
-        const zwnj = String.fromCharCode(0x200c); // legitimate; must be kept
-        const zwj = String.fromCharCode(0x200d); // legitimate; must be kept
-
-        // sanity check the test data
-        expect(zwsp).not.toEqual(zwnj);
-        const input = `a${zwsp}b${zwnj}c${zwj}d${zwsp}`;
-        expect(input.indexOf(zwsp)).toBeGreaterThan(-1);
-
-        const result = EditableDivUtils.removeCkEditorFillingChars(input);
-
-        expect(result.indexOf(zwsp)).toEqual(-1);
-        expect(result).toEqual(`ab${zwnj}c${zwj}d`);
-    });
-
-    it("safelyReplaceContentWithCkEditorData strips orphaned filling chars", () => {
+    // Thai, Khmer and Myanmar text uses U+200B (the same character as ckeditor's filling char)
+    // as a real word break. An earlier fix for BL-16490 stripped every U+200B from a box on
+    // save, which deleted those word breaks from every page (BL-16843). These check that the
+    // save/markup path keeps them, and only the code that rewrites a box from the live DOM
+    // takes out the one character ckeditor is actually tracking.
+    it("safelyReplaceContentWithCkEditorData keeps U+200B word breaks in the text", () => {
         const zwsp = String.fromCharCode(0x200b);
-        const ckEditorData = `<p>ca${zwsp}t${zwsp}</p>`;
-        // sanity check: our input really does contain the filling char we expect to be stripped.
+        // Two Khmer words separated by a zero-width space, as a Khmer keyboard types them.
+        const ckEditorData = `<p>ខ្ញុំ${zwsp}ចូលចិត្ត</p>`;
+        // sanity check: our input really does contain the character that must survive.
         expect(ckEditorData.indexOf(zwsp)).toBeGreaterThan(-1);
 
         const div = document.createElement("div");
@@ -223,8 +213,109 @@ describe("EditableDivUtils Tests", () => {
             ckEditorData,
         );
 
-        expect(div.innerHTML.indexOf(zwsp)).toEqual(-1);
-        expect(div.innerHTML).toEqual("<p>cat</p>");
+        expect(div.innerHTML).toEqual(ckEditorData);
+    });
+
+    it("doCkEditorCleanup keeps U+200B word breaks that ckeditor's getData() reports", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const wordsWithBreak = `<p>a${zwsp}b</p>`;
+        const div = document.createElement("div");
+        // The live DOM differs from getData() (as it does whenever ckeditor is holding a filling
+        // char), so the cleanup rewrites the box from getData().
+        div.innerHTML = `<p>a${zwsp}b${zwsp}</p>`;
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            getData: () => wordsWithBreak,
+        };
+        // sanity check the setup: the rewrite will happen
+        expect(div.innerHTML).not.toEqual(wordsWithBreak);
+
+        EditableDivUtils.doCkEditorCleanup([div], false);
+
+        expect(div.innerHTML).toEqual(wordsWithBreak);
+    });
+
+    it("removeTrackedCkEditorFillingChar takes out only the character ckeditor is tracking", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        // a real word break, in a node ckeditor is not tracking
+        p.appendChild(document.createTextNode(`a${zwsp}b`));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        const tracking = stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(p.textContent).toBe(`a${zwsp}b${zwsp}`);
+
+        EditableDivUtils.removeTrackedCkEditorFillingChar(div);
+
+        expect(p.textContent).toBe(`a${zwsp}b`);
+        expect(fillingCharNode.textContent).toBe("");
+        expect(tracking.removed).toBe(true);
+    });
+
+    it("removeTrackedCkEditorFillingChar keeps text typed into the filling char's node and turns a following space into nbsp, as ckeditor does", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createElement("strong")).textContent = "bold";
+        // Typing right after the filling char puts the letters in the same node. ckeditor's own
+        // removal turns "U+200B space" into an nbsp so the space survives whitespace collapsing.
+        const fillingCharNode = document.createTextNode(`${zwsp} typed`);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+
+        EditableDivUtils.removeTrackedCkEditorFillingChar(div);
+
+        expect(fillingCharNode.textContent).toBe("\u00A0typed");
+        expect(p.childNodes[1]).toBe(fillingCharNode); // edited in place, not replaced
+    });
+
+    it("removeTrackedCkEditorFillingChar keeps U+200B word breaks typed into the filling char's node", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createElement("strong")).textContent = "bold";
+        // ckeditor planted one U+200B; the user then typed two Khmer words with a real word
+        // break between them into the same node. Only the planted one may go.
+        const fillingCharNode = document.createTextNode(
+            `${zwsp}ខ្ញុំ${zwsp}ចូលចិត្ត`,
+        );
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+
+        EditableDivUtils.removeTrackedCkEditorFillingChar(div);
+
+        expect(fillingCharNode.textContent).toBe(`ខ្ញុំ${zwsp}ចូលចិត្ត`);
+    });
+
+    it("removeTrackedCkEditorFillingChar forgets an orphaned filling char without touching the box", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        div.innerHTML = `<p>a${zwsp}b</p>`;
+        const orphan = document.createTextNode(zwsp);
+        const tracking = stubCkEditorTracking(div, orphan);
+        // sanity check the setup: the tracked node is not in the box
+        expect(div.contains(orphan)).toBe(false);
+
+        EditableDivUtils.removeTrackedCkEditorFillingChar(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b</p>`);
+        expect(orphan.textContent).toBe(zwsp);
+        expect(tracking.removed).toBe(true);
+    });
+
+    it("removeTrackedCkEditorFillingChar does nothing when ckeditor holds no filling char", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        div.innerHTML = `<p>a${zwsp}b</p>`;
+        stubCkEditorTracking(div, undefined);
+
+        EditableDivUtils.removeTrackedCkEditorFillingChar(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b</p>`);
     });
 
     // Build a div (attached, so it has a real selection) whose paragraph has been split into
@@ -476,18 +567,31 @@ describe("EditableDivUtils Tests", () => {
         div.remove();
     });
 
-    // Make div look like a box whose ckeditor is tracking fillingCharNode as its filling char.
-    // ckeditor keeps that reference as custom data on the editable div and hands it back as a
-    // CKEDITOR.dom.text, whose `$` is the DOM node.
-    function stubCkEditorTracking(div: HTMLElement, fillingCharNode: Node) {
+    // Make div look like a box whose ckeditor is tracking fillingCharNode as its filling char
+    // (or nothing, if undefined). ckeditor keeps that reference as custom data on the editable
+    // div and hands it back as a CKEDITOR.dom.text, whose `$` is the DOM node. Returns a record
+    // of whether the reference was removed, so tests can check we told ckeditor to forget it.
+    function stubCkEditorTracking(
+        div: HTMLElement,
+        fillingCharNode: Node | undefined,
+    ): { removed: boolean } {
+        const tracking = { removed: false };
+        let tracked = fillingCharNode;
         (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
             editable: () => ({
                 getCustomData: (key: string) =>
-                    key === "cke-fillingChar"
-                        ? { $: fillingCharNode }
+                    key === "cke-fillingChar" && tracked
+                        ? { $: tracked }
                         : undefined,
+                removeCustomData: (key: string) => {
+                    if (key === "cke-fillingChar" && tracked) {
+                        tracked = undefined;
+                        tracking.removed = true;
+                    }
+                },
             }),
         };
+        return tracking;
     }
 
     it("mergeAdjacentTextNodes leaves the box alone while ckeditor holds a filling char", () => {

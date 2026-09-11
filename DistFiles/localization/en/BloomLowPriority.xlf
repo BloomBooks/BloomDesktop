@@ -353,22 +353,22 @@
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
       </trans-unit>
-      <trans-unit id="EditTab.CopyTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to copy that.</source>
         <note>ID: EditTab.CopyTextFailed</note>
         <note>Shown as a toast when Bloom fails to put text on the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to paste.</source>
         <note>ID: EditTab.PasteTextFailed</note>
         <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewTooLarge" translate="no">
+      <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the selected image is too big for the browser to decode for preview. The user can still choose it, so the tone should be reassuring rather than an error.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewUnavailable" translate="no">
+      <trans-unit id="ImageLibrary.PreviewUnavailable">
         <source xml:lang="en">This image could not be previewed.</source>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the preview fails to load for some reason other than the image being too large.</note>
@@ -383,7 +383,7 @@
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
         <note>One choice in the "Field Type:" menu of a text block on a custom layout page. Choosing it makes that block hold the credits (author, illustrator, etc.) that are shown on the cover.</note>
       </trans-unit>
-      <trans-unit id="ImageUtils.ShrinkingImagesFailed" translate="no">
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed">
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
         <note>Shown as a toast when the one-time shrinking of an old book's oversized pictures fails. The book still works; the pictures are just left large, and Bloom retries later. "Bloom" is a product name and must not be translated.</note>
