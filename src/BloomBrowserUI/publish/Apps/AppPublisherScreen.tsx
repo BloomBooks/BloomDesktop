@@ -159,6 +159,15 @@ const AppPublisherScreenContents: React.FunctionComponent<{
         "PublishTab.Apps.SettingsDialog.Copyright",
     );
     const aboutLabel = useL10n("About", "PublishTab.Apps.SettingsDialog.About");
+    const usbDebuggingHelpLabel = useL10n(
+        "How to set up your Android phone",
+        "PublishTab.Apps.UsbDebuggingHelpLink",
+    );
+    const whatsNextLabel = useL10n("What's Next?", "PublishTab.Apps.WhatsNext");
+    const whatsNextExplanation = useL10n(
+        "Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.",
+        "PublishTab.Apps.WhatsNext.Explanation",
+    );
     const preparingWorkspaceLabel = useL10n(
         "Preparing workspace",
         "PublishTab.Apps.Progress.PreparingWorkspace",
@@ -648,7 +657,7 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                             text-transform: none;
                                         `}
                                     >
-                                        How to set up your Android phone
+                                        {usbDebuggingHelpLabel}
                                     </Button>
                                 </div>
                                 <ActionLogAccordion
@@ -679,13 +688,9 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                         margin-bottom: 4px;
                     `}
                 >
-                    What's Next?
+                    {whatsNextLabel}
                 </div>
-                <div>
-                    Actually publishing your app to the Android App Store
-                    requires several more steps. In the near future we hope to
-                    expand Bloom to help with that part of the process.
-                </div>
+                <div>{whatsNextExplanation}</div>
             </NoteBox>
             {showSettingsDialog && (
                 <AppBuilderSettingsDialog

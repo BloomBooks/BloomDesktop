@@ -709,6 +709,11 @@
         <source xml:lang="en">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</source>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
+      <trans-unit id="Topic.Missing">
+        <source xml:lang="en">Missing</source>
+        <note>ID: Topic.Missing</note>
+        <note>Shown in red, with a warning icon, in place of the topic name on the publish screens when the book has no topic set yet.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Visibility">
         <source xml:lang="en">Visibility</source>
         <note>ID: PublishTab.Upload.Visibility</note>
@@ -984,6 +989,11 @@
       <trans-unit id="BookSettings.WhatToShowOnCover" sil:dynamic="true">
         <source xml:lang="en">Front Cover</source>
         <note>BookSettings.WhatToShowOnCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.AllCoverPagesGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">All Cover Pages</source>
+        <note>ID: BookSettings.AllCoverPagesGroupLabel</note>
+        <note>Section label in the Book Settings dialog, over the settings that apply to every cover page (front, inside front, inside back, back) rather than just the front cover.</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true">
         <source xml:lang="en">Show {0}</source>
@@ -1263,6 +1273,21 @@
         <source xml:lang="en">Launching app on phone</source>
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
         <note>Progress message shown while Bloom launches the installed Android app on a connected phone.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingHelpLink">
+        <source xml:lang="en">How to set up your Android phone</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingHelpLink</note>
+        <note>Text button on the Publish to Apps screen, under the step that installs the app on a phone. It opens a dialog of instructions for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.WhatsNext">
+        <source xml:lang="en">What&apos;s Next?</source>
+        <note>ID: PublishTab.Apps.WhatsNext</note>
+        <note>Heading of the note box at the side of the Publish to Apps screen.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.WhatsNext.Explanation">
+        <source xml:lang="en">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</source>
+        <note>ID: PublishTab.Apps.WhatsNext.Explanation</note>
+        <note>Body of the "What's Next?" note box on the Publish to Apps screen. "Bloom" is a product name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Title">
         <source xml:lang="en">App Settings</source>
