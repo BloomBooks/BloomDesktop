@@ -558,6 +558,11 @@ seen again: 2026-09-10 and 2026-09-11, in `bulk-upload-quick-test.spec.ts`, whic
 take that workaround because it needs four books findable by title. Both nightlies died on
 the first book, identically, so on the runner this is close to deterministic.
 
+seen again: 2026-09-11 (the second run that day, on `53eb325a4b`), in
+`xmatter-packs.spec.ts:77` — and NOT in `bulk-upload-quick-test`, which got all four titles
+that run and then failed further on, at the upload itself. So it is not tied to one spec: it
+moves between whichever specs type a cover title on a new book.
+
 What the 2026-09-11 evidence adds — the first failure since #8343 started keeping the
 collection and Bloom's log on a failed test, so for once we can see the wreckage:
 
@@ -575,34 +580,43 @@ collection and Bloom's log on a failed test, so for once we can see the wreckage
   speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
   saved the title. Renderer slowness alone is not the trigger.
 
-The open question, and the reason for the probe below: **is this Bloom, or is it how we
-type?** `typeInGroup` defaults to `page.keyboard.insertText`, which raises `input` but no
-`keydown`/`keypress`/`keyup` at all (see "Typing in a text box raises no key events"). If
-anything in the title's path hangs off a key event, or off the focus leaving the box, then
-a person is safe and only the suite is exposed. Against that: `insertText` saved the title
-12 times out of 12 locally, so it is not simply inert.
+**Answered, 2026-09-11**, by `cover-title-save.spec.ts` (three typing methods) and the
+`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs,
+both landed in #8352 and read from the nightly run on `53eb325a4b`. Three things are now
+ruled out and one is pinned down.
 
-**The probe: `cover-title-save.spec.ts`.** It makes the same book three times in one run,
-typing the title a different way each time — `insertText`, real key presses
-(`typeInGroup`'s new `"keyPresses"` method), and `insertText` followed by an explicit blur
-— and reports for each what the box held just before the save and whether the collection
-learned the title. Read it from a **nightly** run; locally all three pass. Alongside it,
-`EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation: page
-content from the browser carries bookTitle …`, so the run's kept `Log.txt` says whether the
-text was already gone before Bloom saw it or was lost after. Between them the run tells us
-which of three segments loses it: the typing, the capture, or the save.
+- **Not how we type.** All three probe variants — `insertText`, real key presses, and
+  `insertText` then an explicit blur — reached the collection on the runner. The theory that
+  `insertText`'s missing key events were to blame is dead, and `typeInGroup` does not need to
+  change.
+- **Not branding.** The run's actual loss was in `xmatter-packs.spec.ts:77`, whose collection
+  is `<BrandingProjectName>Default</BrandingProjectName>` with an empty `SubscriptionCode`.
+  The earlier guess that this only happens "under a branding" was an artifact of the two
+  specs that had hit it, and is wrong.
+- **Not Bloom's save.** The log line for that failure reads `page content from the browser
+  carries bookTitle en="", z=""`. The DOM the browser handed back for the save had no title
+  in it, so nothing in `SaveThen`, `UpdateDomFromEditedPage` or `BookStorage` lost anything —
+  there was nothing there to lose. The empty `bookTitle` in the kept collection's HTML agrees.
+- **It is the browser, between the typing and the capture.** `typeInGroup` asserts
+  `toHaveText` after typing, so the text demonstrably reached the box; a few seconds later
+  `requestPageContent()` returned a page without it. Something in that window replaces or
+  re-populates the cover's title box, and only on a slow machine.
 
-Fix direction, once the probe has answered:
+Where to look next, then, is the front end and not the C#: what mutates a brand-new book's
+cover after the Edit tab has loaded it. `bookEdit/editablePage.ts` says outright that the
+load-time fix-ups "finish ASYNCHRONOUSLY after `bootstrap()` returns" and register
+`requestPageContent` delays, which is exactly the shape of a late write landing on a box a
+person has already typed into. The data-div → page sync for `data-book` fields is the other
+candidate, since an empty dataset value overwriting the box would leave precisely this.
 
-- only `insertText` loses it → make `typeInGroup` type the way a person does, which also
-  unblocks `bulk-upload-quick-test`;
-- every variant loses it → it is Bloom, and the thing to find is what re-syncs the cover of
-  a brand-new book from its still-empty data-div.
+The instruments: the probe has answered its question and no longer earns its runtime, so it
+can go. **Keep the `Cover-title investigation:` log line** until the bug is fixed — it is
+what turned a third mystery failure into a diagnosis, and it annotates every future
+occurrence for free.
 
-Either way, delete the probe and the `Cover-title investigation` log line when the question
-is settled. Independently of all this, `findBookFolder` could look a book up by its id
+Independently of all this, `findBookFolder` could look a book up by its id
 (`collections/books` reports one) so that no test depends on the rename at all.
-(Found 2026-09-05 in the nightly run.)
+(Found 2026-09-05 in the nightly run; diagnosed 2026-09-11.)
 
 ## The canvas e2e suite is attach-only, so nothing runs it unattended
 
