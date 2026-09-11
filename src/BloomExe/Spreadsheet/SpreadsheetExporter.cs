@@ -183,42 +183,91 @@ namespace Bloom.Spreadsheet
             Color colorForPage
         )
         {
-            var imageContainers = GetImageContainersAndBloomCanvases(page);
+            // Anything inside one of these objects belongs to the object, which gets rows
+            // of its own below; it must not also become a [page content] row, or a single
+            // object holding many text boxes would fill the sheet with positional rows that
+            // no importer could put back where they came from.
+            var objects = SpreadsheetObjectKinds.ObjectsOnPage(page);
+            var imageContainers = GetImageContainersAndBloomCanvases(page)
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
+                .ToList();
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
             var groups = allGroups
-                .Where(x => !x.GetAttribute("class").Contains("bloom-imageDescription"))
+                .Where(x =>
+                    !x.GetAttribute("class").Contains("bloom-imageDescription")
+                    && !SpreadsheetObjectKinds.IsInsideAnObject(x)
+                )
                 .ToList();
             var videoContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-videoContainer')]"
                 )
                 .Cast<SafeXmlElement>()
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
                 .ToList();
             var widgetContainers = page.SafeSelectNodes(
                     ".//*[contains(@class,'bloom-widgetContainer')]"
                 )
                 .Cast<SafeXmlElement>()
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
                 .ToList();
 
             var pageType = SpreadsheetImporter.GetLabelFromPage(page);
 
+            // Puts the page type on the first row we make for the page, whatever kind of row
+            // that is. If we make more rows for this page, we don't specify a type; that
+            // allows subsequent rows to go onto the same page if there is room.
+            void SetPageTypeIfNeeded(ContentRow rowNeedingType)
+            {
+                if (string.IsNullOrEmpty(pageType))
+                    return;
+                var pageTypeIndex = _spreadsheet.AddColumnForTag(
+                    InternalSpreadsheet.PageTypeColumnLabel,
+                    "Page Type"
+                );
+                rowNeedingType.SetCell(pageTypeIndex, pageType);
+                pageType = null;
+            }
+
             // Each of these will result in one row in the output.
-            var rowContentSources = Extensions.MapUnevenLists(
+            var rowContentSources = Extensions
+                .MapUnevenLists(
+                    new[] { groups, imageContainers, videoContainers, widgetContainers }
+                )
+                .ToList();
+
+            // Where each object's rows go among the page's [page content] rows: after as
+            // many of them as hold something that precedes the object in the document.
+            var pageContentRowsBeforeObject = RowsBeforeEachObject(
+                page,
+                objects,
                 new[] { groups, imageContainers, videoContainers, widgetContainers }
             );
+            var objectsWritten = 0;
+            void WriteObjectsDueBefore(int pageContentRowsWritten)
+            {
+                while (
+                    objectsWritten < objects.Count
+                    && pageContentRowsBeforeObject[objectsWritten] <= pageContentRowsWritten
+                )
+                {
+                    ExportObjectRows(
+                        objects[objectsWritten],
+                        pageNumber,
+                        colorForPage,
+                        bookFolderPath,
+                        SetPageTypeIfNeeded
+                    );
+                    objectsWritten++;
+                }
+            }
+
+            var pageContentRowsSoFar = 0;
             foreach (var pageContent in rowContentSources)
             {
+                WriteObjectsDueBefore(pageContentRowsSoFar);
+                pageContentRowsSoFar++;
                 var row = new ContentRow(_spreadsheet);
-                if (!string.IsNullOrEmpty(pageType))
-                {
-                    var pageTypeIndex = _spreadsheet.AddColumnForTag(
-                        InternalSpreadsheet.PageTypeColumnLabel,
-                        "Page Type"
-                    );
-                    row.SetCell(pageTypeIndex, pageType);
-                    // If we make more rows for this page, don't specify a type.
-                    // This allows subsequent rows to go onto the same page if there is room.
-                    pageType = null;
-                }
+                SetPageTypeIfNeeded(row);
                 row.SetCell(
                     InternalSpreadsheet.RowTypeColumnLabel,
                     InternalSpreadsheet.PageContentRowLabel
@@ -279,6 +328,72 @@ namespace Bloom.Spreadsheet
 
                 row.BackgroundColor = colorForPage;
             }
+            // Any objects that come after everything else on the page, including the case of
+            // a page whose only content is such an object, where there are no [page content]
+            // rows at all.
+            WriteObjectsDueBefore(int.MaxValue);
+        }
+
+        /// <summary>
+        /// For each object, how many [page content] rows must be written before it: the
+        /// largest number of items that precede it in document order in any one of the
+        /// lists those rows are made from. (Row k holds groups[k], imageContainers[k] and so
+        /// on, so everything before the object has been written once we have written that
+        /// many rows.)
+        /// </summary>
+        private static List<int> RowsBeforeEachObject(
+            SafeXmlElement page,
+            List<SpreadsheetObjectOnPage> objects,
+            List<SafeXmlElement>[] rowContentLists
+        )
+        {
+            if (objects.Count == 0)
+                return new List<int>();
+            var documentOrder = SpreadsheetObjectKinds.GetDocumentOrder(page);
+            int OrderOf(SafeXmlElement element) =>
+                documentOrder.TryGetValue(element, out var order) ? order : int.MaxValue;
+            return objects
+                .Select(objectOnPage =>
+                {
+                    var objectOrder = OrderOf(objectOnPage.Element);
+                    return rowContentLists
+                        .Select(list => list.Count(item => OrderOf(item) < objectOrder))
+                        .Max();
+                })
+                .ToList();
+        }
+
+        /// <summary>
+        /// Writes the rows for one object of a registered ISpreadsheetObjectKind, at the
+        /// point in the page's rows where the object belongs. All this generic code does is
+        /// make sure the hidden [details] column exists -- its presence is what tells the
+        /// importer that this spreadsheet is the authority on such objects -- and then let
+        /// the kind write whatever rows it needs.
+        /// </summary>
+        private void ExportObjectRows(
+            SpreadsheetObjectOnPage objectOnPage,
+            string pageNumber,
+            Color colorForPage,
+            string bookFolderPath,
+            Action<ContentRow> setPageTypeIfNeeded
+        )
+        {
+            _spreadsheet.AddColumnForTag(
+                InternalSpreadsheet.DetailsColumnLabel,
+                InternalSpreadsheet.DetailsColumnFriendlyName
+            );
+            objectOnPage.Kind.ExportObject(
+                objectOnPage.Element,
+                new SpreadsheetObjectExportContext
+                {
+                    Exporter = this,
+                    Spreadsheet = _spreadsheet,
+                    PageNumber = pageNumber,
+                    ColorForPage = colorForPage,
+                    BookFolderPath = bookFolderPath,
+                    SetPageTypeIfNeeded = setPageTypeIfNeeded,
+                }
+            );
         }
 
         private void WriteWidget(
@@ -341,7 +456,12 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteVideo(
+        /// <summary>
+        /// Writes a bloom-videoContainer's video into the row's [video source] cell,
+        /// copying the file into the spreadsheet's video folder. internal so that an
+        /// ISpreadsheetObjectKind can put a video inside its object into a row of its own.
+        /// </summary>
+        internal void WriteVideo(
             SafeXmlElement videoContainer,
             ContentRow row,
             string bookFolderPath
@@ -389,7 +509,13 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void WriteTranslationGroup(
+        /// <summary>
+        /// Writes each language's text of a bloom-translationGroup into that language's
+        /// column of the row (plus any audio columns). internal so that an
+        /// ISpreadsheetObjectKind can put text inside its object into a row of its own, and
+        /// so a translator sees that text in the same language columns as any other text.
+        /// </summary>
+        internal void WriteTranslationGroup(
             SafeXmlElement translationGroup,
             ContentRow row,
             string bookFolderPath
@@ -634,7 +760,12 @@ namespace Bloom.Spreadsheet
                 .ToList();
         }
 
-        private string ImagePath(string imagesFolderPath, string imageSrc)
+        /// <summary>
+        /// The full path of an image, given the folder it is in and the (url-encoded) src
+        /// attribute that referred to it. internal for the use of ISpreadsheetObjectKind
+        /// implementations that export images inside their objects.
+        /// </summary>
+        internal string ImagePath(string imagesFolderPath, string imageSrc)
         {
             return Path.Combine(
                 imagesFolderPath,
@@ -840,7 +971,12 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void CopyImageFileToSpreadsheetFolder(string imageSourcePath)
+        /// <summary>
+        /// Copies an image the book uses into the spreadsheet's images folder, so that the
+        /// spreadsheet is self-contained. internal for the use of ISpreadsheetObjectKind
+        /// implementations that export images inside their objects.
+        /// </summary>
+        internal void CopyImageFileToSpreadsheetFolder(string imageSourcePath)
         {
             if (_outputImageFolder != null)
             {

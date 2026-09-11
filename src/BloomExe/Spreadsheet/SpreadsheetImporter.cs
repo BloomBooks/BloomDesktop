@@ -39,16 +39,26 @@ namespace Bloom.Spreadsheet
         private SafeXmlElement _currentPage;
         private List<SafeXmlElement> _pages;
 
-        // text, image, video, widget
-        const int blockTypeCount = 4;
+        // text, image, video, widget, registered object
+        const int blockTypeCount = 5;
 
         // lists of translation groups (other than image descriptions),
-        // bloom-canvases, video containers, and widget containers.
+        // bloom-canvases, video containers, widget containers, and the objects of
+        // registered ISpreadsheetObjectKinds.
         List<SafeXmlElement>[] _blocksOnPage = new List<SafeXmlElement>[blockTypeCount];
         public const int translationGroupIndex = 0;
         public const int bloomCanvasIndex = 1;
         public const int videoContainerIndex = 2;
         public const int widgetContainerIndex = 3;
+
+        // An object of a registered ISpreadsheetObjectKind is a block in its own right, so
+        // that its lead row can advance the importer onto its page and pick the right
+        // object there just as a [page content] row does for text and pictures. A page
+        // whose only content is such an object has no [page content] row at all, so nothing
+        // else would get us there. All registered kinds share this one slot, which is
+        // enough while at most one kind puts objects on a page; a second such kind would
+        // need a slot of its own to keep its own place on the page.
+        public const int objectIndex = 4;
 
         // for each kind of block, this gives the index in the corresponding list in blocksOnPage
         // of the next block we should import into. May be -1 or too large if there are no more
@@ -276,6 +286,7 @@ namespace Bloom.Spreadsheet
             _currentPageIndex = -1;
             _blocksOnPage[translationGroupIndex] = new List<SafeXmlElement>();
             _blocksOnPage[bloomCanvasIndex] = new List<SafeXmlElement>();
+            _blocksOnPage[objectIndex] = new List<SafeXmlElement>();
             _destLayout = Layout.FromDom(_destinationDom, Layout.A5Portrait);
             var pageTypeIndex = sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
             while (_currentRowIndex < _inputRows.Count)
@@ -377,6 +388,26 @@ namespace Bloom.Spreadsheet
                         // not have all the required slots.
                         typesInRow &= ~typesToPut;
                     }
+                }
+                else if (SpreadsheetObjectKinds.ForLeadRowLabel(rowTypeLabel) != null)
+                {
+                    await ImportObjectAsync(
+                        SpreadsheetObjectKinds.ForLeadRowLabel(rowTypeLabel),
+                        pageType
+                    );
+                }
+                else if (
+                    rowTypeLabel != InternalSpreadsheet.ImageDescriptionRowLabel
+                    && SpreadsheetObjectKinds.ThatWouldContinueWith(currentRow)
+                        is ISpreadsheetObjectKind strandedKind
+                )
+                {
+                    // A row that means something only as part of the family led by its
+                    // kind's lead row, but that we did not reach through that lead row.
+                    // (Normally the branch above consumes such a row.)
+                    Warn(
+                        $"Row {CurrentRowIndexForMessages} is a {rowTypeLabel} row that does not follow a {strandedKind.LeadRowLabel} row, so Bloom could not use it."
+                    );
                 }
                 else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
                 {
@@ -650,7 +681,12 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private void PutRowInVideo(ContentRow currentRow, SafeXmlElement videoContainer)
+        /// <summary>
+        /// Puts a row's video into a bloom-videoContainer. internal so that an
+        /// ISpreadsheetObjectKind can fill a video container inside its object from one of
+        /// its own rows.
+        /// </summary>
+        internal void PutRowInVideo(ContentRow currentRow, SafeXmlElement videoContainer)
         {
             var source = currentRow.GetCell(InternalSpreadsheet.VideoSourceColumnLabel).Text;
             Debug.Assert(
@@ -837,7 +873,12 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        private async Task PutRowInImageAsync(
+        /// <summary>
+        /// Puts a row's image (and any description row that followed it) into a
+        /// bloom-canvas. internal so that an ISpreadsheetObjectKind can fill a bloom-canvas
+        /// inside its object from one of its own rows.
+        /// </summary>
+        internal async Task PutRowInImageAsync(
             ContentRow currentRow,
             ContentRow descriptionRow,
             SafeXmlElement currentBloomCanvas
@@ -963,7 +1004,11 @@ namespace Bloom.Spreadsheet
             }
         }
 
-        void Warn(string message)
+        /// <summary>
+        /// Reports a problem with the import to the user. internal so that an
+        /// ISpreadsheetObjectKind can report a problem with one of its own rows.
+        /// </summary>
+        internal void Warn(string message)
         {
             _warnings.Add(message);
             _progress?.MessageWithoutLocalizing(message, ProgressKind.Warning);
@@ -1655,6 +1700,31 @@ namespace Bloom.Spreadsheet
                 );
             }
 
+            // None of Bloom's default pages holds an object of a registered kind, so there
+            // is no page we could generate that would satisfy one. Drop the flag and let
+            // the caller decide what to do with the page we have: either it can hold the
+            // rest of what the row needs, or ImportObjectAsync reports that the page has no
+            // object for the row and skips it. We must not invent one: it would be an object
+            // of a shape nothing in the spreadsheet asked for.
+            if (
+                string.IsNullOrEmpty(guid)
+                && (blocksNeeded & BlockTypes.Object) == BlockTypes.Object
+            )
+            {
+                var blocksNeededBesidesObject = blocksNeeded & ~BlockTypes.Object;
+                // If the object was all the row needed, there is nothing left to find a page
+                // for, so we use the page we have. (Recursing with nothing needed would only
+                // repeat the "requested page type" warning above for the same row.)
+                if (blocksNeededBesidesObject == BlockTypes.None)
+                    return false;
+                return InsertDefaultPageIfNeeded(
+                    blocksNeededBesidesObject,
+                    blocksWeHave,
+                    pageTypeNeeded,
+                    _pageTypeOfLastPage
+                );
+            }
+
             if (string.IsNullOrEmpty(guid))
             {
                 throw new ApplicationException("Failed to find a default page type");
@@ -1666,10 +1736,10 @@ namespace Bloom.Spreadsheet
 
         // A good index to show for the current row in messages. This should be the actual
         // row number Excel displays next to the row.
-        private int CurrentRowIndexForMessages =>
+        internal int CurrentRowIndexForMessages =>
             _sheet.GetIndexOfRow(_inputRows[_currentRowIndex]) + 1;
 
-        private static IEnumerable<SafeXmlElement> SafeSelectNodesByClassName(
+        internal static IEnumerable<SafeXmlElement> SafeSelectNodesByClassName(
             SafeXmlNode ancestor,
             string elementXPath,
             string className,
@@ -1687,12 +1757,116 @@ namespace Bloom.Spreadsheet
                 .Cast<SafeXmlElement>();
         }
 
-        private static bool HasExactClassName(SafeXmlElement element, string className)
+        internal static bool HasExactClassName(SafeXmlElement element, string className)
         {
             return element
                 .GetAttribute("class")
                 .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .Contains(className);
+        }
+
+        /// <summary>
+        /// The HtmlDom being imported into. internal so that an ISpreadsheetObjectKind can
+        /// create the elements it needs to rebuild its object.
+        /// </summary>
+        internal HtmlDom DestinationDom => _destinationDom;
+
+        /// <summary>
+        /// Imports the object whose lead row we are on, and every row that belongs to it,
+        /// by handing the whole family to the kind that claims the lead row's label. Leaves
+        /// _currentRowIndex on the last row of the family, since the main loop advances
+        /// past that.
+        ///
+        /// The object the rows are for is found the same way a [page content] row finds its
+        /// translation group: an object of a registered kind is one of the page's blocks,
+        /// so the lead row advances onto the page it belongs to (which for a page whose
+        /// only content is that object is the only thing that could) and takes that page's
+        /// next unused object.
+        ///
+        /// A family that has nowhere to go gets a warning naming its lead row and is
+        /// skipped, but only after the importer has moved the way it would for any row:
+        /// onto a new page if the lead row names a page type; otherwise it stays on the
+        /// page if that page still has an unused object, and else moves to the next page.
+        /// If it did not move, every row after a skipped family would land a page early,
+        /// and the page the family was meant for would be thrown away as unused at the end
+        /// of the import. (Past the end of the book this adds a copy of the last page with
+        /// nothing to put on it, as it does for any other row.)
+        /// </summary>
+        /// <param name="kind">The kind whose LeadRowLabel this row carries.</param>
+        /// <param name="pageType">The page type named in this row's [page type] cell, which
+        /// export writes on the first row it makes for a page. As for a [page content] row,
+        /// a page type means "start a new page of that type".</param>
+        private async Task ImportObjectAsync(ISpreadsheetObjectKind kind, string pageType)
+        {
+            var rows = CollectRowFamily(kind);
+            var firstRowIndex = _currentRowIndex;
+            var lastRowIndex = _currentRowIndex + rows.Count - 1;
+            var leadRowLabel = kind.LeadRowLabel;
+
+            // Find the object first, the way a [page content] row finds its group, so that
+            // a family we end up skipping still holds its place in the page order (see the
+            // summary).
+            var typesFound = AdvanceToNextSetOfBlocks(BlockTypes.Object, pageType);
+            SafeXmlElement target = null;
+            if ((typesFound & BlockTypes.Object) == BlockTypes.Object)
+                target = _blocksOnPage[objectIndex][_blockOnPageIndexes[objectIndex]];
+            // With more than one kind sharing the object slot we could land on an object
+            // belonging to another kind; better to say we found nothing than to hand a kind
+            // something it does not understand.
+            if (target != null && !kind.GetObjectsOnPage(_currentPage).Contains(target))
+                target = null;
+
+            if (_sheet.GetColumnForTag(InternalSpreadsheet.DetailsColumnLabel) < 0)
+            {
+                // Nothing but the [details] column can tell us what the object looks like,
+                // so there is nothing we can do with these rows but leave the book's own
+                // object alone. (Export always writes the column when it writes such a row,
+                // so this means the spreadsheet was edited into this state.)
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {leadRowLabel} row, but this spreadsheet has no {InternalSpreadsheet.DetailsColumnLabel} column, so Bloom could not use it."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
+
+            if (target == null)
+            {
+                Warn(
+                    $"Row {CurrentRowIndexForMessages} is a {leadRowLabel} row, but Bloom found nowhere on the page to put it, so it was skipped."
+                );
+                _currentRowIndex = lastRowIndex;
+                return;
+            }
+
+            await kind.ImportObjectAsync(
+                rows,
+                new SpreadsheetObjectImportContext
+                {
+                    Importer = this,
+                    Spreadsheet = _sheet,
+                    TargetElement = target,
+                    Warn = Warn,
+                    // So that a message about one row of the family names that row.
+                    SetRowInFamilyBeingProcessed = i => _currentRowIndex = firstRowIndex + i,
+                }
+            );
+            _currentRowIndex = lastRowIndex;
+        }
+
+        /// <summary>
+        /// The run of rows that belong to the lead row we are on: itself, then every
+        /// following row the kind claims as a continuation.
+        /// </summary>
+        private List<ContentRow> CollectRowFamily(ISpreadsheetObjectKind kind)
+        {
+            var rows = new List<ContentRow> { _inputRows[_currentRowIndex] };
+            for (var i = _currentRowIndex + 1; i < _inputRows.Count; i++)
+            {
+                if (!kind.IsContinuationRow(_inputRows[i]))
+                    break;
+                rows.Add(_inputRows[i]);
+            }
+            return rows;
         }
 
         private List<SafeXmlElement> GetBloomCanvases(SafeXmlElement ancestor)
@@ -1720,15 +1894,31 @@ namespace Bloom.Spreadsheet
             List<SafeXmlElement>[] blocksOnPageCollector
         )
         {
-            blocksOnPageCollector[bloomCanvasIndex] = GetBloomCanvases(currentPage);
+            // Anything inside an object of a registered ISpreadsheetObjectKind belongs to
+            // that object, which is filled from the object's own rows, so it must not be a
+            // destination for the page's positionally-matched [page content] rows.
+            blocksOnPageCollector[bloomCanvasIndex] = GetBloomCanvases(currentPage)
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
+                .ToList();
             // We don't want image description slots as possible destinations for text.
             // They are handled by special extra rows inserted after the row that has the image.
             var allGroups = TranslationGroupManager.SortedGroupsOnPage(currentPage, true);
             blocksOnPageCollector[translationGroupIndex] = allGroups
-                .Where(x => !HasExactClassName(x, "bloom-imageDescription"))
+                .Where(x =>
+                    !HasExactClassName(x, "bloom-imageDescription")
+                    && !SpreadsheetObjectKinds.IsInsideAnObject(x)
+                )
                 .ToList();
-            blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage);
-            blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage);
+            blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(currentPage)
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
+                .ToList();
+            blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(currentPage)
+                .Where(x => !SpreadsheetObjectKinds.IsInsideAnObject(x))
+                .ToList();
+            blocksOnPageCollector[objectIndex] = SpreadsheetObjectKinds
+                .ObjectsOnPage(currentPage)
+                .Select(o => o.Element)
+                .ToList();
         }
 
         // This helper method supports various tasks that have to be done for each block type
@@ -1824,7 +2014,7 @@ namespace Bloom.Spreadsheet
         /// </summary>
         /// <param name="row"></param>
         /// <param name="group"></param>
-        private async Task PutRowInGroupAsync(ContentRow row, SafeXmlElement group)
+        internal async Task PutRowInGroupAsync(ContentRow row, SafeXmlElement group)
         {
             if (HasExactClassName(group, "QuizAnswer-style"))
             {
@@ -2378,7 +2568,8 @@ namespace Bloom.Spreadsheet
         Image = 1 << SpreadsheetImporter.bloomCanvasIndex,
         Video = 1 << SpreadsheetImporter.videoContainerIndex,
         Widget = 1 << SpreadsheetImporter.widgetContainerIndex,
-        All = 15, // deliberately not including landscape!
+        Object = 1 << SpreadsheetImporter.objectIndex,
+        All = 31, // deliberately not including landscape!
 
         // This is special. A combination of the above flags may be used as an index
         // to look up a page guid that should be inserted when we need that combination
