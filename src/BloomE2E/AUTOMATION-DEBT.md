@@ -534,8 +534,54 @@ branding and the machine is slow. Not reproduced locally.
 
 Worked around in the test, 2026-09-05: it no longer types a title, and keeps the folder
 `makeBookFromTemplate` returns, which is stable as long as the book has no title. A test
-whose subject is the title, or the folder rename, cannot take that route. Fix direction:
-find what reloads or re-saves the cover of a new book under a branding, or make
-`findBookFolder` able to find a book by its id (`collections/books` reports one) so a test
-does not depend on the rename at all.
+whose subject is the title, or the folder rename, cannot take that route.
+
+seen again: 2026-09-10 and 2026-09-11, in `bulk-upload-quick-test.spec.ts`, which cannot
+take that workaround because it needs four books findable by title. Both nightlies died on
+the first book, identically, so on the runner this is close to deterministic.
+
+What the 2026-09-11 evidence adds — the first failure since #8343 started keeping the
+collection and Bloom's log on a failed test, so for once we can see the wreckage:
+
+- **Only the cover title is lost.** In the kept collection every `data-book="bookTitle"`
+  div is empty, `<title>` is empty, and `meta.json` has `"title": ""` — while the page
+  added straight afterwards, the "Hello." typed on it, and the copyright set later through
+  the Publish dialog are all saved. One edit is being dropped, not a save failing.
+- **The signature in Bloom's log is an absence.** Locally `InsertTemplatePage` is followed
+  by `Renaming html … -> '<title>.htm'` and `Renaming folder …` before
+  `BookStorage.Saving…`. On the runner those two lines are missing: the `SaveThen` that
+  `OnInsertPage` wraps the insert in got page content back from the browser with no title
+  in it, so there was nothing to rename to. That absence is the cheapest way to spot this
+  failure in a nightly log.
+- **Not reproducible on a fast machine.** Twelve attempts on a developer box — six at full
+  speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
+  saved the title. Renderer slowness alone is not the trigger.
+
+The open question, and the reason for the probe below: **is this Bloom, or is it how we
+type?** `typeInGroup` defaults to `page.keyboard.insertText`, which raises `input` but no
+`keydown`/`keypress`/`keyup` at all (see "Typing in a text box raises no key events"). If
+anything in the title's path hangs off a key event, or off the focus leaving the box, then
+a person is safe and only the suite is exposed. Against that: `insertText` saved the title
+12 times out of 12 locally, so it is not simply inert.
+
+**The probe: `cover-title-save.spec.ts`.** It makes the same book three times in one run,
+typing the title a different way each time — `insertText`, real key presses
+(`typeInGroup`'s new `"keyPresses"` method), and `insertText` followed by an explicit blur
+— and reports for each what the box held just before the save and whether the collection
+learned the title. Read it from a **nightly** run; locally all three pass. Alongside it,
+`EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation: page
+content from the browser carries bookTitle …`, so the run's kept `Log.txt` says whether the
+text was already gone before Bloom saw it or was lost after. Between them the run tells us
+which of three segments loses it: the typing, the capture, or the save.
+
+Fix direction, once the probe has answered:
+
+- only `insertText` loses it → make `typeInGroup` type the way a person does, which also
+  unblocks `bulk-upload-quick-test`;
+- every variant loses it → it is Bloom, and the thing to find is what re-syncs the cover of
+  a brand-new book from its still-empty data-div.
+
+Either way, delete the probe and the `Cover-title investigation` log line when the question
+is settled. Independently of all this, `findBookFolder` could look a book up by its id
+(`collections/books` reports one) so that no test depends on the rename at all.
 (Found 2026-09-05 in the nightly run.)
