@@ -152,9 +152,15 @@ export const DecodableStagesSetup: React.FunctionComponent<{
                     }
                 `}
             >
-                <Tab label={lettersTab} />
-                <Tab label={sampleWordsTab} />
-                <Tab label={stagesTab} />
+                <Tab
+                    label={lettersTab}
+                    data-testid="reader-setup-tab-letters"
+                />
+                <Tab
+                    label={sampleWordsTab}
+                    data-testid="reader-setup-tab-sample-words"
+                />
+                <Tab label={stagesTab} data-testid="reader-setup-tab-stages" />
             </Tabs>
             <div
                 css={css`
@@ -210,6 +216,7 @@ const LettersTab: React.FunctionComponent<{
                 updateSettings={updateLetters}
                 value={props.settings.letters}
                 ariaLabel={lettersBoxLabel}
+                testId="reader-setup-letters-box"
                 extraStyles={css`
                     display: block;
                     width: 325px;
@@ -557,6 +564,10 @@ const SampleWordsTab: React.FunctionComponent<{
                             </div>
                             {sampleTextFiles.some((file) => !file.readable) && (
                                 <Link
+                                    // A stable hook for the e2e suite; the link's own text is
+                                    // localized. Link takes an id but does not pass through
+                                    // data-* attributes.
+                                    id="readerSetupSampleTextsHelpLink"
                                     l10nKey="ReaderSetup.HowToExport"
                                     // Ask Bloom to open help, rather than giving the anchor an
                                     // href to the api. Link only cancels the anchor's own
@@ -905,6 +916,7 @@ const StagesTab: React.FunctionComponent<{
                             updateSettings={updateSightWords}
                             value={stage.sightWords}
                             ariaLabel={sightWordsBoxLabel}
+                            testId="reader-setup-sight-words-box"
                             extraStyles={css`
                                 display: block;
                                 width: 325px;
@@ -971,6 +983,7 @@ const StagesTab: React.FunctionComponent<{
                                     return (
                                         <button
                                             key={letter}
+                                            data-testid={`reader-setup-letter-${letter}`}
                                             onClick={() => selectLetter(letter)}
                                             css={css`
                                                 width: 46px;
