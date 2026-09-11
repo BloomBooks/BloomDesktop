@@ -3749,6 +3749,11 @@
         <target xml:lang="tr" state="needs-translation">Collections on this Computer</target>
         <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.ImageChooser">
+        <source xml:lang="en">Image Chooser</source>
+        <target xml:lang="tr" state="needs-translation">Image Chooser</target>
+        <note>ID: ImageLibrary.ImageChooser</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.OnlineSources">
         <source xml:lang="en">Online Sources</source>
         <target xml:lang="tr" state="needs-translation">Online Sources</target>
