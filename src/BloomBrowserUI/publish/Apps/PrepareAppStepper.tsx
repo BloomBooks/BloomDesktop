@@ -11,6 +11,7 @@ import {
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { BloomStepper } from "../../react_components/BloomStepper";
+import { findLinkTextBrackets } from "../../utils/textUtils";
 import {
     AppBuilderPrepareStepId,
     IAppBuilderPrepareStepStatus,
@@ -45,10 +46,9 @@ export const PrepareStepTooltipContent: React.FunctionComponent<{
         return <>{props.tooltip.text}</>;
     }
 
-    const idxOpen = props.tooltip.text.indexOf("[");
-    const idxClose = props.tooltip.text.indexOf("]", idxOpen + 1);
+    const brackets = findLinkTextBrackets(props.tooltip.text);
 
-    if (idxOpen < 0 || idxClose <= idxOpen) {
+    if (!brackets) {
         return (
             <Link
                 underline="hover"
@@ -60,6 +60,8 @@ export const PrepareStepTooltipContent: React.FunctionComponent<{
             </Link>
         );
     }
+
+    const { open: idxOpen, close: idxClose } = brackets;
 
     return (
         <span>
