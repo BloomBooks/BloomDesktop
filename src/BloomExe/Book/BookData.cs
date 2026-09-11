@@ -1656,7 +1656,18 @@ namespace Bloom.Book
                                 }
 
                                 var attrsToSave = GetAttributesToSave(nodeToUse, key);
-                                AddPageDependentVariantsFromDataDiv(key, lang, attrsToSave);
+                                // The other xmatter pages' variants of any page-dependent attribute
+                                // live only in the data-div, which we may not be reading; keep them.
+                                var attrNamesAlreadyFound = new HashSet<string>(
+                                    attrsToSave.Select(t => t.Item1)
+                                );
+                                attrsToSave.AddRange(
+                                    GetPageDependentVariantsFromDataDiv(
+                                        key,
+                                        lang,
+                                        attrNamesAlreadyFound
+                                    )
+                                );
                                 dsv.SetAttributeList(lang, attrsToSave);
                             }
                             else
@@ -1901,30 +1912,35 @@ namespace Bloom.Book
         /// page-dependent attribute variants belonging to the OTHER xmatter pages are missing from the
         /// data we gathered. Pushing that data back into the book would then give every other xmatter
         /// page the value from the page we just read, which is the very thing this mechanism exists to
-        /// prevent. So copy any variant the data-div already has, unless the page we read from supplied
-        /// one of the same name (that one is newer). See BL-16811.
+        /// prevent. So this returns the variants the data-div element for key/lang already has, for
+        /// the caller to add to the attributes it is saving. See BL-16811.
         /// </summary>
-        private void AddPageDependentVariantsFromDataDiv(
+        /// <param name="attrNamesAlreadyFound">The names of the attributes we have already decided to
+        /// save from the winning element for this key and lang (including, if it is on an xmatter
+        /// page, its own variant such as data-style-frontcover). Those values are newer than the
+        /// data-div's, so no attribute with one of these names is returned.</param>
+        private List<Tuple<string, XmlString>> GetPageDependentVariantsFromDataDiv(
             string key,
             string lang,
-            List<Tuple<string, XmlString>> attrs
+            HashSet<string> attrNamesAlreadyFound
         )
         {
+            var result = new List<Tuple<string, XmlString>>();
             if (!HasPageDependentAttributes(key))
-                return;
+                return result;
             var dataDivElement =
                 _dataDiv?.SelectSingleNode($"div[@data-book='{key}' and @lang='{lang}']")
                 as SafeXmlElement;
             if (dataDivElement == null)
-                return;
-            var existingNames = new HashSet<string>(attrs.Select(t => t.Item1));
+                return result;
             foreach (var attr in dataDivElement.AttributePairs)
             {
-                if (existingNames.Contains(attr.Name))
+                if (attrNamesAlreadyFound.Contains(attr.Name))
                     continue;
                 if (IsPageDependentVariantName(key, attr.Name, out _))
-                    attrs.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
+                    result.Add(Tuple.Create(attr.Name, XmlString.FromUnencoded(attr.Value)));
             }
+            return result;
         }
 
         /// <summary>
