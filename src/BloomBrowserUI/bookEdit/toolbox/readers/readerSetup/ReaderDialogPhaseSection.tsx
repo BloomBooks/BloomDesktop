@@ -48,6 +48,7 @@ const DraggablePhaseRow: React.FunctionComponent<{
     return (
         <div
             ref={setNodeRef}
+            data-testid="reader-setup-phase-row"
             style={{
                 transform: CSS.Transform.toString(transform),
                 transition,
@@ -314,6 +315,7 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
                 >
                     <Button
                         onClick={addNewStage}
+                        data-testid="reader-setup-add-phase"
                         startIcon={<AddIcon />}
                         css={css`
                             justify-content: flex-start;

@@ -135,6 +135,7 @@ const DecodableReaderSetupDialogLauncher: React.FunctionComponent<{
                 onClose={close}
                 onCancel={close}
                 maxWidth={false}
+                data-testid="decodable-reader-setup-dialog"
                 css={css`
                     .MuiPaper-root {
                         border-radius: 8px;

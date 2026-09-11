@@ -29,6 +29,13 @@ export const ReaderSetupButton: FunctionComponent<{
         <BloomButton
             href={legacyDialogHref}
             onClick={props.onClick}
+            // A stable hook for the e2e suite. The button's own label is localized, and
+            // both reader tools render this same component, so the id says which one.
+            data-testid={
+                props.isForLeveled
+                    ? "set-up-levels-button"
+                    : "set-up-stages-button"
+            }
             l10nKey={
                 props.isForLeveled
                     ? "EditTab.Toolbox.LeveledReaderTool.SetUpLevels"

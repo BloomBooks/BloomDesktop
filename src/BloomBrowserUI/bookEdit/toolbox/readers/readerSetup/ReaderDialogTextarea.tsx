@@ -11,6 +11,11 @@ export const ReaderDialogTextarea: React.FunctionComponent<{
     extraStyles: SerializedStyles;
     /** Accessible name for the box; it is labelled only by a nearby heading, not a <label>. */
     ariaLabel: string;
+    /**
+     * A stable hook for the e2e suite. The aria-label above is localized, so it cannot serve
+     * as one.
+     */
+    testId?: string;
 }> = (props) => {
     const activateLongPress = useCallback(
         (textarea: HTMLTextAreaElement | null) => {
@@ -24,6 +29,7 @@ export const ReaderDialogTextarea: React.FunctionComponent<{
         <textarea
             ref={activateLongPress}
             aria-label={props.ariaLabel}
+            data-testid={props.testId}
             value={props.value}
             onChange={(event) => props.updateSettings(event.target.value)}
             onBlur={(event) => props.updateSettings(event.currentTarget.value)}
