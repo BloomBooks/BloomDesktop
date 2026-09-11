@@ -44,6 +44,7 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
+import { getEditablePageBundleExports } from "../js/workspaceFrames";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -586,6 +587,22 @@ export default class StyleEditor {
             : this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
+        }
+        if (create) {
+            // A caller asking us to create the rule means it is about to change it, and every
+            // change we make to these styles goes through the CSSOM -- setProperty, deleteRule,
+            // insertRule -- which mutates no DOM node. So the page watcher, which is a
+            // MutationObserver, cannot see it, and a formatting change that leaves the text alone
+            // would never be volunteered to C#: leaving the Edit tab or quitting would write the
+            // styles as they were. This is the one place every such change passes through.
+            //
+            // It is deliberately said BEFORE the change rather than after: the watcher waits a
+            // moment before reading the page, and the caller's edits are synchronous, so they are
+            // in by the time it looks. Saying so needlessly costs nothing -- an unchanged page
+            // produces no post.
+            // Through the page frame's exports rather than a direct import, because this class
+            // is used from the toolbox frame as well, and it is the PAGE frame that watches.
+            getEditablePageBundleExports()?.notePageContentMayHaveChanged();
         }
 
         let ruleList: CSSRuleList = styleSheet.cssRules;

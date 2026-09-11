@@ -32,12 +32,12 @@ So:
   is there specifically so the two halves cannot disagree about which commit results belong to the
   page being edited.
 
-The overlay is in the top window because a page save reloads the page iframe, which would tear
-down an overlay hosted there — the same reason the image-gallery and copyright/license dialogs
-live up there (see the comments on those commands in `canvasControlRegistry.ts`). Note that this
-is *not* enough on its own: a save can also reload the whole workspace root, so C# waits for the
-page to come back before opening the overlay. `AiImageEditorApi.HandleSaveThenLaunch` explains
-that in full.
+The overlay is in the top window, like the image-gallery and copyright/license dialogs (see the
+comments on those commands in `canvasControlRegistry.ts`): plenty of operations replace the page
+iframe underneath it. Opening it first saves the page, because everything the editor is told about
+the book is read from the saved file; a save no longer reloads the page (BL-13502), so the editor
+opens as soon as the save returns, and does not open at all if the save did not happen.
+`AiImageEditorApi.HandleSaveThenLaunch` explains that in full.
 
 ## Tests
 

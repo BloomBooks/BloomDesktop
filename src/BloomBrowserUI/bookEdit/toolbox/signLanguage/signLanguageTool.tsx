@@ -1037,6 +1037,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
+        super.detachFromPage(); // this tool has no removeToolMarkup work, but see ITool.detachFromPage
         this.reactControls.leaveCurrentVideoContext();
         // Decided NOT to remove bloom-selected here. It's harmless (only the edit stylesheet
         // does anything with it) and leaving it allows us to keep the same one selected

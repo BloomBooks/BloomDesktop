@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 using Bloom;
 using Bloom.Edit;
 using Bloom.SafeXml;
@@ -35,6 +36,44 @@ namespace BloomTests.Edit
                 .Cast<SafeXmlElement>()
                 .FirstOrDefault();
             return found?.GetAttribute("src");
+        }
+
+        /// <summary>
+        /// MergeCurrentPageThenSave cannot see inside the action it is given, so the action has to
+        /// declare whether it changes the book -- and the DEFAULT has to be "yes".
+        ///
+        /// This is not a style preference. Getting it wrong in the "yes" direction costs a write
+        /// that was not needed. Getting it wrong in the "no" direction means the action runs, the
+        /// screen shows the result, and nothing is written: the merge marks the book dirty only
+        /// when the page's own content changed, so a command used on a page the user never typed on
+        /// leaves the book looking clean at the moment the action makes it dirty. That is how
+        /// changing the page size, choosing a different layout and setting the copyright quietly
+        /// failed to reach disk. Flipping this default would bring all of that back at once, in
+        /// every caller, silently -- hence a test on the default itself.
+        /// </summary>
+        [Test]
+        public void MergeCurrentPageThenSave_ActionChangesTheBook_DefaultsToTrue()
+        {
+            var parameter = typeof(EditingModel)
+                .GetMethod(nameof(EditingModel.MergeCurrentPageThenSave))
+                .GetParameters()
+                .SingleOrDefault(p => p.Name == "actionChangesTheBook");
+
+            Assert.That(
+                parameter,
+                Is.Not.Null,
+                "test setup: MergeCurrentPageThenSave should still have an actionChangesTheBook parameter"
+            );
+            Assert.That(
+                parameter.HasDefaultValue,
+                Is.True,
+                "actionChangesTheBook should be optional, so that a new caller gets the safe answer without thinking about it"
+            );
+            Assert.That(
+                parameter.DefaultValue,
+                Is.True,
+                "actionChangesTheBook must default to TRUE: a caller that changes the book and does not say so has its change written nowhere"
+            );
         }
 
         [Test]

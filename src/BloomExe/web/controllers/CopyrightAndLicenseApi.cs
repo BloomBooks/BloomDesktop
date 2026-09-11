@@ -187,7 +187,7 @@ namespace Bloom.web.controllers
                     // The dialog's "Copy to all other images in the book" button sets this.
                     // (We no longer pop up a question asking whether to copy to all images.)
                     bool applyToAllImages = request.GetParamOrNull("applyToAllImages") == "true";
-                    View.Model.SaveThen(
+                    View.Model.MergeCurrentPageThenSave(
                         () =>
                         { // Saved DOM must be up to date with possibly new imageUrl
                             try

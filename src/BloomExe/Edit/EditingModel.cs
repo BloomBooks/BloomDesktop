@@ -46,6 +46,13 @@ namespace Bloom.Edit
         // page is discarded in favor of the new on-disk content rather than clobbering it.
         private bool _reloadFromDiskOnLeavingEditTab;
 
+        /// <summary>
+        /// What the browser last told us the edited page contains, volunteered rather than asked
+        /// for. See PageSnapshot: this is what lets a save take the current page synchronously
+        /// instead of asking the browser and waiting.
+        /// </summary>
+        private readonly PageSnapshot _pageSnapshot = new PageSnapshot();
+
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;
@@ -58,9 +65,6 @@ namespace Bloom.Edit
 
         // This event fires after the EditingModel has finished responding to a PageSelection change.
         internal event EventHandler PageSelectModelChangesComplete;
-
-        // These variables are not thread-safe. Access only on UI thread.
-        internal bool InProcessOfSaving => _stateMachine.SavePending;
 
         // Perhaps a bit hack-ish, but this causes a full save to be done when our datadiv has been modified
         // but it's not obvious from the dataset changes. If we make new 'data-derived' divs someday, changing them
@@ -120,25 +124,11 @@ namespace Bloom.Edit
                 {
                     StartNavigationToEditPage(CurrentBook.GetPage(pageId));
                 },
-                //requestPageSave,
-                (string pageId) =>
-                {
-                    RequestBrowserToSave();
-                },
                 // updateBookWithPageContent
-                (string pageId, string pageContentData) =>
-                    UpdateBookDomFromBrowserPageContent(pageContentData),
+                (string pageId, string pageContent) =>
+                    UpdateBookDomFromBrowserPageContent(pageContent),
                 // saveBook
-                () =>
-                {
-                    if (_modifiedPageElement == null)
-                        return;
-
-                    CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
-                    _nextSaveMustBeFull = false;
-                    _pageHasUnsavedDataDerivedChange = false;
-                    PageTemplatesApi.LastSaveTime = DateTime.Now;
-                },
+                () => SaveBookToDisk(),
                 // hidePage
                 () =>
                 {
@@ -146,8 +136,7 @@ namespace Bloom.Edit
                     {
                         _view.OnHideEditTab();
                     }
-                },
-                enableStateTransitions: (enabled) => _view?.WorkspaceView?.SetTabsEnabled(enabled)
+                }
             );
 
             bookSelection.SelectionChanged += OnBookSelectionChanged;
@@ -186,58 +175,11 @@ namespace Bloom.Edit
             selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
             pageListChangedEvent.Subscribe(needFullUpdate => _view.UpdatePageList(needFullUpdate));
             relocatePageEvent.Subscribe(OnRelocatePage);
-            collectionClosingEvent.Subscribe(args =>
+            collectionClosingEvent.Subscribe(_ =>
             {
                 if (Visible)
                 {
-                    // We want to save any changes, and they ought to be fully saved before we shut down the program.
-                    // To that end we normally set Delayed to indicate that we take responsibility for doing the caller-supplied
-                    // action that continues the shutdown process (after the Save completes).
-                    // If we can't initiate a Save, we'll just let the shutdown proceed (leave Delayed false).
-                    // Review: should we warn the user? Displaying UI while the user is tying to close the program is
-                    // generally a bad idea, but we may have failed to save some changes. On the other hand,
-                    // the only likely reason for this is that the program is in a bad state, probably from a previously
-                    // reported error.
-                    args.Delayed = true;
-                    SaveThen(
-                        () =>
-                        {
-                            // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
-                            // the postponed work, which is going to shut everything down and would prevent
-                            // the normal automatic save-to-disk from working.
-                            // If the save failed before this action gets called, Delayed is true, and PostponedWork
-                            // doesn't get done at all. This typically means the collection will not close.
-                            // However, FailureAction should be called in this case which allows closing the collection
-                            // to try again. If we do try again and the same page fails again, the state machine will
-                            // call this action anyway. So, finally PostponedWork will get called and we can close the collection.
-                            try
-                            {
-                                CurrentBook.Save();
-                                CurrentBook.RecordPendingCreatedHistoryEvent();
-                            }
-                            catch (Exception e)
-                            {
-                                // Shutting down must not depend on the save succeeding. If it does,
-                                // a page that cannot be saved leaves the user no way out of Bloom at
-                                // all, because every further attempt to close runs this same failing
-                                // save (BL-16776). We deliberately don't put up a dialog: the user is
-                                // trying to quit, and whatever made the save fail will already have
-                                // been reported when it happened.
-                                NonFatalProblem.Report(
-                                    ModalIf.None,
-                                    PassiveIf.All,
-                                    "Bloom could not save the page you were editing as it shut down",
-                                    null,
-                                    e
-                                );
-                            }
-                            args.PostponedWork();
-                            return null;
-                        },
-                        doIfNotInRightStateToSave: () => args.Delayed = false, // go ahead and quit now
-                        skipSaveToDisk: true,
-                        failureAction: args.FailureAction
-                    );
+                    SaveEverythingBeforeClosing();
                 }
             });
             localizationChangedEvent.Subscribe(o =>
@@ -251,13 +193,14 @@ namespace Bloom.Edit
                 //shown so the view has never been full constructed, so we're not in a good state to do a refresh
                 if (Visible)
                 {
-                    SaveThen(
+                    MergeCurrentPageThenSave(
                         () =>
                         {
                             _view.UpdatePageList(false);
                             return _pageSelection.CurrentSelection.Id;
                         },
-                        () => { } // wrong state, I think there's nothing we can safely do.
+                        // Refreshing the thumbnails changes nothing in the book.
+                        actionChangesTheBook: false
                     );
                 }
             });
@@ -284,18 +227,20 @@ namespace Bloom.Edit
         /// Receives a string (which comes from the browser) that combines the body of the document of the page
         /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
         /// to match whatever the browser has.
-        /// Enhance: ideally we would use a mutation observer so the browser knows whether anything needs saving,
-        /// and this method would get something indicating it doesn't need to save if that's so.
+        ///
+        /// Null means the page has not changed since it loaded (see PageSnapshot), so there is
+        /// nothing to merge. Whether a non-null page actually changes the book is decided by
+        /// Book.UpdateDomFromEditedPage, after our own processing of it.
         /// </summary>
-        public void UpdateBookDomFromBrowserPageContent(string pageContentData)
+        public void UpdateBookDomFromBrowserPageContent(string pageContent)
         {
-            if (pageContentData != null)
+            if (pageContent != null)
             {
-                var endHtml = pageContentData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+                var endHtml = pageContent.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
                 if (endHtml > 0)
                 {
-                    var bodyHtml = pageContentData.Substring(0, endHtml);
-                    var userCssContent = pageContentData.Substring(endHtml + "<SPLIT-DATA>".Length);
+                    var bodyHtml = pageContent.Substring(0, endHtml);
+                    var userCssContent = pageContent.Substring(endHtml + "<SPLIT-DATA>".Length);
                     var docFromBrowser = GetCleanCurrentPageFromBodyAndCss(
                         bodyHtml,
                         userCssContent
@@ -309,9 +254,8 @@ namespace Bloom.Edit
         /// Given the body of the editable page and the CSS for any user-defined styles (from the
         /// editable page browser), this method creates a new SafeXmlDocument that contains the same state.
         /// It does some additional cleanup of things that get added to the page as UI controls
-        /// to support editing. (Enhance: it would be nice if ALL the cleanup happened in one place,
-        /// probably the Javascript method that retrieves the page content).
-        /// (Nicer still if cleanup didn't leave the page in an invalid state, see BL-13502.)
+        /// to support editing. (Most of that cleanup now also happens in the browser, on the clone
+        /// it gathers -- see editorChromeCleanup.ts -- but this remains the last line of defence.)
         /// </summary>
         internal static SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,
@@ -362,17 +306,17 @@ namespace Bloom.Edit
         /// factored out so the off-screen book processor (external/process-book) can reuse it without
         /// going through the live EditingModel/state machine.
         /// </summary>
-        public static HtmlDom GetEditedPageDomFromBrowserContent(string pageContentData)
+        public static HtmlDom GetEditedPageDomFromBrowserContent(string pageContent)
         {
-            if (pageContentData == null)
+            if (pageContent == null)
                 throw new ApplicationException("page content was null");
-            var endHtml = pageContentData.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
+            var endHtml = pageContent.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
             if (endHtml < 0)
                 throw new ApplicationException(
                     "page content was missing the <SPLIT-DATA> delimiter"
                 );
-            var bodyHtml = pageContentData.Substring(0, endHtml);
-            var userCssContent = pageContentData.Substring(endHtml + "<SPLIT-DATA>".Length);
+            var bodyHtml = pageContent.Substring(0, endHtml);
+            var userCssContent = pageContent.Substring(endHtml + "<SPLIT-DATA>".Length);
             return new HtmlDom(GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent));
         }
 
@@ -402,11 +346,6 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
-                // Leaving the tab means no page will load to run whatever was queued for the next
-                // page load (see RunAfterNextPageLoad) — and it was queued for the page we are
-                // leaving, so it must not spring to life if the user comes back to that page later.
-                _doAfterNextPageLoad = null;
-
                 // When an external tool has overwritten the current book on disk (see
                 // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
                 // discard the unsaved page. In that case reload from disk instead of saving, so the
@@ -414,114 +353,48 @@ namespace Bloom.Edit
                 var reloadFromDiskInsteadOfSaving = _reloadFromDiskOnLeavingEditTab;
                 _reloadFromDiskOnLeavingEditTab = false;
 
-                SaveThen(
-                    () =>
+                if (reloadFromDiskInsteadOfSaving)
+                {
+                    // Discard the page the user was editing; what the external process wrote wins.
+                    CurrentBook?.ReloadFromDisk(null);
+                    // Force OnBecomeVisible to re-display from the freshly-loaded book if the user
+                    // returns to the Edit tab.
+                    _currentlyDisplayedBook = null;
+                }
+                else
+                {
+                    // Tell the user, but change tabs anyway: a page that cannot be saved must not
+                    // lock them into the Edit tab indefinitely (BL-16776). We report rather than
+                    // letting this propagate so that we still finish on the same path a successful
+                    // save takes, rather than stopping half way out of a tab we have left.
+                    try
                     {
-                        // We are setting skipSaveToDisk true so that we can do it ourselves here BEFORE
-                        // the postponed work, which is going to shut everything down and would prevent
-                        // the normal automatic save-to-disk from working.
-                        if (reloadFromDiskInsteadOfSaving)
-                        {
-                            // Discard the page content just gathered into the in-memory DOM; disk wins.
-                            CurrentBook?.ReloadFromDisk(null);
-                            // Force OnBecomeVisible to re-display from the freshly-loaded book if the
-                            // user returns to the Edit tab.
-                            _currentlyDisplayedBook = null;
-                        }
-                        else
-                        {
-                            try
-                            {
-                                CurrentBook?.Save(); // we need it all the way saved before completing the tab change
-                            }
-                            catch (Exception e)
-                            {
-                                // Tell the user, but change tabs anyway: a page that cannot be saved must
-                                // not lock them into the Edit tab indefinitely (BL-16776). We report rather
-                                // than letting this propagate so that we still finish on the same path a
-                                // successful save takes, rather than navigating a tab we have just left.
-                                // Note this is not the kind of swallowing we deliberately removed from
-                                // GetCleanCurrentPageFromBodyAndCss, where catching let a save carry on with
-                                // missing content. By the time we get here the page content has either
-                                // reached the DOM or thrown; all we abandon is writing it out.
-                                NonFatalProblem.Report(
-                                    ModalIf.All,
-                                    PassiveIf.All,
-                                    LocalizationManager.GetString(
-                                        "Errors.CouldNotSavePage",
-                                        "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
-                                    ),
-                                    null,
-                                    e
-                                );
-                            }
-                        }
-                        // This bizarre behavior prevents BL-2313 and related problems.
-                        // For some reason I cannot discover, switching tabs when focus is in the Browser window
-                        // causes Bloom to get deactivated, which prevents various controls from working.
-                        // Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
-                        // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
-                        _oldActiveForm = Form.ActiveForm;
-                        Application.Idle += ReactivateFormOnIdle;
-                        details.CompleteTheChange?.Invoke();
-                        return null; // leaving this tab, show blank page
-                    },
-                    () =>
+                        SaveCurrentPageAndBook();
+                    }
+                    catch (Exception e)
                     {
-                        // We get here when we could not start a save, so we're in Navigating,
-                        // SavePending or SavedAndStripped. (We shouldn't be in NoPage while in the
-                        // edit tab, but if we somehow are, we take the branch above; and if we're
-                        // Editing we take the branch above too.)
-                        //
-                        // We do ask for the tabs to be disabled while saving, but that doesn't take
-                        // effect soon enough to stop a second click on a tab, so SavePending really
-                        // does happen here — that was BL-16766. See WorkspaceView.SetTabsEnabled.
-                        //
-                        // Navigating: we clicked the Edit tab and then immediately something else,
-                        // or clicked another tab during the fraction of a second while Bloom is
-                        // navigating to a new page after doing some command. Abort the navigate,
-                        // then go ahead. Earlier versions of Bloom had a Debug guard against
-                        // reaching this state, but it happened often enough to be annoying, and the
-                        // recovery code here seems to work adequately. In particlar, we seem to get
-                        // here after a Javascript error has been reported, and raising an exception
-                        // here tends to interfere with reporting the error we really want to see.
-                        if (StateMachine.Navigating)
-                        {
-                            StateMachine.ToNoPage();
-                        }
-                        if (reloadFromDiskInsteadOfSaving)
-                        {
-                            // We reached the fallback because we couldn't take over the save (e.g. a
-                            // save was already in flight: we're in SavePending, waiting on the browser).
-                            // Tell that in-flight save to discard its content, so when it completes it
-                            // doesn't merge the edits we're throwing away and write them back over what
-                            // the external process just put on disk.
-                            StateMachine.DiscardInFlightSave();
-                            CurrentBook?.ReloadFromDisk(null);
-                            _currentlyDisplayedBook = null;
-                        }
-                        // If we are here because a save is still in flight (someone else started
-                        // it, and the browser has not yet handed back the page content), we must
-                        // not let the tab change go ahead now: the tab-changed event would ask the
-                        // state machine to empty the page, which throws while a save is pending,
-                        // and would leave the workspace half switched between the two tabs
-                        // (BL-16766). Wait for the save to finish and then start the tab change
-                        // over from the beginning.
-                        // Note that the retry sees reloadFromDiskInsteadOfSaving as false, because
-                        // this attempt consumed the flag — so it takes the ordinary Save() branch
-                        // above rather than the reload branch. That is correct: the reload has
-                        // already happened, just above, and the discarded save cannot have merged
-                        // anything into the DOM, so the DOM still matches what the external process
-                        // wrote and saving it writes that same content back. There is also no
-                        // second in-flight save for the retry to discard.
-                        if (StateMachine.DeferUntilSaveCompletes(details.StartTheChangeOver))
-                            return;
-                        _oldActiveForm = Form.ActiveForm;
-                        Application.Idle += ReactivateFormOnIdle;
-                        details.CompleteTheChange?.Invoke();
-                    },
-                    skipSaveToDisk: true
-                );
+                        NonFatalProblem.Report(
+                            ModalIf.All,
+                            PassiveIf.All,
+                            CouldNotSavePageMessage,
+                            null,
+                            e
+                        );
+                    }
+                }
+
+                // Show nothing in the editor. Either we saved, or we have told the user we could
+                // not and are leaving anyway; keeping the page would only trap them here.
+                _stateMachine.ToNoPageHavingSaved();
+
+                // This bizarre behavior prevents BL-2313 and related problems.
+                // For some reason I cannot discover, switching tabs when focus is in the Browser window
+                // causes Bloom to get deactivated, which prevents various controls from working.
+                // Moreover, it seems (BL-2329) that if the user types Alt-F4 while whatever-it-is is active,
+                // things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
+                _oldActiveForm = Form.ActiveForm;
+                Application.Idle += ReactivateFormOnIdle;
+                details.CompleteTheChange?.Invoke();
             }
             else
             {
@@ -572,9 +445,9 @@ namespace Bloom.Edit
             }
         }
 
-        internal void OnDuplicatePage()
+        internal void OnDuplicatePage(string pageContent = null)
         {
-            DuplicatePage(_pageSelection.CurrentSelection);
+            DuplicatePage(_pageSelection.CurrentSelection, pageContent);
         }
 
         internal void DuplicateManyPages(IPage page)
@@ -590,9 +463,9 @@ namespace Bloom.Edit
             }
         }
 
-        internal void DuplicatePage(IPage page)
+        internal void DuplicatePage(IPage page, string pageContent = null)
         {
-            DuplicatePageInternal(page);
+            DuplicatePageInternal(page, 1, pageContent);
         }
 
         /// <summary>
@@ -610,12 +483,16 @@ namespace Bloom.Edit
             DuplicatePageInternal(_pageSelection.CurrentSelection, numberOfTimes);
         }
 
-        private void DuplicatePageInternal(IPage page, int numberOfTimesToDuplicate = 1)
+        private void DuplicatePageInternal(
+            IPage page,
+            int numberOfTimesToDuplicate = 1,
+            string pageContent = null
+        )
         {
             // NB: though there is an api call to do this, it isn't currently used, so we have to measure here.
             var countString = numberOfTimesToDuplicate.ToString();
             var newPageId = page.Id; // error fallback
-            SaveThen(
+            MergeCurrentPageThenSave(
                 () =>
                 {
                     using (PerformanceMeasurement.Global.Measure("Duplicate page"))
@@ -649,28 +526,22 @@ namespace Bloom.Edit
                     }
                     return newPageId;
                 },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
+                pageContent: pageContent
             );
         }
 
-        internal void OnDeletePage()
+        internal void OnDeletePage(string pageContent = null)
         {
-            DeletePage(_pageSelection.CurrentSelection);
+            DeletePage(_pageSelection.CurrentSelection, pageContent);
         }
 
-        internal void DeletePage(IPage page)
+        internal void DeletePage(IPage page, string pageContent = null)
         {
             // This can only be called on the UI thread in response to a user button click.
-            // If that ever changed we might need to arrange locking for access to InProcessOfSaving and _tasksToDoAfterSaving.
             Debug.Assert(!_view.InvokeRequired);
-            if (InProcessOfSaving)
-            {
-                // Somehow (BL-431) it's possible that a Save is still in progress when we start executing a delete page.
-                // If this happens, just abort the delete.
-                return;
-            }
-            SaveThen(
+            // There used to be a guard here against a save still being in progress (BL-431). A save
+            // now finishes inside the call that asks for it, so there is no such window.
+            MergeCurrentPageThenSave(
                 () =>
                 {
                     try
@@ -691,8 +562,7 @@ namespace Bloom.Edit
                         return page.Id; // stay on this page.
                     }
                 },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
+                pageContent: pageContent
             );
         }
 
@@ -734,11 +604,21 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
+        /// The event handler form of InsertPage, for the AddPageDialog's InsertPage event. The
+        /// dialog is a separate window, so it has no way to hand us the current page's content;
+        /// "paste page" calls InsertPage directly and can.
         /// </summary>
         private void OnInsertPage(object page, PageInsertEventArgs e)
         {
-            SaveThen(
+            InsertPage(page, e, null);
+        }
+
+        /// <summary>
+        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
+        /// </summary>
+        private void InsertPage(object page, PageInsertEventArgs e, string pageContent)
+        {
+            MergeCurrentPageThenSave(
                 () =>
                 { // there might be unsaved changes in the current page from before we clicked Add Page
                     var newPageId = CurrentBook.InsertPageAfter(
@@ -786,8 +666,7 @@ namespace Bloom.Edit
                     Logger.WriteEvent("InsertTemplatePage");
                     return newPageId;
                 },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
+                pageContent: pageContent
             );
         }
 
@@ -905,35 +784,32 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            SaveThen(
-                () =>
+            MergeCurrentPageThenSave(() =>
+            {
+                var pageId = _pageSelection.CurrentSelection.Id;
+                var changedOrientation =
+                    CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
+                    != layout.SizeAndOrientation.IsLandScape;
+                CurrentBook.SetLayout(layout);
+                if (changedOrientation)
                 {
-                    var pageId = _pageSelection.CurrentSelection.Id;
-                    var changedOrientation =
-                        CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
-                        != layout.SizeAndOrientation.IsLandScape;
-                    CurrentBook.SetLayout(layout);
-                    if (changedOrientation)
-                    {
-                        // We need to update the xmatter, since this process selects images to display based on orientation.
-                        // (Here we need to do it even if we already brought this book up to date when it was selected.)
-                        CurrentBook.BringBookUpToDate(new NullProgress());
-                        // That wrecks everything. In particular guids stored in Page objects are obsolete.
-                        // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
-                        _view.OnVisibleChanged(false);
-                        _currentlyDisplayedBook = null;
-                        _previouslySelectedPage = null;
-                        _view.OnVisibleChanged(true);
-                        // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
-                        // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
-                        _view.SetModalState(false);
-                    }
-                    CurrentBook.PrepareForEditing();
-                    _view.UpdatePageList(true); //counting on this to redo the thumbnails
-                    return pageId;
-                },
-                () => { } // wrong state, do nothing
-            );
+                    // We need to update the xmatter, since this process selects images to display based on orientation.
+                    // (Here we need to do it even if we already brought this book up to date when it was selected.)
+                    CurrentBook.BringBookUpToDate(new NullProgress());
+                    // That wrecks everything. In particular guids stored in Page objects are obsolete.
+                    // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
+                    _view.OnVisibleChanged(false);
+                    _currentlyDisplayedBook = null;
+                    _previouslySelectedPage = null;
+                    _view.OnVisibleChanged(true);
+                    // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
+                    // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
+                    _view.SetModalState(false);
+                }
+                CurrentBook.PrepareForEditing();
+                _view.UpdatePageList(true); //counting on this to redo the thumbnails
+                return pageId;
+            });
         }
 
         /// <summary>
@@ -949,18 +825,15 @@ namespace Bloom.Edit
             // The language choice is saved in the data-div, so we must do a full save even if this
             // page doesn't contain anything else that has non-local effects.
             _nextSaveMustBeFull = true;
-            SaveThen(
-                () =>
-                {
-                    CurrentBook.PrepareForEditing();
-                    _view.UpdatePageList(true); //counting on this to redo the thumbnails
+            MergeCurrentPageThenSave(() =>
+            {
+                CurrentBook.PrepareForEditing();
+                _view.UpdatePageList(true); //counting on this to redo the thumbnails
 
-                    Logger.WriteEvent("ChangingContentLanguages");
-                    BloomAnalytics.Track("Change Content Languages");
-                    return _pageSelection.CurrentSelection.Id;
-                },
-                () => { } // wrong state, do nothing
-            );
+                Logger.WriteEvent("ChangingContentLanguages");
+                BloomAnalytics.Track("Change Content Languages");
+                return _pageSelection.CurrentSelection.Id;
+            });
         }
 
         // Get current MultilingualContentLanguage settings based on what's been recently checked/unchecked.
@@ -1104,6 +977,8 @@ namespace Bloom.Edit
         /// </summary>
         void StartNavigationToEditPage(IPage page)
         {
+            // The page we may have a snapshot of is going away; see PageSnapshot.Clear.
+            _pageSnapshot.Clear();
             try
             {
                 if (page == null)
@@ -1667,17 +1542,14 @@ namespace Bloom.Edit
                 _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
             if (correctLevel != currentLevel)
             {
-                SaveThen(
-                    () =>
-                    {
-                        _currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute(
-                            "data-leveledreaderlevel",
-                            correctLevel
-                        );
-                        return _pageSelection.CurrentSelection.Id;
-                    },
-                    () => { } // wrong state, do nothing
-                );
+                MergeCurrentPageThenSave(() =>
+                {
+                    _currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute(
+                        "data-leveledreaderlevel",
+                        correctLevel
+                    );
+                    return _pageSelection.CurrentSelection.Id;
+                });
             }
         }
 
@@ -1705,15 +1577,31 @@ namespace Bloom.Edit
         //				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
         //				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
         /// <summary>
-        /// Save all the changes to the current page, then reload it (thus restoring any UI stuff that
-        /// was stripped out by the Save).
+        /// Save all the changes to the current page, then reload it.
+        ///
+        /// The reload used to be needed just to restore the UI markup the Save stripped out. That
+        /// is no longer true (BL-13502), but it is still doing a second job for these callers, and
+        /// that is why it stays: the page has to be rebuilt from the book DOM either because C#
+        /// just changed it (a new topic in the data div, new book settings) or because the browser
+        /// created elements that have never been through SetupElements (a new origami layout, an
+        /// imported video, a translation group replaced by a derived field).
+        ///
+        /// pageContent is the current page's content when the request that got us here brought it
+        /// along; callers with no request to carry it (the PageRefreshEvent handlers) leave it
+        /// null, and the snapshot the browser last volunteered is used instead.
         /// </summary>
-        internal void SavePageAndReloadIt(bool forceFullSave = false)
+        internal void SavePageAndReloadIt(bool forceFullSave = false, string pageContent = null)
         {
             if (CannotSavePage())
                 return;
             _nextSaveMustBeFull |= forceFullSave;
-            SaveThen(() => _pageSelection.CurrentSelection.Id, () => { });
+            MergeCurrentPageThenSave(
+                () => _pageSelection.CurrentSelection.Id,
+                // Whatever our caller changed has already said so, via forceFullSave or
+                // _pageHasUnsavedDataDerivedChange.
+                actionChangesTheBook: false,
+                pageContent: pageContent
+            );
         }
 
         //invoked from TopicChooserDialog.tsx via API
@@ -1728,7 +1616,9 @@ namespace Bloom.Edit
 
         internal void SavePageAndReloadIt(ApiRequest request)
         {
-            SavePageAndReloadIt();
+            // The browser sends the current page's content with this request when it can; see
+            // saveChangesAndRethinkPage() in bloomEditing.ts.
+            SavePageAndReloadIt(pageContent: request.GetPageContentOrNull());
             request.PostSucceeded();
         }
 
@@ -1750,63 +1640,274 @@ namespace Bloom.Edit
         private bool _nextSaveMustBeFull; // review: store in state machine?
 
         /// <summary>
-        /// Request the needed data to do a save, then when the in-memory DOM has been updated from the browser,
-        /// call doBeforeSaveToDisk. Its return value is a page ID to navigate to afterward (or null to show a
-        /// blank screen when leaving the edit tab). Unless skipSaveToDisk is true, the book is then saved to
-        /// disk. If doAfterSaveToDisk is provided, it is called after the disk save and before navigation —
-        /// useful for blocking UI (e.g. a modal dialog) that needs up-to-date files on disk.
-        /// (It is only called if skipSaveToDisk is false and the save succeeds.)
-        /// If we are not in the right state to save, doIfNotInRightStateToSave() is called instead. It is
-        /// deliberately not optional so callers think about what to do in that case.
+        /// Fold the current page's edits into the book, let the caller change the book, then write
+        /// it once and go to the page the caller names. All synchronous.
+        ///
+        /// The three steps happen in that order, and the order is the point:
+        ///
+        ///   1. the page the user was editing is merged into the book DOM, so that
+        ///   2. changeBookBeforeWriting sees those edits (duplicating a page has to copy what the
+        ///      user just typed, not what was on disk), and it returns the id of the page to show
+        ///      next -- or null to leave the editor blank;
+        ///   3. the book is written to disk ONCE, covering both the merge and the change, and we
+        ///      navigate to that page.
+        ///
+        /// That middle slot is why this takes an action rather than simply returning: the caller's
+        /// work belongs between the merge and the write, not after the save.
         /// </summary>
-        /// <remarks>If you are doing this in an API handler, remember that you must retrieve any data in
-        /// the request before calling SaveThen. The Request object can't be used inside doBeforeSaveToDisk,
-        /// since by then the request has been marked completed.</remarks>
-        public void SaveThen(
-            Func<string> doBeforeSaveToDisk,
-            Action doIfNotInRightStateToSave,
-            bool forceFullSave = false,
-            bool skipSaveToDisk = false,
-            Action failureAction = null,
-            Action doAfterSaveToDisk = null
+        /// <param name="changeBookBeforeWriting">Runs between the merge and the write. Returns the
+        /// page to show next, or null for a blank editor.</param>
+        /// <param name="ifNotInAStateToSave">Called INSTEAD of everything above when we could not
+        /// start at all -- the user may have begun changing pages, or this may be a nested request
+        /// arriving from inside another one's changeBookBeforeWriting. Most callers have nothing
+        /// useful to do then and omit it. It is NOT called when the save started and then failed,
+        /// because the action may already have run, and running it again would duplicate or delete
+        /// a second page (see SaveOutcome).</param>
+        /// <param name="actionChangesTheBook">Whether changeBookBeforeWriting changes the book.
+        /// We cannot see inside it, so it has to say, and the default is the safe answer: a caller
+        /// that changes the book and does not say so has its change written nowhere, whereas one
+        /// that says so needlessly costs a write. Only callers whose action merely names the page
+        /// to go to next pass false.</param>
+        /// <param name="pageContent">The current page's content, when the request that got us here
+        /// brought it along (see getPageContentForSaveWhenReady() in the browser). Otherwise we use
+        /// whatever the browser last volunteered; a null snapshot means the page has not changed
+        /// since it loaded, not "we do not know".</param>
+        public void MergeCurrentPageThenSave(
+            Func<string> changeBookBeforeWriting,
+            Action ifNotInAStateToSave = null,
+            bool actionChangesTheBook = true,
+            string pageContent = null
         )
         {
-            _nextSaveMustBeFull |= forceFullSave;
-            if (
-                !_stateMachine.ToSavePending(
-                    doBeforeSaveToDisk,
-                    saveActionHandlesSaveBook: skipSaveToDisk,
-                    failureAction,
-                    doAfterSaveToDisk
-                )
-            )
-                doIfNotInRightStateToSave();
-        }
-
-        // Send a request to the browser to send us the page content so we can save it.
-        private void RequestBrowserToSave()
-        {
-            Logger.WriteMinorEvent("EditingModel.RequestSave() starting");
-            // show the saving message to the user
-            _webSocketServer.SendString("pageThumbnailList", "saving", "");
-            // review do we really need to be checking to see if things are loaded? If they are not, then there is nothing to save, and this doesn't thow.
-            var script = $"workspaceBundle.getEditablePageBundleExports().requestPageContent()";
-            // Fire-and-forget: this just asks the browser to send us the page content. The browser
-            // responds asynchronously by calling the ReceivePageContent API (which drives the state
-            // machine on to ToSavedAndStripped), so there is nothing here to wait for.
-            _view.Browser.RunJavascriptFireAndForget(script);
+            if (CannotSavePage() || !_havePageToSave)
+            {
+                ifNotInAStateToSave?.Invoke();
+                return;
+            }
+            var outcome = _stateMachine.SaveThenNavigate(
+                pageContent ?? TakeCurrentPageSnapshot(),
+                () =>
+                {
+                    if (actionChangesTheBook)
+                    {
+                        // Merging the page marks the book dirty only when the page's own content
+                        // differs from what the book already holds. So a command used on a page
+                        // the user never edited leaves the book looking clean at the very moment
+                        // its action is about to make it dirty, and SaveBookToDisk would then
+                        // write nothing: the screen would show the result and disk would not have
+                        // it. We cannot know which pages the action touches, so the write must be
+                        // a full one.
+                        _bookDomHasUnwrittenChanges = true;
+                        _nextSaveMustBeFull = true;
+                    }
+                    return changeBookBeforeWriting();
+                },
+                ReportCouldNotSavePage
+            );
+            if (outcome == SaveOutcome.Declined)
+                ifNotInAStateToSave?.Invoke();
         }
 
         /// <summary>
-        /// Called by an API from JavaScript code invoked by RequestBrowserToSave, this receives the body and user-defined
-        /// styles of the current page and saves them to the book DOM.
+        /// Called by the editView/pageSnapshot API when the browser volunteers the current content
+        /// of the page. All we do is remember it; see PageSnapshot for why, and for why the answer
+        /// (whether we took it) matters to the browser.
         /// </summary>
-        public void ReceivePageContent(string pageContentData)
+        public bool ReceivePageSnapshot(string pageId, string loadId, string pageContent)
         {
-            _stateMachine.ToSavedAndStripped(pageContentData);
+            return _pageSnapshot.Set(pageId, loadId, pageContent);
+        }
+
+        /// <summary>
+        /// Called by the editView/pageBusy API: the browser has begun asynchronous work, named by
+        /// busyWith, whose result belongs in the saved page. See PageSnapshot.SetBusy.
+        /// </summary>
+        public bool ReceivePageBusy(string loadId, long sequence, string busyWith)
+        {
+            return _pageSnapshot.SetBusy(loadId, sequence, busyWith);
+        }
+
+        /// <summary>
+        /// Called by the editView/pageIdle API: that work has finished and the page as it is after
+        /// it has been sent. See PageSnapshot.SetIdle.
+        /// </summary>
+        public bool ReceivePageIdle(string loadId, long sequence)
+        {
+            return _pageSnapshot.SetIdle(loadId, sequence);
+        }
+
+        // How long a snapshot-based save will wait for the browser to finish work that belongs in
+        // the page. Long enough for work that runs entirely in the browser; short enough that work
+        // which cannot finish while we sleep (see PageSnapshot.WaitUntilIdle) costs a pause rather
+        // than a freeze.
+        private const int kMaxWaitForBusyPageMs = 2000;
+
+        /// <summary>
+        /// The current page's content as the browser last reported it, or null if the page has not
+        /// been changed since it loaded. Null genuinely means "nothing to save" rather than "ask the
+        /// browser"; see PageSnapshot.
+        ///
+        /// If the browser has said the page is busy with asynchronous work whose result belongs in
+        /// the saved page, this first waits (sleeping the UI thread, for at most
+        /// kMaxWaitForBusyPageMs) for it to say the work is done and the finished page has been
+        /// sent. Only saves that use the snapshot need this: content that came with a request has
+        /// already waited, in the browser. If we have to go ahead anyway, we log what the page was
+        /// busy with, so that a report of a save that lost something can be read against it.
+        /// </summary>
+        private string TakeCurrentPageSnapshot()
+        {
+            var pageId = _pageSelection?.CurrentSelection?.Id;
+            if (!_pageSnapshot.WaitUntilIdle(kMaxWaitForBusyPageMs, out var busyWith))
+            {
+                Logger.WriteEvent(
+                    "Saving page {0} from the last snapshot although the browser still reports it busy with '{1}' after waiting {2}ms. Whatever that work was doing to the page may be missing from the book.",
+                    pageId,
+                    busyWith,
+                    kMaxWaitForBusyPageMs
+                );
+            }
+            return _pageSnapshot.GetFor(pageId);
+        }
+
+        /// <summary>
+        /// Save the current page and the book, synchronously, and stay on the page. This is what
+        /// leaving the Edit tab, closing the collection, copying a page and opening the AI image
+        /// editor all do; only the last two leave the page on screen afterwards, but nothing here
+        /// depends on that.
+        ///
+        /// pageContent is the current page's content when the caller's request brought it along;
+        /// otherwise the snapshot the browser last volunteered is used. Either may be null, meaning
+        /// the page has not changed since it loaded; then nothing is merged, and the book is written
+        /// only if something else (a data-div change, a forced full save) is waiting to be written.
+        /// While a page is still loading there is likewise nothing to merge -- the page we left was
+        /// saved before the navigation began -- but anything that navigation's write left behind
+        /// (see SaveBookToDisk) is still written.
+        ///
+        /// Returns false if there was no page to save, or if the write failed. The failure has been
+        /// reported to the user; the return value is for callers that must not carry on as though
+        /// the file now says what they think it says. The AI image editor opens the book FROM DISK,
+        /// so opening it after a save that did not happen would edit stale images.
+        ///
+        /// The one thing this cannot do is save a change made in the last few tens of
+        /// milliseconds, which the browser has not posted yet. See "The freshness window" in
+        /// SavingWithoutReloading.md for why that is the accepted trade.
+        /// </summary>
+        public bool SaveCurrentPageAndBook(string pageContent = null)
+        {
+            if (CannotSavePage() || !_havePageToSave)
+                return false;
+            if (_stateMachine.Editing)
+                pageContent = pageContent ?? TakeCurrentPageSnapshot();
+            else
+                pageContent = null;
+            UpdateBookDomFromBrowserPageContent(pageContent);
+            if (!SaveBookToDisk())
+                return false;
+            if (pageContent != null)
+            {
+                // What we just saved is the new baseline for deciding whether the NEXT save has
+                // changed anything the rest of the book shares, and the page list's thumbnail of
+                // this page is out of date. Navigating does both of these for
+                // MergeCurrentPageThenSave (in EditingView.StartNavigationToEditPage); we stay put.
+                SaveStateForFullSaveDecision();
+                _view?.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// As SaveCurrentPageAndBook, plus the book-created history entry that only belongs at the
+        /// end of a session.
+        /// </summary>
+        public void SaveEverythingBeforeClosing()
+        {
+            // Shutting down must not depend on the save succeeding (BL-16776). If it does, a page
+            // that cannot be saved leaves the user no way out of Bloom at all, because every
+            // further attempt to close runs the same failing save. We deliberately don't put up a
+            // dialog: the user is trying to quit, and whatever made the save fail will already
+            // have been reported when it happened.
+            try
+            {
+                SaveCurrentPageAndBook();
+                CurrentBook.RecordPendingCreatedHistoryEvent();
+            }
+            catch (Exception e)
+            {
+                NonFatalProblem.Report(
+                    ModalIf.None,
+                    PassiveIf.All,
+                    "Bloom could not save the page you were editing as it shut down",
+                    null,
+                    e
+                );
+            }
+        }
+
+        /// <summary>
+        /// The message for a page that could not be saved.
+        /// </summary>
+        private static string CouldNotSavePageMessage =>
+            LocalizationManager.GetString(
+                "Errors.CouldNotSavePage",
+                "Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!"
+            );
+
+        private static void ReportCouldNotSavePage(Exception e)
+        {
+            ErrorReport.NotifyUserOfProblem(e, CouldNotSavePageMessage);
+        }
+
+        /// <summary>
+        /// Write out whatever the book DOM has gained that is not on disk yet: nothing, just the one
+        /// page that changed, or the whole book if something shared changed. This is the state
+        /// machine's saveBook action and the second half of SaveCurrentPageAndBook, so every save
+        /// makes the same decision and clears the same flags.
+        ///
+        /// Returns false if something needed writing and the write failed. Nothing to write is a
+        /// success: disk already says what the book says.
+        /// </summary>
+        private bool SaveBookToDisk()
+        {
+            // The merge normally folds these two into its own decision, but when there was nothing
+            // to merge (a null snapshot) they are the only record that something outside the page
+            // is waiting to be written.
+            var mustBeFull = _nextSaveMustBeFull || _pageHasUnsavedDataDerivedChange;
+            if (!_bookDomHasUnwrittenChanges && !mustBeFull)
+                return true;
+
+            // A null page element with a full save is fine -- Book.SavePageToDisk only uses the
+            // element for the single-page fast path.
+            if (!CurrentBook.SavePageToDisk(_modifiedPageElement, mustBeFull))
+            {
+                // Nothing reached disk. The user has been told; what matters here is that the
+                // book still needs writing, so we must not clear the flags that say so. Clearing
+                // them would make the next save believe there was nothing to do, and the change
+                // would never be written at all.
+                //
+                // The next attempt also has to be a FULL save. _modifiedPageElement names one page,
+                // and the next edit will replace it with whichever page that edit was on -- so a
+                // per-page write would then save that page and quietly leave this one's change
+                // behind for good. Once a write has failed we can no longer say the book differs
+                // from disk in one page only, so we stop claiming it.
+                _nextSaveMustBeFull = true;
+                return false;
+            }
+            _bookDomHasUnwrittenChanges = false;
+            _nextSaveMustBeFull = false;
+            _pageHasUnsavedDataDerivedChange = false;
+            _modifiedPageElement = null;
+            PageTemplatesApi.LastSaveTime = DateTime.Now;
+            return true;
         }
 
         private SafeXmlElement _modifiedPageElement;
+
+        // Whether the in-memory book has a change we have not yet written to disk. Deliberately NOT
+        // the same question as "which page element changed" (_modifiedPageElement): a command whose
+        // page had nothing to merge -- Add Page on a page the user never touched -- makes its change
+        // entirely in its own action, so there is no modified page element to point at, yet the
+        // book certainly needs writing.
+        private bool _bookDomHasUnwrittenChanges;
 
         /// <summary>
         /// Receives a DOM (derived the browser) that combines the body of the document of the page
@@ -1855,11 +1956,25 @@ namespace Bloom.Edit
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
             var newPageData = GetPageData(editedDom.RawDom);
+            // True when something OUTSIDE the page HTML we are about to hand over wants saving: a
+            // data-derived value some dialog changed, altered feature requirements, or a caller
+            // that explicitly forced a full save. The page content test below cannot see any of
+            // those, so they have to be kept separately.
+            var somethingElseNeedsSaving = _nextSaveMustBeFull || NeedToDoFullSave(newPageData);
+
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,
                 out _modifiedPageElement,
-                _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
+                somethingElseNeedsSaving,
+                out var anythingChanged
             );
+
+            // The page says exactly what the book already said and nothing else is outstanding, so
+            // there is nothing to write.
+            if (!anythingChanged && !somethingElseNeedsSaving)
+                _modifiedPageElement = null;
+            else
+                _bookDomHasUnwrittenChanges = true;
         }
 
         // If we return 'true', we need to do a complete book save, otherwise we'll just save this page.
@@ -2103,15 +2218,12 @@ namespace Bloom.Edit
             // For Edit tab:
             if (Visible)
             {
-                SaveThen(
-                    () =>
-                    {
-                        CurrentBook.SetMetadata(metadata);
-                        _pageHasUnsavedDataDerivedChange = true;
-                        return _pageSelection.CurrentSelection.Id;
-                    },
-                    () => { } // wrong state, do nothing
-                );
+                MergeCurrentPageThenSave(() =>
+                {
+                    CurrentBook.SetMetadata(metadata);
+                    _pageHasUnsavedDataDerivedChange = true;
+                    return _pageSelection.CurrentSelection.Id;
+                });
             }
             else
             {
@@ -2152,29 +2264,25 @@ namespace Bloom.Edit
             return _pageDivFromCopyPage != null;
         }
 
-        public void CopyPage(IPage page)
+        public void CopyPage(IPage page, string pageContent = null)
         {
-            // need to preserve any typing they've done but not yet saved (BL-4512)
-            SaveThen(
-                () =>
-                {
-                    // We have to clone this so that if the user changes the page after doing the copy,
-                    // when they paste they get the page as it was, not as it is now.
-                    _pageDivFromCopyPage = (SafeXmlElement)
-                        page.GetDivNodeForThisPage().CloneNode(true);
-                    _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
-                    return page.Id;
-                },
-                () => { }, // wrong state, do nothing
-                forceFullSave: true
-            );
+            // Save first, or the copy would miss any typing they have done but not yet saved
+            // (BL-4512). The page being copied is always the selected one: the page list only opens
+            // its context menu on the selected page, and Paste relies on that, since it inserts
+            // after the current selection (see DeterminePageWhichWouldPrecedeNextInsertion).
+            if (!SaveCurrentPageAndBook(pageContent))
+                return;
+            // Clone, so that if the user changes the page after doing the copy, when they paste
+            // they get the page as it was, not as it is now.
+            _pageDivFromCopyPage = (SafeXmlElement)page.GetDivNodeForThisPage().CloneNode(true);
+            _bookPathFromCopyPage = page.Book.GetPathHtmlFile();
         }
 
         /// <summary>
         /// Paste the previously saved _pageDivFromCopyPage as a new page.
         /// </summary>
         /// <param name="pageToPasteAfter">This is NOT the page we are to paste!</param>
-        public void PastePage(IPage pageToPasteAfter)
+        public void PastePage(IPage pageToPasteAfter, string pageContent = null)
         {
             var templateBook = pageToPasteAfter.Book; // default is to assume it's from the same book
             bool fromAnotherBook = templateBook.GetPathHtmlFile() != _bookPathFromCopyPage;
@@ -2197,7 +2305,8 @@ namespace Bloom.Edit
                 "not used",
                 x => _pageDivFromCopyPage
             );
-            OnInsertPage(pageForPasting, new PageInsertEventArgs(false)); // false => don't need analytics on use of template pages
+            // false => don't need analytics on use of template pages
+            InsertPage(pageForPasting, new PageInsertEventArgs(false), pageContent);
         }
 
         public void AdjustPageZoom(int delta)
@@ -2229,62 +2338,18 @@ namespace Bloom.Edit
             return WidgetHelper.AddWidgetFilesToBookFolder(CurrentBook.FolderPath, fullWidgetPath);
         }
 
-        public void HandlePageDomLoadedEvent(string pageId)
+        public void HandlePageDomLoadedEvent(string pageId, string loadId = null)
         {
             var nowEditing = _stateMachine.ToEditing(pageId);
+            // Only for a notification we accepted, i.e. for the page we are now editing; see
+            // PageSnapshot.AcceptSnapshotsFromLoad for why a late one must not be adopted.
             if (nowEditing)
-            {
-                // Run whatever was queued for "the browser has a page again" (see
-                // RunAfterNextPageLoad). Taken and cleared before invoking, so it fires at most
-                // once even if it throws, and so an action that queues another one works.
-                // Before AdvanceUpdatingAllPages, which may navigate straight off this page.
-                var afterPageLoad = _doAfterNextPageLoad;
-                _doAfterNextPageLoad = null;
-                afterPageLoad?.Invoke(pageId);
-            }
+                _pageSnapshot.AcceptSnapshotsFromLoad(loadId);
             // If we are in the middle of the "Update Book" per-page pass, a page finishing loading
             // (which means the edit-tab page setup code has run on it) is our cue to save it and
             // move on to the next page. See StartUpdatingAllPages().
             if (nowEditing && _updatingAllPages)
                 AdvanceUpdatingAllPages(pageId);
-        }
-
-        // The one action queued by RunAfterNextPageLoad, or null.
-        private Action<string> _doAfterNextPageLoad;
-
-        /// <summary>
-        /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
-        /// the browser, passing it that page's id.
-        ///
-        /// This exists for callers that must save the current page before doing something in the
-        /// browser that needs the saved book DOM to be up to date. Saving strips the live page, so
-        /// it always ends by re-navigating to it (see EditingStateMachine) — which means
-        /// SaveThen's own doAfterSaveToDisk is too early for such a caller: it runs before that
-        /// navigation, so the browser code it started would be torn down. Waiting for the page to
-        /// come back is the only safe point. AiImageEditorApi.HandleSaveThenLaunch is the caller
-        /// this was written for (BL-16682).
-        ///
-        /// Note that "torn down" is not limited to the page iframe, which is why this cannot be
-        /// worked around by putting the browser code somewhere higher up.
-        /// EditingView.StartNavigationToEditPage picks one of three routes, and the third reloads
-        /// the whole workspace root document. In practice that route is reached when
-        /// MemoryUtils.SystemIsShortOfMemory() — which is Bloom's OWN private bytes past ~2GB, so
-        /// the ordinary state of a long editing session on a big book, and exactly what the full
-        /// reload exists to recover from. (Its other trigger, _changingUiLanguage, appears
-        /// unreachable from the edit tab today: everything that sets it — choosing a UI language,
-        /// toggling unapproved translations — reopens the project or restarts Bloom first. Don't
-        /// rely on that; the memory condition alone is enough.) So no browser-side state at all is
-        /// guaranteed to survive the navigation that ends a save; only C#-side state like this is.
-        ///
-        /// Only one action is held; queueing a second replaces the first, and passing null cancels.
-        /// The page that loads next is not necessarily the one the caller was on (the user may have
-        /// navigated, or the save may have failed), so callers that care must check the id they are
-        /// given. Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load
-        /// to run it and the caller's page is no longer on screen.
-        /// </summary>
-        public void RunAfterNextPageLoad(Action<string> action)
-        {
-            _doAfterNextPageLoad = action;
         }
 
         // Fields supporting the "Update Book" per-page pass (see StartUpdatingAllPages()).
@@ -2341,9 +2406,15 @@ namespace Bloom.Edit
             if (Visible)
             {
                 // We are already in the Edit tab. Kick off the chain by navigating to the first page.
-                // (SaveThen saves whatever page is currently showing, then navigates.)
+                // (MergeCurrentPageThenSave saves whatever page is showing, then navigates.)
                 var firstPageId = _pageUpdateOrder[0];
-                SaveThen(() => firstPageId, () => FinishUpdatingAllPages());
+                MergeCurrentPageThenSave(
+                    () => firstPageId,
+                    () => FinishUpdatingAllPages(),
+                    // The action only names the page to show; FinishUpdatingAllPages is the
+                    // could-not-save fallback, not the change.
+                    actionChangesTheBook: false
+                );
             }
             else
             {
@@ -2369,19 +2440,21 @@ namespace Bloom.Edit
                 // Save the page we just visited (persisting the edit-tab setup that ran on it) and
                 // move on. Reusing the normal save-then-navigate cycle means each page gets exactly
                 // the treatment it would if the user clicked it in the Edit tab.
-                SaveThen(() => nextPageId, () => FinishUpdatingAllPages());
+                MergeCurrentPageThenSave(
+                    () => nextPageId,
+                    () => FinishUpdatingAllPages(),
+                    actionChangesTheBook: false
+                );
             }
             else
             {
                 // We just visited the last page. Save it, then return to the Collection tab. We
-                // navigate to a blank page (returning null) because we are about to leave the Edit
-                // tab anyway. Switching tabs is deferred to after the save completes so we don't
-                // re-enter the state machine while it is still unwinding this save.
-                SaveThen(
-                    () => null,
-                    () => FinishUpdatingAllPages(),
-                    doAfterSaveToDisk: () => _view.BeginInvoke((Action)FinishUpdatingAllPages)
-                );
+                // show a blank page because we are about to leave the Edit tab anyway. Switching
+                // tabs is still deferred to the next message, so we don't re-enter the state
+                // machine from inside this call.
+                SaveCurrentPageAndBook();
+                _stateMachine.ToNoPageHavingSaved();
+                _view.BeginInvoke((Action)FinishUpdatingAllPages);
             }
         }
 

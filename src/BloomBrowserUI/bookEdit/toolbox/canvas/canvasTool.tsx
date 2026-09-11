@@ -64,6 +64,7 @@ export class CanvasTool extends ToolboxToolReactAdaptor {
     }
 
     public detachFromPage() {
+        super.detachFromPage(); // this tool has no removeToolMarkup work, but see ITool.detachFromPage
         const canvasElementManager = getCanvasElementManager();
         if (canvasElementManager) {
             // For now we are leaving canvas element editing on, because even with the toolbox hidden,

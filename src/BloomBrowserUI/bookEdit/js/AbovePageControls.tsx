@@ -50,7 +50,7 @@ export function updateAbovePageControls(
 export function resetAbovePageControls(): void {
     currentState = defaultState;
     // Off-screen (e.g. process-book) there is no workspace frame, so this is a no-op there.
-    // (Reached via removeEditingDebris() in the shared extractAndStripPageContentForSave() save path.)
+    // (Reached via pageUnloading() in bloomEditing.ts.)
     tryGetWorkspaceBundleExports()?.setToolboxEnabled(true);
 
     const container = document.getElementsByClassName(

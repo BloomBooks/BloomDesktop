@@ -1,4 +1,4 @@
-import { postThatMightNavigate } from "../../utils/bloomApi";
+import { saveChangesAndRethinkPage } from "./bloomEditing";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -196,7 +196,7 @@ export function doVideoCommand(
                 // Makes sure the page gets saved with a reference to the new video,
                 // and incidentally that everything gets updated to be consistent with the
                 // new state of things.
-                postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
+                void saveChangesAndRethinkPage();
             }
         });
     } else if (command === "record") {

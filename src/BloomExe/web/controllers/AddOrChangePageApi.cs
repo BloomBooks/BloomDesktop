@@ -84,7 +84,7 @@ namespace Bloom.web.controllers
             if (templatePage == null)
                 return;
             var pageId = _pageSelection.CurrentSelection.Id;
-            _editingModel.SaveThen(
+            _editingModel.MergeCurrentPageThenSave(
                 () =>
                 {
                     CopyVideoPlaceHolderIfNeeded(templatePage);
@@ -103,8 +103,7 @@ namespace Bloom.web.controllers
                         );
 
                     return pageId;
-                },
-                () => { } // wrong state, do nothing
+                }
             );
             request.PostSucceeded();
         }

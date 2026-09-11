@@ -189,17 +189,20 @@ export class ImpairmentVisualizerControls extends React.Component<
         }
     }
 
-    public static removeImpairmentVisualizerMarkup() {
-        const page = ToolboxToolReactAdaptor.getPage();
-        if (!page || !page.ownerDocument) return;
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
-        const body = page.ownerDocument.body;
+    // The classes that drive the cataract and colour-blindness filters live on the page iframe's
+    // body, which is outside the .bloom-page div and so is never saved. That makes this live-page
+    // work, unlike removeColorBlindnessMarkup: see ImpairmentVisualizerAdaptor.detachFromPage.
+    public static removeSimulationClassesFromBody() {
+        const body = ToolboxToolReactAdaptor.getPage();
+        if (!body) return;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
     }
 
     // Caller is responsible for guarding against a null page parameter.
-    private static removeColorBlindnessMarkup(page: HTMLElement) {
+    // Public because it is also the tool's ITool.removeToolMarkup implementation, which the save
+    // path runs on a clone of the page.
+    public static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
             .map((x) => x.parentElement.removeChild(x));
@@ -359,8 +362,16 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         this.controlsElement.updateSimulations(undefined);
     }
 
+    // The colour-blindness overlays are the only markup this tool puts inside the page div. (The
+    // simulateColorBlindness/simulateCataracts classes go on the body, which we never save, so
+    // removing those is left to removeImpairmentVisualizerMarkup, below.)
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(pageOrClone);
+    }
+
     public detachFromPage() {
-        ImpairmentVisualizerControls.removeImpairmentVisualizerMarkup();
+        super.detachFromPage(); // removeToolMarkup: the overlays
+        ImpairmentVisualizerControls.removeSimulationClassesFromBody();
     }
 
     public isExperimental(): boolean {

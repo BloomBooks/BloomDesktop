@@ -17,6 +17,11 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    getPageLoadId,
+    notePageContentMayHaveChanged,
+    startWatchingPageForSnapshots,
+} from "./js/pageSnapshot";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -34,7 +39,12 @@ function getPageId(): string {
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
 document.addEventListener("DOMContentLoaded", () => {
-    postString("editView/pageDomLoaded", getPageId());
+    // The load id goes with it: from here until the next page reports ready, C# accepts snapshots
+    // only from this load. See getPageLoadId().
+    postJson("editView/pageDomLoaded", {
+        pageId: getPageId(),
+        loadId: getPageLoadId(),
+    });
 });
 
 // This allows strong typing to be done for exported functions.
@@ -48,8 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    requestPageContent(): void;
+    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // Say that the saved form of the page may have changed in a way the page watcher cannot see --
+    // the user's style definitions, which are changed through the CSSOM and mutate no DOM node.
+    notePageContentMayHaveChanged(): void;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -110,12 +125,10 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().pageUnloading() can be called.
 import {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -129,9 +142,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
@@ -141,11 +156,10 @@ import type {
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiImageEditorShared";
 export {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
+    notePageContentMayHaveChanged,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -166,7 +180,7 @@ export {
     applyAiImageEditorReplacements,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
-import { postString } from "../utils/bloomApi";
+import { postJson } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
 
 const styleSheets = [
@@ -383,6 +397,11 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
+    // Start volunteering the page's content to C# whenever it changes and settles, so a save never
+    // has to ask for it and wait. See pageSnapshot.ts. Deliberately after bootstrap(), so the
+    // load-time fix-ups it applies are not themselves reported as the user's changes.
+    startWatchingPageForSnapshots(getPageContentForSaveWhenReady);
+
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
     // back to c#-land. We have a similar listener in the pageThumbnailList itself.
@@ -400,11 +419,10 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
-    requestPageContent: typeof requestPageContent;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
-    userStylesheetContent: typeof userStylesheetContent;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
     pasteClipboard: typeof pasteClipboard;
@@ -460,8 +478,8 @@ declare global {
         //      the finished page onto window.__bloomExternalPageContent.
         //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
         //
-        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
-        // editor's requestPageContent() does:
+        // Why globals + polling, rather than posting to the editView/pageSnapshot API the way the
+        // live editor does:
         //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
         //     editor's state. We want the same page-cleanup output, delivered out-of-band.
         //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
@@ -479,11 +497,10 @@ declare global {
 }
 
 window.editablePageBundle = {
-    requestPageContent,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
-    userStylesheetContent,
+    getPageContentForSaveWhenReady,
     pageUnloading,
+    notePageContentMayHaveChanged,
     copySelection,
     cutSelection,
     pasteClipboard,
