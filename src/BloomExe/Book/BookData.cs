@@ -1966,9 +1966,11 @@ namespace Bloom.Book
             if (IsInDataDiv(targetNode))
                 return attrs;
             var pageType = GetXmatterPageType(targetNode);
-            // The base attributes for which this target has a variant of its own. Such a variant wins
-            // over the plain attribute, which holds whatever was saved most recently from any page.
-            var baseAttrsWithVariant = new HashSet<string>();
+            var result = new List<Tuple<string, XmlString>>();
+            // First, this page's own variants (e.g. data-style-frontcover for a front cover element)
+            // become the plain attributes they are variants of (style). Such a variant wins over the
+            // plain attribute in attrs, which holds whatever was saved most recently from any page.
+            var attrsAddedFromVariant = new HashSet<string>();
             if (pageType != null)
             {
                 foreach (var tuple in attrs)
@@ -1977,24 +1979,19 @@ namespace Bloom.Book
                         IsPageDependentVariantName(key, tuple.Item1, out var baseAttr)
                         && tuple.Item1 == PageDependentVariantName(baseAttr, pageType)
                     )
-                        baseAttrsWithVariant.Add(baseAttr);
+                    {
+                        result.Add(Tuple.Create(baseAttr, tuple.Item2));
+                        attrsAddedFromVariant.Add(baseAttr);
+                    }
                 }
             }
-            var result = new List<Tuple<string, XmlString>>();
+            // Then everything else, skipping the variants (this page's were handled above; the rest
+            // belong to other kinds of page) and any plain attribute already added from a variant.
             foreach (var tuple in attrs)
             {
-                if (IsPageDependentVariantName(key, tuple.Item1, out var baseAttr))
-                {
-                    // A variant belongs only to its own kind of page, where it arrives under the name
-                    // of the attribute it is a variant of.
-                    if (
-                        pageType != null
-                        && tuple.Item1 == PageDependentVariantName(baseAttr, pageType)
-                    )
-                        result.Add(Tuple.Create(baseAttr, tuple.Item2));
+                if (IsPageDependentVariantName(key, tuple.Item1, out _))
                     continue;
-                }
-                if (baseAttrsWithVariant.Contains(tuple.Item1))
+                if (attrsAddedFromVariant.Contains(tuple.Item1))
                     continue;
                 result.Add(tuple);
             }
