@@ -148,6 +148,46 @@
         <target xml:lang="quc" state="needs-translation">Currently, Bloom does not support including audio from embedded videos in video output.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.Title">
+        <source xml:lang="en">How to set up your Android phone to receive apps via USB</source>
+        <target xml:lang="quc" state="needs-translation">How to set up your Android phone to receive apps via USB</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenSettings">
+        <source xml:lang="en">Open the Settings on your phone.</source>
+        <target xml:lang="quc" state="needs-translation">Open the Settings on your phone.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenSettings</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone">
+        <source xml:lang="en">Open &apos;About phone&apos;. On some phones, you may need to then open &apos;Software information&apos; to find the &apos;Build number&apos;.</source>
+        <target xml:lang="quc" state="needs-translation">Open 'About phone'. On some phones, you may need to then open 'Software information' to find the 'Build number'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber">
+        <source xml:lang="en">Find &apos;Build number&apos; and tap it 7 times until Developer options are enabled.</source>
+        <target xml:lang="quc" state="needs-translation">Find 'Build number' and tap it 7 times until Developer options are enabled.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+        <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
+        <target xml:lang="quc" state="needs-translation">Go back to Settings and open 'Developer options'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging">
+        <source xml:lang="en">Turn on &apos;USB debugging&apos;.</source>
+        <target xml:lang="quc" state="needs-translation">Turn on 'USB debugging'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable">
+        <source xml:lang="en">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</source>
+        <target xml:lang="quc" state="needs-translation">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.ConnectCable</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
+        <source xml:lang="en">How to video</source>
+        <target xml:lang="quc" state="needs-translation">How to video</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <target xml:lang="quc" state="needs-translation">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</target>
