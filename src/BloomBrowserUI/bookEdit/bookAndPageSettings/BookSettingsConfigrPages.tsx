@@ -26,6 +26,7 @@ import {
 import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
+import { findLinkTextBrackets } from "../../utils/textUtils";
 
 // Should stay in sync with AppearanceSettings.PageNumberPosition
 enum PageNumberPosition {
@@ -592,12 +593,13 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
         "BookSettings.ThemeDisablesOptionsNoticeWithLink",
     );
 
-    const linkStart = message.indexOf("[");
-    const linkEnd = message.indexOf("]", linkStart >= 0 ? linkStart + 1 : 0);
+    const brackets = findLinkTextBrackets(message);
 
-    if (linkStart < 0 || linkEnd <= linkStart) {
+    if (!brackets) {
         return <span>{message}</span>;
     }
+
+    const { open: linkStart, close: linkEnd } = brackets;
 
     return (
         <span>
