@@ -21,6 +21,8 @@ namespace Bloom.Publish.PDF
     /// </summary>
     public class PdfMaker
     {
+        private const double kFullBleedInsetMillimeters = 3;
+
         /// <summary>
         /// turns on crop marks and TrimBox
         /// </summary>
@@ -204,9 +206,41 @@ namespace Bloom.Publish.PDF
                     for (int i = lastEven; i > 0; i -= 2)
                         pdfDoc.Pages.RemoveAt(i);
                 }
+
+                if (specs.PrintWithFullBleed)
+                {
+                    // Ghostscript's pdfwrite pass can drop page-box metadata.
+                    // Recreate full-bleed boxes here so DotImpose gets the same trim/bleed intent
+                    // regardless of layouter choice (booklet and no-booklet).
+                    foreach (PdfPage page in pdfDoc.Pages)
+                        SetFullBleedPageBoxes(page);
+                }
+
                 pdfDoc.Save(specs.OutputPdfPath);
             }
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
+        }
+
+        internal static void SetFullBleedPageBoxes(PdfPage page)
+        {
+            var bleedMargin = XUnit.FromMillimeter(kFullBleedInsetMillimeters);
+            var trimWidth = page.MediaBox.Width - (2 * bleedMargin.Point);
+            var trimHeight = page.MediaBox.Height - (2 * bleedMargin.Point);
+            if (trimWidth <= 0 || trimHeight <= 0)
+            {
+                throw new ApplicationException(
+                    $"Cannot set full-bleed page boxes for MediaBox {page.MediaBox.Width}x{page.MediaBox.Height}."
+                );
+            }
+
+            var trimBox = new PdfRectangle(
+                new XPoint(bleedMargin.Point, bleedMargin.Point),
+                new XSize(trimWidth, trimHeight)
+            );
+            page.BleedBox = page.MediaBox;
+            page.CropBox = page.MediaBox;
+            page.ArtBox = trimBox;
+            page.TrimBox = trimBox;
         }
 
         public static string GetDistributedColorProfilesFolder()
@@ -353,7 +387,10 @@ namespace Bloom.Publish.PDF
                 switch (specs.BooketLayoutMethod)
                 {
                     case PublishModel.BookletLayoutMethod.NoBooklet:
-                        method = new NullLayoutMethod(specs.PrintWithFullBleed ? 3 : 0);
+                        // Full-bleed source pages carry explicit trim/bleed boxes
+                        // (see SetFullBleedPageBoxes), so NullLayoutMethod needs no
+                        // synthetic trim inset.
+                        method = new NullLayoutMethod();
                         break;
                     case PublishModel.BookletLayoutMethod.SideFold:
                         // To keep the GUI simple, we assume that A6 page size for booklets
@@ -410,6 +447,12 @@ namespace Bloom.Publish.PDF
                     );
                 }
 
+                // var toDotImposePath = Path.Combine(
+                //     Path.GetTempPath(),
+                //     $"toDotImpose-{Guid.NewGuid():D}.pdf"
+                // );
+                // RobustFile.Copy(incoming.Path, toDotImposePath, true);
+
                 var pdf = XPdfForm.FromFile(incoming.Path); //REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
                 method.Layout(
                     pdf,
@@ -421,6 +464,7 @@ namespace Bloom.Publish.PDF
                 );
             }
         }
+
     }
 
     internal class CancellableNullProgress : NullProgress
