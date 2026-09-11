@@ -752,8 +752,9 @@ namespace BloomTests.ImageProcessing
         [TestCase(3000, 5000, 2304, 3840)] // portrait, both too large elongated
         [TestCase(2500, 5000, 1920, 3840)] // portrait, height too large
         [TestCase(5000, 2500, 3840, 1920)] // landscape, width too large
-        [TestCase(3800, 3000, 3546, 2800)] // landscape, height too large
-        [TestCase(3000, 3800, 2800, 3546)] // portrait, width too large
+        [TestCase(3800, 3000, 3547, 2800)] // landscape, height too large (3546.67 rounds up)
+        [TestCase(3000, 3800, 2800, 3547)] // portrait, width too large (3546.67 rounds up)
+        [TestCase(kDylanWidth, kDylanHeight, kDylanExpectedWidth, kDylanExpectedHeight)] // BL-16829: 2156.6 must round to 2157, not truncate to 2156
         public static void TestGetImageSizes(int width, int height, int newWidth, int newHeight)
         {
             var size = ImageUtils.GetDesiredImageSize(width, height);
@@ -768,6 +769,172 @@ namespace BloomTests.ImageProcessing
                 $"Computed height for {width},{height} is correct."
             );
         }
+
+        #region BL-16829: resized images must come out exactly the size we asked for
+
+        // The "Dylan" photo from the "4K Image BloomPUB Resolutions" manual test: 3992x2242, a little
+        // wider than 16:9. Scaling it to Bloom's 3840-pixel maximum width makes the height 2156.6.
+        // Before BL-16829, GetDesiredImageSize truncated that to 2156, and GraphicsMagick's -scale
+        // (with no "!" flag) then fitted the image *inside* 3840x2156, so the truncated height became
+        // the binding constraint and the width came out as 3839.
+        private const int kDylanWidth = 3992;
+        private const int kDylanHeight = 2242;
+        private const int kDylanExpectedWidth = 3840;
+        private const int kDylanExpectedHeight = 2157;
+
+        /// <summary>
+        /// The file-level resize used by the folder shrink (old-book migration, ProcessBook) and by
+        /// BookCompressor must produce a file of exactly the dimensions it was asked for.
+        /// </summary>
+        [Test]
+        public void ResizeImageFileWithOptionalTransparency_WideLandscapePhoto_IsExactlyTheDesiredSize()
+        {
+            using (var folder = new TemporaryFolder("ImageUtilsTests_ResizeFile_WidePhoto"))
+            {
+                var path = folder.Combine("dylan.jpg");
+                CreateLargeJpeg(path, kDylanWidth, kDylanHeight);
+                var desiredSize = ImageUtils.GetDesiredImageSize(kDylanWidth, kDylanHeight);
+                Assert.That(
+                    desiredSize.Width,
+                    Is.EqualTo(kDylanExpectedWidth),
+                    "setup: the desired width should be the maximum long side"
+                );
+
+                bool resized;
+                using (var tagFile = RobustFileIO.CreateTaglibFile(path))
+                {
+                    resized = ImageUtils.ResizeImageFileWithOptionalTransparency(
+                        path,
+                        desiredSize,
+                        false,
+                        false,
+                        tagFile
+                    );
+                }
+                Assert.That(
+                    resized,
+                    Is.True,
+                    "GraphicsMagick (the 'gm' folder beside the test assembly) is missing or failed to run."
+                );
+
+                Assert.That(
+                    GetImageDimensions(path),
+                    Is.EqualTo(new Size(kDylanExpectedWidth, kDylanExpectedHeight)),
+                    "the resized file should be exactly the size GetDesiredImageSize asked for"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Importing an oversized photo into a book (the path the manual test exercised) must shrink it
+        /// to exactly the maximum size, not a pixel short of it.
+        /// </summary>
+        [Test]
+        public void ProcessAndSaveImageIntoFolder_WideLandscapePhoto_ShrinksToExactlyTheDesiredSize()
+        {
+            using (
+                var sourceFolder = new TemporaryFolder("ImageUtilsTests_Import_WidePhoto_Source")
+            )
+            using (var bookFolder = new TemporaryFolder("ImageUtilsTests_Import_WidePhoto_Book"))
+            {
+                var sourcePath = sourceFolder.Combine("dylan.jpg");
+                CreateLargeJpeg(sourcePath, kDylanWidth, kDylanHeight);
+                using (var image = PalasoImage.FromFileRobustly(sourcePath))
+                {
+                    Assert.That(
+                        image.Image.Width,
+                        Is.EqualTo(kDylanWidth),
+                        "setup: the source image should be oversized"
+                    );
+
+                    var fileName = ImageUtils.ProcessAndSaveImageIntoFolder(
+                        image,
+                        bookFolder.Path,
+                        false
+                    );
+
+                    Assert.That(
+                        GetImageDimensions(bookFolder.Combine(fileName)),
+                        Is.EqualTo(new Size(kDylanExpectedWidth, kDylanExpectedHeight)),
+                        "the imported image should be exactly the maximum size"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Publishing (BloomPUB, ePUB) resizes to the book's image settings. Every setting used to
+        /// lose pixels the same way (e.g. 1278x718 instead of 1280x719 at the default setting).
+        /// </summary>
+        [TestCase(2160, 3840, 3840, 2157)] // 4K
+        [TestCase(1080, 1920, 1920, 1078)] // Full HD: the size the manual test plan expects
+        [TestCase(720, 1280, 1280, 719)] // default BloomPUB setting
+        public void AdjustImageForDisplay_WideLandscapePhoto_ShrinksToExactlyTheDesiredSize(
+            int maxShortSide,
+            int maxLongSide,
+            int expectedWidth,
+            int expectedHeight
+        )
+        {
+            using (
+                var sourceFolder = new TemporaryFolder("ImageUtilsTests_Publish_WidePhoto_Source")
+            )
+            using (var destFolder = new TemporaryFolder("ImageUtilsTests_Publish_WidePhoto_Dest"))
+            {
+                var sourcePath = sourceFolder.Combine("dylan.jpg");
+                CreateLargeJpeg(sourcePath, kDylanWidth, kDylanHeight);
+
+                var result = ImageUtils.AdjustImageForDisplay(
+                    sourcePath,
+                    destFolder.Path,
+                    maxShortSide: maxShortSide,
+                    maxLongSide: maxLongSide
+                );
+
+                Assert.That(result, Is.Not.Null, "Expected a resized version to be created");
+                Assert.That(
+                    GetImageDimensions(result),
+                    Is.EqualTo(new Size(expectedWidth, expectedHeight)),
+                    $"the published image should be exactly the size that fits {maxLongSide}x{maxShortSide}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Generate a photo-like JPEG of the given size. Generated rather than committed, because a
+        /// multi-megapixel file is what makes the test meaningful and we don't want it in the repo.
+        /// </summary>
+        private static void CreateLargeJpeg(string path, int width, int height)
+        {
+            using (var bitmap = new Bitmap(width, height))
+            {
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.Clear(Color.SteelBlue);
+                    graphics.FillEllipse(
+                        Brushes.Orange,
+                        width / 4,
+                        height / 4,
+                        width / 2,
+                        height / 2
+                    );
+                }
+                bitmap.Save(path, ImageFormat.Jpeg);
+            }
+        }
+
+        /// <summary>
+        /// Read the pixel dimensions of an image file without holding a lock on the file
+        /// (Image.FromFile would keep the file open for the life of the Image).
+        /// </summary>
+        private static Size GetImageDimensions(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (var image = Image.FromStream(stream, false, false))
+                return image.Size;
+        }
+
+        #endregion
 
         [Test]
         [TestCase(true)]
