@@ -25,7 +25,7 @@
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
-    clickInGroup,
+    editablePageFrame,
     findBookFolder,
     makeBookFromTemplate,
     typeInGroup,
@@ -68,12 +68,22 @@ const VARIANTS: IVariant[] = [
             // Take the focus out of the box the way leaving it does, without clicking anything
             // else on the page (a stray click could select a different element and change what
             // Add Page then does).
-            await clickInGroup(page, ".bookTitle", "en").then((box) =>
-                box.blur(),
-            );
+            await titleBox(page).blur();
         },
     },
 ];
+
+/**
+ * The cover's English title box, WITHOUT touching it. Every read here has to leave the page as
+ * the variant left it: clicking the box back into focus right before the save would undo the
+ * blur variant, and would put a fresh click and focus into all three runs — the very kind of
+ * event that could mask, or cause, the loss being investigated.
+ */
+function titleBox(page: import("@playwright/test").Page) {
+    return editablePageFrame(page)
+        .locator('.bookTitle .bloom-editable[lang="en"]')
+        .first();
+}
 
 test("a title typed on a new book's cover reaches the collection, however it was typed", async ({
     page,
@@ -89,11 +99,7 @@ test("a title typed on a new book's cover reaches the collection, however it was
 
         // What the browser holds right before the save. If this is already wrong, the text never
         // survived in the page at all and Bloom was never given a chance to save it.
-        const inTheBoxBeforeSaving = await clickInGroup(
-            page,
-            ".bookTitle",
-            "en",
-        ).then((box) => box.innerText());
+        const inTheBoxBeforeSaving = await titleBox(page).innerText();
 
         // Adding a page is what saves the cover: OnInsertPage wraps the insert in SaveThen, which
         // asks the browser for the current page's content first.
@@ -102,7 +108,12 @@ test("a title typed on a new book's cover reaches the collection, however it was
         let reachedTheCollection = true;
         try {
             await findBookFolder(page, title, 20000);
-        } catch {
+        } catch (error) {
+            // findBookFolder throws both when the collection never learned the title and when it
+            // could not ask at all (Bloom gone, browser closed). Only the first is the result this
+            // probe is here to record; letting the second through as "the title was lost" would
+            // point the whole investigation at the wrong thing, so it fails the run instead.
+            if (!String(error).includes("has no book called")) throw error;
             reachedTheCollection = false;
         }
 
