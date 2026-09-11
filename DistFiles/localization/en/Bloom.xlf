@@ -3307,6 +3307,11 @@
         <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
         <note>Section heading in the image library's local-images tab, above the list of installed image collections (e.g. Art of Reading).</note>
       </trans-unit>
+      <trans-unit id="ImageLibrary.ImageChooser">
+        <source xml:lang="en">Image Chooser</source>
+        <note>ID: ImageLibrary.ImageChooser</note>
+        <note>Title bar of the dialog for finding and choosing a picture, from the user's computer or from online sources.</note>
+      </trans-unit>
       <trans-unit id="ImageLibrary.OnlineSources">
         <source xml:lang="en">Online Sources</source>
         <note>ID: ImageLibrary.OnlineSources</note>
