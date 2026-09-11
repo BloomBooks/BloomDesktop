@@ -394,6 +394,16 @@ namespace Bloom
                     // user's real value is in, tell a running Doctor again; a repeat is harmless.
                     DoctorLauncher.AnnounceToAnyDoctor();
                 }
+                // Re-apply the pseudo-locale guard that SetUpLocalization already applied. The
+                // migration above ends in Reload(), which discards the normalized value
+                // SetUpLocalization wrote, so a qps-ploc carried forward from an alpha would
+                // otherwise reach the SetUILanguage calls further down ungated and leave a release
+                // user with a mangled UI and no menu entry to escape it. A no-op when no migration
+                // happened, or on a channel that does offer the locale. See BL-16748.
+                Settings.Default.UserInterfaceLanguage = RefusePseudoLocaleWhereNotOffered(
+                    Settings.Default.UserInterfaceLanguage
+                );
+
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
 
@@ -2622,6 +2632,28 @@ namespace Bloom
             ApplicationUpdateSupport.IsDevOrAlpha;
 
         /// <summary>
+        /// Replace the pseudo-locale with English on a channel that does not offer it; any other
+        /// language is returned unchanged.
+        /// </summary>
+        /// <remarks>
+        /// The user may have chosen the pseudo-locale on a channel that offers it and then run one
+        /// that does not — the settings are shared between channels of the same version, and a
+        /// version upgrade migrates them forward. Lookups for qps-ploc keep working either way
+        /// (OfferPseudoLocalization gates only whether we *offer* the locale), so without this the
+        /// user would get an inexplicably mangled UI with no menu entry to get out of it.
+        /// See BL-16748.
+        /// </remarks>
+        public static string RefusePseudoLocaleWhereNotOffered(string language)
+        {
+            if (
+                language == LocalizationManager.PseudoLocalizationLanguageId
+                && !OfferPseudoLocalizationForI18nTesting
+            )
+                return "en";
+            return language;
+        }
+
+        /// <summary>
         /// Derive the desired UI language from the stored value, or from matching the OS value against
         /// the available localizations if nothing has been explicitly stored yet.
         /// </summary>
@@ -2630,19 +2662,13 @@ namespace Bloom
         /// </remarks>
         private static string GetDesiredUiLanguage(string installedStringFileFolder)
         {
-            var desiredLanguage = Settings.Default.UserInterfaceLanguage;
-            // The user may have chosen the pseudo-locale on a channel that offers it and then run
-            // a channel that does not (the settings are shared between channels of the same
-            // version). Lookups for qps-ploc would still work, so without this the user would get
-            // an inexplicably mangled UI with no menu entry to get out of it. Fall back to
-            // English instead. See BL-16748.
-            if (
-                desiredLanguage == LocalizationManager.PseudoLocalizationLanguageId
-                && !OfferPseudoLocalizationForI18nTesting
-            )
+            var desiredLanguage = RefusePseudoLocaleWhereNotOffered(
+                Settings.Default.UserInterfaceLanguage
+            );
+            if (desiredLanguage != Settings.Default.UserInterfaceLanguage)
             {
                 // SetUpLocalization stores whatever we return back into the setting.
-                return "en";
+                return desiredLanguage;
             }
             if (
                 String.IsNullOrEmpty(desiredLanguage)

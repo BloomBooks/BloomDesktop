@@ -40,5 +40,33 @@ namespace BloomTests.Workspace
             );
             Assert.That(Program.OfferPseudoLocalizationForI18nTesting, Is.False);
         }
+
+        [Test]
+        public void RefusePseudoLocaleWhereNotOffered_ChannelDoesNotOfferIt_FallsBackToEnglish()
+        {
+            // Sanity check: this test only means anything on a channel that doesn't offer the locale.
+            Assert.That(
+                Program.OfferPseudoLocalizationForI18nTesting,
+                Is.False,
+                "test setup problem: the unit-test channel should not offer the pseudo-locale"
+            );
+
+            Assert.That(
+                Program.RefusePseudoLocaleWhereNotOffered(
+                    LocalizationManager.PseudoLocalizationLanguageId
+                ),
+                Is.EqualTo("en")
+            );
+        }
+
+        [TestCase("fr")]
+        [TestCase("en")]
+        [TestCase("zh-CN")]
+        [TestCase("")]
+        [TestCase(null)]
+        public void RefusePseudoLocaleWhereNotOffered_AnyOtherLanguage_IsLeftAlone(string language)
+        {
+            Assert.That(Program.RefusePseudoLocaleWhereNotOffered(language), Is.EqualTo(language));
+        }
     }
 }
