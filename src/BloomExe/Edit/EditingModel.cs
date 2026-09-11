@@ -1854,54 +1854,12 @@ namespace Bloom.Edit
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
-            LogCoverTitleArrivingFromBrowser(editedDom);
             var newPageData = GetPageData(editedDom.RawDom);
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
             );
-        }
-
-        /// <summary>
-        /// Say, in the log, what book title (if any) arrived in the page content the browser just
-        /// sent us — but only when the page has a title box at all, so this is quiet for every
-        /// other page.
-        ///
-        /// This is here for the investigation written up in src/BloomE2E/AUTOMATION-DEBT.md, "A
-        /// title typed on the cover of a new book can fail to reach the collection": on a slow
-        /// machine a title typed on a brand-new book's cover is sometimes missing from the saved
-        /// book, and we cannot yet tell whether the text was already gone from the browser's page
-        /// or was lost after we had it. This line answers exactly that, in a nightly's kept
-        /// Log.txt. Delete it, and the note in AUTOMATION-DEBT.md, once the question is settled.
-        /// </summary>
-        private void LogCoverTitleArrivingFromBrowser(HtmlDom editedDom)
-        {
-            try
-            {
-                var titles = editedDom
-                    .RawDom.SafeSelectNodes("//div[@data-book='bookTitle']")
-                    .Cast<SafeXmlElement>()
-                    .ToList();
-                if (titles.Count == 0)
-                    return;
-                // Every language's box, so a title that landed under the wrong language is visible
-                // too rather than looking like no title at all.
-                var described = string.Join(
-                    ", ",
-                    titles.Select(t => $"{t.GetAttribute("lang")}=\"{t.InnerText?.Trim()}\"")
-                );
-                Logger.WriteEvent(
-                    $"Cover-title investigation: page content from the browser carries bookTitle {described}"
-                );
-            }
-            catch (Exception e)
-            {
-                // Never let a diagnostic break a save.
-                Logger.WriteEvent(
-                    $"Cover-title investigation: could not read bookTitle ({e.Message})"
-                );
-            }
         }
 
         // If we return 'true', we need to do a complete book save, otherwise we'll just save this page.

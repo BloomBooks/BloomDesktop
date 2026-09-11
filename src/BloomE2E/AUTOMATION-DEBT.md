@@ -600,21 +600,46 @@ down.
   there was nothing there to lose. The empty `bookTitle` in the kept collection's HTML agrees.
 - **It is the browser, between the typing and the capture.** `typeInGroup` asserts
   `toHaveText` after typing, so the text demonstrably reached the box; a few seconds later
-  `requestPageContent()` returned a page without it. Something in that window replaces or
-  re-populates the cover's title box, and only on a slow machine.
+  `requestPageContent()` returned a page without it.
 
-Where to look next, then, is the front end and not the C#: what mutates a brand-new book's
-cover after the Edit tab has loaded it. `bookEdit/editablePage.ts` says outright that the
-load-time fix-ups "finish ASYNCHRONOUSLY after `bootstrap()` returns" and register
-`requestPageContent` delays, which is exactly the shape of a late write landing on a box a
-person has already typed into. The data-div → page sync for `data-book` fields is the other
-candidate, since an empty dataset value overwriting the box would leave precisely this.
+**The mechanism, proven 2026-09-11: CKEditor discards what you type while it is still
+starting up.** `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector`
+matches and returns at once, but the editor only finishes initialising some time later — and
+when it does, it writes the snapshot it took at `inline()` time over whatever the element
+holds by then. Watching a real Bloom's DOM over CDP while a developer typed by hand:
 
-The instruments: the probe has been deleted, along with the typing-method argument added to
-`typeInGroup` for it — it answered its question and would only have cost runtime from here
-on. The `Cover-title investigation:` log line **stays** until the bug is fixed: it is what
-turned a third mystery failure into a diagnosis, and it annotates every future occurrence
-for free. Delete it with the fix.
+```
+ms=0     installed                 text=""      cke_editable=false
+ms=942   mut:childList+charData    text="a"     cke_editable=false
+ms=944   mut:characterData         text="af"    cke_editable=false
+ms=944   mut:characterData         text="afd"   cke_editable=false
+ms=1215  mut:attributes+childList  text=""      cke_editable=true
+```
+
+The class going on and the content being wiped are one and the same DOM mutation, so there is
+no inference left in this: that is the editor becoming ready and overwriting the typing. A
+detach/re-attach experiment gives the same result deterministically — text put in after
+`inline()` and before `instanceReady` is gone once the editor is ready.
+
+**This is a Bloom defect, and a user-facing one**: type a title fast enough after making a
+book and it silently disappears. It was reproduced by hand, twice, on a normal developer
+machine, with a window of about 1.2 seconds; a loaded machine widens it, which is why the
+runner hit it so reliably. **It is deliberately not being fixed** — CKEditor is being retired
+(the `retireCkEditor` work), so the fix is that removal. The attach site in
+`bookEdit/js/bloomEditing.ts` carries a note pointing back here, for whoever does it.
+
+**The suite's workaround**, and it is a workaround: `clickInGroup` waits for the
+`cke_editable` class before it touches a box, because that class is exactly the signal the
+trace above identifies. It waits only on boxes that will really get an editor, asking the
+page the same three questions `bloomEditing.ts` asks (matches `ckeditableSelector`, no
+`.bloom-canvas` on the page, not read-only), and gives up quietly rather than failing if the
+editor never arrives. Every typing path funnels through `clickInGroup`, so no spec needed
+changing — but a test that ever types by some other route is still exposed. **Delete the wait
+when CKEditor goes.**
+
+The instruments that got us here — a probe spec that typed three different ways, a
+typing-method argument on `typeInGroup`, and a `Cover-title investigation:` line logging what
+the browser handed each save — have all been removed now that the question is settled.
 
 Independently of all this, `findBookFolder` could look a book up by its id
 (`collections/books` reports one) so that no test depends on the rename at all.

@@ -1220,6 +1220,17 @@ export function bootstrap() {
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
+    //
+    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
+    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
+    // ready it writes the snapshot it took here over whatever the element holds by then. So
+    // anything a person types in that window is silently destroyed. Measured on a developer
+    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
+    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
+    // after making a book and you lose it; a loaded machine widens the window. Written up in
+    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
+    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
+    // staying, that entry is the place to start.
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
