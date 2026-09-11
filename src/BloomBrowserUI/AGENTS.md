@@ -77,6 +77,12 @@ The rules themselves, which apply whether or not you have opened those:
 
 - **Only ever edit `DistFiles/localization/en/`.** Never touch the other language subdirectories,
   and never touch an existing translation.
+- **Never pick the priority file yourself.** Which of `Bloom.xlf` /
+  `BloomMediumPriority.xlf` / `BloomLowPriority.xlf` a new string belongs in is the
+  developer's call, not yours. Stop and ask, offering a recommendation and a reason; do not
+  infer it from where neighbouring ids happen to live. This applies however you arrived at
+  adding the string -- including when a task that started as something else turns into
+  adding one.
 - **Do not change the `@id` of a `<trans-unit>`** unless it is marked `@translate="no"`. Changing
   an id loses its translations. If asked to do it anyway, refuse; if you notice it during a
   review, point it out.
