@@ -295,6 +295,24 @@ shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
 helpers no longer act early; the production endpoints still reply success to a request they
 dropped.
 
+seen again 2026-09-11 (Test Case ID 348, `copy-page.spec.ts`): the same drop hits
+`selectPage`, which the 2026-09-02 mitigation does not cover. `helpers/pageThumbnails.ts`
+waits only for the thumbnail to *exist* and then clicks it; its `waitForEditablePage` comes
+after the click, not before, so the click can land while the Edit tab is still settling. The
+kept Bloom log says the click went nowhere at all: the last line is `Entered Edit Tab` for
+the destination book, and for the next 60 seconds there is no `Select Page` and no `changing
+page via workspaceBundle.switchContentPage` — every selection that works logs both. The
+thumbnail therefore never gets `gridSelected` and the test fails on that assertion.
+
+What makes this one worth chasing rather than filing as flake: it fails **every** time on one
+developer machine (twice in full-suite runs and again running the spec alone) and **passed**
+on the 2026-09-11 nightly, so the runner and that machine differ in something that decides
+it. Nobody has found what. Until they do, the cheap fix is the same as the entry's: have
+`selectPage` wait for the Edit tab to be ready *before* it clicks, the way the other
+page-changing helpers now do.
+(Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
+font-chooser helper.)
+
 ## Filling a text box directly leaves part of the old text behind
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
