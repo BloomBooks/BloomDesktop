@@ -2155,13 +2155,6 @@ namespace BloomTests.Book
             Assert.IsTrue(book.CanDelete);
         }
 
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
-        }
-
         [Test]
         public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
         {
