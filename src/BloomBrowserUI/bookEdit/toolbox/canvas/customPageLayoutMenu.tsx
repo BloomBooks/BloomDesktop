@@ -9,6 +9,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
+import { findLinkTextBrackets } from "../../../utils/textUtils";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
@@ -168,22 +169,17 @@ const LegacyThemeCustomLayoutTooltip: React.FunctionComponent<{
         "EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message",
     );
 
-    const linkStart = tooltipMessage.indexOf("[");
-    const linkEnd = tooltipMessage.indexOf(
-        "]",
-        linkStart >= 0 ? linkStart + 1 : 0,
-    );
+    const brackets = findLinkTextBrackets(tooltipMessage);
 
-    const beforeLink =
-        linkStart >= 0 ? tooltipMessage.substring(0, linkStart) : "";
-    const linkText =
-        linkStart >= 0 && linkEnd > linkStart
-            ? tooltipMessage.substring(linkStart + 1, linkEnd)
-            : tooltipMessage;
-    const afterLink =
-        linkStart >= 0 && linkEnd > linkStart
-            ? tooltipMessage.substring(linkEnd + 1)
-            : "";
+    const beforeLink = brackets
+        ? tooltipMessage.substring(0, brackets.open)
+        : "";
+    const linkText = brackets
+        ? tooltipMessage.substring(brackets.open + 1, brackets.close)
+        : tooltipMessage;
+    const afterLink = brackets
+        ? tooltipMessage.substring(brackets.close + 1)
+        : "";
 
     return (
         <div

@@ -10,6 +10,7 @@ import {
     LocalizableElement,
 } from "./l10nComponents";
 import { kBloomDisabledText } from "../utils/colorUtils";
+import { findLinkTextBrackets } from "../utils/textUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -78,9 +79,9 @@ export class TextWithEmbeddedLink extends LocalizableElement<
     public render() {
         // Text within [] is for the link.
         const parts = this.getLocalizedContentAndClass();
-        const idxOpen = parts.text.indexOf("[");
-        const idxClose = parts.text.indexOf("]", idxOpen + 1);
-        if (idxOpen >= 0 && idxClose > idxOpen) {
+        const brackets = findLinkTextBrackets(parts.text);
+        if (brackets) {
+            const { open: idxOpen, close: idxClose } = brackets;
             // We found the link text, piece together the desired output
             return (
                 <span className={parts.l10nClass}>
