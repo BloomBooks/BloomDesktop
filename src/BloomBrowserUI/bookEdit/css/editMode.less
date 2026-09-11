@@ -325,6 +325,41 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     top: calc(@PageLabelVerticalDisplacement - 48);
 }
 
+// An icon in the top right corner of a hint bubble, floated so the text wraps beside it.
+// See BloomHintBubbles.getPossibleLinkIcon.
+.hintBubbleIcon {
+    float: right;
+    line-height: 0;
+    margin: 0 0 4px 10px;
+
+    img {
+        display: block;
+        // Sized by height rather than width: the open padlock's drawing is wider than the
+        // closed one's only because its shackle swings out to the side, and both are drawn in
+        // a box of the same height, so matching the heights makes the two padlocks match.
+        height: 15px;
+        width: auto;
+    }
+}
+
+// When there is somewhere for it to go, it behaves like a small button.
+a.hintBubbleIcon {
+    padding: 3px;
+    margin: -3px -3px 1px 7px;
+    border-radius: 3px;
+    opacity: 0.7;
+    cursor: pointer;
+
+    &:hover {
+        opacity: 1;
+        background-color: fade(@tipLinkColor, 15%);
+    }
+
+    &:active {
+        background-color: fade(@tipLinkColor, 30%);
+    }
+}
+
 [data-derived="originalCopyrightAndLicense"] {
     cite {
         &.missingOriginalTitle,

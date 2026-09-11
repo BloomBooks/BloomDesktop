@@ -875,6 +875,19 @@ export function SetupElements(
             //     theOneCanvasElementManager.setActiveElement(undefined);
             // }
 
+            // A field the server has just opened for editing in response to a click, such as
+            // the sentence about the original book on the credits page. The user asked for it,
+            // so it wins over the guesses below, and the caret goes to the start of it.
+            const fieldJustOpened = container.querySelector(
+                "[data-bloom-focus-when-shown]",
+            ) as HTMLElement | null;
+            if (fieldJustOpened && elementToFocus !== "none") {
+                fieldJustOpened.removeAttribute("data-bloom-focus-when-shown");
+                fieldJustOpened.focus();
+                EditableDivUtils.makeSelectionIn(fieldJustOpened, 0, -1, true);
+                return;
+            }
+
             if (elementToFocus !== "none") {
                 // the check for visibility-code-on here prevents focusing a bloom-editable that we are just
                 // showing as a prompt.
