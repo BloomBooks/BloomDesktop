@@ -19,6 +19,19 @@ House rules:
 
 ---
 
+## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
+
+- **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.
+  The collection copy lands as real files under `test-results/<test>/collection/`, but the log does
+  not land anywhere you can open: it is not in `test-results/<test>/`, not in
+  `playwright-report/data/`, and the run's console prints only its truncated first line. Reading it
+  from the nightly's `e2e-report` artifact meant unzipping `trace.zip` and guessing which
+  `resources/<40-hex>` blob it was.
+- **Idea:** write it with `testInfo.outputPath("bloom-log.txt")` and attach by `path`, so it sits
+  beside `collection/` as a plain file in the artifact.
+- **Context:** hit while reading the 2026-09-11 nightly for the cover-title failure
+  (`src/BloomE2E/AUTOMATION-DEBT.md`); cost about ten minutes of hunting.
+
 ## 2026-09-11 — pnpm skips the install entirely after a rebase changes the lockfile
 
 - **Cut:** After rebasing onto a master that had refreshed `pnpm-lock.yaml`, `pnpm install` in

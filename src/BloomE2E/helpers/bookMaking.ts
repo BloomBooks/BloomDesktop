@@ -565,6 +565,16 @@ export async function clickInGroup(
 }
 
 /**
+ * How the characters get into the box.
+ *
+ * `insertText` is one insertion for the whole string: cheap, and enough for anything that works
+ * from the `input` event. `keyPresses` sends a real keydown/keypress/keyup per character, which
+ * is what a person's keyboard produces — use it where what is under test might listen for a key,
+ * or where the question is whether our typing is faithful enough (see cover-title-save.spec.ts).
+ */
+export type TypingMethod = "insertText" | "keyPresses";
+
+/**
  * Type text into one language's box of one translation group on the page being shown, the way a
  * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title.
  *
@@ -576,22 +586,28 @@ export async function typeInGroup(
     groupSelector: string,
     languageTag: string,
     text: string,
+    method: TypingMethod = "insertText",
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
     const box = await clickInGroup(page, groupSelector, languageTag);
     await box.press("Control+a");
     await box.press("Delete");
-    // One insertion rather than a key press per character: the box has focus, and CKEditor and
-    // Bloom's own markup code both work from the input event this raises, so the result is the
-    // same and the cost does not grow with the length of the text.
+    // By default, one insertion rather than a key press per character: the box has focus, and
+    // CKEditor and Bloom's own markup code both work from the input event this raises, so the
+    // result is the same and the cost does not grow with the length of the text.
     //
-    // What this does NOT do is raise keydown, keypress or keyup. So a test that types here does
+    // What that does NOT do is raise keydown, keypress or keyup. So a test that types here does
     // not exercise anything in Bloom that listens for a key rather than for input, and the
-    // assertion below cannot tell the difference. A test whose subject IS a key press needs a
-    // helper of its own that presses that key. (AUTOMATION-DEBT.md: "Typing in a text box raises
-    // no key events".)
-    if (text) await page.keyboard.insertText(text);
+    // assertion below cannot tell the difference. Pass "keyPresses" when that matters.
+    // (AUTOMATION-DEBT.md: "Typing in a text box raises no key events".)
+    if (text) {
+        if (method === "keyPresses")
+            // A small delay per character, so the page gets to react between keys as it would
+            // under a person's hands; instant keystrokes are their own kind of unfaithful.
+            await box.pressSequentially(text, { delay: 30 });
+        else await page.keyboard.insertText(text);
+    }
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
     // later failure cannot be blamed on text that never arrived.
     await expect(box).toHaveText(text, { timeout: 15000 });
