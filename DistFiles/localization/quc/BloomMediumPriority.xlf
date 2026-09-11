@@ -785,6 +785,11 @@
         <target xml:lang="quc" state="needs-translation">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</target>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
+      <trans-unit id="Topic.Missing">
+        <source xml:lang="en">Missing</source>
+        <target xml:lang="quc" state="needs-translation">Missing</target>
+        <note>ID: Topic.Missing</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Visibility">
         <source xml:lang="en">Visibility</source>
         <target xml:lang="quc" state="needs-translation">Visibility</target>
@@ -1079,6 +1084,11 @@
         <source xml:lang="en">Front Cover</source>
         <target xml:lang="quc" state="needs-translation">Front Cover</target>
         <note>BookSettings.WhatToShowOnCover</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.AllCoverPagesGroupLabel" sil:dynamic="true">
+        <source xml:lang="en">All Cover Pages</source>
+        <target xml:lang="quc" state="needs-translation">All Cover Pages</target>
+        <note>ID: BookSettings.AllCoverPagesGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.ShowContentLanguage" sil:dynamic="true">
         <source xml:lang="en">Show {0}</source>
@@ -1388,6 +1398,21 @@
         <source xml:lang="en">Launching app on phone</source>
         <target xml:lang="quc" state="needs-translation">Launching app on phone</target>
         <note>ID: PublishTab.Apps.Progress.LaunchingOnPhone</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingHelpLink">
+        <source xml:lang="en">How to set up your Android phone</source>
+        <target xml:lang="quc" state="needs-translation">How to set up your Android phone</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.WhatsNext">
+        <source xml:lang="en">What&apos;s Next?</source>
+        <target xml:lang="quc" state="needs-translation">What's Next?</target>
+        <note>ID: PublishTab.Apps.WhatsNext</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.WhatsNext.Explanation">
+        <source xml:lang="en">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</source>
+        <target xml:lang="quc" state="needs-translation">Actually publishing your app to the Android App Store requires several more steps. In the near future we hope to expand Bloom to help with that part of the process.</target>
+        <note>ID: PublishTab.Apps.WhatsNext.Explanation</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.SettingsDialog.Title">
         <source xml:lang="en">App Settings</source>
