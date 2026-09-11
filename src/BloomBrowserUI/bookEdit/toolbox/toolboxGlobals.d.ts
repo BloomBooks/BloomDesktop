@@ -1,28 +1,11 @@
 export {};
 
 declare global {
-    interface ToolboxReactAdapterApi {
-        isEnabled: () => boolean;
-        setActiveToolByToolId: (toolId: string) => void;
-        getActiveToolId: () => string | undefined;
-        onActiveToolChanged: (callback: (toolId: string) => void) => void;
-    }
-
-    interface ToolboxToolApi {
-        makeRootElement?: () => HTMLDivElement;
-    }
-
-    interface CurrentToolApi {
-        id: () => string;
-    }
-
-    interface ToolboxApi {
-        getToolIfOffered?: (toolId: string) => ToolboxToolApi | undefined;
-        getCurrentTool?: () => CurrentToolApi | undefined;
-    }
-
+    // The set of functions the toolbox iframe publishes as window.toolboxBundle, for
+    // other frames (and C#) to call. Consumers get the real types by casting to
+    // IToolboxFrameExports (see workspaceFrames.ts), so these are just names.
     interface ToolboxBundleApi {
-        getTheOneToolbox: () => ToolboxApi | undefined;
+        getTheOneToolbox: unknown;
         scheduleMarkupUpdateAfterPaste: unknown;
         updateMarkupAfterUndoOrRedo: unknown;
         applyToolboxStateToPage: unknown;
@@ -37,7 +20,6 @@ declare global {
         TalkingBookTool: unknown;
         canUndo: unknown;
         undo: unknown;
-        applyToolboxStateToPageLegacy: unknown;
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;
@@ -45,7 +27,6 @@ declare global {
     }
 
     interface Window {
-        toolboxReactAdapter?: ToolboxReactAdapterApi;
         toolboxBundle?: ToolboxBundleApi;
     }
 }
