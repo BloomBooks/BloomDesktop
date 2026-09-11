@@ -580,10 +580,11 @@ collection and Bloom's log on a failed test, so for once we can see the wreckage
   speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
   saved the title. Renderer slowness alone is not the trigger.
 
-**Answered, 2026-09-11**, by `cover-title-save.spec.ts` (three typing methods) and the
-`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs,
-both landed in #8352 and read from the nightly run on `53eb325a4b`. Three things are now
-ruled out and one is pinned down.
+**Answered, 2026-09-11**, by two instruments landed in #8352 — a throwaway probe spec that
+made the same book three times, typing the title a different way each time, and the
+`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs —
+read from the nightly run on `53eb325a4b`. Three things are now ruled out and one is pinned
+down.
 
 - **Not how we type.** All three probe variants — `insertText`, real key presses, and
   `insertText` then an explicit blur — reached the collection on the runner. The theory that
@@ -609,10 +610,11 @@ load-time fix-ups "finish ASYNCHRONOUSLY after `bootstrap()` returns" and regist
 person has already typed into. The data-div → page sync for `data-book` fields is the other
 candidate, since an empty dataset value overwriting the box would leave precisely this.
 
-The instruments: the probe has answered its question and no longer earns its runtime, so it
-can go. **Keep the `Cover-title investigation:` log line** until the bug is fixed — it is
-what turned a third mystery failure into a diagnosis, and it annotates every future
-occurrence for free.
+The instruments: the probe has been deleted, along with the typing-method argument added to
+`typeInGroup` for it — it answered its question and would only have cost runtime from here
+on. The `Cover-title investigation:` log line **stays** until the bug is fixed: it is what
+turned a third mystery failure into a diagnosis, and it annotates every future occurrence
+for free. Delete it with the fix.
 
 Independently of all this, `findBookFolder` could look a book up by its id
 (`collections/books` reports one) so that no test depends on the rename at all.
