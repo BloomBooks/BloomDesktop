@@ -511,9 +511,16 @@ namespace Bloom.Book
         /// </summary>
         internal static void SeedUserEditableOriginalCopyrightNotice(HtmlDom dom, BookData bookData)
         {
-            var notice = FlattenOriginalTitleCitation(
+            // The generated sentence carries the original title and copyright holder exactly as
+            // the publisher typed them, so "SIL & LASI" arrives as a bare ampersand and the
+            // string does not parse as XML. Put it through the same filter the locked sentence
+            // goes through, which escapes everything and lets only <br> and <cite> stand.
+            var escaper = dom.RawDom.CreateElement("div");
+            HtmlDom.SetElementFromUserStringSafely(
+                escaper,
                 GetOriginalCopyrightAndLicenseNotice(bookData, dom) ?? ""
             );
+            var notice = FlattenOriginalTitleCitation(escaper.InnerXml);
             // Wrap it in a paragraph, because that is the shape the editing code keeps text in.
             // Handed a bare run of text and markup, it wraps only the text nodes, which would
             // strand the italicized title on a line of its own.

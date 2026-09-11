@@ -870,6 +870,40 @@ namespace BloomTests.Book
         }
 
         /// <summary>
+        /// Bloom builds the sentence by pasting the original title and copyright holder straight
+        /// into it, and those are whatever the publisher typed: "SIL &amp; LASI" is ordinary.
+        /// The sentence therefore is not valid XML, and handing it over to the user has to escape
+        /// it rather than parse it.
+        /// </summary>
+        [Test]
+        public void SeedUserEditableOriginalCopyrightNotice_AmpersandInTitleAndCopyright_IsEscaped()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, SIL &amp; LASI</div>
+								<div data-book='originalTitle' lang='*'>Tom &amp; Jerry</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, bookDom),
+                Does.Contain("SIL & LASI"),
+                "Test setup problem: the generated sentence was supposed to hold a bare ampersand."
+            );
+
+            BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
+
+            var stored = bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml;
+            Assert.That(stored, Does.Contain("SIL &amp; LASI"));
+            Assert.That(stored, Does.Contain("<em>Tom &amp; Jerry</em>"));
+            // The stored wording goes back onto the page with InnerXml, so it has to parse.
+            Assert.That(() => SafeXmlDocument.Create().LoadXml(stored), Throws.Nothing);
+        }
+
+        /// <summary>
         /// A book that was never a derivative has the same empty data-derived div, and there is
         /// nothing there to hand over, so it must not get the bubble either.
         /// </summary>
