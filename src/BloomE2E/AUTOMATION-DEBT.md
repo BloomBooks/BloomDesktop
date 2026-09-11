@@ -603,3 +603,16 @@ Either way, delete the probe and the `Cover-title investigation` log line when t
 is settled. Independently of all this, `findBookFolder` could look a book up by its id
 (`collections/books` reports one) so that no test depends on the rename at all.
 (Found 2026-09-05 in the nightly run.)
+
+## The canvas e2e suite is attach-only, so nothing runs it unattended
+
+`bookEdit/canvas-e2e-tests` drives `http://localhost:8089/bloom/CURRENTPAGE` — a Bloom a
+developer already launched, with the right book open on the right page — and fails fast when
+that URL is not reachable. It has no fixture that launches Bloom, opens a collection, or
+navigates to a canvas page, so it cannot join the nightly's five suites, and canvas
+regressions (drag-to-canvas, element manipulation, the Canvas Tool panel) are only caught
+when someone runs it by hand at a workstation. Fix direction: port the suite onto BloomE2E's
+fixtures (`bloomTest` plus a prepared collection holding a known canvas page); the nightly
+already has everything that shape of suite needs, so after the port, adding it is a config
+edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
+is worth keeping — page loads are the slow part either way.
