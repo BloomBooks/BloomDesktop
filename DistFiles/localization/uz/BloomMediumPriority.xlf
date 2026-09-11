@@ -10,27 +10,27 @@
         <target xml:lang="uz" state="needs-translation">Available with your Bloom Subscription</target>
         <note>ID: AvailableWithSubscription</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel" translate="no">
+      <trans-unit id="CopyrightAndLicense.ReuseMetadataShortcutLabel">
         <source xml:lang="en">Shortcuts:</source>
         <target xml:lang="uz" state="needs-translation">Shortcuts:</target>
         <note>ID: CopyrightAndLicense.ReuseMetadataShortcutLabel</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.FromThisBook" translate="no">
+      <trans-unit id="CopyrightAndLicense.FromThisBook">
         <source xml:lang="en">Copyright and license from this book</source>
         <target xml:lang="uz" state="needs-translation">Copyright and license from this book</target>
         <note>ID: CopyrightAndLicense.FromThisBook</note>
       </trans-unit>
-      <trans-unit id="Common.Gathering" translate="no">
+      <trans-unit id="Common.Gathering">
         <source xml:lang="en">Gathering…</source>
         <target xml:lang="uz" state="needs-translation">Gathering…</target>
         <note>ID: Common.Gathering</note>
       </trans-unit>
-      <trans-unit id="CopyrightAndLicense.CopyToAllImages" translate="no">
+      <trans-unit id="CopyrightAndLicense.CopyToAllImages">
         <source xml:lang="en">Add this info to all images in this book</source>
         <target xml:lang="uz" state="needs-translation">Add this info to all images in this book</target>
         <note>ID: CopyrightAndLicense.CopyToAllImages</note>
       </trans-unit>
-      <trans-unit id="Common.Working" translate="no">
+      <trans-unit id="Common.Working">
         <source xml:lang="en">Working…</source>
         <target xml:lang="uz" state="needs-translation">Working…</target>
         <note>ID: Common.Working</note>
@@ -40,7 +40,7 @@
         <target xml:lang="uz" state="needs-translation">App Builder</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
       </trans-unit>
-      <trans-unit id="Feature.AiImageEditing" translate="no">
+      <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <target xml:lang="uz" state="needs-translation">Edit Images with AI</target>
         <note>ID: Feature.AiImageEditing</note>
@@ -50,7 +50,7 @@
         <target xml:lang="uz" state="needs-translation">Edit with AI...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground" translate="no">
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground">
         <source xml:lang="en">Canvas Background</source>
         <target xml:lang="uz" state="needs-translation">Canvas Background</target>
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
@@ -1624,92 +1624,92 @@
         <target xml:lang="uz" state="needs-translation">Apps have a maximum size of about %1. The current estimate for this app is %0.</target>
         <note>ID: PublishTab.Apps.SizeEstimate.Total</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.FailedToAddImage" translate="no">
+      <trans-unit id="ImageLibrary.FailedToAddImage">
         <source xml:lang="en">Sorry, there was a problem adding the image.</source>
         <target xml:lang="uz" state="needs-translation">Sorry, there was a problem adding the image.</target>
         <note>ID: ImageLibrary.FailedToAddImage</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.AboutOpenVerse" translate="no">
-        <source xml:lang="en">About OpenVerse</source>
-        <target xml:lang="uz" state="needs-translation">About OpenVerse</target>
+      <trans-unit id="ImageLibrary.AboutOpenVerse">
+        <source xml:lang="en">About Openverse</source>
+        <target xml:lang="uz" state="needs-translation">About Openverse</target>
         <note>ID: ImageLibrary.AboutOpenVerse</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Disclaimer" translate="no">
+      <trans-unit id="ImageLibrary.Disclaimer">
         <source xml:lang="en">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</source>
         <target xml:lang="uz" state="needs-translation">These images are not from Bloom or SIL. This tool requests images suitable for general audiences. However, we cannot guarantee that all images will be inoffensive.</target>
         <note>ID: ImageLibrary.Disclaimer</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.MoreInfo" translate="no">
+      <trans-unit id="ImageLibrary.MoreInfo">
         <source xml:lang="en">More info</source>
         <target xml:lang="uz" state="needs-translation">More info</target>
         <note>ID: ImageLibrary.MoreInfo</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.OpenVerseDescription" translate="no">
+      <trans-unit id="ImageLibrary.OpenVerseDescription">
         <source xml:lang="en">Openverse searches multiple public repositories for CC-licensed and public domain works.</source>
         <target xml:lang="uz" state="needs-translation">Openverse searches multiple public repositories for CC-licensed and public domain works.</target>
         <note>ID: ImageLibrary.OpenVerseDescription</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.AboutArtOfReading" translate="no">
+      <trans-unit id="ImageLibrary.AboutArtOfReading">
         <source xml:lang="en">About Art of Reading</source>
         <target xml:lang="uz" state="needs-translation">About Art of Reading</target>
         <note>ID: ImageLibrary.AboutArtOfReading</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.AboutPixabay" translate="no">
+      <trans-unit id="ImageLibrary.AboutPixabay">
         <source xml:lang="en">About Pixabay</source>
         <target xml:lang="uz" state="needs-translation">About Pixabay</target>
         <note>ID: ImageLibrary.AboutPixabay</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ArtOfReadingDescription" translate="no">
+      <trans-unit id="ImageLibrary.ArtOfReadingDescription">
         <source xml:lang="en">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</source>
         <target xml:lang="uz" state="needs-translation">International Illustrations: Art of Reading 3.0 is a collection of over 11,000 images. The collection is designed for use in the preparation of a wide variety of literacy and educational materials, such as shellbooks, primers, news-sheets, posters, and other culturally appropriate materials. These images are black and white line drawings collected from SIL and national artists from around the world.</target>
         <note>ID: ImageLibrary.ArtOfReadingDescription</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions" translate="no">
+      <trans-unit id="ImageLibrary.ArtOfReadingNotReadyInstructions">
         <source xml:lang="en">To get Art of Reading images, you need to:</source>
         <target xml:lang="uz" state="needs-translation">To get Art of Reading images, you need to:</target>
         <note>ID: ImageLibrary.ArtOfReadingNotReadyInstructions</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.DownloadArtOfReading" translate="no">
+      <trans-unit id="ImageLibrary.DownloadArtOfReading">
         <source xml:lang="en">Download and install the Art of Reading Installer</source>
         <target xml:lang="uz" state="needs-translation">Download and install the Art of Reading Installer</target>
         <note>ID: ImageLibrary.DownloadArtOfReading</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ImageCount" translate="no">
+      <trans-unit id="ImageLibrary.ImageCount">
         <source xml:lang="en">{0} images</source>
         <target xml:lang="uz" state="needs-translation">{0} images</target>
         <note>ID: ImageLibrary.ImageCount</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.NoMatchesFound" translate="no">
+      <trans-unit id="ImageLibrary.NoMatchesFound">
         <source xml:lang="en">No matches found</source>
         <target xml:lang="uz" state="needs-translation">No matches found</target>
         <note>ID: ImageLibrary.NoMatchesFound</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PhotogrIllustrator" translate="no">
+      <trans-unit id="ImageLibrary.PhotogrIllustrator">
         <source xml:lang="en">Photographer/Illustrator:</source>
         <target xml:lang="uz" state="needs-translation">Photographer/Illustrator:</target>
         <note>ID: ImageLibrary.PhotogrIllustrator</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PixabayDescription" translate="no">
+      <trans-unit id="ImageLibrary.PixabayDescription">
         <source xml:lang="en">Pixabay is a large collection of images that may be used for free without attribution.</source>
         <target xml:lang="uz" state="needs-translation">Pixabay is a large collection of images that may be used for free without attribution.</target>
         <note>ID: ImageLibrary.PixabayDescription</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.QuitAndRerunBloom" translate="no">
+      <trans-unit id="ImageLibrary.QuitAndRerunBloom">
         <source xml:lang="en">Quit and re-run Bloom</source>
         <target xml:lang="uz" state="needs-translation">Quit and re-run Bloom</target>
         <note>ID: ImageLibrary.QuitAndRerunBloom</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Refresh" translate="no">
+      <trans-unit id="ImageLibrary.Refresh">
         <source xml:lang="en">Refresh</source>
         <target xml:lang="uz" state="needs-translation">Refresh</target>
         <note>ID: ImageLibrary.Refresh</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.Source" translate="no">
+      <trans-unit id="ImageLibrary.Source">
         <source xml:lang="en">Source</source>
         <target xml:lang="uz" state="needs-translation">Source</target>
         <note>ID: ImageLibrary.Source</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.ThisPage" translate="no">
+      <trans-unit id="ImageLibrary.ThisPage">
         <source xml:lang="en">this page</source>
         <target xml:lang="uz" state="needs-translation">this page</target>
         <note>ID: ImageLibrary.ThisPage</note>
