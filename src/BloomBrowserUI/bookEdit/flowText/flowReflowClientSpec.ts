@@ -21,9 +21,11 @@ function emptyAnswer(): Promise<{ data?: unknown }> {
 }
 
 import {
+    getAutoPages,
     getPendingWalks,
     getRefitResult,
     getReflowOnPageChange,
+    postAutoPages,
     postReflowNow,
     postReflowOnPageChange,
 } from "./flowReflowClient";
@@ -41,6 +43,7 @@ describe("flowReflowClient", () => {
                     pending: true,
                     chainIds: ["chain-1"],
                     reflowOnPageChange: true,
+                    autoPages: false,
                 },
             });
 
@@ -49,6 +52,19 @@ describe("flowReflowClient", () => {
         expect(walks?.pending).toBe(true);
         expect(walks?.chainIds).toEqual(["chain-1"]);
         expect(walks?.reflowOnPageChange).toBe(true);
+        expect(walks?.autoPages).toBe(false);
+    });
+
+    it("says nothing about the settings the reply leaves out", async () => {
+        answers["flowText/pendingWalks"] = () =>
+            Promise.resolve({ data: { pending: false, chainIds: [] } });
+
+        const walks = await getPendingWalks();
+
+        // Sanity check: the reply was read at all.
+        expect(walks?.pending).toBe(false);
+        expect(walks?.reflowOnPageChange).toBeUndefined();
+        expect(walks?.autoPages).toBeUndefined();
     });
 
     it("says nothing about the refits when Bloom could not be asked", async () => {
@@ -69,13 +85,26 @@ describe("flowReflowClient", () => {
         expect(await getReflowOnPageChange()).toBe(true);
     });
 
-    it("asks Bloom to run the refits, and to run them on a page change", async () => {
+    it("reads whether a refit may add and remove pages, answered either way", async () => {
+        answers["flowText/autoPages"] = () => Promise.resolve({ data: true });
+        expect(await getAutoPages()).toBe(true);
+        expect(calls[0].endpoint).toBe("flowText/autoPages");
+
+        answers["flowText/autoPages"] = () =>
+            Promise.resolve({ data: { value: false } });
+        expect(await getAutoPages()).toBe(false);
+    });
+
+    it("asks Bloom to run the refits, to run them on a page change, and to add and remove pages", async () => {
         await postReflowNow();
         await postReflowOnPageChange(true);
+        await postAutoPages(false);
 
         expect(calls[0].endpoint).toBe("flowText/reflowNow");
         expect(calls[1].endpoint).toBe("flowText/reflowOnPageChange");
         expect(calls[1].body).toEqual({ value: true });
+        expect(calls[2].endpoint).toBe("flowText/autoPages");
+        expect(calls[2].body).toEqual({ value: false });
     });
 
     it("hands back the boxes of this page that the refit rewrote", async () => {

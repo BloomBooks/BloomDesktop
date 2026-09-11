@@ -70,7 +70,7 @@ export const kTextForSeveralPages = buildLongText(6000);
  * The wording is fixed, so the same text goes in on every run and the boxes break it in the same
  * places. assertRunIsIntact is what reads it back.
  */
-function buildLongText(minimumLength: number): string {
+export function buildLongText(minimumLength: number): string {
     const sentences: string[] = [];
     let length = 0;
     let word = 1;
@@ -223,7 +223,10 @@ export async function waitForReflowIdle(page: Page): Promise<void> {
                 return quietRounds;
             },
             {
-                timeout: 30000,
+                // A refit lays out every page of a chain off-screen, one at a time, and a chain
+                // of a dozen pages takes well over half a minute. This only caps how long a
+                // failure takes to report: quiet rounds are what say the flow is idle.
+                timeout: 180000,
                 intervals: [100, 150, 200, 250, 250, 500],
                 message:
                     "The flow never went quiet: the page kept the reflowing mark, or Bloom " +
@@ -1219,6 +1222,7 @@ export async function isProgressDialogOpen(page: Page): Promise<boolean> {
 const kReflowBubbleTestId = "flow-reflow-bubble";
 const kReflowOnPageChangeTestId = "flow-reflow-on-page-change";
 const kReflowNowTestId = "flow-reflow-now";
+const kAutoPagesTestId = "flow-reflow-auto-pages";
 
 /** How long clickReflowNow watches for the refit it asked for to start. */
 const kWaitForReflowToStartMs = 5000;
@@ -1464,6 +1468,81 @@ export async function setReflowOnPageChangeViaBubble(
             message:
                 "Bloom never reported the reflow-on-page-change setting the checkbox was " +
                 "clicked to give it.",
+        })
+        .toBe(value);
+    expect(
+        await checkbox.isChecked(),
+        "The checkbox does not show the value Bloom now holds.",
+    ).toBe(value);
+}
+
+/**
+ * Whether Bloom adds and removes pages for a chain by itself when a refit needs them. The book's
+ * own setting, which the reflow panel shows as "Automatically add & remove pages".
+ */
+export async function getAutoPages(page: Page): Promise<boolean> {
+    return (await apiGetJson<{ value: boolean }>(page, "flowText/autoPages"))
+        .value;
+}
+
+/**
+ * Say whether Bloom adds and removes pages for a chain by itself, through Bloom's API rather than
+ * through the panel. This is for a test that needs the setting a particular way to start from,
+ * and for putting it back afterwards; a test about the checkbox itself uses setAutoPagesViaBubble.
+ */
+export async function setAutoPages(page: Page, value: boolean): Promise<void> {
+    await apiPost(
+        page,
+        "flowText/autoPages",
+        JSON.stringify({ value }),
+        "application/json",
+    );
+    expect(
+        await getAutoPages(page),
+        "Bloom did not take the new value of the automatically-add-and-remove-pages setting.",
+    ).toBe(value);
+}
+
+function autoPagesCheckbox(page: Page): Locator {
+    // Whichever bubble is nearest to hand: the setting is the book's, so every bubble on the page
+    // shows the same value and any of them can be used to change it.
+    return reflowBubble(page).locator(`[data-testid="${kAutoPagesTestId}"]`);
+}
+
+/**
+ * Whether the reflow panel on the page being edited shows "Automatically add & remove pages" as
+ * ticked. The panel is up only while a refit is waiting, so the caller has to have left one
+ * waiting before asking.
+ */
+export async function isAutoPagesChecked(page: Page): Promise<boolean> {
+    const checkbox = autoPagesCheckbox(page);
+    await checkbox.waitFor({ state: "attached", timeout: 30000 });
+    return checkbox.isChecked();
+}
+
+/**
+ * Tick or untick "Automatically add & remove pages" in the panel, the way an author does, and wait
+ * until Bloom holds the new value. Does nothing when the checkbox already says what is wanted.
+ *
+ * The click lands on the label rather than on the checkbox, which is what a person clicks: the
+ * checkbox MUI draws is an input of no opacity over the box it paints.
+ */
+export async function setAutoPagesViaBubble(
+    page: Page,
+    value: boolean,
+): Promise<void> {
+    const checkbox = autoPagesCheckbox(page);
+    await checkbox.waitFor({ state: "attached", timeout: 30000 });
+    if ((await checkbox.isChecked()) !== value) {
+        await checkbox.locator("xpath=ancestor::label[1]").click();
+    }
+
+    await expect
+        .poll(() => getAutoPages(page), {
+            timeout: 10000,
+            message:
+                "Bloom never reported the automatically-add-and-remove-pages setting the " +
+                "checkbox was clicked to give it.",
         })
         .toBe(value);
     expect(

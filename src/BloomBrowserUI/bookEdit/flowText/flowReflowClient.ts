@@ -23,6 +23,11 @@ export interface IPendingWalks {
      * it, in which case the caller asks for it on its own.
      */
     reflowOnPageChange?: boolean;
+    /**
+     * Whether a refit may add and remove pages. Undefined when the reply does not carry it, in
+     * which case the caller asks for it on its own.
+     */
+    autoPages?: boolean;
 }
 
 /**
@@ -41,6 +46,7 @@ export async function getPendingWalks(): Promise<IPendingWalks | undefined> {
             pending: !!data.pending,
             chainIds: data.chainIds ?? [],
             reflowOnPageChange: data.reflowOnPageChange,
+            autoPages: data.autoPages,
         };
     } catch {
         return undefined;
@@ -64,6 +70,17 @@ export async function getReflowOnPageChange(): Promise<boolean> {
 /** Say whether changing pages should run the refits Bloom is holding. */
 export async function postReflowOnPageChange(value: boolean): Promise<void> {
     await postJsonAsync("flowText/reflowOnPageChange", { value });
+}
+
+/** Whether a refit may add the pages the run needs and remove the ones it leaves empty. */
+export async function getAutoPages(): Promise<boolean> {
+    const response = await getAsync("flowText/autoPages");
+    return readBoolean(response?.data);
+}
+
+/** Say whether a refit may add and remove pages. */
+export async function postAutoPages(value: boolean): Promise<void> {
+    await postJsonAsync("flowText/autoPages", { value });
 }
 
 /**

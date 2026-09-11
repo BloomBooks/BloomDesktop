@@ -24,6 +24,7 @@ namespace Bloom.Book
 
         // True unless the book says otherwise: see FlowTextReflowOnPageChange.
         private bool _flowTextReflowOnPageChange = true;
+        private bool _flowTextAutoPages;
 
         private UserPrefs() { }
 
@@ -178,6 +179,28 @@ namespace Bloom.Book
             set
             {
                 _flowTextReflowOnPageChange = value;
+                Save();
+            }
+        }
+
+        /// <summary>
+        /// May refitting a flow add the pages the run of text needs, and take away the pages it
+        /// has emptied, without being asked? False until the author asks for pages once
+        /// (createPagesAndContinue), which is how they say that this book's text may make its own
+        /// pages.
+        ///
+        /// Only the true value is written to the file: DefaultValueHandling.Ignore leaves the
+        /// property out while it holds the default, so a book nobody has asked for pages in has
+        /// no entry, and reading such a book gets the false the field is initialized to.
+        /// </summary>
+        [DefaultValue(false)]
+        [JsonProperty("flowTextAutoPages", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool FlowTextAutoPages
+        {
+            get { return _flowTextAutoPages; }
+            set
+            {
+                _flowTextAutoPages = value;
                 Save();
             }
         }

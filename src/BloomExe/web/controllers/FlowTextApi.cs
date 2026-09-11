@@ -81,9 +81,34 @@ namespace Bloom.web.controllers
             _bookSelection.SelectionChanged += (unused1, unused2) =>
             {
                 _pendingCaret = null;
+                _justTextTemplatePage = null;
                 FlowTextWalk.ClearRefitResults();
             };
+            // A walk that runs out of boxes makes the pages its text needs, and making a page is
+            // this layer's work: it needs the template book the Add Page dialog would offer.
+            FlowTextWalk.AddTextOnlyPageAfter = (book, afterPageId) =>
+            {
+                var templatePage = JustTextTemplatePage;
+                if (templatePage == null)
+                    throw new ApplicationException(
+                        "flow text: Bloom cannot find the Just Text page template, so a walk "
+                            + "cannot make the pages its text needs."
+                    );
+                return AddTextOnlyPageAfter(book, afterPageId, templatePage);
+            };
         }
+
+        // The Just Text template page for the selected book, once it has been looked for. Finding
+        // it reads template books off the disk, which is too slow to do for every page a walk
+        // makes; the books a collection offers do not change while one book is selected.
+        private IPage _justTextTemplatePage;
+
+        /// <summary>
+        /// The template page the Add Page dialog calls "Just Text", looked for once per selected
+        /// book. Null when no template book on this machine has it.
+        /// </summary>
+        private IPage JustTextTemplatePage =>
+            _justTextTemplatePage = _justTextTemplatePage ?? FindJustTextTemplatePage();
 
         public class PendingCaret
         {
@@ -173,6 +198,15 @@ namespace Bloom.web.controllers
             public bool value { get; set; }
         }
 
+        public class AutoPagesRequest
+        {
+            /// <summary>
+            /// Whether refitting may make the pages this book's flowing text needs, and take away
+            /// the ones it has emptied.
+            /// </summary>
+            public bool value { get; set; }
+        }
+
         public class UnlinkFromRequest
         {
             public string chainId { get; set; }
@@ -219,6 +253,7 @@ namespace Bloom.web.controllers
                 HandleReflowOnPageChange,
                 true
             );
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "autoPages", HandleAutoPages, true);
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingCaret",
                 HandlePendingCaret,
@@ -262,6 +297,10 @@ namespace Bloom.web.controllers
                         request.Failed("No book is selected.");
                         return;
                     }
+
+                    // Asking for pages is how the author says that this book's text may make its
+                    // own pages, so from here on refitting makes and takes away pages itself.
+                    book.UserPrefs.FlowTextAutoPages = true;
 
                     // Nothing else may move this run of text about while the pages are made and
                     // filled one at a time. A walk that gathered the run while some of the new
@@ -315,7 +354,7 @@ namespace Bloom.web.controllers
             if (!string.IsNullOrEmpty(body.chainId))
                 sourceGroup.Group.SetAttribute(HtmlDom.kFlowChainAttrName, body.chainId);
 
-            var templatePage = FindJustTextTemplatePage();
+            var templatePage = JustTextTemplatePage;
             if (templatePage == null)
             {
                 request.Failed("Bloom cannot find the Just Text page template.");
@@ -958,8 +997,10 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// GET flowText/pendingWalks: what refitting is waiting to be done, which is what the
-        /// Reflow now button is offered for. Replies { pending, chainIds, reflowOnPageChange },
-        /// reflowOnPageChange being whether changing pages will run it (the book's own setting).
+        /// Reflow now button is offered for. Replies
+        /// { pending, chainIds, reflowOnPageChange, autoPages }, reflowOnPageChange being whether
+        /// changing pages will run it and autoPages whether refitting may make and take away
+        /// pages, both the book's own settings.
         /// </summary>
         private void HandleGetPendingWalks(ApiRequest request)
         {
@@ -973,6 +1014,7 @@ namespace Bloom.web.controllers
                             chainIds = FlowTextWalk.PendingChainIds,
                             reflowOnPageChange = CurrentUserPrefs?.FlowTextReflowOnPageChange
                                 ?? true,
+                            autoPages = CurrentUserPrefs?.FlowTextAutoPages ?? false,
                         }
                     )
             );
@@ -1051,6 +1093,33 @@ namespace Bloom.web.controllers
                     request.ReplyWithJson(
                         new { value = prefs?.FlowTextReflowOnPageChange ?? true }
                     );
+                }
+            );
+        }
+
+        /// <summary>
+        /// GET flowText/autoPages: whether refitting this book may make the pages its flowing
+        /// text needs and take away the ones it has emptied, which is this book's own setting.
+        /// Replies { value }.
+        /// POST flowText/autoPages with { value }: set it.
+        /// </summary>
+        private void HandleAutoPages(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var prefs = CurrentUserPrefs;
+                    if (request.HttpMethod == HttpMethods.Post)
+                    {
+                        var body = request.RequiredPostObject<AutoPagesRequest>();
+                        if (prefs != null)
+                            prefs.FlowTextAutoPages = body.value;
+                        request.PostSucceeded();
+                        return;
+                    }
+
+                    request.ReplyWithJson(new { value = prefs?.FlowTextAutoPages ?? false });
                 }
             );
         }

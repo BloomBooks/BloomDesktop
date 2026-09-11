@@ -5,21 +5,33 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // module talks to FlowTextApi; flowBoundaryClient is mocked too, because the real one reaches
 // bloomEditing and the whole edit page with it.
 let pendingWalks:
-    | { pending: boolean; chainIds: string[]; reflowOnPageChange?: boolean }
+    | {
+          pending: boolean;
+          chainIds: string[];
+          reflowOnPageChange?: boolean;
+          autoPages?: boolean;
+      }
     | undefined;
 let reflowOnPageChangeAnswer = false;
+let autoPagesAnswer = false;
 let reflowNowCalls = 0;
 const reflowOnPageChangePosts: boolean[] = [];
+const autoPagesPosts: boolean[] = [];
 
 vi.mock("./flowReflowClient", () => ({
     getPendingWalks: () => Promise.resolve(pendingWalks),
     getReflowOnPageChange: () => Promise.resolve(reflowOnPageChangeAnswer),
+    getAutoPages: () => Promise.resolve(autoPagesAnswer),
     postReflowNow: () => {
         reflowNowCalls++;
         return Promise.resolve();
     },
     postReflowOnPageChange: (value: boolean) => {
         reflowOnPageChangePosts.push(value);
+        return Promise.resolve();
+    },
+    postAutoPages: (value: boolean) => {
+        autoPagesPosts.push(value);
         return Promise.resolve();
     },
 }));
@@ -29,6 +41,8 @@ vi.mock("./flowBoundaryClient", () => ({
 }));
 
 import {
+    kAutoPagesEnglish,
+    kAutoPagesTestId,
     kReflowBubbleClass,
     kReflowNowEnglish,
     kReflowNowTestId,
@@ -94,6 +108,16 @@ function getCheckbox(bubble: HTMLElement): HTMLInputElement {
     return box;
 }
 
+function getAutoPagesCheckbox(bubble: HTMLElement): HTMLInputElement {
+    const box = bubble.querySelector<HTMLInputElement>(
+        `[data-testid="${kAutoPagesTestId}"]`,
+    );
+    if (!box) {
+        fail("the panel has no add-and-remove-pages checkbox");
+    }
+    return box;
+}
+
 function getReflowNowButton(bubble: HTMLElement): HTMLButtonElement {
     const button = bubble.querySelector<HTMLButtonElement>(
         `[data-testid="${kReflowNowTestId}"]`,
@@ -115,8 +139,10 @@ describe("flowReflowBubble", () => {
     beforeEach(() => {
         pendingWalks = undefined;
         reflowOnPageChangeAnswer = false;
+        autoPagesAnswer = false;
         reflowNowCalls = 0;
         reflowOnPageChangePosts.length = 0;
+        autoPagesPosts.length = 0;
         setFlowSettleWaiter(undefined);
         document.body.innerHTML = "";
     });
@@ -144,6 +170,7 @@ describe("flowReflowBubble", () => {
         }
         expect(bubble.textContent).toContain(kReflowPendingEnglish);
         expect(bubble.textContent).toContain(kReflowOnPageChangeEnglish);
+        expect(bubble.textContent).toContain(kAutoPagesEnglish);
         expect(getReflowNowButton(bubble).textContent).toBe(kReflowNowEnglish);
         expect(getReflowNowButton(bubble).disabled).toBe(false);
         // It must never be saved with the page.
@@ -220,6 +247,71 @@ describe("flowReflowBubble", () => {
             fail("the waiting chain's group got no panel");
         }
         expect(getCheckbox(bubble).checked).toBe(true);
+    });
+
+    it("takes the add-and-remove-pages checkbox's state from what Bloom said", async () => {
+        const page = makePage(["chainA"]);
+        pendingWalks = {
+            pending: true,
+            chainIds: ["chainA"],
+            reflowOnPageChange: false,
+            autoPages: true,
+        };
+
+        await refresh(page);
+
+        const bubble = getReflowBubbleFor(getGroup(page, 0));
+        if (!bubble) {
+            fail("the waiting chain's group got no panel");
+        }
+        expect(getAutoPagesCheckbox(bubble).checked).toBe(true);
+    });
+
+    it("asks whether pages may be added and removed when the reply does not carry it", async () => {
+        const page = makePage(["chainA"]);
+        pendingWalks = {
+            pending: true,
+            chainIds: ["chainA"],
+            reflowOnPageChange: false,
+        };
+        autoPagesAnswer = true;
+
+        await refresh(page);
+
+        const bubble = getReflowBubbleFor(getGroup(page, 0));
+        if (!bubble) {
+            fail("the waiting chain's group got no panel");
+        }
+        expect(getAutoPagesCheckbox(bubble).checked).toBe(true);
+    });
+
+    it("posts the new add-and-remove-pages setting as soon as its checkbox is changed", async () => {
+        const page = makePage(["chainA"]);
+        pendingWalks = {
+            pending: true,
+            chainIds: ["chainA"],
+            reflowOnPageChange: false,
+            autoPages: false,
+        };
+        await refresh(page);
+
+        const bubble = getReflowBubbleFor(getGroup(page, 0));
+        if (!bubble) {
+            fail("the waiting chain's group got no panel");
+        }
+        // Sanity check: the checkbox starts off, and nothing has been posted.
+        expect(getAutoPagesCheckbox(bubble).checked).toBe(false);
+        expect(autoPagesPosts).toEqual([]);
+
+        await act(async () => {
+            getAutoPagesCheckbox(bubble).click();
+        });
+
+        expect(autoPagesPosts).toEqual([true]);
+        expect(getAutoPagesCheckbox(bubble).checked).toBe(true);
+        // The other setting is its own; ticking this one leaves it alone.
+        expect(reflowOnPageChangePosts).toEqual([]);
+        expect(getCheckbox(bubble).checked).toBe(false);
     });
 
     it("takes the panel away once the waiting refit has run", async () => {

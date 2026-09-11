@@ -749,5 +749,100 @@ namespace BloomTests.Book
             Assert.That(moves, Is.Empty);
             Assert.That(dom.RawDom.OuterXml, Is.EqualTo(before));
         }
+
+        /// <summary>
+        /// The group of the page's first translation group, which is the one a chain runs through
+        /// in these tests.
+        /// </summary>
+        private static SafeXmlElement FirstGroup(HtmlDom dom, string pageId)
+        {
+            return dom.RawDom.SelectSingleNode(
+                    $"//div[@id='{pageId}']//div[contains(@class,'bloom-translationGroup')]"
+                ) as SafeXmlElement;
+        }
+
+        [Test]
+        public void PageHoldsNothingBut_EmptyBoxAndNothingElse_IsTrue()
+        {
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p><br /></p>"), "chain")));
+            // Sanity check: the box really is empty before we ask.
+            Assert.That(FlowTextChains.HasVisibleText(FirstEditable(dom, "p1")), Is.False);
+
+            Assert.That(
+                FlowTextChains.PageHoldsNothingBut(PageElement(dom, "p1"), FirstGroup(dom, "p1")),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void PageHoldsNothingBut_AnotherGroupHasText_IsFalse()
+        {
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    Group(Editable("<p><br /></p>"), "chain") + Group(Editable("<p>A caption.</p>"))
+                )
+            );
+
+            Assert.That(
+                FlowTextChains.PageHoldsNothingBut(PageElement(dom, "p1"), FirstGroup(dom, "p1")),
+                Is.False,
+                "Text in any other box on the page would go with the page."
+            );
+        }
+
+        [Test]
+        public void PageHoldsNothingBut_RealPicture_IsFalse()
+        {
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    "<div class='bloom-imageContainer'><img src='aor_Cat1.png'/></div>"
+                        + Group(Editable("<p><br /></p>"), "chain")
+                )
+            );
+
+            Assert.That(
+                FlowTextChains.PageHoldsNothingBut(PageElement(dom, "p1"), FirstGroup(dom, "p1")),
+                Is.False,
+                "A picture the author chose would go with the page."
+            );
+        }
+
+        [Test]
+        public void PageHoldsNothingBut_PlaceholderPicture_IsTrue()
+        {
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    "<div class='bloom-imageContainer'><img src='placeHolder.png'/></div>"
+                        + Group(Editable("<p><br /></p>"), "chain")
+                )
+            );
+
+            Assert.That(
+                FlowTextChains.PageHoldsNothingBut(PageElement(dom, "p1"), FirstGroup(dom, "p1")),
+                Is.True,
+                "The placeholder stands for a picture nobody has chosen yet."
+            );
+        }
+
+        [Test]
+        public void PageHoldsNothingBut_Video_IsFalse()
+        {
+            var dom = MakeBookDom(
+                Page(
+                    "p1",
+                    "<div class='bloom-videoContainer'><video><source src='video/one.mp4'/></video></div>"
+                        + Group(Editable("<p><br /></p>"), "chain")
+                )
+            );
+
+            Assert.That(
+                FlowTextChains.PageHoldsNothingBut(PageElement(dom, "p1"), FirstGroup(dom, "p1")),
+                Is.False,
+                "A video the author recorded would go with the page."
+            );
+        }
     }
 }

@@ -30,6 +30,9 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 import { renderRootSync, unmountRoot } from "../../utils/reactRender";
 import { waitForBoundaryQueue } from "./flowBoundaryClient";
 import {
+    kAutoPagesEnglish,
+    kAutoPagesL10nId,
+    kAutoPagesTestId,
     kChainedGroupSelector,
     kFlowChainAttr,
     kReflowBubbleClass,
@@ -44,8 +47,10 @@ import {
     kReflowPendingL10nId,
 } from "./flowConstants";
 import {
+    getAutoPages,
     getPendingWalks,
     getReflowOnPageChange,
+    postAutoPages,
     postReflowNow,
     postReflowOnPageChange,
 } from "./flowReflowClient";
@@ -157,15 +162,16 @@ async function updateBubbles(root: ParentNode): Promise<void> {
     }
 
     const waitingChains = new Set(status.pending ? status.chainIds : []);
-    // The reply usually carries the setting; when it does not, it is a question of its own.
+    // The reply usually carries the settings; when it does not, each is a question of its own.
     const onPageChange =
         status.reflowOnPageChange ?? (await getReflowOnPageChange());
+    const autoPages = status.autoPages ?? (await getAutoPages());
 
     const shown = new Set<HTMLElement>();
     getGroupsOnPages(root).forEach((group) => {
         const chainId = group.getAttribute(kFlowChainAttr);
         if (chainId && waitingChains.has(chainId)) {
-            showBubble(group, onPageChange);
+            showBubble(group, onPageChange, autoPages);
             shown.add(group);
         }
     });
@@ -197,7 +203,11 @@ function getGroupsOnPages(root: ParentNode): HTMLElement[] {
     return groups;
 }
 
-function showBubble(group: HTMLElement, onPageChange: boolean): void {
+function showBubble(
+    group: HTMLElement,
+    onPageChange: boolean,
+    autoPages: boolean,
+): void {
     const page = group.closest<HTMLElement>(kPageSelector);
     if (!page) {
         return;
@@ -215,8 +225,10 @@ function showBubble(group: HTMLElement, onPageChange: boolean): void {
     renderRootSync(
         <ReflowBubble
             reflowOnPageChange={onPageChange}
+            autoPages={autoPages}
             onReflowNow={reflowNow}
             onReflowOnPageChangeChanged={postReflowOnPageChange}
+            onAutoPagesChanged={postAutoPages}
         />,
         bubble,
     );
@@ -432,18 +444,63 @@ async function reflowNow(): Promise<void> {
 const kBubbleBorder = "#96668f";
 const kBubbleText = "black";
 
+/** One of the panel's settings: a checkbox drawn in the bubble's palette. */
+const SettingCheckbox: React.FunctionComponent<{
+    testId: string;
+    label: string;
+    checked: boolean;
+    onChanged: (value: boolean) => void;
+}> = (props) => (
+    <FormControlLabel
+        css={css`
+            margin: 0;
+            .MuiFormControlLabel-label {
+                font-family: inherit;
+                font-size: inherit;
+                line-height: 1.3;
+                color: ${kBubbleText};
+                // The panel is sized to its content (editMode.less), and this is what
+                // makes the label one line for it to be sized to.
+                white-space: nowrap;
+            }
+        `}
+        control={
+            <Checkbox
+                size="small"
+                // On the input itself, not on the wrapper the checkbox draws, so that
+                // what a test finds is the thing it can tick.
+                inputProps={{ "data-testid": props.testId }}
+                checked={props.checked}
+                onChange={(event) => props.onChanged(event.target.checked)}
+                css={css`
+                    padding: 2px;
+                    margin-right: 4px;
+                    color: ${kBubbleBorder};
+                    &.Mui-checked {
+                        color: ${kBubbleBorder};
+                    }
+                `}
+            />
+        }
+        label={props.label}
+    />
+);
+
 /**
- * What the panel says: that a refit is waiting, a way to have every page change run it, and a
- * button to run it now.
+ * What the panel says: that a refit is waiting, a way to have every page change run it, whether a
+ * refit may add and remove pages, and a button to run it now.
  */
 export const ReflowBubble: React.FunctionComponent<{
     reflowOnPageChange: boolean;
+    autoPages: boolean;
     onReflowOnPageChangeChanged: (value: boolean) => Promise<void>;
+    onAutoPagesChanged: (value: boolean) => Promise<void>;
     onReflowNow: () => Promise<void>;
 }> = (props) => {
     const [onPageChange, setOnPageChange] = React.useState(
         props.reflowOnPageChange,
     );
+    const [autoPages, setAutoPages] = React.useState(props.autoPages);
     const [running, setRunning] = React.useState(false);
     const pendingLabel = useFlowLabel(
         kReflowPendingL10nId,
@@ -453,14 +510,16 @@ export const ReflowBubble: React.FunctionComponent<{
         kReflowOnPageChangeL10nId,
         kReflowOnPageChangeEnglish,
     );
+    const autoPagesLabel = useFlowLabel(kAutoPagesL10nId, kAutoPagesEnglish);
     const reflowNowLabel = useFlowLabel(kReflowNowL10nId, kReflowNowEnglish);
 
-    // The panel is rendered again each time Bloom is asked what is waiting, and the setting is
-    // the book's rather than this panel's: another page's panel can have changed it.
+    // The panel is rendered again each time Bloom is asked what is waiting, and both settings are
+    // the book's rather than this panel's: another page's panel can have changed them.
     React.useEffect(
         () => setOnPageChange(props.reflowOnPageChange),
         [props.reflowOnPageChange],
     );
+    React.useEffect(() => setAutoPages(props.autoPages), [props.autoPages]);
 
     return (
         <div
@@ -478,44 +537,23 @@ export const ReflowBubble: React.FunctionComponent<{
             >
                 {pendingLabel}
             </div>
-            <FormControlLabel
-                css={css`
-                    margin: 0;
-                    .MuiFormControlLabel-label {
-                        font-family: inherit;
-                        font-size: inherit;
-                        line-height: 1.3;
-                        color: ${kBubbleText};
-                        // The panel is sized to its content (editMode.less), and this is what
-                        // makes the label one line for it to be sized to.
-                        white-space: nowrap;
-                    }
-                `}
-                control={
-                    <Checkbox
-                        size="small"
-                        // On the input itself, not on the wrapper the checkbox draws, so that
-                        // what a test finds is the thing it can tick.
-                        inputProps={{
-                            "data-testid": kReflowOnPageChangeTestId,
-                        }}
-                        checked={onPageChange}
-                        onChange={(event) => {
-                            const value = event.target.checked;
-                            setOnPageChange(value);
-                            void props.onReflowOnPageChangeChanged(value);
-                        }}
-                        css={css`
-                            padding: 2px;
-                            margin-right: 4px;
-                            color: ${kBubbleBorder};
-                            &.Mui-checked {
-                                color: ${kBubbleBorder};
-                            }
-                        `}
-                    />
-                }
+            <SettingCheckbox
+                testId={kReflowOnPageChangeTestId}
                 label={onPageChangeLabel}
+                checked={onPageChange}
+                onChanged={(value) => {
+                    setOnPageChange(value);
+                    void props.onReflowOnPageChangeChanged(value);
+                }}
+            />
+            <SettingCheckbox
+                testId={kAutoPagesTestId}
+                label={autoPagesLabel}
+                checked={autoPages}
+                onChanged={(value) => {
+                    setAutoPages(value);
+                    void props.onAutoPagesChanged(value);
+                }}
             />
             <Button
                 size="small"

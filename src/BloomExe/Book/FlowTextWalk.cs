@@ -62,6 +62,12 @@ namespace Bloom.Book
         // browser reads it in bookEdit/flowText/flowConstants.ts, so the two must agree.
         private const string kMeasuringFlowFitAttrName = "data-bloom-measuring-flow-fit";
 
+        // Names, on the body of the page loaded for one fit, the request that loaded it. The
+        // off-screen browser starts a navigation and returns at once, and until the new document
+        // takes over, a script runs in the document of the page fitted before it, which already
+        // says it is ready. So the wait for readiness has to see this request's own mark as well.
+        private const string kFitRequestAttrName = "data-bloom-flow-fit-request";
+
         // The classes the browser's overflow checker puts on a box that holds more text than
         // fits it, on a box pushed outside its container, and on a page that holds either.
         private const string kOverflowClass = "overflow";
@@ -103,36 +109,52 @@ namespace Bloom.Book
         /// it is given the group, the whole of the run that is left (which is already in the
         /// group's box, so the caller can lay the page out), and whether this is the last box.
         /// Returns the groups whose box changed, for the caller to save.
+        ///
+        /// addPage, when it is given, adds one text-only page after the last page of the run and
+        /// hands back the group on it, so that a run of text longer than the chain's boxes makes
+        /// the pages it needs rather than piling up in the last box. Null leaves the last box
+        /// holding whatever is left, with the mark that says where its text ran out. maxPagesToAdd
+        /// is what stops a fit that never says the text is placed from filling the book; the last
+        /// page it allows keeps the rest, so no word is lost and the work can be asked for again.
+        /// The groups of the pages added come back in the changed list with the rest.
         /// </summary>
         public static List<FlowTextChains.FlowGroup> Distribute(
             List<FlowTextChains.FlowGroup> groups,
             int startIndex,
             string lang,
-            Func<FlowTextChains.FlowGroup, bool, FitResult> fit
+            Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
+            Func<FlowTextChains.FlowGroup> addPage = null,
+            int maxPagesToAdd = FlowTextCreatePages.kMaxPagesToCreate
         )
         {
             var changed = new List<FlowTextChains.FlowGroup>();
+            // The chain as this call sees it, which grows as pages are added. The caller's list
+            // is left alone: the groups added come back in what is returned.
+            var chain = new List<FlowTextChains.FlowGroup>(groups);
             var boxes = Enumerable
-                .Range(startIndex, groups.Count - startIndex)
-                .Where(index => FlowTextChains.GetFlowEditable(groups[index].Group, lang) != null)
+                .Range(startIndex, chain.Count - startIndex)
+                .Where(index => FlowTextChains.GetFlowEditable(chain[index].Group, lang) != null)
                 .ToList();
             if (boxes.Count == 0)
                 return changed;
 
-            var startEditable = FlowTextChains.GetFlowEditable(groups[boxes[0]].Group, lang);
+            var startEditable = FlowTextChains.GetFlowEditable(chain[boxes[0]].Group, lang);
             var keep = ReadContinuationMarkers(startEditable);
-            var run = CollectRun(groups, startIndex, lang);
+            var run = CollectRun(chain, startIndex, lang);
             var wordsOfRun = ComparableWords(run.InnerText);
             var remaining = run.InnerXml;
             // Somewhere to put a piece of content when we need to ask a question about it
             // rather than write it into a box.
-            var scratch = groups[startIndex].Group.OwnerDocument.CreateElement("div");
+            var scratch = chain[startIndex].Group.OwnerDocument.CreateElement("div");
 
             for (var position = 0; position < boxes.Count; position++)
             {
-                var group = groups[boxes[position]];
+                var group = chain[boxes[position]];
                 var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
                 var before = editable.InnerXml;
+                // Pages of its own are coming for whatever the boxes cannot hold, so the last
+                // box of the chain as it stands is not the one that keeps the rest.
+                var isLast = position == boxes.Count - 1 && addPage == null;
 
                 if (!HoldsAnyText(scratch, remaining))
                 {
@@ -145,7 +167,7 @@ namespace Bloom.Book
                     // The box holds the whole of what is left while the browser measures it:
                     // the fit is a question about this box's layout with this text in it.
                     HtmlDom.SetInnerHtmlFromFragment(editable, remaining);
-                    var result = fit(group, position == boxes.Count - 1);
+                    var result = fit(group, isLast);
                     HtmlDom.SetInnerHtmlFromFragment(editable, result.head);
                     remaining = result.tail ?? "";
                 }
@@ -157,17 +179,36 @@ namespace Bloom.Book
                 // the box after it, so it is not overfull however full it looks. The last box
                 // keeps what is left, and the mark the fit left in it is what says its text ran
                 // out. So the page's own overflow warning follows from the mark alone.
-                var overfull =
-                    position == boxes.Count - 1 && FindOverflowMarkers(editable).Count > 0;
+                var overfull = isLast && FindOverflowMarkers(editable).Count > 0;
                 var markingChanged = !overfull && ClearOverflowMarking(editable);
                 if (editable.InnerXml != before || markingChanged)
                     changed.Add(group);
             }
 
+            if (addPage != null)
+            {
+                var chainId = chain[startIndex].Group.GetAttribute(HtmlDom.kFlowChainAttrName);
+                foreach (
+                    var added in AddPagesForTheRest(
+                        remaining,
+                        lang,
+                        chainId,
+                        fit,
+                        addPage,
+                        maxPagesToAdd,
+                        scratch
+                    )
+                )
+                {
+                    chain.Add(added);
+                    changed.Add(added);
+                }
+            }
+
             // The run is the whole of what the chain carries from here on, and it has just been
             // written to several pages. A word dropped or repeated between two of them is a
             // word dropped or repeated in the book, so say so rather than saving it.
-            var wordsNow = ComparableWords(CollectRun(groups, startIndex, lang).InnerText);
+            var wordsNow = ComparableWords(CollectRun(chain, startIndex, lang).InnerText);
             if (wordsNow != wordsOfRun)
                 throw new ApplicationException(
                     "flow text: refitting the chain changed its text. It carried "
@@ -176,6 +217,65 @@ namespace Bloom.Book
                 );
 
             return changed;
+        }
+
+        /// <summary>
+        /// Make pages for the text the chain's boxes could not hold, and divide that text among
+        /// them, until one page holds what is left or the cap is reached. Returns the groups of
+        /// the pages made, in the order the text flows through them.
+        ///
+        /// The box on each page made holds the whole of what is left while its fit is measured,
+        /// exactly as a box of the chain does, and carries the chain so that the text can find
+        /// its way back when the author deletes some of it earlier on.
+        /// </summary>
+        private static List<FlowTextChains.FlowGroup> AddPagesForTheRest(
+            string remaining,
+            string lang,
+            string chainId,
+            Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
+            Func<FlowTextChains.FlowGroup> addPage,
+            int maxPagesToAdd,
+            SafeXmlElement scratch
+        )
+        {
+            var added = new List<FlowTextChains.FlowGroup>();
+            while (HoldsAnyText(scratch, remaining) && added.Count < maxPagesToAdd)
+            {
+                var isLast = added.Count + 1 >= maxPagesToAdd;
+                var group = addPage();
+                var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
+                if (editable == null)
+                    throw new ApplicationException(
+                        $"flow text: the page just made, {group.PageId}, has no {lang} box for "
+                            + "the text to flow into."
+                    );
+
+                if (!string.IsNullOrEmpty(chainId))
+                    group.Group.SetAttribute(HtmlDom.kFlowChainAttrName, chainId);
+                HtmlDom.SetInnerHtmlFromFragment(editable, remaining);
+
+                // The fit answers about the box's layout with this text in it and says nothing
+                // about whether its first paragraph carries on a paragraph in the box before it,
+                // so those markers are read here and put back afterwards.
+                var markers = ReadContinuationMarkers(editable);
+                var fitted = fit(group, isLast);
+                HtmlDom.SetInnerHtmlFromFragment(editable, fitted.head);
+                WriteContinuationMarkers(editable, markers);
+                remaining = fitted.tail ?? "";
+                added.Add(group);
+
+                if (isLast && HoldsAnyText(scratch, remaining))
+                {
+                    // The cap has stopped the work with text still in hand. It goes into this
+                    // box, however over-full that leaves it: text in no box at all is text the
+                    // book has lost. The box then still holds more than fits, with the mark that
+                    // says so, and the work can be asked for again.
+                    FlowTextCreatePages.AppendKeepingSeam(editable, remaining);
+                    remaining = "";
+                }
+            }
+
+            return added;
         }
 
         /// <summary>
@@ -390,6 +490,15 @@ namespace Bloom.Book
             /// </summary>
             public string Styles;
         }
+
+        /// <summary>
+        /// Adds one text-only page after the page whose id is given and hands back the group on
+        /// it that the text flows into. FlowTextApi sets this in its constructor, because making
+        /// a page is the Add Page code path and needs the template book the Add Page dialog would
+        /// offer, which is the api layer's to find. Null where there is no api layer, such as a
+        /// unit test, and then a walk makes no pages.
+        /// </summary>
+        internal static Func<Book, string, FlowTextChains.FlowGroup> AddTextOnlyPageAfter;
 
         private static readonly object _lock = new object();
 
@@ -1003,6 +1112,25 @@ namespace Bloom.Book
         {
             var book = model.CurrentBook;
             var pagesLoaded = 0;
+            // The author has asked for pages once in this book, so the flow may make the pages
+            // its text needs and take away the ones it has emptied.
+            var autoPages =
+                book.UserPrefs?.FlowTextAutoPages == true && AddTextOnlyPageAfter != null;
+            // Where a page made goes: after the last page of the chain, and then after the last
+            // page made, so that the pages come in the order the text flows through them.
+            var afterPageId = groups[groups.Count - 1].PageId;
+            Func<FlowTextChains.FlowGroup> addPage = null;
+            if (autoPages)
+                addPage = () =>
+                {
+                    var added = AddTextOnlyPageAfter(book, afterPageId);
+                    afterPageId = added.PageId;
+                    // Its box is one more box for the browser to measure, so the bar has one
+                    // more box to go.
+                    queueProgress.AddBoxesToFit(1);
+                    return added;
+                };
+
             var changed = Distribute(
                 groups,
                 start,
@@ -1021,9 +1149,29 @@ namespace Bloom.Book
                     );
                     queueProgress.BoxFitted();
                     return fitted;
-                }
+                },
+                addPage
             );
-            if (changed.Count == 0)
+
+            // A page the run of text has emptied, and that holds nothing else, goes with the
+            // text: the page was there to carry that text and now carries nothing. The chain's
+            // first page stays whatever it holds, because a chain has to begin somewhere.
+            var emptyPageIds = autoPages
+                ? groups
+                    .Skip(start)
+                    .Where(group =>
+                        group.PageId != groups[0].PageId
+                        && FlowTextChains.PageHoldsNothingBut(
+                            FlowTextChains.FindPage(book, group.PageId)?.GetDivNodeForThisPage(),
+                            group.Group
+                        )
+                    )
+                    .Select(group => group.PageId)
+                    .Distinct()
+                    .ToList()
+                : new List<string>();
+
+            if (changed.Count == 0 && emptyPageIds.Count == 0)
                 return;
 
             var changedPageIds = changed.Select(group => group.PageId).Distinct().ToList();
@@ -1034,6 +1182,11 @@ namespace Bloom.Book
                 // Read here rather than earlier, because which page is being edited is a
                 // question about the moment the walk's work lands.
                 var currentPageId = model.CurrentPage?.Id;
+                // The page the user is looking at is not taken away underneath them, whatever it
+                // holds.
+                var pageIdsToDelete = emptyPageIds
+                    .Where(pageId => pageId != currentPageId)
+                    .ToList();
                 foreach (var group in changed.Where(group => group.PageId == currentPageId))
                 {
                     var editable = FlowTextChains.GetFlowEditable(group.Group, walk.Lang);
@@ -1051,7 +1204,7 @@ namespace Bloom.Book
                     );
                 }
 
-                foreach (var pageId in changedPageIds)
+                foreach (var pageId in changedPageIds.Where(id => !pageIdsToDelete.Contains(id)))
                 {
                     var page = FlowTextChains.FindPage(book, pageId);
                     if (page == null)
@@ -1059,6 +1212,23 @@ namespace Bloom.Book
                     book.SaveForPageChanged(page.Id, page.GetDivNodeForThisPage());
                     model.RefreshThumbnail(page);
                 }
+
+                if (pageIdsToDelete.Count == 0)
+                    return;
+
+                foreach (var pageId in pageIdsToDelete)
+                {
+                    var page = FlowTextChains.FindPage(book, pageId);
+                    if (page != null)
+                        model.RemovePageFromBook(page);
+                }
+
+                // Book.DeletePage takes the page out of the book's DOM and tells the page list,
+                // but nothing there writes the book to disk: the Delete Page command relies on
+                // the save it is wrapped in. A walk is in no such save, so the whole book is
+                // written here, which is also what the renumbering of the pages that are left
+                // needs.
+                book.Save();
             });
         }
 
@@ -1089,6 +1259,8 @@ namespace Bloom.Book
             // a page by moving text into the box after it, and here that box is on a page this
             // document does not hold (flowTrigger.setupFlowText).
             dom.Body.SetAttribute(kMeasuringFlowFitAttrName, "true");
+            var requestId = Guid.NewGuid().ToString("N");
+            dom.Body.SetAttribute(kFitRequestAttrName, requestId);
             // Off-screen measuring never types into the page, so CKEditor is dead weight: a
             // third of a megabyte of script to load into each fresh renderer, and none of it
             // changes how the text is laid out.
@@ -1105,7 +1277,10 @@ namespace Bloom.Book
             {
                 BookProcessor.WaitForJavascriptResult(
                     browser,
-                    "(window.__bloomEditablePageReady && window.editablePageBundle) ? 'ready' : ''",
+                    "(document.body && document.body.getAttribute("
+                        + $"'{kFitRequestAttrName}') === '{requestId}' "
+                        + "&& window.__bloomEditablePageReady && window.editablePageBundle) "
+                        + "? 'ready' : ''",
                     "the editing bundle to initialize",
                     group.PageId,
                     kFitTimeoutMs

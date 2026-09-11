@@ -53,6 +53,60 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void FlowTextAutoPages_NewPrefs_IsOff()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(
+                    up.FlowTextAutoPages,
+                    Is.False,
+                    "A book does not make and take away pages until the author has asked for pages once."
+                );
+            }
+        }
+
+        [Test]
+        public void FlowTextAutoPages_TurnedOn_IsSavedAndReadBack()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextAutoPages, Is.False, "Sanity check.");
+
+                up.FlowTextAutoPages = true;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Contain("flowTextAutoPages"),
+                    "The setting is not the default any more, so the file has to carry it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextAutoPages, Is.True);
+            }
+        }
+
+        [Test]
+        public void FlowTextAutoPages_TurnedBackOff_LeavesNoEntry()
+        {
+            using (var t = new TempFile("{\"flowTextAutoPages\":true}"))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextAutoPages, Is.True, "Sanity check.");
+
+                up.FlowTextAutoPages = false;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Not.Contain("flowTextAutoPages"),
+                    "A book that holds the default writes no entry for it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextAutoPages, Is.False);
+            }
+        }
+
+        [Test]
         public void FlowTextReflowOnPageChange_NewPrefs_IsOn()
         {
             using (var t = new TempFile(""))

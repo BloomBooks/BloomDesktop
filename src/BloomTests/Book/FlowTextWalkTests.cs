@@ -94,6 +94,143 @@ namespace BloomTests.Book
             };
         }
 
+        /// <summary>
+        /// Stand in for the Add Page code path: put one text-only page at the end of the book and
+        /// hand back the group on it, in no chain, as FlowTextApi's page maker does.
+        /// </summary>
+        private static FlowTextChains.FlowGroup AppendTextOnlyPage(HtmlDom dom, string pageId)
+        {
+            var scratch = dom.RawDom.CreateElement("div");
+            HtmlDom.SetInnerHtmlFromFragment(
+                scratch,
+                $"<div class='bloom-page numberedPage' id='{pageId}'>"
+                    + "<div class='bloom-translationGroup'>"
+                    + Editable("<p><br /></p>")
+                    + "</div></div>"
+            );
+            var page = scratch.FirstChild as SafeXmlElement;
+            dom.Body.AppendChild(page);
+            var pages = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .OfType<SafeXmlElement>()
+                .ToList();
+            return new FlowTextChains.FlowGroup
+            {
+                PageId = pageId,
+                PageIndex = pages.IndexOf(page),
+                IndexInPage = 0,
+                Group = page.SafeSelectNodes(".//div[contains(@class,'bloom-translationGroup')]")
+                    .OfType<SafeXmlElement>()
+                    .First(),
+            };
+        }
+
+        /// <summary>
+        /// A fitter that gives every box four characters of the run and carries the rest on, and
+        /// that marks where the text ran out when it is told this is the last box, as the browser
+        /// does. Four characters a box makes the number of pages a run needs easy to count.
+        /// </summary>
+        private static FlowTextWalk.FitResult FitFourCharactersMarkingOverflow(
+            FlowTextChains.FlowGroup group,
+            bool isLast
+        )
+        {
+            var fitted = SplitFirstParagraphAt(
+                FlowTextChains.GetFlowEditable(group.Group, "en").InnerXml,
+                4
+            );
+            if (isLast && !string.IsNullOrEmpty(fitted.tail))
+                fitted.head = ReplaceFirst(fitted.head, "</p>", kMarker + "</p>");
+            return fitted;
+        }
+
+        private static string ReplaceFirst(string text, string wanted, string replacement)
+        {
+            var at = text.IndexOf(wanted, StringComparison.Ordinal);
+            return at < 0
+                ? text
+                : text.Substring(0, at) + replacement + text.Substring(at + wanted.Length);
+        }
+
+        [Test]
+        public void Distribute_WithAddPage_MakesAPageForEachBoxfulTheChainCannotHold()
+        {
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>aaaabbbbccccdddd</p>"))));
+            // Sanity check the start state: one page, holding the whole run, and four
+            // characters a box means it needs four boxes in all.
+            Assert.That(Chain(dom).Count, Is.EqualTo(1));
+            Assert.That(BoxText(dom, 0), Is.EqualTo("aaaabbbbccccdddd"));
+
+            var added = 0;
+            var changed = FlowTextWalk.Distribute(
+                Chain(dom),
+                0,
+                "en",
+                FitFourCharactersMarkingOverflow,
+                () => AppendTextOnlyPage(dom, "made" + ++added)
+            );
+
+            Assert.That(added, Is.EqualTo(3), "Three more boxes were needed to hold the run.");
+            var chain = Chain(dom);
+            Assert.That(
+                chain.Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1", "made1", "made2", "made3" }),
+                "Every page made carries the chain, in the order the text flows through them."
+            );
+            Assert.That(
+                chain.Select((group, index) => BoxText(dom, index)),
+                Is.EqualTo(new[] { "aaaa", "bbbb", "cccc", "dddd" })
+            );
+            Assert.That(
+                changed.Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1", "made1", "made2", "made3" }),
+                "The pages made are for the caller to save along with the boxes it changed."
+            );
+            Assert.That(
+                FlowTextWalk.CollectRun(chain, 0, "en").InnerText,
+                Is.EqualTo("aaaabbbbccccdddd"),
+                "Dividing the run over new pages must not lose or repeat a word."
+            );
+        }
+
+        [Test]
+        public void Distribute_WithAddPage_StopsAtTheCapAndLeavesTheRestInTheLastPage()
+        {
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>aaaabbbbccccdddd</p>"))));
+            // Sanity check: without a cap this run would need three pages made, as the test
+            // above shows.
+            Assert.That(BoxText(dom, 0), Is.EqualTo("aaaabbbbccccdddd"));
+
+            var added = 0;
+            FlowTextWalk.Distribute(
+                Chain(dom),
+                0,
+                "en",
+                FitFourCharactersMarkingOverflow,
+                () => AppendTextOnlyPage(dom, "made" + ++added),
+                maxPagesToAdd: 1
+            );
+
+            Assert.That(added, Is.EqualTo(1), "The cap allows one page and no more.");
+            var chain = Chain(dom);
+            Assert.That(BoxText(dom, 0), Is.EqualTo("aaaa"));
+            Assert.That(
+                BoxText(dom, 1).Replace(((char)0x200c).ToString(), ""),
+                Is.EqualTo("bbbbccccdddd"),
+                "Text in no box at all is text the book has lost, so the last page keeps it."
+            );
+            Assert.That(
+                BoxHtml(dom, 1),
+                Does.Contain(HtmlDom.kOverflowStartClass),
+                "The mark is what says the last box holds more than fits it."
+            );
+            Assert.That(
+                FlowTextWalk.CollectRun(chain, 0, "en").InnerText,
+                Is.EqualTo("aaaabbbbccccdddd"),
+                "The run is still whole, so the work can be asked for again."
+            );
+        }
+
         [Test]
         public void Distribute_KeepsEveryWordWhenItStartsAtASeam()
         {

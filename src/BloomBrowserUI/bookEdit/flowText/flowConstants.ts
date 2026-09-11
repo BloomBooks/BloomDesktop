@@ -115,6 +115,12 @@ export const kReflowPendingEnglish = "Reflow pending";
 export const kReflowOnPageChangeTestId = "flow-reflow-on-page-change";
 export const kReflowOnPageChangeL10nId = "EditTab.FlowText.ReflowOnPageChange";
 export const kReflowOnPageChangeEnglish = "Reflow when you change pages";
+// Whether a refit may change how many pages the book has: with it on, a refit adds text-only
+// pages when the run does not fit its last box, and removes the pages the run leaves empty.
+// With it off, a refit only divides the run up over the pages that are already there.
+export const kAutoPagesTestId = "flow-reflow-auto-pages";
+export const kAutoPagesL10nId = "EditTab.FlowText.AutoPages";
+export const kAutoPagesEnglish = "Automatically add & remove pages";
 export const kReflowNowTestId = "flow-reflow-now";
 export const kReflowNowL10nId = "EditTab.FlowText.ReflowNow";
 export const kReflowNowEnglish = "Reflow now";

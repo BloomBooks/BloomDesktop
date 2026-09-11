@@ -276,12 +276,23 @@ export function requestWalk(
     );
 }
 
-/** The style rules of the page being edited, as they stand in the browser. */
+/**
+ * The style rules of the page being edited, as they stand in the browser. Read from the
+ * stylesheet, not from the style element's text: the style editor changes the rules in the
+ * sheet and leaves the element's text as it was when the page loaded, so the text does not
+ * carry a change the user has just made. This is the same reading Bloom saves
+ * (bloomEditing.userStylesheetContent).
+ */
 function getUserModifiedStyles(): string {
-    return (
-        document.querySelector("style[title='userModifiedStyles']")
-            ?.textContent ?? ""
-    );
+    const sheet = Array.from(document.styleSheets).find(
+        (candidate) => candidate.title === "userModifiedStyles",
+    ) as CSSStyleSheet | undefined;
+    if (!sheet) {
+        return "";
+    }
+    return Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText)
+        .join("\n");
 }
 
 /** Take every box of this chain from this one on out of the chain, on the other pages. */

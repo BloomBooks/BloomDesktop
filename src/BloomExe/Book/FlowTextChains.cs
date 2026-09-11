@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 
 namespace Bloom.Book
@@ -917,6 +918,76 @@ namespace Bloom.Book
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Is this group the only thing on the page that could hold anything, and is it empty?
+        /// That is what makes a page one that refitting may take away again: the text that was
+        /// its whole reason for being there has moved back up the chain, and nothing else on it
+        /// would be lost with it.
+        ///
+        /// Every kind of content a page can carry has to be looked for, because any one of them
+        /// is the author's work: text in the group's own boxes or in any other group, a picture
+        /// that is not the placeholder, a video with a source, a widget, and anything on a canvas.
+        /// </summary>
+        public static bool PageHoldsNothingBut(SafeXmlElement pageElement, SafeXmlElement group)
+        {
+            if (pageElement == null || group == null)
+                return false;
+
+            // Every language's box of the group, because a run of text the walk emptied in one
+            // language says nothing about what the others hold.
+            foreach (
+                var editable in group
+                    .SafeSelectNodes(".//div[contains(@class,'bloom-editable')]")
+                    .OfType<SafeXmlElement>()
+            )
+            {
+                if (HasVisibleText(editable))
+                    return false;
+            }
+
+            foreach (
+                var otherGroup in SafeXmlElement.GetAllDivsWithClass(
+                    pageElement,
+                    "bloom-translationGroup"
+                )
+            )
+            {
+                if (otherGroup != group && HasVisibleText(otherGroup))
+                    return false;
+            }
+
+            foreach (
+                var image in pageElement
+                    .SafeSelectNodes(
+                        $".//div[contains(@class,'{HtmlDom.kImageContainerClass}')]//img"
+                    )
+                    .OfType<SafeXmlElement>()
+            )
+            {
+                var path = HtmlDom.GetImageElementUrl(image).PathOnly.NotEncoded;
+                if (!string.IsNullOrEmpty(path) && !ImageUtils.IsPlaceholderImageFilename(path))
+                    return false;
+            }
+
+            if (
+                pageElement
+                    .SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]//source")
+                    .Length > 0
+            )
+                return false;
+
+            if (
+                pageElement
+                    .SafeSelectNodes(".//div[contains(@class,'bloom-widgetContainer')]")
+                    .Length > 0
+            )
+                return false;
+
+            return pageElement
+                    .SafeSelectNodes($".//div[contains(@class,'{HtmlDom.kCanvasElementClass}')]")
+                    .Length == 0;
         }
 
         /// <summary>

@@ -659,6 +659,21 @@ namespace Bloom.Edit
             DeletePage(_pageSelection.CurrentSelection);
         }
 
+        /// <summary>
+        /// Take this page out of the book, with no round trip through the browser. It is for a
+        /// caller that is already holding the book still and will save it itself, such as a flow
+        /// text walk taking away a page its run of text has emptied. DeletePage is the one to
+        /// use anywhere else: it collects the page being edited from the browser first, which is
+        /// what a user pressing Delete Page needs.
+        ///
+        /// The page list redraws itself, because Book.DeletePage raises the page-list-changed
+        /// event.
+        /// </summary>
+        internal void RemovePageFromBook(IPage page)
+        {
+            CurrentBook.DeletePage(page);
+        }
+
         internal void DeletePage(IPage page)
         {
             // This can only be called on the UI thread in response to a user button click.

@@ -190,7 +190,7 @@ namespace Bloom.Book
         /// onto the paragraph it broke off from when it is that paragraph's tail. Otherwise the
         /// two halves of one paragraph would sit in the box as two paragraphs.
         /// </summary>
-        private static void AppendKeepingSeam(SafeXmlElement editable, string html)
+        internal static void AppendKeepingSeam(SafeXmlElement editable, string html)
         {
             var lastBefore = FlowTextChains.GetTopLevelParagraphs(editable).Count;
             var scratch = editable.OwnerDocument.CreateElement("div");

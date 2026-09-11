@@ -120,6 +120,11 @@
         <note>ID: EditTab.FlowText.ReflowOnPageChange</note>
         <note>Label on a checkbox in the small "Reflow pending" bubble in the Edit tab. When it is ticked, Bloom runs the waiting job as soon as the user moves to another page, instead of waiting to be asked. "you" is the user. "Reflow" here means moving text on from a full text box into the next linked one.</note>
       </trans-unit>
+      <trans-unit id="EditTab.FlowText.AutoPages" translate="no">
+        <source xml:lang="en">Automatically add &amp; remove pages</source>
+        <note>ID: EditTab.FlowText.AutoPages</note>
+        <note>Label on the second checkbox in the small "Reflow pending" bubble in the Edit tab. When it is ticked, the waiting job may change how many pages the book has: it adds text-only pages when the run of linked text boxes holds more text than they can take, and removes the pages the text no longer reaches. When it is not ticked, the job only divides the text up over the pages that are already there. "&amp;" is the ampersand standing for "and".</note>
+      </trans-unit>
       <trans-unit id="EditTab.FlowText.ReflowNow" translate="no">
         <source xml:lang="en">Reflow now</source>
         <note>ID: EditTab.FlowText.ReflowNow</note>
