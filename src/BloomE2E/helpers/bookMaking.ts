@@ -598,6 +598,37 @@ export async function typeInGroup(
 }
 
 /**
+ * Type several paragraphs into one language's box of one translation group, the way a person does:
+ * the first as typeInGroup types it, then Enter and the next, and so on. The box ends up holding one
+ * <p> per paragraph, which is what a test of anything paragraph-shaped needs to start from.
+ *
+ * As with typeInGroup, nothing reaches the file until the book leaves this page — see goToPage.
+ */
+export async function typeParagraphsInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    paragraphs: string[],
+): Promise<void> {
+    if (paragraphs.length === 0)
+        throw new Error("typeParagraphsInGroup needs at least one paragraph.");
+    await typeInGroup(page, groupSelector, languageTag, paragraphs[0]);
+    // typeInGroup leaves the caret at the end of what it typed, so each Enter starts a new paragraph
+    // after the last one. Enter is a real key press because CKEditor makes the paragraph from it.
+    for (const paragraph of paragraphs.slice(1)) {
+        await page.keyboard.press("Enter");
+        await page.keyboard.insertText(paragraph);
+    }
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await expect(
+        box.locator(":scope > p"),
+        `The "${languageTag}" box of "${groupSelector}" did not end up with one paragraph per string typed.`,
+    ).toHaveText(paragraphs, { timeout: 15000 });
+}
+
+/**
  * The font one language's box of one translation group is shown in: the first family of its computed
  * font-family, without quotes, e.g. "Andika". This is how a test checks that a font chosen in the
  * Format dialog reached the text.

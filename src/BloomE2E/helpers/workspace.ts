@@ -155,16 +155,48 @@ export async function canUndo(page: Page): Promise<boolean> {
 }
 
 /**
- * Undo the last change. This returns as soon as the front end has been told to undo; what the undo
- * changes lands asynchronously, so wait for the state you expect (a text, a count, a class)
- * rather than reading the page straight after this.
+ * Click the Edit tab's Undo button in the top bar, the way a person undoes with the mouse. This is
+ * the UI route to undo; `undo` below is the route for a test whose subject is not the button.
  *
- * Ctrl+Z in the Edit tab is a WinForms accelerator: the key press never reaches the browser, so a
- * test cannot send it. What the shell does when the key is pressed is call the front end's
- * `workspaceBundle.handleUndo()`, which is exactly what this calls. So this is the production undo
- * path with only the key press missing, and it covers CKEditor undo and the canvas element
- * manager's undo alike, because handleUndo is the code that chooses between them.
- * (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven".)
+ * The button posts editView/topBarButtonClick, and the shell answers by running the page bundle's
+ * `topBarButtonClick({ command: "undo" })` in the Edit tab's browser (EditingViewApi.cs), which is
+ * a different route to undo from the shell's own Ctrl+Z handling that `undo` reproduces. Like
+ * `undo`, this returns as soon as the click is delivered; wait for the state you expect rather
+ * than reading the page straight after it. Throws when Bloom has nothing to undo, because the
+ * button is disabled then and a click on it would do nothing.
+ */
+export async function clickUndoButton(page: Page): Promise<void> {
+    if (!(await canUndo(page)))
+        throw new Error(
+            "Bloom says there is nothing to undo, so the Undo button is disabled. " +
+                "The change you meant to undo may not have registered.",
+        );
+    // The test id is set in bookEdit/topbar/editTopBarControls.tsx (EditingControlButton).
+    const button = page.getByTestId("edit-top-bar-undo-button");
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await button.click();
+}
+
+/**
+ * Press Ctrl+Z, the way a person undoes from the keyboard, into whatever has the focus. In a text
+ * box the key goes to CKEditor's own undo plugin; the shell does not claim it (Shell.ProcessCmdKey
+ * only raises an event and lets the key through, and the C# UndoCommand's implementer is empty).
+ * Like the other undo routes this returns as soon as the key is delivered; wait for the state you
+ * expect rather than reading the page straight after it.
+ */
+export async function pressUndoKey(page: Page): Promise<void> {
+    await page.keyboard.press("Control+z");
+}
+
+/**
+ * Undo the last change through the front end's own undo dispatcher, `workspaceBundle.handleUndo()`,
+ * which is the code the Undo button ends in and which chooses between CKEditor undo, origami undo
+ * and the canvas element manager's undo. This is the SETUP route to an undo; a test whose subject
+ * is undo itself clicks the button (clickUndoButton) or presses the key (pressUndoKey).
+ *
+ * Returns as soon as the front end has been told to undo; what the undo changes lands
+ * asynchronously, so wait for the state you expect (a text, a count, a class) rather than reading
+ * the page straight after this.
  */
 export async function undo(page: Page): Promise<void> {
     if (!(await canUndo(page)))

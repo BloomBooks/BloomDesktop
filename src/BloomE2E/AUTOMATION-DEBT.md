@@ -464,6 +464,26 @@ So: **to test the working tree, serve the dev server on 5173 and set
 `BLOOM_E2E_VITE_PORT=5173`.** Fix direction: emit the port into those two pug files the way the
 shell gets it, so `--vite-port` means what it says. (Found 2026-09-02.)
 
+## The text color palette sometimes does not open on the first click
+
+The formatting toolbar's Text Color button drops down a CKEditor panel of swatches. `attachToCkEditor`
+in `bookEdit/js/bloomEditing.ts` hides every `.cke_panel` on every CKEditor `selectionCheck`, to stop
+the palette from popping up on its own each time the toolbar shows (its comment says nobody knows
+why it does). CKEditor checks the selection a moment after each mouseup, on a timer, so when that
+check lands after the click has opened the panel, the panel is hidden again while the button still
+shows as "on": the click looks as if it did nothing, and the next click closes the panel CKEditor
+thinks is open rather than showing it. Seen 2026-09-08 (Test Case ID 364,
+`text-formatting-shortcuts.spec.ts`): the second color pick of a run failed this way about one run in
+two, the first never did. Worse, a swatch click delivered into a panel that closed at that moment
+landed on the text beneath it and moved the selection, so the color went on half a word.
+`helpers/textFormatting.ts pickTextColorFromToolbar` therefore waits out CKEditor's 200ms
+selection-check throttle after the panel opens, clicks a swatch only in a panel that is still
+showing, clicks the button again otherwise (which is what a person does), and fails if the
+selection moved. Fix direction: find out why the panel reappears
+on its own (CKEditor's floatpanel remembers `showBlockParams`, and Bloom's `display:none` bypasses
+its `hide`, so its state and the DOM disagree from then on) and hide it through `panel.hide()`
+instead, or only on `selectionChange` rather than on every check. A person can hit this too.
+
 ## Canvas element toolbar buttons are anonymous
 
 The floating toolbar over a selected canvas element (`#canvas-element-context-controls`,
