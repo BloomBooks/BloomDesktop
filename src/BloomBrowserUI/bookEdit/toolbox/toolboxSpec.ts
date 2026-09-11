@@ -177,7 +177,7 @@ describe("toolbox tests", () => {
         div.innerHTML = "<p>A&nbsp;b c</p>";
         const textNodeBefore = div.querySelector("p")!.firstChild;
         // Sanity check the setup: this nbsp is one we expect to be converted.
-        expect(textNodeBefore?.textContent).toBe("A b c"); // the character after the A is U+00A0, a non-breaking space
+        expect(textNodeBefore?.textContent).toBe("A\u00A0b c");
 
         cleanUpNbsps(div);
 

@@ -35,6 +35,7 @@ if [ -s $filesToCheck ]; then
     case "$file" in
       src/BloomExe/RobustFileIO.cs) continue;;
       src/BloomTests/*) continue;;
+      src/BloomFreezeDoctor.Tests/*) continue;;
     esac
     if awk '
       # Flag ordinary banned file APIs directly.

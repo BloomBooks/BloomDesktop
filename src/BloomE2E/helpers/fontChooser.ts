@@ -403,7 +403,12 @@ export async function showFontDetails(page: Page): Promise<string> {
             resolve(text);
         });
     });
-    await icon.click({ timeout: 30000 });
+    // The pane re-renders while the mouse rests on the list (on the nightly runner the icon was
+    // "not stable", then detached, for the whole 30 seconds of one click attempt), so try the click
+    // afresh, against the icon as it is now, rather than waiting on one that is being replaced.
+    await expect(async () => {
+        await icon.click({ timeout: 3000 });
+    }).toPass({ timeout: 30000 });
     return message;
 }
 

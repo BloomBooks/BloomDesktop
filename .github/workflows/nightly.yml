@@ -313,10 +313,21 @@ jobs:
                   # also work, but asking for it here says what the run needs instead of leaving
                   # it to whatever the runner happens to do.
                   BLOOM_AUTOMATION_MONITOR: headless
+                  # The password of the Bloom Library test account (e2e-tester@example.org on
+                  # dev.bloomlibrary.org), for the tests that sign in and upload for real. The
+                  # account exists only for this; the email is a constant in the suite
+                  # (src/BloomE2E/helpers/bloomLibraryAccount.ts). Locally the same variable is set
+                  # at User scope; a developer without it has those tests skipped, while a run on CI
+                  # without it fails, so a missing secret is noticed.
+                  BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD: ${{ secrets.BLOOM_E2E_TESTER_EMAIL_BLORG_PASSWORD }}
               run: pnpm test --reporter=list,junit,html
 
             # What explains an e2e failure: Playwright's HTML report, plus the trace and failure
-            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure).
+            # screenshot its config keeps (trace: retain-on-failure, screenshot: only-on-failure),
+            # and what the fixture keeps beside them for a failed test (fixtures/bloomTest.ts,
+            # keepEvidenceOnFailure): Bloom's Log.txt and a copy of the collection folder as Bloom
+            # left it. Not the user-settings folder: this artifact is public, and user.config holds
+            # the Bloom Library login of a Bloom that signed in for real.
             # On failure only: a green run's report says nothing a green check has not already said,
             # the same reason the visual-regression screenshots below go up only on failure.
             #

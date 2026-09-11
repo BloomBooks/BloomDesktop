@@ -29,6 +29,8 @@ export interface ICollectionSettings {
      * Left out, the collection has no code and so is Basic.
      */
     subscriptionCode?: string;
+    /** The Bloom Library bookshelf, by url key; see ICollectionSpec.bookshelf. Left out, none. */
+    bookshelf?: string;
 }
 
 /**
@@ -66,7 +68,7 @@ export async function restartWithCollectionSettings(
             makeCollectionXml(
                 settings.languages,
                 settings.xmatterPack,
-                settings.subscriptionCode,
+                settings,
             ),
             "utf8",
         ),
@@ -112,6 +114,13 @@ export type SubscriptionTier =
  * this one stops serving, ask.
  */
 export const kEnterpriseSubscriptionCode = "Test-727011-1339";
+
+/**
+ * The bookshelves the Test subscription (kEnterpriseSubscriptionCode) owns on Bloom Library, by
+ * url key, which Contentful knows about. A collection under that code can name either as the
+ * bookshelf its books are uploaded to, as the Settings dialog offers a person.
+ */
+export const kTestBookshelves = ["test-bookshelf-1", "test-bookshelf-2"];
 
 /**
  * What Bloom says about one feature, as features/status reports it. It answers with more than
