@@ -653,6 +653,11 @@ namespace Bloom.Api
             get { return _actualContext.Request.RawUrl; }
         }
 
+        public string Referer
+        {
+            get { return _actualContext.Request.Referer; }
+        }
+
         HttpMethods IRequestInfo.HttpMethod
         {
             get
