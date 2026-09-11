@@ -959,6 +959,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     }
                                     data-toolid={section.id}
                                     data-testid="toolbox-header-icon"
+                                    // The icon path is also exposed as data so tests can
+                                    // check which icon a header shows without reading styles.
+                                    data-icon-src={
+                                        toolIconPathByToolId[section.id]
+                                    }
                                     style={{
                                         backgroundImage: `url(${toolIconPathByToolId[section.id] || ""})`,
                                     }}

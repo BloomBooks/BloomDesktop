@@ -262,19 +262,21 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        // Five headers: the four tools plus the "More..." (settings) header. Each tool's
-        // icon is an inline background image (an svg or png) the component sets from its own
-        // table, so that attribute is the state to check; "More..." has no icon of its own.
+        // Five headers: the four tools plus the "More..." (settings) header. The component
+        // exposes each header's icon path as data-icon-src; "More..." has no icon of its own.
         const icons = page.getByTestId("toolbox-header-icon");
         await expect(icons).toHaveCount(5);
         const icon = (toolId: string) =>
             icons.and(page.locator(`[data-toolid='${toolId}']`));
         for (const toolId of ["canvas", "motion", "music", "talkingBook"]) {
             await expect(icon(toolId)).toHaveCount(1);
-            await expect(icon(toolId)).toHaveAttribute("style", /svg|png/);
+            await expect(icon(toolId)).toHaveAttribute(
+                "data-icon-src",
+                /svg|png/,
+            );
         }
         await expect(icon("settings")).toHaveCount(1);
-        await expect(icon("settings")).not.toHaveAttribute("style", /svg|png/);
+        await expect(icon("settings")).not.toHaveAttribute("data-icon-src");
 
         // Scoped to the headers: the "More..." panel lists the tools with their own
         // badges, which are not what this test is about.
