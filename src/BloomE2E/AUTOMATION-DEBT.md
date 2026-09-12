@@ -647,10 +647,31 @@ the wait existed. So the wait may have narrowed the window without closing it, o
 nothing; one run cannot tell those apart. **It is kept for now** rather than reverted, because
 removing it would only make the next run harder to interpret.
 
-The leading hypothesis is a **second** CKEditor attach: the class the wait looks for is already
-there from the first attach, so the wait returns at once, and a later re-attach wipes text typed
-in between. Beware the trap that hid this the first time — a verification run where the box is
-already `cke_editable` proves the wait costs nothing, NOT that it works.
+**Why it did not work, answered 2026-09-12 by the instrumentation.** The wait was keyed on the
+wrong signal. `cke_editable` reaches the element *before* the editor is ready, so the wait
+returned while the box was still inside the window where the editor would overwrite it. The
+console trace from the failing run shows it plainly, in order:
+
+```
+[cover-title] attaching an editor; box holds ""
+    … the test's three insertText calls land here …
+[cover-title] editor ready; box now holds ""
+```
+
+and Bloom's own log agrees that nothing ever reached the save: `bookTitle en=""; the book's
+title is currently "Book-c12aeca0"`. No second attach was needed to explain it — the simpler
+reading was right, and the earlier guess (a re-attach) was wrong.
+
+**Fixed by asking CKEditor instead of the DOM**: the wait now polls `editor.status === "ready"`
+on the instance bound to that box, which is true from the moment it fires `instanceReady`. It
+also no longer tries to predict whether a box will get an editor by copying `bloomEditing.ts`'s
+three conditions — that copy could drift out of step, and guessing "no editor" wrongly skips the
+wait entirely, which is the failure that looks exactly like no bug. It waits for an editor to
+appear and, if none is bound after a short grace period, concludes none is coming.
+
+Beware the trap that hid this twice: a verification run where the box is **already** ready
+proves the wait costs nothing, NOT that it works. Only a run that starts from `unloaded` and
+blocks to `ready` demonstrates anything.
 
 **What is instrumented now**, and why it should stay until the nightly goes several runs without
 losing a title:

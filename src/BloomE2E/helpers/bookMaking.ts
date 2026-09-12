@@ -541,15 +541,6 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
- * The fields CKEditor takes over, from `ckeditableSelector` in src/BloomBrowserUI/utils/shared.ts.
- * Kept as a literal because the e2e suite does not import from the front-end bundle.
- */
-const kCkEditableSelector =
-    ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
-    ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
-    ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
-
-/**
  * Wait until CKEditor has finished taking this box over, on the boxes it takes over at all.
  *
  * Bloom's `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector` matches and
@@ -572,21 +563,49 @@ const kCkEditableSelector =
  * it. Delete it when CKEditor goes (the `retireCkEditor` work).
  */
 async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
-    // Decide in the page, against the same three conditions bloomEditing.ts applies: the field has
-    // to match ckeditableSelector, the page must not contain a .bloom-canvas (bootstrap gives up on
-    // the whole page when it does), and the field must not be read-only.
-    const willGetAnEditor = await box.evaluate((element, selector) => {
-        if (!element.matches(selector)) return false;
-        if (element.ownerDocument.querySelector(".bloom-canvas")) return false;
-        return getComputedStyle(element).cursor !== "not-allowed";
-    }, kCkEditableSelector);
-    if (!willGetAnEditor) return;
-    const deadline = Date.now() + 20000;
+    // Ask the page what is actually bound to this box, rather than trying to predict it. An
+    // earlier version of this replicated bloomEditing.ts's three conditions for attaching an
+    // editor (matches ckeditableSelector, no .bloom-canvas on the page, not read-only) and
+    // returned at once when they said no editor was coming. That is a copy of somebody else's
+    // rules that can silently drift out of step with them, and when it guesses "no editor" wrongly
+    // it skips the wait entirely — which is the one failure that looks exactly like no bug.
+    //
+    // So: wait for an editor to report itself ready. If no editor has even been bound after a
+    // short grace period, none is coming for this box and there is nothing to wait for.
+    const start = Date.now();
+    const deadline = start + 20000;
     while (Date.now() < deadline) {
-        const classes = (await box.getAttribute("class")) ?? "";
-        if (classes.includes("cke_editable")) return;
+        const state = await ckEditorStateOn(box);
+        if (state === "ready") return;
+        if (state === "none" && Date.now() - start > 3000) return;
         await box.page().waitForTimeout(50);
     }
+}
+
+/**
+ * What CKEditor has bound to this box: "ready" when an editor has finished initialising, "pending"
+ * when one is attached but not ready yet, "none" when nothing is attached.
+ *
+ * Ask CKEditor itself — `editor.status`, which reads "ready" from the moment it fires
+ * instanceReady. Do NOT go by the `cke_editable` class: the class reaches the element BEFORE the
+ * editor is ready, so waiting on it returns while the box is still inside the window where the
+ * editor will overwrite anything typed. That is precisely the mistake that let the nightly go on
+ * losing cover titles after this wait was first added, and the console trace caught it — the
+ * typing landed between "attaching an editor" and "editor ready".
+ */
+async function ckEditorStateOn(
+    box: Locator,
+): Promise<"ready" | "pending" | "none"> {
+    return box.evaluate((element) => {
+        const ckeditor = (window as unknown as Record<string, any>).CKEDITOR;
+        if (!ckeditor?.instances) return "none";
+        for (const key of Object.keys(ckeditor.instances)) {
+            const editor = ckeditor.instances[key];
+            if (editor?.element?.$ === element)
+                return editor.status === "ready" ? "ready" : "pending";
+        }
+        return "none";
+    });
 }
 
 /**
