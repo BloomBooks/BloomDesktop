@@ -775,6 +775,11 @@ namespace Bloom.web.controllers
             // put Bloom into the publish tab first (POST workspace/selectTab {tab:"publish"}), which
             // runs all the real publish-tab setup; otherwise we might miss setup that the tab does
             // now or adds later. Fail Fast here (via the guard) if the caller forgot to do that.
+            // Note what the guard does and does not prove: since BL-16174 the flag is set by the
+            // ActiveTab setter, so it goes true when the tab becomes active, ahead of the
+            // SelectedTabChangedEvent subscribers that do the rest of the setup (PublishView.Activate).
+            // What makes the setup complete by the time we get here is that selectTab runs the whole
+            // switch synchronously inside its own API call, which the caller awaits -- not the flag.
             if (!PublishHelper.InPublishTab)
                 throw new InvalidOperationException(
                     "makeBloomPubPreview requires the publish tab to be active. "
