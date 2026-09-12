@@ -363,6 +363,28 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 
 ## Field-verified gotchas (all hit in real agent runs)
 
+- **Port 8089 is first-come, not per-worktree.** Bloom's server starts at
+  8089 and falls forward to the next port block when it is taken, so a second
+  worktree's Bloom lands on 8092/8094 without complaint. Always take
+  httpPort/cdpPort from launcher `--status`; anything that hardcodes 8089
+  (the canvas e2e suite's default `BLOOM_CANVAS_E2E_URL`) silently drives
+  whichever Bloom got there first — possibly another worktree's build.
+- **`data-toolid` means two things in the toolbox.** A section header's icon
+  carries the tool's canonical id (`canvas`); the panel body carries the
+  persisted "Tool"-suffixed name (`canvasTool`). A selector matching both
+  finds the 16px icon first, which reads as "the panel renders empty" when
+  the panel is fine — scope panel queries to `div[data-toolid="...Tool"]`.
+- **Reader/audio highlight state lives in `CSS.highlights`, not the DOM.**
+  Since BL-16558 there are no marker spans to count. Assert via
+  `CSS.highlights.entries()`, counting ranges where `!range.collapsed` and
+  `range.getClientRects().length` for "actually painted". And no highlights
+  is not proof markup is broken: the Leveled Reader panel's switch gates
+  painting entirely — flip it on first.
+- **Ad-hoc driver scripts cannot `import "playwright"` from a scratch
+  directory** — Node resolves from the script's own path. Do what the shipped
+  drivers do: `createRequire("<repo>/src/BloomBrowserUI/react_components/component-tester/package.json")`
+  and `require("playwright")` through that.
+
 - **WMI/wmic can go blind mid-session.** `bloomProcessStatus.mjs` (plain
   mode) and `killBloomProcess.mjs` enumerate processes via `wmic`; WMI has
   stopped answering partway through a session — status reported zero Bloom

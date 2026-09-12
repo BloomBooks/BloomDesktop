@@ -541,6 +541,55 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
+ * The fields CKEditor takes over, from `ckeditableSelector` in src/BloomBrowserUI/utils/shared.ts.
+ * Kept as a literal because the e2e suite does not import from the front-end bundle.
+ */
+const kCkEditableSelector =
+    ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
+    ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
+    ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
+
+/**
+ * Wait until CKEditor has finished taking this box over, on the boxes it takes over at all.
+ *
+ * Bloom's `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector` matches and
+ * then returns, but the editor only finishes initialising some time later — and when it does, it
+ * writes the snapshot it took at `inline()` time over whatever the element holds by then. Anything
+ * typed in that window is destroyed, silently. Watching a real Bloom over CDP: a title typed at
+ * 942ms after the page loaded was gone at 1215ms, in the very same DOM mutation that added the
+ * `cke_editable` class. That window is why three nightlies lost a cover title
+ * (AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to reach the
+ * collection"), and a person who types fast enough loses it too.
+ *
+ * `cke_editable` is how the editor announces it is ready, so wait for that before touching the box.
+ * We only wait on boxes that will actually get an editor, because most will not and waiting on
+ * those would cost every test the whole timeout. Even a matching box can miss out —
+ * `attachToCkEditor` skips a page that has a `.bloom-canvas`, and any field whose cursor is
+ * `not-allowed` — so this gives up quietly rather than failing: the caller is no worse off than
+ * before this wait existed.
+ *
+ * This is a workaround in the tests for a real Bloom defect, and it is deliberately not a fix for
+ * it. Delete it when CKEditor goes (the `retireCkEditor` work).
+ */
+async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
+    // Decide in the page, against the same three conditions bloomEditing.ts applies: the field has
+    // to match ckeditableSelector, the page must not contain a .bloom-canvas (bootstrap gives up on
+    // the whole page when it does), and the field must not be read-only.
+    const willGetAnEditor = await box.evaluate((element, selector) => {
+        if (!element.matches(selector)) return false;
+        if (element.ownerDocument.querySelector(".bloom-canvas")) return false;
+        return getComputedStyle(element).cursor !== "not-allowed";
+    }, kCkEditableSelector);
+    if (!willGetAnEditor) return;
+    const deadline = Date.now() + 20000;
+    while (Date.now() < deadline) {
+        const classes = (await box.getAttribute("class")) ?? "";
+        if (classes.includes("cke_editable")) return;
+        await box.page().waitForTimeout(50);
+    }
+}
+
+/**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
  * the cover title. Waits until the box has the focus, and returns it.
@@ -556,6 +605,7 @@ export async function clickInGroup(
         .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
         .first();
     await box.waitFor({ state: "visible", timeout: 30000 });
+    await waitForCkEditorToTakeTheBox(box);
     await box.click();
     await expect(
         box,

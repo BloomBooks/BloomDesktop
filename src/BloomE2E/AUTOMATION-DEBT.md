@@ -295,6 +295,24 @@ shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
 helpers no longer act early; the production endpoints still reply success to a request they
 dropped.
 
+seen again 2026-09-11 (Test Case ID 348, `copy-page.spec.ts`): the same drop hits
+`selectPage`, which the 2026-09-02 mitigation does not cover. `helpers/pageThumbnails.ts`
+waits only for the thumbnail to *exist* and then clicks it; its `waitForEditablePage` comes
+after the click, not before, so the click can land while the Edit tab is still settling. The
+kept Bloom log says the click went nowhere at all: the last line is `Entered Edit Tab` for
+the destination book, and for the next 60 seconds there is no `Select Page` and no `changing
+page via workspaceBundle.switchContentPage` — every selection that works logs both. The
+thumbnail therefore never gets `gridSelected` and the test fails on that assertion.
+
+What makes this one worth chasing rather than filing as flake: it fails **every** time on one
+developer machine (twice in full-suite runs and again running the spec alone) and **passed**
+on the 2026-09-11 nightly, so the runner and that machine differ in something that decides
+it. Nobody has found what. Until they do, the cheap fix is the same as the entry's: have
+`selectPage` wait for the Edit tab to be ready *before* it clicks, the way the other
+page-changing helpers now do.
+(Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
+font-chooser helper.)
+
 ## Filling a text box directly leaves part of the old text behind
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
@@ -534,8 +552,133 @@ branding and the machine is slow. Not reproduced locally.
 
 Worked around in the test, 2026-09-05: it no longer types a title, and keeps the folder
 `makeBookFromTemplate` returns, which is stable as long as the book has no title. A test
-whose subject is the title, or the folder rename, cannot take that route. Fix direction:
-find what reloads or re-saves the cover of a new book under a branding, or make
-`findBookFolder` able to find a book by its id (`collections/books` reports one) so a test
-does not depend on the rename at all.
-(Found 2026-09-05 in the nightly run.)
+whose subject is the title, or the folder rename, cannot take that route.
+
+seen again: 2026-09-10 and 2026-09-11, in `bulk-upload-quick-test.spec.ts`, which cannot
+take that workaround because it needs four books findable by title. Both nightlies died on
+the first book, identically, so on the runner this is close to deterministic.
+
+seen again: 2026-09-11 (the second run that day, on `53eb325a4b`), in
+`xmatter-packs.spec.ts:77` — and NOT in `bulk-upload-quick-test`, which got all four titles
+that run and then failed further on, at the upload itself. So it is not tied to one spec: it
+moves between whichever specs type a cover title on a new book.
+
+What the 2026-09-11 evidence adds — the first failure since #8343 started keeping the
+collection and Bloom's log on a failed test, so for once we can see the wreckage:
+
+- **Only the cover title is lost.** In the kept collection every `data-book="bookTitle"`
+  div is empty, `<title>` is empty, and `meta.json` has `"title": ""` — while the page
+  added straight afterwards, the "Hello." typed on it, and the copyright set later through
+  the Publish dialog are all saved. One edit is being dropped, not a save failing.
+- **The signature in Bloom's log is an absence.** Locally `InsertTemplatePage` is followed
+  by `Renaming html … -> '<title>.htm'` and `Renaming folder …` before
+  `BookStorage.Saving…`. On the runner those two lines are missing: the `SaveThen` that
+  `OnInsertPage` wraps the insert in got page content back from the browser with no title
+  in it, so there was nothing to rename to. That absence is the cheapest way to spot this
+  failure in a nightly log.
+- **Not reproducible on a fast machine.** Twelve attempts on a developer box — six at full
+  speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
+  saved the title. Renderer slowness alone is not the trigger.
+
+**Answered, 2026-09-11**, by two instruments landed in #8352 — a throwaway probe spec that
+made the same book three times, typing the title a different way each time, and the
+`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs —
+read from the nightly run on `53eb325a4b`. Three things are now ruled out and one is pinned
+down.
+
+- **Not how we type.** All three probe variants — `insertText`, real key presses, and
+  `insertText` then an explicit blur — reached the collection on the runner. The theory that
+  `insertText`'s missing key events were to blame is dead, and `typeInGroup` does not need to
+  change.
+- **Not branding.** The run's actual loss was in `xmatter-packs.spec.ts:77`, whose collection
+  is `<BrandingProjectName>Default</BrandingProjectName>` with an empty `SubscriptionCode`.
+  The earlier guess that this only happens "under a branding" was an artifact of the two
+  specs that had hit it, and is wrong.
+- **Not Bloom's save.** The log line for that failure reads `page content from the browser
+  carries bookTitle en="", z=""`. The DOM the browser handed back for the save had no title
+  in it, so nothing in `SaveThen`, `UpdateDomFromEditedPage` or `BookStorage` lost anything —
+  there was nothing there to lose. The empty `bookTitle` in the kept collection's HTML agrees.
+- **It is the browser, between the typing and the capture.** `typeInGroup` asserts
+  `toHaveText` after typing, so the text demonstrably reached the box; a few seconds later
+  `requestPageContent()` returned a page without it.
+
+**The mechanism, proven 2026-09-11: CKEditor discards what you type while it is still
+starting up.** `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector`
+matches and returns at once, but the editor only finishes initialising some time later — and
+when it does, it writes the snapshot it took at `inline()` time over whatever the element
+holds by then. Watching a real Bloom's DOM over CDP while a developer typed by hand:
+
+```
+ms=0     installed                 text=""      cke_editable=false
+ms=942   mut:childList+charData    text="a"     cke_editable=false
+ms=944   mut:characterData         text="af"    cke_editable=false
+ms=944   mut:characterData         text="afd"   cke_editable=false
+ms=1215  mut:attributes+childList  text=""      cke_editable=true
+```
+
+The class going on and the content being wiped are one and the same DOM mutation, so there is
+no inference left in this: that is the editor becoming ready and overwriting the typing. A
+detach/re-attach experiment gives the same result deterministically — text put in after
+`inline()` and before `instanceReady` is gone once the editor is ready.
+
+**This is a Bloom defect, and a user-facing one**: type a title fast enough after making a
+book and it silently disappears. It was reproduced by hand, twice, on a normal developer
+machine, with a window of about 1.2 seconds; a loaded machine widens it, which is why the
+runner hit it so reliably. **It is deliberately not being fixed** — CKEditor is being retired
+(the `retireCkEditor` work), so the fix is that removal. The attach site in
+`bookEdit/js/bloomEditing.ts` carries a note pointing back here, for whoever does it.
+
+**The suite's workaround did NOT stop it, 2026-09-11 (second run of the night).**
+`clickInGroup` now waits for the `cke_editable` class before touching a box, on the boxes that
+get an editor at all (it asks the page the same three questions `bloomEditing.ts` asks:
+matches `ckeditableSelector`, no `.bloom-canvas` on the page, not read-only). Every typing path
+funnels through it, so no spec needed changing. The very next nightly still lost two titles:
+
+- `publish-talking-book-languages.spec.ts:82` — `has no book called "Talking Book Languages
+  Test". It has: "Book-bbd2b161"`.
+- `publish-text-languages.spec.ts:46` — `has no book called "Text Languages Test". It has:
+  "Title Missing"` — a **new** end state; every earlier loss left the book as `Book-<hex>`.
+
+Both type through `typeInGroup`, so the wait ran and the title went anyway. Note what the run
+does NOT show: `xmatter-packs`, which lost its title the run before, passed, and
+`bulk-upload-quick-test` again got all four books titled. The loss keeps moving between specs
+(`import-recording` → `bulk-upload` → `xmatter-packs` → these two), which is what it did before
+the wait existed. So the wait may have narrowed the window without closing it, or may be doing
+nothing; one run cannot tell those apart. **It is kept for now** rather than reverted, because
+removing it would only make the next run harder to interpret.
+
+The leading hypothesis is a **second** CKEditor attach: the class the wait looks for is already
+there from the first attach, so the wait returns at once, and a later re-attach wipes text typed
+in between. Beware the trap that hid this the first time — a verification run where the box is
+already `cke_editable` proves the wait costs nothing, NOT that it works.
+
+**What is instrumented now**, and why it should stay until the nightly goes several runs without
+losing a title:
+
+- `EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation:` — the
+  bookTitle the browser handed the save, and what the book already believes its title is. An
+  empty box with a known title means something cleared it after an earlier save; both empty
+  means it never arrived.
+- `attachToCkEditor` logs `[cover-title]` on every attach to a title box, with the text going in
+  and the text once the editor is ready. Two attaches in one page load would confirm the
+  hypothesis above. Playwright keeps the page console in its trace, so a failed run carries it.
+
+This instrumentation was once removed as soon as the mechanism looked understood, and was needed
+again the next night. Do not remove it on the strength of one green run.
+
+Independently of all this, `findBookFolder` could look a book up by its id
+(`collections/books` reports one) so that no test depends on the rename at all.
+(Found 2026-09-05 in the nightly run; diagnosed 2026-09-11.)
+
+## The canvas e2e suite is attach-only, so nothing runs it unattended
+
+`bookEdit/canvas-e2e-tests` drives `http://localhost:8089/bloom/CURRENTPAGE` — a Bloom a
+developer already launched, with the right book open on the right page — and fails fast when
+that URL is not reachable. It has no fixture that launches Bloom, opens a collection, or
+navigates to a canvas page, so it cannot join the nightly's five suites, and canvas
+regressions (drag-to-canvas, element manipulation, the Canvas Tool panel) are only caught
+when someone runs it by hand at a workstation. Fix direction: port the suite onto BloomE2E's
+fixtures (`bloomTest` plus a prepared collection holding a known canvas page); the nightly
+already has everything that shape of suite needs, so after the port, adding it is a config
+edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
+is worth keeping — page loads are the slow part either way.

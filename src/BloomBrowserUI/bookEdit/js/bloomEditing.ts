@@ -1220,6 +1220,17 @@ export function bootstrap() {
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
+    //
+    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
+    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
+    // ready it writes the snapshot it took here over whatever the element holds by then. So
+    // anything a person types in that window is silently destroyed. Measured on a developer
+    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
+    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
+    // after making a book and you lose it; a loaded machine widens the window. Written up in
+    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
+    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
+    // staying, that entry is the place to start.
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
@@ -1953,6 +1964,22 @@ export function attachToCkEditor(element) {
         return;
     }
 
+    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): an editor wipes the box when it
+    // becomes ready, so a title typed before that is lost. Waiting for the first editor did not
+    // stop the nightly losing titles, and the open question is whether a SECOND attach is landing
+    // on a box somebody has already typed in. These two lines answer that: every attach on a title
+    // box is announced, with what the box holds going in and what it holds once the editor is
+    // ready. Playwright keeps the page's console in its trace, so a failed run carries the answer.
+    // Remove with the rest of this investigation.
+    const isBookTitleBox =
+        !!element.getAttribute &&
+        element.getAttribute("data-book") === "bookTitle";
+    const titleBoxText = () => (element.innerText || "").trim();
+    if (isBookTitleBox)
+        console.warn(
+            `[cover-title] attaching an editor; box holds "${titleBoxText()}"`,
+        );
+
     // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
     // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
     const alwaysHideToolbar =
@@ -2048,6 +2075,12 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Cover-title investigation: see the note at the top of this function.
+        if (isBookTitleBox)
+            console.warn(
+                `[cover-title] editor ready; box now holds "${titleBoxText()}"`,
+            );
 
         // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
         // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
