@@ -150,6 +150,7 @@ export const SubscriptionBadgeWithTooltipAndDialog: React.FunctionComponent<{
     return (
         <BloomTooltip tip={featureMessage} placement="bottom-end">
             <img
+                data-testid="subscription-badge"
                 css={css`
                     height: 1.5em;
                     margin-left: 1em;

@@ -40,6 +40,53 @@ House rules:
 - **Idea:** set the line ending in a `.csharpierrc` (it has an `endOfLine` option) so formatting a
   file leaves its endings alone.
 - **Context:** formatting `FlowTextWalk.cs` and `FlowTextApi.cs` after editing them.
+## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
+
+- **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.
+  The collection copy lands as real files under `test-results/<test>/collection/`, but the log does
+  not land anywhere you can open: it is not in `test-results/<test>/`, not in
+  `playwright-report/data/`, and the run's console prints only its truncated first line. Reading it
+  from the nightly's `e2e-report` artifact meant unzipping `trace.zip` and guessing which
+  `resources/<40-hex>` blob it was.
+- **Idea:** write it with `testInfo.outputPath("bloom-log.txt")` and attach by `path`, so it sits
+  beside `collection/` as a plain file in the artifact.
+- **Context:** hit while reading the 2026-09-11 nightly for the cover-title failure
+  (`src/BloomE2E/AUTOMATION-DEBT.md`); cost about ten minutes of hunting.
+
+## 2026-09-11 — pnpm skips the install entirely after a rebase changes the lockfile
+
+- **Cut:** After rebasing onto a master that had refreshed `pnpm-lock.yaml`, `pnpm install` in
+  `src/BloomBrowserUI` printed "Already up to date" and did nothing. So did `pnpm install --force`.
+  So did `--force` after I deleted `node_modules/bloom-image-gallery` outright — pnpm cheerfully
+  reported up-to-date with the package physically absent. The culprit is pnpm 11's fast-path cache
+  `node_modules/.pnpm-workspace-state-v1.json`; it was dated 2026-09-02 and `--force` does not
+  invalidate it. Deleting that one file made the install run for real, which then pulled the new
+  gallery commit *and* bloom-player 2.20.1-alpha.6 -> 2.20.3-alpha.1. Both had been silently stale.
+- **Idea:** Note it in AGENTS.md next to the front-end build guidance: "Already up to date" from
+  pnpm is not evidence — if a dependency looks stale after a rebase, delete
+  `node_modules/.pnpm-workspace-state-v1.json` and install again. Better, have a script verify the
+  installed tree against the lockfile resolution rather than trusting the message.
+- **Context:** BloomDesktop BL-16748-pseudo-english, PR #8283. Andrew noticed the symptom ("we don't
+  seem to be getting the latest image-chooser-gallery") — nothing in the tooling flagged it.
+
+## 2026-09-11 — switchWorkspaceTab.mjs drives whichever Bloom page it happens to find first
+
+- **Cut:** `switchWorkspaceTab.mjs --tab publish` failed with "Could not find a workspace tab
+  control" twice in a row while Bloom was running normally. `getBloomPage` takes the *first* CDP
+  page whose URL contains `/bloom/`, and that was the open Settings dialog, which has no workspace
+  tabs. Separately, on a fresh launch with no book selected only `workspace-tab-collection` exists
+  in the DOM, so the script cannot reach edit/publish until something selects a book — the error
+  message is the same in both cases and names neither.
+- **Idea:** Pick the page that actually has `[data-testid="workspace-top-bar"]` rather than the
+  first URL match, and when the requested tab is absent say which tabs *are* present (and that a
+  book may need selecting) instead of the generic not-found message.
+- **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
+
+
+## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
+- **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
+- **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
+- **Context:** worktree Format-Gear-Positioning-356 at the Version6.5 tip, while fixing BL-16809; hit by Claude.
 
 ## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
 
@@ -94,6 +141,37 @@ House rules:
   2026-07-27 entry (C# host aborting alongside vitest): both the wedged run and the successful
   `--pool=threads` run overlapped a `dotnet test`, so concurrency wasn't the differentiator here.
 
+## 2026-08-26 — A Bloom launched by ./go.sh cannot be watched by the Freeze Doctor
+
+- **Cut:** `go.sh` runs Bloom with `--automation`, and the Doctor deliberately refuses to watch any
+  run whose command line carries that flag (such runs legitimately have no window, so watching them
+  would manufacture zombie reports). So the repo’s sanctioned dev launcher produces the one kind of
+  Bloom the Doctor ignores, and an agent following AGENTS.md cannot test the Doctor at all. Launching
+  the built exe directly instead dies at Velopack init when given no arguments ("Bloom Problem"
+  immediately), though the same binary starts fine with go.sh’s own arguments. F5 works, which is why
+  every successful manual test of this feature so far has been F5.
+- **Idea:** either have go.sh omit `--automation` (or offer a flag to), or say in AGENTS.md that testing
+  the Freeze Doctor needs F5 rather than go.sh, and why. Also worth noting that go.sh builds to
+  `output/Debug/AnyCPU` while launch.json runs `output/Debug/x64`.
+- **Context:** BL-16719, trying to run a crash test unattended. A related false start: 
+  `build/agent-dotnet.sh` builds into `output/agent/<key>/`, so `output/Debug/x64` was eleven commits
+  stale and the first attempt silently exercised old code.
+
+## 2026-07-30 — Visual regression suite reports only the first stale image per case
+- **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview
+  and then every bloom-player page in sequence, and every comparison throws on failure — so the
+  first stale baseline kills the case and the later comparisons never even capture their images.
+  After BL-16370 the stale previews meant **no** player page was compared for weeks: BL-16638
+  started as 10 baselines, became 22, and would have taken three accept-and-rerun rounds to
+  bottom out (10 previews → 10 player pages → 2 more hidden behind those). Each layer costs a
+  full ~3-minute run to discover, and the nightly reads as "one failure per case" the whole time.
+- **Idea:** Accumulate per-comparison failures for the case (label, pixel count, diff path), let
+  the preview capture and the whole player loop run to completion, then fail once at the end with
+  the full list. Proven to work — the change was made temporarily during BL-16638 to capture all
+  84 images in one run, then reverted. Roughly 20–30 lines, confined to that spec file.
+- **Context:** BL-16638 / PR #8134. Andrew chose "make a papercut entry" over fixing it inline.
+  Loop at `index.spec.ts:426`, assertion at `index.spec.ts:486`.
+
 ## 2026-07-28 — One talkingBookSpec test fails only under full-suite worker load
 - **Cut:** `talkingBookSpec.ts > showTool(checksum=missing, audio=missing, scenario=PreTextBox) => UPDATE`
   fails intermittently in `pnpm test`, but passes when its file is run alone, passes on a
@@ -118,6 +196,11 @@ House rules:
 - **Context:** BloomDesktop, `/preflight` of PR #8107 (dev launcher control API).
 - **seen again 2026-08-26:** `/preflight` of PR #8239 (BL-16763). The failed copy was read as a
   build break for a comment-only commit, which had already been pushed.
+- **seen again 2026-09-11:** a new mechanism for the same lock — stopping the backgrounded
+  `agent-dotnet.sh test` task (TaskStop) does **not** kill its `testhost.exe` child, which keeps
+  holding `Bloom.dll`, so every later build in that terminal fails MSB3027 until you
+  `taskkill //PID <testhost> //F` by hand. Killing the task is not enough; the wrapper should reap
+  its own test host, or say that an orphan is still holding the tree.
 
 ## 2026-07-27 — Changing harness imports + `reuseExistingServer` = 20 bogus test failures
 

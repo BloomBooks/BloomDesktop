@@ -528,6 +528,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             enabled={
                                 !recording &&
                                 isLicenseOK &&
+                                !isPlaygroundBook &&
                                 !(isScalingActive && recordingVideo) &&
                                 havePreviewForOrientation
                             }

@@ -23,8 +23,7 @@ and ask its author.
 | --- | --- | --- |
 | #8299 | `BL-16799-page-change` | `editView/jumpToPage` refuses a jump it cannot do, and every page-changing helper waits for the Edit tab to settle. |
 | #8300 | `BL-16799-collection-languages` | The `e2e/setCollectionLanguages` hook, so no test composes `.bloomCollection` XML. |
-| not yet open | `e2e-private-user-settings` | Every Bloom a test launches keeps its user settings in a folder of its own, named on the command line, so a run starts from defaults and its settings die with its temp folder. |
-| not yet open | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off the one above. |
+| #8306 | `e2e-real-library-login` | A test can sign in to dev.bloomlibrary.org for real, with a test account whose credentials the run supplies, so the upload cases can run to the end. Branches off `e2e-private-user-settings`, which gave every Bloom a test launches a settings folder of its own and removed its entry from this file. |
 
 Three of these also add entries of their own, for the debt that is left after the fix. The
 stack replaces PR #8276, which did all of this at once.
@@ -149,29 +148,19 @@ use.
 it, so it was left alone -- but it is the same shape, and worth remembering if a test ever finds
 that api reporting a stale subscription.
 
-## The Bloom Library login cannot be done for real in a test
+## The Sign in button's trip through the system browser cannot be driven
 
-Bloom's login state lives in machine-wide settings (`Settings.Default.WebUserId`), which an e2e
-Bloom shares with the developer's own Bloom, and signing in goes out to an external browser with
-real credentials. So a test can drive neither half of it: posting `account/logout` would sign the
-developer out of their own Bloom, and `account/login` would sit waiting for a human. The e2e hook
-`e2e/loginState` therefore makes Bloom *report* a login state without touching the real one, which
-is enough for the gate the upload screen enforces (Upload is offered only to a signed-in user) but
-covers neither the real sign-in and sign-out buttons nor anything that needs a real account —
-which is every manual case that uploads for real (#204, #205, #211-#213, #215, #217, #218, #220),
-so none of those can be automated either. Fix direction: a test account plus a per-instance login
-store (a login the `--e2e` instance keeps to itself), so a run can sign in for real and upload to
-dev.bloomlibrary.org without touching the developer's settings. The per-instance half of that is
-the same fix "Every Bloom of one build shares one user.config" asks for, below; the test account
-is the rest. Note that the pretense changes only what Bloom reports, so Bloom under `--e2e` now
-refuses to upload at all rather than let an automated click publish under the developer's real
-account.
-(Found 2026-09-02 automating Test Case ID 606, `upload-required-items.spec.ts`.)
-
-being fixed on `e2e-real-library-login`, once `e2e-private-user-settings` (the user.config entry
-below) has landed: with a settings folder of its own, a test's Bloom can be given a real test
-account's login before it starts, and can sign out for real without touching anyone else's login.
-The test account, and where its credentials live, are the rest of this branch.
+A test can now sign a Bloom in to dev.bloomlibrary.org for real (`signBloomIntoLibraryForReal`,
+`helpers/bloomLibraryAccount.ts`): it signs the test account in the way the website does and posts
+the result to `external/login`, the endpoint the website posts a browser login back to, and Bloom
+keeps it in the run's own settings folder. What stays out of reach is the button itself: Sign in
+opens the system browser on bloomlibrary.org's login page, and Playwright drives only Bloom's
+WebView2, so the click, the browser round trip, and the hand-back to Bloom are never exercised.
+Sign out is a plain button and could be, but no test does yet. Cost: the manual cases about the
+sign-in and sign-out buttons stay manual; every case that merely needs to be signed in (the upload
+cases) can run. Fix direction: none cheap. A Bloom-hosted login page under `--e2e` would test a
+different flow from the one users have.
+(Found 2026-09-04 automating Test Case ID 211, `bulk-upload-quick-test.spec.ts`.)
 
 ## Which front end the e2e suite tests depends on what else is running
 
@@ -306,6 +295,24 @@ shows a `.bloom-page`. Two page adds in a row therefore lost the second one.
 helpers no longer act early; the production endpoints still reply success to a request they
 dropped.
 
+seen again 2026-09-11 (Test Case ID 348, `copy-page.spec.ts`): the same drop hits
+`selectPage`, which the 2026-09-02 mitigation does not cover. `helpers/pageThumbnails.ts`
+waits only for the thumbnail to *exist* and then clicks it; its `waitForEditablePage` comes
+after the click, not before, so the click can land while the Edit tab is still settling. The
+kept Bloom log says the click went nowhere at all: the last line is `Entered Edit Tab` for
+the destination book, and for the next 60 seconds there is no `Select Page` and no `changing
+page via workspaceBundle.switchContentPage` — every selection that works logs both. The
+thumbnail therefore never gets `gridSelected` and the test fails on that assertion.
+
+What makes this one worth chasing rather than filing as flake: it fails **every** time on one
+developer machine (twice in full-suite runs and again running the spec alone) and **passed**
+on the 2026-09-11 nightly, so the runner and that machine differ in something that decides
+it. Nobody has found what. Until they do, the cheap fix is the same as the entry's: have
+`selectPage` wait for the Edit tab to be ready *before* it clicks, the way the other
+page-changing helpers now do.
+(Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
+font-chooser helper.)
+
 ## Filling a text box directly leaves part of the old text behind
 
 A `.bloom-editable` is a CKEditor surface, and Playwright's `fill()` on one leaves a
@@ -355,28 +362,6 @@ copy is a feature we want; if it is, put the page on the real clipboard, and giv
 fixture a way to run a second instance.
 (Found 2026-09-01 while automating Test Case ID 348.)
 
-## Every Bloom of one build shares one user.config, so a run inherits another Bloom's settings
-
-Bloom keeps its user settings (UI language, page zoom, and the rest of `Settings.Default`) in
-`%LOCALAPPDATA%\SIL\Bloom\<version>\user.config`, one file per build version, and `--e2e` does
-nothing to change that. So the Bloom a test launches starts from whatever the last Bloom of the
-same version saved, and saves its own changes for the next one. The e2e lock keeps suites from
-running at once, but a developer's own Bloom from a worktree of the same version is outside the
-lock and shares the file all the same, and so does the previous run of any suite.
-
-Seen 2026-09-02 (Test Case ID 356, `format-gear-positioning.spec.ts`): two runs found every
-factory template named in Turkish, then in French, and failed in `makeBookFromTemplate`, which
-matches the English title; a Bloom nobody in the suite had started was running at the time, and
-the file said `en` again a moment later. The same test has to restore the zoom it changes, because
-that setting is shared too. Fix direction: under `--e2e`, point the settings provider at a
-per-instance folder (a sibling of the temp collection would do), so a test's Bloom starts from
-defaults and its changes die with it.
-
-being fixed on `e2e-private-user-settings`: a command-line argument names the folder Bloom keeps
-its user settings in, and the launch fixture gives every Bloom it starts a folder inside the run's
-temp folder, so the settings start from defaults, or from whatever the test puts there first, and
-are deleted with the rest of the run.
-
 ## No way to run the suite at a chosen monitor resolution and scale factor
 
 Every run takes the resolution and the scale factor of whatever monitor it lands on, so a
@@ -408,8 +393,8 @@ Fix direction, cheapest first, none of it tried yet:
   driver is told to offer. Setting that monitor's *scale factor* is the harder half: Windows
   exposes per-monitor scale only through display-config calls Microsoft does not document.
   Worth an afternoon of investigation before committing to it.
-- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, but it
-  is the only one that also isolates the shared `user.config` described above.
+- **A virtual machine or Windows Sandbox** at a chosen resolution and scale. Heaviest, and the
+  only one that would also isolate everything else on the machine a run could inherit.
 
 Whatever the mechanism, the suite needs the same thing from it: a way to say "run these tests
 at 1920x1080 at 150%" and have the run either honour it or refuse, rather than silently using
@@ -566,3 +551,170 @@ The fix is a reading helper in `helpers/bookMaking.ts` -- `getPageLanguages(page
 visible editables of the page's translation groups -- so a test asks the page rather than assuming.
 `helpers/flowText.ts` already takes a language tag on every function; it is only the list of tags
 that is missing.
+## A title typed on the cover of a new book can fail to reach the collection
+
+`import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,
+then `makeBookFromTemplate`), typed a title on the cover as soon as the Edit tab reported
+`Editing`, and added a page, which saves the cover. Locally the collection then lists the
+book under that title, its folder renamed to match. On the CI runner, in the first nightly
+run that had the test (2026-09-05), the collection went on listing the book under the name
+Bloom made up for it (`Book-3d943766`) for the whole 30 seconds `findBookFolder` waited, and
+the cover thumbnail showed no title. The typing itself was confirmed: `typeInGroup` saw the
+title in the box. Every other spec that types a cover title the same way passes on that
+runner; none of them makes the book under a branding. So something between the typing and
+the save loses the text, or the save does not carry it, only when the book is new under a
+branding and the machine is slow. Not reproduced locally.
+
+Worked around in the test, 2026-09-05: it no longer types a title, and keeps the folder
+`makeBookFromTemplate` returns, which is stable as long as the book has no title. A test
+whose subject is the title, or the folder rename, cannot take that route.
+
+seen again: 2026-09-10 and 2026-09-11, in `bulk-upload-quick-test.spec.ts`, which cannot
+take that workaround because it needs four books findable by title. Both nightlies died on
+the first book, identically, so on the runner this is close to deterministic.
+
+seen again: 2026-09-11 (the second run that day, on `53eb325a4b`), in
+`xmatter-packs.spec.ts:77` — and NOT in `bulk-upload-quick-test`, which got all four titles
+that run and then failed further on, at the upload itself. So it is not tied to one spec: it
+moves between whichever specs type a cover title on a new book.
+
+What the 2026-09-11 evidence adds — the first failure since #8343 started keeping the
+collection and Bloom's log on a failed test, so for once we can see the wreckage:
+
+- **Only the cover title is lost.** In the kept collection every `data-book="bookTitle"`
+  div is empty, `<title>` is empty, and `meta.json` has `"title": ""` — while the page
+  added straight afterwards, the "Hello." typed on it, and the copyright set later through
+  the Publish dialog are all saved. One edit is being dropped, not a save failing.
+- **The signature in Bloom's log is an absence.** Locally `InsertTemplatePage` is followed
+  by `Renaming html … -> '<title>.htm'` and `Renaming folder …` before
+  `BookStorage.Saving…`. On the runner those two lines are missing: the `SaveThen` that
+  `OnInsertPage` wraps the insert in got page content back from the browser with no title
+  in it, so there was nothing to rename to. That absence is the cheapest way to spot this
+  failure in a nightly log.
+- **Not reproducible on a fast machine.** Twelve attempts on a developer box — six at full
+  speed, six with the WebView renderer throttled 6x over CDP — all renamed the folder and
+  saved the title. Renderer slowness alone is not the trigger.
+
+**Answered, 2026-09-11**, by two instruments landed in #8352 — a throwaway probe spec that
+made the same book three times, typing the title a different way each time, and the
+`Cover-title investigation:` line `EditingModel.UpdateBookDomFromBrowserPageContent` logs —
+read from the nightly run on `53eb325a4b`. Three things are now ruled out and one is pinned
+down.
+
+- **Not how we type.** All three probe variants — `insertText`, real key presses, and
+  `insertText` then an explicit blur — reached the collection on the runner. The theory that
+  `insertText`'s missing key events were to blame is dead, and `typeInGroup` does not need to
+  change.
+- **Not branding.** The run's actual loss was in `xmatter-packs.spec.ts:77`, whose collection
+  is `<BrandingProjectName>Default</BrandingProjectName>` with an empty `SubscriptionCode`.
+  The earlier guess that this only happens "under a branding" was an artifact of the two
+  specs that had hit it, and is wrong.
+- **Not Bloom's save.** The log line for that failure reads `page content from the browser
+  carries bookTitle en="", z=""`. The DOM the browser handed back for the save had no title
+  in it, so nothing in `SaveThen`, `UpdateDomFromEditedPage` or `BookStorage` lost anything —
+  there was nothing there to lose. The empty `bookTitle` in the kept collection's HTML agrees.
+- **It is the browser, between the typing and the capture.** `typeInGroup` asserts
+  `toHaveText` after typing, so the text demonstrably reached the box; a few seconds later
+  `requestPageContent()` returned a page without it.
+
+**The mechanism, proven 2026-09-11: CKEditor discards what you type while it is still
+starting up.** `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector`
+matches and returns at once, but the editor only finishes initialising some time later — and
+when it does, it writes the snapshot it took at `inline()` time over whatever the element
+holds by then. Watching a real Bloom's DOM over CDP while a developer typed by hand:
+
+```
+ms=0     installed                 text=""      cke_editable=false
+ms=942   mut:childList+charData    text="a"     cke_editable=false
+ms=944   mut:characterData         text="af"    cke_editable=false
+ms=944   mut:characterData         text="afd"   cke_editable=false
+ms=1215  mut:attributes+childList  text=""      cke_editable=true
+```
+
+The class going on and the content being wiped are one and the same DOM mutation, so there is
+no inference left in this: that is the editor becoming ready and overwriting the typing. A
+detach/re-attach experiment gives the same result deterministically — text put in after
+`inline()` and before `instanceReady` is gone once the editor is ready.
+
+**This is a Bloom defect, and a user-facing one**: type a title fast enough after making a
+book and it silently disappears. It was reproduced by hand, twice, on a normal developer
+machine, with a window of about 1.2 seconds; a loaded machine widens it, which is why the
+runner hit it so reliably. **It is deliberately not being fixed** — CKEditor is being retired
+(the `retireCkEditor` work), so the fix is that removal. The attach site in
+`bookEdit/js/bloomEditing.ts` carries a note pointing back here, for whoever does it.
+
+**The suite's workaround did NOT stop it, 2026-09-11 (second run of the night).**
+`clickInGroup` now waits for the `cke_editable` class before touching a box, on the boxes that
+get an editor at all (it asks the page the same three questions `bloomEditing.ts` asks:
+matches `ckeditableSelector`, no `.bloom-canvas` on the page, not read-only). Every typing path
+funnels through it, so no spec needed changing. The very next nightly still lost two titles:
+
+- `publish-talking-book-languages.spec.ts:82` — `has no book called "Talking Book Languages
+  Test". It has: "Book-bbd2b161"`.
+- `publish-text-languages.spec.ts:46` — `has no book called "Text Languages Test". It has:
+  "Title Missing"` — a **new** end state; every earlier loss left the book as `Book-<hex>`.
+
+Both type through `typeInGroup`, so the wait ran and the title went anyway. Note what the run
+does NOT show: `xmatter-packs`, which lost its title the run before, passed, and
+`bulk-upload-quick-test` again got all four books titled. The loss keeps moving between specs
+(`import-recording` → `bulk-upload` → `xmatter-packs` → these two), which is what it did before
+the wait existed. So the wait may have narrowed the window without closing it, or may be doing
+nothing; one run cannot tell those apart. **It is kept for now** rather than reverted, because
+removing it would only make the next run harder to interpret.
+
+**Why it did not work, answered 2026-09-12 by the instrumentation.** The wait was keyed on the
+wrong signal. `cke_editable` reaches the element *before* the editor is ready, so the wait
+returned while the box was still inside the window where the editor would overwrite it. The
+console trace from the failing run shows it plainly, in order:
+
+```
+[cover-title] attaching an editor; box holds ""
+    … the test's three insertText calls land here …
+[cover-title] editor ready; box now holds ""
+```
+
+and Bloom's own log agrees that nothing ever reached the save: `bookTitle en=""; the book's
+title is currently "Book-c12aeca0"`. No second attach was needed to explain it — the simpler
+reading was right, and the earlier guess (a re-attach) was wrong.
+
+**Fixed by asking CKEditor instead of the DOM**: the wait now polls `editor.status === "ready"`
+on the instance bound to that box, which is true from the moment it fires `instanceReady`. It
+also no longer tries to predict whether a box will get an editor by copying `bloomEditing.ts`'s
+three conditions — that copy could drift out of step, and guessing "no editor" wrongly skips the
+wait entirely, which is the failure that looks exactly like no bug. It waits for an editor to
+appear and, if none is bound after a short grace period, concludes none is coming.
+
+Beware the trap that hid this twice: a verification run where the box is **already** ready
+proves the wait costs nothing, NOT that it works. Only a run that starts from `unloaded` and
+blocks to `ready` demonstrates anything.
+
+**What is instrumented now**, and why it should stay until the nightly goes several runs without
+losing a title:
+
+- `EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation:` — the
+  bookTitle the browser handed the save, and what the book already believes its title is. An
+  empty box with a known title means something cleared it after an earlier save; both empty
+  means it never arrived.
+- `attachToCkEditor` logs `[cover-title]` on every attach to a title box, with the text going in
+  and the text once the editor is ready. Two attaches in one page load would confirm the
+  hypothesis above. Playwright keeps the page console in its trace, so a failed run carries it.
+
+This instrumentation was once removed as soon as the mechanism looked understood, and was needed
+again the next night. Do not remove it on the strength of one green run.
+
+Independently of all this, `findBookFolder` could look a book up by its id
+(`collections/books` reports one) so that no test depends on the rename at all.
+(Found 2026-09-05 in the nightly run; diagnosed 2026-09-11.)
+
+## The canvas e2e suite is attach-only, so nothing runs it unattended
+
+`bookEdit/canvas-e2e-tests` drives `http://localhost:8089/bloom/CURRENTPAGE` — a Bloom a
+developer already launched, with the right book open on the right page — and fails fast when
+that URL is not reachable. It has no fixture that launches Bloom, opens a collection, or
+navigates to a canvas page, so it cannot join the nightly's five suites, and canvas
+regressions (drag-to-canvas, element manipulation, the Canvas Tool panel) are only caught
+when someone runs it by hand at a workstation. Fix direction: port the suite onto BloomE2E's
+fixtures (`bloomTest` plus a prepared collection holding a known canvas page); the nightly
+already has everything that shape of suite needs, so after the port, adding it is a config
+edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
+is worth keeping — page loads are the slow part either way.

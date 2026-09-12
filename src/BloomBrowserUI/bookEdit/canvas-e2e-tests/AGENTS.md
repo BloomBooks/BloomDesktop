@@ -34,6 +34,13 @@ Use Playwright UI mode for interactive reruns and debugging:
 
 The command fails fast if `http://localhost:8089/bloom/CURRENTPAGE` is not reachable.
 
+Set `BLOOM_CANVAS_E2E_URL` to target a Bloom on another port. 8089 is
+first-come-first-served across worktrees (Bloom falls forward to the next
+port block when it is taken), so before trusting a run, verify which Bloom
+owns the port you are driving — launcher `--status` in the right worktree, or
+`bloomProcessStatus.mjs --running-bloom` — or you may be testing another
+worktree's build.
+
 ## Stability notes for future agents
 
 - Shared mode teardown is implemented in fixtures using `CanvasElementManager` APIs (not click-based selection), because overlay canvases can intercept pointer events.

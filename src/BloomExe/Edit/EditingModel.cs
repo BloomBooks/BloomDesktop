@@ -1956,12 +1956,59 @@ namespace Bloom.Edit
             }
             //OK, looks safe, time to save.
             var editedDom = new HtmlDom(docFromBrowser);
+            LogCoverTitleArrivingFromBrowser(editedDom);
             var newPageData = GetPageData(editedDom.RawDom);
             _nextSaveMustBeFull = CurrentBook.UpdateDomFromEditedPage(
                 editedDom,
                 out _modifiedPageElement,
                 _nextSaveMustBeFull || NeedToDoFullSave(newPageData)
             );
+        }
+
+        /// <summary>
+        /// Say, in the log, what book title (if any) arrived in the page content the browser just
+        /// sent us, and what the book's title is on our side at that moment — but only when the
+        /// page has a title box at all, so this stays quiet for every other page.
+        ///
+        /// This is here for the investigation written up in src/BloomE2E/AUTOMATION-DEBT.md, "A
+        /// title typed on the cover of a new book can fail to reach the collection": a title typed
+        /// on a brand-new book's cover is sometimes missing from the saved book, and this is the
+        /// line that says whether the text was already gone from the browser's page (it was, the
+        /// one time we caught it) or was lost afterwards. It was removed once, when the question
+        /// looked settled, and had to come back the next night — so leave it until the nightly has
+        /// gone several runs without losing a title.
+        /// </summary>
+        private void LogCoverTitleArrivingFromBrowser(HtmlDom editedDom)
+        {
+            try
+            {
+                var titles = editedDom
+                    .RawDom.SafeSelectNodes("//div[@data-book='bookTitle']")
+                    .Cast<SafeXmlElement>()
+                    .ToList();
+                if (titles.Count == 0)
+                    return;
+                // Every language's box, so a title that landed under the wrong language is visible
+                // too rather than looking like no title at all.
+                var described = string.Join(
+                    ", ",
+                    titles.Select(t => $"{t.GetAttribute("lang")}=\"{t.InnerText?.Trim()}\"")
+                );
+                // What the book already believes its title is. When the browser sends an empty box
+                // but this is set, the text reached us on an earlier save and something later
+                // cleared it; when both are empty, it never arrived.
+                var knownTitle = CurrentBook?.Title ?? "(no book)";
+                Logger.WriteEvent(
+                    $"Cover-title investigation: page content from the browser carries bookTitle {described}; the book's title is currently \"{knownTitle}\""
+                );
+            }
+            catch (Exception e)
+            {
+                // Never let a diagnostic break a save.
+                Logger.WriteEvent(
+                    $"Cover-title investigation: could not read bookTitle ({e.Message})"
+                );
+            }
         }
 
         // If we return 'true', we need to do a complete book save, otherwise we'll just save this page.

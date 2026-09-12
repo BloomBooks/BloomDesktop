@@ -193,6 +193,35 @@ describe("aiImageEditorPageCommands: the menu command", () => {
             slotIndex: 2,
         });
     });
+
+    test("a game target's copy of a picture does not shift the index (BL-16793)", () => {
+        // A Bloom Games target holds a copy of its draggable's whole content, image container
+        // and all. C# declines to OFFER that copy to the AI image editor, but it still counts
+        // it when numbering, so this side has to count it too.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-canvas-element" data-draggable-id="d1">
+                    <div class="bloom-imageContainer"><img src="dog.png" /></div>
+                </div>
+                <div data-target-of="d1">
+                    <div class="bloom-targetWrapper">
+                        <div class="bloom-imageContainer"><img src="dog.png" /></div>
+                    </div>
+                </div>
+                <div class="bloom-canvas-element" data-draggable-id="d2">
+                    <div class="bloom-imageContainer"><img src="cat.png" /></div>
+                </div>
+            </div>`;
+        const secondDraggablesImage = document.querySelector(
+            '[data-draggable-id="d2"] img',
+        ) as HTMLImageElement;
+
+        launchAiImageEditor(secondDraggablesImage, undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 2,
+        });
+    });
 });
 
 describe("aiImageEditorPageCommands: applying current-page replacements", () => {

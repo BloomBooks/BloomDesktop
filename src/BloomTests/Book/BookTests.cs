@@ -296,6 +296,73 @@ namespace BloomTests.Book
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
 
+        /// <summary>
+        /// BL-16819: the user's Transparency choice for the cover image (here Opaque) is a class on the
+        /// img and, once the page is saved, on the data-div copy. Bringing the book up to date replaces
+        /// the xmatter with a fresh template page and refills the cover image from the data-div, and the
+        /// choice must survive that.
+        /// </summary>
+        [Test]
+        public void BringBookUpToDate_CoverImageTransparencyChoiceSurvives()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*' src='aor.png' data-canvas-element-style='width: 468px; height: 479px; top: 31px; left: 0px;' data-canvas-imgsizebasedon='469,545' class=' bloom-imageLoadError bloom-opaque' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa'>aor.png</div>
+					</div>
+					<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' data-xmatter-page='frontCover' data-custom-layout-id='customOutsideFrontCover' id='cover' lang='en'>
+						<div class='marginBox'>
+							<div class='bloom-canvas bloom-has-canvas-element' data-imgsizebasedon='469,545'>
+								<div class='bloom-canvas-element bloom-backgroundImage' style='width: 468px; height: 479px; top: 31px; left: 0px;'>
+									<div class='bloom-imageContainer'>
+										<img data-book='coverImage' src='aor.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' class='bloom-opaque' alt='' />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>"
+            );
+            var book = CreateBook();
+            var dom = book.RawDom;
+            var pageImageXpath =
+                "//div[contains(@class,'bloom-page')]//img[@data-book='coverImage']";
+            Assert.That(
+                ((SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath)).HasClass(
+                    "bloom-opaque"
+                ),
+                Is.True,
+                "sanity check: the cover image starts out Opaque"
+            );
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var dataDivImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+            Assert.That(
+                dataDivImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the data-div copy should keep the Opaque choice"
+            );
+            var pageImage = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("aor.png"));
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the cover image should still be Opaque after the xmatter is regenerated"
+            );
+
+            // And the page as prepared for the Edit tab must show the choice too.
+            var coverPage = book.GetPages().First(p => p.IsXMatter);
+            var editDom = book.GetEditableHtmlDomForPage(coverPage);
+            var editImg = (SafeXmlElement)editDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(
+                editImg.HasClass("bloom-opaque"),
+                Is.True,
+                "the page prepared for editing should keep the Opaque choice"
+            );
+        }
+
         // Unless it's part of a bloom-canvas that has an image description, an image
         // should have an alt attr that is exactly an empty string.
         [Test]
@@ -2117,13 +2184,6 @@ namespace BloomTests.Book
         {
             var book = CreateBook();
             Assert.IsTrue(book.CanDelete);
-        }
-
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
         }
 
         [Test]

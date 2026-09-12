@@ -3641,6 +3641,12 @@ namespace Bloom.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Apply the transparency algorithm to a copy of the image at destinationPath (which must be
+        /// a .png path) if the image looks like line art on a white background; otherwise do nothing
+        /// and return false. Handles a JPEG source the same way the display pipeline does: the
+        /// line-art check accepts JPEGs, and the copy is re-saved as PNG so it can carry the alpha.
+        /// </summary>
         internal static bool MakeTransparentBackgroundIfNeeded(
             string sourcePath,
             string destinationPath
@@ -3648,24 +3654,33 @@ namespace Bloom.ImageProcessing
         {
             using (var imageInfo = PalasoImage.FromFileRobustly(sourcePath))
             {
-                if (ShouldMakeBackgroundTransparent(imageInfo))
-                {
-                    RobustFile.Copy(sourcePath, destinationPath, true);
-                    ApplyBloomTransparencyToFile(destinationPath);
-                    return true;
-                }
+                if (!ShouldMakeBackgroundTransparent(imageInfo))
+                    return false;
             }
-            return false;
+            return MakeTransparentBackground(sourcePath, destinationPath);
         }
 
         /// <summary>
         /// Like <see cref="MakeTransparentBackgroundIfNeeded"/> but always applies the
         /// transparency algorithm, bypassing the line-art detection check.
         /// Used when an image has the <c>bloom-transparent</c> class (<c>transparent=force</c>).
+        /// The destination must be a .png path: only a PNG can carry the alpha channel, and
+        /// ApplyBloomTransparencyToFile does nothing to any other extension. A source that is not
+        /// itself a PNG (a JPEG cover, say) is re-saved as PNG there rather than copied.
         /// </summary>
         internal static bool MakeTransparentBackground(string sourcePath, string destinationPath)
         {
-            RobustFile.Copy(sourcePath, destinationPath, true);
+            if (sourcePath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
+            {
+                RobustFile.Copy(sourcePath, destinationPath, true);
+            }
+            else
+            {
+                using (var imageInfo = PalasoImage.FromFileRobustly(sourcePath))
+                {
+                    RobustImageIO.SaveImage(imageInfo.Image, destinationPath, ImageFormat.Png);
+                }
+            }
             ApplyBloomTransparencyToFile(destinationPath);
             return true;
         }
