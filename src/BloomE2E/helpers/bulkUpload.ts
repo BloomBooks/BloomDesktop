@@ -68,25 +68,60 @@ export async function startCollectionUpload(page: Page): Promise<void> {
 }
 
 /**
+ * How long to give one bulk upload.
+ *
+ * The child Bloom makes a thumbnail, a PDF preview, a PDF from the HTML and a Ghostscript
+ * compression pass for every book it uploads, and then sends each one to dev.bloomlibrary.org, so a
+ * round that really uploads four books is minutes of work — on a runner that is slower than a
+ * developer machine and often busy with the rest of the suite. This was 180s, which the runner did
+ * not manage even for the first of the four books: its log stopped inside "Compressing PDF" on book
+ * 1. So this is deliberately generous. An upload that is merely slow should finish; only one that
+ * is genuinely stuck should reach this.
+ */
+const kBulkUploadTimeoutMs = 600000;
+
+/**
  * Wait until the bulk-upload child process has finished and return its tally. It writes the log as
  * it goes and ends with the three counts, so this polls for the "Skipped ... books" line — the last
- * of the three — then reads all three. Throws with the log when it does not finish in time.
+ * of the three — then reads all three.
+ *
+ * When it does not finish in time, the failure says how far the upload actually got. That is the
+ * thing worth knowing and it used to be missing: "stuck inside Compressing PDF on book 1" and
+ * "never wrote a line at all" are different problems with different fixes, and telling them apart
+ * meant downloading the run's artifact and unzipping it.
  */
 export async function waitForBulkUploadResult(
     collectionDir: string,
-    timeoutMs = 180000,
+    timeoutMs = kBulkUploadTimeoutMs,
 ): Promise<IBulkUploadResult> {
     const file = logPath(collectionDir);
     const skippedLine = /Skipped (\d+) books/;
-    await expect
-        .poll(
-            () => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : ""),
-            {
-                timeout: timeoutMs,
-                message: `The bulk upload never finished: ${file} did not report a final tally.`,
-            },
-        )
-        .toMatch(skippedLine);
+    const readLog = () =>
+        fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+    const startedAt = Date.now();
+    try {
+        await expect.poll(readLog, { timeout: timeoutMs }).toMatch(skippedLine);
+        // Report how long a round that worked actually took. Nobody knows yet what a bulk upload
+        // costs on the runner — the first measurement anyone had was of a round that never
+        // finished — and the timeout above cannot be right-sized until a few real numbers come
+        // back from the nightly.
+        console.error(
+            `[bulk upload] finished in ${Math.round((Date.now() - startedAt) / 1000)}s`,
+        );
+    } catch {
+        const lines = readLog()
+            .split(/\r?\n/)
+            .map((line) => line.trimEnd())
+            .filter((line) => line.length > 0);
+        const howFar = lines.length
+            ? lines.slice(-8).join("\n    ")
+            : "(the child Bloom never wrote a line — it may not have started at all)";
+        throw new Error(
+            `The bulk upload did not finish within ${Math.round(timeoutMs / 1000)}s: ` +
+                `${file} never reported its final tally.\n` +
+                `  How far it got, from the end of that log:\n    ${howFar}`,
+        );
+    }
 
     const log = fs.readFileSync(file, "utf8");
     const count = (pattern: RegExp): number => {
