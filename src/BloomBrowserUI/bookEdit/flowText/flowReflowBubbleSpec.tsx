@@ -57,6 +57,7 @@ import {
     removeReflowBubbles,
     setFlowSettleWaiter,
 } from "./flowReflowBubble";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /**
  * A page holding one translation group per entry of `chainIds`. An undefined entry makes a
@@ -137,6 +138,8 @@ async function refresh(page: HTMLElement): Promise<void> {
 
 describe("flowReflowBubble", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         pendingWalks = undefined;
         reflowOnPageChangeAnswer = false;
         autoPagesAnswer = false;

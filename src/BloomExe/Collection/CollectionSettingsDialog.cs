@@ -52,6 +52,8 @@ namespace Bloom.Collection
         internal bool PendingAllowTeamCollection;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
+        internal bool PendingEnableFlowText;
+
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
@@ -116,6 +118,9 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
+            );
+            PendingEnableFlowText = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kFlowText
             );
 
             if (
@@ -413,6 +418,7 @@ namespace Bloom.Collection
             Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
+            UpdateFlowTextAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -825,6 +831,15 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
+        }
+
+        /// <summary>
+        /// Save the flow-text experimental feature as the Advanced tab left it. No restart is
+        /// needed: the edit view asks for the feature's status as each page loads.
+        /// </summary>
+        private void UpdateFlowTextAllowed()
+        {
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kFlowText, PendingEnableFlowText);
         }
     }
 }

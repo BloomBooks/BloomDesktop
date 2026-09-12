@@ -22,6 +22,7 @@ import {
     getPendingOverflow,
     IPendingOverflow,
 } from "./flowBoundaryClient";
+import { isFlowTextAvailable } from "./flowTextAvailable";
 import {
     kContinueButtonClass,
     kContinueButtonEnglish,
@@ -123,6 +124,10 @@ export function resetPendingOverflowCache(): void {
  * `root` is a page, or anything holding pages.
  */
 export function updateContinueButtons(root: ParentNode = document): void {
+    if (!isFlowTextAvailable()) {
+        return;
+    }
+
     getPages(root).forEach((page) => {
         Array.from(
             page.querySelectorAll<HTMLElement>(kVisibleEditableSelector),

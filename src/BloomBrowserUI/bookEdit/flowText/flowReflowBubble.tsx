@@ -29,6 +29,7 @@ import * as React from "react";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { renderRootSync, unmountRoot } from "../../utils/reactRender";
 import { waitForBoundaryQueue } from "./flowBoundaryClient";
+import { isFlowTextAvailable } from "./flowTextAvailable";
 import {
     kAutoPagesEnglish,
     kAutoPagesL10nId,
@@ -115,6 +116,10 @@ export function setFlowSettleWaiter(
 export function refreshReflowBubbles(
     root: ParentNode = document,
 ): Promise<void> {
+    if (!isFlowTextAvailable()) {
+        return Promise.resolve();
+    }
+
     if (refreshing) {
         wantedAgain = true;
         return refreshTail;

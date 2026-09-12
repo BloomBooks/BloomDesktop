@@ -101,6 +101,7 @@ import {
     suspendFlowText,
     waitForBoundaryWork,
 } from "./flowTrigger";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 // The real fit probe asks a Range for its rectangles, and jsdom's Range has no such method.
 // An answer of no rectangles is what jsdom means: nothing is laid out, so all of it "fits".
@@ -194,6 +195,8 @@ function reasonsOfPasses(): string[] {
 
 describe("flowTrigger", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
         frameQueue = [];
         clearSamples();

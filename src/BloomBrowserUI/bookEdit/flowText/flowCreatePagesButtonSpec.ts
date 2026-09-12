@@ -47,6 +47,7 @@ import {
 } from "./flowConstants";
 import { setFlowPassRunner } from "./flowContinueButton";
 import { resetNextBoxCache } from "./flowNextBox";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /**
  * A page of origami split panes holding one translation group per box. `boxes` says, per box,
@@ -160,6 +161,8 @@ function giveBoxABox(
 
 describe("flowCreatePagesButton", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
         resetNextBoxCache();
         nextBox = undefined;

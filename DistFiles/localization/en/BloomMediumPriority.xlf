@@ -55,6 +55,21 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.FlowText" translate="no">
+        <source xml:lang="en">Flow Text</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.FlowText</note>
+        <note>Label of a checkbox in the Experimental Features group of the Advanced tab of the collection Settings dialog. It turns on flow text, where one run of text carries on from one text box into the next.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.FlowText.Description" translate="no">
+        <source xml:lang="en">Text you type keeps going into the next text box, and on to later pages, instead of stopping when a box is full.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.FlowText.Description</note>
+        <note>Explanatory line under the Flow Text checkbox in the Experimental Features group of the Advanced tab of the collection Settings dialog. It tells the user what happens to their text once the checkbox is on.</note>
+      </trans-unit>
+      <trans-unit id="Feature.FlowText" translate="no">
+        <source xml:lang="en">Flow Text</source>
+        <note>ID: Feature.FlowText</note>
+        <note>Name of the flow text feature, used in subscription messages such as the one saying which subscription tier a feature needs.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FlowText.ContinueFromBoxAbove" translate="no">
         <source xml:lang="en">flow text here from the box above</source>
         <note>ID: EditTab.FlowText.ContinueFromBoxAbove</note>

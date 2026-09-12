@@ -5,6 +5,7 @@
 
 import { unlinkFrom } from "./flowBoundaryClient";
 import { getFlowGroupsOfPage } from "./flowChain";
+import { isFlowTextAvailable } from "./flowTextAvailable";
 import {
     kContinuationAttr,
     kFlowChainAttr,
@@ -33,6 +34,10 @@ export interface UnlinkOptions {
 
 /** Is the box's group part of a chain? This is what decides whether Unlink is offered. */
 export function isBoxLinked(element: HTMLElement): boolean {
+    if (!isFlowTextAvailable()) {
+        return false;
+    }
+
     const group = element.closest(kTranslationGroupSelector);
     return !!group?.getAttribute(kFlowChainAttr);
 }
@@ -48,6 +53,10 @@ export function unlinkBox(
     element: HTMLElement,
     options: UnlinkOptions = {},
 ): void {
+    if (!isFlowTextAvailable()) {
+        return;
+    }
+
     const group = element.closest<HTMLElement>(kTranslationGroupSelector);
     const page = element.closest<HTMLElement>(kPageSelector);
     const chainId = group?.getAttribute(kFlowChainAttr);

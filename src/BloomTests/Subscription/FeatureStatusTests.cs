@@ -97,9 +97,10 @@ namespace BloomTests.FeatureStatusTests
             StringAssert.Contains("\"visible\":true", json);
         }
 
-        // No feature in the registry is currently gated by an experimental token, so these two
-        // tests exercise the mechanism itself with a FeatureInfo made up here. The token is one
-        // no real feature uses, so flipping it cannot disturb any other test.
+        // These two tests exercise the mechanism itself with a FeatureInfo made up here, rather
+        // than any registry entry that happens to use it (FlowTextFeatureTests covers the one
+        // that does). The token is one no real feature uses, so flipping it cannot disturb any
+        // other test.
         private const string kTestExperimentalToken = "test-only-experimental-feature";
 
         private static FeatureInfo MakeExperimentalProFeature()

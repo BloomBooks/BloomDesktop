@@ -9,6 +9,7 @@ import {
     kSeamSpaceAttr,
     kSeamSpaceAttrValue,
 } from "./flowConstants";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /** One box of the page: its text, and the chain id its group carries. */
 type BoxSpec = { text: string; chainId?: string; continuation?: boolean };
@@ -54,6 +55,8 @@ function chainIdOf(page: HTMLElement, index: number): string | null {
 
 describe("flowCommands", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
     });
 

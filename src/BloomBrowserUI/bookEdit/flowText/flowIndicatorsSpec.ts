@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
     clearPageOverflowsIfNoBoxOverflows,
     stripTransientFlowMarkup,
     suppressesOverflowMarking,
     updateIndicators,
 } from "./flowIndicators";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /** A page of chained groups, each with one visible box of the chain's language. */
 function makeChainedPage(boxCount: number, chainId = "chain-1"): HTMLElement[] {
@@ -121,7 +122,22 @@ describe("the page's own overflow warning", () => {
 
 describe("suppressesOverflowMarking", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
+    });
+
+    afterEach(() => {
+        setFlowTextAvailableForTesting(undefined);
+    });
+
+    it("is false for a chained box once the collection may not flow text", () => {
+        const chain = makeChainedPage(3);
+        // Sanity check: this box is one the flow would otherwise keep the warning off.
+        expect(suppressesOverflowMarking(chain[0])).toBe(true);
+
+        setFlowTextAvailableForTesting(false);
+        expect(suppressesOverflowMarking(chain[0])).toBe(false);
     });
 
     it("is true for every box but the last one on the page", () => {

@@ -26,6 +26,7 @@ import { kBloomCanvasSelector } from "../toolbox/canvas/canvasElementConstants";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { createPagesAndContinue, jumpToPage } from "./flowBoundaryClient";
+import { isFlowTextAvailable } from "./flowTextAvailable";
 import { getFlowGroupsOfPage } from "./flowChain";
 import {
     kCreatePagesButtonClass,
@@ -65,6 +66,10 @@ const kGapBelowBox = 4;
  * `root` is a page, or anything holding pages.
  */
 export function updateCreatePagesButtons(root: ParentNode = document): void {
+    if (!isFlowTextAvailable()) {
+        return;
+    }
+
     getPages(root).forEach((page) => {
         Array.from(
             page.querySelectorAll<HTMLElement>(kVisibleEditableSelector),

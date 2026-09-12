@@ -1,7 +1,8 @@
 // The marks that tell the user, and the overflow checker, what the flow is doing.
 //
-// This module must import nothing but flowChain and flowConstants: OverflowChecker imports
-// it, so anything it pulls in becomes part of the overflow checker's import graph.
+// This module must import nothing but flowChain, flowConstants and flowTextAvailable:
+// OverflowChecker imports it, so anything it pulls in becomes part of the overflow checker's
+// import graph.
 
 import { getLanguageChainOnPage } from "./flowChain";
 import {
@@ -11,6 +12,7 @@ import {
     kRefusedReasonAttr,
     kReflowingAttr,
 } from "./flowConstants";
+import { isFlowTextAvailable } from "./flowTextAvailable";
 
 const kTranslationGroupSelector = ".bloom-translationGroup";
 const kPageSelector = ".bloom-page";
@@ -78,6 +80,12 @@ export function clearPageOverflowsIfNoBoxOverflows(
  * The last box on the page keeps its warning, because that is where text really runs out.
  */
 export function suppressesOverflowMarking(editable: HTMLElement): boolean {
+    if (!isFlowTextAvailable()) {
+        // A book made while the collection could flow text still holds its chains, but nothing
+        // will move that text now, so every box of them owes the user the ordinary warning.
+        return false;
+    }
+
     const chain = getLanguageChainOnPage(editable);
     if (chain.length < 2) {
         return false;

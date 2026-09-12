@@ -38,6 +38,7 @@ import {
     kFlowChainAttr,
     kOverflowStartClass,
 } from "./flowConstants";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /**
  * A page of origami split panes holding one translation group per box. `boxes` says, per box,
@@ -126,6 +127,8 @@ async function flushAnswers(): Promise<void> {
 
 describe("flowContinueButton", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
         resetPendingOverflowCache();
         pendingOverflow = undefined;

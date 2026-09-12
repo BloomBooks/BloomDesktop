@@ -13,6 +13,13 @@ namespace Bloom
         public const string kTeamCollections = "team-collections";
 
         /// <summary>
+        /// Flow text: one run of text carried through a chain of linked boxes. Named in
+        /// FeatureRegistry as the FlowText feature's ExperimentalFeatureToken, so a collection
+        /// also needs a subscription before Bloom offers it.
+        /// </summary>
+        public const string kFlowText = "flow-text";
+
+        /// <summary>
         /// The comma-separated tokens of the features that are enabled: normally the saved setting,
         /// but under --e2e only what the command line asked for (--experimental-features), which
         /// may be nothing.

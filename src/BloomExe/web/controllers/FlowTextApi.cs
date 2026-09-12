@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Publish;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -42,6 +44,7 @@ namespace Bloom.web.controllers
         private readonly EditingModel _editingModel;
         private readonly PageTemplatesApi _pageTemplatesApi;
         private readonly ITemplateFinder _sourceCollectionsList;
+        private readonly CollectionSettings _collectionSettings;
 
         /// <summary>
         /// Where the caret should go when the next page loads, when the text the user was typing
@@ -69,13 +72,15 @@ namespace Bloom.web.controllers
             BookSelection bookSelection,
             EditingModel editingModel,
             PageTemplatesApi pageTemplatesApi,
-            ITemplateFinder sourceCollectionsList
+            ITemplateFinder sourceCollectionsList,
+            CollectionSettings collectionSettings
         )
         {
             _bookSelection = bookSelection;
             _editingModel = editingModel;
             _pageTemplatesApi = pageTemplatesApi;
             _sourceCollectionsList = sourceCollectionsList;
+            _collectionSettings = collectionSettings;
             // A caret waiting for a page of one book, and content a walk worked out for a page of
             // one book, mean nothing once the book has been reloaded, let alone once another book
             // is selected: both name a page of a document that no longer exists.
@@ -241,51 +246,73 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             // Every one of these reads or writes the book's DOM and may save a page, so they all
-            // run on the UI thread.
+            // run on the UI thread. Each goes through Gated: the browser is told not to offer
+            // flow text without a subscription, but a request that arrives anyway is refused
+            // here rather than trusted.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingOverflow",
-                HandleGetPendingOverflow,
+                Gated(HandleGetPendingOverflow),
                 true
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "continueInto",
-                HandleContinueInto,
+                Gated(HandleContinueInto),
                 true
             );
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "previous", HandleGetPrevious, true);
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "peekNext", HandlePeekNext, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "previous",
+                Gated(HandleGetPrevious),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "peekNext",
+                Gated(HandlePeekNext),
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "setNextContent",
-                HandleSetNextContent,
+                Gated(HandleSetNextContent),
                 true
             );
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "unlinkFrom", HandleUnlinkFrom, true);
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "walk", HandleWalk, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "unlinkFrom",
+                Gated(HandleUnlinkFrom),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "walk", Gated(HandleWalk), true);
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingWalks",
-                HandleGetPendingWalks,
+                Gated(HandleGetPendingWalks),
                 true
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "refitResult",
-                HandleGetRefitResult,
+                Gated(HandleGetRefitResult),
                 true
             );
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "reflowNow", HandleReflowNow, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "reflowNow",
+                Gated(HandleReflowNow),
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "reflowOnPageChange",
-                HandleReflowOnPageChange,
+                Gated(HandleReflowOnPageChange),
                 true
             );
-            apiHandler.RegisterEndpointHandler(kApiUrlPart + "autoPages", HandleAutoPages, true);
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "autoPages",
+                Gated(HandleAutoPages),
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingCaret",
-                HandlePendingCaret,
+                Gated(HandlePendingCaret),
                 true
             );
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "deleteEmptiedPage",
-                HandleDeleteEmptiedPage,
+                Gated(HandleDeleteEmptiedPage),
                 true
             );
 
@@ -298,10 +325,49 @@ namespace Bloom.web.controllers
             // worker cannot starve the pool.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "createPagesAndContinue",
-                HandleCreatePagesAndContinue,
+                Gated(HandleCreatePagesAndContinue),
                 false,
                 false
             );
+        }
+
+        /// <summary>
+        /// Whether this collection may use flow text: the subscription allows it and the
+        /// experimental feature is turned on. The selected book matters, because a Playground
+        /// book unlocks features whatever the collection's subscription is.
+        /// </summary>
+        private bool IsFlowTextAvailable
+        {
+            get
+            {
+                var status = FeatureStatus.GetFeatureStatus(
+                    _collectionSettings.Subscription,
+                    FeatureName.FlowText,
+                    _bookSelection.CurrentSelection
+                );
+                return status.Enabled && status.Visible;
+            }
+        }
+
+        /// <summary>
+        /// Wrap a handler so that it refuses the request when the collection may not use flow
+        /// text. The browser hides the affordances in that case, so a request that gets this far
+        /// is either a stale page or something we did not write.
+        /// </summary>
+        private EndpointHandler Gated(EndpointHandler handler)
+        {
+            return request =>
+            {
+                if (!IsFlowTextAvailable)
+                {
+                    request.Failed(
+                        "Flow text needs a Bloom subscription and the flow-text experimental feature."
+                    );
+                    return;
+                }
+
+                handler(request);
+            };
         }
 
         /// <summary>

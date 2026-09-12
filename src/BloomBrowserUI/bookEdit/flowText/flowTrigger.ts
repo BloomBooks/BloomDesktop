@@ -61,6 +61,11 @@ import {
 import { getPretextMeasurer } from "./flowPretextMeasurer";
 import { handleSeamKey } from "./flowSeamKeys";
 import { markRefusals } from "./flowSupport";
+import {
+    isFlowTextAvailable,
+    isFlowTextAvailabilityKnown,
+    whenFlowTextAvailabilityKnown,
+} from "./flowTextAvailable";
 import { timePass } from "./flowTiming";
 import { OverflowMeasurer, verifyAndNudge } from "./flowVerify";
 import WebSocketManager, {
@@ -131,19 +136,44 @@ let passOutstanding = false;
 // The engine's own mutations must not schedule another pass.
 let isFlowing = false;
 let isComposing = false;
+// Which setup call is the current one. A setup that had to wait for Bloom's word about the
+// subscription checks this before going ahead: by the time the answer comes the reader may be
+// on another page, and that page's own setup is the one that counts.
+let setupGeneration = 0;
 
 export function setupFlowText(
     container: HTMLElement,
     overrides: FlowTextOptions = {},
 ): void {
     suspendFlowText();
+    const generation = ++setupGeneration;
     if (document.body.hasAttribute(kMeasuringFlowFitAttr)) {
         // This page is here to be measured, not edited: the box it is being asked about holds
         // more text than fits it because that is the question. Watching it and settling it
         // would take that text out of the box before it is measured, and the box on the next
         // page, which is where it would go, is not in this document at all.
+        //
+        // Answered before the check below, so that the off-screen pages a refit makes ask
+        // Bloom nothing: a refit only runs when flow text is available anyway.
         return;
     }
+
+    if (!isFlowTextAvailabilityKnown()) {
+        // Nothing may run before Bloom has said whether this collection may use flow text: the
+        // first pass moves text between boxes, and a book that already holds chains must not be
+        // rewritten by a collection that is not allowed to flow it.
+        void whenFlowTextAvailabilityKnown().then(() => {
+            if (generation === setupGeneration && container.isConnected) {
+                setupFlowText(container, overrides);
+            }
+        });
+        return;
+    }
+
+    if (!isFlowTextAvailable()) {
+        return;
+    }
+
     observedContainer = container;
     activeOptions = overrides;
 
@@ -203,6 +233,9 @@ export function setupFlowText(
 }
 
 export function suspendFlowText(): void {
+    // A setup still waiting for Bloom's word about the subscription belongs to the page we are
+    // leaving, so it must not go ahead once it has one.
+    setupGeneration++;
     observer?.disconnect();
     observer = undefined;
     observedContainer?.removeEventListener(

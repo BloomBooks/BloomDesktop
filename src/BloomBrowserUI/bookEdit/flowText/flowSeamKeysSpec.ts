@@ -6,6 +6,7 @@ import {
     kFlowChainAttr,
 } from "./flowConstants";
 import { handleSeamKey } from "./flowSeamKeys";
+import { setFlowTextAvailableForTesting } from "./flowTextAvailable";
 
 /** A page of boxes, each in its own translation group, all in one chain. */
 function makeChainedPage(texts: string[], chainId = "chain-1"): HTMLElement[] {
@@ -54,6 +55,8 @@ function pressKey(
 
 describe("flowSeamKeys", () => {
     beforeEach(() => {
+        // The collection is allowed to use flow text; nothing here has a Bloom to ask.
+        setFlowTextAvailableForTesting(true);
         document.body.innerHTML = "";
     });
 
