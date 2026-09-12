@@ -713,7 +713,7 @@ namespace BloomTests.Book
             FlowTextWalk.ClearQueueForTests();
             var dom = TwoPageChain();
 
-            FlowTextWalk.QueueEveryChain(dom, "en");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" });
 
             var queued = FlowTextWalk.QueuedWalksForTests();
             Assert.That(queued.Count, Is.EqualTo(1));
@@ -723,6 +723,58 @@ namespace BloomTests.Book
                 "A refit of the whole flow starts at its first page."
             );
             Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_OnABilingualChain_QueuesAWalkPerLanguage()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>abcdefghij</p>") + Editable("<p>klm</p>", "fr")))
+                    + Page("p2", Group(Editable("<p><br /></p>") + Editable("<p><br /></p>", "fr")))
+            );
+            Assert.That(
+                FlowTextChains.GetFlowEditable(Chain(dom)[0].Group, "fr"),
+                Is.Not.Null,
+                "Sanity check: the chain's first group has a French box to walk."
+            );
+
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en", "fr" });
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(
+                queued.Select(walk => walk.Lang).OrderBy(lang => lang).ToArray(),
+                Is.EqualTo(new[] { "en", "fr" }),
+                "Each language's text flows through its own boxes, so each needs its own walk."
+            );
+            Assert.That(
+                queued.Select(walk => walk.FromPageId).Distinct().ToArray(),
+                Is.EqualTo(new[] { "p1" }),
+                "A refit of the whole flow starts at its first page, whatever the language."
+            );
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_ForALanguageTheChainHasNoBoxOf_QueuesNothingForIt()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+            Assert.That(
+                FlowTextChains.GetFlowEditable(Chain(dom)[0].Group, "fr"),
+                Is.Null,
+                "Sanity check: this chain has no French box."
+            );
+
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en", "fr" });
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(
+                queued.Select(walk => walk.Lang).ToArray(),
+                Is.EqualTo(new[] { "en" }),
+                "A walk of a language the chain has no box of would have nothing to measure."
+            );
             FlowTextWalk.ClearQueueForTests();
         }
 
@@ -741,7 +793,7 @@ namespace BloomTests.Book
             );
 
             // Both start at the same page, so the second request merges into the first.
-            FlowTextWalk.QueueEveryChain(dom, "en");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" });
 
             var queued = FlowTextWalk.QueuedWalksForTests();
             Assert.That(queued.Count, Is.EqualTo(1), "One chain and one language is one walk.");
@@ -759,7 +811,7 @@ namespace BloomTests.Book
             FlowTextWalk.ClearQueueForTests();
             var dom = TwoPageChain();
 
-            FlowTextWalk.QueueEveryChain(dom, "en", "some css");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" }, "some css");
 
             var queued = FlowTextWalk.QueuedWalksForTests();
             Assert.That(queued.Count, Is.EqualTo(1));
@@ -788,7 +840,7 @@ namespace BloomTests.Book
             );
             Assert.That(queuedFirst[0].Styles, Is.Null, "Sanity check: no rules yet.");
 
-            FlowTextWalk.QueueEveryChain(dom, "en", "some css");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" }, "some css");
 
             var queued = FlowTextWalk.QueuedWalksForTests();
             Assert.That(queued.Count, Is.EqualTo(1), "One chain and one language is one walk.");
@@ -809,7 +861,7 @@ namespace BloomTests.Book
             FlowTextWalk.ClearQueueForTests();
             var dom = TwoPageChain();
 
-            FlowTextWalk.QueueEveryChain(dom, "en");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" });
             // The whole flow is already going to be refitted from page one, so this merges in.
             FlowTextWalk.QueueFromPageForward(dom, "chain", "p2", "en", null);
 
@@ -913,7 +965,7 @@ namespace BloomTests.Book
             FlowTextWalk.ClearQueueForTests();
             var dom = TwoPageChain();
 
-            FlowTextWalk.QueueEveryChain(dom, "en");
+            FlowTextWalk.QueueEveryChain(dom, new[] { "en" });
 
             var queued = FlowTextWalk.QueuedWalksForTests();
             Assert.That(
@@ -1077,6 +1129,112 @@ namespace BloomTests.Book
                 addedGroups.Select(group => group.PageId),
                 Is.EqualTo(new[] { "made1", "made2", "made3" }),
                 "The pages made come back in the order the text flows through them."
+            );
+        }
+
+        [Test]
+        public void Distribute_WhenAFitFails_LeavesEveryBoxHoldingWhatItHeld()
+        {
+            // A refit puts the whole of the text still to be placed into a box while the browser
+            // measures it, and cuts the box down only when the answer comes back. If the answer
+            // never comes, that box would be left holding text the later boxes still hold too,
+            // and the next save would write the author's text into the book twice.
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>aaaabbbb</p>")))
+                    + Page("p2", Group(Editable("<p>cccc</p>")))
+                    + Page("p3", Group(Editable("<p>dddd</p>")))
+            );
+            Assert.That(BoxHtml(dom, 0), Is.EqualTo("<p>aaaabbbb</p>"));
+            Assert.That(BoxHtml(dom, 1), Is.EqualTo("<p>cccc</p>"));
+            Assert.That(BoxHtml(dom, 2), Is.EqualTo("<p>dddd</p>"));
+
+            var fits = 0;
+            Assert.That(
+                () =>
+                    FlowTextWalk.Distribute(
+                        Chain(dom),
+                        0,
+                        "en",
+                        (group, isLast) =>
+                        {
+                            // The first box is measured and divided; the second measurement is
+                            // the one that never answers.
+                            if (++fits > 1)
+                                throw new ApplicationException("the browser did not answer");
+                            return SplitFirstParagraphAt(
+                                FlowTextChains.GetFlowEditable(group.Group, "en").InnerXml,
+                                4
+                            );
+                        }
+                    ),
+                Throws.TypeOf<ApplicationException>(),
+                "The failure is reported, not swallowed: the caller must not save."
+            );
+
+            Assert.That(
+                fits,
+                Is.EqualTo(2),
+                "Sanity check: the second fit was the one that failed."
+            );
+            Assert.That(
+                BoxHtml(dom, 0),
+                Is.EqualTo("<p>aaaabbbb</p>"),
+                "The box that was divided before the failure holds what it held."
+            );
+            Assert.That(
+                BoxHtml(dom, 1),
+                Is.EqualTo("<p>cccc</p>"),
+                "The box being measured when the failure came holds what it held, not the "
+                    + "whole of the rest of the run."
+            );
+            Assert.That(BoxHtml(dom, 2), Is.EqualTo("<p>dddd</p>"));
+        }
+
+        [Test]
+        public void Distribute_WhenAFitFails_TakesAwayThePagesItHadMade()
+        {
+            // A page made by a run that never finished holds a copy of text that is still where
+            // it started, so it goes with the rest of the rollback.
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>aaaabbbbccccdddd</p>"))));
+            var added = 0;
+            var removed = new List<string>();
+
+            Assert.That(
+                () =>
+                    FlowTextWalk.Distribute(
+                        Chain(dom),
+                        0,
+                        "en",
+                        (group, isLast) =>
+                        {
+                            // The first box divides; the first page made is the fit that fails.
+                            if (added > 0)
+                                throw new ApplicationException("the browser did not answer");
+                            return SplitFirstParagraphAt(
+                                FlowTextChains.GetFlowEditable(group.Group, "en").InnerXml,
+                                4
+                            );
+                        },
+                        () => AppendTextOnlyPage(dom, "made" + ++added),
+                        removePage: group => removed.Add(group.PageId)
+                    ),
+                Throws.TypeOf<ApplicationException>()
+            );
+
+            Assert.That(
+                added,
+                Is.EqualTo(1),
+                "Sanity check: one page was made before the failure."
+            );
+            Assert.That(
+                removed,
+                Is.EqualTo(new[] { "made1" }),
+                "The page made before the failure is taken back out of the book."
+            );
+            Assert.That(
+                BoxHtml(dom, 0),
+                Is.EqualTo("<p>aaaabbbbccccdddd</p>"),
+                "The box that was divided holds the whole run again."
             );
         }
 

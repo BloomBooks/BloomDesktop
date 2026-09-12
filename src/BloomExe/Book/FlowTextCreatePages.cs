@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Bloom.SafeXml;
 
@@ -87,7 +87,33 @@ namespace Bloom.Book
             string lang,
             Func<FlowTextChains.FlowGroup> addPage,
             Func<FlowTextChains.FlowGroup, bool, FlowTextWalk.FitResult> fit,
-            int maxPages = kMaxPagesToCreate
+            int maxPages = kMaxPagesToCreate,
+            Action<FlowTextChains.FlowGroup> removePage = null
+        )
+        {
+            var snapshot = new FlowTextWalk.ChainSnapshot(lang, removePage);
+            try
+            {
+                return RunOrThrow(sourceGroup, lang, addPage, fit, maxPages, snapshot);
+            }
+            catch
+            {
+                // The tail of the box's text is part way onto pages that nobody is going to
+                // finish, and the box itself no longer holds it. Put both back: otherwise the
+                // editor still shows the whole text, the pages made hold a copy of its tail, and
+                // the next save writes the author's text into the book twice.
+                snapshot.Restore();
+                throw;
+            }
+        }
+
+        private static Result RunOrThrow(
+            FlowTextChains.FlowGroup sourceGroup,
+            string lang,
+            Func<FlowTextChains.FlowGroup> addPage,
+            Func<FlowTextChains.FlowGroup, bool, FlowTextWalk.FitResult> fit,
+            int maxPages,
+            FlowTextWalk.ChainSnapshot snapshot
         )
         {
             var sourceEditable = FlowTextChains.GetFlowEditable(sourceGroup.Group, lang);
@@ -113,6 +139,9 @@ namespace Bloom.Book
             var chainId = sourceGroup.Group.GetAttribute(HtmlDom.kFlowChainAttrName);
             if (string.IsNullOrEmpty(chainId))
                 chainId = Guid.NewGuid().ToString();
+            // Remembered before the chain is written, so that a box that was in no chain is in
+            // none again if this work does not finish.
+            snapshot.Remember(sourceGroup);
             sourceGroup.Group.SetAttribute(HtmlDom.kFlowChainAttrName, chainId);
 
             var result = new Result { ChainId = chainId };
@@ -127,6 +156,9 @@ namespace Bloom.Book
             {
                 var isLast = result.PagesCreated + 1 >= maxPages;
                 var group = addPage();
+                // Noted before anything can go wrong with it: a page made by work that then
+                // fails is a page holding a copy of text that is still in the box it came from.
+                snapshot.RememberAdded(group);
                 var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
                 if (editable == null)
                     throw new ApplicationException(

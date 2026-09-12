@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Api;
@@ -139,7 +139,44 @@ namespace Bloom.Book
             Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
             Func<FlowTextChains.FlowGroup> addPage = null,
             int maxPagesToAdd = FlowTextCreatePages.kMaxPagesToCreate,
-            List<FlowTextChains.FlowGroup> addedGroups = null
+            List<FlowTextChains.FlowGroup> addedGroups = null,
+            Action<FlowTextChains.FlowGroup> removePage = null
+        )
+        {
+            var snapshot = new ChainSnapshot(lang, removePage);
+            try
+            {
+                return DistributeOrThrow(
+                    groups,
+                    startIndex,
+                    lang,
+                    fit,
+                    addPage,
+                    maxPagesToAdd,
+                    addedGroups,
+                    snapshot
+                );
+            }
+            catch
+            {
+                // The book is part way through a division of the text and no caller is going to
+                // finish it, so put it back rather than leave the author's text in two places at
+                // once. The list of pages made goes with it: none of them is in the book now.
+                snapshot.Restore();
+                addedGroups?.Clear();
+                throw;
+            }
+        }
+
+        private static List<FlowTextChains.FlowGroup> DistributeOrThrow(
+            List<FlowTextChains.FlowGroup> groups,
+            int startIndex,
+            string lang,
+            Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
+            Func<FlowTextChains.FlowGroup> addPage,
+            int maxPagesToAdd,
+            List<FlowTextChains.FlowGroup> addedGroups,
+            ChainSnapshot snapshot
         )
         {
             var changed = new List<FlowTextChains.FlowGroup>();
@@ -165,6 +202,7 @@ namespace Bloom.Book
             for (var position = 0; position < boxes.Count; position++)
             {
                 var group = chain[boxes[position]];
+                snapshot.Remember(group);
                 var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
                 var before = editable.InnerXml;
                 // The fit brings back the inline font size the page being measured gives the
@@ -219,7 +257,8 @@ namespace Bloom.Book
                         fit,
                         addPage,
                         maxPagesToAdd,
-                        scratch
+                        scratch,
+                        snapshot
                     )
                 )
                 {
@@ -259,7 +298,8 @@ namespace Bloom.Book
             Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
             Func<FlowTextChains.FlowGroup> addPage,
             int maxPagesToAdd,
-            SafeXmlElement scratch
+            SafeXmlElement scratch,
+            ChainSnapshot snapshot
         )
         {
             var added = new List<FlowTextChains.FlowGroup>();
@@ -267,6 +307,9 @@ namespace Bloom.Book
             {
                 var isLast = added.Count + 1 >= maxPagesToAdd;
                 var group = addPage();
+                // Noted before anything can go wrong with it: a page made by a run that then
+                // fails is a page holding a copy of text that is still where it started.
+                snapshot.RememberAdded(group);
                 var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
                 if (editable == null)
                     throw new ApplicationException(
@@ -523,6 +566,127 @@ namespace Bloom.Book
         /// unit test, and then a walk makes no pages.
         /// </summary>
         internal static Func<Book, string, FlowTextChains.FlowGroup> AddTextOnlyPageAfter;
+
+        /// <summary>
+        /// What the boxes of a chain held before a refit touched them, so that a refit which
+        /// fails part way through can leave the book as it found it.
+        ///
+        /// This is needed because a refit writes the book as it goes. Each box takes the whole of
+        /// the text still to be placed while the browser measures it, and is cut down to its own
+        /// share only when the answer comes back. If the answer never comes -- the measurement
+        /// throws, or the browser times out -- that box is left holding text that the boxes after
+        /// it still hold as well, and the next save would write both copies into the author's
+        /// book. The pages a refit makes for text the chain cannot hold are the same story: a
+        /// page left behind by a run that never finished holds a copy of text that is still
+        /// where it started.
+        ///
+        /// So every box is remembered before it is first written, every page made is noted, and
+        /// Restore puts the text, the styles and the chain attributes back and takes the pages
+        /// away again. One instance covers one run of one chain in one language.
+        /// </summary>
+        internal class ChainSnapshot
+        {
+            private class Box
+            {
+                internal SafeXmlElement Group;
+                internal string Style;
+                internal bool HadStyle;
+                internal string ChainId;
+                internal bool HadChainId;
+                internal SafeXmlElement Editable;
+                internal string Html;
+            }
+
+            private readonly string _lang;
+            private readonly Action<FlowTextChains.FlowGroup> _removePage;
+            private readonly List<Box> _boxes = new List<Box>();
+            private readonly List<FlowTextChains.FlowGroup> _added =
+                new List<FlowTextChains.FlowGroup>();
+
+            /// <summary>
+            /// removePage takes a page this run made back out of the book. Null where the caller
+            /// makes no pages, and then Restore only puts the boxes back.
+            /// </summary>
+            internal ChainSnapshot(string lang, Action<FlowTextChains.FlowGroup> removePage)
+            {
+                _lang = lang;
+                _removePage = removePage;
+            }
+
+            /// <summary>
+            /// Remember what this group holds, if it is not already remembered. Call it before
+            /// the first write to the group, every time; a group already remembered keeps the
+            /// earlier reading, which is the one the book started from.
+            /// </summary>
+            internal void Remember(FlowTextChains.FlowGroup group)
+            {
+                var element = group?.Group;
+                if (element == null || _boxes.Any(box => box.Group == element))
+                    return;
+
+                var editable = FlowTextChains.GetFlowEditable(element, _lang);
+                _boxes.Add(
+                    new Box
+                    {
+                        Group = element,
+                        HadStyle = element.HasAttribute("style"),
+                        Style = element.GetAttribute("style"),
+                        HadChainId = element.HasAttribute(HtmlDom.kFlowChainAttrName),
+                        ChainId = element.GetAttribute(HtmlDom.kFlowChainAttrName),
+                        Editable = editable,
+                        Html = editable?.InnerXml,
+                    }
+                );
+            }
+
+            /// <summary>Note a page this run has just made, so that Restore can take it away.</summary>
+            internal void RememberAdded(FlowTextChains.FlowGroup group)
+            {
+                if (group != null)
+                    _added.Add(group);
+            }
+
+            /// <summary>
+            /// Put the book back: every remembered box holds what it held, every remembered group
+            /// carries the style and the chain it carried, and every page this run made is gone.
+            ///
+            /// The pages go last and in reverse, so that each is removed while the book still
+            /// holds the pages that came before it.
+            /// </summary>
+            internal void Restore()
+            {
+                foreach (var box in _boxes)
+                {
+                    if (box.Editable != null && box.Html != null)
+                        HtmlDom.SetInnerHtmlFromFragment(box.Editable, box.Html);
+                    RestoreAttribute(box.Group, "style", box.HadStyle, box.Style);
+                    RestoreAttribute(
+                        box.Group,
+                        HtmlDom.kFlowChainAttrName,
+                        box.HadChainId,
+                        box.ChainId
+                    );
+                }
+
+                if (_removePage == null)
+                    return;
+                for (var index = _added.Count - 1; index >= 0; index--)
+                    _removePage(_added[index]);
+            }
+
+            private static void RestoreAttribute(
+                SafeXmlElement element,
+                string name,
+                bool had,
+                string value
+            )
+            {
+                if (had)
+                    element.SetAttribute(name, value);
+                else
+                    element.RemoveAttribute(name);
+            }
+        }
 
         private static readonly object _lock = new object();
 
@@ -813,21 +977,37 @@ namespace Bloom.Book
             if (book == null)
                 return;
 
-            var lang = book.Language1Tag;
-            if (string.IsNullOrEmpty(lang))
+            // Every language the book is showing, not just the first. On a bilingual page each
+            // content language has its own box inside the translation group and its own run of
+            // text flowing through its own boxes, so a change that alters where the text breaks
+            // alters it for each of them. Refitting only the first would leave the others divided
+            // the way they were, at a size that is no longer what the page shows.
+            var langs = book
+                .ActiveLanguages.Where(tag => !string.IsNullOrEmpty(tag))
+                .Distinct()
+                .ToList();
+            if (langs.Count == 0)
                 return;
 
-            if (QueueEveryChain(book.OurHtmlDom, lang, styles))
+            if (QueueEveryChain(book.OurHtmlDom, langs, styles))
                 NotifyQueued();
         }
 
         /// <summary>
-        /// Queue the walks that RequestEveryChain asks for, one per chain, each starting at the
-        /// chain's first page, each carrying the style rules given. Returns whether any chain now
-        /// has a walk waiting. Separate from RequestEveryChain so that what goes into the queue
-        /// can be tested without an EditingModel.
+        /// Queue the walks that RequestEveryChain asks for: one per chain per language, each
+        /// starting at the chain's first page, each carrying the style rules given. Returns
+        /// whether any chain now has a walk waiting. Separate from RequestEveryChain so that what
+        /// goes into the queue can be tested without an EditingModel.
+        ///
+        /// A language is only queued for a chain that has a box of that language somewhere: a
+        /// book can be showing a language that a particular chain's groups were never given a box
+        /// for, and a walk of a language that is not there has nothing to measure.
         /// </summary>
-        internal static bool QueueEveryChain(HtmlDom dom, string lang, string styles = null)
+        internal static bool QueueEveryChain(
+            HtmlDom dom,
+            IReadOnlyList<string> langs,
+            string styles = null
+        )
         {
             var any = false;
             foreach (var chainId in GetChainIds(dom))
@@ -836,14 +1016,23 @@ namespace Bloom.Book
                 // One box on its own is not a chain: it has nowhere to send its extra text.
                 if (groups.Count < 2)
                     continue;
-                any |= Enqueue(
-                    chainId,
-                    groups[0].PageId,
-                    groups[0].PageIndex,
-                    lang,
-                    styles,
-                    WalkKind.WholeFlow
-                );
+                foreach (var lang in langs)
+                {
+                    if (
+                        !groups.Any(group =>
+                            FlowTextChains.GetFlowEditable(group.Group, lang) != null
+                        )
+                    )
+                        continue;
+                    any |= Enqueue(
+                        chainId,
+                        groups[0].PageId,
+                        groups[0].PageIndex,
+                        lang,
+                        styles,
+                        WalkKind.WholeFlow
+                    );
+                }
             }
 
             return any;
@@ -1233,6 +1422,18 @@ namespace Bloom.Book
                     return added;
                 };
 
+            // How a page this walk made is taken away again when the walk fails part way through.
+            // Removing a page rebuilds the book's page cache, so it belongs on the UI thread with
+            // the rest of what changes the book's structure; nothing is saved, because the walk
+            // that would have saved it is the one that failed.
+            Action<FlowTextChains.FlowGroup> removePage = added =>
+                InvokeOnUiThread(() =>
+                {
+                    var page = FlowTextChains.FindPage(book, added.PageId);
+                    if (page != null)
+                        model.RemovePageFromBook(page);
+                });
+
             var addedGroups = new List<FlowTextChains.FlowGroup>();
             var changed = Distribute(
                 groups,
@@ -1254,7 +1455,8 @@ namespace Bloom.Book
                     return fitted;
                 },
                 addPage,
-                addedGroups: addedGroups
+                addedGroups: addedGroups,
+                removePage: removePage
             );
 
             // A page the run of text has emptied, and that holds nothing else, goes with the

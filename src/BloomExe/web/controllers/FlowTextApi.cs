@@ -566,7 +566,8 @@ namespace Bloom.web.controllers
                             heldByFirstPage
                         );
                         return fitted;
-                    }
+                    },
+                    removePage: RemoveCreatedPage(book)
                 );
                 if (result == null)
                     return null;
@@ -627,6 +628,23 @@ namespace Bloom.web.controllers
                 );
 
             return added;
+        }
+
+        /// <summary>
+        /// How a page made for the text is taken back out when the work fails part way through.
+        /// Removing a page rebuilds the book's page cache, so it belongs on the UI thread with
+        /// everything else that changes the book's structure. Nothing is saved: the save that
+        /// would have written these pages is the one that never happened.
+        /// </summary>
+        private Action<FlowTextChains.FlowGroup> RemoveCreatedPage(Book.Book book)
+        {
+            return group =>
+                FlowTextWalk.InvokeOnUiThread(() =>
+                {
+                    var page = FlowTextChains.FindPage(book, group.PageId);
+                    if (page != null)
+                        _editingModel.RemovePageFromBook(page);
+                });
         }
 
         /// <summary>

@@ -131,6 +131,56 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void Run_WhenAFitFails_PutsTheTextBackAndTakesAwayThePagesItMade()
+        {
+            // Making pages moves the tail of the box's text onto a new page before that page has
+            // been laid out. If the layout never answers, the editor still holds the whole text
+            // and the page made holds a copy of its tail, so the next save would write the
+            // author's text into the book twice.
+            var dom = MakeBookDom($"<p>w1 w2 {kMarker}w3 w4 w5 w6</p>", chainId: null);
+            var source = SourceGroup(dom);
+            var textBefore = BoxText(source);
+            Assert.That(
+                source.Group.HasAttribute(HtmlDom.kFlowChainAttrName),
+                Is.False,
+                "Sanity check: this box is in no chain before the work starts."
+            );
+
+            var made = 0;
+            var removed = new List<string>();
+            Assert.That(
+                () =>
+                    FlowTextCreatePages.Run(
+                        SourceGroup(dom),
+                        "en",
+                        () => AddPage(dom, ++made),
+                        (group, isLast) =>
+                            throw new System.ApplicationException("the browser did not answer"),
+                        removePage: group => removed.Add(group.PageId)
+                    ),
+                Throws.TypeOf<System.ApplicationException>(),
+                "The failure is reported, not swallowed: the caller must not save."
+            );
+
+            Assert.That(made, Is.EqualTo(1), "Sanity check: one page was made before the failure.");
+            Assert.That(
+                removed,
+                Is.EqualTo(new[] { "made1" }),
+                "The page made before the failure is taken back out of the book."
+            );
+            Assert.That(
+                BoxText(SourceGroup(dom)),
+                Is.EqualTo(textBefore),
+                "The source box holds the whole of its text again, tail included."
+            );
+            Assert.That(
+                SourceGroup(dom).Group.HasAttribute(HtmlDom.kFlowChainAttrName),
+                Is.False,
+                "A box that was in no chain is in none again."
+            );
+        }
+
+        [Test]
         public void Run_MakesPagesUntilTheLastBoxFits()
         {
             // Eight words, of which the box holds the first two. Three words go on each page
