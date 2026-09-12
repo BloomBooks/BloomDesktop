@@ -16,7 +16,9 @@ export const kImageDescriptionToolId = "imageDescription";
 export const kMotionToolId = "motion";
 export const kMusicToolId = "music";
 // The "More..." section, which is where the user turns the other tools on and off.
-// It is a tool like the others, except that it can never be the "current" tool of a book.
+// It is a tool like the others, but it is never a sensible *default* current tool
+// (getFirstOfferedToolId skips it). Expanding it does still get persisted as the
+// book's current tool, as it always has been.
 export const kSettingsToolId = "settings";
 export const kTalkingBookToolId = "talkingBook";
 

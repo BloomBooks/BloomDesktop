@@ -106,8 +106,8 @@ const ToolSection: React.FunctionComponent<{
     // IToolboxUiState.currentToolId.
     isRunning: boolean;
     pageGeneration: number;
-}> = ({ section, isExpanded, isRunning, pageGeneration }) => {
-    useToolLifecycle(section.tool, isRunning, pageGeneration);
+}> = (props) => {
+    useToolLifecycle(props.section.tool, props.isRunning, props.pageGeneration);
 
     return (
         <Accordion
@@ -155,10 +155,10 @@ const ToolSection: React.FunctionComponent<{
                 }
             `}
             disableGutters
-            expanded={isExpanded}
+            expanded={props.isExpanded}
             onChange={(_event, expanded) => {
                 if (expanded) {
-                    setActiveTool(section.id);
+                    setActiveTool(props.section.id);
                 } else {
                     clearActiveTool();
                 }
@@ -203,7 +203,7 @@ const ToolSection: React.FunctionComponent<{
                     // The talking book icon is a tall, narrow microphone,
                     // so it gets a narrower box than the others.
                     css={
-                        section.id === kTalkingBookToolId
+                        props.section.id === kTalkingBookToolId
                             ? [
                                   toolboxHeaderIconStyles,
                                   css`
@@ -213,15 +213,15 @@ const ToolSection: React.FunctionComponent<{
                               ]
                             : toolboxHeaderIconStyles
                     }
-                    data-toolid={section.id}
+                    data-toolid={props.section.id}
                     data-testid="toolbox-header-icon"
                     // The icon path is also exposed as data so tests can
                     // check which icon a header shows without reading styles.
-                    data-icon-src={section.iconPath}
+                    data-icon-src={props.section.iconPath}
                     style={
-                        section.iconPath
+                        props.section.iconPath
                             ? {
-                                  backgroundImage: `url(${section.iconPath})`,
+                                  backgroundImage: `url(${props.section.iconPath})`,
                               }
                             : undefined
                     }
@@ -232,14 +232,14 @@ const ToolSection: React.FunctionComponent<{
                         font-size: 11px;
                     `}
                 >
-                    <LocalizedString l10nKey={section.l10nKey}>
-                        {section.englishLabel}
+                    <LocalizedString l10nKey={props.section.l10nKey}>
+                        {props.section.englishLabel}
                     </LocalizedString>
                 </Typography>
-                {section.featureName && (
+                {props.section.featureName && (
                     <span>
                         <SubscriptionBadgeWithTooltipAndDialog
-                            featureName={section.featureName}
+                            featureName={props.section.featureName}
                         />
                     </span>
                 )}
@@ -258,7 +258,7 @@ const ToolSection: React.FunctionComponent<{
                     // Some tool stylesheets, and our automated tests,
                     // still select a tool's body by this attribute, using
                     // the historical "Tool"-suffixed name.
-                    data-toolid={toPersistedToolName(section.id)}
+                    data-toolid={toPersistedToolName(props.section.id)}
                     css={css`
                         width: 100%;
                         display: flex;
@@ -290,7 +290,7 @@ const ToolSection: React.FunctionComponent<{
                         }
                     `}
                 >
-                    {section.tool.renderPanel()}
+                    {props.section.tool.renderPanel()}
                 </div>
             </AccordionDetails>
         </Accordion>

@@ -168,6 +168,19 @@ export function withdrawTool(toolId: string): void {
         // We withdrew a tool the user wasn't looking at, so which section is open
         // doesn't change.
         updateState({ offeredToolIds: remainingToolIds });
+        // But it may still have been the tool that was RUNNING: collapsing a section
+        // leaves its tool current (see clearActiveTool), so activeToolId and
+        // currentToolId can name different tools. If the running tool just lost its
+        // section, toolbox.ts must switch to a survivor, or it goes on driving markup
+        // for a tool whose panel React has unmounted.
+        if (theState.currentToolId === toolId) {
+            const replacementToolId = remainingToolIds.find(
+                (id) => id !== kSettingsToolId,
+            );
+            if (replacementToolId) {
+                notifyActiveToolListeners(replacementToolId);
+            }
+        }
         return;
     }
     const replacementToolId = remainingToolIds[0];

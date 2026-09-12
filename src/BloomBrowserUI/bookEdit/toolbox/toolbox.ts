@@ -794,8 +794,9 @@ function isToolInitialized(tool: ITool): boolean {
 function setCurrentTool(toolId: string) {
     toolId = toCanonicalToolId(toolId);
 
-    // NOTE: the More (settings) section cannot be the "currentTool", so
-    // getFirstOfferedToolId() never returns it.
+    // NOTE: getFirstOfferedToolId() never returns the More (settings) section: it is
+    // never a sensible *default*. (Expanding it by hand does still make it current and
+    // gets persisted, as it always has.)
     if (!toolId) {
         toolId = getFirstOfferedToolId() ?? "";
     }

@@ -58,7 +58,11 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
     ): Promise<void> {
         await beginInitializeDecodableReaderTool();
         const model = getTheOneReaderToolsModel();
-        const decodableReaderState = settings["decodableReaderState"];
+        // settings can be undefined/null at runtime for a book with no saved toolbox
+        // settings; guard before indexing so we fall through to the default-stage path
+        // instead of throwing an unhandled rejection that aborts tool activation (the
+        // leveled reader hit exactly this: Sentry BLOOM-DESKTOP-FFH).
+        const decodableReaderState = settings?.["decodableReaderState"];
         // This wrapper function ensures that we still finish restoring,
         // even in the very unlikely case that setStageNumber fails.
         const runStageRestore = async (
