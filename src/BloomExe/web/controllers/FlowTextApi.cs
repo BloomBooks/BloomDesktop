@@ -76,17 +76,28 @@ namespace Bloom.web.controllers
             _editingModel = editingModel;
             _pageTemplatesApi = pageTemplatesApi;
             _sourceCollectionsList = sourceCollectionsList;
-            // A caret waiting for a page of one book, content a walk worked out for a page of
-            // one book, or a walk queued against the chains of one book, all mean nothing in
-            // another. The queue matters most: a walk names its chain and page by id, and a copy
-            // of a book keeps those ids, so a walk left over from the book before would match the
-            // new book's pages and rewrite them.
+            // A caret waiting for a page of one book, and content a walk worked out for a page of
+            // one book, mean nothing once the book has been reloaded, let alone once another book
+            // is selected: both name a page of a document that no longer exists.
+            //
+            // The queue is different, and is emptied only when the book itself changes. A walk
+            // waiting in it names its chain and page by id and nothing else, and a copy of a book
+            // keeps those ids, so a walk left over from the book before would match the new book's
+            // pages and rewrite them. But this event is also how Bloom announces that the selected
+            // book has been reloaded in place -- a spreadsheet import, a Team Collection update --
+            // and a reload does not invalidate a queued refit: the queue is the only record that
+            // the pages outside the editor still need refitting.
+            Book.Book bookWhenLastCleared = null;
             _bookSelection.SelectionChanged += (unused1, unused2) =>
             {
                 _pendingCaret = null;
                 _justTextTemplatePage = null;
                 FlowTextWalk.ClearRefitResults();
-                FlowTextWalk.ClearPendingWalks();
+                if (!ReferenceEquals(bookWhenLastCleared, _bookSelection.CurrentSelection))
+                {
+                    bookWhenLastCleared = _bookSelection.CurrentSelection;
+                    FlowTextWalk.ClearPendingWalks();
+                }
             };
             // A walk that runs out of boxes makes the pages its text needs, and making a page is
             // this layer's work: it needs the template book the Add Page dialog would offer.
