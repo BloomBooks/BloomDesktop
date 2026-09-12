@@ -76,13 +76,17 @@ namespace Bloom.web.controllers
             _editingModel = editingModel;
             _pageTemplatesApi = pageTemplatesApi;
             _sourceCollectionsList = sourceCollectionsList;
-            // A caret waiting for a page of one book, or content a walk worked out for a page of
-            // one book, means nothing in another.
+            // A caret waiting for a page of one book, content a walk worked out for a page of
+            // one book, or a walk queued against the chains of one book, all mean nothing in
+            // another. The queue matters most: a walk names its chain and page by id, and a copy
+            // of a book keeps those ids, so a walk left over from the book before would match the
+            // new book's pages and rewrite them.
             _bookSelection.SelectionChanged += (unused1, unused2) =>
             {
                 _pendingCaret = null;
                 _justTextTemplatePage = null;
                 FlowTextWalk.ClearRefitResults();
+                FlowTextWalk.ClearPendingWalks();
             };
             // A walk that runs out of boxes makes the pages its text needs, and making a page is
             // this layer's work: it needs the template book the Add Page dialog would offer.

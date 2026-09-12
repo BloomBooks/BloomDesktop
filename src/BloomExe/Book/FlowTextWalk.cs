@@ -915,11 +915,22 @@ namespace Bloom.Book
                 return _pending.Values.ToList();
         }
 
-        /// <summary>Forget the walks waiting to run, so that one test cannot affect another.</summary>
-        internal static void ClearQueueForTests()
+        /// <summary>
+        /// Forget the walks waiting to run. A waiting walk names its chain and its page by id
+        /// and nothing else, and a copy of a book keeps those ids, so a walk queued in one book
+        /// would match, and rewrite, the pages of another. The queue therefore belongs to the
+        /// selected book: FlowTextApi empties it whenever the selection changes.
+        /// </summary>
+        public static void ClearPendingWalks()
         {
             lock (_lock)
                 _pending.Clear();
+        }
+
+        /// <summary>Forget the walks waiting to run, so that one test cannot affect another.</summary>
+        internal static void ClearQueueForTests()
+        {
+            ClearPendingWalks();
         }
 
         /// <summary>

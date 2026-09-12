@@ -135,7 +135,7 @@
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
       </trans-unit>
-      <trans-unit id="EditTab.TextContextMenu.UnlinkTextBox">
+      <trans-unit id="EditTab.TextContextMenu.UnlinkTextBox" translate="no">
         <source xml:lang="en">Unlink text box</source>
         <note>ID: EditTab.TextContextMenu.UnlinkTextBox</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. Shown only for a text box whose text flows on from, or into, another text box. It separates this box, and every box after it, from that group, so the text stops moving between them. The text itself stays where it is.</note>
