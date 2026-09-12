@@ -135,6 +135,11 @@ namespace Bloom.Edit
                         return;
 
                     CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
+                    // Every page save in the Edit tab passes through here, which is why the one
+                    // flow-text event is reported from it. It costs nothing on a page with no
+                    // chain on it, and sends nothing unless this book's longest run is longer
+                    // than anything already reported for the book.
+                    FlowTextAnalytics.ReportIfRunGrew(CurrentBook, _modifiedPageElement);
                     _nextSaveMustBeFull = false;
                     _pageHasUnsavedDataDerivedChange = false;
                     PageTemplatesApi.LastSaveTime = DateTime.Now;

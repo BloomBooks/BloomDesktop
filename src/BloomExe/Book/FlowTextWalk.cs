@@ -1305,6 +1305,11 @@ namespace Bloom.Book
                     emptiedPageBeingEdited == null ? lastPageAdded : null,
                     emptiedPageBeingEdited
                 );
+                // After the browser has been told the chain is free, because that is what lets
+                // the author carry on and nothing belongs in front of it. Not in the catch below
+                // either: a refit that threw has put the book back as it found it, so there is no
+                // new length to report.
+                FlowTextAnalytics.ReportIfRunGrew(model?.CurrentBook);
             }
             catch (Exception e)
             {
