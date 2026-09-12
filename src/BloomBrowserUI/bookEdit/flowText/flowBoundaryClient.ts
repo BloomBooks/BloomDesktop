@@ -277,6 +277,30 @@ export function requestWalk(
 }
 
 /**
+ * Ask Bloom to refit every chain in the book, each from its first page, off-screen. This is for
+ * a change that alters where the text breaks on every page at once, such as a style change.
+ *
+ * The styles go with it for the reason given on requestWalk: a style the user has just changed
+ * is in this page and nowhere else until the page is saved, and Bloom lays the other pages out
+ * to measure them.
+ */
+export function requestWalkOfEveryChain(): Promise<void> {
+    return enqueue(async () => {
+        await postJsonAsync("flowText/walk", {
+            chainId: "",
+            fromPageId: "",
+            lang: "",
+            styles: getUserModifiedStyles(),
+        });
+    }).then(
+        () => undefined,
+        // A refusal is not a failure of the pass: the text is where the browser put it, and
+        // the later pages are no worse off than before.
+        () => undefined,
+    );
+}
+
+/**
  * The style rules of the page being edited, as they stand in the browser. Read from the
  * stylesheet, not from the style element's text: the style editor changes the rules in the
  * sheet and leaves the element's text as it was when the page loaded, so the text does not
@@ -340,6 +364,21 @@ export function getPendingCaret(
  */
 export function jumpToPage(pageId: string): void {
     void postString("editView/jumpToPage", pageId);
+}
+
+/**
+ * Ask Bloom to take away the page being edited, which a refit has left holding nothing but an
+ * empty box of a chain.
+ *
+ * Taking the page away saves it, so what the refit made of this page's boxes has to be in them
+ * before this is called. It goes through the queue for the same reason a boundary move does: a
+ * round trip still in flight is a change to this page that is not yet in the book. Bloom checks
+ * the page again and refuses quietly when it is no longer one that may go.
+ */
+export function deleteEmptiedPage(pageId: string): Promise<void> {
+    return enqueue(async () => {
+        await postJsonAsync("flowText/deleteEmptiedPage", { pageId });
+    });
 }
 
 /**

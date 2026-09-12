@@ -25,6 +25,7 @@ import {
     getRenderedFontSize,
     setFontSizeWithFormatDialog,
 } from "./formatDialog";
+import { pageListFrame } from "./pageList";
 
 /** The Basic Book template page with a text box, a picture, and a second text box. */
 const kImageInMiddlePageId = "adcd48df-e9ab-4a07-afd4-6a24d0398383";
@@ -854,11 +855,25 @@ export async function typeNewParagraphAfter(
  * flow has settled. Doubling the size is how a test makes a page hold much less text without
  * touching the text itself, so whatever no longer fits has to move on to the next box.
  *
- * Returns the size in points that it asked for.
+ * Returns the new size in points. The caller is left on the page it was on.
  */
 export async function doubleFontSizeOfBox(
     page: Page,
     boxIndex: number,
+    language = "en",
+): Promise<number> {
+    return scaleFontSizeOfBox(page, boxIndex, 2, language);
+}
+
+/**
+ * Multiply the font size of the style of this box by this factor through the Format dialog, and
+ * return the new size in points. The style belongs to the whole book, so every box of that
+ * style on every page is drawn at the new size. The caller is left on the page it was on.
+ */
+export async function scaleFontSizeOfBox(
+    page: Page,
+    boxIndex: number,
+    factor: number,
     language = "en",
 ): Promise<number> {
     const box = flowBox(page, boxIndex, language);
@@ -876,10 +891,10 @@ export async function doubleFontSizeOfBox(
     // The dialog works in points and the box is drawn in pixels, at 96 dpi in the page frame.
     const pixels = await getRenderedFontSize(box);
     const points = Math.round((pixels * 72) / 96);
-    const doubled = points * 2;
-    await setFontSizeWithFormatDialog(page, box, doubled);
+    const scaled = Math.round(points * factor);
+    await setFontSizeWithFormatDialog(page, box, scaled);
     await waitForReflowIdle(page);
-    return doubled;
+    return scaled;
 }
 
 /**
@@ -1549,4 +1564,51 @@ export async function setAutoPagesViaBubble(
         await checkbox.isChecked(),
         "The checkbox does not show the value Bloom now holds.",
     ).toBe(value);
+}
+
+/**
+ * Which of these pages show the red warning triangle on their thumbnail. The triangle is drawn
+ * from the page's saved HTML (the pageOverflows class, in PageThumbnail), so it is what an author
+ * sees about a page they are not looking at.
+ */
+export async function pagesWithWarningTriangles(
+    page: Page,
+    pageIds: string[],
+): Promise<string[]> {
+    const warned: string[] = [];
+    for (const pageId of pageIds) {
+        const count = await pageListFrame(page)
+            .locator(`.gridItem[id="${pageId}"] .pageOverflowsIcon`)
+            .count();
+        if (count > 0) {
+            warned.push(pageId);
+        }
+    }
+    return warned;
+}
+
+/** Wait until every one of these pages has a thumbnail drawn, so a reading of it means something. */
+export async function waitForThumbnails(
+    page: Page,
+    pageIds: string[],
+): Promise<void> {
+    for (const pageId of pageIds) {
+        await expect(
+            pageListFrame(page).locator(
+                `.gridItem[id="${pageId}"] .pageContainer .bloom-page`,
+            ),
+            `The thumbnail of page ${pageId} was never drawn, so nothing can be read off it.`,
+        ).toHaveCount(1, { timeout: 60000 });
+    }
+}
+
+/** The id of the page the Edit tab is showing. */
+export async function getPageBeingEditedId(page: Page): Promise<string> {
+    return (
+        (await editablePageFrame(page)
+            .locator(".bloom-page[id]")
+            .first()
+            .getAttribute("id")
+            .catch(() => null)) ?? ""
+    );
 }

@@ -24,13 +24,19 @@ import {
 } from "../helpers/bookMaking";
 import {
     addJustTextPage,
+    buildLongText,
     clickContinueText,
+    doubleFontSizeOfBox,
+    getBookChains,
     kTextForSeveralPages,
+    pagesWithWarningTriangles,
     pasteText,
     runPendingReflow,
     waitForReflowIdle,
+    waitForThumbnails,
 } from "../helpers/flowText";
 import { pageListFrame } from "../helpers/pageList";
+import { switchTab } from "../helpers/workspace";
 
 test.use({
     collectionSpec: { name: "flow-text-thumbnails", languages: ["en"] },
@@ -49,33 +55,28 @@ async function countWarningTriangles(
     return (await pagesWithWarningTriangles(page, pageIds)).length;
 }
 
-/** Which of these pages show the warning triangle on their thumbnail. */
-async function pagesWithWarningTriangles(
+/**
+ * The font size each of these pages' thumbnails is drawn at, in the page list's own document. A
+ * thumbnail is laid out with the page list's stylesheet rather than the book's, so the size comes
+ * from the inline style attribute on the translation group and from nowhere else.
+ */
+async function thumbnailFontSizes(
     page: Page,
     pageIds: string[],
 ): Promise<string[]> {
-    const warned: string[] = [];
+    const sizes: string[] = [];
     for (const pageId of pageIds) {
-        const count = await pageListFrame(page)
-            .locator(`.gridItem[id="${pageId}"] .pageOverflowsIcon`)
-            .count();
-        if (count > 0) {
-            warned.push(pageId);
-        }
+        sizes.push(
+            await pageListFrame(page)
+                .locator(
+                    `.gridItem[id="${pageId}"] .pageContainer .bloom-page ` +
+                        `.bloom-translationGroup`,
+                )
+                .first()
+                .evaluate((group) => window.getComputedStyle(group).fontSize),
+        );
     }
-    return warned;
-}
-
-/** Wait until every one of these pages has a thumbnail drawn, so a reading of it means something. */
-async function waitForThumbnails(page: Page, pageIds: string[]): Promise<void> {
-    for (const pageId of pageIds) {
-        await expect(
-            pageListFrame(page).locator(
-                `.gridItem[id="${pageId}"] .pageContainer .bloom-page`,
-            ),
-            `The thumbnail of page ${pageId} was never drawn, so nothing can be read off it.`,
-        ).toHaveCount(1, { timeout: 60000 });
-    }
+    return sizes;
 }
 
 /**
@@ -161,4 +162,68 @@ test.describe("the page thumbnails of a run of linked text boxes", () => {
             })
             .toBe(1);
     });
+
+    test("every page of the run is drawn at the new font size [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // Two pages is the whole of what this needs: one the author changes the size on, and one
+        // the refit writes without anyone opening it.
+        // Asked from the Edit tab, Bloom makes the book but never loads a page of it.
+        await switchTab(page, "collection");
+        await makeBookFromTemplate(page, "Basic Book");
+        const firstPageId = await addJustTextPage(page);
+        await pasteText(page, 0, buildLongText(2000));
+        const secondPageId = await addJustTextPage(page);
+        await clickContinueText(page, 0);
+
+        const chainPageIds = [firstPageId, secondPageId];
+        await parkOffTheChain(page, chainPageIds);
+        await waitForThumbnails(page, chainPageIds);
+        const sizesBefore = await thumbnailFontSizes(page, chainPageIds);
+
+        await goToPage(page, firstPageId);
+        await waitForReflowIdle(page);
+        // THE ACTION UNDER TEST: double the size of the style the run is written in, then ask for
+        // the refit that carries the change through the pages the author is not looking at.
+        await doubleFontSizeOfBox(page, 0);
+        await waitForReflowIdle(page);
+        await runPendingReflow(page);
+
+        const pageIdsNow = await chainPageIdsNow(page);
+        await parkOffTheChain(page, pageIdsNow);
+        await waitForThumbnails(page, pageIdsNow);
+
+        await expect
+            .poll(
+                async () =>
+                    new Set(await thumbnailFontSizes(page, pageIdsNow)).size,
+                {
+                    timeout: 60000,
+                    intervals: [200, 250, 500, 500],
+                    message:
+                        "A thumbnail is drawn from the inline font size on the translation group, " +
+                        "which Bloom writes only onto the page being edited unless the refit " +
+                        "copies it back. So every page of the run has to be drawn at one size.",
+                },
+            )
+            .toBe(1);
+
+        const sizesAfter = await thumbnailFontSizes(page, pageIdsNow);
+        expect(
+            sizesAfter[0],
+            "The size the thumbnails are drawn at has to have changed, or they would all " +
+                "agree whether or not the refit copied anything back.",
+        ).not.toBe(sizesBefore[0]);
+    });
 });
+
+/** The pages of the book's one chain, in flow order. */
+async function chainPageIdsNow(page: Page): Promise<string[]> {
+    const chains = await getBookChains(page);
+    expect(
+        chains,
+        "This test is about one run of text, so the book must hold exactly one chain.",
+    ).toHaveLength(1);
+    return chains[0].groups.map((group) => group.pageId);
+}

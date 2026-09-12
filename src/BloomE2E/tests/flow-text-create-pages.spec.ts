@@ -35,12 +35,13 @@ import {
     IFlowChain,
     isCreatePagesButtonShown,
     kTextForSeveralPages,
+    pagesWithWarningTriangles,
     pasteText,
     runPendingReflow,
     typeParagraphAtEnd,
     waitForReflowIdle,
+    waitForThumbnails,
 } from "../helpers/flowText";
-import { pageListFrame } from "../helpers/pageList";
 
 test.use({
     collectionSpec: { name: "flow-text-create-pages", languages: ["en"] },
@@ -176,21 +177,14 @@ async function expectNoWarningTriangle(
     page: Page,
     pageId: string,
 ): Promise<void> {
-    await expect(
-        pageListFrame(page).locator(
-            `.gridItem[id="${pageId}"] .pageContainer .bloom-page`,
-        ),
-        `The thumbnail of page ${pageId} was never drawn, so nothing can be read off it.`,
-    ).toHaveCount(1, { timeout: 60000 });
+    await waitForThumbnails(page, [pageId]);
 
     let agreeing = 0;
     await expect
         .poll(
             async () => {
-                const triangles = await pageListFrame(page)
-                    .locator(`.gridItem[id="${pageId}"] .pageOverflowsIcon`)
-                    .count();
-                agreeing = triangles === 0 ? agreeing + 1 : 0;
+                const warned = await pagesWithWarningTriangles(page, [pageId]);
+                agreeing = warned.length === 0 ? agreeing + 1 : 0;
                 return agreeing;
             },
             {
@@ -233,6 +227,10 @@ test.describe("making the pages a run of text needs", () => {
             page,
             firstPageId,
         );
+
+        // The page the text was pasted into now holds only what fits it, and the jump above saved
+        // it: its thumbnail must not still be warning that it holds more than fits.
+        await expectNoWarningTriangle(page, firstPageId);
 
         const chain = await readTheChain(page);
         expect(

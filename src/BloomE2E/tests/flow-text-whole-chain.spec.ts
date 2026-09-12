@@ -46,6 +46,7 @@ import {
     kTextForSeveralPages,
     pasteText,
     runPendingReflow,
+    scaleFontSizeOfBox,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
@@ -387,6 +388,50 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             "Nor was the third page opened, and it is where the text pushed off the others " +
                 "has to end up.",
         ).not.toBe(before[2]);
+        assertRunIsIntact(after, kTextForSeveralPages);
+    });
+
+    test("halving the font size on the last page fills the pages before it again [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        const before = await readRun(page);
+        await goToPage(page, thirdPageId);
+        await waitForReflowIdle(page);
+
+        // THE ACTION UNDER TEST: halve the font size from the last page of the chain. A style
+        // belongs to the whole book, so the pages before this one now have room for text they
+        // gave up, and they are the pages the page being edited cannot reach by itself. Only a
+        // refit that starts at the first page of the chain moves text back into them.
+        await scaleFontSizeOfBox(page, 0, 0.5);
+        await waitForReflowIdle(page);
+        await expect
+            .poll(() => isReflowPendingShown(page), {
+                timeout: 30000,
+                message:
+                    "A smaller font has to leave a refit of the whole chain waiting.",
+            })
+            .toBe(true);
+        await clickReflowNow(page);
+        await expect
+            .poll(async () => (await getBoxTexts(page))[0].length, {
+                timeout: 30000,
+                message:
+                    "The earlier pages take the text back, so the page being edited must be " +
+                    "left holding less.",
+            })
+            .toBeLessThan(before[2].length);
+        expect(await isWalkPending(page)).toBe(false);
+        expect(await isReflowPendingShown(page)).toBe(false);
+
+        const after = await readRun(page);
+        expect(
+            after[0].length,
+            "At half the size the first page holds far more, so a refit that reached it " +
+                "must have given it text back. A refit from the page being edited on would " +
+                "have left it as it was.",
+        ).toBeGreaterThan(before[0].length);
+        expect(after[1]).not.toBe(before[1]);
         assertRunIsIntact(after, kTextForSeveralPages);
     });
 });

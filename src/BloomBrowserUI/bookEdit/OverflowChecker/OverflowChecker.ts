@@ -813,7 +813,10 @@ export default class OverflowChecker {
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
-    private static UpdatePageOverflow(page: JQuery) {
+    // Public because code that changes what a box holds and then has the page saved at once
+    // (flowCreatePagesButton) must bring the page-level class up to date before that save, rather
+    // than on the deferred timer AdjustSizeOrMarkOverflowSoon uses.
+    public static UpdatePageOverflow(page: JQuery | HTMLElement | null) {
         // TODO: Investigate BL-6686. It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (

@@ -201,6 +201,13 @@ export async function createPagesFor(editable: HTMLElement): Promise<void> {
         editable.innerHTML = result.sourceHtml;
         group.setAttribute(kFlowChainAttr, result.chainId);
         removeButtonFor(editable);
+        // The box now holds only what fits it, so the warning it and its page carry is out of
+        // date. The jump below saves this page at once, and the page's warning is what its
+        // thumbnail draws its red triangle from, so both are brought up to date here rather than
+        // on the overflow checker's own deferred timer.
+        editable.classList.remove("overflow", "thisOverflowingParent");
+        runner?.markOverflow(editable);
+        runner?.updatePageOverflow(page);
     };
     if (runner) {
         runner.applyWithoutPass(apply);

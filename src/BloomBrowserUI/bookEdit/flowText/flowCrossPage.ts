@@ -27,12 +27,13 @@ import {
     peekNext,
     postPendingCaret,
     requestWalk,
+    requestWalkOfEveryChain,
     setNextContent,
 } from "./flowBoundaryClient";
 import { getFlowGroupsOfPage, getLanguageChainOnPage } from "./flowChain";
 import type { IRefitBox } from "./flowReflowClient";
 import { waitForEditorReady } from "./flowEditorReady";
-import { kChainedGroupSelector, kFlowChainAttr } from "./flowConstants";
+import { kFlowChainAttr } from "./flowConstants";
 import {
     getCombinedTextAcrossPages,
     splitCombinedAcrossPages,
@@ -93,13 +94,13 @@ const walksWanted = new Map<
         chainId: string;
         pageId: string;
         lang: string;
-        /**
-         * True when pageId is the page being edited, which asks for everything after that page.
-         * That covers whatever a single boundary could ask for, so such an entry is not replaced.
-         */
-        fromPageBeingEdited: boolean;
     }
 >();
+
+// Whether every chain in the book is to be refitted from its first page, which covers anything
+// the map could ask for. A change that alters where the text breaks on every page at once, such
+// as a style change, wants this rather than a walk from one page on.
+let everyChainWanted = false;
 
 // The boxes whose boundary Bloom would not settle because a refit of the whole chain held it.
 // A refit refuses the browser's move, and only word that the refit has finished brings the
@@ -175,17 +176,30 @@ export function beginCrossPageRun(): void {
     settledThisRun.clear();
 }
 
-/** Is a refit of the pages after this one still to be asked for? */
+/** Is a refit of the pages the browser cannot see still to be asked for? */
 export function areWalksWanted(): boolean {
-    return walksWanted.size > 0;
+    return everyChainWanted || walksWanted.size > 0;
 }
 
 /**
- * Ask Bloom to refit the pages after the ones this pass moved text onto. Text that arrived on
- * the next page has to go on breaking correctly all the way to the end of the chain, and only
- * Bloom can measure the pages the browser is not editing.
+ * Ask Bloom for the refitting this pass has made necessary. Text that arrived on the next page
+ * has to go on breaking correctly all the way to the end of the chain, and only Bloom can
+ * measure the pages the browser is not editing.
+ *
+ * A wanted refit of every chain covers every chain from its first page, so it takes the place of
+ * whatever single chains had asked for.
  */
 export async function requestQueuedWalks(): Promise<void> {
+    if (everyChainWanted) {
+        everyChainWanted = false;
+        walksWanted.clear();
+        // Bloom writes the boxes of every chain on the later pages, so nothing we remember
+        // about a next box is what it holds.
+        nextBoxByChainAndPage.clear();
+        await requestWalkOfEveryChain();
+        return;
+    }
+
     const wanted = Array.from(walksWanted.values());
     walksWanted.clear();
     for (const walk of wanted) {
@@ -206,40 +220,22 @@ function forgetNextBoxesOfChain(chainId: string): void {
 }
 
 /**
- * Want a refit of the pages after this one, for every chain with a box on this page. This is for
- * a change that alters where the text breaks without moving any of it, such as a new style: this
- * page settles itself, and the pages after it are Bloom's to measure.
+ * Want a refit of every chain in the book, each from its first page. This is for a change that
+ * alters where the text breaks without moving any of it and does so on every page at once, such
+ * as a new style: a page earlier in the chain has room it did not have, and only Bloom can
+ * measure the pages the browser is not editing.
  *
  * This only says what is wanted. requestQueuedWalks sends it, once this page has stopped moving
  * text: a walk asked for while the browser still has text to hand to the next page would refuse
  * that move, and the page being edited would keep text that no longer fits it.
  */
-export function queueWalksForChainsOnPage(root: ParentNode = document): void {
-    const page = getPage(root);
-    if (!page?.id) {
-        return;
-    }
-
-    page.querySelectorAll<HTMLElement>(
-        `${kChainedGroupSelector} > ${kVisibleEditableSelector}`,
-    ).forEach((editable) => {
-        const chainId = editable
-            .closest<HTMLElement>(".bloom-translationGroup")
-            ?.getAttribute(kFlowChainAttr);
-        const lang = editable.getAttribute("lang");
-        if (chainId && lang) {
-            walksWanted.set(`${chainId}|${lang}`, {
-                chainId,
-                pageId: page.id,
-                lang,
-                fromPageBeingEdited: true,
-            });
-        }
-    });
+export function queueWalksForEveryChain(): void {
+    everyChainWanted = true;
 }
 
 /** Forget what the boxes on the later pages hold. Call this when the page being edited changes. */
 export function resetCrossPageCache(): void {
+    everyChainWanted = false;
     nextBoxByChainAndPage.clear();
     settledThisRun.clear();
     boundariesToRetryAfterWalk.clear();
@@ -418,15 +414,11 @@ export async function settleCrossPageBoundary(
     // The next page holds different text now, so whatever follows it in the chain breaks
     // somewhere else. Only Bloom can measure those pages; requestQueuedWalks asks it to, once
     // this pass is over.
-    const walkKey = `${chainId}|${lang}`;
-    if (!walksWanted.get(walkKey)?.fromPageBeingEdited) {
-        walksWanted.set(walkKey, {
-            chainId,
-            pageId: next.pageId,
-            lang,
-            fromPageBeingEdited: false,
-        });
-    }
+    walksWanted.set(`${chainId}|${lang}`, {
+        chainId,
+        pageId: next.pageId,
+        lang,
+    });
 
     if (carrier) {
         carrier.startPosting();

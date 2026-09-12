@@ -966,6 +966,7 @@ export function SetupElements(
     setupFlowText(container, {
         markOverflow: (editable) =>
             OverflowChecker.AdjustSizeOrMarkOverflow(editable),
+        updatePageOverflow: (page) => OverflowChecker.UpdatePageOverflow(page),
     });
 
     const editor = GetEditor();

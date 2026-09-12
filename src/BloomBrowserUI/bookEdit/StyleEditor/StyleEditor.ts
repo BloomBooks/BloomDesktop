@@ -44,7 +44,7 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
-import { queueWalksForChainsOnPage } from "../flowText/flowCrossPage";
+import { queueWalksForEveryChain } from "../flowText/flowCrossPage";
 import {
     reflowAllChainsOnPage,
     requestWalksWhenQuiet,
@@ -2301,11 +2301,12 @@ export default class StyleEditor {
         const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
         fonts?.ready?.then(() => {
             reflowAllChainsOnPage("styleChangeFontsReady");
-            // The style breaks the text somewhere else on every page of a chain, not just this
-            // one, so the pages the browser cannot see have to be refitted too. The ask waits
+            // A style applies to every page of the book, so every chain is refitted from its
+            // first page, with this page's rules: a page before this one has room it did not
+            // have, and only Bloom can measure the pages the browser cannot see. The ask waits
             // for this page to finish handing text to the next one: a refit and a pass would
             // otherwise be writing the same box at the same time.
-            queueWalksForChainsOnPage();
+            queueWalksForEveryChain();
             requestWalksWhenQuiet();
         });
 

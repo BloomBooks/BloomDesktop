@@ -10,6 +10,13 @@ let nextContentAnswer: { accepted: boolean; walkInProgress?: boolean } = {
 let setNextContentCount = 0;
 // The content the browser offered C# for the box on the next page, in order.
 const sentContent: string[] = [];
+// The pages the trigger asked Bloom to open, in the order it asked.
+const pagesShown: string[] = [];
+// The pages the trigger asked Bloom to take away, in the order it asked.
+const pagesDeleted: string[] = [];
+// What the boxes of the page held at the moment the trigger asked for the page to be taken
+// away. Taking it away saves it, so what a refit made has to be in them by then.
+let boxesWhenDeleteAsked: string[] = [];
 
 vi.mock("./flowBoundaryClient", () => ({
     peekNext: () => Promise.resolve(nextBox),
@@ -28,8 +35,18 @@ vi.mock("./flowBoundaryClient", () => ({
     getPendingOverflow: () => Promise.resolve(undefined),
     postPendingCaret: () => Promise.resolve(),
     requestWalk: () => Promise.resolve(),
+    requestWalkOfEveryChain: () => Promise.resolve(),
     unlinkFrom: () => Promise.resolve(),
-    jumpToPage: () => undefined,
+    jumpToPage: (pageId: string) => {
+        pagesShown.push(pageId);
+    },
+    deleteEmptiedPage: (pageId: string) => {
+        pagesDeleted.push(pageId);
+        boxesWhenDeleteAsked = Array.from(
+            document.querySelectorAll<HTMLElement>(".bloom-editable"),
+        ).map((box) => box.innerHTML);
+        return Promise.resolve();
+    },
 }));
 
 // What a refit changed in the boxes of the page being edited, which Bloom hands over once, and
@@ -57,7 +74,9 @@ vi.mock("./flowReflowClient", () => ({
 
 // The listener flowTrigger puts on the flowText websocket, so that a test can send it the
 // event C# sends when a refit finishes.
-let socketListener: ((event: { id: string }) => void) | undefined;
+let socketListener:
+    | ((event: { id: string; message?: string }) => void)
+    | undefined;
 
 vi.mock("../../utils/WebSocketManager", () => ({
     default: {
@@ -184,6 +203,9 @@ describe("flowTrigger", () => {
         sentContent.length = 0;
         refitResult = [];
         refitResultAsks = 0;
+        pagesShown.length = 0;
+        pagesDeleted.length = 0;
+        boxesWhenDeleteAsked = [];
     });
 
     afterEach(() => {
@@ -430,6 +452,102 @@ describe("flowTrigger", () => {
         expect(boxes[1].innerHTML).toBe("<p>fixed</p>");
         // The box holds text nothing in the browser has measured, so the page settles around it.
         expect(reasonsOfPasses()).toContain("refitResult");
+    });
+
+    it("goes to the page a refit names, once what it made for this page is in", async () => {
+        // A refit that added pages leaves the run of text ending on one of them, and the author
+        // asked for the refit: they are taken to where their text went. The jump saves the page
+        // being edited, so what the refit made for a box of this page has to be in it first.
+        const { page, boxes } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+        refitResult = [
+            {
+                chainId: "chain-1",
+                lang: "xkal",
+                indexInPage: 1,
+                html: "<p>fixed</p>",
+            },
+        ];
+
+        socketListener!({
+            id: "walkFinished",
+            message: JSON.stringify({ pageIdToShow: "page-9" }),
+        });
+        await settleAllWork();
+
+        expect(boxes[1].innerHTML).toBe("<p>fixed</p>");
+        expect(pagesShown).toEqual(["page-9"]);
+    });
+
+    it("goes nowhere when a refit names no page", async () => {
+        const { page } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+
+        socketListener!({ id: "walkFinished" });
+        await settleAllWork();
+
+        expect(pagesShown).toEqual([]);
+
+        // Nor when the page it names is the one already being edited.
+        socketListener!({
+            id: "walkFinished",
+            message: JSON.stringify({ pageIdToShow: "page-2" }),
+        });
+        await settleAllWork();
+
+        expect(pagesShown).toEqual([]);
+    });
+
+    it("asks for the emptied page to go only once what the refit made is in", async () => {
+        // A refit that moved this page's text away leaves the page holding nothing, and the page
+        // is taken away by the Delete Page route, which saves it. So the box has to hold what the
+        // refit made of it before the request goes: otherwise the text the box held before the
+        // refit is saved, and moved again into the box that already holds the whole run.
+        const { page, boxes } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+        const heldBeforeTheRefit = boxes[1].innerHTML;
+        refitResult = [
+            {
+                chainId: "chain-1",
+                lang: "xkal",
+                indexInPage: 1,
+                html: "",
+            },
+        ];
+
+        socketListener!({
+            id: "walkFinished",
+            message: JSON.stringify({ pageIdToDelete: "page-2" }),
+        });
+        await settleAllWork();
+
+        expect(pagesDeleted).toEqual(["page-2"]);
+        expect(heldBeforeTheRefit).not.toBe("");
+        expect(boxesWhenDeleteAsked[1]).toBe(boxes[1].innerHTML);
+        expect(boxesWhenDeleteAsked[1]).not.toBe(heldBeforeTheRefit);
+        // A refit that empties the page being edited names no page to show, and none is shown.
+        expect(pagesShown).toEqual([]);
+    });
+
+    it("leaves a page alone when the refit names some other page to go", async () => {
+        const { page } = makePage(2);
+        page.id = "page-2";
+        setupFlowText(page, makeOptions());
+        await settleAllWork();
+
+        socketListener!({
+            id: "walkFinished",
+            message: JSON.stringify({ pageIdToDelete: "page-7" }),
+        });
+        await settleAllWork();
+
+        expect(pagesDeleted).toEqual([]);
     });
 
     it("takes what a refit left for this page as the page opens", async () => {

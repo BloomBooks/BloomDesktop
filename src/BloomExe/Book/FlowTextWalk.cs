@@ -89,6 +89,15 @@ namespace Bloom.Book
             /// fits in this box.
             /// </summary>
             public string tail { get; set; }
+
+            /// <summary>
+            /// The style attribute the page being measured left on this box's translation group.
+            /// The editor writes the group's font size into it from the box's computed size
+            /// (SetupThingsSensitiveToStyleChanges), and a page thumbnail is drawn in the page
+            /// list's own document, where that inline size is the only word on how big the text
+            /// is. Empty when the group carries no style attribute.
+            /// </summary>
+            public string groupStyle { get; set; }
         }
 
         /// <summary>
@@ -117,6 +126,11 @@ namespace Bloom.Book
         /// is what stops a fit that never says the text is placed from filling the book; the last
         /// page it allows keeps the rest, so no word is lost and the work can be asked for again.
         /// The groups of the pages added come back in the changed list with the rest.
+        ///
+        /// addedGroups, when it is given, is filled with just the groups of the pages added, in
+        /// the order the text flows through them. The caller cannot pick them out of the changed
+        /// list, which says only that a box holds something new, and the last of them is the page
+        /// the author is to be taken to.
         /// </summary>
         public static List<FlowTextChains.FlowGroup> Distribute(
             List<FlowTextChains.FlowGroup> groups,
@@ -124,7 +138,8 @@ namespace Bloom.Book
             string lang,
             Func<FlowTextChains.FlowGroup, bool, FitResult> fit,
             Func<FlowTextChains.FlowGroup> addPage = null,
-            int maxPagesToAdd = FlowTextCreatePages.kMaxPagesToCreate
+            int maxPagesToAdd = FlowTextCreatePages.kMaxPagesToCreate,
+            List<FlowTextChains.FlowGroup> addedGroups = null
         )
         {
             var changed = new List<FlowTextChains.FlowGroup>();
@@ -152,6 +167,10 @@ namespace Bloom.Book
                 var group = chain[boxes[position]];
                 var editable = FlowTextChains.GetFlowEditable(group.Group, lang);
                 var before = editable.InnerXml;
+                // The fit brings back the inline font size the page being measured gives the
+                // group, which is what a thumbnail of this page is drawn at, so a page whose
+                // text is unchanged at a new size is still a page to save.
+                var styleBefore = group.Group.GetAttribute("style");
                 // Pages of its own are coming for whatever the boxes cannot hold, so the last
                 // box of the chain as it stands is not the one that keeps the rest.
                 var isLast = position == boxes.Count - 1 && addPage == null;
@@ -181,7 +200,11 @@ namespace Bloom.Book
                 // out. So the page's own overflow warning follows from the mark alone.
                 var overfull = isLast && FindOverflowMarkers(editable).Count > 0;
                 var markingChanged = !overfull && ClearOverflowMarking(editable);
-                if (editable.InnerXml != before || markingChanged)
+                if (
+                    editable.InnerXml != before
+                    || markingChanged
+                    || group.Group.GetAttribute("style") != styleBefore
+                )
                     changed.Add(group);
             }
 
@@ -202,6 +225,7 @@ namespace Bloom.Book
                 {
                     chain.Add(added);
                     changed.Add(added);
+                    addedGroups?.Add(added);
                 }
             }
 
@@ -661,10 +685,36 @@ namespace Bloom.Book
         ///
         /// One call per transition to idle, sent once the pages a walk changed have been saved.
         /// There is no socket server in a unit test, and then nothing is sent.
+        ///
+        /// pageIdToShow, when it is given, is the page the run of text now ends on, after the
+        /// walks added pages for it. pageIdToDelete, when it is given, is the page being edited
+        /// that the walks left holding nothing but an empty box of a chain.
+        ///
+        /// Both are for the browser to act on, and neither is acted on here, because both save
+        /// the page being edited and the browser has yet to put in what the walk made of that
+        /// page's boxes. Saving it first would write the text the box held before the walk.
         /// </summary>
-        private static void NotifyFinished()
+        private static void NotifyFinished(string pageIdToShow = null, string pageIdToDelete = null)
         {
-            BloomWebSocketServer.Instance?.SendEvent(kWebSocketContext, "walkFinished");
+            if (string.IsNullOrEmpty(pageIdToShow) && string.IsNullOrEmpty(pageIdToDelete))
+            {
+                BloomWebSocketServer.Instance?.SendEvent(kWebSocketContext, "walkFinished");
+                return;
+            }
+
+            BloomWebSocketServer.Instance?.SendString(
+                kWebSocketContext,
+                "walkFinished",
+                JsonConvert.SerializeObject(
+                    new
+                    {
+                        pageIdToShow = string.IsNullOrEmpty(pageIdToShow) ? null : pageIdToShow,
+                        pageIdToDelete = string.IsNullOrEmpty(pageIdToDelete)
+                            ? null
+                            : pageIdToDelete,
+                    }
+                )
+            );
         }
 
         /// <summary>
@@ -745,14 +795,19 @@ namespace Bloom.Book
         /// <summary>
         /// Ask for every chain in the book to be refitted, each from its first page, in the book's
         /// main language. This is for a change that alters where the text breaks on every page at
-        /// once, such as a new paper size.
+        /// once, such as a new paper size or a new style.
+        ///
+        /// styles carries the browser's own style rules, and means what it means on Request: a
+        /// style change lives in the page being edited until that page is saved, so a walk asked
+        /// for by the browser is told the rules rather than reading the older ones the book
+        /// holds. Pass null to measure with the rules the book holds.
         ///
         /// Queuing runs nothing: the walks wait until something calls RunPending. That is what
         /// keeps this out of the browser's way, so the page being edited settles itself
         /// undisturbed after such a change. When a walk does run it covers the page being edited
         /// along with the rest of the chain.
         /// </summary>
-        public static void RequestEveryChain(EditingModel model)
+        public static void RequestEveryChain(EditingModel model, string styles = null)
         {
             var book = model?.CurrentBook;
             if (book == null)
@@ -762,17 +817,17 @@ namespace Bloom.Book
             if (string.IsNullOrEmpty(lang))
                 return;
 
-            if (QueueEveryChain(book.OurHtmlDom, lang))
+            if (QueueEveryChain(book.OurHtmlDom, lang, styles))
                 NotifyQueued();
         }
 
         /// <summary>
         /// Queue the walks that RequestEveryChain asks for, one per chain, each starting at the
-        /// chain's first page. Returns whether any chain now has a walk waiting. Separate from
-        /// RequestEveryChain so that what goes into the queue can be tested without an
-        /// EditingModel.
+        /// chain's first page, each carrying the style rules given. Returns whether any chain now
+        /// has a walk waiting. Separate from RequestEveryChain so that what goes into the queue
+        /// can be tested without an EditingModel.
         /// </summary>
-        internal static bool QueueEveryChain(HtmlDom dom, string lang)
+        internal static bool QueueEveryChain(HtmlDom dom, string lang, string styles = null)
         {
             var any = false;
             foreach (var chainId in GetChainIds(dom))
@@ -786,7 +841,7 @@ namespace Bloom.Book
                     groups[0].PageId,
                     groups[0].PageIndex,
                     lang,
-                    null,
+                    styles,
                     WalkKind.WholeFlow
                 );
             }
@@ -1010,6 +1065,12 @@ namespace Bloom.Book
             // a thread of its own, and a queue whose walks all turn out to have nothing to fit
             // (every page of the chain is the page being edited, say) needs none.
             OffScreenBrowser browser = null;
+            // The last page the queue's walks added to the chain the author is on, and a page the
+            // queue emptied that the author is looking at. Both are for after every walk has run:
+            // a page added by one walk can be filled again by the next, and the page being edited
+            // cannot be taken away while a walk still has work to do on the book.
+            string lastPageAdded = null;
+            string emptiedPageBeingEdited = null;
             try
             {
                 PendingWalk walk;
@@ -1021,13 +1082,29 @@ namespace Bloom.Book
                     queueProgress.AddBoxesToFit(groups.Count - start);
                     progress?.SendStage(StageText(walk.Kind));
                     browser = browser ?? new OffScreenBrowser();
-                    RunOneWalk(model, browser, walk, groups, start, queueProgress);
+                    RunOneWalk(
+                        model,
+                        browser,
+                        walk,
+                        groups,
+                        start,
+                        queueProgress,
+                        out var addedByThisWalk,
+                        out var emptiedByThisWalk
+                    );
+                    lastPageAdded = addedByThisWalk ?? lastPageAdded;
+                    emptiedPageBeingEdited = emptiedByThisWalk ?? emptiedPageBeingEdited;
                 }
 
                 // TakeNext gave the claim back when it found nothing left, and RunOneWalk saved
                 // each page it changed before returning, so the chain is free and the book holds
                 // what the walk made of it.
-                NotifyFinished();
+                // Taking the page being edited away moves the Edit tab to the page beside it, so
+                // there is no jump to ask the browser for as well.
+                NotifyFinished(
+                    emptiedPageBeingEdited == null ? lastPageAdded : null,
+                    emptiedPageBeingEdited
+                );
             }
             catch (Exception e)
             {
@@ -1101,15 +1178,29 @@ namespace Bloom.Book
             return groups;
         }
 
+        /// <summary>
+        /// Refit one chain, save every page the refit changed, and take away the pages it
+        /// emptied.
+        ///
+        /// lastPageAdded comes back as the id of the last page this walk made, and only when the
+        /// author is on a page of the chain it walked: that is where their own text ended up.
+        /// Null otherwise. emptiedPageBeingEdited comes back as the id of the page the author is
+        /// looking at when this walk emptied that page, or null. Neither is acted on here: both
+        /// are for RunQueue, once every walk has run.
+        /// </summary>
         private static void RunOneWalk(
             EditingModel model,
             OffScreenBrowser browser,
             PendingWalk walk,
             List<FlowTextChains.FlowGroup> groups,
             int start,
-            QueueProgress queueProgress
+            QueueProgress queueProgress,
+            out string lastPageAdded,
+            out string emptiedPageBeingEdited
         )
         {
+            lastPageAdded = null;
+            emptiedPageBeingEdited = null;
             var book = model.CurrentBook;
             var pagesLoaded = 0;
             // The author has asked for pages once in this book, so the flow may make the pages
@@ -1131,6 +1222,7 @@ namespace Bloom.Book
                     return added;
                 };
 
+            var addedGroups = new List<FlowTextChains.FlowGroup>();
             var changed = Distribute(
                 groups,
                 start,
@@ -1150,12 +1242,17 @@ namespace Bloom.Book
                     queueProgress.BoxFitted();
                     return fitted;
                 },
-                addPage
+                addPage,
+                addedGroups: addedGroups
             );
 
             // A page the run of text has emptied, and that holds nothing else, goes with the
             // text: the page was there to carry that text and now carries nothing. The chain's
             // first page stays whatever it holds, because a chain has to begin somewhere.
+            //
+            // The page the author is looking at goes the same way, but not here: the browser is
+            // showing it, so it is taken out once every walk has run (RunQueue), by the route the
+            // Delete Page command uses.
             var emptyPageIds = autoPages
                 ? groups
                     .Skip(start)
@@ -1175,6 +1272,9 @@ namespace Bloom.Book
                 return;
 
             var changedPageIds = changed.Select(group => group.PageId).Distinct().ToList();
+            // Assigned on the UI thread below, because an out parameter cannot be.
+            string emptiedCurrentPage = null;
+            string lastAddedForThisAuthor = null;
             InvokeOnUiThread(() =>
             {
                 // The browser is showing the page being edited and will not be navigated to
@@ -1182,11 +1282,24 @@ namespace Bloom.Book
                 // Read here rather than earlier, because which page is being edited is a
                 // question about the moment the walk's work lands.
                 var currentPageId = model.CurrentPage?.Id;
-                // The page the user is looking at is not taken away underneath them, whatever it
-                // holds.
+                // The page the user is looking at is not taken away here: the browser is showing
+                // it and has yet to be given what the walk made of its boxes, so it asks for the
+                // page to go once it has put that in (flowText/deleteEmptiedPage).
                 var pageIdsToDelete = emptyPageIds
                     .Where(pageId => pageId != currentPageId)
                     .ToList();
+                emptiedCurrentPage = PageBeingEditedToDelete(
+                    emptyPageIds,
+                    currentPageId,
+                    groups[0].PageId
+                );
+
+                // Where the author is taken when this walk made pages: the last of them. Only a
+                // walk of the chain the author is editing offers one. A book can hold several
+                // chains, and a change of font size or paper size refits them all, so a walk of
+                // some other chain grew a run the author was not looking at.
+                if (addedGroups.Count > 0 && groups.Any(group => group.PageId == currentPageId))
+                    lastAddedForThisAuthor = addedGroups[addedGroups.Count - 1].PageId;
                 foreach (var group in changed.Where(group => group.PageId == currentPageId))
                 {
                     var editable = FlowTextChains.GetFlowEditable(group.Group, walk.Lang);
@@ -1230,6 +1343,88 @@ namespace Bloom.Book
                 // needs.
                 book.Save();
             });
+
+            emptiedPageBeingEdited = emptiedCurrentPage;
+            lastPageAdded = lastAddedForThisAuthor;
+        }
+
+        /// <summary>
+        /// Which page a walk emptied is the page the author is looking at, and so is the one page
+        /// the walk itself cannot take away. Null when none of them is.
+        ///
+        /// A page the author is looking at is taken away like any other page the run of text has
+        /// left empty, because a page that was only ever there to carry text the flow has moved
+        /// elsewhere is a page in the author's way. The chain's first page is the exception: a
+        /// chain has to begin somewhere.
+        /// </summary>
+        internal static string PageBeingEditedToDelete(
+            List<string> emptyPageIds,
+            string currentPageId,
+            string firstPageIdOfChain
+        )
+        {
+            if (string.IsNullOrEmpty(currentPageId) || currentPageId == firstPageIdOfChain)
+                return null;
+            return emptyPageIds.Contains(currentPageId) ? currentPageId : null;
+        }
+
+        /// <summary>
+        /// Take away the page the author is looking at, which a refit has left holding nothing
+        /// but an empty box of a chain. Returns whether the page went.
+        ///
+        /// This is the Delete Page route (EditingModel.DeletePage), because the browser is
+        /// showing the page: that saves what the browser holds, takes the page out, moves the
+        /// Edit tab to the page beside it and redraws the page list. So it must be called on the
+        /// UI thread, and only once the browser has put the refit's own content into the boxes
+        /// of this page, which is why the browser asks for it rather than the refit doing it.
+        ///
+        /// Everything the walk read is checked again, because the book has changed hands since:
+        /// the author may have turned the page, the setting may be off, and the box may have
+        /// been filled again.
+        /// </summary>
+        internal static bool DeleteEmptiedPageBeingEdited(EditingModel model, string pageId)
+        {
+            var book = model?.CurrentBook;
+            if (book == null || string.IsNullOrEmpty(pageId))
+                return false;
+            if (book.UserPrefs?.FlowTextAutoPages != true)
+                return false;
+            if (model.CurrentPage?.Id != pageId)
+                return false;
+
+            var page = FlowTextChains.FindPage(book, pageId);
+            var pageElement = page?.GetDivNodeForThisPage();
+            if (pageElement == null)
+                return false;
+
+            // The box the refit emptied, found again by the chain it belongs to: that is what
+            // makes this a page the flow put there rather than one the author made.
+            var group = FlowTextChains
+                .GetFlowGroupsOfPage(pageElement, pageId, 0)
+                .Select(candidate => candidate.Group)
+                .FirstOrDefault(candidate => candidate.HasAttribute(HtmlDom.kFlowChainAttrName));
+            if (group == null)
+                return false;
+
+            var chainId = group.GetAttribute(HtmlDom.kFlowChainAttrName);
+            var chainGroups = FlowTextChains.GetChainGroups(book.OurHtmlDom, chainId);
+            if (chainGroups.Count > 0 && chainGroups[0].PageId == pageId)
+                return false;
+
+            if (!FlowTextChains.PageHoldsNothingBut(pageElement, group))
+                return false;
+
+            if (model.InProcessOfSaving)
+            {
+                Logger.WriteEvent(
+                    "flow text: the page being edited was left empty by a refit, but a save "
+                        + "was in progress, so it was not taken out."
+                );
+                return false;
+            }
+
+            model.DeletePage(page);
+            return true;
         }
 
         /// <summary>
@@ -1310,7 +1505,24 @@ namespace Bloom.Book
                     $"flow text: refitting the box on page {group.PageId} failed: {answer}"
                 );
 
-            return JsonConvert.DeserializeObject<FitResult>(answer);
+            var result = JsonConvert.DeserializeObject<FitResult>(answer);
+            WriteGroupStyle(group.Group, result.groupStyle);
+            return result;
+        }
+
+        /// <summary>
+        /// Give the group the style attribute the page laid out off-screen settled on. The editor
+        /// writes the group's font size into that attribute from the box's computed size, and a
+        /// page thumbnail is drawn in the page list's own document, whose stylesheet is not the
+        /// book's: the inline size is all the thumbnail has to go on. So a page a walk writes
+        /// keeps the size it was drawn at before unless it is copied back here.
+        /// </summary>
+        internal static void WriteGroupStyle(SafeXmlElement group, string style)
+        {
+            if (!string.IsNullOrEmpty(style))
+                group.SetAttribute("style", style);
+            else if (group.HasAttribute("style"))
+                group.RemoveAttribute("style");
         }
 
         // Keeps every error the page reports while it loads, for DescribePageState to hand back

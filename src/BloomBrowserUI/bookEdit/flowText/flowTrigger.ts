@@ -5,6 +5,7 @@ import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
 } from "../js/bloomEditing";
+import { deleteEmptiedPage, jumpToPage } from "./flowBoundaryClient";
 import { getLanguageChainOnPage } from "./flowChain";
 import {
     removeContinueButtons,
@@ -79,6 +80,12 @@ export type FlowTextOptions = {
      * text that arrives from another page arrives without one.
      */
     markOverflow?: (editable: HTMLElement) => void;
+    /**
+     * Bring the page's own overflow warning into line with the boxes on it now. It is the
+     * page-level half of the warning above (OverflowChecker.UpdatePageOverflow), and what a page
+     * thumbnail is drawn from.
+     */
+    updatePageOverflow?: (page: HTMLElement) => void;
 };
 
 const kPageSelector = ".bloom-page";
@@ -148,7 +155,12 @@ export function setupFlowText(
         onFlowTextEvent,
     );
 
-    setFlowPassRunner({ applyWithoutPass, requestPassFor });
+    setFlowPassRunner({
+        applyWithoutPass,
+        requestPassFor,
+        markOverflow,
+        updatePageOverflow,
+    });
     setFlowSettleWaiter(waitForThisPageToSettle);
     // What the other pages hold is read afresh for each page the reader edits.
     resetCrossPageCache();
@@ -488,7 +500,7 @@ async function runBoundaryWork(): Promise<void> {
  */
 function onFlowTextEvent(event: IBloomWebSocketEvent): void {
     if (event.id === "walkFinished") {
-        void onWalkFinishedFromBloom();
+        void onWalkFinishedFromBloom(event.message);
     }
 
     // walkQueued says a refit is now waiting to be run, and walkFinished says the ones that
@@ -498,14 +510,42 @@ function onFlowTextEvent(event: IBloomWebSocketEvent): void {
     }
 }
 
+/** What Bloom sends with walkFinished when the refit leaves the browser something to do. */
+interface IWalkFinished {
+    /** The page the run of text now ends on, when the refit made pages for it. */
+    pageIdToShow?: string | null;
+    /** The page being edited, when the refit left it holding nothing but an empty box. */
+    pageIdToDelete?: string | null;
+}
+
 /**
  * A refit has ended. What it changed in the boxes of this page goes in first, and the page then
  * settles around it: everything below works from what the boxes hold, so a box holding text the
  * refit has replaced would be settled against text that is not in the book.
+ *
+ * Then one of two things, and both come last because both save the page being edited: what the
+ * refit made for a box of this page has to be in that box before it is written to the book.
+ * Either the page goes, because the refit left it holding nothing, or the author is taken to
+ * the page their text now ends on. A refit that emptied the page being edited names no page to
+ * show, because taking the page away moves the Edit tab to the page beside it.
+ *
+ * The message is empty when the refit left the browser nothing to do.
  */
-async function onWalkFinishedFromBloom(): Promise<void> {
+async function onWalkFinishedFromBloom(message?: string): Promise<void> {
+    const finished: IWalkFinished = message ? JSON.parse(message) : {};
     await takeAndApplyRefitResult();
     await settleRefusedBoundaries();
+
+    const page = getPages()[0];
+    if (finished.pageIdToDelete && finished.pageIdToDelete === page?.id) {
+        // Bloom refuses this when the page is no longer one that may go, and a refusal is the
+        // right answer rather than something to report.
+        void deleteEmptiedPage(finished.pageIdToDelete).catch(() => undefined);
+        return;
+    }
+    if (finished.pageIdToShow && finished.pageIdToShow !== page?.id) {
+        jumpToPage(finished.pageIdToShow);
+    }
 }
 
 /**
@@ -695,6 +735,12 @@ async function waitForQuietThenRequestWalks(): Promise<void> {
 function markOverflow(editable: HTMLElement): void {
     if (editable.isConnected) {
         activeOptions.markOverflow?.(editable);
+    }
+}
+
+function updatePageOverflow(page: HTMLElement): void {
+    if (page.isConnected) {
+        activeOptions.updatePageOverflow?.(page);
     }
 }
 

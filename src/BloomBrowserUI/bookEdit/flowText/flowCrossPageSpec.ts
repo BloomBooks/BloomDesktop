@@ -30,6 +30,8 @@ let peekCount = 0;
 // The refits of the later pages the browser has asked C# for.
 const walkRequests: { chainId: string; fromPageId: string; lang: string }[] =
     [];
+// How many times the browser has asked for every chain in the book to be refitted.
+let everyChainWalkCount = 0;
 // What happens while C# is still being asked to take the text.
 let whileNextContentPending: (() => void) | undefined;
 
@@ -62,6 +64,10 @@ vi.mock("./flowBoundaryClient", () => ({
         walkRequests.push({ chainId, fromPageId, lang });
         return Promise.resolve();
     },
+    requestWalkOfEveryChain: () => {
+        everyChainWalkCount++;
+        return Promise.resolve();
+    },
 }));
 
 import {
@@ -71,6 +77,7 @@ import {
     beginCrossPageRun,
     onWalkFinished,
     placePendingCaret,
+    queueWalksForEveryChain,
     requestQueuedWalks,
     resetCrossPageCache,
     settleCrossPageBoundary,
@@ -150,6 +157,7 @@ describe("flowCrossPage", () => {
         // What one test's move asked for outlives that test, so it is sent and forgotten here.
         await requestQueuedWalks();
         walkRequests.length = 0;
+        everyChainWalkCount = 0;
         nextBox = { pageId: "page-3", indexInPage: 0, html: "<p>next</p>" };
         acceptNextContent = true;
         refuseBecauseWalkInProgress = false;
@@ -537,6 +545,20 @@ describe("flowCrossPage", () => {
         expect(moved).toBe(false);
         expect(sentContent).toHaveLength(0);
         expect(editable.innerHTML).toBe(before);
+        expect(areWalksWanted()).toBe(false);
+    });
+
+    it("asks for every chain to be refitted after a style change", async () => {
+        // Sanity check: nothing is waiting to be asked for.
+        expect(areWalksWanted()).toBe(false);
+
+        queueWalksForEveryChain();
+        expect(areWalksWanted()).toBe(true);
+
+        await requestQueuedWalks();
+
+        expect(everyChainWalkCount).toBe(1);
+        expect(walkRequests).toHaveLength(0);
         expect(areWalksWanted()).toBe(false);
     });
 

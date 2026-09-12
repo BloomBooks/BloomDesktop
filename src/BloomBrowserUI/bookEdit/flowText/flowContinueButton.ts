@@ -64,6 +64,18 @@ export interface FlowPassRunner {
     applyWithoutPass: (work: () => void) => void;
     /** Settle these boxes now: text has arrived that nobody has measured. */
     requestPassFor: (editables: HTMLElement[], reason: string) => void;
+    /**
+     * Show or clear Bloom's warning that this box holds more text than fits it
+     * (OverflowChecker.AdjustSizeOrMarkOverflow).
+     */
+    markOverflow: (editable: HTMLElement) => void;
+    /**
+     * Bring the page's own warning into line with the boxes on it now
+     * (OverflowChecker.UpdatePageOverflow). The page thumbnail is drawn from that class, so a
+     * caller whose page is about to be saved has to ask for this rather than leave it to the
+     * overflow checker's deferred timer.
+     */
+    updatePageOverflow: (page: HTMLElement) => void;
 }
 
 let passRunner: FlowPassRunner | undefined;

@@ -45,6 +45,7 @@ import {
     kFlowChainAttr,
     kOverflowStartClass,
 } from "./flowConstants";
+import { setFlowPassRunner } from "./flowContinueButton";
 import { resetNextBoxCache } from "./flowNextBox";
 
 /**
@@ -169,6 +170,7 @@ describe("flowCreatePagesButton", () => {
 
     afterEach(() => {
         document.body.innerHTML = "";
+        setFlowPassRunner(undefined);
     });
 
     describe("which boxes get the offer", () => {
@@ -423,6 +425,59 @@ describe("flowCreatePagesButton", () => {
             // The box now holds only what fits, so it makes no offer any more.
             expect(hasCreatePagesButton(editable)).toBe(false);
             // The author is taken to where the text now ends.
+            expect(pagesShown).toEqual(["made-last"]);
+        });
+
+        it("takes the overflow warning off the box and the page before the jump", async () => {
+            // The jump saves this page at once, and a page thumbnail draws its red warning
+            // triangle from the pageOverflows class, so a page still marked when the save
+            // happens goes on warning about text that has moved to another page.
+            createPagesResult = {
+                chainId: "made-here",
+                sourceHtml: "<p>what fits</p>",
+                pagesCreated: 2,
+                lastPageId: "made-last",
+            };
+            const page = makePage([
+                { text: { en: "more than fits" }, overflowing: ["en"] },
+            ]);
+            const editable = box(page, 0);
+            editable.classList.add("overflow");
+            page.classList.add("pageOverflows");
+            // What the trigger hands over in Bloom is OverflowChecker: marking a box that has
+            // just been measured, and then the page's own class from the boxes left on it. jsdom
+            // measures nothing, so the rule the page-level half applies is written out here.
+            const marked: HTMLElement[] = [];
+            const pagesUpdated: HTMLElement[] = [];
+            setFlowPassRunner({
+                applyWithoutPass: (work) => work(),
+                requestPassFor: () => undefined,
+                markOverflow: (measured) => marked.push(measured),
+                updatePageOverflow: (updated) => {
+                    pagesUpdated.push(updated);
+                    if (
+                        !updated.querySelector(
+                            ".overflow, .thisOverflowingParent",
+                        )
+                    ) {
+                        updated.classList.remove("pageOverflows");
+                    }
+                },
+            });
+
+            await createPagesFor(editable);
+
+            expect(
+                editable.classList.contains("overflow"),
+                "The box holds only what fits it now, so it must not still be marked.",
+            ).toBe(false);
+            expect(
+                page.classList.contains("pageOverflows"),
+                "No box on the page is overfull, so the page must not still warn.",
+            ).toBe(false);
+            expect(marked).toEqual([editable]);
+            expect(pagesUpdated).toEqual([page]);
+            // The page was brought up to date before the jump that saves it.
             expect(pagesShown).toEqual(["made-last"]);
         });
 

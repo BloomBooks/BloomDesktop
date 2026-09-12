@@ -3,8 +3,8 @@
 // "Create pages and flow text" makes the pages a run needs once. The book setting behind these
 // tests, "Automatically add & remove pages", keeps doing it: while it is on, a refit that finds
 // the run no longer fits its last box adds text-only pages after that box, and a refit that
-// leaves pages of the chain empty takes them out. The chain's first page and the page the author
-// is editing are never taken out.
+// leaves pages of the chain empty takes them out, the page the author is editing included. The
+// chain's first page is the one page never taken out.
 //
 // A book here holds TWO runs of text, one after the other, because the risk the setting carries
 // is that Bloom edits the wrong pages: a run that grows must not push its way into the run after
@@ -40,6 +40,7 @@ import {
     doubleFontSizeOfBox,
     getAutoPages,
     getBookChains,
+    getPageBeingEditedId,
     IFlowChain,
     isAutoPagesChecked,
     isReflowPendingShown,
@@ -342,8 +343,25 @@ test.describe("adding and removing pages for a run of text automatically", () =>
             "Reflow now has to leave nothing waiting behind it.",
         ).toBe(false);
 
+        // The author asked for the refit and it made pages, so Bloom takes them to where their
+        // text now ends. Read before anything else navigates: reading the chains parks the Edit
+        // tab off them.
+        await expect
+            .poll(() => getPageBeingEditedId(page), {
+                timeout: 30000,
+                message:
+                    "The refit added pages, so the author has to be taken off the page they " +
+                    "asked from to the page the run of text now ends on.",
+            })
+            .not.toBe(chainAFirstPageId);
+        const pageAfterReflow = await getPageBeingEditedId(page);
+
         const after = await readBothChains(page);
         const chainAAfter = pagesAndText(chainWithId(after, chainAId));
+        expect(
+            pageAfterReflow,
+            "The author has to be looking at the page the run of text now ends on.",
+        ).toBe(chainAAfter[chainAAfter.length - 1].pageId);
         expect(
             chainAAfter.length,
             "Twice the font size fits about a quarter of the text on a page, so the run has " +
@@ -395,7 +413,14 @@ test.describe("adding and removing pages for a run of text automatically", () =>
             (await getPageSizeChoices(page)).choices.map((c) => c.id),
         );
 
-        await goToPage(page, chainAFirstPageId);
+        // The page the run of text ends on, which a larger page size will leave empty. The author
+        // is put on it on purpose: a page they are looking at is taken out like any other once
+        // the run no longer reaches it, and that is what this test is about.
+        const lastPageOfChainA = chainABefore[chainABefore.length - 1].pageId;
+        const orderBefore = await pageOrder(page);
+        const pageAfterTheLastOfChainA =
+            orderBefore[orderBefore.indexOf(lastPageOfChainA) + 1];
+        await goToPage(page, lastPageOfChainA);
         await waitForReflowIdle(page);
 
         // THE ACTION UNDER TEST: draw the book at the largest page size it offers. Each page now
@@ -409,8 +434,24 @@ test.describe("adding and removing pages for a run of text automatically", () =>
             "Reflow now has to leave nothing waiting behind it.",
         ).toBe(false);
 
+        // THE SECOND ASSERTION UNDER TEST: the page the author was on has gone with the rest, and
+        // Bloom has moved them to the page beside it.
+        await expect
+            .poll(() => getPageBeingEditedId(page), {
+                timeout: 30000,
+                message:
+                    `The refit emptied page ${lastPageOfChainA}, which the author was on, so ` +
+                    `Bloom has to take it out and show the page beside it.`,
+            })
+            .toBe(pageAfterTheLastOfChainA);
+
         const after = await readBothChains(page);
         const chainAAfter = pagesAndText(chainWithId(after, chainAId));
+        expect(
+            (await pageOrder(page)).includes(lastPageOfChainA),
+            `Page ${lastPageOfChainA} was left holding nothing but an empty box of the run, ` +
+                `so it has to be gone from the book even though the author was looking at it.`,
+        ).toBe(false);
         expect(
             chainAAfter.length,
             "A larger page holds more of the run, so the pages the run no longer reaches have " +

@@ -34,6 +34,15 @@ export interface IFlowFitResult {
      * markers when this box's last paragraph was divided. Empty when all of the text fits here.
      */
     tail: string;
+    /**
+     * The style attribute this page left on the box's translation group, which carries the font
+     * size the editor works out from the box (SetupThingsSensitiveToStyleChanges). A page
+     * thumbnail is drawn in the page list's own document, where that inline size is the only word
+     * on how big the text is, so C# copies it back onto the page it saves.
+     *
+     * captureFlowFit fills this in; divideBoxAtFit, which answers only about the text, does not.
+     */
+    groupStyle?: string;
 }
 
 /**
@@ -80,11 +89,11 @@ async function runCapture(
             // Either nothing follows this box, or there is no character inside the text at
             // which its share ends: all of the text fits, or not even one word does. Each way
             // the box keeps everything, with whatever mark placeOverflowMarker just settled.
-            stash({ head: editable.innerHTML, tail: "" });
+            stash({ head: editable.innerHTML, tail: "" }, editable);
             return;
         }
 
-        stash(divideBoxAtFit(editable, markerOffset));
+        stash(divideBoxAtFit(editable, markerOffset), editable);
     } catch (error) {
         const problem = error as Error;
         window.__bloomFlowFit =
@@ -145,8 +154,12 @@ function textOfHtml(html: string): string {
     return paragraphs.map((paragraph) => paragraph.textContent ?? "").join(" ");
 }
 
-function stash(result: IFlowFitResult): void {
-    window.__bloomFlowFit = JSON.stringify(result);
+function stash(result: IFlowFitResult, editable: HTMLElement): void {
+    const group = editable.closest<HTMLElement>(".bloom-translationGroup");
+    window.__bloomFlowFit = JSON.stringify({
+        ...result,
+        groupStyle: group?.getAttribute("style") ?? "",
+    });
 }
 
 /**

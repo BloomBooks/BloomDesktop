@@ -754,6 +754,56 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void QueueEveryChain_WithStyles_CarriesThemOnTheWalk()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueEveryChain(dom, "en", "some css");
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1));
+            Assert.That(
+                queued[0].Styles,
+                Is.EqualTo("some css"),
+                "A style the user has just changed is in the browser and nowhere else, so the "
+                    + "walk measures the pages with the rules the browser sent."
+            );
+            Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
+        public void QueueEveryChain_WithStyles_ReplacesAWalkFromALaterPage()
+        {
+            FlowTextWalk.ClearQueueForTests();
+            var dom = TwoPageChain();
+
+            FlowTextWalk.QueueFromPageForward(dom, "chain", "p2", "en", null);
+            var queuedFirst = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(
+                queuedFirst[0].FromPageId,
+                Is.EqualTo("p2"),
+                "Sanity check: the walk the second request has to start earlier than."
+            );
+            Assert.That(queuedFirst[0].Styles, Is.Null, "Sanity check: no rules yet.");
+
+            FlowTextWalk.QueueEveryChain(dom, "en", "some css");
+
+            var queued = FlowTextWalk.QueuedWalksForTests();
+            Assert.That(queued.Count, Is.EqualTo(1), "One chain and one language is one walk.");
+            Assert.That(
+                queued[0].FromPageId,
+                Is.EqualTo("p1"),
+                "A style breaks the text somewhere else on every page, so the walk starts at "
+                    + "the first page of the chain."
+            );
+            Assert.That(queued[0].Kind, Is.EqualTo(FlowTextWalk.WalkKind.WholeFlow));
+            Assert.That(queued[0].Styles, Is.EqualTo("some css"));
+            FlowTextWalk.ClearQueueForTests();
+        }
+
+        [Test]
         public void QueueFromPageForward_AfterAWalkOfTheWholeFlow_StillReportsTheWholeFlow()
         {
             FlowTextWalk.ClearQueueForTests();
@@ -1001,6 +1051,116 @@ namespace BloomTests.Book
             FlowTextWalk.ClearRefitResults();
 
             Assert.That(FlowTextWalk.TakeRefitResults("p1"), Is.Empty);
+        }
+
+        [Test]
+        public void Distribute_HandsBackTheGroupsOfThePagesItMade()
+        {
+            // The caller cannot pick the pages made out of the changed list, which says only
+            // that a box holds something new, and the last of them is where the run now ends:
+            // that is the page the author is taken to.
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>aaaabbbbccccdddd</p>"))));
+            Assert.That(Chain(dom).Count, Is.EqualTo(1));
+
+            var added = 0;
+            var addedGroups = new List<FlowTextChains.FlowGroup>();
+            FlowTextWalk.Distribute(
+                Chain(dom),
+                0,
+                "en",
+                FitFourCharactersMarkingOverflow,
+                () => AppendTextOnlyPage(dom, "made" + ++added),
+                addedGroups: addedGroups
+            );
+
+            Assert.That(
+                addedGroups.Select(group => group.PageId),
+                Is.EqualTo(new[] { "made1", "made2", "made3" }),
+                "The pages made come back in the order the text flows through them."
+            );
+        }
+
+        [Test]
+        public void Distribute_SavesAPageWhoseOnlyChangeIsTheGroupsStyle()
+        {
+            // A thumbnail is drawn in the page list's own document, where the inline font size
+            // on the group is the only word on how big the text is. So a page whose text is
+            // unchanged at a new size is still a page to save.
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>abcd</p>"))));
+            Assert.That(Chain(dom)[0].Group.GetAttribute("style"), Is.Empty);
+
+            var changed = FlowTextWalk.Distribute(
+                Chain(dom),
+                0,
+                "en",
+                (group, isLast) =>
+                {
+                    FlowTextWalk.WriteGroupStyle(group.Group, "font-size: 24px;");
+                    return new FlowTextWalk.FitResult
+                    {
+                        head = FlowTextChains.GetFlowEditable(group.Group, "en").InnerXml,
+                        tail = "",
+                    };
+                }
+            );
+
+            Assert.That(Chain(dom)[0].Group.GetAttribute("style"), Is.EqualTo("font-size: 24px;"));
+            Assert.That(
+                changed.Select(group => group.PageId),
+                Is.EqualTo(new[] { "p1" }),
+                "The box holds what it held, but the page is drawn at a new size, so it is saved."
+            );
+        }
+
+        [Test]
+        public void WriteGroupStyle_TakesTheAttributeOffWhenThePageLeftNone()
+        {
+            var dom = MakeBookDom(Page("p1", Group(Editable("<p>abcd</p>"))));
+            var group = Chain(dom)[0].Group;
+            FlowTextWalk.WriteGroupStyle(group, "font-size: 24px;");
+            Assert.That(group.HasAttribute("style"), Is.True);
+
+            FlowTextWalk.WriteGroupStyle(group, "");
+
+            Assert.That(group.HasAttribute("style"), Is.False);
+        }
+
+        [Test]
+        public void PageBeingEditedToDelete_NamesThePageTheAuthorIsOnWhenTheRunEmptiedIt()
+        {
+            Assert.That(
+                FlowTextWalk.PageBeingEditedToDelete(new List<string> { "p2", "p3" }, "p3", "p1"),
+                Is.EqualTo("p3")
+            );
+        }
+
+        [Test]
+        public void PageBeingEditedToDelete_NamesNothingWhenThePageStillHoldsSomething()
+        {
+            Assert.That(
+                FlowTextWalk.PageBeingEditedToDelete(new List<string> { "p2" }, "p3", "p1"),
+                Is.Null,
+                "The run did not empty the page the author is on, so it stays."
+            );
+        }
+
+        [Test]
+        public void PageBeingEditedToDelete_NamesNothingForTheChainsFirstPage()
+        {
+            Assert.That(
+                FlowTextWalk.PageBeingEditedToDelete(new List<string> { "p1" }, "p1", "p1"),
+                Is.Null,
+                "A chain has to begin somewhere, so its first page is never taken away."
+            );
+        }
+
+        [Test]
+        public void PageBeingEditedToDelete_NamesNothingWhenNoPageIsBeingEdited()
+        {
+            Assert.That(
+                FlowTextWalk.PageBeingEditedToDelete(new List<string> { "p2" }, null, "p1"),
+                Is.Null
+            );
         }
 
         [Test]

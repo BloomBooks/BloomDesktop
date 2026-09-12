@@ -178,7 +178,7 @@ namespace Bloom.web.controllers
         {
             /// <summary>
             /// Which chain to refit. Empty means every chain in the book, each from its first
-            /// page, which is what a change of paper size calls for.
+            /// page, which is what a change of paper size or of a style calls for.
             /// </summary>
             public string chainId { get; set; }
             public string fromPageId { get; set; }
@@ -205,6 +205,15 @@ namespace Bloom.web.controllers
             /// the ones it has emptied.
             /// </summary>
             public bool value { get; set; }
+        }
+
+        public class DeleteEmptiedPageRequest
+        {
+            /// <summary>
+            /// The page the browser was told a refit had emptied, which is the page it is
+            /// showing.
+            /// </summary>
+            public string pageId { get; set; }
         }
 
         public class UnlinkFromRequest
@@ -257,6 +266,11 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pendingCaret",
                 HandlePendingCaret,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "deleteEmptiedPage",
+                HandleDeleteEmptiedPage,
                 true
             );
 
@@ -981,7 +995,7 @@ namespace Bloom.web.controllers
                 {
                     var body = request.RequiredPostObject<WalkRequest>();
                     if (string.IsNullOrEmpty(body.chainId))
-                        FlowTextWalk.RequestEveryChain(_editingModel);
+                        FlowTextWalk.RequestEveryChain(_editingModel, body.styles);
                     else
                         FlowTextWalk.Request(
                             _editingModel,
@@ -1158,6 +1172,30 @@ namespace Bloom.web.controllers
 
                     _pendingCaret = null;
                     request.ReplyWithJson(waiting);
+                }
+            );
+        }
+
+        /// <summary>
+        /// POST flowText/deleteEmptiedPage { pageId }: take away the page being edited, which a
+        /// refit has left holding nothing but an empty box of a chain.
+        ///
+        /// The browser asks for this rather than the refit doing it, because taking the page away
+        /// saves it: what the refit made of this page's boxes has to be in them first, and only
+        /// the browser knows when it is. FlowTextWalk checks that the page is still one that may
+        /// go, so a request that arrives after the author has typed in the box does nothing.
+        /// </summary>
+        private void HandleDeleteEmptiedPage(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var body = request.RequiredPostObject<DeleteEmptiedPageRequest>();
+                    // Answered before the page goes, because taking it away saves the page and
+                    // navigates the Edit tab, which is more than the browser's request waits for.
+                    request.PostSucceeded();
+                    FlowTextWalk.DeleteEmptiedPageBeingEdited(_editingModel, body.pageId);
                 }
             );
         }

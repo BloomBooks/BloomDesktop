@@ -6,9 +6,15 @@
 // The measuring itself belongs to the real layout and is not tested here. What is tested is the
 // arithmetic around it: the offset the mark sits at, and the division at that offset.
 
-import { describe, expect, it } from "vitest";
-import { divideBoxAtFit } from "./flowCaptureFit";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { captureFlowFit, divideBoxAtFit } from "./flowCaptureFit";
 import { createOverflowMarker } from "./flowOverflowMarker";
+
+// The real fit probe asks a Range for its rectangles, and jsdom's Range has no such method.
+// An answer of no rectangles is what jsdom means: nothing is laid out, so all of it "fits".
+(
+    Range.prototype as unknown as { getClientRects: () => DOMRect[] }
+).getClientRects = () => [];
 
 /** Words that say where they come, so a gap or a repeat in the result is plain to read. */
 function indexedWords(from: number, count: number): string {
@@ -102,5 +108,43 @@ describe("divideBoxAtFit", () => {
 
         expect(textOf(result.head)).toBe(indexedWords(1, 29));
         expect(textOf(result.tail)).toBe(indexedWords(30, 71));
+    });
+});
+
+describe("captureFlowFit", () => {
+    afterEach(() => {
+        document.body.innerHTML = "";
+        window.__bloomFlowFit = undefined;
+    });
+
+    it("stashes the style attribute of the box's translation group", async () => {
+        // The page being measured writes the group's font size into that attribute, and a page
+        // thumbnail is drawn in the page list's own document, where the inline size is the only
+        // word on how big the text is. So it travels back to C# with the two halves of the text.
+        const page = document.createElement("div");
+        page.className = "bloom-page";
+        const group = document.createElement("div");
+        group.className = "bloom-translationGroup";
+        group.setAttribute("style", "font-size: 24px;");
+        const editable = document.createElement("div");
+        editable.className =
+            "bloom-editable normal-style bloom-visibility-code-on";
+        editable.setAttribute("lang", "en");
+        editable.setAttribute("contenteditable", "true");
+        editable.innerHTML = "<p>some text</p>";
+        group.appendChild(editable);
+        page.appendChild(group);
+        document.body.appendChild(page);
+
+        captureFlowFit(0, "en", true);
+        await vi.waitUntil(() => window.__bloomFlowFit !== undefined, {
+            timeout: 5000,
+        });
+
+        const stashed = JSON.parse(window.__bloomFlowFit as string);
+        expect(
+            stashed.groupStyle,
+            `captureFlowFit stashed ${window.__bloomFlowFit}`,
+        ).toBe("font-size: 24px;");
     });
 });
