@@ -628,18 +628,43 @@ runner hit it so reliably. **It is deliberately not being fixed** — CKEditor i
 (the `retireCkEditor` work), so the fix is that removal. The attach site in
 `bookEdit/js/bloomEditing.ts` carries a note pointing back here, for whoever does it.
 
-**The suite's workaround**, and it is a workaround: `clickInGroup` waits for the
-`cke_editable` class before it touches a box, because that class is exactly the signal the
-trace above identifies. It waits only on boxes that will really get an editor, asking the
-page the same three questions `bloomEditing.ts` asks (matches `ckeditableSelector`, no
-`.bloom-canvas` on the page, not read-only), and gives up quietly rather than failing if the
-editor never arrives. Every typing path funnels through `clickInGroup`, so no spec needed
-changing — but a test that ever types by some other route is still exposed. **Delete the wait
-when CKEditor goes.**
+**The suite's workaround did NOT stop it, 2026-09-11 (second run of the night).**
+`clickInGroup` now waits for the `cke_editable` class before touching a box, on the boxes that
+get an editor at all (it asks the page the same three questions `bloomEditing.ts` asks:
+matches `ckeditableSelector`, no `.bloom-canvas` on the page, not read-only). Every typing path
+funnels through it, so no spec needed changing. The very next nightly still lost two titles:
 
-The instruments that got us here — a probe spec that typed three different ways, a
-typing-method argument on `typeInGroup`, and a `Cover-title investigation:` line logging what
-the browser handed each save — have all been removed now that the question is settled.
+- `publish-talking-book-languages.spec.ts:82` — `has no book called "Talking Book Languages
+  Test". It has: "Book-bbd2b161"`.
+- `publish-text-languages.spec.ts:46` — `has no book called "Text Languages Test". It has:
+  "Title Missing"` — a **new** end state; every earlier loss left the book as `Book-<hex>`.
+
+Both type through `typeInGroup`, so the wait ran and the title went anyway. Note what the run
+does NOT show: `xmatter-packs`, which lost its title the run before, passed, and
+`bulk-upload-quick-test` again got all four books titled. The loss keeps moving between specs
+(`import-recording` → `bulk-upload` → `xmatter-packs` → these two), which is what it did before
+the wait existed. So the wait may have narrowed the window without closing it, or may be doing
+nothing; one run cannot tell those apart. **It is kept for now** rather than reverted, because
+removing it would only make the next run harder to interpret.
+
+The leading hypothesis is a **second** CKEditor attach: the class the wait looks for is already
+there from the first attach, so the wait returns at once, and a later re-attach wipes text typed
+in between. Beware the trap that hid this the first time — a verification run where the box is
+already `cke_editable` proves the wait costs nothing, NOT that it works.
+
+**What is instrumented now**, and why it should stay until the nightly goes several runs without
+losing a title:
+
+- `EditingModel.UpdateBookDomFromBrowserPageContent` logs `Cover-title investigation:` — the
+  bookTitle the browser handed the save, and what the book already believes its title is. An
+  empty box with a known title means something cleared it after an earlier save; both empty
+  means it never arrived.
+- `attachToCkEditor` logs `[cover-title]` on every attach to a title box, with the text going in
+  and the text once the editor is ready. Two attaches in one page load would confirm the
+  hypothesis above. Playwright keeps the page console in its trace, so a failed run carries it.
+
+This instrumentation was once removed as soon as the mechanism looked understood, and was needed
+again the next night. Do not remove it on the strength of one green run.
 
 Independently of all this, `findBookFolder` could look a book up by its id
 (`collections/books` reports one) so that no test depends on the rename at all.
