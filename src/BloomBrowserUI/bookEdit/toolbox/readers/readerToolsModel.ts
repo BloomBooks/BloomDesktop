@@ -38,6 +38,7 @@ import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
+import { isToolboxUiMounted } from "../toolboxState";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -1532,14 +1533,14 @@ export class ReaderToolsModel {
         return dataWords;
     }
 
+    /**
+     * Persists the decodable-reader stage/sort and the leveled-reader level in the book.
+     * Does nothing until the toolbox UI exists: before that (and in unit tests, where it
+     * never does) there is no user-chosen state worth saving, and saving would overwrite
+     * the book's real settings with defaults.
+     */
     public saveState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
-
-        // this is also needed for unit testing
-        const active = toolbox.accordion("option", "active");
-        if (isNaN(active)) return;
+        if (!isToolboxUiMounted()) return;
 
         postString(
             "editView/saveToolboxSetting",
@@ -1555,10 +1556,12 @@ export class ReaderToolsModel {
         );
     }
 
+    /**
+     * Restores the stage/level the book was last using. Like saveState(), does nothing
+     * until the toolbox UI exists (in particular, in unit tests).
+     */
     public restoreState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
+        if (!isToolboxUiMounted()) return;
 
         const state = new DRTState();
 

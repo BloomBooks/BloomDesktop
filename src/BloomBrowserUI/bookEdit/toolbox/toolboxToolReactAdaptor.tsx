@@ -1,47 +1,43 @@
-import { renderRoot } from "../../utils/reactRender";
-import $ from "jquery";
-import { ITool, IReactTool } from "./toolbox";
-import { ReactElement } from "react";
+import { ITool, IToolboxSettings } from "./toolbox";
+import type * as React from "react";
 import { isPageBloomGame } from "./games/GameInfo";
+import { getBloomPageElement } from "../../utils/shared";
 
 // Provides a base class with some common code for react-based tools that live
 // in Bloom's Edit Page Toolbox.
-export default abstract class ToolboxToolReactAdaptor
-    implements ITool, IReactTool
-{
+export default abstract class ToolboxToolReactAdaptor implements ITool {
     imageUpdated(_img: HTMLImageElement | undefined): void {
         // does nothing by default
     }
-    public hasRestoredSettings: boolean;
-    public abstract makeRootElement(): HTMLDivElement;
+    public abstract renderPanel(): React.ReactNode;
     public abstract id(): string;
 
     public requiresToolId(): boolean {
         return false;
     }
 
-    protected adaptReactElement(
-        element: ReactElement<unknown>,
-    ): HTMLDivElement {
-        // We need a wrapperDiv to hand back to our the toolbox because react wants some freedom to render asynchronously.
-        // So we just create empty div now to hand back to the toolbox, and ask React to render into it eventually.
-        const wrapperDiv = document.createElement("div");
-        renderRoot(element, wrapperDiv);
-        return wrapperDiv as HTMLDivElement;
+    /**
+     * The URL of the icon for this tool's toolbox section header. Tools that don't show one
+     * (the "More..." section, and tools that only appear on pages that ask for them) don't
+     * override this.
+     */
+    public iconPath(): string | undefined {
+        return undefined;
     }
+
     public isAlwaysEnabled(): boolean {
         return false;
     }
-    public isExperimental(): boolean {
-        return false;
-    }
+    // See ITool.featureName. Tools that require a subscription set this.
     public featureName?: string;
 
-    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
+    /**
+     * Restores this tool's state from the book's saved toolbox settings (see ITool).
+     * Tools that save no state don't override this.
+     */
+    public beginRestoreSettings(_settings: IToolboxSettings): Promise<void> {
         // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
+        return Promise.resolve();
     }
     // We need these to implement the interface, but don't need them to do anything.
     /* eslint-disable @typescript-eslint/no-empty-function */
@@ -59,68 +55,34 @@ export default abstract class ToolboxToolReactAdaptor
     public newPageReady() {}
     public detachFromPage() {}
     public configureElements(_container: HTMLElement) {}
-    public finishToolLocalization(_pane: HTMLElement) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
 
-    public static getPageFrame(): HTMLIFrameElement {
-        return parent.window.document.getElementById(
-            "page",
-        ) as HTMLIFrameElement;
-    }
+    // Note: the general helpers for getting at the page being edited (the page iframe, its
+    // body, the .bloom-page element, and whether the page is xmatter) live in
+    // utils/shared.ts. The few below remain here because they are about particular things
+    // tools do with the page: attributes we deliberately store URL-encoded, and games.
 
-    // The body of the editable page, a root for searching for document content.
-    public static getPage(): HTMLElement | null {
-        const page = this.getPageFrame();
-        if (!page || !page.contentWindow) return null;
-        return page.contentWindow.document.body;
-    }
-
-    public static getBloomPage(): HTMLElement | null {
-        const page = this.getPage();
-        if (!page) return null;
-        return page.querySelector(".bloom-page") as HTMLElement;
-    }
-
+    /** The value of an attribute of the .bloom-page element that we store URL-encoded. */
     public static getBloomPageAttrDecoded(name: string): string | undefined {
-        const page = this.getBloomPage();
+        const page = getBloomPageElement();
         if (!page) return undefined;
         const v = page.getAttribute(name);
         return v ? decodeURIComponent(v) : undefined;
     }
 
+    /** Stores a value, URL-encoded, in an attribute of the .bloom-page element. */
     public static encodeAndSetPageAttr(
         name: string,
         unencodedValue: string,
     ): void {
-        const page = this.getBloomPage();
+        const page = getBloomPageElement();
         if (!page) return;
         page.setAttribute(name, encodeURIComponent(unencodedValue));
     }
 
-    // Generally returns true if the page is xmatter. Some callers (enabling canvas tool) want to treat
-    // a custom page as not being xmatter, so we support an override for that. Could be just a boolean,
-    // but using an object with a named field makes it clearer what the argument is for where it is used.
-    public static isXmatter(
-        args: { returnFalseForCustomPage: boolean } = {
-            returnFalseForCustomPage: false,
-        },
-    ): boolean {
-        const pageClass = this.getBloomPageAttrDecoded("class");
-        if (!pageClass) return false; // paranoia
-        if (
-            args?.returnFalseForCustomPage &&
-            pageClass.indexOf("bloom-customLayout") >= 0
-        ) {
-            return false;
-        }
-        return (
-            pageClass.indexOf("bloom-frontMatter") >= 0 ||
-            pageClass.indexOf("bloom-backMatter") >= 0
-        );
-    }
-
+    /** Is the page currently being edited one of our games? */
     public static isCurrentPageABloomGame(): boolean {
-        const page = this.getBloomPage();
+        const page = getBloomPageElement();
         if (!page) {
             return false; // huh??
         }
