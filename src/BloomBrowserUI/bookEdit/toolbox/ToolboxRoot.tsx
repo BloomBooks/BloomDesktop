@@ -17,7 +17,6 @@ import { getMasterToolList, ITool } from "./toolbox";
 import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { useMountEffect } from "../../utils/useMountEffect";
 import {
-    clearActiveTool,
     getToolboxUiState,
     setActiveTool,
     setToolboxUiMounted,
@@ -157,10 +156,14 @@ const ToolSection: React.FunctionComponent<{
             disableGutters
             expanded={props.isExpanded}
             onChange={(_event, expanded) => {
+                // Clicking the open tool's header does nothing, as in 6.5 and earlier
+                // (originally BL-16533). With the legacy sync gone the collapse would
+                // now work cleanly, but we decided (2026-09-11, on the BL-16608 review)
+                // to keep the established behavior: the toolbox always shows one open
+                // tool. The store itself still supports a section-less state — the
+                // withdraw paths produce it — this just offers no gesture for it.
                 if (expanded) {
                     setActiveTool(props.section.id);
-                } else {
-                    clearActiveTool();
                 }
             }}
         >

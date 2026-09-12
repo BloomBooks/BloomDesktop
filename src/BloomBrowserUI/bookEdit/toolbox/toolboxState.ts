@@ -240,9 +240,14 @@ export function setActiveTool(toolId: string): void {
 
 /**
  * Collapses whatever section is open, so no section is expanded. Deliberately leaves the
- * current tool alone: a tool whose section the user collapsed goes on running, as it always
+ * current tool alone: a tool whose section is collapsed goes on running, as it always
  * has. Also deliberately does not notify the active-tool listeners, which are about a tool
  * *becoming* current; expanding a section later will tell them then.
+ *
+ * The UI deliberately offers no gesture that calls this (clicking the open header does
+ * nothing, as in 6.5 and earlier — see ToolSection's onChange). It stays because the
+ * withdraw paths put the store in the same section-less state, and the specs pin that
+ * state's semantics here.
  */
 export function clearActiveTool(): void {
     updateState({ activeToolId: undefined });
