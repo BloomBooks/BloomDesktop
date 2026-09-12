@@ -28,6 +28,7 @@ import {
     clickContinueText,
     doubleFontSizeOfBox,
     getBookChains,
+    kFlowTextCollection,
     kTextForSeveralPages,
     pagesWithWarningTriangles,
     pasteText,
@@ -38,9 +39,10 @@ import {
 import { pageListFrame } from "../helpers/pageList";
 import { switchTab } from "../helpers/workspace";
 
-test.use({
-    collectionSpec: { name: "flow-text-thumbnails", languages: ["en"] },
-});
+// The same collection object as every other flow-text spec, which is what lets all of them
+// run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
+// test here cannot be disturbed by the file before it.
+test.use({ collectionSpec: kFlowTextCollection });
 
 // How many readings in a row have to agree before the thumbnails are believed. A thumbnail is
 // redrawn whenever Bloom refits its page, so one reading can be of a thumbnail that is about to

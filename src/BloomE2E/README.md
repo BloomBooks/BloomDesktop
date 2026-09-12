@@ -55,6 +55,30 @@ Two more things are decided at launch, because Bloom reads them once and keeps t
 Either way the fixture launches Bloom on a temp copy and attaches to the WebView2. One Bloom
 serves every test in a worker, because launching takes several seconds.
 
+### Several files on one Bloom
+
+A worker, and so its Bloom, carries on into the next file when that file's worker-scoped `test.use`
+values are the **same objects**, not merely equal ones: Playwright keys a worker's identity on the
+identity of each value. So a group of files that want one Bloom between them import one collection
+object and pass that:
+
+```ts
+import { kFlowTextCollection } from "../helpers/flowText";
+
+test.use({ collectionSpec: kFlowTextCollection });
+```
+
+The ten `flow-text-*.spec.ts` files do this, and run on one launch instead of ten. Writing
+`{ name: "flow-text", languages: ["en"] }` in each file instead looks identical and costs nine more
+Blooms, with nothing to tell you.
+
+What a file must then do to earn its place in the group: make its own book before it does anything
+else, keep every assertion to that book, and change nothing outside it that another file reads.
+`kFlowTextCollection`'s comment works this through for the flow-text group, including why the books
+are left in the collection rather than deleted. A test that needs a collection of its own — other
+languages, a subscription code, an experimental feature — keeps its own `test.use` and pays for its
+own Bloom.
+
 ## The fixture API
 
 `page` is Playwright's own `page` fixture, overridden to be Bloom's shell document: the top bar,

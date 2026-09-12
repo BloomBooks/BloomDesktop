@@ -26,6 +26,46 @@ import {
     setFontSizeWithFormatDialog,
 } from "./formatDialog";
 import { pageListFrame } from "./pageList";
+import type { ICollectionSpec } from "../fixtures/launchBloom";
+
+/**
+ * The collection every flow-text spec opens, and the reason all of them run on ONE Bloom.
+ *
+ * Import this object and pass it, rather than writing an equal-looking literal in each file:
+ *
+ *     test.use({ collectionSpec: kFlowTextCollection });
+ *
+ * Playwright decides whether the next file can keep the worker (and so the Bloom the worker-scoped
+ * fixture launched) from the worker hash it computes for each file, and that hash is built from the
+ * IDENTITY of every worker-scoped test.use value, not from its content: it keys the values in a Map
+ * (registrationId in playwright/lib/common/fixtures.js). Two files passing two deep-equal literals
+ * therefore get two workers, and so two Blooms, and each launch costs the better part of a minute.
+ * One imported object is the whole of what makes these ten files share one launch. (A Map compares
+ * a string by its value, which is why two files that both say collectionName: "basic" share a Bloom
+ * without doing anything special, and why a collectionSpec has to be handled this way instead.)
+ *
+ * Sharing one Bloom is safe here because a flow-text test's state is its book, and every one of
+ * these files makes its own book with makeBookFromTemplate before it does anything else:
+ *
+ * - The settings these tests change, "run the waiting refits when the page changes" and
+ *   "automatically add and remove pages", are the book's own (book.UserPrefs), so one file's choice
+ *   cannot reach another file's book.
+ * - The queue of waiting refits is Bloom's, not the book's, but Bloom empties it whenever a
+ *   different book is selected (FlowTextApi's SelectionChanged handler, which exists because a
+ *   queued walk names its chain and page by id and those ids survive into a copy of the book). So
+ *   a file that deliberately ends with a refit still waiting, as flow-text-reflow-pending does,
+ *   cannot leave it to run against the next file's book.
+ * - The books pile up in the collection, which nothing here minds: each test reads the chains of
+ *   the selected book alone, and no test counts the collection's books. They are not deleted
+ *   because Bloom's deleteBook opens a WinForms confirmation dialog, which would hang the run.
+ *
+ * A test that needs something else of its collection — other languages, a subscription code —
+ * needs its own spec, and pays for its own Bloom.
+ */
+export const kFlowTextCollection: ICollectionSpec = {
+    name: "flow-text",
+    languages: ["en"],
+};
 
 /** The Basic Book template page with a text box, a picture, and a second text box. */
 const kImageInMiddlePageId = "adcd48df-e9ab-4a07-afd4-6a24d0398383";

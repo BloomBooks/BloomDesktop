@@ -25,6 +25,7 @@ import {
     assertRunIsIntact,
     clickContinueText,
     getBookChains,
+    kFlowTextCollection,
     kTextForSeveralPages,
     pasteText,
     runPendingReflow,
@@ -32,9 +33,10 @@ import {
 } from "../helpers/flowText";
 import { deletePage } from "../helpers/pageList";
 
-test.use({
-    collectionSpec: { name: "flow-text-delete-page", languages: ["en"] },
-});
+// The same collection object as every other flow-text spec, which is what lets all of them
+// run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
+// test here cannot be disturbed by the file before it.
+test.use({ collectionSpec: kFlowTextCollection });
 
 test.describe("deleting a page that holds part of a flow", () => {
     test("the text of the deleted page stays in the run [Test Case ID TBD]", async ({

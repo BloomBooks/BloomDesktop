@@ -24,6 +24,7 @@ import {
     getChainId,
     hasOverflowMarker,
     isContinueButtonShown,
+    kFlowTextCollection,
     kTextForSeveralPages,
     kTextTooLongForOneBox,
     makeLinkedTwoBoxPage,
@@ -40,9 +41,10 @@ import {
     splitSection,
 } from "../helpers/origami";
 
-test.use({
-    collectionSpec: { name: "flow-text-chains", languages: ["en"] },
-});
+// The same collection object as every other flow-text spec, which is what lets all of them
+// run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
+// test here cannot be disturbed by the file before it.
+test.use({ collectionSpec: kFlowTextCollection });
 
 test.describe.configure({ mode: "serial" });
 
