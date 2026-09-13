@@ -34,20 +34,24 @@ import {
 import {
     addJustTextPage,
     assertRunIsIntact,
+    buildLongText,
     clickContinueText,
     clickReflowNow,
     doubleFontSizeOfBox,
+    enableFlowTextFeature,
     getBookChains,
     getBoxTexts,
     hasOverflowWarning,
     isProgressDialogOpen,
     isReflowPendingShown,
     isWalkPending,
+    kCharactersPerPage,
     kFlowTextCollection,
-    kTextForSeveralPages,
-    pasteText,
+    kFlowTextFeatures,
     runPendingReflow,
     scaleFontSizeOfBox,
+    splitIntoParagraphs,
+    typeParagraphs,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
@@ -55,9 +59,35 @@ import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
+
+/**
+ * The run of text this file flows. It is five pages' worth at the size the book starts at, rather
+ * than the three every other spec uses, and the page-size tests are why: they draw the book at A4,
+ * where a page holds about twice as much, so a three-page run would fit on one and a half pages
+ * there and the last page of the chain would come back empty. What these tests read is how the run
+ * DIVIDES when the pages change size, which needs a run that still reaches the last page at the
+ * largest size they use.
+ *
+ * The chain is three pages throughout all the same: the pages are added by hand and none is ever
+ * made, so what grew is the text on them, not the number of pages a refit walks.
+ */
+const kRunParagraphs = splitIntoParagraphs(
+    buildLongText(kCharactersPerPage * 5),
+    10,
+);
+const kRunText = kRunParagraphs.join(" ");
 
 // The pages of the run of text, in the order the text flows through them.
 let firstPageId: string;
@@ -137,7 +167,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         firstPageId = await addJustTextPage(page);
-        await pasteText(page, 0, kTextForSeveralPages);
+        await typeParagraphs(page, 0, kRunParagraphs);
 
         secondPageId = await addJustTextPage(page);
         await clickContinueText(page, 0);
@@ -158,7 +188,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             secondPageId,
             thirdPageId,
         ]);
-        assertRunIsIntact(texts, kTextForSeveralPages);
+        assertRunIsIntact(texts, kRunText);
     });
 
     test("a smaller page size refits the pages nobody opened [Test Case ID TBD]", async ({
@@ -216,7 +246,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             "The text the earlier pages gave up has to have arrived at the end of the chain.",
         ).toBeGreaterThan(before[2].length);
         // Not a word lost or repeated at any of the joins the refit made.
-        assertRunIsIntact(after, kTextForSeveralPages);
+        assertRunIsIntact(after, kRunText);
 
         // The middle page is full rather than overfull: the refit gave it what fits, so opening
         // it now finds nothing to complain about and nothing left to move.
@@ -264,7 +294,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             after[2].length,
             "The end of the chain has to be emptier once the pages before it hold more.",
         ).toBeLessThan(before[2].length);
-        assertRunIsIntact(after, kTextForSeveralPages);
+        assertRunIsIntact(after, kRunText);
     });
 
     test("a page size change made on the last page refits the page being edited too [Test Case ID TBD]", async ({
@@ -305,7 +335,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
         expect(await isReflowPendingShown(page)).toBe(false);
 
         const afterSmaller = await readRun(page);
-        assertRunIsIntact(afterSmaller, kTextForSeveralPages);
+        assertRunIsIntact(afterSmaller, kRunText);
         await goToPage(page, thirdPageId);
         await waitForReflowIdle(page);
 
@@ -317,24 +347,32 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             .poll(() => isReflowPendingShown(page), { timeout: 30000 })
             .toBe(true);
         await clickReflowNow(page);
-        const lastWord = kTextForSeveralPages.slice(
-            kTextForSeveralPages.lastIndexOf(" ") + 1,
-        );
+        // What this page must be left holding is the END of the run: the run's last word, and
+        // little else. "Little else" is measured against the first page rather than in characters,
+        // because how much a page holds depends on the paper size, the font and how many paragraph
+        // breaks fall on it.
+        const lastWord = kRunText.slice(kRunText.lastIndexOf(" ") + 1);
         await expect
             .poll(async () => (await getBoxTexts(page))[0].trim(), {
                 timeout: 30000,
                 message:
                     "At this size the earlier pages hold most of the run, so the page being " +
-                    "edited must be left holding only its end.",
+                    "edited must be left holding the end of it.",
             })
-            .toMatch(new RegExp("^.{0,200}" + lastWord + "$"));
+            .toMatch(new RegExp(lastWord + "$"));
         expect(await isWalkPending(page)).toBe(false);
         expect(await isReflowPendingShown(page)).toBe(false);
 
         // The refit reached the pages before this one, and left nothing waiting on them.
         const afterLargest = await readRun(page);
-        assertRunIsIntact(afterLargest, kTextForSeveralPages);
+        assertRunIsIntact(afterLargest, kRunText);
         expect(afterLargest[0].length).toBeGreaterThan(afterSmaller[0].length);
+        expect(
+            afterLargest[2].length,
+            `The last page holds ${afterLargest[2].length} characters and the first ` +
+                `${afterLargest[0].length}. At this size the earlier pages have to hold most of ` +
+                `the run, leaving this one its tail.`,
+        ).toBeLessThan(afterLargest[0].length);
         await goToPage(page, secondPageId);
         await waitForReflowIdle(page);
         expect(await isReflowPendingShown(page)).toBe(false);
@@ -390,7 +428,7 @@ test.describe("refitting a whole chain without visiting its pages", () => {
             "Nor was the third page opened, and it is where the text pushed off the others " +
                 "has to end up.",
         ).not.toBe(before[2]);
-        assertRunIsIntact(after, kTextForSeveralPages);
+        assertRunIsIntact(after, kRunText);
     });
 
     test("halving the font size on the last page fills the pages before it again [Test Case ID TBD]", async ({
@@ -434,6 +472,6 @@ test.describe("refitting a whole chain without visiting its pages", () => {
                 "have left it as it was.",
         ).toBeGreaterThan(before[0].length);
         expect(after[1]).not.toBe(before[1]);
-        assertRunIsIntact(after, kTextForSeveralPages);
+        assertRunIsIntact(after, kRunText);
     });
 });

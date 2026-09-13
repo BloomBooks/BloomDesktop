@@ -27,19 +27,24 @@ import {
 import {
     addJustTextPage,
     assertRunIsIntact,
+    buildLongText,
     clickCreatePagesAndContinue,
+    enableFlowTextFeature,
     getBookChains,
     getCreatePagesButtonLabel,
     hasOverflowMarker,
     hasOverflowWarning,
     IFlowChain,
     isCreatePagesButtonShown,
+    kCharactersPerPage,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
     pagesWithWarningTriangles,
-    pasteText,
     runPendingReflow,
     typeParagraphAtEnd,
+    typeParagraphs,
     waitForReflowIdle,
     waitForThumbnails,
 } from "../helpers/flowText";
@@ -47,7 +52,16 @@ import {
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -201,20 +215,20 @@ async function expectNoWarningTriangle(
 }
 
 test.describe("making the pages a run of text needs", () => {
-    test("one long paste becomes a run of text over pages Bloom makes [Test Case ID TBD]", async ({
+    test("one long run of text becomes a run over pages Bloom makes [Test Case ID TBD]", async ({
         page,
     }) => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         firstPageId = await addJustTextPage(page);
         textThatWentIn = kTextForSeveralPages;
-        await pasteText(page, 0, textThatWentIn);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
 
         // Sanity check the start state: one box, holding more text than fits, in no chain, so
         // there is nowhere for the rest of the text to go and the offer is the way out.
         expect(
             await hasOverflowMarker(page, 0),
-            "The pasted text has to be more than the page holds, or there is nothing to offer.",
+            "The text has to be more than the page holds, or there is nothing to offer.",
         ).toBe(true);
         expect(await getBookChains(page)).toHaveLength(0);
         expect(await isCreatePagesButtonShown(page, 0)).toBe(true);
@@ -230,7 +244,7 @@ test.describe("making the pages a run of text needs", () => {
             firstPageId,
         );
 
-        // The page the text was pasted into now holds only what fits it, and the jump above saved
+        // The page the text went into now holds only what fits it, and the jump above saved
         // it: its thumbnail must not still be warning that it holds more than fits.
         await expectNoWarningTriangle(page, firstPageId);
 
@@ -292,9 +306,11 @@ test.describe("making the pages a run of text needs", () => {
         await goToPage(page, lastGroup.pageId);
         await waitForReflowIdle(page);
 
-        // Enough more text to need pages of its own. The last box of the run is not full,
-        // so a few sentences would simply fit in it and nothing would be offered.
-        const more = ` ${kTextForSeveralPages}`;
+        // Enough more text to need a page of its own, and no more than that. The last box of the
+        // run is not full, so a few sentences would simply fit in it and nothing would be
+        // offered; a page and a half is past that and short of spending a second a page on
+        // pages that would show nothing the first added page does not.
+        const more = ` ${buildLongText(Math.round(kCharactersPerPage * 1.5))}`;
         await typeParagraphAtEnd(page, lastGroup.indexInPage, more);
         textThatWentIn += more;
 

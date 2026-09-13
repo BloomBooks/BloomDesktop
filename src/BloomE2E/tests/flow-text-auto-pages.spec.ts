@@ -38,6 +38,7 @@ import {
     clickCreatePagesAndContinue,
     clickReflowNow,
     doubleFontSizeOfBox,
+    enableFlowTextFeature,
     getAutoPages,
     getBookChains,
     getPageBeingEditedId,
@@ -46,11 +47,14 @@ import {
     isReflowPendingShown,
     isWalkPending,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
     pasteText,
     runPendingReflow,
     setAutoPages,
     setAutoPagesViaBubble,
+    typeParagraphs,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
@@ -58,7 +62,16 @@ import { getPageSizeChoices, setPageSize } from "../helpers/pageSize";
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -242,7 +255,7 @@ test.describe("adding and removing pages for a run of text automatically", () =>
 
         // The first run of text, over pages Bloom makes for it.
         chainAFirstPageId = await addJustTextPage(page);
-        await pasteText(page, 0, chainAText);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
         // Start from the setting off, so that the assertion below is about the button rather than
         // about whatever a new book happens to begin with.
         await setAutoPages(page, false);
@@ -269,7 +282,7 @@ test.describe("adding and removing pages for a run of text automatically", () =>
         );
         if (!first) {
             throw new Error(
-                "No chain holds the page the first run of text was pasted into.",
+                "No chain holds the page the first run of text went into.",
             );
         }
         chainAId = first.chainId;
@@ -283,7 +296,7 @@ test.describe("adding and removing pages for a run of text automatically", () =>
         ).toBeGreaterThanOrEqual(3);
         expect(
             chainBWhenMade.length,
-            "The second run needs a page of its own beyond the one it was pasted into.",
+            "The second run needs a page of its own beyond the one it went into.",
         ).toBeGreaterThanOrEqual(2);
         assertRunIsIntact(readRun(first), chainAText);
         assertRunIsIntact(
@@ -321,6 +334,11 @@ test.describe("adding and removing pages for a run of text automatically", () =>
         // THE ACTION UNDER TEST: double the font size of the box on the page being edited. The
         // style belongs to the whole book, so the first run now needs more pages than it has, and
         // the setting says Bloom is to make them.
+        //
+        // This is the one test in the ordinary suite whose run grows past three pages, and it has
+        // to: what it checks is that Bloom MAKES the pages a refit needs, in the right places in
+        // the book, which cannot be shown without a run that outgrows the pages it has. Twice the
+        // font size fits about a quarter as much on a page, so three pages become about a dozen.
         await doubleFontSizeOfBox(page, 0);
         await waitForReflowIdle(page);
 

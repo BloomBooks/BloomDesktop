@@ -23,6 +23,17 @@ export default defineConfig({
     // nothing here: if a test is unreliable, fix the test or file automation debt.
     retries: 0,
 
+    // Torture tests are left out of every ordinary run, including the nightly one. They flow
+    // book-sized runs of text to measure how the work scales, which takes tens of minutes and says
+    // nothing about whether the feature works; the specs that answer that are quick. Run them, and
+    // only them, with:
+    //
+    //     BLOOM_E2E_TORTURE=1 pnpm exec playwright test --grep @torture
+    //
+    // The variable is what lets them in at all. A bare --grep @torture finds nothing, because the
+    // command line's --grep does not replace this exclusion, it is applied on top of it.
+    grepInvert: process.env.BLOOM_E2E_TORTURE ? undefined : /@torture/,
+
     // Per test. The first test in a file also pays for launching Bloom.
     timeout: 180000,
 

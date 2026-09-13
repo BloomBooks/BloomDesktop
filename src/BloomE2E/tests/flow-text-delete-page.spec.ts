@@ -24,11 +24,14 @@ import {
     addJustTextPage,
     assertRunIsIntact,
     clickContinueText,
+    enableFlowTextFeature,
     getBookChains,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
-    pasteText,
     runPendingReflow,
+    typeParagraphs,
     waitForReflowIdle,
 } from "../helpers/flowText";
 import { deletePage } from "../helpers/pageList";
@@ -36,7 +39,16 @@ import { deletePage } from "../helpers/pageList";
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe("deleting a page that holds part of a flow", () => {
     test("the text of the deleted page stays in the run [Test Case ID TBD]", async ({
@@ -45,7 +57,7 @@ test.describe("deleting a page that holds part of a flow", () => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         const firstPageId = await addJustTextPage(page);
-        await pasteText(page, 0, kTextForSeveralPages);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
         const secondPageId = await addJustTextPage(page);
         await clickContinueText(page, 0);
         const thirdPageId = await addJustTextPage(page);

@@ -26,6 +26,7 @@ import {
     setFontSizeWithFormatDialog,
 } from "./formatDialog";
 import { pageListFrame } from "./pageList";
+import { setBranding } from "./collectionSettings";
 import type { ICollectionSpec } from "../fixtures/launchBloom";
 
 /**
@@ -61,11 +62,68 @@ import type { ICollectionSpec } from "../fixtures/launchBloom";
  *
  * A test that needs something else of its collection — other languages, a subscription code —
  * needs its own spec, and pays for its own Bloom.
+ *
+ * The collection has a second language because one spec, flow-text-bilingual, flows a book in two
+ * of them. The other specs are unaffected: a new book shows only Language1 until a test turns the
+ * second language on for it (setContentLanguages), so nothing else here sees a second box.
+ *
+ * FLOW TEXT IS GATED TWICE, and a Bloom that satisfies neither gate does not offer the feature at
+ * all, so every spec here fails at once and none of them says why. The two gates, and where each
+ * is answered:
+ *  - An experimental feature token, ExperimentalFeatures.kFlowText. Answered by kFlowTextFeatures
+ *    below, which each spec passes as the worker-scoped experimentalFeatures option. Under --e2e
+ *    the command line is the whole answer (ExperimentalFeatures.TokensOfEnabledFeatures returns
+ *    Program.StartupExperimentalFeatures and nothing is saved), so this is the ONLY way in: no
+ *    test can turn the feature on from inside Bloom, and the developer's own saved experiments
+ *    never reach a run.
+ *  - A paid subscription. FeatureRegistry gives FlowText SubscriptionTier.Pro, the lowest paid
+ *    tier, so a collection with no subscription is refused the feature. Answered by
+ *    enableFlowTextFeature below.
  */
 export const kFlowTextCollection: ICollectionSpec = {
     name: "flow-text",
-    languages: ["en"],
+    languages: ["en", "fr"],
 };
+
+/**
+ * The experimental features every flow-text spec's Bloom is launched with. Pass this array itself,
+ * the way kFlowTextCollection is passed and for the same reason: an equal-looking literal in each
+ * file is a different object, and costs a Bloom launch each.
+ *
+ * The token is ExperimentalFeatures.kFlowText, read from the code rather than written out here
+ * twice; if it is ever renamed, this is the one line to change.
+ */
+export const kFlowTextFeatures = ["flow-text"];
+
+/**
+ * The branding this feature's tests run under, which is what gives the collection a paid
+ * subscription. A descriptor ending in "-pro" is the Pro tier (E2eTestingApi's
+ * MakeSubscriptionForBranding), and Pro is the lowest tier FlowText is offered at, so these tests
+ * run at exactly the tier the feature asks for rather than at a higher one that would hide a
+ * mistake in the gate.
+ *
+ * The branding is what makes these tests pass the gate, and taking it away would make them fail.
+ * That is worth saying because there is a way to be given the feature without a subscription: a
+ * Playground book unlocks every feature that does not opt out, and FlowText does not opt out. But
+ * Book.IsPlayground asks whether the book's lineage names the Playground template itself
+ * (Book.cs), and these books are made from Basic Book, so none of them is one. The subscription
+ * gate is being tested here rather than bypassed.
+ */
+export const kFlowTextBranding = "Sample-Pro";
+
+/**
+ * Give the collection the paid subscription flow text needs. Each spec calls this once, in a
+ * test.beforeAll, before any of its tests runs.
+ *
+ * It is done after launch rather than by putting a subscription code in the collection, because a
+ * code is a real purchased code and there is none for the Pro tier, while a branding descriptor
+ * names the tier directly. That works here because the part of Bloom that answers "is this feature
+ * available" reads the collection's Subscription each time it is asked rather than keeping the one
+ * it was built with (FeatureStatusApi.Subscription).
+ */
+export async function enableFlowTextFeature(page: Page): Promise<void> {
+    await setBranding(page, kFlowTextBranding);
+}
 
 /** The Basic Book template page with a text box, a picture, and a second text box. */
 const kImageInMiddlePageId = "adcd48df-e9ab-4a07-afd4-6a24d0398383";
@@ -96,11 +154,68 @@ export const kTextTooLongForOneBox =
 const kWordsPerSentence = 12;
 
 /**
- * More text than three text-box pages can hold, as one paragraph. Every word says where it comes
- * in the whole run, so a word that goes missing or arrives twice at a join between two boxes
- * shows up as a break in the counting rather than as text that merely looks plausible.
+ * About how many characters of the built text one "Just Text" page holds, at the page size and
+ * font a new Basic Book is drawn at. It is the unit every text size in these tests is expressed
+ * in, so a run of a known number of pages is buildLongText(kCharactersPerPage * pages).
+ *
+ * It is approximate, and only ever used to ask for MORE text than some number of pages holds, so
+ * being a little under the true figure is safe and being over is not. If a change to Bloom's
+ * default page size or font makes a page hold much more or less, this is the one number to
+ * re-measure, and flow-text-happy-path is the test that says so first: its run stops needing
+ * three pages.
  */
-export const kTextForSeveralPages = buildLongText(6000);
+export const kCharactersPerPage = 1200;
+
+/**
+ * How long the run of text every ordinary test flows is. It is sized to need THREE pages and no
+ * more.
+ *
+ * Three is the smallest number that proves anything about flowing between pages: a first page that
+ * gives text up, a middle page that both receives and gives up, and a last page that only
+ * receives. A run of eight or twenty pages exercises the same three cases over and over, at about
+ * a second a page. A test that needs more than three has to say, where it asks for them, what it
+ * can only show with four; flow-text-torture.spec.ts is where book-sized runs belong.
+ */
+const kCharactersForThreePages = 3 * kCharactersPerPage;
+
+/**
+ * The run of text every ordinary test flows, as the paragraphs it is made of. Real paragraphs are
+ * the default shape on purpose: an author's text has them, and the interesting cases live at their
+ * edges — a paragraph cut in half by a box boundary, a paragraph boundary landing exactly on a box
+ * boundary, and the mark that records that a box's first paragraph carries on the one before it.
+ * A single unbroken paragraph exercises none of that. flow-text-paragraphs.spec.ts is the spec
+ * that holds those cases; kTextTooLongForOneBox is the one-paragraph text, for the tests whose
+ * subject is a box boundary rather than a paragraph.
+ *
+ * Every word says where it comes in the whole run, so a word that goes missing or arrives twice at
+ * a join shows up as a break in the counting rather than as text that merely looks plausible.
+ */
+export const kParagraphsForSeveralPages = splitIntoParagraphs(
+    buildLongText(kCharactersForThreePages),
+    6,
+);
+
+/**
+ * The same run of text as one string, for comparing against what came back out of the book.
+ * assertRunIsIntact ignores whitespace, so this joins the paragraphs the way a reader would read
+ * them.
+ */
+export const kTextForSeveralPages = kParagraphsForSeveralPages.join(" ");
+
+/**
+ * Cut a body of text into `count` paragraphs of about equal length, never inside a word. A test
+ * that wants a particular number of paragraphs in a box builds them with this rather than writing
+ * prose, so the paragraphs carry the same indexed words as the rest of the run.
+ */
+export function splitIntoParagraphs(text: string, count: number): string[] {
+    const words = text.split(" ").filter((word) => word.length > 0);
+    const perParagraph = Math.ceil(words.length / count);
+    const paragraphs: string[] = [];
+    for (let at = 0; at < words.length; at += perParagraph) {
+        paragraphs.push(words.slice(at, at + perParagraph).join(" "));
+    }
+    return paragraphs;
+}
 
 /**
  * A paragraph of numbered sentences, at least `minimumLength` characters long. Sentence 7 reads
@@ -132,9 +247,16 @@ export function buildLongText(minimumLength: number): string {
  * Assert that the text of a chain of boxes, read in flow order, is still exactly the text that
  * went in: no word lost and none repeated, however the boxes divided it.
  *
- * The box texts are joined with a space and the whitespace of both sides is then collapsed,
- * because a box may keep or drop the space at the point the text was cut, and which of the two
- * happened is not what this checks. Everything else has to match character for character.
+ * Whitespace is left out of the comparison on both sides, and everything else has to match
+ * character for character. Two things make whitespace unreadable here rather than merely
+ * uninteresting: a box may keep or drop the space at the point the text was cut, and the text a
+ * test reads back out of the book is the box's InnerText, which runs one paragraph into the next
+ * with no separator at all. So a run of three paragraphs would differ from what went in at every
+ * paragraph boundary, for no reason a reader would ever see.
+ *
+ * What this therefore cannot see is the paragraph structure: a flow that merged two paragraphs
+ * into one, or split one where it should not have, passes here. assertParagraphsAreIntact is the
+ * check for that, and flow-text-paragraphs.spec.ts is where it is used.
  *
  * On failure it names the first character the two disagree at and prints 40 characters of each
  * side around it, which is what tells you which word went missing and at which join.
@@ -143,8 +265,8 @@ export function assertRunIsIntact(
     actualTexts: string[],
     expected: string,
 ): void {
-    const actual = collapseWhitespace(actualTexts.join(" "));
-    const wanted = collapseWhitespace(expected);
+    const actual = withoutWhitespace(actualTexts.join(" "));
+    const wanted = withoutWhitespace(expected);
     if (actual === wanted) return;
 
     let at = 0;
@@ -175,8 +297,7 @@ export function assertRunIsIntact(
  */
 export function assertNoWordAppearsTwice(actualTexts: string[]): void {
     const counts = new Map<string, number>();
-    for (const word of collapseWhitespace(actualTexts.join(" ")).split(" ")) {
-        if (!/^w\d{4}$/.test(word)) continue;
+    for (const word of indexedWordsOf(actualTexts.join(" "))) {
         counts.set(word, (counts.get(word) ?? 0) + 1);
     }
 
@@ -198,13 +319,26 @@ const kZeroWidthCharacters = new RegExp(
 );
 
 /**
- * Whitespace, however much of it and of whatever kind, counts as one space. The two zero-width
- * characters that live in an edited box go: U+200C, which the mark that says where a box's text
+ * The text with every space, line break and zero-width character taken out, for comparing what
+ * came out of the book against what went in. The text a test reads back is a box's InnerText,
+ * which puts nothing at all between one paragraph and the next, so whitespace cannot be compared
+ * once the run has paragraphs in it. See assertRunIsIntact.
+ *
+ * The two zero-width characters go with it: U+200C, which the mark that says where a box's text
  * stops fitting is made of, and U+200B, the editor's own end-of-paragraph filler. Neither is any
  * part of the text, and Bloom takes both out of what it publishes.
  */
-function collapseWhitespace(text: string): string {
-    return text.replace(kZeroWidthCharacters, "").replace(/\s+/g, " ").trim();
+function withoutWhitespace(text: string): string {
+    return text.replace(kZeroWidthCharacters, "").replace(/\s+/g, "");
+}
+
+/**
+ * The indexed words (`w0042`) of a body of text, in the order they appear. Found by matching
+ * rather than by splitting on spaces: a paragraph boundary reads back with no space at it, so the
+ * last word of one paragraph and the first of the next arrive as one token.
+ */
+function indexedWordsOf(text: string): string[] {
+    return text.match(/w\d{4}/g) ?? [];
 }
 
 /** One translation group of a flow chain, as e2e/flowText/chains reports it. */
@@ -449,6 +583,167 @@ export async function getBoxParagraphTexts(
                 return (paragraph.textContent ?? "").replace(invisible, "");
             }),
         );
+}
+
+/** One paragraph of a box, as getBoxParagraphs reports it. */
+export interface IFlowParagraph {
+    /** Its text, with the two zero-width characters of an edited box taken out. */
+    text: string;
+    /**
+     * Whether this paragraph carries on the paragraph before it, in the box before it. Bloom marks
+     * such a paragraph with data-flow-continuation, and a stylesheet rule then draws it with no
+     * indent and no gap above, so that a paragraph cut in half at a box boundary reads as one
+     * paragraph. Only a box's FIRST paragraph can be one.
+     */
+    isContinuation: boolean;
+}
+
+/**
+ * The paragraphs of one box of the page being edited, each with whether it carries on the
+ * paragraph before it. A test about paragraphs needs the mark as well as the text: "the flow put
+ * these words in the next box" and "the flow recorded that they are the rest of a paragraph" are
+ * two different claims, and only the second one is what a reader sees as an unbroken paragraph.
+ */
+export async function getBoxParagraphs(
+    page: Page,
+    boxIndex: number,
+    language = "en",
+): Promise<IFlowParagraph[]> {
+    await waitForReflowIdle(page);
+    return flowBox(page, boxIndex, language)
+        .locator(":scope > p")
+        .evaluateAll((paragraphs) =>
+            paragraphs.map((paragraph) => {
+                const invisible = new RegExp(
+                    "[" + String.fromCharCode(8203, 8204) + "]",
+                    "g",
+                );
+                return {
+                    text: (paragraph.textContent ?? "").replace(invisible, ""),
+                    isContinuation:
+                        paragraph.getAttribute("data-flow-continuation") ===
+                        "true",
+                };
+            }),
+        );
+}
+
+/**
+ * The paragraphs of every box of the book's one chain, in flow order, one array per box. Each page
+ * of the chain is opened in turn, because the marks and the paragraph boundaries live in the
+ * page's own HTML and C# reports only the text.
+ *
+ * It leaves the Edit tab on the last page of the chain.
+ */
+export async function getRunParagraphs(
+    page: Page,
+    language = "en",
+): Promise<IFlowParagraph[][]> {
+    await runPendingReflow(page);
+    await reloadPageBeingEdited(page);
+    const chains = await getBookChains(page);
+    if (chains.length !== 1)
+        throw new Error(
+            `The book holds ${chains.length} chains of linked text boxes, not one. ` +
+                `Their ids: ${chains.map((chain) => chain.chainId).join(", ") || "(none)"}.`,
+        );
+
+    const perBox: IFlowParagraph[][] = [];
+    for (const group of chains[0].groups) {
+        await goToPage(page, group.pageId);
+        perBox.push(await getBoxParagraphs(page, group.indexInPage, language));
+    }
+    return perBox;
+}
+
+/**
+ * Assert that the paragraphs a run of text went in as are the paragraphs it is still made of, and
+ * that every place one of them was cut in half is recorded as such.
+ *
+ * The rules it holds the book to, given the paragraphs that went in:
+ *  - Reading the boxes in flow order, paragraph by paragraph, gives back exactly the text that
+ *    went in, character for character apart from whitespace.
+ *  - A paragraph may be divided between two boxes, and only at the boundary between them: no box
+ *    may hold a piece of a paragraph in its middle.
+ *  - The piece that begins a box is marked as carrying on the one before it, and no other
+ *    paragraph is marked. So the reader sees one paragraph across the join, not two.
+ *  - Nothing else was joined: the number of paragraph beginnings, counting a marked continuation
+ *    as no beginning at all, is the number of paragraphs that went in.
+ *
+ * On failure it says which rule broke and shows the paragraph shape it found, box by box, which
+ * is what tells you whether the flow lost a boundary or invented one.
+ */
+export function assertParagraphsAreIntact(
+    perBox: IFlowParagraph[][],
+    expectedParagraphs: string[],
+): void {
+    const shape = () =>
+        perBox
+            .map(
+                (box, index) =>
+                    `  box ${index}: ` +
+                    (box.length === 0
+                        ? "(empty)"
+                        : box
+                              .map(
+                                  (paragraph) =>
+                                      `${paragraph.isContinuation ? "…" : "¶"}${paragraph.text.length}`,
+                              )
+                              .join(" ")),
+            )
+            .join("\n");
+
+    // A mark anywhere but on a box's first paragraph, or on the first paragraph of the whole run,
+    // is a mark on a paragraph that cannot be carrying one on.
+    for (const [boxIndex, box] of perBox.entries()) {
+        for (const [inBox, paragraph] of box.entries()) {
+            if (paragraph.isContinuation && inBox > 0)
+                throw new Error(
+                    `Paragraph ${inBox} of box ${boxIndex} is marked as carrying on the ` +
+                        `paragraph before it, but only the first paragraph of a box can be. ` +
+                        `The run:\n${shape()}`,
+                );
+            if (paragraph.isContinuation && boxIndex === 0)
+                throw new Error(
+                    `The first paragraph of the whole run is marked as carrying one on, and ` +
+                        `there is nothing before it. The run:\n${shape()}`,
+                );
+        }
+    }
+
+    const beginnings = perBox
+        .flat()
+        .filter((paragraph) => !paragraph.isContinuation).length;
+    if (beginnings !== expectedParagraphs.length)
+        throw new Error(
+            `The run went in as ${expectedParagraphs.length} paragraph(s) and came back as ` +
+                `${beginnings}, counting a paragraph marked as carrying on the one before it as ` +
+                `part of that one. So the flow lost a paragraph boundary or invented one. The ` +
+                `run:\n${shape()}`,
+        );
+
+    // Now the text itself, read as the reader reads it: a continuation paragraph is the rest of
+    // the paragraph before it, so the two are one.
+    const readBack: string[] = [];
+    for (const box of perBox) {
+        for (const paragraph of box) {
+            if (paragraph.isContinuation && readBack.length > 0)
+                readBack[readBack.length - 1] += paragraph.text;
+            else readBack.push(paragraph.text);
+        }
+    }
+    for (const [index, wanted] of expectedParagraphs.entries()) {
+        const found = readBack[index] ?? "";
+        if (withoutWhitespace(found) !== withoutWhitespace(wanted))
+            throw new Error(
+                `Paragraph ${index + 1} of ${expectedParagraphs.length} is not the paragraph ` +
+                    `that went in (${withoutWhitespace(wanted).length} characters expected, ` +
+                    `${withoutWhitespace(found).length} found).\n` +
+                    `  expected: ${JSON.stringify(wanted.slice(0, 60))}…\n` +
+                    `  found:    ${JSON.stringify(found.slice(0, 60))}…\n` +
+                    `The run:\n${shape()}`,
+            );
+    }
 }
 
 /**
@@ -784,6 +1079,26 @@ export async function unlinkTextBox(
  * in one of the page's ordinary text boxes. This is how a test checks that a person's typing
  * carries on where they were typing, rather than following the text that moved away.
  */
+/**
+ * The language tag of the box the caret is in on the page being edited, or undefined when the
+ * caret is in no text box. This is the question "which language am I typing in?", which on a
+ * bilingual page is not the same as which box of a language the caret is in (getCaretOwner).
+ *
+ * It reads the focused element rather than the selection: after Bloom turns the page, what decides
+ * where the next keystroke goes is what has the focus.
+ */
+export async function getCaretLanguage(
+    page: Page,
+): Promise<string | undefined> {
+    await waitForReflowIdle(page);
+    const language = await editablePageFrame(page).evaluate(() => {
+        const active = document.activeElement;
+        const holder = active?.closest(".bloom-editable");
+        return holder?.getAttribute("lang") ?? "";
+    });
+    return language || undefined;
+}
+
 export async function getCaretOwner(page: Page): Promise<number | undefined> {
     await waitForReflowIdle(page);
     const index = await editablePageFrame(page).evaluate(() => {
@@ -909,6 +1224,10 @@ export async function doubleFontSizeOfBox(
  * Multiply the font size of the style of this box by this factor through the Format dialog, and
  * return the new size in points. The style belongs to the whole book, so every box of that
  * style on every page is drawn at the new size. The caller is left on the page it was on.
+ *
+ * The Format dialog offers a fixed list of sizes — 7, 8, 9, 10, 11, 12, 13, 14, 16, 18 and up —
+ * so a factor that lands between two of them, or below 7, fails there rather than here. A test
+ * that wants a particular size, rather than a particular change, says so with setFontSizeOfBox.
  */
 export async function scaleFontSizeOfBox(
     page: Page,
@@ -935,6 +1254,34 @@ export async function scaleFontSizeOfBox(
     await setFontSizeWithFormatDialog(page, box, scaled);
     await waitForReflowIdle(page);
     return scaled;
+}
+
+/**
+ * Draw the style of this box at this size in points, through the Format dialog. The style belongs
+ * to the whole book, so every box of that style on every page is drawn at the new size. The caller
+ * is left on the page it was on.
+ *
+ * The size has to be one the dialog offers (7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20 and up); it
+ * says which ones it has when given one it does not.
+ */
+export async function setFontSizeOfBox(
+    page: Page,
+    boxIndex: number,
+    points: number,
+    language = "en",
+): Promise<void> {
+    const box = flowBox(page, boxIndex, language);
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    await clickIntoBox(box);
+    await expect(
+        box,
+        `Clicking box ${boxIndex} did not give it the focus, so it would show no format gear.`,
+    ).toBeFocused({ timeout: 15000 });
+    // As in scaleFontSizeOfBox: the caret goes to the start, so that a size change which pushes
+    // the tail of the text onto the next page does not take the caret, and the author, with it.
+    await box.press("Control+Home");
+    await setFontSizeWithFormatDialog(page, box, points);
+    await waitForReflowIdle(page);
 }
 
 /**

@@ -39,6 +39,7 @@ import {
     assertRunIsIntact,
     clickContinueText,
     clickReflowNow,
+    enableFlowTextFeature,
     getBookChains,
     getBoxParagraphTexts,
     getReflowBubbleTexts,
@@ -48,9 +49,11 @@ import {
     isReflowPendingShown,
     isWalkPending,
     kFlowTextCollection,
+    kFlowTextFeatures,
     kTextForSeveralPages,
     runPendingReflow,
     setReflowOnPageChange,
+    splitIntoParagraphs,
     setReflowOnPageChangeViaBubble,
     typeNewParagraphAfter,
     typeParagraphs,
@@ -60,7 +63,16 @@ import {
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -75,18 +87,7 @@ const kReflowNowText = "Reflow now";
  * full page moves off it as it is typed, and Bloom follows the words onto the next page, which
  * would leave these tests looking at a page they did not change.
  */
-const kParagraphs = splitIntoParagraphs(kTextForSeveralPages, 8);
-
-/** Cut a body of text into `count` paragraphs of about equal length, never inside a word. */
-function splitIntoParagraphs(text: string, count: number): string[] {
-    const words = text.split(" ").filter((word) => word.length > 0);
-    const perParagraph = Math.ceil(words.length / count);
-    const paragraphs: string[] = [];
-    for (let at = 0; at < words.length; at += perParagraph) {
-        paragraphs.push(words.slice(at, at + perParagraph).join(" "));
-    }
-    return paragraphs;
-}
+const kParagraphs = splitIntoParagraphs(kTextForSeveralPages, 12);
 
 /**
  * A paragraph of about 200 characters whose every word is its own, so the words a person typed

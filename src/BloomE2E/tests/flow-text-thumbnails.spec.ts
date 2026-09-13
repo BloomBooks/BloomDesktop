@@ -27,12 +27,16 @@ import {
     buildLongText,
     clickContinueText,
     doubleFontSizeOfBox,
+    enableFlowTextFeature,
     getBookChains,
+    kCharactersPerPage,
     kFlowTextCollection,
-    kTextForSeveralPages,
+    kFlowTextFeatures,
     pagesWithWarningTriangles,
     pasteText,
     runPendingReflow,
+    splitIntoParagraphs,
+    typeParagraphs,
     waitForReflowIdle,
     waitForThumbnails,
 } from "../helpers/flowText";
@@ -42,7 +46,16 @@ import { switchTab } from "../helpers/workspace";
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 // How many readings in a row have to agree before the thumbnails are believed. A thumbnail is
 // redrawn whenever Bloom refits its page, so one reading can be of a thumbnail that is about to
@@ -113,7 +126,15 @@ test.describe("the page thumbnails of a run of linked text boxes", () => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         const firstPageId = await addJustTextPage(page);
-        await pasteText(page, 0, kTextForSeveralPages);
+        // Four pages' worth of text on the three pages this test gives it, because what it checks
+        // is a run whose END overflows: the last page has to hold more than fits, with nothing
+        // after it to take the rest, or there is no warning triangle to prove a triangle can be
+        // seen at all. The chain is still three pages.
+        await typeParagraphs(
+            page,
+            0,
+            splitIntoParagraphs(buildLongText(kCharactersPerPage * 4), 8),
+        );
         const secondPageId = await addJustTextPage(page);
         await clickContinueText(page, 0);
         const thirdPageId = await addJustTextPage(page);

@@ -32,6 +32,7 @@ import {
     clearBox,
     clickContinueText,
     doubleFontSizeOfBox,
+    enableFlowTextFeature,
     getBoxTexts,
     getCaretOwner,
     getChainId,
@@ -42,6 +43,8 @@ import {
     hasOverflowWarning,
     hoverPageBeingEdited,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
     makeTwoLinkedJustTextPages,
     pasteText,
@@ -49,13 +52,23 @@ import {
     runPendingReflow,
     typeNewParagraphAfter,
     typeParagraphAtEnd,
+    typeParagraphs,
 } from "../helpers/flowText";
 import { switchTab } from "../helpers/workspace";
 
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -80,7 +93,7 @@ test.describe("editing a run of text that crosses pages", () => {
         test.setTimeout(300000);
         await makeBookFromTemplate(page, "Basic Book");
         firstPageId = await addJustTextPage(page);
-        await pasteText(page, 0, kTextForSeveralPages);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
         secondPageId = await addJustTextPage(page);
         await clickContinueText(page, 0);
 

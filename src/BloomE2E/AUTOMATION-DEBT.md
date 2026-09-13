@@ -536,21 +536,6 @@ the test-side check necessary.
 (Found 2026-09-01 while making `jumpToPage` queue a jump.)
 
 
-## No helper reports the languages a page is showing
-
-A bilingual page shows one text box per content language inside each translation group, and each
-language's text flows through its own boxes. A test about that needs to address "box 0 of French"
-and "box 1 of French" separately from the English ones. `setContentLanguages` turns a language on
-for the book, but nothing reports which language tags actually reached the page being edited, so a
-test has to guess the tags from the collection spec and hope the page shows them in that order.
-
-Blocks: the bilingual test in `tests/flow-text-same-page.spec.ts` (`test.fixme`, "each language of
-a bilingual page flows on its own").
-
-The fix is a reading helper in `helpers/bookMaking.ts` -- `getPageLanguages(page)`, over the
-visible editables of the page's translation groups -- so a test asks the page rather than assuming.
-`helpers/flowText.ts` already takes a language tag on every function; it is only the list of tags
-that is missing.
 ## A title typed on the cover of a new book can fail to reach the collection
 
 `import-recording.spec.ts` made a book under the Sample-Pro branding (`e2e/setBranding`,

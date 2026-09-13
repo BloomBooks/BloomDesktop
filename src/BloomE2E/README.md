@@ -123,6 +123,31 @@ button does, and fails the test with that text. It never clicks Submit, which wo
 a screenshot, and the book to Bloom's servers. If the same problem keeps coming back, that is a
 real bug in the code under test; read the message and fix it rather than working around it.
 
+### The torture test
+
+`tests/flow-text-torture.spec.ts` is the one test that flows a book-sized run of text. It measures
+how the work scales rather than whether the feature works, so it takes tens of minutes and no
+ordinary run includes it: `playwright.config.ts` excludes `@torture` unless `BLOOM_E2E_TORTURE` is
+set. To run it:
+
+```bash
+BLOOM_E2E_TORTURE=1 pnpm exec playwright test --grep @torture
+```
+
+A bare `--grep @torture` finds nothing. The command line's `--grep` is applied on top of the
+config's exclusion rather than replacing it, so the variable is what lets these tests in at all.
+
+It asserts two things, both as ratios, so that a slow machine moves neither: that flowing twice as
+many pages takes about twice as long rather than four times as long, and that Bloom is holding no
+more memory per page after the larger run than after the smaller one. The test says in its own
+comments what the memory reading can and cannot see — it is the Bloom process's working set, so it
+misses the WebView2 processes and anything the garbage collector has already taken.
+
+Every other flow-text spec flows **three pages**, which is the smallest run that has a page giving
+text up, a page doing both, and a page only receiving. A test that wants more has to say, where it
+asks for them, what it can only show with four or more; at about a second a page, a twenty-page
+run in an ordinary test is a minute spent proving nothing new.
+
 ## The UI-vs-API policy
 
 - Every UI path gets **one dedicated journey test** that drives every click from launch to result.

@@ -1,4 +1,4 @@
-// The journey this whole feature exists for: a person pastes more text than one page holds, and
+// The journey this whole feature exists for: a person puts in more text than one page holds, and
 // carries it on over the pages that follow.
 //
 // Every page here is Basic Book's "Just Text": one text box and nothing else, which is the page a
@@ -23,6 +23,7 @@ import {
     addJustTextPage,
     assertRunIsIntact,
     clickContinueText,
+    enableFlowTextFeature,
     getBookChains,
     getBoxTexts,
     getChainId,
@@ -34,22 +35,33 @@ import {
     hasOverflowWarning,
     isContinueButtonShown,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
-    pasteText,
     runPendingReflow,
     typeParagraphAtEnd,
+    typeParagraphs,
     waitForReflowIdle,
 } from "../helpers/flowText";
 
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
 // What the test types at the end of the run. Its words are not indexed words, so they can be
-// told apart from the text that was pasted in.
+// told apart from the text that went in.
 const kTypedTail = "Then the boat came back.";
 
 // The book these tests build, so the one that restarts Bloom can select it again.
@@ -61,7 +73,7 @@ let secondPageId: string;
 let thirdPageId: string;
 
 test.describe("carrying one run of text over several pages", () => {
-    test("a page of pasted text says where its text stops fitting [Test Case ID TBD]", async ({
+    test("a page of too much text says where its text stops fitting [Test Case ID TBD]", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -69,7 +81,7 @@ test.describe("carrying one run of text over several pages", () => {
         firstPageId = await addJustTextPage(page);
 
         // THE ACTION UNDER TEST: put in far more text than the box can hold.
-        await pasteText(page, 0, kTextForSeveralPages);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
 
         expect(await hasOverflowWarning(page, 0)).toBe(true);
         // The mark is what a later empty box offers to continue from, so without it nothing

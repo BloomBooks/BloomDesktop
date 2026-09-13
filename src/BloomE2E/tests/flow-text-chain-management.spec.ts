@@ -19,18 +19,22 @@ import {
     assertRunIsIntact,
     clearBox,
     clickContinueText,
+    enableFlowTextFeature,
     getBookChains,
     getBoxTexts,
     getChainId,
     hasOverflowMarker,
     isContinueButtonShown,
     kFlowTextCollection,
+    kFlowTextFeatures,
+    kParagraphsForSeveralPages,
     kTextForSeveralPages,
     kTextTooLongForOneBox,
     makeLinkedTwoBoxPage,
     pasteText,
     runPendingReflow,
     typeParagraphAtEnd,
+    typeParagraphs,
     unlinkTextBox,
 } from "../helpers/flowText";
 import { deletePage, duplicatePageWithButton } from "../helpers/pageList";
@@ -44,7 +48,16 @@ import {
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -147,7 +160,7 @@ test.describe("linked pages and page operations", () => {
     test("builds three pages holding one run of text", async ({ page }) => {
         test.setTimeout(300000);
         const first = await addJustTextPage(page);
-        await pasteText(page, 0, kTextForSeveralPages);
+        await typeParagraphs(page, 0, kParagraphsForSeveralPages);
         const second = await addJustTextPage(page);
         await clickContinueText(page, 0);
         const third = await addJustTextPage(page);
@@ -192,15 +205,21 @@ test.describe("linked pages and page operations", () => {
         page,
     }) => {
         test.setTimeout(300000);
-        // Put the last page back into the run, so there is a middle page to delete. It takes
-        // more text for the run to reach that far again: the first two pages hold what fits.
+        // Put the last page back into the run, so there is a middle page to delete. Emptying the
+        // last box took that page out of the chain, so the run is put back in: the run is three
+        // pages' worth of text, so it reaches the third page again and the offer there returns.
+        //
+        // All of it goes in at once rather than paragraph by paragraph. This box is already part
+        // of a chain, so text typed into it moves off it as soon as it overflows, and Bloom
+        // follows the moved words to the next page, caret and all: the paragraphs after that one
+        // would be typed into whatever box the caret had landed in.
         await goToPage(page, runPageIds[2]);
         await clearBox(page, 0);
         await goToPage(page, runPageIds[0]);
-        await pasteText(page, 0, kTextForSeveralPages + kTextForSeveralPages);
-        // The paste pushed text onto the page after this one, which leaves the rest of the run to
-        // be refitted. Run it here rather than letting the page turn below start it, or the
-        // offer this test then takes would be read while the refit was still moving text.
+        await pasteText(page, 0, kTextForSeveralPages);
+        // Putting the run back in pushed text onto the page after this one, which leaves the rest
+        // of the run to be refitted. Run it here rather than letting the page turn below start
+        // it, or the offer this test then takes would be read while the refit was still moving.
         await runPendingReflow(page);
         await goToPage(page, runPageIds[2]);
         await clickContinueText(page, 0);

@@ -47,6 +47,15 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    // A person does this from the Collection tab, and so must a test, for the reason
+    // makeBookFromBookInCollection gives: asked from the Edit tab, Bloom makes the book and
+    // reports it selected, but the Edit tab never loads a page of it. Bloom switches to the Edit
+    // tab for a newly made book by raising EditBookCommand, and WorkspaceView.ChangeTab returns
+    // at once when that tab is already the active one (BL-8382), so nothing rebuilds the view for
+    // the new book and it sits empty. This bites the first test of a file that inherits a Bloom
+    // another file left in the Edit tab; it costs nothing when Bloom is on the Collection tab
+    // already.
+    await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
@@ -313,6 +322,34 @@ export async function setContentLanguages(
             .toBe(wanted);
     }
     await waitForEditablePage(page);
+}
+
+/**
+ * The language tags the page being edited is actually showing, in the order its boxes appear in a
+ * translation group, e.g. ["en", "fr"].
+ *
+ * This is the page's own answer, not the collection's and not the book's: setContentLanguages says
+ * what the book should show, and this says what reached the page. A test that addresses one
+ * language's boxes needs the second, because the tags a group holds, and the order they come in,
+ * are decided by the page's own HTML and by which boxes are visible.
+ *
+ * The boxes it reads are the ones flowBox addresses, so "box 0 of fr" in a test means the first box
+ * of the tag this reports second. It answers for the first group that has any: a page whose groups
+ * showed different languages from one another would be a bug in Bloom, not something for a test to
+ * paper over. A page with no such box answers with an empty list.
+ */
+export async function getPageLanguages(page: Page): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(
+            ".bloom-translationGroup > .bloom-editable.normal-style.bloom-visibility-code-on[lang]",
+        )
+        .evaluateAll((boxes) => {
+            if (boxes.length === 0) return [];
+            const firstGroup = boxes[0].parentElement;
+            return boxes
+                .filter((box) => box.parentElement === firstGroup)
+                .map((box) => box.getAttribute("lang") ?? "");
+        });
 }
 
 /** The Edit tab's frame holding the page being edited. Throws if the Edit tab is not showing. */

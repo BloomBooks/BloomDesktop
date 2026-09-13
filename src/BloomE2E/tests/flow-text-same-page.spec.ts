@@ -15,12 +15,15 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     getContentPages,
+    getPageLanguages,
     goToPage,
     makeBookFromTemplate,
+    setContentLanguages,
 } from "../helpers/bookMaking";
 import {
     assertRunIsIntact,
     clickContinueText,
+    enableFlowTextFeature,
     getBoxTexts,
     getCaretOwner,
     getChainId,
@@ -29,18 +32,29 @@ import {
     hasOverflowWarning,
     isContinueButtonShown,
     kFlowTextCollection,
+    kFlowTextFeatures,
     kTextTooLongForOneBox,
     makeTwoBoxFlowPage,
     pressKeyAtEndOfBox,
     pressKeyAtStartOfBox,
     seedTalkingBookMarkup,
     typeParagraphAtEnd,
+    waitForReflowIdle,
 } from "../helpers/flowText";
 
 // The same collection object as every other flow-text spec, which is what lets all of them
 // run on one Bloom rather than one each. kFlowTextCollection says how that works and why a
 // test here cannot be disturbed by the file before it.
-test.use({ collectionSpec: kFlowTextCollection });
+test.use({
+    collectionSpec: kFlowTextCollection,
+    experimentalFeatures: kFlowTextFeatures,
+});
+
+// Flow text needs a paid subscription as well as the feature token above. Without it Bloom does
+// not offer the feature at all and every test here fails at once; see kFlowTextCollection.
+test.beforeAll(async ({ bloomApp }) => {
+    await enableFlowTextFeature(bloomApp.page);
+});
 
 test.describe.configure({ mode: "serial" });
 
@@ -194,15 +208,77 @@ test.describe("text flowing between two boxes on one page", () => {
         expect(await isContinueButtonShown(page, 1)).toBe(false);
     });
 
-    // A bilingual page needs the collection's second language turned on for the book, and each
-    // language's second box then flows on its own. setContentLanguages does the first half;
-    // what is missing is a helper that says which languages a PAGE is showing, so the test can
-    // address each language's boxes without guessing which tags reached the page. See
-    // AUTOMATION-DEBT.md, "No helper reports the languages a page is showing".
-    test.fixme(
-        "each language of a bilingual page flows on its own [Test Case ID TBD]",
-        async () => {
-            // Blocked: see the comment above.
-        },
-    );
+    test("each language of a bilingual page flows on its own [Test Case ID TBD]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // A page of its own again, and both of the collection's languages showing on it, so that
+        // each translation group holds two boxes: one per language.
+        const bilingualPageId = await makeTwoBoxFlowPage(page);
+        await setContentLanguages(page, ["en", "fr"]);
+        await goToPage(page, bilingualPageId);
+        await waitForReflowIdle(page);
+        const languages = await getPageLanguages(page);
+        expect(
+            languages,
+            "This test addresses one language's boxes at a time, so the page has to be showing " +
+                "both, in this order.",
+        ).toEqual(["en", "fr"]);
+
+        // THE ACTION UNDER TEST, once per language: text that overflows the top box of a group is
+        // carried into the box below it — the box below it IN THAT LANGUAGE.
+        await typeParagraphAtEnd(page, 0, kTextTooLongForOneBox, "en");
+        expect(
+            await isContinueButtonShown(page, 1, "en"),
+            "The first language's lower box has to offer to carry its own language's text on.",
+        ).toBe(true);
+        expect(
+            await isContinueButtonShown(page, 1, "fr"),
+            "The second language's boxes are empty and nothing of theirs overflows, so nothing " +
+                "is offered there.",
+        ).toBe(false);
+        await clickContinueText(page, 1, "en");
+
+        const firstLanguageAfter = await getBoxTexts(page, "en");
+        expect(
+            await getBoxTexts(page, "fr"),
+            "Flowing one language must not write in the other language's boxes.",
+        ).toEqual(["", ""]);
+
+        // Now the second language, whose text is its own words so that a word in the wrong box can
+        // be named. It is three times what the first language needed: a bilingual page divides
+        // each group between its languages, so neither box is the size kTextTooLongForOneBox was
+        // measured against.
+        //
+        // No offer is taken this time, and none is expected. A chain belongs to the translation
+        // GROUP rather than to a box (E2eTestingApi reads the chain id off the group), so taking
+        // the offer above joined the two groups for every language they hold. The second
+        // language's text has nothing left to ask for: its own boxes are already the boxes of a
+        // chain, and what overflows one moves into the next by itself.
+        const secondLanguageText = Array.from(
+            { length: 360 },
+            (_unused, index) => "f" + String(index + 1).padStart(4, "0"),
+        ).join(" ");
+        await typeParagraphAtEnd(page, 0, secondLanguageText, "fr");
+        expect(
+            await isContinueButtonShown(page, 1, "fr"),
+            "The groups are already chained, so the second language's boxes have nothing to " +
+                "offer: its text moves between them without being asked.",
+        ).toBe(false);
+
+        const secondLanguageAfter = await getBoxTexts(page, "fr");
+        expect(
+            secondLanguageAfter[1].length,
+            "The second language's text has to have been carried into its own lower box.",
+        ).toBeGreaterThan(0);
+        assertRunIsIntact(secondLanguageAfter, secondLanguageText);
+        expect(
+            await getBoxTexts(page, "en"),
+            "Flowing the second language must not have moved the first language's text.",
+        ).toEqual(firstLanguageAfter);
+        expect(
+            secondLanguageAfter.join(" ").match(/w\d{4}/g) ?? [],
+            "The second language's boxes hold none of the first language's words.",
+        ).toEqual([]);
+    });
 });
