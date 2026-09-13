@@ -19,6 +19,27 @@ House rules:
 
 ---
 
+## 2026-09-09 — A Bloom left running by the launcher blocks the e2e fixture's cleanup for 45 minutes
+
+- **Cut:** `flow-text-whole-chain.spec.ts` passed all four tests in two and a half minutes, then
+  the worker sat for another forty-five in `fs.rmSync` at `fixtures/launchBloom.ts:819` and
+  reported `Error: EBUSY ... unlink ...flow-text-whole-chain.bloomCollection`, with "Failed worker
+  ran 4 tests" listing every passing test. The launcher's own Bloom had restarted (a build changed
+  `Bloom.exe`) and reopened the most recently used collection, which was the run's temp copy.
+- **Idea:** before deleting `tempRoot`, look for any Bloom holding it (`common/instanceInfo`
+  already reports each instance's `editableCollectionFolder`) and say which process is holding the
+  folder instead of retrying blind; cap the retries at something short.
+- **Context:** wiring the Edit tab's progress dialog into the flow-text work.
+
+## 2026-09-09 — csharpier rewrites CRLF files as LF
+
+- **Cut:** `dotnet csharpier format <file>` writes LF line endings over this repo's CRLF C#
+  sources, so `git diff --stat` reports the whole file as changed and warns "LF will be replaced
+  by CRLF the next time Git touches it". The real edit becomes unreviewable until the endings are
+  put back.
+- **Idea:** set the line ending in a `.csharpierrc` (it has an `endOfLine` option) so formatting a
+  file leaves its endings alone.
+- **Context:** formatting `FlowTextWalk.cs` and `FlowTextApi.cs` after editing them.
 ## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
 
 - **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.
@@ -377,3 +398,67 @@ want first in `MruProjects`, or delete the entries so Bloom shows the collection
 the branch rather than the version in that path.
 
 **Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## 2026-09-08 — compileLess.mjs reports "up-to-date" for a .less file you just changed
+
+`node src/BloomBrowserUI/scripts/compileLess.mjs` printed `Less: 0 compiled, 183 up-to-date`
+after edits to `bookEdit/css/editMode.less` and `content/bookLayout/basePage-sharedRules.less`.
+`needsBuild` compares each entry against the dependency list restored from
+`output/browser/.less-watch-state.json`, and deleting that state file does not help: with no
+dependencies recorded it falls back to comparing the entry's own mtime with the output's, and a
+watcher from an earlier `pnpm dev` had already refreshed the outputs.
+
+**Workaround:** delete the output CSS files you care about
+(`output/browser/bookEdit/css/editMode.css`, `output/browser/bookLayout/basePage.css`) and run
+`compileLess.mjs` again; a missing output always builds.
+
+**Idea:** give the script a `--force` flag, or have it hash the sources rather than trust mtimes.
+
+**Context:** Phase 1 of the flow-text work, verifying that two .less edits compile.
+
+## 2026-09-08 — NUnit's Does.Contain says every string contains a zero-width character
+
+A test that asserted `Does.Not.Contain(marker)`, where `marker` is `"‌"`, failed against a
+string the character had already been removed from, and the paired `Does.Contain(marker)` passed
+against a string that never held it. `Does.Contain` compares with the current culture, and a
+culture-sensitive comparison treats U+200C (and U+200B, U+FEFF, the soft hyphen) as ignorable, so
+both directions of the assertion are meaningless.
+
+**Workaround:** assert with an ordinal comparison instead:
+`Assert.That(text.IndexOf(marker, StringComparison.Ordinal), Is.EqualTo(-1))`.
+
+**Context:** Phase 2 of the flow-text work, testing HtmlDom.RemoveOverflowMarkers.
+
+## 2026-09-08 — The shared localizationManager test mock empties every {0}
+
+`vitest.setup.ts` mocks `asyncGetText(key, defaultText, ...args)`, but the real signature is
+`asyncGetText(id, englishText, comment, ...args)`. The mock therefore takes the *comment* as the
+first format argument and replaces `{0}` with `arg || ""`, so a label that names something, e.g.
+"Continue text from page {0}", comes back as "Continue text from page " in every unit test while
+being right in Bloom. The assertion that fails looks like a bug in the code under test.
+
+**Workaround:** none needed in production code; a test either asserts the label before the
+localization promise settles, or the code keeps its English label when the localized text has
+lost the placeholder.
+
+**Idea:** give the mock the real signature, and have it drop the comment argument.
+
+**Context:** Phase 4 of the flow-text work, labelling the button that offers to continue the text
+of an earlier page.
+
+## A C# compile error during `launcherControl.mjs --restart` kills the launcher, and the Vite port then changes
+
+**What happened:** a `--restart` issued while the C# would not compile left no launcher at all:
+the next `--status`/`--restart` answered `"launcherFound": false`, and `--ensure-running` started
+a new one on a *different* Vite port. Any e2e command still passing the old
+`BLOOM_E2E_VITE_PORT` then fails with "BloomE2E refuses to test a stale build", which reads as a
+build problem rather than a wrong port.
+
+**Workaround:** build first (`build/agent-dotnet.sh build src/BloomExe/BloomExe.csproj`) and only
+restart once it succeeds; after any `--ensure-running`, read `vitePort` out of the JSON and use
+that.
+
+**Idea:** have `--restart` refuse to stop Bloom when the build fails, and have BloomE2E read the
+port from `output/bloom-launcher.json` rather than an environment variable.
+
+**Context:** Phase 5 of the flow-text work, the e2e spec for making pages for the rest of a run.

@@ -135,6 +135,11 @@ namespace Bloom.Edit
                         return;
 
                     CurrentBook.SavePageToDisk(_modifiedPageElement, _nextSaveMustBeFull);
+                    // Every page save in the Edit tab passes through here, which is why the one
+                    // flow-text event is reported from it. It costs nothing on a page with no
+                    // chain on it, and sends nothing unless this book's longest run is longer
+                    // than anything already reported for the book.
+                    FlowTextAnalytics.ReportIfRunGrew(CurrentBook, _modifiedPageElement);
                     _nextSaveMustBeFull = false;
                     _pageHasUnsavedDataDerivedChange = false;
                     PageTemplatesApi.LastSaveTime = DateTime.Now;
@@ -659,6 +664,21 @@ namespace Bloom.Edit
             DeletePage(_pageSelection.CurrentSelection);
         }
 
+        /// <summary>
+        /// Take this page out of the book, with no round trip through the browser. It is for a
+        /// caller that is already holding the book still and will save it itself, such as a flow
+        /// text walk taking away a page its run of text has emptied. DeletePage is the one to
+        /// use anywhere else: it collects the page being edited from the browser first, which is
+        /// what a user pressing Delete Page needs.
+        ///
+        /// The page list redraws itself, because Book.DeletePage raises the page-list-changed
+        /// event.
+        /// </summary>
+        internal void RemovePageFromBook(IPage page)
+        {
+            CurrentBook.DeletePage(page);
+        }
+
         internal void DeletePage(IPage page)
         {
             // This can only be called on the UI thread in response to a user button click.
@@ -670,12 +690,26 @@ namespace Bloom.Edit
                 // If this happens, just abort the delete.
                 return;
             }
+            // What the text of a chain of linked text boxes did when the page went, filled in
+            // before the page is removed and used after the book is on disk.
+            var flowMoves = new List<FlowTextChains.PageDeletionMove>();
             SaveThen(
                 () =>
                 {
                     try
                     {
                         var pageToShowNext = GetPageToShowAfterDeletion(page);
+                        // The text a chained box on this page holds belongs to a run of text that
+                        // carries on in other boxes, so it moves to the box beside it in the chain
+                        // rather than going with the page. The page is still in the DOM here, and
+                        // the browser has already handed over what it holds (this runs inside a
+                        // save), so nothing in the edit iframe has to take part.
+                        flowMoves.AddRange(
+                            FlowTextChains.MoveChainedTextOffPage(
+                                _currentlyDisplayedBook.OurHtmlDom,
+                                page.GetDivNodeForThisPage()
+                            )
+                        );
                         _currentlyDisplayedBook.DeletePage(page);
                         //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
                         Logger.WriteEvent("Delete Page");
@@ -692,7 +726,27 @@ namespace Bloom.Edit
                     }
                 },
                 () => { }, // wrong state, do nothing
-                forceFullSave: true
+                forceFullSave: true,
+                doAfterSaveToDisk: () =>
+                {
+                    // The run of text is now longer in the box it moved into than fits there, so
+                    // the whole chain from that box on has to be divided again. A walk does that
+                    // off-screen; each language flows through its own boxes, so each one is asked
+                    // for separately.
+                    foreach (var move in flowMoves)
+                    {
+                        if (string.IsNullOrEmpty(move.WalkFromPageId))
+                            continue;
+                        foreach (var lang in move.Langs)
+                            FlowTextWalk.Request(
+                                this,
+                                move.ChainId,
+                                move.WalkFromPageId,
+                                lang,
+                                null
+                            );
+                    }
+                }
             );
         }
 
@@ -802,6 +856,19 @@ namespace Bloom.Edit
         }
 
         public IPage CurrentPage => _pageSelection.CurrentSelection;
+
+        /// <summary>
+        /// Redraw one page's thumbnail in the page list. Code that changes a page other than the
+        /// one being edited (see FlowTextApi, which moves text onto a later page) has to ask for
+        /// this: nothing else notices that the page is no longer what its thumbnail shows.
+        /// </summary>
+        public void RefreshThumbnail(IPage page)
+        {
+            if (page == null || _view == null)
+                return;
+
+            _view.UpdateThumbnailAsync(page);
+        }
 
         public bool CanAddPages => !CurrentBook.IsCalendar;
 
@@ -932,7 +999,13 @@ namespace Bloom.Edit
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
                     return pageId;
                 },
-                () => { } // wrong state, do nothing
+                () => { }, // wrong state, do nothing
+                doAfterSaveToDisk: () =>
+                    // Every page is a different size now, so a run of text carried through
+                    // linked text boxes breaks in different places on every page of its chain.
+                    // This asks for every chain to be refitted; nothing runs until the user
+                    // changes pages or presses Reflow now.
+                    FlowTextWalk.RequestEveryChain(this)
             );
         }
 
@@ -1130,6 +1203,9 @@ namespace Bloom.Edit
                         _view.UpdateThumbnailAsync(_previouslySelectedPage);
                     }
 
+                    // The page the user is leaving, which is what says whether this is a page
+                    // change at all: see RunPendingFlowTextWalks below.
+                    var pageLeft = _previouslySelectedPage;
                     _previouslySelectedPage = _pageSelection.CurrentSelection;
 
                     // BL-2339: remember last edited page
@@ -1147,6 +1223,8 @@ namespace Bloom.Edit
                     CheckForBL8852();
 
                     PageSelectModelChangesComplete?.Invoke(this, EventArgs.Empty);
+
+                    RunPendingFlowTextWalks(pageLeft, page);
                 }
             }
             catch (Exception)
@@ -1186,6 +1264,35 @@ namespace Bloom.Edit
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Refit the pages of any flow that a change has left out of date, now that the user has
+        /// changed pages. This is the one moment in editing when refitting does not interrupt
+        /// anything: a walk holds a progress dialog over the window for seconds, which is why
+        /// nothing else starts one (see FlowTextWalk), and the page the user has just left is
+        /// saved and the new one is not yet being typed in.
+        ///
+        /// Nothing here has to save a page first, which reflowNow does: the page the user has
+        /// just left was saved by the navigation, and the page they have arrived at has not been
+        /// typed in yet, so the book's copy of each is what the browser holds.
+        ///
+        /// Only a move from one page of this book to another counts. This same code navigates
+        /// when a different book is opened and when a page is saved and reloaded in place, and
+        /// neither of those is the user turning a page.
+        /// </summary>
+        private void RunPendingFlowTextWalks(IPage pageLeft, IPage pageNow)
+        {
+            if (!Visible || pageLeft == null || pageNow == null)
+                return;
+            if (pageLeft.Id == pageNow.Id || pageLeft.Book != CurrentBook)
+                return;
+            if (!FlowTextWalk.HasPending)
+                return;
+            if (!CurrentBook.UserPrefs.FlowTextReflowOnPageChange)
+                return; // The user would rather ask for it themselves, with Reflow now.
+
+            FlowTextWalk.RunPending(this);
         }
 
         private void CheckForBL8852()

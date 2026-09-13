@@ -79,6 +79,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { setupFlowText, suspendFlowText } from "../flowText/flowTrigger";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -962,6 +963,12 @@ export function SetupElements(
     // were prematurely overflowing before the images were set to the right size.
     GetOverflowChecker().AddOverflowHandlers(container);
 
+    setupFlowText(container, {
+        markOverflow: (editable) =>
+            OverflowChecker.AdjustSizeOrMarkOverflow(editable),
+        updatePageOverflow: (page) => OverflowChecker.UpdatePageOverflow(page),
+    });
+
     const editor = GetEditor();
 
     // Applying this to the body element allows it to work for any bloom-editable that can get
@@ -1333,6 +1340,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
+    suspendFlowText();
     resetAbovePageControls();
     // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
     // pages while the Change Layout mode toggle is on.
@@ -1381,6 +1389,29 @@ export function removeRequestPageContentDelay(id: string): void {
     if (activeDelays.length === 0 && requestPageContentTimeout) {
         requestPageContentInternal();
     }
+}
+
+/**
+ * Settles once no in-flight async DOM work is left, or after kMaxWaitTimeMs, whichever comes
+ * first — the same wait captureContentForExternalProcessing does before it captures a page.
+ * Off-screen measuring needs it for the same reason: a box measured while an image is still
+ * being sized is measured against a layout that is about to change.
+ */
+export function waitForRequestPageContentDelays(): Promise<void> {
+    return new Promise<void>((resolve) => {
+        const start = Date.now();
+        const check = () => {
+            if (
+                activeDelays.length === 0 ||
+                Date.now() - start > kMaxWaitTimeMs
+            ) {
+                resolve();
+            } else {
+                setTimeout(check, 50);
+            }
+        };
+        check();
+    });
 }
 
 // Wrap a function that returns a promise with delay management.

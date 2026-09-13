@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
@@ -36,6 +37,13 @@ namespace Bloom.MiscUI
     /// responding to paint events, a click on the buttons, and and so forth.</remarks>
     public class BrowserProgressDialog
     {
+        /// <summary>
+        /// The dialogId of the EmbeddedProgressDialog the Edit tab's top document renders. It
+        /// must match kEditViewProgressDialogId in App.tsx, which is the only document that
+        /// answers a dialog opened with this id.
+        /// </summary>
+        public const string kEditViewProgressDialogId = "editView";
+
         private static WebSocketProgress _progress;
 
         // This overload is almost obsolete; please use it only if you need a progress dialog and there
@@ -164,7 +172,75 @@ namespace Bloom.MiscUI
             );
         }
 
+        /// <summary>
+        /// This is what a long-running task on the Edit tab calls to show its progress. It puts
+        /// up a small dialog that is just the title and a determinate bar: no message list, no
+        /// Cancel, no Report. doWhat reports how far it has got with progress.SendPercent(), and
+        /// the dialog closes as soon as doWhat returns.
+        /// The document that is to show the dialog must render an EmbeddedProgressDialog whose id
+        /// is dialogId; the Edit tab's is kEditViewProgressDialogId, mounted in App.tsx.
+        /// Note that, as with the DoWorkWithProgressDialogAsync it calls, the returned Task
+        /// completes once the work has been started on a background thread, NOT when doWhat has
+        /// finished.
+        /// </summary>
+        public static Task DoWorkWithDeterminateProgressDialogAsync(
+            IBloomWebSocketServer socketServer,
+            string dialogId,
+            string title,
+            Func<IWebSocketProgress, Task> doWhat
+        )
+        {
+            // Should correspond with IEmbeddedProgressDialogConfig in ProgressDialog.tsx
+            var props = new DynamicJson();
+            dynamic props1 = props;
+            props1.which = dialogId;
+            props1.title = title;
+            props1.titleColor = "white";
+            props1.titleBackgroundColor = Palette.kBloomBlueHex;
+            props1.determinate = true;
+            props1.linearProgress = true;
+            props1.noMessages = true;
+            props1.size = "small";
+            props1.showCancelButton = false;
+            props1.showReportButton = "never";
+            return DoWorkWithProgressDialogAsync(
+                socketServer,
+                props,
+                async (progress, worker) =>
+                {
+                    await doWhat(progress);
+                    // false: no buttons, just close the dialog.
+                    return false;
+                }
+            );
+        }
+
         private static bool _readyForProgressReports;
+
+        // How long the background work waits for the dialog to post progress/ready before
+        // going ahead without it.
+        private const int kMaxMillisecondsToWaitForDialogReady = 5000;
+
+        /// <summary>
+        /// Wait until the dialog posts progress/ready, or until we have waited
+        /// kMaxMillisecondsToWaitForDialogReady. Returns true if it reported ready.
+        /// </summary>
+        /// <remarks>The wait is bounded because the work must happen even when no document is
+        /// hosting an EmbeddedProgressDialog with the "which" we sent: nothing then ever posts
+        /// progress/ready, and an unbounded wait would mean the work never runs at all.</remarks>
+        private static bool WaitForDialogReady()
+        {
+            var start = DateTime.Now;
+            while (!_readyForProgressReports)
+            {
+                if (
+                    (DateTime.Now - start).TotalMilliseconds >= kMaxMillisecondsToWaitForDialogReady
+                )
+                    return false;
+                Thread.Sleep(50);
+            }
+            return true;
+        }
 
         /// <summary>
         /// Show a progress dialog while doing a task.
@@ -211,8 +287,10 @@ namespace Bloom.MiscUI
                 });
 
                 // A way of waiting until the dialog is ready to receive progress messages
-                while (!_readyForProgressReports)
-                    Thread.Sleep(50);
+                if (!WaitForDialogReady())
+                    Logger.WriteEvent(
+                        "BrowserProgressDialog: the progress dialog never reported ready; doing the work without it."
+                    );
                 bool waitForUserToCloseDialogOrReportProblems;
                 try
                 {

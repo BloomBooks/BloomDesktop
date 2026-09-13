@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
     isPointOverRange,
     kWordNotDecodableHighlight,
+    mapReaderText,
     theOneReaderHighlightManager,
     trimSpan,
 } from "./readerHighlights";
@@ -147,6 +148,22 @@ describe("readerHighlights", () => {
         it("collapses a span that is all whitespace", () => {
             const span = trimSpan("a   b", { start: 1, end: 4 });
             expect(span.end).toBe(span.start);
+        });
+    });
+
+    describe("mapReaderText", () => {
+        it("leaves out the overflow marker, so a word it splits stays one word", () => {
+            const editable = document.createElement("div");
+            editable.className = "bloom-editable";
+            editable.innerHTML =
+                '<p>elephant<span class="bloom-overflowStart">' +
+                String.fromCharCode(0x200c) +
+                "</span>ine</p>";
+
+            // The paragraph itself ends the line, hence the newline.
+            expect(mapReaderText(editable).text).toBe(
+                "elephantine" + String.fromCharCode(10),
+            );
         });
     });
 });

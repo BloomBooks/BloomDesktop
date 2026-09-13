@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -3791,6 +3791,9 @@ namespace Bloom.Book
                     firstPageAdded = clonedDiv;
                 BookStarter.SetupIdAndLineage(templatePageDiv, clonedDiv);
                 BookStarter.UniqueifyIds(clonedDiv);
+                // A duplicated, pasted or added page must not join the chain its original
+                // belongs to, and it must not carry a fit that was measured for other text.
+                HtmlDom.RemoveFlowMarkup(clonedDiv);
                 elementOfPageBefore.ParentNode.InsertAfter(clonedDiv, elementOfPageBefore);
 
                 CopyAndRenameAudioFiles(clonedDiv, templatePage.Book.FolderPath);

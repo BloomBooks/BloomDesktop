@@ -1,9 +1,11 @@
+﻿using System.Collections.Generic;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
+using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using SIL.IO;
 using SIL.Progress;
@@ -113,10 +115,11 @@ namespace Bloom.web.controllers
                 false // does not need the UI thread
             );
 
-            // GET returns the selected book's pages as JSON: id, caption, and whether the page is
-            // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
-            // one), and the page-list thumbnails do not expose which pages are xmatter, so without
-            // this a test has to guess from thumbnail markup.
+            // GET returns the selected book's pages as JSON: id, caption, the label the page list
+            // shows (its page number, or a name for front and back matter), and whether the page
+            // is front or back matter. A test needs page ids to navigate (editView/jumpToPage
+            // takes one), and the page-list thumbnails do not expose which pages are xmatter, so
+            // without this a test has to guess from thumbnail markup.
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "pages",
                 HandleGetPages,
@@ -175,6 +178,29 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "nextFileToChoose",
                 HandleSetNextFileToChoose,
+                false // does not need the UI thread
+            );
+
+            // GET returns every flow-text chain in the selected book: the chain id, and for each
+            // of its translation groups the page it is on, that page's index, the group's index
+            // among the page's translation groups, and the text of each language's box. A test
+            // about linked text boxes has to know which boxes ended up in which chain and where
+            // the text landed, and the only other way to ask is to read the book's HTML off disk
+            // and re-implement the chain rules in the test. Read-only.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "flowText/chains",
+                HandleGetFlowTextChains,
+                false // does not need the UI thread
+            );
+
+            // GET returns true when no flow pass is pending anywhere in Bloom. The browser's own
+            // passes are visible to a test through the data-flow-reflowing attribute on the page,
+            // so this reports only what a test cannot see from the page: the cross-page work C#
+            // does, which is every handler of FlowTextApi. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "flowText/isIdle",
+                request => FlowTextApi.IsIdle,
+                null, // read only
                 false // does not need the UI thread
             );
         }
@@ -256,15 +282,25 @@ namespace Bloom.web.controllers
                 request.ReplyWithJson(new object[0]);
                 return;
             }
-            var pages = book.GetPages()
-                .Select(page => new
-                {
-                    id = page.Id,
-                    caption = page.Caption,
-                    isContentPage = !page.IsXMatter,
-                })
-                .ToArray();
-            request.ReplyWithJson(pages);
+            // GetCaptionOrPageNumber counts the content pages as it goes, so the pages have to be
+            // walked in order and the counter shared between them. That rules out a LINQ
+            // projection: a ref argument cannot be passed from inside a lambda.
+            var pageNumber = 0;
+            var pages = new List<object>();
+            foreach (var page in book.GetPages())
+            {
+                var numberLabel = page.GetCaptionOrPageNumber(ref pageNumber, out var unusedI18nId);
+                pages.Add(
+                    new
+                    {
+                        id = page.Id,
+                        caption = page.Caption,
+                        numberLabel,
+                        isContentPage = !page.IsXMatter,
+                    }
+                );
+            }
+            request.ReplyWithJson(pages.ToArray());
         }
 
         /// <summary>
@@ -304,6 +340,92 @@ namespace Bloom.web.controllers
                 })
                 .ToArray();
             request.ReplyWithJson(pages);
+        }
+
+        /// <summary>
+        /// Reply with the flow-text chains of the selected book (see the registration above).
+        /// Groups inside a bloom-canvas are skipped, because a canvas element lays its own text
+        /// out and can never be part of a chain.
+        /// </summary>
+        private void HandleGetFlowTextChains(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            if (book == null)
+            {
+                request.ReplyWithJson(new object[0]);
+                return;
+            }
+
+            var groupsByChain = new Dictionary<string, List<object>>();
+            var chainOrder = new List<string>();
+            foreach (var page in book.GetPages())
+            {
+                var pageElement = page.GetDivNodeForThisPage();
+                if (pageElement == null)
+                    continue;
+                var groups = SafeXmlElement
+                    .GetAllDivsWithClass(pageElement, "bloom-translationGroup")
+                    .Where(group => !IsInBloomCanvas(group))
+                    .ToArray();
+                for (var indexInPage = 0; indexInPage < groups.Length; indexInPage++)
+                {
+                    var chainId = groups[indexInPage].GetAttribute(HtmlDom.kFlowChainAttrName);
+                    if (string.IsNullOrEmpty(chainId))
+                        continue;
+                    if (!groupsByChain.TryGetValue(chainId, out var groupsOfChain))
+                    {
+                        groupsOfChain = new List<object>();
+                        groupsByChain.Add(chainId, groupsOfChain);
+                        chainOrder.Add(chainId);
+                    }
+                    groupsOfChain.Add(
+                        new
+                        {
+                            pageId = page.Id,
+                            pageIndex = page.GetIndex(),
+                            indexInPage,
+                            textByLang = GetTextOfEachLanguage(groups[indexInPage]),
+                        }
+                    );
+                }
+            }
+
+            request.ReplyWithJson(
+                chainOrder
+                    .Select(chainId => new { chainId, groups = groupsByChain[chainId].ToArray() })
+                    .ToArray()
+            );
+        }
+
+        /// <summary>
+        /// The text of each of a translation group's boxes, by language tag.
+        /// </summary>
+        private static Dictionary<string, string> GetTextOfEachLanguage(SafeXmlElement group)
+        {
+            var result = new Dictionary<string, string>();
+            foreach (var child in group.ChildNodes.OfType<SafeXmlElement>())
+            {
+                if (!child.HasClass("bloom-editable"))
+                    continue;
+                var language = child.GetAttribute("lang");
+                if (!string.IsNullOrEmpty(language))
+                    result[language] = child.InnerText;
+            }
+            return result;
+        }
+
+        private static bool IsInBloomCanvas(SafeXmlElement element)
+        {
+            for (
+                var ancestor = element.ParentNode as SafeXmlElement;
+                ancestor != null;
+                ancestor = ancestor.ParentNode as SafeXmlElement
+            )
+            {
+                if (ancestor.HasClass("bloom-canvas"))
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>

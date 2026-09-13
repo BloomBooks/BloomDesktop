@@ -12,9 +12,39 @@ import { isInDragActivity } from "../toolbox/games/GameInfo";
 import $ from "jquery";
 import { kBloomButtonClass } from "../toolbox/canvas/canvasElementPageBridge";
 import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
+import { updateContinueButtons } from "../flowText/flowContinueButton";
+import { updateCreatePagesButtons } from "../flowText/flowCreatePagesButton";
+import { suppressesOverflowMarking } from "../flowText/flowIndicators";
+import {
+    placeOverflowMarker,
+    removeOverflowMarker,
+} from "../flowText/flowOverflowMarker";
+import { getPretextMeasurer } from "../flowText/flowPretextMeasurer";
+import { kBloomCanvasSelector } from "../toolbox/canvas/canvasElementConstants";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
+}
+
+// The boxes an input method is composing in. A pass over one of them would move the text
+// the input method is still working on, so the overflow marker waits for compositionend.
+const composingEditables = new WeakSet<HTMLElement>();
+
+const kNormalStyleClass = "normal-style";
+
+/**
+ * Does this box get a marker at the character where its text stops fitting? Only a
+ * normal-style box in the page's own layout does: a canvas element grows to fit its text
+ * instead, and a box that hands its extra text to a following linked box has no character
+ * at which its text runs out.
+ */
+function wantsOverflowMarker(editable: HTMLElement): boolean {
+    return (
+        editable.classList.contains(kNormalStyleClass) &&
+        !editable.closest(kBloomCanvasSelector) &&
+        !composingEditables.has(editable) &&
+        !suppressesOverflowMarking(editable)
+    );
 }
 
 // logically a function of OverflowChecker, but it doesn't need any member variables, and with the
@@ -72,6 +102,18 @@ export default class OverflowChecker {
 
             return;
         }
+
+        // The overflow marker must not go in while an input method is composing.
+        container.addEventListener(
+            "compositionstart",
+            OverflowChecker.onCompositionStart,
+            true,
+        );
+        container.addEventListener(
+            "compositionend",
+            OverflowChecker.onCompositionEnd,
+            true,
+        );
 
         //Add the handler so that when the elements change, we test for overflow
         $editablePageElements.on("keyup paste", (e) => {
@@ -469,6 +511,12 @@ export default class OverflowChecker {
             OverflowChecker.getSelfOverflowAmounts(editable);
         const overflowX = overflowAmounts[0];
         let overflowY = overflowAmounts[1];
+
+        if (suppressesOverflowMarking(editable)) {
+            // A chained box with another box after it on the page is meant to be full: the
+            // flow moves the extra text on, so there is no problem to report here.
+            overflowY = 0;
+        }
         overflowY =
             theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
                 editable,
@@ -504,6 +552,17 @@ export default class OverflowChecker {
             if (overflowY > 0 && page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
+            if (overflowY > 0 && wantsOverflowMarker(editable)) {
+                // Hand our own measurement in, so that the marker appears exactly when this
+                // box is the one we call overfull.
+                placeOverflowMarker(
+                    editable,
+                    getPretextMeasurer(),
+                    () => overflowY,
+                );
+            } else {
+                removeOverflowMarker(editable);
+            }
             const isButton =
                 $editable.closest("." + kBloomButtonClass).length > 0;
             // don't show an overflow warning if we have scrolling available (unless it's a button)
@@ -536,11 +595,47 @@ export default class OverflowChecker {
             }
         } else {
             $editable.removeClass("overflow");
+            removeOverflowMarker(editable);
             const page = $editable.closest(".bloom-page");
             if (page.length) {
                 OverflowChecker.fixScrollBarsSoon(page[0]);
             }
         }
+
+        // A box that has just started or stopped overflowing has just gained or lost the
+        // marker that a later empty box offers to continue from, so the offers on this page
+        // are out of date. (flowTrigger recomputes them after a flow pass; this covers the
+        // boxes that are not part of any chain yet, which is where a chain begins.)
+        const pageOfEditable = editable.closest(".bloom-page");
+        if (pageOfEditable) {
+            updateContinueButtons(pageOfEditable);
+            // And which box, if any, is where the run of text ends with more still to place,
+            // and so offers to make the pages the rest of it needs.
+            updateCreatePagesButtons(pageOfEditable);
+        }
+    }
+
+    private static onCompositionStart(event: Event) {
+        const editable = OverflowChecker.getComposingEditable(event);
+        if (editable) {
+            composingEditables.add(editable);
+        }
+    }
+
+    private static onCompositionEnd(event: Event) {
+        const editable = OverflowChecker.getComposingEditable(event);
+        if (editable) {
+            composingEditables.delete(editable);
+            OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable);
+        }
+    }
+
+    private static getComposingEditable(event: Event): HTMLElement | undefined {
+        const target =
+            event.target instanceof HTMLElement
+                ? event.target
+                : (event.target as Node | null)?.parentElement;
+        return target?.closest<HTMLElement>(".bloom-editable") ?? undefined;
     }
 
     // Type 2 overflow handling: scans all editable elements on the page (within the same
@@ -718,7 +813,10 @@ export default class OverflowChecker {
     }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
-    private static UpdatePageOverflow(page: JQuery) {
+    // Public because code that changes what a box holds and then has the page saved at once
+    // (flowCreatePagesButton) must bring the page-level class up to date before that save, rather
+    // than on the deferred timer AdjustSizeOrMarkOverflowSoon uses.
+    public static UpdatePageOverflow(page: JQuery | HTMLElement | null) {
         // TODO: Investigate BL-6686. It seems that it takes more clicks to propagate the pageOverflows class onto a FrontCover page than a normal page??? Repro in both 4.4 and 4.5
         const $page = $(page);
         if (

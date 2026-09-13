@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom;
@@ -34,6 +34,147 @@ namespace BloomTests.Book
             var dom = new HtmlDom();
             dom.Title = "<b>one</b>1";
             Assert.AreEqual("one1", dom.Title);
+        }
+
+        [Test]
+        public void RemoveFlowMarkup_RemovesChainAttributeAndOverflowMarker()
+        {
+            var marker = ((char)0x200c).ToString();
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>text that fits<span class='bloom-overflowStart'>MARKER</span> and text that does not</p>
+						</div>
+					</div>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'><p><br/></p></div>
+					</div>
+				</div></body></html>".Replace("MARKER", marker)
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveFlowMarkup(pageDiv);
+
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//*[@data-flow-chain]");
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasNoMatchForXpath("//span[contains(@class,'bloom-overflowStart')]");
+            // The text on either side of the marker stays, and stays in order.
+            Assert.That(pageDiv.InnerXml, Does.Contain("text that fits and text that does not"));
+        }
+
+        [Test]
+        public void SetInnerHtmlFromFragment_KeepsTheElementsAttributes()
+        {
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style bloom-visibility-code-on bloom-content1'
+							lang='en' contenteditable='true' data-languagetipcontent='English'>
+							<p>the old text</p>
+						</div>
+					</div>
+				</div></body></html>"
+            );
+            var editable =
+                dom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-editable')]")
+                as SafeXmlElement;
+            // Sanity check the starting point: if the box did not have these to begin with,
+            // the test could not tell whether they survived.
+            Assert.That(editable.GetAttribute("lang"), Is.EqualTo("en"), "test setup");
+            Assert.That(editable.GetAttribute("class"), Does.Contain("normal-style"), "test setup");
+            Assert.That(editable.InnerXml, Does.Contain("the old text"), "test setup");
+
+            HtmlDom.SetInnerHtmlFromFragment(
+                editable,
+                "<p data-flow-continuation='true'>the new text</p><p>and more</p>"
+            );
+
+            // System.Xml's RemoveAll would have taken the attributes off with the children, and
+            // the box would arrive in the editor with no class and no lang: not editable, and
+            // shown in the wrong language's colour.
+            Assert.That(editable.GetAttribute("lang"), Is.EqualTo("en"));
+            Assert.That(editable.GetAttribute("class"), Does.Contain("normal-style"));
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-visibility-code-on"));
+            Assert.That(editable.GetAttribute("class"), Does.Contain("bloom-content1"));
+            Assert.That(editable.GetAttribute("contenteditable"), Is.EqualTo("true"));
+            Assert.That(editable.GetAttribute("data-languagetipcontent"), Is.EqualTo("English"));
+            // The group's own attributes are no business of this call either.
+            Assert.That(
+                (
+                    dom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-translationGroup')]")
+                    as SafeXmlElement
+                ).GetAttribute("data-flow-chain"),
+                Is.EqualTo("chain-1")
+            );
+
+            // Only the children are replaced.
+            Assert.That(editable.InnerXml, Does.Not.Contain("the old text"));
+            Assert.That(editable.InnerXml, Does.Contain("the new text"));
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-editable')]/p",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//p[@data-flow-continuation='true']", 1);
+        }
+
+        [Test]
+        public void RemoveFlowMarkup_LeavesOtherSpansAlone()
+        {
+            var dom = new HtmlDom(
+                @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>one <span class='bloom-linebreak'></span><em>two</em> <span id='cke_bm_1S'> </span>three</p>
+						</div>
+					</div>
+				</div></body></html>"
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveFlowMarkup(pageDiv);
+
+            var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath(
+                "//span[contains(@class,'bloom-linebreak')]",
+                1
+            );
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//em", 1);
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//span[@id='cke_bm_1S']", 1);
+        }
+
+        [Test]
+        public void RemoveOverflowMarkers_RemovesMarkersButKeepsTheChainAttribute()
+        {
+            var marker = ((char)0x200c).ToString();
+            var dom = new HtmlDom(
+                (
+                    @"<html><body><div class='bloom-page' id='page1'>
+					<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+						<div class='bloom-editable normal-style' lang='en'>
+							<p>text that fits<span class='bloom-overflowStart'>MARKER</span> and text that does not</p>
+						</div>
+					</div>
+				</div></body></html>"
+                ).Replace("MARKER", marker)
+            );
+            var pageDiv = dom.RawDom.SelectSingleNode("//div[@id='page1']") as SafeXmlElement;
+
+            HtmlDom.RemoveOverflowMarkers(pageDiv);
+
+            var assertThatResult = AssertThatXmlIn.Dom(dom.RawDom);
+            assertThatResult.HasNoMatchForXpath("//span[contains(@class,'bloom-overflowStart')]");
+            // Publishing takes the marker out; the chain attribute is harmless and stays.
+            assertThatResult.HasSpecifiedNumberOfMatchesForXpath("//*[@data-flow-chain]", 1);
+            Assert.That(pageDiv.InnerXml, Does.Contain("text that fits"));
+            // An ordinal comparison, because the default one ignores a zero-width character
+            // and so reports every string as containing it.
+            Assert.That(pageDiv.InnerXml.IndexOf(marker, StringComparison.Ordinal), Is.EqualTo(-1));
         }
 
         [Test]
@@ -1756,6 +1897,53 @@ namespace BloomTests.Book
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//p[.='My test text.']", 1);
+        }
+
+        [Test]
+        public void MigrateEditableData_KeepsTheFlowChainAttribute()
+        {
+            // Change Layout keeps the box and the page, so it must keep the box's place in the
+            // chain of linked text boxes. Losing it would strand the text of the boxes after it.
+            var pageDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='pageGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup' data-flow-chain='chain-1'>
+								<div class='bloom-editable' contenteditable='true' lang='en'>Contents</div>
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            var templateDom = new HtmlDom(
+                @"<html><head></head><body>
+					<div class='bloom-page' id='templateGuid'>
+						<div class='split-pane-component-inner'>
+							<div class='bloom-translationGroup'>
+								<div class='bloom-editable' contenteditable='true' lang='en'></div>
+							</div>
+						</div>
+					</div>
+				</body></html>"
+            );
+            var pageElement = pageDom.SelectSingleNode("//div[@class='bloom-page']");
+            var templateElement = templateDom.SelectSingleNode("//div[@class='bloom-page']");
+
+            // SUT
+            pageDom.MigrateEditableData(
+                pageElement,
+                templateElement,
+                "someGuid",
+                false,
+                out bool didChange
+            );
+
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-translationGroup') and @data-flow-chain='chain-1']",
+                    1
+                );
         }
 
         [Test]

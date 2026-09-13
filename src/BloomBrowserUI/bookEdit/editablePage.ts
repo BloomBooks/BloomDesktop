@@ -132,6 +132,9 @@ import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
+// The off-screen half of flow text: C# walks a chain page by page in a throwaway browser and
+// asks this where each box's text stops fitting (see FlowTextWalk).
+import { captureFlowFit } from "./flowText/flowCaptureFit";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
@@ -164,6 +167,7 @@ export {
     getTheOneCanvasElementManager,
     showGamePromptDialog,
     applyAiImageEditorReplacements,
+    captureFlowFit,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -440,6 +444,7 @@ interface EditablePageBundleApi {
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
     applyAiImageEditorReplacements: typeof applyAiImageEditorReplacements;
+    captureFlowFit: typeof captureFlowFit;
 }
 
 declare global {
@@ -475,6 +480,9 @@ declare global {
         __bloomEditablePageReady?: boolean;
         // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
         __bloomExternalPageContent?: string;
+        // The same handshake for one box of a flow-text chain (C# FlowTextWalk ⇆ captureFlowFit):
+        // the JSON of an IFlowFitResult, or "ERROR: <message>".
+        __bloomFlowFit?: string;
     }
 }
 
@@ -519,4 +527,5 @@ window.editablePageBundle = {
     renderDragActivityTabControl,
     showGamePromptDialog,
     applyAiImageEditorReplacements,
+    captureFlowFit,
 };

@@ -30,6 +30,7 @@ namespace Bloom.SubscriptionAndFeatures
         Bookshelf,
         AppBuilder,
         AiImageEditing,
+        FlowText,
     }
 
     public static class FeatureRegistry
@@ -203,6 +204,18 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.AiImageEditing,
                 SubscriptionTier = SubscriptionTier.Pro,
+            },
+            new FeatureInfo
+            {
+                // Text that runs on from one box into the next, on a page and across pages.
+                // Pro is the lowest paid tier, so this asks for a subscription of any kind.
+                Feature = FeatureName.FlowText,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kFlowText,
+                // A book whose text flows publishes as it stands: the boxes hold ordinary text
+                // by the time anything is published, so no medium has to be told about it.
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.None,
             },
             // ----------------------------------------
             // Enterprise Tier Features

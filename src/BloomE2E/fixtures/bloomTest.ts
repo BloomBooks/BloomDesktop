@@ -9,6 +9,13 @@
 //
 //     test.use({ collectionName: "basic" });
 //
+// Several files can share one launch, which is worth having: launching costs the better part of a
+// minute. Playwright keeps a worker, and so the Bloom that worker started, for the next file when
+// the worker hash matches, and that hash is built from the IDENTITY of each worker-scoped test.use
+// value rather than from its content. So files that pass the same imported object share a Bloom,
+// while files that write two equal-looking literals get one each. helpers/flowText.ts's
+// kFlowTextCollection is the worked example, and says what a shared Bloom requires of a test.
+//
 // See README.md for the whole story, including the UI-vs-API policy.
 
 import {
@@ -331,8 +338,10 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // Override Playwright's own `page`, so a test that just wants to click things says `page` and
     // never launches a browser of Playwright's own.
     //
-    // This is bound once per worker, so a test that calls bloomApp.restart() must use the page
-    // that returns (or bloomApp.page) from then on: this one points at a dead target.
+    // This is test-scoped, so each test reads whatever bloomApp.page is when it starts, and a test
+    // after a restart — in this file or in a later one sharing the worker — gets the live page.
+    // Within the test that calls bloomApp.restart(), though, this `page` points at a dead target
+    // from the restart onwards: use the page restart() returns, or bloomApp.page.
     page: async ({ bloomApp }, use) => {
         await use(bloomApp.page);
     },

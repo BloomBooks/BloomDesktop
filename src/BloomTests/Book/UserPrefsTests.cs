@@ -51,5 +51,113 @@ namespace BloomTests.Book
                 Assert.That(reloaded.IncludeBackgroundColors, Is.False);
             }
         }
+
+        [Test]
+        public void FlowTextAutoPages_NewPrefs_IsOff()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(
+                    up.FlowTextAutoPages,
+                    Is.False,
+                    "A book does not make and take away pages until the author has asked for pages once."
+                );
+            }
+        }
+
+        [Test]
+        public void FlowTextAutoPages_TurnedOn_IsSavedAndReadBack()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextAutoPages, Is.False, "Sanity check.");
+
+                up.FlowTextAutoPages = true;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Contain("flowTextAutoPages"),
+                    "The setting is not the default any more, so the file has to carry it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextAutoPages, Is.True);
+            }
+        }
+
+        [Test]
+        public void FlowTextAutoPages_TurnedBackOff_LeavesNoEntry()
+        {
+            using (var t = new TempFile("{\"flowTextAutoPages\":true}"))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextAutoPages, Is.True, "Sanity check.");
+
+                up.FlowTextAutoPages = false;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Not.Contain("flowTextAutoPages"),
+                    "A book that holds the default writes no entry for it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextAutoPages, Is.False);
+            }
+        }
+
+        [Test]
+        public void FlowTextReflowOnPageChange_NewPrefs_IsOn()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(
+                    up.FlowTextReflowOnPageChange,
+                    Is.True,
+                    "Refitting on a page change is what a book does unless it says otherwise."
+                );
+            }
+        }
+
+        [Test]
+        public void FlowTextReflowOnPageChange_TurnedOff_IsSavedAndReadBack()
+        {
+            using (var t = new TempFile(""))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextReflowOnPageChange, Is.True, "Sanity check.");
+
+                up.FlowTextReflowOnPageChange = false;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Contain("flowTextReflowOnPageChange"),
+                    "The setting is not the default any more, so the file has to carry it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextReflowOnPageChange, Is.False);
+            }
+        }
+
+        [Test]
+        public void FlowTextReflowOnPageChange_TurnedBackOn_LeavesNoEntry()
+        {
+            using (var t = new TempFile("{\"flowTextReflowOnPageChange\":false}"))
+            {
+                var up = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(up.FlowTextReflowOnPageChange, Is.False, "Sanity check.");
+
+                up.FlowTextReflowOnPageChange = true;
+
+                Assert.That(
+                    RobustFile.ReadAllText(t.Path),
+                    Does.Not.Contain("flowTextReflowOnPageChange"),
+                    "A book that holds the default writes no entry for it."
+                );
+                var reloaded = UserPrefs.LoadOrMakeNew(t.Path);
+                Assert.That(reloaded.FlowTextReflowOnPageChange, Is.True);
+            }
+        }
     }
 }

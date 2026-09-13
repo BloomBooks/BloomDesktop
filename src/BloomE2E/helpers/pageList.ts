@@ -11,7 +11,12 @@
 
 import { expect, type Frame, type Page } from "@playwright/test";
 import { apiPost } from "./api";
-import { getPages, waitForEditablePage, type IBookPage } from "./bookMaking";
+import {
+    getPages,
+    goToPage,
+    waitForEditablePage,
+    type IBookPage,
+} from "./bookMaking";
 
 /** The Edit tab's frame holding the page thumbnails. Throws if the Edit tab is not showing. */
 export function pageListFrame(page: Page): Frame {
@@ -105,6 +110,31 @@ export async function duplicatePageWithContextMenu(
         before,
         "choosing Duplicate Page from the menu",
     );
+}
+
+/**
+ * Delete a page, by the same route as the Delete Page button: Bloom deletes the page it is
+ * showing, so the page is selected first. The button's own confirmation is in the browser, and
+ * this posts what it posts once the person has confirmed.
+ *
+ * Waits until Bloom lists one page fewer.
+ */
+export async function deletePage(page: Page, pageId: string): Promise<void> {
+    const before = await getPages(page);
+    if (!before.some((p) => p.id === pageId))
+        throw new Error(
+            `Cannot delete page ${pageId}: the book's pages are ` +
+                before.map((p) => p.id).join(", "),
+        );
+    await goToPage(page, pageId);
+    await apiPost(page, "edit/pageControls/deletePage");
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: `Bloom never dropped page ${pageId} from the page list.`,
+        })
+        .toBe(before.length - 1);
+    await waitForEditablePage(page);
 }
 
 /**

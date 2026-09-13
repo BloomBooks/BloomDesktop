@@ -394,6 +394,8 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    enableFlowText = dialog?.PendingEnableFlowText
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kFlowText),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -428,6 +430,10 @@ namespace Bloom.web.controllers
                 if (allowTeamCollection != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
+
+            var enableFlowTextToken = data["enableFlowText"];
+            if (enableFlowTextToken != null)
+                dialog.PendingEnableFlowText = enableFlowTextToken.Value<bool>();
 
             var showQrCodeToken = data["showQrCode"];
             if (showQrCodeToken != null)

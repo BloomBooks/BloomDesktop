@@ -4,8 +4,13 @@ import * as React from "react";
 import Menu from "@mui/material/Menu";
 import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { LocalizableSelectableMenuItem } from "../../react_components/localizableMenuItem";
+import {
+    LocalizableMenuItem,
+    LocalizableSelectableMenuItem,
+} from "../../react_components/localizableMenuItem";
 import { renderRoot } from "../../utils/reactRender";
+import OverflowChecker from "../OverflowChecker/OverflowChecker";
+import { isBoxLinked, unlinkBox } from "../flowText/flowCommands";
 import {
     canToggleNoIndent,
     findParagraphForTextContextMenu,
@@ -28,9 +33,22 @@ const TextContextMenu: React.FunctionComponent<{
     anchorPosition: { left: number; top: number };
 }> = (props) => {
     const noIndentIsOn = isNoIndentOn(props.paragraph);
+    const boxIsLinked = isBoxLinked(props.paragraph);
 
     const handleNoIndentClick = () => {
         toggleNoIndent(props.paragraph);
+        props.setOpen(false);
+    };
+
+    const handleUnlinkClick = () => {
+        unlinkBox(props.paragraph, {
+            // A box that no longer hands its extra text to a following box has to say that
+            // the text does not fit, and one that no longer receives text may now fit.
+            onUnlinked: (editables) =>
+                editables.forEach((editable) =>
+                    OverflowChecker.AdjustSizeOrMarkOverflowSoon(editable),
+                ),
+        });
         props.setOpen(false);
     };
 
@@ -61,6 +79,14 @@ const TextContextMenu: React.FunctionComponent<{
                     disabled={!canToggleNoIndent(props.paragraph)}
                     onClick={handleNoIndentClick}
                 />
+                {boxIsLinked && (
+                    <LocalizableMenuItem
+                        english="Unlink text box"
+                        l10nId="EditTab.TextContextMenu.UnlinkTextBox"
+                        hasLeadingIconSpace={true}
+                        onClick={handleUnlinkClick}
+                    />
+                )}
             </Menu>
         </ThemeProvider>
     );

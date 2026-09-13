@@ -12,7 +12,7 @@
 // target into view first, and the case the manual test cares about most is a gear that is only
 // partly in view.
 
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { editablePageFrame } from "./bookMaking";
 import { realClickAt } from "./realClick";
 import { getZoom, setZoom } from "./workspace";
@@ -174,6 +174,64 @@ export async function openFormatDialog(page: Page): Promise<void> {
 /** True while the Format dialog is open. */
 export async function isFormatDialogOpen(page: Page): Promise<boolean> {
     return editablePageFrame(page).locator(DIALOG).isVisible();
+}
+
+/** The font-size control on the dialog's Characters tab, in points. */
+const SIZE_SELECT = `${DIALOG} #size-select`;
+
+/**
+ * How large the text of a box is drawn, in CSS pixels. This is what the reader sees, so it is
+ * what a test about the size of the text asks for: the number in the Format dialog is in points
+ * and is a style rule, while this is the size the rule produced on this box.
+ */
+export async function getRenderedFontSize(box: Locator): Promise<number> {
+    return box.evaluate((element) =>
+        parseFloat(getComputedStyle(element).fontSize),
+    );
+}
+
+/**
+ * Change the font size of a box's style, the way a person does: through the Format dialog's
+ * Characters tab. `points` must be one of the sizes the dialog offers.
+ *
+ * The box must already have the focus, because the dialog belongs to the box whose gear is
+ * showing. Returns when the text of that box is drawn at a different size, so a caller does not
+ * have to wait for the style rule to take effect.
+ *
+ * The size is set on the control rather than typed into it: the control is a select2 widget over
+ * a plain select, and Bloom listens for the select's own change event
+ * (StyleEditor.changeSize), so setting the value and raising that event is the same path as
+ * choosing from the list.
+ */
+export async function setFontSizeWithFormatDialog(
+    page: Page,
+    box: Locator,
+    points: number,
+): Promise<void> {
+    const before = await getRenderedFontSize(box);
+    await openFormatDialog(page);
+    await showFormatDialogTab(page, "characters");
+
+    const select = editablePageFrame(page).locator(SIZE_SELECT);
+    const offered = await select.locator("option").allTextContents();
+    if (!offered.map((text) => text.trim()).includes(String(points)))
+        throw new Error(
+            `The Format dialog does not offer ${points} pt. It offers: ${offered
+                .map((text) => text.trim())
+                .join(", ")}.`,
+        );
+    await select.evaluate((element, value) => {
+        (element as HTMLSelectElement).value = value;
+        element.dispatchEvent(new Event("change", { bubbles: true }));
+    }, String(points));
+
+    await expect
+        .poll(async () => getRenderedFontSize(box), {
+            timeout: 30000,
+            message: `The text of the box is still drawn at ${before}px after asking for ${points} pt.`,
+        })
+        .not.toBe(before);
+    await clickOutsideFormatDialog(page);
 }
 
 /** The Format dialog's tabs, named as the dialog labels them. Not every box offers every tab. */

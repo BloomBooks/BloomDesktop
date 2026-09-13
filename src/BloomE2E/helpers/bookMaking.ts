@@ -47,6 +47,15 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    // A person does this from the Collection tab, and so must a test, for the reason
+    // makeBookFromBookInCollection gives: asked from the Edit tab, Bloom makes the book and
+    // reports it selected, but the Edit tab never loads a page of it. Bloom switches to the Edit
+    // tab for a newly made book by raising EditBookCommand, and WorkspaceView.ChangeTab returns
+    // at once when that tab is already the active one (BL-8382), so nothing rebuilds the view for
+    // the new book and it sits empty. This bites the first test of a file that inherits a Bloom
+    // another file left in the Edit tab; it costs nothing when Bloom is on the Collection tab
+    // already.
+    await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
@@ -315,6 +324,34 @@ export async function setContentLanguages(
     await waitForEditablePage(page);
 }
 
+/**
+ * The language tags the page being edited is actually showing, in the order its boxes appear in a
+ * translation group, e.g. ["en", "fr"].
+ *
+ * This is the page's own answer, not the collection's and not the book's: setContentLanguages says
+ * what the book should show, and this says what reached the page. A test that addresses one
+ * language's boxes needs the second, because the tags a group holds, and the order they come in,
+ * are decided by the page's own HTML and by which boxes are visible.
+ *
+ * The boxes it reads are the ones flowBox addresses, so "box 0 of fr" in a test means the first box
+ * of the tag this reports second. It answers for the first group that has any: a page whose groups
+ * showed different languages from one another would be a bug in Bloom, not something for a test to
+ * paper over. A page with no such box answers with an empty list.
+ */
+export async function getPageLanguages(page: Page): Promise<string[]> {
+    return editablePageFrame(page)
+        .locator(
+            ".bloom-translationGroup > .bloom-editable.normal-style.bloom-visibility-code-on[lang]",
+        )
+        .evaluateAll((boxes) => {
+            if (boxes.length === 0) return [];
+            const firstGroup = boxes[0].parentElement;
+            return boxes
+                .filter((box) => box.parentElement === firstGroup)
+                .map((box) => box.getAttribute("lang") ?? "");
+        });
+}
+
 /** The Edit tab's frame holding the page being edited. Throws if the Edit tab is not showing. */
 export function editablePageFrame(page: Page): Frame {
     const frame = page.frame({ name: "page" });
@@ -372,10 +409,35 @@ export async function waitForEditablePage(
 export interface IBookPage {
     /** The page's id, which is what editView/jumpToPage takes. */
     id: string;
-    /** The page list's caption for the page: its number, or its name for front and back matter. */
+    /** The name of the template page this page was made from, e.g. "Just Text". */
     caption: string;
+    /**
+     * What the page list writes under the page, and what Bloom calls the page when it names one to
+     * the person: the page number for a content page, a name such as "Front Cover" for front and
+     * back matter.
+     */
+    numberLabel: string;
     /** False for the cover, the credits page, and the rest of the front and back matter. */
     isContentPage: boolean;
+}
+
+/**
+ * What Bloom calls one page when it names it to the person: its page number, or its name for
+ * front and back matter. A test that checks a message naming a page compares against this.
+ */
+export async function getPageNumberLabel(
+    page: Page,
+    pageId: string,
+): Promise<string> {
+    const pages = await getPages(page);
+    const found = pages.find((p) => p.id === pageId);
+    if (!found)
+        throw new Error(
+            `The book has no page ${pageId}. Its pages are: ${pages
+                .map((p) => `${p.id} (${p.numberLabel})`)
+                .join(", ")}.`,
+        );
+    return found.numberLabel;
 }
 
 /**
@@ -443,6 +505,42 @@ export async function addPage(
                     .join(", ") +
                 ".",
         );
+    await insertTemplatePage(page, template, times, `"${templatePageLabel}"`);
+}
+
+/**
+ * Add content pages to the selected book by the template page's ID rather than its label. Use
+ * this when the page matters more than its name: a label is localized and two templates can
+ * share one, while an id names exactly one page of one template book.
+ */
+export async function addPageWithId(
+    page: Page,
+    templatePageId: string,
+    times = 1,
+): Promise<void> {
+    const templates = await apiGetJson<ITemplatePage[]>(
+        page,
+        "e2e/templatePages",
+    );
+    const template = templates.find((t) => t.id === templatePageId);
+    if (!template)
+        throw new Error(
+            `No template offers a page with the id "${templatePageId}". On offer: ` +
+                templates
+                    .map((t) => `${t.templateBookTitle}: ${t.label} (${t.id})`)
+                    .join(", ") +
+                ".",
+        );
+    await insertTemplatePage(page, template, times, `"${template.label}"`);
+}
+
+/** Insert one of the Add Page dialog's template pages, and wait until the book has it. */
+async function insertTemplatePage(
+    page: Page,
+    template: ITemplatePage,
+    times: number,
+    describedAs: string,
+): Promise<void> {
     const before = (await getPages(page)).length;
     await apiPost(
         page,
@@ -464,7 +562,7 @@ export async function addPage(
     await expect
         .poll(async () => (await getPages(page)).length, {
             timeout: 60000,
-            message: `Bloom never added the "${templatePageLabel}" page(s).`,
+            message: `Bloom never added the ${describedAs} page(s).`,
         })
         .toBe(before + times);
     await waitForEditablePage(page);

@@ -19,6 +19,7 @@ interface IAdvancedSettings {
     autoUpdate?: boolean;
     showExperimentalBookSources?: boolean;
     allowTeamCollection?: boolean;
+    enableFlowText?: boolean;
     showQrCode?: boolean;
     qrcodeCaption?: string;
 }
@@ -55,6 +56,14 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
         "Show Experimental Book Sources",
         "CollectionSettingsDialog.AdvancedTab.Experimental.ShowExperimentalBookSources",
     );
+    const flowTextLabel = useL10n(
+        "Flow Text",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.FlowText",
+    );
+    const flowTextDescription = useL10n(
+        "Text you type keeps going into the next text box, and on to later pages, instead of stopping when a box is full.",
+        "CollectionSettingsDialog.AdvancedTab.Experimental.FlowText.Description",
+    );
     const teamCollectionsLabel = useL10n(
         "Team Collections",
         "TeamCollection.TeamCollections",
@@ -84,6 +93,14 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
     const teamCollectionOptionEnabled =
         featureStatus === undefined ? true : featureStatus.enabled;
     const canChangeTeamCollectionOption = allowTeamCollectionEnabled !== false;
+
+    // Only the subscription half of the feature's status matters here: its "visible" flag is
+    // off exactly when the experimental feature is off, which is what this checkbox turns on.
+    const flowTextFeatureStatus = useGetFeatureStatus("FlowText");
+    const flowTextOptionEnabled =
+        flowTextFeatureStatus === undefined
+            ? true
+            : flowTextFeatureStatus.enabled;
 
     const normalizeConfigrSettings = React.useCallback(
         (
@@ -222,6 +239,38 @@ export const AdvancedSettingsPanel: React.FunctionComponent = () => {
                                 >
                                     <BloomSubscriptionIndicatorIconAndText
                                         feature="TeamCollection"
+                                        className="bloom-subscriptionIndicator"
+                                    />
+                                </div>
+                            </div>
+                            <div
+                                css={css`
+                                    .Mui-disabled {
+                                        // The color already sets opacity to 0.26.  We don't
+                                        // want to get any lighter, but MUI defaults to an
+                                        // additional "opacity: 0.38" for disabled elements.
+                                        opacity: 1;
+                                    }
+                                `}
+                            >
+                                <ConfigrBoolean
+                                    label={flowTextLabel}
+                                    path="enableFlowText"
+                                    description={flowTextDescription}
+                                    disabled={!flowTextOptionEnabled}
+                                ></ConfigrBoolean>
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        .bloom-subscriptionIndicator {
+                                            font-size: 10pt;
+                                            font-weight: 700;
+                                        }
+                                    `}
+                                >
+                                    <BloomSubscriptionIndicatorIconAndText
+                                        feature="FlowText"
                                         className="bloom-subscriptionIndicator"
                                     />
                                 </div>

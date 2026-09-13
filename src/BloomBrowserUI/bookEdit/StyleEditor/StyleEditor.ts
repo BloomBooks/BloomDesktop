@@ -44,6 +44,11 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
+import { queueWalksForEveryChain } from "../flowText/flowCrossPage";
+import {
+    reflowAllChainsOnPage,
+    requestWalksWhenQuiet,
+} from "../flowText/flowTrigger";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -2290,6 +2295,21 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
+        // A new style breaks the text somewhere else, so settle the chains before we measure
+        // anything, and again once a font the style asked for has arrived.
+        reflowAllChainsOnPage("styleChange");
+        const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+        fonts?.ready?.then(() => {
+            reflowAllChainsOnPage("styleChangeFontsReady");
+            // A style applies to every page of the book, so every chain is refitted from its
+            // first page, with this page's rules: a page before this one has room it did not
+            // have, and only Bloom can measure the pages the browser cannot see. The ask waits
+            // for this page to finish handing text to the next one: a refit and a pass would
+            // otherwise be writing the same box at the same time.
+            queueWalksForEveryChain();
+            requestWalksWhenQuiet();
+        });
+
         const editable = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {

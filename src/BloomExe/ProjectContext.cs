@@ -236,6 +236,7 @@ namespace Bloom
                                 typeof(AudioSegmentationApi),
                                 typeof(FileIOApi),
                                 typeof(EditingViewApi),
+                                typeof(FlowTextApi),
                                 typeof(ImageGalleryApi),
                                 typeof(AnalyticsApi),
                                 typeof(ProblemReportApi),
@@ -498,6 +499,7 @@ namespace Bloom
             _scope.Resolve<BookCommandsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<SpreadsheetApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<PageControlsApi>().RegisterWithApiHandler(server.ApiHandler);
+            _scope.Resolve<FlowTextApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<KeyboardingConfigApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<BookSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
             _scope.Resolve<StylesAndFontsApi>().RegisterWithApiHandler(server.ApiHandler);
