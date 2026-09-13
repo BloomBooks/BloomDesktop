@@ -591,7 +591,7 @@ export async function placePendingCaret(
     // taken and then dropped is an author whose caret never followed their text, with nothing
     // to say so and nothing left to try again with.
     if (!page.isConnected) {
-        return await giveBack(caret);
+        return await giveBack(caret, "the page is gone");
     }
 
     const boxOfTheCaret = () =>
@@ -601,7 +601,7 @@ export async function placePendingCaret(
 
     const found = boxOfTheCaret();
     if (!found) {
-        return await giveBack(caret);
+        return await giveBack(caret, "no box of that language in that chain");
     }
 
     // CKEditor rewrites the box as it attaches, and would take out anything put in before that.
@@ -610,7 +610,10 @@ export async function placePendingCaret(
     // refit landing on this page in the meantime replaces the box this was going to write to.
     const editable = boxOfTheCaret();
     if (!editable?.isConnected) {
-        return await giveBack(caret);
+        return await giveBack(
+            caret,
+            "the box went while we waited for its editor",
+        );
     }
 
     const chain = getLanguageChainOnPage(editable);
@@ -634,7 +637,13 @@ export async function placePendingCaret(
  * page it names as it did before, so the next attempt -- the page finishing its load, or a refit
  * settling -- can place it. Always returns false, so a caller can end on it.
  */
-async function giveBack(caret: IPendingCaret): Promise<boolean> {
+async function giveBack(caret: IPendingCaret, why: string): Promise<boolean> {
+    // Said out loud because the author sees nothing: their caret simply does not arrive, and
+    // they carry on typing wherever the new page put the focus, which is the first language's
+    // box. A silent give-back is indistinguishable from a caret that was never sent.
+    console.warn(
+        `flow text: could not place the caret on page ${caret.pageId} in ${caret.lang} (${why}); handing it back.`,
+    );
     await postPendingCaret(caret);
     return false;
 }
