@@ -608,6 +608,44 @@ describe("flowCrossPage", () => {
         const { page } = makePage("<p>hello</p>");
 
         expect(await placePendingCaret(page)).toBe(false);
+        expect(postedCarets).toHaveLength(0);
+    });
+
+    it("gives the caret back when this page has no box of its language", async () => {
+        // Asking Bloom for the caret is what takes it, and Bloom hands it over once. A caret
+        // taken and then dropped is an author whose caret never followed their text, with
+        // nothing to say so and nothing left to try again with. So a page that cannot place it
+        // has to hand it back.
+        pendingCaret = {
+            pageId: "page-2",
+            chainId: "chain-1",
+            lang: "fr",
+            charOffset: 3,
+        };
+        const { page } = makePage("<p>hello world</p>");
+        expect(
+            page.querySelector('[lang="fr"]'),
+            "Sanity check: this page really has no French box to place it in.",
+        ).toBeNull();
+
+        expect(await placePendingCaret(page)).toBe(false);
+
+        expect(postedCarets).toEqual([pendingCaret]);
+    });
+
+    it("gives the caret back when the page is gone by the time it arrives", async () => {
+        pendingCaret = {
+            pageId: "page-2",
+            chainId: "chain-1",
+            lang: "en",
+            charOffset: 3,
+        };
+        const { page } = makePage("<p>hello world</p>");
+        page.remove();
+
+        expect(await placePendingCaret(page)).toBe(false);
+
+        expect(postedCarets).toEqual([pendingCaret]);
     });
 });
 

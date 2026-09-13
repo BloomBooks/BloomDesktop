@@ -583,21 +583,34 @@ export async function placePendingCaret(
     }
 
     const caret = await getPendingCaret(page.id);
-    if (!caret || !page.isConnected) {
+    if (!caret) {
         return false;
     }
+    // Asking for the caret is what takes it: Bloom holds one, and hands it over once. So every
+    // way out of this function from here on either places it or gives it back, because a caret
+    // taken and then dropped is an author whose caret never followed their text, with nothing
+    // to say so and nothing left to try again with.
+    if (!page.isConnected) {
+        return await giveBack(caret);
+    }
 
-    const editable = page.querySelector<HTMLElement>(
-        `.bloom-translationGroup[${kFlowChainAttr}="${caret.chainId}"] > ${kVisibleEditableSelector}[lang="${caret.lang}"]`,
-    );
-    if (!editable) {
-        return false;
+    const boxOfTheCaret = () =>
+        page.querySelector<HTMLElement>(
+            `.bloom-translationGroup[${kFlowChainAttr}="${caret.chainId}"] > ${kVisibleEditableSelector}[lang="${caret.lang}"]`,
+        );
+
+    const found = boxOfTheCaret();
+    if (!found) {
+        return await giveBack(caret);
     }
 
     // CKEditor rewrites the box as it attaches, and would take out anything put in before that.
-    await waitForEditorReady(editable);
-    if (!editable.isConnected) {
-        return false;
+    await waitForEditorReady(found);
+    // Looked for again rather than reused: that wait runs for as long as two seconds, and a
+    // refit landing on this page in the meantime replaces the box this was going to write to.
+    const editable = boxOfTheCaret();
+    if (!editable?.isConnected) {
+        return await giveBack(caret);
     }
 
     const chain = getLanguageChainOnPage(editable);
@@ -614,6 +627,16 @@ export async function placePendingCaret(
         insertTextAtSelection(editable, caret.typedText);
     }
     return true;
+}
+
+/**
+ * Hand a caret back to Bloom, because this attempt could not place it. It then waits for the
+ * page it names as it did before, so the next attempt -- the page finishing its load, or a refit
+ * settling -- can place it. Always returns false, so a caller can end on it.
+ */
+async function giveBack(caret: IPendingCaret): Promise<boolean> {
+    await postPendingCaret(caret);
+    return false;
 }
 
 async function getNextBox(
