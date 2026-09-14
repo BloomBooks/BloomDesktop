@@ -1968,16 +1968,14 @@ namespace Bloom.web.controllers
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
             );
-            RefitSlotImageForNewPicture(
-                element,
-                () =>
-                    ImageUtils.TryGetImageSize(
-                        Path.Combine(book.FolderPath, newFileName),
-                        out var size
-                    )
-                        ? size
-                        : Size.Empty
-            );
+            // Reading the size costs a GraphicsMagick subprocess and only the cover-fit case
+            // needs it, so this is a function rather than a value, shared by the slot and by any
+            // Bloom Games target copies of it below.
+            Func<Size> getNewImageSize = () =>
+                ImageUtils.TryGetImageSize(Path.Combine(book.FolderPath, newFileName), out var size)
+                    ? size
+                    : Size.Empty;
+            RefitSlotImageForNewPicture(element, getNewImageSize);
             // Now that the element points at the new file, Bloom's own updater can re-derive
             // the mirrored attributes for us.
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
@@ -1994,12 +1992,14 @@ namespace Bloom.web.controllers
             // picture, and its reference to the old file would also stop
             // DeleteSupersededAiImageFiles reclaiming it (BL-16793).
             //
-            // This repoints the copy and re-derives its credit attributes; it deliberately does
-            // not touch the sizing and cropping the copy inherited from the draggable. Those
-            // suit the old image's shape, so a replacement of a different shape looks right only
-            // once the user next selects that draggable and the front end rebuilds the copy
-            // properly. Guessing at them here would mean a second, poorer implementation of
-            // copyContentToTarget.
+            // This repoints the copy, re-derives its credit attributes, and drops the crop the
+            // copy inherited from the draggable — for the same reason the draggable's own crop
+            // goes: it was computed for the picture that is no longer there, and would crop the
+            // replacement a second time. It deliberately does NOT touch the copy's sizing, which
+            // suits the old image's shape and looks right again only once the user next selects
+            // that draggable and the front end rebuilds the copy. Guessing at that here would
+            // mean a second, poorer implementation of copyContentToTarget; the crop needs no
+            // guessing, because there is nothing left for it to describe.
             foreach (var copy in GetGameTargetImageCopiesOfSlot(page, slots[ordinal]))
             {
                 HtmlDom.SetImageElementUrl(
@@ -2011,6 +2011,7 @@ namespace Bloom.web.controllers
                     copy,
                     new NullProgress()
                 );
+                RefitSlotImageForNewPicture(copy, getNewImageSize);
             }
 
             if (element.HasAttribute("data-book"))
