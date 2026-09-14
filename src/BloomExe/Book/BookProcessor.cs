@@ -40,7 +40,10 @@ namespace Bloom.Book
     public static class BookProcessor
     {
         // Generous per-page limit; this is a background automation step, not interactive editing.
-        private const int kReadyTimeoutMs = 30000;
+        // Must stay comfortably above kExternalCaptureMaxWaitMs in pageContentCapturePolicy.ts (the
+        // browser's own cap on waiting for a page's async fix-ups before it captures or gives up),
+        // or we would time out on a slow page just before the browser reported it.
+        private const int kReadyTimeoutMs = 60000;
 
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
