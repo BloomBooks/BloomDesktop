@@ -58,7 +58,7 @@ shell page  (top, url .../bloom/…Temp/bloomXXXX.htm)
 ## 3. Open the overlay the *real* way (so the commit handler is live)
 
 Right-click the canvas element → **"Edit with AI…"**. Loading the iframe directly (as the
-`bloom-exe-ai-image-editor-open.uitest.ts` smoke test does) does **not** register
+`src/BloomE2E/tests/ai-image-editor.spec.ts` boot test does) does **not** register
 `aiImageEditorOverlay.ts`'s postMessage handler, so the commit + current-page save path wouldn't run.
 
 **The overlay does not appear on the same tick as the click.** The menu command posts
