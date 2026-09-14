@@ -3146,6 +3146,15 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
 
+        /// <summary>
+        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb
+        /// (including the child Bloom that `upload` starts for a bulk upload) or the e2e /
+        /// visual-regression suite's own Bloom. Code that would otherwise show modal UI must
+        /// report the problem some other way (typically stderr) and return, because a modal here
+        /// blocks the process forever -- no failure, no exit code, just a hang (BL-16869).
+        /// </summary>
+        public static bool RunningNonInteractive => RunningInConsoleMode || RunningE2eTests;
+
         private static bool _runningE2eTests;
 
         // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is

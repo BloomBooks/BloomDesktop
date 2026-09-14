@@ -51,7 +51,9 @@ namespace Bloom.WebLibraryIntegration
         /// (over-writing the existing book) without informing the user.
         /// </summary>
         /// <remarks>This method is triggered by starting Bloom with "upload" on the cmd line.</remarks>
-        public async Task BulkUpload(ApplicationContainer container, UploadParameters options)
+        /// <returns>true if every book we looked at was uploaded or deliberately skipped; false if
+        /// anything failed, so that the caller can exit with a non-zero code (BL-16869).</returns>
+        public async Task<bool> BulkUpload(ApplicationContainer container, UploadParameters options)
         {
             BookUpload.Destination = options.Dest;
 
@@ -166,6 +168,7 @@ namespace Bloom.WebLibraryIntegration
                             logFilePath
                         );
                     }
+                    return _booksWithErrors == 0 && _collectionFoldersUploaded.Count > 0;
                 }
                 finally
                 {

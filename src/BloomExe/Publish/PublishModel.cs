@@ -106,16 +106,24 @@ namespace Bloom.Publish
             set { _pdfSucceeded = value; }
         }
 
+        // The exception (if any) that the last PDF-making run ended with. Recorded on the worker
+        // thread, so that a caller which waits for the worker (MakePDFForUpload) can see it without
+        // racing RunWorkerCompleted.
+        private Exception _pdfGenerationError;
+
         private void _makePdfBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             e.Result = BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
             LoadBook(sender as BackgroundWorker, e);
+            _pdfGenerationError = e.Result as Exception;
         }
 
         /// <summary>
         /// Make the preview required for publishing the book.
         /// </summary>
-        internal void MakePDFForUpload(IProgress progress)
+        /// <returns>true if we made a PDF; false if PDF generation failed or was refused, in which
+        /// case the caller must not go on to upload as though it had succeeded (BL-16869).</returns>
+        internal bool MakePDFForUpload(IProgress progress)
         {
             if (_makePdfBackgroundWorker.IsBusy)
             {
@@ -131,13 +139,23 @@ namespace Bloom.Publish
             );
             if (message != null)
             {
-                MessageBox.Show(
-                    message,
-                    LocalizationManager.GetString("Common.Warning", "Warning")
-                );
-                return;
+                if (Program.RunningNonInteractive)
+                {
+                    // Nobody can dismiss a MessageBox here; say why we are giving up and let the
+                    // caller treat it as a failure.
+                    progress.WriteError(message);
+                }
+                else
+                {
+                    MessageBox.Show(
+                        message,
+                        LocalizationManager.GetString("Common.Warning", "Warning")
+                    );
+                }
+                return false;
             }
 
+            _pdfGenerationError = null;
             _previewProgress = progress;
             _makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
 
@@ -154,6 +172,14 @@ namespace Bloom.Publish
             _makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
             _previewProgress = null;
             _previousStatus = null;
+
+            if (_pdfGenerationError != null)
+            {
+                progress.WriteError("Making the PDF failed: {0}", _pdfGenerationError.Message);
+                progress.WriteException(_pdfGenerationError);
+                return false;
+            }
+            return true;
         }
 
         IProgress _previewProgress;
@@ -195,6 +221,21 @@ namespace Bloom.Publish
                 ReportPdfGenerationError(e.Result as Exception);
         }
 
+        /// <summary>
+        /// Warn the user about a PDF problem, unless nobody is there to dismiss the warning, in
+        /// which case report it on stderr. A modal in a command-line verb or an e2e run is never
+        /// dismissed, so it hangs the process instead of failing it (BL-16869).
+        /// </summary>
+        private static void ShowPdfWarning(string message)
+        {
+            if (Program.RunningNonInteractive)
+            {
+                Console.Error.WriteLine("PDF problem: " + message);
+                return;
+            }
+            BloomMessageBox.ShowWarning(message);
+        }
+
         internal static void ReportPdfGenerationError(Exception error)
         {
             if (error is ApplicationException)
@@ -229,7 +270,7 @@ namespace Bloom.Publish
                     "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>",
                     "</a>"
                 );
-                BloomMessageBox.ShowWarning(msg);
+                ShowPdfWarning(msg);
             }
             else if (
                 error is ArgumentException
@@ -238,7 +279,7 @@ namespace Bloom.Publish
             )
             {
                 // Full bleed printing for this paper size is not supported. Notify user but don't let them report.
-                BloomMessageBox.ShowWarning(error.Message);
+                ShowPdfWarning(error.Message);
             }
             else // for others, just give a generic message and include the original exception in the message
             {
