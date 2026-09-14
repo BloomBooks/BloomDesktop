@@ -54,13 +54,26 @@
   </ItemGroup>
 
   <!--
-    **Every package here that BloomExe also uses must be pinned to the SAME version BloomExe uses.**
-    Not a tidiness rule - the Doctor is installed into Bloom's own folder, which can hold only one copy
-    of any DLL. Disagree, and one of the two runs against a version its .deps.json never named.
+    **Every package here that BloomExe also uses must be pinned to the SAME version BloomExe uses -
+    including ones we never reference ourselves and only get transitively.** Not a tidiness rule - the
+    Doctor is installed into Bloom's own folder, which can hold only one copy of any DLL. Disagree, and
+    one of the two runs against a version its .deps.json never named. The .NET host binds by simple name
+    and accepts a HIGHER version than the one asked for but rejects a lower one, so whoever ends up with
+    the lower file on disk loses: FileNotFoundException naming a version that is sitting right there.
 
-    It shows up first as a broken build. A running Doctor holds its DLLs open, and MSBuild skips copying
-    a file that is already identical - so a matched dependency is invisible, while a mismatched one is
-    rewritten on every Bloom build and fails with MSB3027 naming BloomFreezeDoctor.
+    That is BL-16867. Microsoft.Diagnostics.Runtime drags in Microsoft.Extensions.* 6.0.0, below what
+    Bloom's graph resolves; the Doctor's build wrote them last, and every PDF in 6.5 failed inside
+    PdfSharp, which wants Logging.Abstractions 8. Nothing here was wrong except a dependency tail nobody
+    had looked at - hence the check below, which now looks for us.
+
+    Do not rely on noticing it while developing. In principle a mismatch shows up as a broken build: a
+    running Doctor holds its DLLs open, and MSBuild skips copying a file that is already identical, so a
+    matched dependency is invisible while a mismatched one is rewritten on every Bloom build and fails
+    with MSB3027 naming BloomFreezeDoctor. That only fires if a Doctor happens to be running, which it
+    is not by default - it did not fire for BL-16867, which shipped to BetaInternal. The
+    CheckForConflictingDependencyVersions target in build/Bloom.proj is what actually enforces this rule:
+    it compares every .deps.json in the output folder and fails the build on any assembly the co-located
+    apps disagree on.
   -->
   <ItemGroup>
     <!-- Reading the Windows Event Log for crash and unexpected-shutdown entries. -->
@@ -71,6 +84,17 @@
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
     <!-- Asking the target's own runtime to write its dump, over the diagnostics IPC pipe. -->
     <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.510501" />
+    <!--
+      Not used here: Microsoft.Diagnostics.Runtime drags these in, so they land in the folder either way.
+      Pinned only to match BloomExe, which resolves 8.0.1 and 9.0.5 where the transitive resolution alone
+      would settle on 6.0.0 and overwrite Bloom's copies (BL-16867, see the note above). Pinning just
+      these two is enough: their closure is exactly the set BloomExe resolves, down to
+      DependencyInjection 8.0.1, DependencyInjection.Abstractions 9.0.5, Options 8.0.2 and
+      Primitives 8.0.0. Bloom's versions are themselves transitive, so when they move, these follow -
+      the build will say so.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
     <!--
       libpalaso, for SIL.IO.RobustFile and RobustIO: the outbox's staging-to-final rename races against
       whatever else on Windows has just touched the files it wrote, and a plain rename loses often enough
