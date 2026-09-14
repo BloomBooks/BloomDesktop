@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1418,11 +1420,16 @@ namespace Bloom.web.controllers
                 return null;
 
             // Ask whether the reader is actually seeing less than the file holds before doing
-            // any real work. Bloom writes width/left/top when it merely FITS a background image
-            // to its canvas as well as when the user crops, so without this nearly every
-            // background image in the book would be re-encoded at launch to produce a copy of
-            // itself. Reading the size costs one cheap GraphicsMagick "identify"; rendering
-            // costs a full decode and encode.
+            // any real work, cheapest question first. Most images are not cropped at all, and
+            // this one reads only the DOM; everything past it opens the image file, which costs
+            // a GraphicsMagick subprocess per slot.
+            if (!ImageUtils.HasCropStyles(element))
+                return null;
+
+            // Bloom writes width/left/top when it merely FITS a background image to its canvas
+            // as well as when the user crops, so the styles alone do not mean anything is
+            // hidden; without this check a book's background images would each be re-encoded at
+            // launch to produce a copy of themselves.
             // A book's image src can still be percent-encoded, so decode our way to the real
             // file the way the rest of Bloom does (BL-3901) instead of a plain Path.Combine.
             var sourcePath = UrlPathString.GetFullyDecodedPath(bookFolderPath, ref src);
@@ -1473,7 +1480,9 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Drops the crop from a slot's image element, leaving any other styling alone.
+        /// Re-frames a slot's image element for a replacement picture: drops the crop that was
+        /// computed for the image being replaced, and re-establishes the fill for a background
+        /// image that covers its canvas.
         /// </summary>
         /// <remarks>
         /// A replacement is the whole of what the slot should now show — the AI image editor was
@@ -1482,13 +1491,92 @@ namespace Bloom.web.controllers
         /// it was computed for. Left in place it would crop the replacement a second time, by a
         /// rectangle that means nothing for it (BL-16868).
         ///
-        /// These are the four properties the front end clears for the currently-open page in
-        /// updateCanvasElementForChangedImage (CanvasElementManager.ts); an off-page slot has no
-        /// live browser to do it. Internal for testing.
+        /// This is what updateCanvasElementForChangedImage (CanvasElementManager.ts) does for
+        /// the currently-open page: clear width/height/left/top, then re-fit. An off-page slot
+        /// has no live browser to do it, and nothing re-fits it when the page is next opened
+        /// (setupBackgroundImageAttributes returns early once the element has a data-bubble).
+        ///
+        /// The re-fit here covers the one case where clearing alone would change the page's
+        /// layout: a background image marked to cover its canvas is made to cover by these very
+        /// styles, so clearing them would letterbox a full-bleed picture. Centering the new
+        /// image so it fills the canvas element is what adjustBackgroundImageSizeToFit's cover
+        /// branch arrives at for an image with no crop to preserve. Every other case is left
+        /// fitted inside the canvas element it has, which is where the front end's own clearing
+        /// step leaves it.
+        ///
+        /// Internal for testing.
         /// </remarks>
-        internal static void RemoveCropFromSlotImage(SafeXmlElement element)
+        /// <param name="getNewImageSize">reads the replacement file's pixel size; called only
+        /// in the one case that needs it, because reading it costs a GraphicsMagick
+        /// subprocess. An empty size skips the re-fit.</param>
+        internal static void RefitSlotImageForNewPicture(
+            SafeXmlElement element,
+            Func<Size> getNewImageSize
+        )
         {
+            // A container wearing its picture as a background image has no img, and no crop
+            // styles either; its width/height/left/top are its own geometry and must be left
+            // alone. GetImageElementOfSlot hands us the container in that case.
+            if (element.Name != "img")
+                return;
+
             HtmlDom.RemoveStyleProperties(element, "width", "height", "left", "top");
+
+            if (!element.HasClass(kCoverFitClass))
+                return;
+            var newImageSize = getNewImageSize();
+            if (newImageSize.Width <= 0 || newImageSize.Height <= 0)
+                return;
+            // img -> image container -> canvas element, whose style holds the box to fill. The
+            // cover branch sets that box to the whole bloom-canvas, which is why filling it is
+            // the same thing as covering the page.
+            var canvasElement = element.ParentNode?.ParentNode as SafeXmlElement;
+            if (canvasElement == null || !canvasElement.HasClass(HtmlDom.kCanvasElementClass))
+                return;
+            var canvasElementStyle = canvasElement.GetAttribute("style");
+            var boxWidth = ImageUtils.GetNumberFromPx("width", canvasElementStyle);
+            var boxHeight = ImageUtils.GetNumberFromPx("height", canvasElementStyle);
+            if (boxWidth <= 0 || boxHeight <= 0)
+                return;
+
+            var scale = Math.Max(boxWidth / newImageSize.Width, boxHeight / newImageSize.Height);
+            var width = newImageSize.Width * scale;
+            var height = newImageSize.Height * scale;
+            // Negative or zero: the overflow is hidden evenly on both sides, as the front end's
+            // cover branch also arrives at when there is no earlier crop to preserve.
+            PrependStyleProperties(
+                element,
+                ("width", width),
+                ("left", (boxWidth - width) / 2),
+                ("top", (boxHeight - height) / 2)
+            );
+        }
+
+        /// <summary>The class Bloom puts on a background image that should fill its canvas
+        /// rather than fit inside it. Must match the front end's own spelling.</summary>
+        private const string kCoverFitClass = "bloom-imageObjectFit-cover";
+
+        /// <summary>
+        /// Puts the given pixel declarations at the front of the element's style attribute,
+        /// keeping whatever was already there. Invariant culture throughout: a decimal comma in
+        /// a style attribute is not a number to a browser.
+        /// </summary>
+        private static void PrependStyleProperties(
+            SafeXmlElement element,
+            params (string name, double pixels)[] declarations
+        )
+        {
+            var added = string.Join(
+                " ",
+                declarations.Select(d =>
+                    d.name + ": " + d.pixels.ToString("0.###", CultureInfo.InvariantCulture) + "px;"
+                )
+            );
+            var existing = element.GetAttribute("style");
+            element.SetAttribute(
+                "style",
+                string.IsNullOrEmpty(existing) ? added : added + " " + existing
+            );
         }
 
         /// <summary>
@@ -1880,7 +1968,16 @@ namespace Bloom.web.controllers
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
             );
-            RemoveCropFromSlotImage(element);
+            RefitSlotImageForNewPicture(
+                element,
+                () =>
+                    ImageUtils.TryGetImageSize(
+                        Path.Combine(book.FolderPath, newFileName),
+                        out var size
+                    )
+                        ? size
+                        : Size.Empty
+            );
             // Now that the element points at the new file, Bloom's own updater can re-derive
             // the mirrored attributes for us.
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
