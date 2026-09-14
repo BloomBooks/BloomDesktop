@@ -175,6 +175,10 @@ namespace Bloom.Publish
 
             if (_pdfGenerationError != null)
             {
+                // ReportPdfGenerationError (from RunWorkerCompleted) will also have reported this,
+                // to Bloom's own log. Reporting it again here is deliberate: this is the copy that
+                // reaches the caller's progress, and so BloomBulkUploadLog.txt, which is where
+                // someone chasing a failed bulk upload actually looks.
                 progress.WriteError("Making the PDF failed: {0}", _pdfGenerationError.Message);
                 progress.WriteException(_pdfGenerationError);
                 return false;
