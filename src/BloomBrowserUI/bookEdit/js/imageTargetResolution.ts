@@ -4,11 +4,23 @@
 // "An image with W x H dots would fill this container" line and the AI image editor's
 // suggested target both come from getSuggestedImageTargetForFraction below.
 //
-// The tooltip works on the page the user is looking at, so it measures the container itself.
-// The AI image editor has to answer for every page in the book, and only the open page is laid
-// out in a browser, so it works from the fraction of the page each slot takes up, which Bloom
-// writes into the HTML whenever a page is saved (see recordFractionOfPageOnImageSlots).
+// The tooltip works on the page the user is looking at, so it measures a box directly. The AI
+// image editor has to answer for every page in the book, and only the open page is laid out in
+// a browser, so it works from the fraction of the page each slot takes up, which Bloom writes
+// into the HTML whenever a page is saved (see recordFractionOfPageOnImageSlots).
+//
+// Which box to measure is not always the image container. A canvas BACKGROUND image is
+// presented as the picture of the whole bloom-canvas, and a replacement committed from the AI
+// image editor is re-fitted to fill that canvas, while the container itself holds only the part
+// of the canvas the current image happens to reach (letterboxed, or cropped). So a background
+// slot has to be measured against its bloom-canvas, and every other slot against the container.
+// getElementThatDeterminesImageSlotSize below is the one place that decides which.
 
+import {
+    kBackgroundImageClass,
+    kBloomCanvasClass,
+    kCanvasElementClass,
+} from "../toolbox/canvas/canvasElementConstants";
 import { kScrollingLayouts } from "./scrollingLayouts";
 
 // This appears to be constant even on higher dpi screens.
@@ -190,6 +202,34 @@ export function getOpenPageMetrics(
     };
 }
 
+// The element whose size says how big the image in the given slot ought to be.
+//
+// For nearly every slot that is the image container itself. A canvas BACKGROUND image is the
+// exception: it is the picture of the whole bloom-canvas, its container covers only as much of
+// that canvas as the current image reaches, and a replacement is re-fitted to fill the canvas
+// again (TryMakeCroppedViewOfSlotImage and the re-fit in AiImageEditorApi.cs). Measuring the
+// container there would ask for a picture the size of the old image's letterbox.
+//
+// A background set to "contain" rather than "cover" is letterboxed inside the canvas instead of
+// filling it, so for those the canvas is an upper bound and we ask for slightly more than the
+// picture will finally occupy. That is the direction to err in: the replacement's aspect ratio
+// is not known until it exists, and too many dots costs nothing but a resize.
+//
+// Pass the image container. Returns the container itself for anything that is not a canvas
+// background, and for a background whose bloom-canvas cannot be found.
+export function getElementThatDeterminesImageSlotSize(
+    container: HTMLElement,
+): HTMLElement {
+    const canvasElement = container.closest("." + kCanvasElementClass);
+    if (!canvasElement?.classList.contains(kBackgroundImageClass)) {
+        return container;
+    }
+    return (
+        (container.closest("." + kBloomCanvasClass) as HTMLElement | null) ??
+        container
+    );
+}
+
 // Writes each image slot's share of its page onto the slot, so that the size it wants can be
 // worked out later for a page nobody has open. Called as a page is saved (see
 // extractAndStripPageContentForSave in bloomEditing.ts), which is both the ordinary Edit-tab
@@ -212,16 +252,18 @@ export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
         // them anyway.
         if (slot.closest(".bloom-ui")) return;
         const container = slot as HTMLElement;
+        // The value always goes ON the container, because that is what C# enumerates
+        // (EnumerateBookImages), but for a canvas background it is the canvas that gets
+        // measured.
+        const box = getElementThatDeterminesImageSlotSize(container);
         if (
-            !isUsableLength(container.offsetWidth) ||
-            !isUsableLength(container.offsetHeight)
+            !isUsableLength(box.offsetWidth) ||
+            !isUsableLength(box.offsetHeight)
         ) {
             return;
         }
-        const width = roundToTwoDecimals(container.offsetWidth / page.widthPx);
-        const height = roundToTwoDecimals(
-            container.offsetHeight / page.heightPx,
-        );
+        const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
+        const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
         container.setAttribute(kFractionOfPageAttribute, `${width},${height}`);
     });
 }

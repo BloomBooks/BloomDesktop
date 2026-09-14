@@ -1247,17 +1247,7 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// How much of its page an image slot covers, written onto every image container by the
-        /// front end when a page is saved; see kFractionOfPageAttribute /
-        /// recordFractionOfPageOnImageSlots in imageTargetResolution.ts. It is the only record
-        /// of how big a slot ends up on screen, because the book's HTML otherwise says nothing
-        /// about that, and it is what lets the AI image editor suggest a size for images on
-        /// pages nobody has open.
-        /// </summary>
-        internal const string kFractionOfPageAttribute = "data-fraction-of-page";
-
-        /// <summary>
-        /// Reads the two numbers of <see cref="kFractionOfPageAttribute"/> ("0.42,0.31"). Null
+        /// Reads the two numbers of <see cref="HtmlDom.kFractionOfPageAttribute"/> ("0.42,0.31"). Null
         /// for anything else, including a missing attribute and a page saved by a Bloom that
         /// did not write one; the AI image editor then simply offers that slot no automatic
         /// size. Parsed with the invariant culture, because the front end writes the numbers
@@ -1386,11 +1376,14 @@ namespace Bloom.web.controllers
                             // How much of its page this slot covers, as the front end measured
                             // it and wrote it into the HTML the last time this page was saved
                             // (recordFractionOfPageOnImageSlots in imageTargetResolution.ts).
-                            // We only carry it; the arithmetic that turns it into a number of
-                            // dots needs the page's size in pixels, which only a laid-out
-                            // browser page knows, so the overlay JS does it.
+                            // For a canvas background that is the share of the whole
+                            // bloom-canvas, which is what a replacement is re-fitted to fill;
+                            // for every other slot it is the container's own share. We only
+                            // carry it; the arithmetic that turns it into a number of dots
+                            // needs the page's size in pixels, which only a laid-out browser
+                            // page knows, so the overlay JS does it.
                             fractionOfPage: TryParseFractionOfPage(
-                                slots[ordinal].GetAttribute(kFractionOfPageAttribute)
+                                slots[ordinal].GetAttribute(HtmlDom.kFractionOfPageAttribute)
                             )
                         )
                     );

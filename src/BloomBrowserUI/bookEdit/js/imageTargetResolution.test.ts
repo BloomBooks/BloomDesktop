@@ -361,6 +361,66 @@ describe("recordFractionOfPageOnImageSlots", () => {
 
         expect(slots()[0].hasAttribute(kFractionOfPageAttribute)).toBe(false);
     });
+
+    // A 500 x 800 page holding one bloom-canvas with one canvas element in it. The canvas
+    // element carries the given extra classes, so the same markup serves for a background
+    // image and for an ordinary picture sitting on top of one.
+    const makePageWithCanvasSlot = (canvasElementClasses: string) => {
+        document.body.innerHTML =
+            `<div class="bloom-page A5Portrait">` +
+            `<div class="bloom-canvas">` +
+            `<div class="bloom-canvas-element ${canvasElementClasses}">` +
+            `<div class="bloom-imageContainer"><img src="a.png" /></div>` +
+            `</div></div></div>`;
+        setLayoutSize(
+            document.querySelector(".bloom-page") as HTMLElement,
+            500,
+            800,
+        );
+        // The canvas fills most of the page; the container is the smaller letterbox the
+        // current image happens to reach inside it.
+        setLayoutSize(
+            document.querySelector(".bloom-canvas") as HTMLElement,
+            400,
+            600,
+        );
+        setLayoutSize(slots()[0], 210, 248);
+    };
+
+    test("a canvas background slot records the whole canvas's share of the page", () => {
+        makePageWithCanvasSlot("bloom-backgroundImage");
+        // Sanity check: the container really is the smaller box, so the answer below can only
+        // have come from measuring the canvas.
+        expect(slots()[0].offsetWidth).toBe(210);
+
+        recordFractionOfPageOnImageSlots(document.body);
+
+        // 400/500 is 0.8 and 600/800 is 0.75; the container's own share would be 0.42,0.31.
+        expect(slots()[0].getAttribute(kFractionOfPageAttribute)).toBe(
+            "0.8,0.75",
+        );
+    });
+
+    test("an ordinary canvas element records its own container's share", () => {
+        makePageWithCanvasSlot("");
+
+        recordFractionOfPageOnImageSlots(document.body);
+
+        expect(slots()[0].getAttribute(kFractionOfPageAttribute)).toBe(
+            "0.42,0.31",
+        );
+    });
+
+    test("a plain image slot outside any canvas records its own share", () => {
+        makePageWithSlots();
+        setLayoutSize(slots()[0], 210, 248);
+
+        recordFractionOfPageOnImageSlots(document.body);
+
+        expect(slots()[0].getAttribute(kFractionOfPageAttribute)).toBe(
+            "0.42,0.31",
+        );
+    });
 });
 
 describe("parseFractionOfPage", () => {
