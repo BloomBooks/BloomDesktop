@@ -24,6 +24,9 @@ export interface BackgroundImageManagerState {
 }
 
 const pageContentDelayRequestId = "adjustBackgroundImageSize";
+// Held for the whole old-style-image to background-canvas-element conversion, cleanup included
+// (see switchBackgroundToCanvasElement).
+const switchBackgroundDelayRequestId = "switchBackgroundToCanvasElement";
 
 function clearImageLoadListener(
     state: BackgroundImageManagerState,
@@ -203,20 +206,33 @@ function switchBackgroundToCanvasElement(
     );
     // Keep the new background hidden until its first size adjustment settles,
     // so users never see intermediate geometry.
-    void setupBackgroundImageAttributes(
-        state,
-        bloomCanvas,
-        getActiveElement,
-        alignControlFrameWithActiveElement,
-        bgCanvasElement,
-        true,
-    ).finally(() => {
-        bgCanvasElement.style.visibility = "";
-        SetupMetadataButton(bloomCanvas);
-        if (oldBgImage) {
-            oldBgImage.remove();
-        }
-    });
+    //
+    // The whole conversion, including the cleanup below, must count as one piece of in-flight
+    // work for requestPageContent. The size adjustment holds its own delay, but that delay is
+    // released (and a waiting save captures the page, synchronously) the moment the adjustment's
+    // promise resolves, which is BEFORE this .finally() runs. A save requested while the image
+    // was still loading would therefore capture the page with the old-style img still in the
+    // bloom-canvas alongside a new, still-hidden background canvas element: a page whose image
+    // can't be cropped or deleted (BL-16870). Holding an outer delay across the cleanup means
+    // such a save waits until the old img is gone and the new element is visible.
+    void wrapWithRequestPageContentDelay(
+        () =>
+            setupBackgroundImageAttributes(
+                state,
+                bloomCanvas,
+                getActiveElement,
+                alignControlFrameWithActiveElement,
+                bgCanvasElement,
+                true,
+            ).finally(() => {
+                bgCanvasElement.style.visibility = "";
+                SetupMetadataButton(bloomCanvas);
+                if (oldBgImage) {
+                    oldBgImage.remove();
+                }
+            }),
+        switchBackgroundDelayRequestId,
+    );
 }
 
 export function setupBackgroundImageAttributes(
