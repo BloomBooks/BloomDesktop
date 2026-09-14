@@ -2483,6 +2483,43 @@ namespace BloomTests.web.controllers
             );
         }
 
+        /// <summary>
+        /// The rounding that makes a fitted image's rectangle miss the file's bounds happens in
+        /// CSS pixels, and the rectangle is in image pixels, so the tolerance has to grow with
+        /// the ratio between them. A big photo shown small would otherwise report itself cropped
+        /// and be re-encoded at every launch, a few rows short of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_LargeImageShownSmallWithRounding_ReturnsNull()
+        {
+            var displayedWidth = _uncroppedSize.Width / 10.0;
+            // Four tenths of a CSS pixel short in height — four image pixels at this scale.
+            var displayedHeight = _uncroppedSize.Height / 10.0 - 0.4;
+            var element = MakeSlotImage(
+                Px("width", displayedWidth) + " left: 0px; top: 0px;",
+                Px("width", displayedWidth) + " " + Px("height", displayedHeight)
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "sub-pixel rounding in the layout is not a crop"
+            );
+        }
+
+        private static string Px(string name, double value)
+        {
+            return name
+                + ": "
+                + value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+                + "px;";
+        }
+
         [Test]
         public void TryMakeCroppedViewOfSlotImage_Placeholder_ReturnsNull()
         {
@@ -2562,7 +2599,7 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void RemoveCropFromSlotImage_RemovesOnlyTheCropProperties()
+        public void RefitSlotImageForNewPicture_RemovesOnlyTheCropProperties()
         {
             var element = MakeCroppedSlotImage();
             element.SetAttribute(
@@ -2576,7 +2613,7 @@ namespace BloomTests.web.controllers
                 "setup: the image starts out cropped"
             );
 
-            AiImageEditorApi.RemoveCropFromSlotImage(element);
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
 
             var style = element.GetAttribute("style");
             Assert.That(style, Does.Not.Contain("width"), "crop width should be gone");
@@ -2590,16 +2627,95 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
-        public void RemoveCropFromSlotImage_NothingElseInTheStyle_RemovesTheAttribute()
+        public void RefitSlotImageForNewPicture_NothingElseInTheStyle_RemovesTheAttribute()
         {
             var element = MakeCroppedSlotImage();
 
-            AiImageEditorApi.RemoveCropFromSlotImage(element);
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
 
             Assert.That(
                 element.HasAttribute("style"),
                 Is.False,
                 "an empty style attribute is worth removing rather than leaving behind"
+            );
+        }
+
+        /// <summary>
+        /// GetImageElementOfSlot hands back the CONTAINER when it wears the picture as a
+        /// background image. Its width/height/left/top are the container's own geometry, and a
+        /// background-image slot has no crop to drop in the first place.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_ElementIsAContainer_LeavesItAlone()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'>
+                      <div class='bloom-imageContainer' style=""width: 200px; height: 100px; background-image:url('man.png')""></div>
+                    </div>
+                  </body></html>"
+            );
+            var container =
+                dom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-imageContainer')]")
+                as SafeXmlElement;
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(container, () => new Size(100, 100));
+
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("width: 200px"),
+                "the container's own geometry must survive"
+            );
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("height: 100px"),
+                "the container's own geometry must survive"
+            );
+        }
+
+        /// <summary>
+        /// A background image marked to cover its canvas is made to cover BY the crop styles,
+        /// so clearing them and stopping there would letterbox a full-bleed picture. The
+        /// replacement has to be re-centered to fill the canvas element, which the cover branch
+        /// has already sized to the whole page canvas.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackground_FillsTheCanvasElement()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 200px; height: 100px;"
+            );
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            // A 100x200 replacement in a 200x100 box: covering needs scale 2 on the width,
+            // giving a 200x400 image centered vertically at top -150.
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 200));
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Contain("width: 200px"), "wide enough to fill the box");
+            Assert.That(style, Does.Contain("left: 0px"), "no overflow to share horizontally");
+            Assert.That(style, Does.Contain("top: -150px"), "the overflow is hidden evenly");
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackgroundButSizeUnreadable_JustClearsTheCrop()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => Size.Empty);
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "without the new image's size there is nothing to compute a fill from"
             );
         }
     }

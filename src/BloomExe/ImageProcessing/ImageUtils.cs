@@ -3465,13 +3465,23 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
+        /// Whether the img is in the structure cropping uses and carries the styles that
+        /// express one. Cheap — it reads the DOM only — so it is the right question to ask
+        /// before anything that opens the image file.
+        /// </summary>
+        internal static bool HasCropStyles(SafeXmlElement img)
+        {
+            return TryGetCropMetadata(img) != null;
+        }
+
+        /// <summary>
         /// Whether the img's crop styles actually hide part of the image file, rather than
         /// merely sizing it to its canvas element. Bloom writes width/left/top when it fits a
         /// background image to its canvas as well as when the user crops, so the presence of
         /// those styles says nothing on its own: a fitted image's rectangle covers the whole
         /// file. Callers that want to know whether the reader is seeing less than the file
         /// holds — and to avoid the cost of rendering a "crop" that would copy the image
-        /// unchanged — should ask this first.
+        /// unchanged — should ask this.
         /// </summary>
         /// <param name="imageSize">the file's real pixel size, from <see cref="TryGetImageSize"/></param>
         internal static bool CropHidesPartOfImage(SafeXmlElement img, Size imageSize)
@@ -3482,13 +3492,18 @@ namespace Bloom.ImageProcessing
             if (cropMetadata == null)
                 return false;
             var rectangle = ComputeCropRectangle(cropMetadata, imageSize);
-            // A pixel of slop at each edge: the styles are CSS pixels carrying rounding from
-            // however the image was fitted, so an untouched image's rectangle lands on the
-            // file's bounds only to within a pixel.
-            return rectangle.Left > 1
-                || rectangle.Top > 1
-                || rectangle.Right < imageSize.Width - 1
-                || rectangle.Bottom < imageSize.Height - 1;
+            // How much slop to allow at each edge. The rounding we are compensating for
+            // happened in CSS pixels, while the rectangle is in image pixels, and
+            // ComputeCropRectangle magnifies the one into the other by 1/scale — for a 3000px
+            // photo shown 300px wide, half a CSS pixel is five image pixels. A flat one-pixel
+            // tolerance would therefore call a merely-fitted image cropped, and we would
+            // re-encode it at every launch to hand back a few rows short of itself.
+            var scale = cropMetadata.ImgWidth / imageSize.Width;
+            var tolerance = scale > 0 ? Math.Max(1.0, 1.0 / scale) : 1.0;
+            return rectangle.Left > tolerance
+                || rectangle.Top > tolerance
+                || rectangle.Right < imageSize.Width - tolerance
+                || rectangle.Bottom < imageSize.Height - tolerance;
         }
 
         /// <summary>
