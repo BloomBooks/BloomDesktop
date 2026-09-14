@@ -36,7 +36,11 @@ import {
     trackEvent,
 } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
-import { getSuggestedImageTargetForFraction } from "../js/imageTargetResolution";
+import {
+    getDefaultDigitalScreen,
+    getSuggestedImageTargetForFraction,
+    IDigitalScreen,
+} from "../js/imageTargetResolution";
 import {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
@@ -102,11 +106,15 @@ function applyOnThePageBeingEdited(
 // page in the book, so we ask the page frame once. Nothing here may stop the editor opening:
 // the page frame is a separate bundle that may not be attached yet (or may be an older one
 // without this function), so a miss is reported to the console and otherwise ignored.
+//
+// `digitalScreen` is the book's BloomPUB image limit, which C# sends with the launch reply and
+// which decides how many pixels a slot on a screen-sized page is worth.
 function addSuggestedTargets(
     bookImages: Array<{
         fractionOfPage?: { width: number; height: number } | null;
         suggestedTarget?: { width: number; height: number; memo: string };
     }>,
+    digitalScreen: IDigitalScreen,
 ): void {
     try {
         const page =
@@ -117,6 +125,7 @@ function addSuggestedTargets(
             const suggestion = getSuggestedImageTargetForFraction(
                 bookImage.fractionOfPage,
                 page,
+                digitalScreen,
             );
             if (!suggestion) return;
             bookImage.suggestedTarget = {
@@ -155,16 +164,22 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 // recording it.
                 fractionOfPage?: { width: number; height: number } | null;
                 // What size this slot would like its image to be, worked out below from
-                // fractionOfPage and how big the pages of this book are. C# does no
-                // arithmetic here, because only a laid-out browser page knows the page size.
-                // (fractionOfPage itself rides along to the editor in the ...launchData
-                // spread below; the editor ignores fields it does not know.)
+                // fractionOfPage, how big the pages of this book are, and the book's
+                // digitalScreen limit. C# does no arithmetic here, because only a laid-out
+                // browser page knows the page size. (fractionOfPage itself, like
+                // digitalScreen, rides along to the editor in the ...launchData spread below;
+                // the editor ignores fields it does not know.)
                 suggestedTarget?: {
                     width: number;
                     height: number;
                     memo: string;
                 };
             }>;
+            // The screen a digital copy of this book is made for: the BloomPUB image limit
+            // from Book Settings, which is what the publish step shrinks images to. Used for
+            // the suggested targets above. Absent from an older Bloom's reply, in which case
+            // we assume the BloomPUB default (getDefaultDigitalScreen).
+            digitalScreen?: IDigitalScreen;
             references?: Array<{
                 id: string;
                 src: string;
@@ -221,7 +236,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             ? clickedId
             : undefined;
 
-        addSuggestedTargets(launchData.bookImages ?? []);
+        addSuggestedTargets(
+            launchData.bookImages ?? [],
+            launchData.digitalScreen ?? getDefaultDigitalScreen(),
+        );
 
         const initPayload = {
             ...launchData,

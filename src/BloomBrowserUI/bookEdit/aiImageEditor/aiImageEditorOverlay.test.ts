@@ -51,6 +51,9 @@ const openAgainstABookWithOneImage = (
             src: `http://localhost:8089/bloom/book/${kImageFile}`,
         },
     ],
+    // The book's BloomPUB image limit, as C# sends it with the launch reply. Left out
+    // altogether when not given, which is what an older C# half sends.
+    digitalScreen?: { longEdgePx: number; shortEdgePx: number },
 ) => {
     openAiImageEditor(target);
 
@@ -65,6 +68,7 @@ const openAgainstABookWithOneImage = (
             sessionToken: "token123",
             book: { id: "book1", title: "Test Book" },
             bookImages,
+            ...(digitalScreen ? { digitalScreen } : {}),
             history: [],
         },
     });
@@ -1035,10 +1039,14 @@ describe("aiImageEditorOverlay: the size each slot wants", () => {
         },
     ];
 
-    const getBookImagesSentToEditor = () => {
+    const getBookImagesSentToEditor = (digitalScreen?: {
+        longEdgePx: number;
+        shortEdgePx: number;
+    }) => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
             { pageId: kPageId, slotIndex: 0 },
             bookImagesAcrossTwoPages(),
+            digitalScreen,
         );
         const payload = getInitPayloadSentToEditor(
             iframe,
@@ -1077,6 +1085,51 @@ describe("aiImageEditorOverlay: the size each slot wants", () => {
             width: Math.ceil((300 * 0.5 * 559) / 96),
             height: Math.ceil((300 * 0.25 * 794) / 96),
             memo: expect.stringContaining("300 DPI"),
+        });
+    });
+
+    test("a slot on a screen-sized page is sized for this book's BloomPUB resolution setting", () => {
+        // 378 x 672 is a 16x9 device page, and this book's Resolution slider has been moved
+        // up from the 1280 x 720 default to 1920 x 1080.
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => ({
+                widthPx: 378,
+                heightPx: 672,
+                isDigital: true,
+            }),
+        });
+
+        const bookImages = getBookImagesSentToEditor({
+            longEdgePx: 1920,
+            shortEdgePx: 1080,
+        });
+
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: 908,
+            height: 1325,
+            memo: expect.stringContaining("1920 x 1080 screen"),
+        });
+    });
+
+    test("a book whose limit C# did not send falls back to the BloomPUB default", () => {
+        // An older C# half sends no digitalScreen. The editor must still open, with the
+        // numbers BloomPUB uses when nobody has moved the slider.
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => ({
+                widthPx: 378,
+                heightPx: 672,
+                isDigital: true,
+            }),
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: 605,
+            height: 884,
+            memo: expect.stringContaining("1280 x 720 screen"),
         });
     });
 

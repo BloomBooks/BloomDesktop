@@ -7,15 +7,20 @@ import { beforeEach, describe, expect, test } from "vitest";
 // Bloom's digital books are published at.
 
 import {
+    getDefaultDigitalScreen,
     getOpenPageMetrics,
     getSuggestedImageTargetForContainer,
     getSuggestedImageTargetForFraction,
     isDeviceLayoutPage,
-    kDigitalScreenLongEdgePx,
     kFractionOfPageAttribute,
+    parseBloomPubImageLimit,
     parseFractionOfPage,
     recordFractionOfPageOnImageSlots,
 } from "./imageTargetResolution";
+
+// The screen limit most of these tests work with: the BloomPUB default, which is what a book
+// whose Resolution slider nobody has moved has.
+const kDefaultScreen = getDefaultDigitalScreen();
 
 // jsdom lays nothing out, so offsetWidth/offsetHeight are always 0; the sizes a real browser
 // would measure have to be stated.
@@ -57,7 +62,10 @@ describe("getSuggestedImageTargetForContainer on a paper page", () => {
         expect(container.offsetWidth).toBe(469);
         expect(container.offsetHeight).toBe(546);
 
-        const suggestion = getSuggestedImageTargetForContainer(container);
+        const suggestion = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
 
         if (!suggestion)
             throw new Error("a sized container should be measurable");
@@ -70,7 +78,10 @@ describe("getSuggestedImageTargetForContainer on a paper page", () => {
     test("the memo says 300 DPI and how big the container is in millimeters", () => {
         const container = makePage("A5Portrait", 559, 794, 469, 546);
 
-        const suggestion = getSuggestedImageTargetForContainer(container);
+        const suggestion = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
 
         if (!suggestion)
             throw new Error("a sized container should be measurable");
@@ -91,12 +102,15 @@ describe("getSuggestedImageTargetForContainer on a device page", () => {
             ),
         ).toBe(true);
 
-        const suggestion = getSuggestedImageTargetForContainer(container);
+        const suggestion = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
 
         if (!suggestion)
             throw new Error("a sized container should be measurable");
         expect(suggestion.isDigital).toBe(true);
-        const scale = kDigitalScreenLongEdgePx / 672;
+        const scale = kDefaultScreen.longEdgePx / 672;
         expect(suggestion.width).toBe(Math.ceil(378 * scale));
         expect(suggestion.height).toBe(Math.ceil(300 * scale));
     });
@@ -113,7 +127,10 @@ describe("getSuggestedImageTargetForContainer on a device page", () => {
             ),
         ).toBe(true);
 
-        const suggestion = getSuggestedImageTargetForContainer(container);
+        const suggestion = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
 
         if (!suggestion)
             throw new Error("a sized container should be measurable");
@@ -123,7 +140,7 @@ describe("getSuggestedImageTargetForContainer on a device page", () => {
         // Neither edge exceeds what the publish step keeps.
         expect(
             Math.max(suggestion.width, suggestion.height),
-        ).toBeLessThanOrEqual(kDigitalScreenLongEdgePx);
+        ).toBeLessThanOrEqual(kDefaultScreen.longEdgePx);
         expect(
             Math.min(suggestion.width, suggestion.height),
         ).toBeLessThanOrEqual(720);
@@ -132,7 +149,10 @@ describe("getSuggestedImageTargetForContainer on a device page", () => {
     test("the memo talks about a screen rather than about printing", () => {
         const container = makePage("Device16x9Portrait", 378, 672, 378, 300);
 
-        const suggestion = getSuggestedImageTargetForContainer(container);
+        const suggestion = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
 
         if (!suggestion)
             throw new Error("a sized container should be measurable");
@@ -148,13 +168,17 @@ describe("getSuggestedImageTargetForContainer when the size is unknown", () => {
         // the container has a size, so a null here is about the size and nothing else.
         expect(container.offsetWidth).toBe(0);
 
-        expect(getSuggestedImageTargetForContainer(container)).toBeNull();
+        expect(
+            getSuggestedImageTargetForContainer(container, kDefaultScreen),
+        ).toBeNull();
     });
 
     test("a container with width but no height gets no suggestion", () => {
         const container = makePage("A5Portrait", 559, 794, 469, 0);
 
-        expect(getSuggestedImageTargetForContainer(container)).toBeNull();
+        expect(
+            getSuggestedImageTargetForContainer(container, kDefaultScreen),
+        ).toBeNull();
     });
 
     test("a container outside any page is treated as a whole paper page, not measured against some other page", () => {
@@ -169,7 +193,10 @@ describe("getSuggestedImageTargetForContainer when the size is unknown", () => {
         expect(document.querySelector(".bloom-page")).not.toBeNull();
         expect(loose.closest(".bloom-page")).toBeNull();
 
-        const suggestion = getSuggestedImageTargetForContainer(loose);
+        const suggestion = getSuggestedImageTargetForContainer(
+            loose,
+            kDefaultScreen,
+        );
 
         expect(suggestion).not.toBeNull();
         expect(suggestion!.isDigital).toBe(false);
@@ -194,6 +221,7 @@ describe("getSuggestedImageTargetForFraction", () => {
         const suggestion = getSuggestedImageTargetForFraction(
             { width: 0.42, height: 0.31 },
             { widthPx: 559, heightPx: 794, isDigital: false },
+            kDefaultScreen,
         );
 
         if (!suggestion)
@@ -208,12 +236,13 @@ describe("getSuggestedImageTargetForFraction", () => {
         const suggestion = getSuggestedImageTargetForFraction(
             { width: 1, height: 0.45 },
             { widthPx: 378, heightPx: 672, isDigital: true },
+            kDefaultScreen,
         );
 
         if (!suggestion)
             throw new Error("a real fraction should be answerable");
         expect(suggestion.isDigital).toBe(true);
-        const scale = kDigitalScreenLongEdgePx / 672;
+        const scale = kDefaultScreen.longEdgePx / 672;
         expect(suggestion.width).toBe(Math.ceil(378 * scale));
         expect(suggestion.height).toBe(Math.ceil(0.45 * 672 * scale));
         expect(suggestion.memo).toContain("1280 x 720 screen");
@@ -225,10 +254,14 @@ describe("getSuggestedImageTargetForFraction", () => {
         // path goes through this same function.
         const container = makePage("A5Portrait", 559, 794, 469, 546);
 
-        const fromElement = getSuggestedImageTargetForContainer(container);
+        const fromElement = getSuggestedImageTargetForContainer(
+            container,
+            kDefaultScreen,
+        );
         const fromFraction = getSuggestedImageTargetForFraction(
             { width: 469 / 559, height: 546 / 794 },
             { widthPx: 559, heightPx: 794, isDigital: false },
+            kDefaultScreen,
         );
 
         expect(fromElement).toEqual(fromFraction);
@@ -242,6 +275,7 @@ describe("getSuggestedImageTargetForFraction", () => {
             getSuggestedImageTargetForFraction(
                 { width: 0.42, height: 0.31 },
                 { widthPx: 0, heightPx: 0, isDigital: false },
+                kDefaultScreen,
             ),
         ).toBeNull();
     });
@@ -440,5 +474,109 @@ describe("parseFractionOfPage", () => {
 
     test("a missing attribute is not a fraction", () => {
         expect(parseFractionOfPage(null)).toBeNull();
+    });
+});
+
+describe("getSuggestedImageTargetForFraction with the book's own screen limit", () => {
+    // What a user gets by dragging Book Settings > BloomPUB > Resolution up from its default.
+    const kLargerScreen = { longEdgePx: 1920, shortEdgePx: 1080 };
+
+    test("a slot on a 16x9 page is scaled to this book's screen, not to the default one", () => {
+        const slot = { width: 1, height: 0.45 };
+        const page = { widthPx: 378, heightPx: 672, isDigital: true };
+
+        const suggestion = getSuggestedImageTargetForFraction(
+            slot,
+            page,
+            kLargerScreen,
+        );
+
+        if (!suggestion)
+            throw new Error("a real fraction should be answerable");
+        expect(suggestion.width).toBe(1080);
+        expect(suggestion.height).toBe(864);
+        expect(suggestion.memo).toContain("1920 x 1080 screen");
+        // Sanity check: the same slot asks for fewer dots at the default limit, so the
+        // numbers above really did come from the setting we passed in.
+        const atTheDefault = getSuggestedImageTargetForFraction(
+            slot,
+            page,
+            kDefaultScreen,
+        );
+        expect(atTheDefault!.width).toBe(720);
+    });
+
+    test("a page that is not 16x9 is fitted to this book's short edge too", () => {
+        // A 2x3 portrait page, 500 x 750. Taking its long edge to 1920 would make it 1280
+        // across, wider than the 1080 the publish step keeps, so the short edge binds.
+        const suggestion = getSuggestedImageTargetForFraction(
+            { width: 1, height: 1 },
+            { widthPx: 500, heightPx: 750, isDigital: true },
+            kLargerScreen,
+        );
+
+        if (!suggestion)
+            throw new Error("a real fraction should be answerable");
+        expect(suggestion.width).toBe(1080);
+        expect(suggestion.height).toBe(1620);
+        expect(suggestion.height).toBeLessThanOrEqual(kLargerScreen.longEdgePx);
+        expect(suggestion.width).toBeLessThanOrEqual(kLargerScreen.shortEdgePx);
+    });
+
+    test("a paper page gets the same answer whatever the screen limit is", () => {
+        const paperPage = { widthPx: 559, heightPx: 794, isDigital: false };
+
+        expect(
+            getSuggestedImageTargetForFraction(
+                { width: 0.42, height: 0.31 },
+                paperPage,
+                kLargerScreen,
+            ),
+        ).toEqual(
+            getSuggestedImageTargetForFraction(
+                { width: 0.42, height: 0.31 },
+                paperPage,
+                kDefaultScreen,
+            ),
+        );
+    });
+});
+
+describe("parseBloomPubImageLimit", () => {
+    test("reads the book's BloomPUB resolution setting", () => {
+        expect(
+            parseBloomPubImageLimit({
+                bloomPUB: {
+                    imageSettings: { maxWidth: 1920, maxHeight: 1080 },
+                },
+            }),
+        ).toEqual({ longEdgePx: 1920, shortEdgePx: 1080 });
+    });
+
+    test.each([
+        ["nothing at all", undefined],
+        ["settings with no BloomPUB section", {}],
+        ["a BloomPUB section with no image settings", { bloomPUB: {} }],
+        [
+            "image settings with only one of the two numbers",
+            { bloomPUB: { imageSettings: { maxWidth: 1920 } } },
+        ],
+        [
+            "a zero",
+            { bloomPUB: { imageSettings: { maxWidth: 0, maxHeight: 720 } } },
+        ],
+        [
+            "a negative number",
+            {
+                bloomPUB: {
+                    imageSettings: { maxWidth: 1280, maxHeight: -720 },
+                },
+            },
+        ],
+    ])("falls back to the BloomPUB default given %s", (_name, settings) => {
+        // Sanity check: the fallback is a real answer, not an empty object.
+        expect(kDefaultScreen).toEqual({ longEdgePx: 1280, shortEdgePx: 720 });
+
+        expect(parseBloomPubImageLimit(settings)).toEqual(kDefaultScreen);
     });
 });

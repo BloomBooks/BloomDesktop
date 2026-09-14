@@ -506,6 +506,21 @@ namespace Bloom.web.controllers
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
                     bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
+                    // How big a screen a digital copy of this book is made for: the BloomPUB
+                    // image limit the user set in Book Settings, which is the size the publish
+                    // step shrinks every image to. The front end turns it into a pixel count
+                    // for each slot, because that needs the page size, and only a page laid out
+                    // in a browser knows how big a page is. As in BloomPubMaker, MaxWidth is
+                    // the long edge and MaxHeight the short one whichever way round a page is.
+                    digitalScreen = new
+                    {
+                        longEdgePx = book.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth,
+                        shortEdgePx = book.BookInfo
+                            .PublishSettings
+                            .BloomPub
+                            .ImageSettings
+                            .MaxHeight,
+                    },
                     // The history folder is the source of truth; enumerate it so images
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),

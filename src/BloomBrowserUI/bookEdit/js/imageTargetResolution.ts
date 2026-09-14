@@ -30,12 +30,59 @@ export const kBrowserDpi = 96;
 // What we tell people to aim for in a printed book.
 export const kPrintDpi = 300;
 
-// The screen a digital book is assumed to be shown on. These mirror the BloomPUB default
-// image limits ImagePublishSettings.MaxWidth/MaxHeight in src/BloomExe/Book/PublishSettings.cs,
-// which is what Bloom shrinks digital-book images to by default, so asking for more pixels
-// than this would only produce data that the publish step throws away.
-export const kDigitalScreenLongEdgePx = 1280;
-export const kDigitalScreenShortEdgePx = 720;
+// The screen a digital book is assumed to be shown on, which is the book's own BloomPUB image
+// limit (Book Settings > BloomPUB > Resolution). Bloom shrinks every image to this when it
+// publishes a digital book, so asking for more pixels than this would only produce data that
+// the publish step throws away, and asking for fewer would waste a setting the user raised on
+// purpose.
+//
+// As in BloomPubMaker.cs, the long edge is the width setting and the short edge the height
+// setting, whichever way round the page is.
+export interface IDigitalScreen {
+    longEdgePx: number;
+    shortEdgePx: number;
+}
+
+// What to use when a book's own setting cannot be read (an old Bloom that does not send it, or
+// a failed request). These mirror the defaults of ImagePublishSettings.MaxWidth/MaxHeight in
+// src/BloomExe/Book/PublishSettings.cs, so a book nobody has touched the slider on gets the
+// same answer either way.
+const kDefaultDigitalScreenLongEdgePx = 1280;
+const kDefaultDigitalScreenShortEdgePx = 720;
+
+// The screen limit to assume when the book's own one is unavailable; see the constants above.
+export function getDefaultDigitalScreen(): IDigitalScreen {
+    return {
+        longEdgePx: kDefaultDigitalScreenLongEdgePx,
+        shortEdgePx: kDefaultDigitalScreenShortEdgePx,
+    };
+}
+
+// This book's BloomPUB image limit, read out of the `publish` object the book/settings API
+// replies with (PublishSettings in C#, so the names here are its JsonProperty ones). Falls back
+// to getDefaultDigitalScreen when either number is missing or is not a positive number, which
+// is what an older book's settings file, or a book saved before the slider existed, gives us.
+export function parseBloomPubImageLimit(
+    publishSettings:
+        | {
+              bloomPUB?: {
+                  imageSettings?: {
+                      maxWidth?: number;
+                      maxHeight?: number;
+                  } | null;
+              } | null;
+          }
+        | null
+        | undefined,
+): IDigitalScreen {
+    const imageSettings = publishSettings?.bloomPUB?.imageSettings;
+    const longEdgePx = imageSettings?.maxWidth;
+    const shortEdgePx = imageSettings?.maxHeight;
+    if (!isUsableLength(longEdgePx) || !isUsableLength(shortEdgePx)) {
+        return getDefaultDigitalScreen();
+    }
+    return { longEdgePx, shortEdgePx };
+}
 
 // How much of its page an image slot takes up, as two numbers between 0 and 1 separated by a
 // comma, e.g. "0.42,0.31". Bloom writes this onto every image container when a page is saved,
@@ -63,9 +110,12 @@ export function isDeviceLayoutPage(page: Element): boolean {
 // that page is.
 //
 // `isDigital` says which of the two ways the answer was reached: on a screen-sized page the
-// target is the slot's share of a 1280 x 720 screen, and on a paper page it is whatever fills
-// the slot at 300 DPI. `memo` explains the number in plain words for a user; the AI image
-// editor shows it verbatim under its size selector.
+// target is the slot's share of `digitalScreen`, this book's BloomPUB image limit, and on a
+// paper page it is whatever fills the slot at 300 DPI. `memo` explains the number in plain
+// words for a user; the AI image editor shows it verbatim under its size selector.
+//
+// `digitalScreen` is asked for even on a paper page, where it is unused, so that a caller
+// cannot forget it on the one path where it changes the answer.
 //
 // Returns null when the inputs do not describe a real space, which happens when a page was
 // never laid out (or, in tests, in jsdom). Callers treat that as "we don't know" rather than as
@@ -73,6 +123,7 @@ export function isDeviceLayoutPage(page: Element): boolean {
 export function getSuggestedImageTargetForFraction(
     fraction: { width: number; height: number },
     page: { widthPx: number; heightPx: number; isDigital: boolean },
+    digitalScreen: IDigitalScreen,
 ): {
     width: number;
     height: number;
@@ -93,13 +144,14 @@ export function getSuggestedImageTargetForFraction(
         // Fit the whole page inside the screen on BOTH edges, then take the slot's share of
         // that. Scaling only the long edge would overshoot on the two ebook layouts that are
         // not 16x9: a 2x3 page taken to 1280 on its long edge is 853 across, and the publish
-        // step, which caps the short edge at 720 as well, would throw those extra pixels away
-        // (BloomPubMaker.cs uses MaxWidth as the long side and MaxHeight as the short one).
+        // step, which caps the short edge at 720 as well, would throw those extra pixels
+        // away. (BloomPubMaker.cs uses MaxWidth as the long side and MaxHeight as the short
+        // one, which is why the two edges are named rather than numbered here.)
         const pageLongEdgePx = Math.max(page.widthPx, page.heightPx);
         const pageShortEdgePx = Math.min(page.widthPx, page.heightPx);
         const scale = Math.min(
-            kDigitalScreenLongEdgePx / pageLongEdgePx,
-            kDigitalScreenShortEdgePx / pageShortEdgePx,
+            digitalScreen.longEdgePx / pageLongEdgePx,
+            digitalScreen.shortEdgePx / pageShortEdgePx,
         );
         const width = Math.ceil(containerWidthPx * scale);
         const height = Math.ceil(containerHeightPx * scale);
@@ -109,8 +161,8 @@ export function getSuggestedImageTargetForFraction(
             isDigital: true,
             memo:
                 `${width} x ${height} so that the image fills its share of a ` +
-                `${kDigitalScreenLongEdgePx} x ${kDigitalScreenShortEdgePx} screen, ` +
-                `the size Bloom's digital books use by default`,
+                `${digitalScreen.longEdgePx} x ${digitalScreen.shortEdgePx} screen, ` +
+                `this book's BloomPUB image size setting`,
         };
     }
 
@@ -135,7 +187,10 @@ export function getSuggestedImageTargetForFraction(
 // Measures with offsetWidth/offsetHeight rather than getBoundingClientRect because Bloom scales
 // the whole page frame with a CSS transform for zoom (EditingModel.cs), and a bounding rect
 // would report the zoomed size instead of the layout size.
-export function getSuggestedImageTargetForContainer(container: HTMLElement): {
+export function getSuggestedImageTargetForContainer(
+    container: HTMLElement,
+    digitalScreen: IDigitalScreen,
+): {
     width: number;
     height: number;
     isDigital: boolean;
@@ -167,6 +222,7 @@ export function getSuggestedImageTargetForContainer(container: HTMLElement): {
                 heightPx: containerHeightPx,
                 isDigital: false,
             },
+            digitalScreen,
         );
     }
 
@@ -179,6 +235,7 @@ export function getSuggestedImageTargetForContainer(container: HTMLElement): {
             height: containerHeightPx / page.heightPx,
         },
         page,
+        digitalScreen,
     );
 }
 
@@ -297,8 +354,8 @@ export function parseFractionOfPage(
 }
 
 // A length we can do arithmetic with: a real, positive number of pixels (or share of a page).
-function isUsableLength(value: number): boolean {
-    return isFinite(value) && value > 0;
+function isUsableLength(value: number | null | undefined): value is number {
+    return typeof value === "number" && isFinite(value) && value > 0;
 }
 
 // Multiplies a fraction of a page back out into pixels, dropping the last few digits of the
