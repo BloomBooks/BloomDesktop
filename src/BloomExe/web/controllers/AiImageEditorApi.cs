@@ -496,14 +496,20 @@ namespace Bloom.web.controllers
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
-                    // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = OpenRouterCredentialStore.GetApiKey(),
+                    // obtained key back via aiImageEditor/saveCredentials. A Playground
+                    // session gets no key at all: nothing in it may reach OpenRouter, and
+                    // the editor's contract for playgroundMode is that no key is sent.
+                    apiKey = book.IsPlayground ? null : OpenRouterCredentialStore.GetApiKey(),
                     // In a Playground template book all features are unlocked for
                     // "try it out", so the AI image editor opens — but it's a shared demo
-                    // context, so it must not let the user set/save an OpenRouter API key.
-                    // The AI image editor disables its credential UI when this is true;
+                    // context with no subscription behind it. The editor calls this
+                    // "look-around" mode: it disables every tool whose run would reach
+                    // OpenRouter, and the OpenRouter credential UI with them.
                     // HandleSaveCredentials also refuses to persist.
-                    demoOnly = book.IsPlayground,
+                    // The name must stay `playgroundMode`: that is the field the editor
+                    // reads (it was called `demoOnly` before bloom-ai-image-tools 0.1.11),
+                    // and a name it doesn't know silently leaves Playground unrestricted.
+                    playgroundMode = book.IsPlayground,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
                     // "Local Dummy (No AI)" model, for cost-free testing). The AI image
                     // editor hides those tools unless the host opts in, so ordinary
