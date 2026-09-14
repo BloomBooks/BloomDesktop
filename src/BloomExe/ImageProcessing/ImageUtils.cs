@@ -3465,6 +3465,33 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
+        /// Whether the img's crop styles actually hide part of the image file, rather than
+        /// merely sizing it to its canvas element. Bloom writes width/left/top when it fits a
+        /// background image to its canvas as well as when the user crops, so the presence of
+        /// those styles says nothing on its own: a fitted image's rectangle covers the whole
+        /// file. Callers that want to know whether the reader is seeing less than the file
+        /// holds — and to avoid the cost of rendering a "crop" that would copy the image
+        /// unchanged — should ask this first.
+        /// </summary>
+        /// <param name="imageSize">the file's real pixel size, from <see cref="TryGetImageSize"/></param>
+        internal static bool CropHidesPartOfImage(SafeXmlElement img, Size imageSize)
+        {
+            if (imageSize.Width <= 0 || imageSize.Height <= 0)
+                return false;
+            var cropMetadata = TryGetCropMetadata(img);
+            if (cropMetadata == null)
+                return false;
+            var rectangle = ComputeCropRectangle(cropMetadata, imageSize);
+            // A pixel of slop at each edge: the styles are CSS pixels carrying rounding from
+            // however the image was fitted, so an untouched image's rectangle lands on the
+            // file's bounds only to within a pixel.
+            return rectangle.Left > 1
+                || rectangle.Top > 1
+                || rectangle.Right < imageSize.Width - 1
+                || rectangle.Bottom < imageSize.Height - 1;
+        }
+
+        /// <summary>
         /// Holds the cropping metadata extracted from an img element and its containing canvas element.
         /// </summary>
         private class CropMetadata

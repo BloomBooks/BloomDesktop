@@ -203,6 +203,16 @@ namespace Bloom.web.controllers
             );
         }
 
+        /// <summary>The book subfolder that holds everything this feature keeps on disk.</summary>
+        internal const string kWorkingFolderName = ".ai-image-editor";
+
+        /// <summary>
+        /// The subfolder of <see cref="kWorkingFolderName"/> holding the cropped renderings we
+        /// hand the AI image editor in place of a cropped image's file. See
+        /// <see cref="TryMakeCroppedViewOfSlotImage"/>.
+        /// </summary>
+        internal const string kCroppedViewFolderName = "cropped";
+
         /// <summary>
         /// The selected book's ".ai-image-editor" working folder (state, history images,
         /// sidecars), or null when no book is selected.
@@ -212,7 +222,7 @@ namespace Bloom.web.controllers
             var folderPath = _bookSelection.CurrentSelection?.FolderPath;
             return string.IsNullOrEmpty(folderPath)
                 ? null
-                : Path.Combine(folderPath, ".ai-image-editor");
+                : Path.Combine(folderPath, kWorkingFolderName);
         }
 
         private string GetAiImageEditorUrl()
@@ -475,6 +485,10 @@ namespace Bloom.web.controllers
             // H3: ensure .ai-image-editor and history subfolder exist.
             var aiImageEditorFolder = GetAiImageEditorFolderPath();
             Directory.CreateDirectory(Path.Combine(aiImageEditorFolder, "history"));
+            // Unlike history, which is the source of truth and outlives every session, a
+            // cropped rendering is good only for the launch that made it: the user can re-crop
+            // the slot the moment the overlay closes. Start each launch with an empty folder.
+            EmptyTheCroppedViewFolder(aiImageEditorFolder);
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
@@ -1291,10 +1305,20 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
+                    // Offer the picture as the PAGE SHOWS it. A cropped image keeps its whole
+                    // frame in the book folder and wears the crop as styles, so the file holds
+                    // more than the reader ever sees; handing that over let the AI compose a
+                    // result around parts of the image the book does not show (BL-16868). Null
+                    // means nothing is hidden — nearly always — and then the file itself is
+                    // what the page shows, as before.
+                    var servedRelativePath =
+                        TryMakeCroppedViewOfSlotImage(book.FolderPath, element, pageId, ordinal)
+                        ?? relativePath;
+
                     slotsOnThisPage.Add(
                         (
                             id: pageId + ":" + ordinal,
-                            src: (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
+                            src: (folderAsUrlPrefix + "/" + servedRelativePath).ToLocalhost(),
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
@@ -1335,6 +1359,136 @@ namespace Bloom.web.controllers
             }
 
             return images;
+        }
+
+        /// <summary>
+        /// Empties (creating if need be) the folder holding the cropped renderings we hand to
+        /// the AI image editor. Never throws: a rendering we fail to delete is harmless,
+        /// because the names are per-slot and this launch's rendering simply overwrites it,
+        /// and because a slot is only ever offered a rendering we made during this launch.
+        /// </summary>
+        private static void EmptyTheCroppedViewFolder(string aiImageEditorFolder)
+        {
+            var folder = Path.Combine(aiImageEditorFolder, kCroppedViewFolderName);
+            try
+            {
+                if (Directory.Exists(folder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(folder);
+                Directory.CreateDirectory(folder);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError("AiImageEditorApi: could not empty " + folder, ex);
+            }
+        }
+
+        /// <summary>
+        /// Renders the visible part of a cropped slot image to its own file under
+        /// .ai-image-editor/cropped/, and returns the book-folder-relative path to it. Returns
+        /// null — the ordinary case — when the slot's image is not cropped, and also whenever
+        /// the rendering cannot be made, so the caller falls back to offering the image file
+        /// itself.
+        /// </summary>
+        /// <remarks>
+        /// Cropping in Bloom is presentational: the image file keeps its whole frame and the
+        /// visible rectangle is expressed as width/left/top styles on an img inside a canvas
+        /// element that fixes the visible box (see ImageUtils.MakeCroppedImage, which reads
+        /// exactly that structure and is what publishing uses to bake a crop into a file).
+        ///
+        /// The other half of this is at commit time: a replacement stands for the whole of what
+        /// the slot should show, so the crop must not survive it. The current page gets that
+        /// from updateCanvasElementForChangedImage in CanvasElementManager.ts; off-page slots
+        /// are handled by <see cref="RemoveCropFromSlotImage"/> in TryApplyReplacement.
+        /// </remarks>
+        internal static string TryMakeCroppedViewOfSlotImage(
+            string bookFolderPath,
+            SafeXmlElement element,
+            string pageId,
+            int ordinal
+        )
+        {
+            // Only an img can be cropped; a container wearing its picture as a background image
+            // has no crop styles to read.
+            if (element.Name != "img")
+                return null;
+            // An empty slot's placeholder is never cropped, only hidden (BL-15201), so don't
+            // put GraphicsMagick to work deciding that.
+            var src = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
+            if (string.IsNullOrEmpty(src) || ImageUtils.IsPlaceholderImageFilename(src))
+                return null;
+
+            // Ask whether the reader is actually seeing less than the file holds before doing
+            // any real work. Bloom writes width/left/top when it merely FITS a background image
+            // to its canvas as well as when the user crops, so without this nearly every
+            // background image in the book would be re-encoded at launch to produce a copy of
+            // itself. Reading the size costs one cheap GraphicsMagick "identify"; rendering
+            // costs a full decode and encode.
+            // A book's image src can still be percent-encoded, so decode our way to the real
+            // file the way the rest of Bloom does (BL-3901) instead of a plain Path.Combine.
+            var sourcePath = UrlPathString.GetFullyDecodedPath(bookFolderPath, ref src);
+            if (!RobustFile.Exists(sourcePath))
+                return null;
+            if (!ImageUtils.TryGetImageSize(sourcePath, out var imageSize))
+                return null;
+            if (!ImageUtils.CropHidesPartOfImage(element, imageSize))
+                return null;
+
+            var croppedViewFolder = Path.Combine(
+                bookFolderPath,
+                kWorkingFolderName,
+                kCroppedViewFolderName
+            );
+            try
+            {
+                Directory.CreateDirectory(croppedViewFolder);
+                // Returns null both for an uncropped image and for any failure along the way,
+                // which is the same answer as far as we are concerned.
+                var renderedPath = ImageUtils.MakeCroppedImage(
+                    element,
+                    bookFolderPath,
+                    croppedViewFolder
+                );
+                if (renderedPath == null)
+                    return null;
+
+                // Name it for the slot rather than keeping the guid MakeCroppedImage produces:
+                // the folder holds at most one rendering per slot, and a name that says which
+                // slot it came from is worth having when something looks wrong. The page id is
+                // already known to match SafeId, so it is safe in a file name.
+                var fileName = pageId + "-" + ordinal + Path.GetExtension(renderedPath);
+                var finalPath = Path.Combine(croppedViewFolder, fileName);
+                RobustFile.Move(renderedPath, finalPath, true);
+                return kWorkingFolderName + "/" + kCroppedViewFolderName + "/" + fileName;
+            }
+            catch (Exception ex)
+            {
+                // Offering the uncropped file is worse than offering the cropped view, but it
+                // is a great deal better than failing the launch.
+                Logger.WriteError(
+                    "AiImageEditorApi: could not render the cropped view of " + src,
+                    ex
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Drops the crop from a slot's image element, leaving any other styling alone.
+        /// </summary>
+        /// <remarks>
+        /// A replacement is the whole of what the slot should now show — the AI image editor was
+        /// handed the picture as the page shows it, cropped view and all (see
+        /// <see cref="TryMakeCroppedViewOfSlotImage"/>) — so the crop must not outlive the image
+        /// it was computed for. Left in place it would crop the replacement a second time, by a
+        /// rectangle that means nothing for it (BL-16868).
+        ///
+        /// These are the four properties the front end clears for the currently-open page in
+        /// updateCanvasElementForChangedImage (CanvasElementManager.ts); an off-page slot has no
+        /// live browser to do it. Internal for testing.
+        /// </remarks>
+        internal static void RemoveCropFromSlotImage(SafeXmlElement element)
+        {
+            HtmlDom.RemoveStyleProperties(element, "width", "height", "left", "top");
         }
 
         /// <summary>
@@ -1726,6 +1880,7 @@ namespace Bloom.web.controllers
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
             );
+            RemoveCropFromSlotImage(element);
             // Now that the element points at the new file, Bloom's own updater can re-derive
             // the mirrored attributes for us.
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
