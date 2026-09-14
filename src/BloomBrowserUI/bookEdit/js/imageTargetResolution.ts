@@ -78,8 +78,17 @@ export function getSuggestedImageTargetForFraction(
     if (containerWidthPx <= 0 || containerHeightPx <= 0) return null;
 
     if (page.isDigital) {
+        // Fit the whole page inside the screen on BOTH edges, then take the slot's share of
+        // that. Scaling only the long edge would overshoot on the two ebook layouts that are
+        // not 16x9: a 2x3 page taken to 1280 on its long edge is 853 across, and the publish
+        // step, which caps the short edge at 720 as well, would throw those extra pixels away
+        // (BloomPubMaker.cs uses MaxWidth as the long side and MaxHeight as the short one).
         const pageLongEdgePx = Math.max(page.widthPx, page.heightPx);
-        const scale = kDigitalScreenLongEdgePx / pageLongEdgePx;
+        const pageShortEdgePx = Math.min(page.widthPx, page.heightPx);
+        const scale = Math.min(
+            kDigitalScreenLongEdgePx / pageLongEdgePx,
+            kDigitalScreenShortEdgePx / pageShortEdgePx,
+        );
         const width = Math.ceil(containerWidthPx * scale);
         const height = Math.ceil(containerHeightPx * scale);
         return {

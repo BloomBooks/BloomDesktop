@@ -101,6 +101,34 @@ describe("getSuggestedImageTargetForContainer on a device page", () => {
         expect(suggestion.height).toBe(Math.ceil(300 * scale));
     });
 
+    test("a page that is not 16x9 is fitted to the screen's short edge too", () => {
+        // A 2x3 portrait page: 500 across, 750 tall. Taking its long edge to 1280 would make
+        // it 853 across, and the publish step caps the short edge at 720, so those pixels
+        // would be thrown away. Fitting both edges gives 720 x 1080 for a full-page slot.
+        const container = makePage("Ebook2x3Portrait", 500, 750, 500, 750);
+        // Sanity check: this test is only meaningful if the layout counts as a device one.
+        expect(
+            isDeviceLayoutPage(
+                document.querySelector(".bloom-page") as HTMLElement,
+            ),
+        ).toBe(true);
+
+        const suggestion = getSuggestedImageTargetForContainer(container);
+
+        if (!suggestion)
+            throw new Error("a sized container should be measurable");
+        expect(suggestion.isDigital).toBe(true);
+        expect(suggestion.width).toBe(720);
+        expect(suggestion.height).toBe(1080);
+        // Neither edge exceeds what the publish step keeps.
+        expect(
+            Math.max(suggestion.width, suggestion.height),
+        ).toBeLessThanOrEqual(kDigitalScreenLongEdgePx);
+        expect(
+            Math.min(suggestion.width, suggestion.height),
+        ).toBeLessThanOrEqual(720);
+    });
+
     test("the memo talks about a screen rather than about printing", () => {
         const container = makePage("Device16x9Portrait", 378, 672, 378, 300);
 
