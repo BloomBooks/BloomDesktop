@@ -2350,4 +2350,257 @@ namespace BloomTests.web.controllers
             }
         }
     }
+
+    /// <summary>
+    /// The cropped view Bloom hands the AI image editor in place of a cropped image's file,
+    /// and the matching removal of the crop when a replacement lands on a slot the user does
+    /// not have open (BL-16868).
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorCroppingTests
+    {
+        private const string kTestImagesFolder = "src/BloomTests/ImageProcessing/images";
+
+        private TemporaryFolder _bookFolder;
+        private Size _uncroppedSize;
+
+        [SetUp]
+        public void Setup()
+        {
+            _bookFolder = new TemporaryFolder("AiImageEditorCroppingTests");
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                kTestImagesFolder,
+                "man.png"
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, "man.png"));
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out _uncroppedSize
+                ),
+                Is.True,
+                "setup: should be able to read the test image's size"
+            );
+            // The crops below take a 50x40 rectangle at (10,20), so the test image has to be
+            // bigger than that for "smaller than the original" to mean anything.
+            Assert.That(
+                _uncroppedSize.Width,
+                Is.GreaterThan(60),
+                "setup: test image is wide enough to crop"
+            );
+            Assert.That(
+                _uncroppedSize.Height,
+                Is.GreaterThan(60),
+                "setup: test image is tall enough to crop"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _bookFolder.Dispose();
+        }
+
+        /// <summary>
+        /// The markup a cropped image actually has: an img carrying width/left/top, inside an
+        /// image container, inside a canvas element whose width/height fix the visible box.
+        /// Passing no imgStyle gives an ordinary, uncropped image.
+        /// </summary>
+        private static SafeXmlElement MakeSlotImage(string imgStyle, string canvasElementStyle)
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='bloom-canvas'>
+                      <div class='bloom-canvas-element' style='"
+                    + canvasElementStyle
+                    + @"'>
+                        <div class='bloom-imageContainer'><img src='man.png' style='"
+                    + imgStyle
+                    + @"'/></div>
+                      </div>
+                    </div></div>
+                  </body></html>"
+            );
+            return dom.RawDom.SelectSingleNode("//img") as SafeXmlElement;
+        }
+
+        // An img cropped to a 50x40 rectangle at (10,20) of the full image: with the img's
+        // width left at the image's natural width the scale is 1, so the canvas element's
+        // width/height are the crop size and the img's negative left/top are its origin.
+        private SafeXmlElement MakeCroppedSlotImage()
+        {
+            return MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageIsNotCropped_ReturnsNull()
+        {
+            var element = MakeSlotImage("", "width: 50px; height: 40px;");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an uncropped image should be offered as its own file"
+            );
+        }
+
+        /// <summary>
+        /// Bloom writes width/left/top when it merely fits a background image to its canvas,
+        /// so those styles alone must not send us off re-encoding an image to produce a copy
+        /// of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageOnlyFittedToItsCanvas_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: 0px; top: 0px;",
+                $"width: {_uncroppedSize.Width}px; height: {_uncroppedSize.Height}px;"
+            );
+            // Sanity: this is the markup that would otherwise look cropped.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("width"),
+                "setup: the image carries the styles cropping uses"
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "nothing is hidden, so there is nothing to render"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_Placeholder_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+            element.SetAttribute("src", "placeHolder.png");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an empty slot's placeholder is hidden, not cropped (BL-15201)"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_CroppedImage_RendersTheVisibleRectangle()
+        {
+            var element = MakeCroppedSlotImage();
+
+            var relativePath = AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                _bookFolder.Path,
+                element,
+                "page1",
+                2
+            );
+
+            Assert.That(relativePath, Is.Not.Null, "a cropped image should get a cropped view");
+            Assert.That(
+                relativePath,
+                Is.EqualTo(
+                    AiImageEditorApi.kWorkingFolderName
+                        + "/"
+                        + AiImageEditorApi.kCroppedViewFolderName
+                        + "/page1-2.png"
+                ),
+                "the rendering is named for the slot it came from, inside the working folder"
+            );
+
+            var renderedPath = Path.Combine(
+                _bookFolder.Path,
+                relativePath.Replace('/', Path.DirectorySeparatorChar)
+            );
+            Assert.That(
+                RobustFile.Exists(renderedPath),
+                Is.True,
+                "the rendering should be on disk"
+            );
+            Assert.That(
+                ImageUtils.TryGetImageSize(renderedPath, out var croppedSize),
+                Is.True,
+                "the rendering should be a readable image"
+            );
+            Assert.That(croppedSize.Width, Is.EqualTo(50), "the visible width");
+            Assert.That(croppedSize.Height, Is.EqualTo(40), "the visible height");
+
+            // The book's own image must come through untouched: the crop is presentational,
+            // and losing the rest of the frame would be destructive.
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out var afterSize
+                ),
+                Is.True
+            );
+            Assert.That(
+                afterSize,
+                Is.EqualTo(_uncroppedSize),
+                "the original image file must not be altered"
+            );
+        }
+
+        [Test]
+        public void RemoveCropFromSlotImage_RemovesOnlyTheCropProperties()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "style",
+                element.GetAttribute("style") + " transform: rotate(3deg);"
+            );
+            // Sanity check, so the assertion below can't pass on markup that never had a crop.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("left"),
+                "setup: the image starts out cropped"
+            );
+
+            AiImageEditorApi.RemoveCropFromSlotImage(element);
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Not.Contain("width"), "crop width should be gone");
+            Assert.That(style, Does.Not.Contain("left"), "crop left should be gone");
+            Assert.That(style, Does.Not.Contain("top"), "crop top should be gone");
+            Assert.That(
+                style,
+                Does.Contain("rotate(3deg)"),
+                "styling that has nothing to do with cropping should survive"
+            );
+        }
+
+        [Test]
+        public void RemoveCropFromSlotImage_NothingElseInTheStyle_RemovesTheAttribute()
+        {
+            var element = MakeCroppedSlotImage();
+
+            AiImageEditorApi.RemoveCropFromSlotImage(element);
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "an empty style attribute is worth removing rather than leaving behind"
+            );
+        }
+    }
 }

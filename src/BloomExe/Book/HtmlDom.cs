@@ -2192,7 +2192,11 @@ namespace Bloom.Book
             }
         }
 
-        private static void RemoveStyleProperties(
+        /// <summary>
+        /// Removes the named CSS declarations from the element's style attribute, leaving any
+        /// others alone, and removes the attribute entirely when nothing is left.
+        /// </summary>
+        internal static void RemoveStyleProperties(
             SafeXmlElement element,
             params string[] propertyNames
         )
