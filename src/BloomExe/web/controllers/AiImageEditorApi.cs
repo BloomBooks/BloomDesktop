@@ -505,7 +505,7 @@ namespace Bloom.web.controllers
                     httpBase,
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
-                    bookImages = EnumerateBookImages(book),
+                    bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
                     // The history folder is the source of truth; enumerate it so images
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),
@@ -1247,18 +1247,65 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// How much of its page an image slot covers, written onto every image container by the
+        /// front end when a page is saved; see kFractionOfPageAttribute /
+        /// recordFractionOfPageOnImageSlots in imageTargetResolution.ts. It is the only record
+        /// of how big a slot ends up on screen, because the book's HTML otherwise says nothing
+        /// about that, and it is what lets the AI image editor suggest a size for images on
+        /// pages nobody has open.
+        /// </summary>
+        internal const string kFractionOfPageAttribute = "data-fraction-of-page";
+
+        /// <summary>
+        /// Reads the two numbers of <see cref="kFractionOfPageAttribute"/> ("0.42,0.31"). Null
+        /// for anything else, including a missing attribute and a page saved by a Bloom that
+        /// did not write one; the AI image editor then simply offers that slot no automatic
+        /// size. Parsed with the invariant culture, because the front end writes the numbers
+        /// with JavaScript, which always uses a point for the decimal separator.
+        /// </summary>
+        internal static (double width, double height)? TryParseFractionOfPage(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            var parts = value.Split(',');
+            if (parts.Length != 2)
+                return null;
+            if (
+                !double.TryParse(
+                    parts[0].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var width
+                )
+                || !double.TryParse(
+                    parts[1].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var height
+                )
+            )
+                return null;
+            // A zero or negative share is not a real measurement, and neither is a NaN.
+            if (!(width > 0) || !(height > 0))
+                return null;
+            return (width, height);
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
         /// servable URL); image bytes are fetched lazily by the AI image editor, never
         /// inlined.
         /// </summary>
-        private List<object> EnumerateBookImages(Bloom.Book.Book book)
+        /// <param name="dom">the book's DOM, as <see cref="Bloom.Book.Book.OurHtmlDom"/></param>
+        /// <param name="bookFolderPath">the book's folder, which the served URLs are built from</param>
+        internal static List<object> EnumerateBookImages(HtmlDom dom, string bookFolderPath)
         {
             var images = new List<object>();
-            var folderAsUrlPrefix = book.FolderPath.Replace("\\", "/");
-            var pages = book
-                .OurHtmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+            var folderAsUrlPrefix = bookFolderPath.Replace("\\", "/");
+            var pages = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .OfType<SafeXmlElement>();
 
             foreach (var page in pages)
@@ -1278,7 +1325,8 @@ namespace Bloom.web.controllers
                         string src,
                         bool isPlaceholder,
                         bool isCanvasBackground,
-                        ImageCredits credits
+                        ImageCredits credits,
+                        (double width, double height)? fractionOfPage
                     )>();
                 // Ordinal is the index within the full slot list, so a slot we decline to offer
                 // below still holds its place. That is what lets the page frame send an index it
@@ -1314,7 +1362,7 @@ namespace Bloom.web.controllers
                     // means nothing is hidden — nearly always — and then the file itself is
                     // what the page shows, as before.
                     var servedRelativePath =
-                        TryMakeCroppedViewOfSlotImage(book.FolderPath, element, pageId, ordinal)
+                        TryMakeCroppedViewOfSlotImage(bookFolderPath, element, pageId, ordinal)
                         ?? relativePath;
 
                     slotsOnThisPage.Add(
@@ -1334,7 +1382,16 @@ namespace Bloom.web.controllers
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
-                            credits: GetCreditsForImageFile(book.FolderPath, relativePath)
+                            credits: GetCreditsForImageFile(bookFolderPath, relativePath),
+                            // How much of its page this slot covers, as the front end measured
+                            // it and wrote it into the HTML the last time this page was saved
+                            // (recordFractionOfPageOnImageSlots in imageTargetResolution.ts).
+                            // We only carry it; the arithmetic that turns it into a number of
+                            // dots needs the page's size in pixels, which only a laid-out
+                            // browser page knows, so the overlay JS does it.
+                            fractionOfPage: TryParseFractionOfPage(
+                                slots[ordinal].GetAttribute(kFractionOfPageAttribute)
+                            )
                         )
                     );
                 }
@@ -1355,6 +1412,14 @@ namespace Bloom.web.controllers
                             pageLabel = labels[i],
                             isPlaceholder = slot.isPlaceholder,
                             credits = slot.credits,
+                            fractionOfPage = slot.fractionOfPage.HasValue
+                                ? (object)
+                                    new
+                                    {
+                                        width = slot.fractionOfPage.Value.width,
+                                        height = slot.fractionOfPage.Value.height,
+                                    }
+                                : null,
                         }
                     );
                 }

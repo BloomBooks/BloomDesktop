@@ -79,6 +79,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1427,6 +1428,17 @@ export function requestPageContent() {
 // uses a fresh disposable browser per page. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
+    // Record how much of the page each image slot covers, while the page is still laid out.
+    // That is the only record of it: the saved HTML otherwise says nothing about how big
+    // anything ends up on screen, so without this the AI image editor could not tell what size
+    // an image on any page but the open one ought to be. Never throws out: a missing size hint
+    // must not cost the user their page.
+    try {
+        recordFractionOfPageOnImageSlots(document.body);
+    } catch (e) {
+        console.error("recordFractionOfPageOnImageSlots failed: ", e);
+    }
+
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
     getToolboxBundleExports()?.removeToolboxMarkup();

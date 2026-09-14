@@ -36,6 +36,7 @@ import {
     trackEvent,
 } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
+import { getSuggestedImageTargetForFraction } from "../js/imageTargetResolution";
 import {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
@@ -85,6 +86,53 @@ function applyOnThePageBeingEdited(
     return pageFrame.applyAiImageEditorReplacements(results);
 }
 
+// Tells the AI Image Editor how big each slot in the book wants its image to be. The editor
+// offers that as the Upscale tool's "Auto" size, and shows the memo under the selector; a slot
+// with no suggestedTarget simply gets no "Auto" option.
+//
+// It can answer for EVERY page, not just the open one, because Bloom records each slot's share
+// of its page in the HTML whenever the page is saved (recordFractionOfPageOnImageSlots), and
+// C# hands that back with each book image. So a book whose pages have been visited in the Edit
+// tab, or that has been through "Update Book", carries the value throughout; a page that has
+// not been saved since this feature arrived carries none and gets no "Auto" option. Every
+// editor launch saves the page being edited first (see HandleSaveThenLaunch), so that page at
+// least always has it.
+//
+// The one thing only the live page can say is how big the page is, which is the same for every
+// page in the book, so we ask the page frame once. Nothing here may stop the editor opening:
+// the page frame is a separate bundle that may not be attached yet (or may be an older one
+// without this function), so a miss is reported to the console and otherwise ignored.
+function addSuggestedTargets(
+    bookImages: Array<{
+        fractionOfPage?: { width: number; height: number } | null;
+        suggestedTarget?: { width: number; height: number; memo: string };
+    }>,
+): void {
+    try {
+        const page =
+            getEditablePageBundleExports()?.getAiImageEditorPageMetrics?.();
+        if (!page) return;
+        bookImages.forEach((bookImage) => {
+            if (!bookImage.fractionOfPage) return;
+            const suggestion = getSuggestedImageTargetForFraction(
+                bookImage.fractionOfPage,
+                page,
+            );
+            if (!suggestion) return;
+            bookImage.suggestedTarget = {
+                width: suggestion.width,
+                height: suggestion.height,
+                memo: suggestion.memo,
+            };
+        });
+    } catch (e) {
+        console.warn(
+            "AI Image Editor: could not work out what size the images should be, so it will offer no automatic size: " +
+                (e instanceof Error ? e.message : String(e)),
+        );
+    }
+}
+
 // Opens the AI Image Editor overlay, with the image named by `target` (the one the user
 // right-clicked, before the save reloaded the page frame) in its "Image to Edit" slot.
 // Called from C# — via workspaceBundle.openAiImageEditor — once the page has been saved.
@@ -102,6 +150,20 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 width?: number;
                 height?: number;
                 isPlaceholder?: boolean;
+                // How much of its page this slot covers, as C# read it out of the book's
+                // HTML. Null for a page that has not been saved since Bloom started
+                // recording it.
+                fractionOfPage?: { width: number; height: number } | null;
+                // What size this slot would like its image to be, worked out below from
+                // fractionOfPage and how big the pages of this book are. C# does no
+                // arithmetic here, because only a laid-out browser page knows the page size.
+                // (fractionOfPage itself rides along to the editor in the ...launchData
+                // spread below; the editor ignores fields it does not know.)
+                suggestedTarget?: {
+                    width: number;
+                    height: number;
+                    memo: string;
+                };
             }>;
             references?: Array<{
                 id: string;
@@ -158,6 +220,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         )
             ? clickedId
             : undefined;
+
+        addSuggestedTargets(launchData.bookImages ?? []);
 
         const initPayload = {
             ...launchData,

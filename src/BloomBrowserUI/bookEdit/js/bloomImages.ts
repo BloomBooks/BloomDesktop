@@ -30,10 +30,14 @@ import {
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
+import {
+    kBrowserDpi,
+    kPrintDpi,
+    kDigitalScreenLongEdgePx,
+    kDigitalScreenShortEdgePx,
+    getSuggestedImageTargetForContainer,
+} from "./imageTargetResolution";
 
-// This appears to be constant even on higher dpi screens.
-// (See http://www.w3.org/TR/css3-values/#absolute-lengths)
-const kBrowserDpi = 96;
 export const kImageContainerClass = "bloom-imageContainer";
 export const kImageContainerSelector = `.${kImageContainerClass}`;
 
@@ -962,10 +966,11 @@ async function DetermineImageTooltipAsync(
     }
 
     const containerJQ = $(bloomCanvas);
-    const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
-    const targetDpiHeight = Math.ceil(
-        (300 * containerJQ.height()) / kBrowserDpi,
-    );
+    // The same size advice the AI image editor gets, so the two never disagree. On a
+    // screen-sized page this asks for the container's share of a device screen instead of
+    // 300 DPI, and print advice is then left out below because it would be misleading.
+    const suggestedTarget = getSuggestedImageTargetForContainer(bloomCanvas);
+    const isDigital = suggestedTarget?.isDigital === true;
     const isPlaceHolder = isPlaceHolderImage(url);
 
     const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
@@ -997,18 +1002,32 @@ async function DetermineImageTooltipAsync(
         } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
             imageFileInfo.width
         } x ${imageFileInfo.height}\n\n`;
-        if (!isPlaceHolder) {
+        // On a screen-sized page nothing is printed, so a printing DPI would only mislead.
+        if (!isPlaceHolder && !isDigital) {
             dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
         }
     }
 
+    let targetLine = "";
+    if (suggestedTarget && isDigital) {
+        targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container on a ${kDigitalScreenLongEdgePx} x ${kDigitalScreenShortEdgePx} screen.`;
+    } else if (suggestedTarget) {
+        targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container at ${kPrintDpi} DPI.`;
+    }
+    // Print resolution advice belongs only to a page that will be printed.
+    const printAdviceLine = isDigital
+        ? ""
+        : `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n`;
+
     // This is really talking about the bloom-canvas, but for UI we'll stick with image container.
     const linesAboutThisContext =
-        `For the current paper size:\n` +
+        (isDigital
+            ? `For the current page size:\n`
+            : `For the current paper size:\n`) +
         `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
-        `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+        printAdviceLine +
         dpiLine +
-        `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+        targetLine;
 
     // if there is a data-href, start with that url
     let hyperlinkInfo = "";
