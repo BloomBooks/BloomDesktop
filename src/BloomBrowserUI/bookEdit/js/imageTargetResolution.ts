@@ -238,6 +238,13 @@ export function getElementThatDeterminesImageSlotSize(
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction
 // from the last save is better evidence than none, and guessing would have the AI image editor
 // generate at the wrong resolution.
+//
+// For the same reason, a value recorded under one page size or layout survives a change to
+// either, and a page nobody reopens keeps it until it is next saved. A share is a proportion,
+// so it only goes wrong where the new layout gives that slot a different proportion of its
+// page, and the cost is a suggested size somewhat off rather than a broken picture. "Update
+// Book" refreshes every page's value in one pass, so there is a way out that does not depend
+// on the user visiting each page. Deliberately not re-measured any more eagerly than that.
 export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
     const pageElement =
         pageRoot.closest(".bloom-page") ??
