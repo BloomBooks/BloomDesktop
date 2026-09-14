@@ -3492,6 +3492,12 @@ namespace Bloom.ImageProcessing
             if (cropMetadata == null)
                 return false;
             var rectangle = ComputeCropRectangle(cropMetadata, imageSize);
+            // A rectangle with no area shows nothing at all, so it is not a view of part of
+            // the image; it means the canvas element is missing one of the dimensions a crop
+            // is expressed in (TryGetCropMetadata requires a width, not a height). Answering
+            // "cropped" here would send a zero-sized rectangle on to the renderer.
+            if (rectangle.Width <= 0 || rectangle.Height <= 0)
+                return false;
             // How much slop to allow at each edge. The rounding we are compensating for
             // happened in CSS pixels, while the rectangle is in image pixels, and
             // ComputeCropRectangle magnifies the one into the other by 1/scale — for a 3000px
