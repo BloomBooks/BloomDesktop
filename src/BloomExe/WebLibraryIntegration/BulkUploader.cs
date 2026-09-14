@@ -31,6 +31,12 @@ namespace Bloom.WebLibraryIntegration
         private int _booksSkipped;
         private int _booksWithErrors;
 
+        // Collections we were asked to upload but refused to. Counted separately from
+        // _booksWithErrors because these are whole collections, not books, so folding them into
+        // the "Failed to upload N books" tally would misreport them. Both feed the success
+        // result, so a logged refusal cannot exit 0. (BL-16869)
+        private int _collectionsWithErrors;
+
         public const string HashInfoFromLastUpload = ".lastUploadInfo"; // this filename must begin with a period
         public bool LoggedIn => _singleBookUploader.BloomLibraryBookApiClient.LoggedIn;
 
@@ -120,6 +126,7 @@ namespace Bloom.WebLibraryIntegration
                     _booksUpdated = 0;
                     _booksSkipped = 0;
                     _booksWithErrors = 0;
+                    _collectionsWithErrors = 0;
 
                     progress.WriteMessageWithColor(
                         "green",
@@ -168,7 +175,18 @@ namespace Bloom.WebLibraryIntegration
                             logFilePath
                         );
                     }
-                    return _booksWithErrors == 0 && _collectionFoldersUploaded.Count > 0;
+                    if (_collectionsWithErrors > 0)
+                    {
+                        progress.WriteError(
+                            "Skipped {0} collections. See \"{1}\" for details.",
+                            _collectionsWithErrors,
+                            logFilePath
+                        );
+                    }
+
+                    return _booksWithErrors == 0
+                        && _collectionsWithErrors == 0
+                        && _collectionFoldersUploaded.Count > 0;
                 }
                 finally
                 {
@@ -215,6 +233,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Skipping {uploadParams.Folder} because there is no default bookshelf."
                     );
+                    ++_collectionsWithErrors;
                     return context;
                 }
                 var featureStatus = FeatureStatus.GetFeatureStatus(
@@ -226,6 +245,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Skipping {uploadParams.Folder} because bulk upload requires a Bloom subscription tier of at least \"{featureStatus.SubscriptionTier}\". "
                     );
+                    ++_collectionsWithErrors;
                     return context;
                 }
                 context = await BulkUploadBooksOfOneCollection(
@@ -364,6 +384,7 @@ namespace Bloom.WebLibraryIntegration
                 progress.WriteError(
                     "Skipping book because no collection file was found in its parent directory."
                 );
+                ++_booksWithErrors;
                 return context;
             }
             _collectionFoldersUploaded.Add(collectionPath);
@@ -407,6 +428,7 @@ namespace Bloom.WebLibraryIntegration
                     progress.WriteError(
                         $"Did not upload '{Path.GetFileName(uploadParams.Folder)}' because there is already at least one book with the same ID ('{book.BookInfo.Id}') in BloomLibrary. You can get more information by uploading it individually."
                     );
+                    ++_booksWithErrors;
                     return context;
                 }
                 progress.WriteMessageWithColor(

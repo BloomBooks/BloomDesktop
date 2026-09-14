@@ -111,11 +111,17 @@ namespace Bloom.Publish
         // racing RunWorkerCompleted.
         private Exception _pdfGenerationError;
 
+        // Whether the last PDF-making run was cancelled. A cancelled run leaves no exception, but
+        // it also did not make a PDF, so it must not be reported to MakePDFForUpload's caller as
+        // success -- a stale PDF from an earlier run could otherwise be uploaded. (BL-16869)
+        private bool _pdfGenerationCancelled;
+
         private void _makePdfBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             e.Result = BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
             LoadBook(sender as BackgroundWorker, e);
             _pdfGenerationError = e.Result as Exception;
+            _pdfGenerationCancelled = e.Cancel;
         }
 
         /// <summary>
@@ -156,6 +162,7 @@ namespace Bloom.Publish
             }
 
             _pdfGenerationError = null;
+            _pdfGenerationCancelled = false;
             _previewProgress = progress;
             _makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
 
@@ -172,6 +179,12 @@ namespace Bloom.Publish
             _makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
             _previewProgress = null;
             _previousStatus = null;
+
+            if (_pdfGenerationCancelled)
+            {
+                progress.WriteError("Making the PDF was cancelled, so there is no PDF to upload.");
+                return false;
+            }
 
             if (_pdfGenerationError != null)
             {

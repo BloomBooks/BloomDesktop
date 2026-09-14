@@ -3147,13 +3147,23 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         public static bool RunningHarvesterMode { get; set; }
 
         /// <summary>
-        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb
-        /// (including the child Bloom that `upload` starts for a bulk upload) or the e2e /
-        /// visual-regression suite's own Bloom. Code that would otherwise show modal UI must
-        /// report the problem some other way (typically stderr) and return, because a modal here
-        /// blocks the process forever -- no failure, no exit code, just a hang (BL-16869).
+        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb,
+        /// including the child Bloom that `upload` starts for a bulk upload. Code that would
+        /// otherwise show modal UI must report the problem some other way (typically stderr) and
+        /// return, because a modal here blocks the process forever -- no failure, no exit code,
+        /// just a hang (BL-16869).
         /// </summary>
-        public static bool RunningNonInteractive => RunningInConsoleMode || RunningE2eTests;
+        /// <remarks>
+        /// Deliberately NOT including RunningE2eTests, even though NonFatalProblem.Report treats
+        /// the two alike. The e2e suite's problemDialogWatcher fixture
+        /// (src/BloomE2E/fixtures/problemDialogWatcher.ts) finds the problem dialog among the CDP
+        /// page targets, scrapes the exception from behind its "Learn More" link, and fails the
+        /// test with it. Suppressing the dialog under --e2e would take that away and let tests go
+        /// green through exceptions they currently catch. Nothing is lost by excluding it: the
+        /// bulk-upload child that BL-16869 is about runs the `upload` verb, so it is in console
+        /// mode regardless.
+        /// </remarks>
+        public static bool RunningNonInteractive => RunningInConsoleMode;
 
         private static bool _runningE2eTests;
 
