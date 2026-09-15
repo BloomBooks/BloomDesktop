@@ -133,12 +133,14 @@ namespace Bloom
     }
 
     /// <summary>
-    /// Called when the user is quitting or changing to another collection. There is nothing to say
-    /// beyond that, so the payload is always null. (It used to carry a protocol for postponing the
-    /// close until the page being edited had been saved; see Shell.OnClosing for what that was and
-    /// why it is gone.)
+    /// Called when the user is quitting or changing to another collection. The payload is true when
+    /// the close is Windows itself shutting down, restarting or logging off, rather than the user
+    /// closing Bloom: Windows then allows only a few seconds before it treats us as hung, and the
+    /// browser is being shut down too, so a subscriber should do what it must and not wait for
+    /// anything. (The event used to carry a protocol for postponing the close until the page being
+    /// edited had been saved; see Shell.OnFormClosing for what that was and why it is gone.)
     /// </summary>
-    public class CollectionClosing : Event<object>
+    public class CollectionClosing : Event<bool>
     {
         public CollectionClosing()
             : base("CollectionClosing", LoggingLevel.Major) { }

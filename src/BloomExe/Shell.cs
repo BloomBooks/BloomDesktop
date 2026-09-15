@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
@@ -200,15 +201,25 @@ namespace Bloom
 
         private bool _closing;
 
-        protected override void OnClosing(CancelEventArgs e)
+        // Tell Windows why we are slow to answer a shutdown, so that the shutdown screen says
+        // "Bloom is saving your book" against our name rather than that we are not responding.
+        // Windows shows it only if we take longer than it likes (about five seconds); otherwise
+        // nobody sees it. Must be called on the thread that owns the window, i.e. the UI thread.
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool ShutdownBlockReasonCreate(IntPtr hWnd, string reason);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ShutdownBlockReasonDestroy(IntPtr hWnd);
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
             // Everything here is synchronous, which it did not used to be. Saving the page being
             // edited meant asking the browser for it and waiting for the answer on another API
-            // call, and that could not be done from inside OnClosing: if we let the close proceed,
-            // the reply arrived to a disposed Shell. So this cancelled the close, kicked off the
-            // save, and called Close() again when it finished -- with two flags to swallow the
-            // clicks the user got in meanwhile, and a FailureAction to unstick things when the save
-            // failed and left Bloom unclosable.
+            // call, and that could not be done from inside the closing handler: if we let the close
+            // proceed, the reply arrived to a disposed Shell. So this cancelled the close, kicked
+            // off the save, and called Close() again when it finished -- with two flags to swallow
+            // the clicks the user got in meanwhile, and a FailureAction to unstick things when the
+            // save failed and left Bloom unclosable.
             //
             // None of that is needed now: the browser volunteers the page as it is edited (see
             // PageSnapshot), so EditingModel already has what it needs and the closing event
@@ -216,7 +227,32 @@ namespace Bloom
             _closing = true;
             Logger.WriteMinorEvent("starting to shut Bloom down");
 
-            _collectionClosingEvent.Raise(null);
+            // This is OnFormClosing rather than OnClosing for the sake of the close reason. When
+            // Windows itself is shutting down, restarting or logging off, it gives us about five
+            // seconds to answer before treating us as hung, and the browser is being shut down
+            // alongside us -- so the save must not wait on the browser for anything (see
+            // EditingModel.SaveEverythingBeforeClosing), and we tell Windows what we are doing in
+            // case the write itself runs long. Windows-only API; Linux has nothing comparable.
+            var windowsIsShuttingDown = e.CloseReason == CloseReason.WindowsShutDown;
+            var toldWindowsWhy =
+                windowsIsShuttingDown
+                && SIL.PlatformUtilities.Platform.IsWindows
+                && ShutdownBlockReasonCreate(
+                    Handle,
+                    L10NSharp.LocalizationManager.GetString(
+                        "Shell.SavingBeforeWindowsShutsDown",
+                        "Bloom is saving your book"
+                    )
+                );
+            try
+            {
+                _collectionClosingEvent.Raise(windowsIsShuttingDown);
+            }
+            finally
+            {
+                if (toldWindowsWhy)
+                    ShutdownBlockReasonDestroy(Handle);
+            }
 
             if (
                 !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
@@ -260,7 +296,7 @@ namespace Bloom
             }
 
             Logger.WriteMinorEvent("closing the Shell");
-            base.OnClosing(e);
+            base.OnFormClosing(e);
         }
 
         public void SetWindowText(string bookName)

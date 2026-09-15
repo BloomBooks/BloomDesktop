@@ -175,11 +175,11 @@ namespace Bloom.Edit
             selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
             pageListChangedEvent.Subscribe(needFullUpdate => _view.UpdatePageList(needFullUpdate));
             relocatePageEvent.Subscribe(OnRelocatePage);
-            collectionClosingEvent.Subscribe(_ =>
+            collectionClosingEvent.Subscribe(windowsIsShuttingDown =>
             {
                 if (Visible)
                 {
-                    SaveEverythingBeforeClosing();
+                    SaveEverythingBeforeClosing(windowsIsShuttingDown);
                 }
             });
             localizationChangedEvent.Subscribe(o =>
@@ -1753,17 +1753,21 @@ namespace Bloom.Edit
         /// sent. Only saves that use the snapshot need this: content that came with a request has
         /// already waited, in the browser. If we have to go ahead anyway, we log what the page was
         /// busy with, so that a report of a save that lost something can be read against it.
+        ///
+        /// A caller that cannot afford to wait at all -- Windows is shutting down -- passes false,
+        /// and gets the snapshot as it stands, with the same log entry if the page was busy.
         /// </summary>
-        private string TakeCurrentPageSnapshot()
+        private string TakeCurrentPageSnapshot(bool waitForInFlightPageWork = true)
         {
             var pageId = _pageSelection?.CurrentSelection?.Id;
-            if (!_pageSnapshot.WaitUntilIdle(kMaxWaitForBusyPageMs, out var busyWith))
+            var maxWaitMs = waitForInFlightPageWork ? kMaxWaitForBusyPageMs : 0;
+            if (!_pageSnapshot.WaitUntilIdle(maxWaitMs, out var busyWith))
             {
                 Logger.WriteEvent(
                     "Saving page {0} from the last snapshot although the browser still reports it busy with '{1}' after waiting {2}ms. Whatever that work was doing to the page may be missing from the book.",
                     pageId,
                     busyWith,
-                    kMaxWaitForBusyPageMs
+                    maxWaitMs
                 );
             }
             return _pageSnapshot.GetFor(pageId);
@@ -1788,16 +1792,22 @@ namespace Bloom.Edit
         /// the file now says what they think it says. The AI image editor opens the book FROM DISK,
         /// so opening it after a save that did not happen would edit stale images.
         ///
+        /// waitForInFlightPageWork is false only when Windows is shutting down; see
+        /// TakeCurrentPageSnapshot.
+        ///
         /// The one thing this cannot do is save a change made in the last few tens of
         /// milliseconds, which the browser has not posted yet. See "The freshness window" in
         /// SavingWithoutReloading.md for why that is the accepted trade.
         /// </summary>
-        public bool SaveCurrentPageAndBook(string pageContent = null)
+        public bool SaveCurrentPageAndBook(
+            string pageContent = null,
+            bool waitForInFlightPageWork = true
+        )
         {
             if (CannotSavePage() || !_havePageToSave)
                 return false;
             if (_stateMachine.Editing)
-                pageContent = pageContent ?? TakeCurrentPageSnapshot();
+                pageContent = pageContent ?? TakeCurrentPageSnapshot(waitForInFlightPageWork);
             else
                 pageContent = null;
             UpdateBookDomFromBrowserPageContent(pageContent);
@@ -1818,8 +1828,13 @@ namespace Bloom.Edit
         /// <summary>
         /// As SaveCurrentPageAndBook, plus the book-created history entry that only belongs at the
         /// end of a session.
+        ///
+        /// windowsIsShuttingDown means the close is Windows shutting down, restarting or logging
+        /// off rather than the user closing Bloom. Windows then allows us only a few seconds before
+        /// it treats us as hung, and the browser is being shut down alongside us, so we do not wait
+        /// for in-flight page work: the snapshot we hold is what gets saved.
         /// </summary>
-        public void SaveEverythingBeforeClosing()
+        public void SaveEverythingBeforeClosing(bool windowsIsShuttingDown = false)
         {
             // Shutting down must not depend on the save succeeding (BL-16776). If it does, a page
             // that cannot be saved leaves the user no way out of Bloom at all, because every
@@ -1828,7 +1843,7 @@ namespace Bloom.Edit
             // have been reported when it happened.
             try
             {
-                SaveCurrentPageAndBook();
+                SaveCurrentPageAndBook(waitForInFlightPageWork: !windowsIsShuttingDown);
                 CurrentBook.RecordPendingCreatedHistoryEvent();
             }
             catch (Exception e)

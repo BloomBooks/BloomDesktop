@@ -501,6 +501,15 @@ bar goes through `workspace/selectTab`), work that calls any synchronised API is
 those cases the wait costs a pause and then behaves exactly as before the wait existed -- and the
 log says which work it was, which is how we will learn whether any of them matter.
 
+One exit does not wait at all: Windows shutting down, restarting or logging off. Windows gives an
+application about five seconds to answer `WM_QUERYENDSESSION` before treating it as hung, the
+browser is being shut down alongside us so its idle notice may never come, and the snapshot is at
+most the usual tens of milliseconds behind for typing. `Shell.OnFormClosing` sees the close reason
+(which is why it is `OnFormClosing` rather than `OnClosing`), passes it through the
+collection-closing event, and the save takes the snapshot as it stands, logging if the page was
+busy. It also registers a shutdown block reason for the duration of the save, so that if the write
+itself runs long the shutdown screen says Bloom is saving rather than that it is not responding.
+
 ### Would observing `.bloom-page` instead of the body be better?
 
 It would have hidden the `measureTextDiv` bug rather than exposing it, and it would be unsound:
