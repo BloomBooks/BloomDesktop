@@ -1,6 +1,7 @@
 using System;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.SafeXml;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using NUnit.Framework;
@@ -597,6 +598,350 @@ namespace BloomTests.Book
                     "//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]",
                     2
                 );
+        }
+
+        /// <summary>
+        /// Once the user has asked to edit the generated original-copyright sentence, Bloom
+        /// stops generating it and shows their wording instead. The book's own copy of the page
+        /// still holds it locked: only the copy sent to the editor is opened up, which is what
+        /// makes leaving the page or refreshing it lock the sentence again.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_UserEditsOriginalCopyrightNotice_ShowsTheirWordingStillLocked()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+							</div>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='en'>BoilerPlateDescription</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+
+            // Sanity check: with the flag off we get Bloom's sentence, with the padlock that
+            // offers to hand it over. Without this, the assertions below could pass on a DOM
+            // where the notice never appeared in the first place.
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, false);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and contains(text(),'This book is an adaptation of the original')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//*[@data-derived='originalCopyrightAndLicense' and @data-link-icon='lock'"
+                        + " and @data-link-target='UnlockOriginalCredits()'"
+                        + " and @data-link-icon-tooltip='Unlock to edit']",
+                    1
+                );
+
+            // This is what the API does when the user clicks the padlock.
+            BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, true);
+
+            // The user's wording is what shows now, and it is still locked.
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense'"
+                        + " and @data-link-icon='lock'"
+                        + " and contains(., 'This book is an adaptation of the original')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath("//div[@class='test']//*[@data-book]");
+            // The wording is markup, and must go back onto the page as markup rather than as
+            // text that shows the reader its own tags.
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense']/p",
+                    1
+                );
+            // The wording is in the data div, which is what makes the user's edits stick.
+            Assert.That(
+                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                Does.Contain("This book is an adaptation of the original")
+            );
+        }
+
+        /// <summary>
+        /// When the book carries the original copyright as its own, saying it again in a
+        /// sentence about the original book prints it twice. That holds for the user's own
+        /// wording as much as for Bloom's, and their wording waits in the data div in case
+        /// they turn the option off again. See BL-7381.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_UsingOriginalCopyright_HidesTheUsersOwnNoticeToo()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+								<div data-book='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+
+            // Sanity check: without the option, the user's wording is what shows.
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, true);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[contains(., 'My own words about the original')]",
+                    1
+                );
+
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, true, true);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@class='test']//*[contains(., 'My own words about the original')]"
+                );
+            AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//*[@data-link-icon]");
+            // Their wording is still there for when they turn the option off again.
+            Assert.That(
+                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                Does.Contain("My own words about the original")
+            );
+        }
+
+        /// <summary>
+        /// The copy of the page sent to the editor turns the locked sentence into an ordinary
+        /// editable field, with an open padlock in the bubble and the caret waiting in it.
+        /// </summary>
+        [Test]
+        public void MakeOriginalCopyrightNoticeEditable_ReplacesTheLockedTextWithAnEditableField()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'
+								     data-hint='Bloom wrote this' data-link-icon='lock' data-link-target='UnlockOriginalCredits()'><p>Some sentence about the original.</p></div>
+							</div>
+						</body></html>";
+            var pageDom = new HtmlDom(html);
+
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(pageDom);
+
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasNoMatchForXpath("//*[@data-derived='originalCopyrightAndLicense']");
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/div[contains(@class,'bloom-translationGroup')"
+                        + " and contains(@class,'copyright') and @data-default-languages='*'"
+                        + " and @data-link-icon='unlock'"
+                        + " and @data-link-target='RelockOriginalCredits()'"
+                        + " and not(@data-link-icon-tooltip)]"
+                        + "/div[@data-book='originalCopyrightAndLicense' and @lang='*'"
+                        + " and contains(@class,'bloom-editable')"
+                        + " and contains(@class,'Credits-Page-style')"
+                        + " and not(@data-hint) and not(@data-link-icon)"
+                        + " and @data-bloom-focus-when-shown='true'"
+                        + " and contains(., 'Some sentence about the original')]",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// The unlock is good for one look at the page, so both the copy that goes back into the
+        /// book and the next copy sent to the editor have to be locked again, keeping whatever
+        /// the user typed.
+        /// </summary>
+        [Test]
+        public void LockOriginalCopyrightNotice_PutsTheEditedWordingBackAsPlainText()
+        {
+            var pageDom = new HtmlDom(
+                @"<html><head></head><body><div id='test' class='test'>
+					<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>Some sentence about the original.</p></div>
+				</div></body></html>"
+            );
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(pageDom);
+            // Sanity check: we can only test the locking if the unlocking happened.
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[contains(@class,'bloom-translationGroup')]",
+                    1
+                );
+            // Stand in for the user's editing, and for the empty fields Bloom adds for the
+            // book's other languages.
+            var editable =
+                pageDom.SelectSingleNode("//div[@data-book='originalCopyrightAndLicense']")
+                as SafeXmlElement;
+            editable.InnerXml = "<p>My own <em>wording</em>.</p>";
+            var otherLanguage =
+                editable.ParentNode.AppendChild(pageDom.RawDom.CreateElement("div"))
+                as SafeXmlElement;
+            otherLanguage.SetAttribute("class", "bloom-editable");
+            otherLanguage.SetAttribute("data-book", "originalCopyrightAndLicense");
+            otherLanguage.SetAttribute("lang", "fr");
+
+            BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageDom.RawDom);
+
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//*[@data-book]");
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasNoMatchForXpath("//*[contains(@class,'bloom-translationGroup')]");
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/div[@data-derived='originalCopyrightAndLicense'"
+                        + " and contains(@class,'Credits-Page-style')"
+                        + " and @data-link-icon='lock']/p/em[text()='wording']",
+                    1
+                );
+        }
+
+        /// <summary>
+        /// A book that is not a derivative has nothing to hand over, so the empty spot must not
+        /// turn into an editable field if some other page's unlock passes through.
+        /// </summary>
+        [Test]
+        public void MakeOriginalCopyrightNoticeEditable_NothingThere_LeavesItAlone()
+        {
+            var pageDom = new HtmlDom(
+                @"<html><head></head><body><div id='test' class='test'>
+					<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense'></div>
+				</div></body></html>"
+            );
+
+            BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable(pageDom);
+
+            AssertThatXmlIn
+                .Dom(pageDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//*[@data-derived='originalCopyrightAndLicense']",
+                    1
+                );
+            AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//*[@data-book]");
+        }
+
+        /// <summary>
+        /// Bloom names the original title in a &lt;cite data-book="originalTitle"&gt; so it can keep
+        /// it in step with the book's settings. Once the sentence belongs to the user it is just
+        /// words they can type over, and a data-book inside a data-book field would be harvested
+        /// as book data, so the citation is reduced to plain italics.
+        /// </summary>
+        [Test]
+        public void SeedUserEditableOriginalCopyrightNotice_ReplacesOriginalTitleCitationWithItalics()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+								<div data-book='originalTitle' lang='*'>Aat ni Tata</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, bookDom),
+                Does.Contain("<cite"),
+                "Test setup problem: the generated sentence was supposed to contain a citation."
+            );
+
+            BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
+
+            var stored = bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml;
+            Assert.That(stored, Does.Not.Contain("cite"));
+            Assert.That(stored, Does.Not.Contain("data-book"));
+            Assert.That(stored, Does.Contain("<em>Aat ni Tata</em>"));
+            // A bare run of text and markup would leave the italicized title on a line of its
+            // own once the editing code wrapped the text nodes in paragraphs.
+            Assert.That(stored, Does.StartWith("<p>"));
+            Assert.That(stored, Does.EndWith("</p>"));
+        }
+
+        /// <summary>
+        /// Bloom builds the sentence by pasting the original title and copyright holder straight
+        /// into it, and those are whatever the publisher typed: "SIL &amp; LASI" is ordinary.
+        /// The sentence therefore is not valid XML, and handing it over to the user has to escape
+        /// it rather than parse it.
+        /// </summary>
+        [Test]
+        public void SeedUserEditableOriginalCopyrightNotice_AmpersandInTitleAndCopyright_IsEscaped()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, SIL &amp; LASI</div>
+								<div data-book='originalTitle' lang='*'>Tom &amp; Jerry</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                BookCopyrightAndLicense.GetOriginalCopyrightAndLicenseNotice(bookData, bookDom),
+                Does.Contain("SIL & LASI"),
+                "Test setup problem: the generated sentence was supposed to hold a bare ampersand."
+            );
+
+            BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
+
+            var stored = bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml;
+            Assert.That(stored, Does.Contain("SIL &amp; LASI"));
+            Assert.That(stored, Does.Contain("<em>Tom &amp; Jerry</em>"));
+            // The stored wording goes back onto the page with InnerXml, so it has to parse.
+            Assert.That(() => SafeXmlDocument.Create().LoadXml(stored), Throws.Nothing);
+        }
+
+        /// <summary>
+        /// A book that was never a derivative has the same empty data-derived div, and there is
+        /// nothing there to hand over, so it must not get the bubble either.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_NotADerivative_NoNoticeAndNoHint()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='licenseUrl' lang='*'>http://creativecommons.org/licenses/by/4.0/</div>
+							</div>
+							<div id='test' class='test'>
+								<div data-derived='originalCopyrightAndLicense' lang='en'>BoilerPlateDescription</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                bookData.BookIsDerivative(),
+                Is.False,
+                "Test setup problem: this book was supposed to not be a derivative."
+            );
+
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, false);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and .='']",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//*[@data-derived='originalCopyrightAndLicense' and @data-hint]"
+                );
+            AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//*[@data-link-icon]");
         }
 
         [Test]

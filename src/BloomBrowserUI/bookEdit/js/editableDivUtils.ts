@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get, postString } from "../../utils/bloomApi";
+import { get, post, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 
 interface qtipInterface extends JQuery {
@@ -274,6 +274,22 @@ export class EditableDivUtils {
                     scale;
             },
         });
+    }
+
+    // Bloom generates the sentence about the original book's copyright and license into a
+    // data-derived div on the credits page, where the user cannot touch it. This asks the server
+    // to hand the text over: it stores the current wording in the data div, stops generating the
+    // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
+    // The server saves the page and reloads it, so we have nothing to change here ourselves.
+    public static unlockOriginalCredits() {
+        post("copyrightAndLicense/userEditsOriginalCopyrightNotice");
+    }
+
+    // Close the sentence about the original book again. The wording the user has just typed is
+    // theirs from now on; saving the page stores it in the data div, and the page comes back
+    // with that spot read-only, as it is on every other visit.
+    public static relockOriginalCredits() {
+        post("common/saveChangesAndRethinkPageEvent");
     }
 
     public static pasteImageCredits() {

@@ -1887,6 +1887,11 @@
         <note>ID: EditTab.FrontMatter.OriginalContributorsPrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
+      <trans-unit id="EditTab.FrontMatter.OriginalCopyrightAndLicenseHint" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Original copyright &amp; license</source>
+        <note>ID: EditTab.FrontMatter.OriginalCopyrightAndLicenseHint</note>
+        <note>Label in the hint bubble shown on the credits page next to the sentence Bloom generates about the original book's copyright and license.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FrontMatter.OriginalCopyrightSentence">
         <source xml:lang="en">This book is an adaptation of the original, {0}.</source>
         <note>ID: EditTab.FrontMatter.OriginalCopyrightSentence</note>

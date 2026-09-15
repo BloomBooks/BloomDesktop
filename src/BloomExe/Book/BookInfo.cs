@@ -1798,6 +1798,16 @@ namespace Bloom.Book
         public bool UseOriginalCopyright { get; set; }
 
         /// <summary>
+        /// Flag that the user has taken over the sentence about the original book's copyright and
+        /// license which Bloom otherwise generates onto the credits page. Once this is set, Bloom
+        /// stops generating that sentence; instead the place it appeared becomes an ordinary
+        /// editable field whose text is stored in the data div under originalCopyrightAndLicense.
+        /// The book remains a derivative in every other way.
+        /// </summary>
+        [JsonProperty("user-edits-original-copyright-notice")]
+        public bool UserEditsOriginalCopyrightNotice { get; set; }
+
+        /// <summary>
         /// The URL the source of this book was downloaded from before conversion to Bloom source format.
         /// This is set by RoseGarden, but expected to be empty for books that originate in Bloom.
         /// </summary>
