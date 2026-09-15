@@ -28,10 +28,22 @@ namespace Bloom.Book
     /// metadata. This mirrors the publish tab's off-screen page-check browser
     /// (PublishHelper.GetOrCreatePageChecksBrowser).
     /// </summary>
+    /// <remarks>
+    /// Besides BloomBridge (via the external/process-book API), this is what the Collection tab's
+    /// "Update Book" command runs (CollectionModel.BringBookUpToDate): the whole-book migrations
+    /// alone leave undone everything the editing JavaScript does to a page, so users used to be told
+    /// to "go to the Edit tab and click on each page" (BL-16595). Doing that here, off-screen, is
+    /// also safer than driving the live editor through the pages: the capture below waits for the
+    /// page's asynchronous fix-ups to finish and captures on a later timer tick, so it can never save
+    /// a page mid-fix-up. The live save path, triggered the instant a page loaded, could (BL-16870).
+    /// </remarks>
     public static class BookProcessor
     {
         // Generous per-page limit; this is a background automation step, not interactive editing.
-        private const int kReadyTimeoutMs = 30000;
+        // Must stay comfortably above kExternalCaptureMaxWaitMs in pageContentCapturePolicy.ts (the
+        // browser's own cap on waiting for a page's async fix-ups before it captures or gives up),
+        // or we would time out on a slow page just before the browser reported it.
+        private const int kReadyTimeoutMs = 60000;
 
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
@@ -59,9 +71,19 @@ namespace Bloom.Book
         /// illustration already fills the relevant page dimension (beyond which a bigger pane is only
         /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
         /// fitImageOverTextSplits() in bloomEditing.ts.
+        ///
+        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages and
+        /// then one per page ("Updating page 3 of 22..."), plus the percent done on its indicator (if
+        /// it has one), so a progress dialog can show where we are. It may be called on whatever
+        /// thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
-        public static int ProcessBook(Book book, bool fitImageTextSplits = false)
+        public static int ProcessBook(
+            Book book,
+            bool fitImageTextSplits = false,
+            IProgress progress = null
+        )
         {
+            progress = progress ?? new NullProgress();
             // 1. Structural "make it right" pass. Besides migrations, this ensures stylesheet links
             //    (and, when we Save below, the actual CSS files) that BloomBridge's raw HTML may
             //    be missing. See BookStorage.EnsureHasLinksToStylesheets.
@@ -107,9 +129,18 @@ namespace Bloom.Book
                 Log($"done shrinking images ({shrinkTimer.ElapsedMilliseconds}ms)");
             }
 
-            book.BringBookUpToDate(new NullProgress());
+            book.BringBookUpToDate(progress);
 
             // 2. Per-page browser fix-up.
+            // A book with structural errors cannot be shown for editing (the Edit tab displays an error
+            // page instead), so there is nothing meaningful the per-page pass could do for it; the
+            // whole-book update above (which has already saved) is all it gets.
+            var errors = book.CheckForErrors();
+            if (!string.IsNullOrEmpty(errors))
+            {
+                Log($"skipping the per-page fix-up because the book has errors: {errors}");
+                return 0;
+            }
             var pages = book.GetPages().Where(p => p != null).ToList();
             Log($"starting per-page fix-up of {pages.Count} pages (ckeditor stripped off-screen)");
 
@@ -139,6 +170,10 @@ namespace Bloom.Book
                     foreach (var page in pages)
                     {
                         pageIndex++;
+                        progress.WriteStatus($"Updating page {pageIndex} of {pages.Count}...");
+                        if (progress.ProgressIndicator != null)
+                            progress.ProgressIndicator.PercentCompleted =
+                                (pageIndex - 1) * 100 / pages.Count;
                         if (pageIndex > 1)
                         {
                             // Fresh renderer for this page (see above); the shared environment stays warm.
@@ -161,6 +196,8 @@ namespace Bloom.Book
 
             // 3. One full save now that every page's in-memory DOM has been updated.
             book.Save();
+            if (progress.ProgressIndicator != null)
+                progress.ProgressIndicator.PercentCompleted = 100;
 
             Log($"DONE: {pages.Count} pages");
             return pages.Count;
