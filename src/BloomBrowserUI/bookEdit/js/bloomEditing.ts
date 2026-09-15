@@ -69,6 +69,10 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import {
+    externalCaptureErrorForPendingWork,
+    kExternalCaptureMaxWaitMs,
+} from "./pageContentCapturePolicy";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -1572,9 +1576,14 @@ function resizeCanvasElementsToFitContent(): void {
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
 // API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
-// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
-// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page. It also resizes text canvas elements to fit their content (see
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, so
+// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we capture
+// the page. Unlike the live save, it is a background job with nobody waiting at the keyboard, so it
+// waits longer (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR instead
+// of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
+// elements to fit their content (see
 // resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
 // timer the wait loop does not track.
 export function captureContentForExternalProcessing(
@@ -1620,11 +1629,25 @@ export function captureContentForExternalProcessing(
         }
     };
     const waitForDelaysThenFinish = () => {
-        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
+        if (activeDelays.length === 0) {
             finish();
-        } else {
-            setTimeout(waitForDelaysThenFinish, 50);
+            return;
         }
+        if (Date.now() - start > kExternalCaptureMaxWaitMs) {
+            const error = externalCaptureErrorForPendingWork(activeDelays);
+            if (error) {
+                window.__bloomExternalPageContent = error;
+                return;
+            }
+            console.warn(
+                `captureContentForExternalProcessing: Maximum wait time (${kExternalCaptureMaxWaitMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
+            );
+            finish();
+            return;
+        }
+        setTimeout(waitForDelaysThenFinish, 50);
     };
     waitForDelaysThenFinish();
 }
