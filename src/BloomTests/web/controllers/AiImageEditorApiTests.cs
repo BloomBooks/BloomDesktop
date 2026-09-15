@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Code;
 using SIL.Core.ClearShare;
@@ -2150,6 +2151,107 @@ namespace BloomTests.web.controllers
             Assert.That(
                 AiImageEditorApi.BuildImageSlotLabelsForPage("Page 4", new[] { true }),
                 Is.EqualTo(new[] { "Page 4" })
+            );
+        }
+
+        // A one-page book DOM whose single image slot carries the given
+        // data-fraction-of-page attribute markup (pass "" for no attribute at all).
+        private static HtmlDom MakeDomWithFractionOfPage(string fractionAttributeMarkup)
+        {
+            return new HtmlDom(
+                @"<html><head></head><body>
+                    <div id='bloomDataDiv'></div>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <div class='bloom-imageContainer' "
+                    + fractionAttributeMarkup
+                    + @"><img src='pic.png'/></div>
+                    </div></div>
+                  </body></html>"
+            );
+        }
+
+        // The fractionOfPage that EnumerateBookImages hands the AI image editor for the first
+        // (only) slot of the given DOM, as JSON. Null when it sent none.
+        private JToken FirstImagesFractionOfPage(HtmlDom dom)
+        {
+            MakePlainPng("pic.png");
+            var images = AiImageEditorApi.EnumerateBookImages(dom, _bookFolder.Path);
+            Assert.That(images, Is.Not.Empty, "setup: the slot should have been offered at all");
+            var first = JObject.FromObject(images[0]);
+            return first["fractionOfPage"];
+        }
+
+        [Test]
+        public void EnumerateBookImages_SlotRecordsItsShareOfThePage_PassesItOn()
+        {
+            // The front end wrote this when the page was last saved; C# only carries it, because
+            // turning it into a number of dots needs the page size, which only a laid-out
+            // browser page knows.
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,0.31'")
+            );
+
+            Assert.That(fraction, Is.Not.Null, "the slot's share of its page should travel");
+            Assert.That(fraction["width"].Value<double>(), Is.EqualTo(0.42).Within(0.0001));
+            Assert.That(fraction["height"].Value<double>(), Is.EqualTo(0.31).Within(0.0001));
+        }
+
+        [Test]
+        public void EnumerateBookImages_NoShareRecorded_SendsNull()
+        {
+            // A page not saved since Bloom started recording this. The AI image editor then
+            // offers that slot no automatic size, which is better than a guessed one.
+            var fraction = FirstImagesFractionOfPage(MakeDomWithFractionOfPage(""));
+
+            Assert.That(
+                fraction.Type,
+                Is.EqualTo(JTokenType.Null),
+                "a slot with no recorded share should be sent as null, not omitted"
+            );
+        }
+
+        [Test]
+        public void EnumerateBookImages_MalformedShare_SendsNull()
+        {
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,banana'")
+            );
+
+            Assert.That(fraction.Type, Is.EqualTo(JTokenType.Null));
+        }
+
+        [TestCase("0.42,0.31", 0.42, 0.31)]
+        [TestCase(" 0.42 , 0.31 ", 0.42, 0.31)]
+        [TestCase("1,1", 1.0, 1.0)]
+        public void TryParseFractionOfPage_ReadsTwoNumbers(
+            string value,
+            double expectedWidth,
+            double expectedHeight
+        )
+        {
+            var fraction = AiImageEditorApi.TryParseFractionOfPage(value);
+
+            Assert.That(fraction, Is.Not.Null, "'{0}' should parse", value);
+            Assert.That(fraction.Value.width, Is.EqualTo(expectedWidth).Within(0.0001));
+            Assert.That(fraction.Value.height, Is.EqualTo(expectedHeight).Within(0.0001));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("abc")]
+        [TestCase("1")]
+        [TestCase("0.4,x")]
+        [TestCase("0.4,0.3,0.2")]
+        [TestCase("0,0.5")]
+        [TestCase("-0.4,0.5")]
+        public void TryParseFractionOfPage_RefusesAnythingElse(string value)
+        {
+            Assert.That(
+                AiImageEditorApi.TryParseFractionOfPage(value),
+                Is.Null,
+                "'{0}' is not a share of a page",
+                value ?? "(null)"
             );
         }
     }
