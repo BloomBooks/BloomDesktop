@@ -19,6 +19,18 @@ House rules:
 
 ---
 
+## 2026-09-15 — A unit test can pass while exercising nothing, and nobody notices
+- **Cut:** `audioRecordingSpec.ts`'s `importRecording() encodes special characters` passed for years
+  without testing anything. It mocked `fileIO/chooseFile` on `axios.get`, but `importRecordingAsync`
+  asks with `postJson` (a POST), so the import gave up on its first line and none of the path ran —
+  and because *every* assertion in the test is commented out (with a note that tracking the request
+  details "doesn't seem worth it"), it still went green. A test named for an assertion it does not
+  make is worse than no test: it tells you the case is covered. This one would have caught BL-16873.
+- **Idea:** Sweep the front-end specs for `it(...)` blocks with no live `expect`, and either restore
+  an assertion or delete them. A lint rule (`vitest/expect-expect`) would make it permanent.
+- **Context:** Found while fixing BL-16873; I repaired the shared mock but left that test's
+  commented-out assertions alone, so the cut is still open.
+
 ## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
 
 - **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.
