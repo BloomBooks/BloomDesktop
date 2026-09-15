@@ -89,10 +89,11 @@ namespace Bloom.Book
         /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
         /// fitImageOverTextSplits() in bloomEditing.ts.
         ///
-        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages and
-        /// then one per page ("Updating page 3 of 22..."), plus the percent done on its indicator (if
-        /// it has one), so a progress dialog can show where we are. It may be called on whatever
-        /// thread this runs on; the progress objects we use marshal for themselves.
+        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages,
+        /// plus the percent done on its indicator (if it has one) as the per-page pass advances, so a
+        /// determinate progress dialog can show where we are. (It deliberately gets no per-page text
+        /// message: the bar already shows that, and a line per page just floods the log.) It may be
+        /// called on whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
             Book book,
