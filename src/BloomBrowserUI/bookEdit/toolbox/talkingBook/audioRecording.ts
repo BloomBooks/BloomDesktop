@@ -1369,9 +1369,19 @@ export default class AudioRecording implements IAudioRecorder {
             });
     }
 
+    // The id under which the current selection's audio file is stored, minting one if the element
+    // has not got an id yet.
+    //
+    // This deliberately asks getCurrentAudioSentence() rather than reading highlightedElement
+    // directly. The highlight is not always on the element that OWNS the audio: in soft-split mode
+    // it sits on the highlighted sub-element, and after switching back from By Sentence to By Whole
+    // Text Box it can still be on a paragraph inside the box. The audio belongs to the enclosing
+    // audio-sentence, and that is the only name the tool ever looks under -- so naming a file after
+    // the sub-element writes an mp3 that nothing on the page owns, and (worse) mints a stray id onto
+    // the sub-element on the way. That was BL-16873: an imported recording silently went missing.
     private getCurrentAudioId(): string | undefined {
         let id: string | undefined = undefined;
-        const currentElement = this.highlightedElement;
+        const currentElement = this.getCurrentAudioSentence();
         if (currentElement) {
             if (currentElement.hasAttribute("id")) {
                 id = currentElement.getAttribute("id")!;
