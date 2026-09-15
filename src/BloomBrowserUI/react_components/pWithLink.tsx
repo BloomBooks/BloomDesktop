@@ -4,6 +4,7 @@ import {
     LocalizableElement,
 } from "./l10nComponents";
 import { Link as MuiLink } from "@mui/material";
+import { findLinkTextBrackets } from "../utils/textUtils";
 
 export interface ILocalizationPropsWithLink extends ILocalizationProps {
     href: string;
@@ -18,9 +19,9 @@ export class PWithLink extends LocalizableElement<
 
         // Text within [] is for the link.
         const parts = this.getLocalizedContentAndClass();
-        const idxOpen = parts.text.indexOf("[");
-        const idxClose = parts.text.indexOf("]", idxOpen + 1);
-        if (idxOpen >= 0 && idxClose > idxOpen) {
+        const brackets = findLinkTextBrackets(parts.text);
+        if (brackets) {
+            const { open: idxOpen, close: idxClose } = brackets;
             // We found the link text, piece together the desired output
             return (
                 <p className={this.getClassName()}>
