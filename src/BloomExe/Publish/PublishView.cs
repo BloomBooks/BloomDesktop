@@ -140,7 +140,12 @@ namespace Bloom.Publish
                         () =>
                         {
                             BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
-                            ActivatePublishTab();
+                            // The fix-up's modal blocks tab switching while it runs, but guard anyway:
+                            // if we are somehow no longer on the Publish tab by the time it returns,
+                            // don't activate the publish tab now (that would enable publishing and send
+                            // switchToPublishTab under whatever tab is actually showing).
+                            if (_tabSelection.ActiveTab == WorkspaceTab.publish)
+                                ActivatePublishTab();
                         }
                     )
                 );
