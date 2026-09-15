@@ -417,6 +417,26 @@ export default class OverflowChecker {
         OverflowChecker.CheckPageAncestorOverflow(editable);
     } // end AdjustSizeOrMarkOverflow
 
+    // Whether a bloom-padForOverflow box should measure its descenders and store the resulting
+    // padding-bottom in its style attribute.
+    // The book title is one data-book field shown on several xmatter pages (the front cover, the
+    // title page, sometimes more), and Bloom keeps the style attribute of all its copies in sync.
+    // If every page measured and stored its own padding, the copies would overwrite each other's
+    // value on every visit, and the published book would carry whichever page was looked at last,
+    // clipping the cover title when that was the title page (BL-16811). The front cover is where
+    // descender clipping matters, so only the copy there measures; the other copies inherit the
+    // cover's padding through the normal sync, which is harmless there. Other padded fields are
+    // measured wherever they are.
+    public static shouldMeasurePaddingForOverflow(
+        editable: HTMLElement,
+    ): boolean {
+        if (editable.getAttribute("data-book") !== "bookTitle") {
+            return true;
+        }
+        const page = editable.closest(".bloom-page");
+        return !!page && page.classList.contains("outsideFrontCover");
+    }
+
     // Type 1 overflow handling: checks/resizes the element's containing canvas element and
     // marks whether the element overflows its own box. This is the per-element part of
     // overflow handling and can be called in a loop over multiple elements before calling
@@ -449,7 +469,10 @@ export default class OverflowChecker {
             "bloom-padForOverflow",
         );
 
-        if (preventOverflowY) {
+        if (
+            preventOverflowY &&
+            OverflowChecker.shouldMeasurePaddingForOverflow(editable)
+        ) {
             editable.style.paddingBottom = "0";
             const measurements =
                 MeasureText.getDescentMeasurementsOfBox(editable);
