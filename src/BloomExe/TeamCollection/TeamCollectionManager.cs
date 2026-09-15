@@ -1,10 +1,12 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.web;
+using L10NSharp;
 using SIL.IO;
 
 namespace Bloom.TeamCollection
@@ -20,6 +22,21 @@ namespace Bloom.TeamCollection
         CollectionSettings Settings { get; }
         CollectionLock Lock { get; }
         bool CheckConnection();
+
+        /// <summary>
+        /// Something noticed, without the user asking, that we can no longer reach the Team
+        /// Collection repo: a file system watcher died, or the periodic connection check failed
+        /// enough times to be believed. Switches to the disconnected state and tells the user.
+        /// Thread-safe, idempotent, and non-blocking, so it is safe to call from a watcher
+        /// callback or a background timer. See BL-16729.
+        /// </summary>
+        void NoticeConnectionProblem(TeamCollectionMessage message, string repoDescription);
+
+        /// <summary>
+        /// Open the Team Collection dialog, as clicking the top-bar Team Collection button does.
+        /// </summary>
+        void ShowStatusDialog();
+
         void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
         string PlannedRepoFolderPath(string repoFolderParentPath);
 
@@ -58,6 +75,10 @@ namespace Bloom.TeamCollection
         private readonly BookStatusChangeEvent _bookStatusChangeEvent;
         private BookCollectionHolder _bookCollectionHolder;
         public TeamCollection CurrentCollection { get; private set; }
+
+        // The collection we were using before MakeDisconnected replaced it, kept only so that
+        // Dispose can dispose it. See BL-16729.
+        private TeamCollection _collectionAwaitingDisposal;
 
         // Normally the same as CurrentCollection, but CurrentCollection is only
         // non-null when we have a fully functional Team Collection operating.
@@ -453,16 +474,199 @@ namespace Bloom.TeamCollection
 
             if (connectionProblem != null)
             {
-                MakeDisconnected(connectionProblem, CurrentCollection.RepoDescription);
+                MakeDisconnected(connectionProblem, CurrentCollection?.RepoDescription);
                 return false;
             }
 
             return true;
         }
 
-        public void MakeDisconnected(TeamCollectionMessage message, string repoDescription)
+        /// <inheritdoc />
+        public void NoticeConnectionProblem(TeamCollectionMessage message, string repoDescription)
         {
-            CurrentCollection = null;
+            if (CurrentCollection == null)
+            {
+                // Already disconnected, or not a TC at all -- but also the window during
+                // ConnectToTeamCollection where a brand-new collection is being set up and has
+                // not been published as CurrentCollection yet. A watcher failing to start in
+                // that window has nowhere to go, so at least record it rather than dropping it
+                // on the floor. See the open question on BL-16729 about whether a collection we
+                // cannot watch should be treated as disconnected outright.
+                SIL.Reporting.Logger.WriteError(
+                    "Team Collection connection problem with no current collection to disconnect: "
+                        + message?.TextForDisplay,
+                    new ApplicationException(message?.RawEnglishMessageTemplate ?? "unknown")
+                );
+                NonFatalProblem.ReportSentryOnly(
+                    $"Team Collection connection problem dropped (no current collection): {message?.L10NId}"
+                );
+                return;
+            }
+
+            // Deliberately no "a disconnect is already queued" flag here. Racing callers are
+            // handled by MakeDisconnected being idempotent: whichever gets to the UI thread
+            // first does the work and returns true, the rest return false and do nothing. A
+            // flag would have to be cleared by the queued delegate, and a delegate that never
+            // runs (the form's handle is destroyed before it is dispatched) would then latch
+            // us into a state where we could never disconnect again.
+            RunOnUiThreadLater(() =>
+            {
+                try
+                {
+                    if (!MakeDisconnected(message, repoDescription))
+                        return; // someone else already disconnected us; don't toast twice.
+                    // Recolouring the Team Collection button is too easy to miss for something
+                    // this consequential, so put a notification in front of the user as well.
+                    // No durationSeconds, so it stays until they close or click it.
+                    ToastService.ShowToast(
+                        ToastType.Error,
+                        text: LocalizationManager.GetString(
+                            kNoLongerSeeingChangesId,
+                            kNoLongerSeeingChangesEnglish
+                        ),
+                        l10nId: kNoLongerSeeingChangesId,
+                        action: new ToastAction { Callback = ShowStatusDialog },
+                        toastId: "team-collection-disconnected"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    NonFatalProblem.ReportSentryOnly(ex);
+                }
+            });
+        }
+
+        private const string kNoLongerSeeingChangesId = "TeamCollection.NoLongerSeeingChanges";
+        private const string kNoLongerSeeingChangesEnglish =
+            "Bloom can no longer see the Team Collection folder, so you will not see changes made by your teammates.";
+
+        /// <summary>
+        /// Run the action on the UI thread on a LATER turn of the message pump.
+        ///
+        /// It must be later, not inline, because one caller is TryStartWatching in the middle of
+        /// StartMonitoring: disconnecting inline there would tear the watchers down while that
+        /// method is still setting them up. And it must not block, because the other callers are
+        /// on a file system watcher's thread or the heartbeat's, where a synchronous invoke can
+        /// deadlock against a UI thread waiting on the BloomServer.
+        ///
+        /// Program.MainContext is the WinForms synchronization context, captured once at startup.
+        /// Post satisfies both requirements, is safe to call from any thread, and -- unlike
+        /// looking a form up -- never enumerates Application.OpenForms, which is not thread-safe
+        /// and which every caller here would be enumerating from a background thread.
+        /// </summary>
+        internal static void RunOnUiThreadLater(Action action)
+        {
+            var uiContext = Program.MainContext;
+            if (uiContext == null)
+            {
+                // No UI thread exists: unit tests, or startup before Application.Run. Nobody can
+                // be racing us, and the state change matters more than the notification, so just
+                // do it here.
+                action();
+                return;
+            }
+            try
+            {
+                uiContext.Post(_ => action(), null);
+            }
+            catch (Exception ex)
+            {
+                // The context is torn down, i.e. we are shutting down. Deliberately NOT falling
+                // back to running inline: this work exists to be done on the UI thread, and
+                // doing it on a watcher thread instead would trade a missed notification for a
+                // data race. At this point there is nobody left to notify anyway.
+                NonFatalProblem.ReportSentryOnly(ex);
+            }
+        }
+
+        /// <inheritdoc />
+        public void ShowStatusDialog()
+        {
+            dynamic messageBundle = new DynamicJson();
+            messageBundle.showReloadButton = MessageLog.ShouldShowReloadButton;
+            _webSocketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
+            CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
+                MessageAndMilestoneType.LogDisplayed
+            );
+        }
+
+        /// <summary>
+        /// Switch to the disconnected state, recording the given message. Returns false, having
+        /// done nothing, if we were already disconnected -- racing callers (two watchers failing
+        /// at once, a heartbeat and a checkout) must not each write another copy of the messages.
+        /// </summary>
+        public bool MakeDisconnected(TeamCollectionMessage message, string repoDescription)
+        {
+            TeamCollection previousCollection;
+            // Claim the transition atomically. Callers arrive both directly (a synchronous
+            // CheckConnection from an API handler that is not on the UI thread) and indirectly
+            // (a watcher or heartbeat failure marshalled onto the UI thread), so without this
+            // two of them could capture the same live collection, both pass the guard, and both
+            // go on to stop it and build a replacement.
+            lock (_disconnectLock)
+            {
+                if (_disconnectInProgress)
+                    return false;
+                previousCollection = CurrentCollection;
+                if (
+                    previousCollection == null
+                    && CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection
+                )
+                {
+                    return false;
+                }
+                // Null this inside the claim, so that anything looking at it while we build the
+                // replacement sees "disconnected" rather than a half-built state.
+                CurrentCollection = null;
+                _disconnectInProgress = true;
+            }
+            try
+            {
+                CompleteDisconnect(previousCollection, message, repoDescription);
+            }
+            finally
+            {
+                // Cleared in a finally, and only ever within this one synchronous method, so
+                // unlike a flag held across an asynchronous marshal it cannot latch on and leave
+                // us permanently unable to disconnect.
+                lock (_disconnectLock)
+                {
+                    _disconnectInProgress = false;
+                }
+            }
+            return true;
+        }
+
+        private readonly object _disconnectLock = new object();
+        private bool _disconnectInProgress;
+
+        /// <summary>
+        /// The rest of the disconnect, run by whichever caller won the claim above. Deliberately
+        /// outside the lock: it writes to the message log, which raises an event that reaches
+        /// WinForms and the websocket server.
+        /// </summary>
+        private void CompleteDisconnect(
+            TeamCollection previousCollection,
+            TeamCollectionMessage message,
+            string repoDescription
+        )
+        {
+            // BL-16729: we have given up on this collection, so stop its file system watchers and
+            // its periodic connection check. Otherwise a dead watcher goes on raising Error, and a
+            // live one goes on queueing repo changes into an object nobody is using any more.
+            try
+            {
+                previousCollection?.StopMonitoring();
+            }
+            catch (Exception ex)
+            {
+                NonFatalProblem.ReportSentryOnly(ex);
+            }
+            // Keep it so Dispose can still clean it up; nothing else refers to it now. If we
+            // already had one (disconnected, reconnected, disconnected again), that one has
+            // certainly finished with, so let it go rather than leaking it.
+            _collectionAwaitingDisposal?.Dispose();
+            _collectionAwaitingDisposal = previousCollection;
             // This will show the TC icon in error state, and if the dialog is shown it will have this one message.
             CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(
                 this,
@@ -560,6 +764,10 @@ namespace Bloom.TeamCollection
         public void Dispose()
         {
             CurrentCollection?.Dispose();
+            // A collection we disconnected from part way through the session. MakeDisconnected
+            // has already stopped its watchers, but it still holds the objects (BL-16729).
+            _collectionAwaitingDisposal?.Dispose();
+            _collectionAwaitingDisposal = null;
         }
 
         public void RaiseBookStatusChanged(BookStatusChangeEventArgs eventInfo)
