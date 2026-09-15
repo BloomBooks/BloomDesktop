@@ -103,10 +103,11 @@ let unsubscribeFromDelayRegister: (() => void) | undefined;
 // Set when the work finished but the snapshot of the finished page could not be delivered, so
 // the idle notice was withheld; the next delivered snapshot sends it. See tellCSharpIdle.
 let idleNoticeOwed = false;
-// What the last gather returned, delivered or not. The idle notice may go only when this is what
-// C# holds (lastPosted); otherwise C# would take "idle" as "you have the finished page" when it
-// does not.
+// What the last gather returned, delivered or not, and whether it returned at all. The idle
+// notice may go only when the last gather succeeded and what it returned is what C# holds
+// (lastPosted); otherwise C# would take "idle" as "you have the finished page" when it does not.
 let lastGathered: string | undefined;
+let lastGatherSucceeded = false;
 // Numbers the busy and idle notices, so that C# can ignore one that arrives after a later one.
 // The two are separate HTTP requests and HTTP does not promise to deliver them in order, so an
 // idle notice (or its retry) can land after the busy notice for work that began afterwards; taken
@@ -180,11 +181,13 @@ async function takeSnapshot(): Promise<void> {
         // Waits for any in-flight work that belongs in the page (see pageContentDelays), then
         // reads the page the same way a real save does, so a snapshot can never differ from what
         // a save would have produced at the same moment.
+        lastGatherSucceeded = false;
         const content = await gatherPageContent();
 
         // The page may have been unloaded, or navigated, while we were waiting.
         if (pageIdBeingWatched !== pageId) return;
         lastGathered = content;
+        lastGatherSucceeded = true;
 
         if (content !== lastPosted) {
             const reply = await postStringQuietly(
@@ -333,11 +336,11 @@ function wasTaken(reply: unknown): boolean {
 async function tellCSharpIdle(pageId: string): Promise<void> {
     if (busy) await runDone;
     await takeSnapshot();
-    if (lastGathered !== lastPosted) {
-        // The snapshot of the finished page was not delivered (the post failed, or was refused),
-        // so C# does not have it yet. Saying idle now would let a save go ahead on the content
-        // from before the work. The retry that takeSnapshot has scheduled sends the notice once
-        // the content lands.
+    if (!lastGatherSucceeded || lastGathered !== lastPosted) {
+        // The finished page could not be read, or its snapshot was not delivered (the post
+        // failed, or was refused), so C# does not have it yet. Saying idle now would let a save
+        // go ahead on the content from before the work. The retry that takeSnapshot has
+        // scheduled sends the notice once the content lands.
         idleNoticeOwed = true;
         return;
     }
@@ -408,6 +411,14 @@ function takeBaseline(pageId: string): void {
                 scheduleSnapshot();
             } else {
                 lastPosted = baseline;
+                lastGathered = baseline;
+                lastGatherSucceeded = true;
+                if (idleNoticeOwed) {
+                    // Load-time work finished while the baseline was still being read, so the
+                    // idle notice waited; the baseline IS the page as it is after that work.
+                    idleNoticeOwed = false;
+                    void postIdleNotice(pageId);
+                }
             }
         },
         () => {
@@ -441,6 +452,7 @@ export function startWatchingPageForSnapshots(
     busyWith = undefined;
     idleNoticeOwed = false;
     lastGathered = undefined;
+    lastGatherSucceeded = false;
     unsubscribeFromDelayRegister = onDelayRegisterChanged(
         handleDelayRegisterChange,
     );
@@ -497,6 +509,7 @@ export function stopWatchingPageForSnapshots(): void {
     busyWith = undefined;
     idleNoticeOwed = false;
     lastGathered = undefined;
+    lastGatherSucceeded = false;
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
 }
