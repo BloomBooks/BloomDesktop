@@ -703,3 +703,49 @@ fixtures (`bloomTest` plus a prepared collection holding a known canvas page); t
 already has everything that shape of suite needs, so after the port, adding it is a config
 edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
 is worth keeping — page loads are the slow part either way.
+
+## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
+
+`import-recording.spec.ts:84` failed in the 2026-09-15 nightly (run 34994810480) with a good
+message — it named the imported file's id and the ids actually on the page — but that alone does
+not say whether the test or Bloom is wrong. What settled it was the **order of Bloom's own API
+calls**: `checkForAnyRecording?ids=i40279cf0…` repeatedly before the import, `fileIO/copyFile`
+naming `i69cdb056…`, and then `checkForAnyRecording?ids=i69cdb056…` — an id that appears in no
+page query anywhere in the trace. That sequence is what proved a real product bug (BL-16873,
+Import Recording naming the mp3 after an element that is not the one owning the audio) rather
+than a flaky test, and it is what told us *which* of two possible mechanisms had fired.
+
+Getting at it meant downloading the artifact, unzipping `trace.zip`, and writing a throwaway
+Node script: `0-trace.network` is newline-delimited JSON with a `startedDateTime` on every
+entry, so sorting the `bloom/api/` requests by time reconstructs what the tool did. Playwright's
+HTML report has the same data behind a GUI, which is no use to a terminal session or to anyone
+reading a CI artifact. That cost most of an hour, and it is the third nightly investigation this
+month to need it.
+
+Fix direction: a small `src/BloomE2E/tools/apiTimeline.mjs` that takes a `trace.zip` (or a
+`test-results/<test>/` folder) and prints the `bloom/api/` calls in time order; and have
+`keepEvidenceOnFailure` write that timeline beside the kept collection, so the artifact carries
+it and nobody unzips anything. (Found 2026-09-15.)
+
+## Nothing reproduces a loaded-runner race on a developer machine
+
+Three investigations this month — the cover-title loss, the font-chooser pane, and BL-16873 —
+all turned on a failure that the CI runner produces and a developer box does not, and in each
+one "try it locally" was the first thing tried and the least informative. For BL-16873 the local
+attempts were worse than uninformative: of about a dozen runs, only six actually completed an
+import (all correct), because the two more interesting setups never got that far — after a page
+change the Import button was not clickable within 5s, and under CDP `Emulation.setCPUThrottlingRate`
+at 20x the *By Whole Text Box* radio stayed disabled, so the run died before the step under test.
+Throttling the renderer hard enough to widen the race also disables the controls the test needs,
+which is why the cover-title entry's "six with the WebView renderer throttled 6x" found nothing
+either.
+
+So the suite has no honest way to ask "does this fail when the machine is busy?", and a negative
+local result gets reported with more confidence than it earns.
+
+Fix direction: a suite-level slow mode that reproduces runner *contention* rather than clamping
+the renderer — background CPU load while the test runs at normal speed, plus an env var
+(`BLOOM_E2E_SLOW=1`) that the fixtures honour by raising the action timeouts to match, so the UI
+stays drivable while the app's own async work gets pushed around. Worth pairing with a way to
+run one spec N times under that load, since these failures are all intermittent.
+(Found 2026-09-15.)
