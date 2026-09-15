@@ -258,7 +258,7 @@ namespace Bloom.Book
             if (!Version.TryParse(stampedVersionString, out var stampedVersion))
                 return true; // never done, or an unreadable stamp we should redo
 
-            if (stampedVersion < GetRunningBloomVersion())
+            if (stampedVersion < Shell.GetShortVersion())
                 return true; // last done by an older Bloom
 
             // Same or newer Bloom did it; the only remaining reason to redo is a page-size change.
@@ -357,14 +357,6 @@ namespace Bloom.Book
             return true;
         }
 
-        // The Bloom version (major.minor.build) whose per-page fix-up is stamped into a processed book.
-        // Shell.GetShortVersionInfo() reads it from the running assembly (e.g. "6.5.0") and parses
-        // cleanly as a Version, unlike Application.ProductVersion, which can carry a channel suffix.
-        private static Version GetRunningBloomVersion()
-        {
-            return Version.TryParse(Shell.GetShortVersionInfo(), out var v) ? v : new Version(0, 0);
-        }
-
         // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
         // governs the layout-derived measurements the per-page fix-up computes, so a change to it is
         // exactly when those measurements need recomputing.
@@ -379,7 +371,7 @@ namespace Bloom.Book
         {
             book.OurHtmlDom.UpdateMetaElement(
                 kPerPageFixupVersionMeta,
-                GetRunningBloomVersion().ToString()
+                Shell.GetShortVersion().ToString()
             );
             book.OurHtmlDom.UpdateMetaElement(kPerPageFixupLayoutMeta, GetLayoutStamp(book));
         }
