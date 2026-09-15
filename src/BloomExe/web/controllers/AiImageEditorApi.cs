@@ -1229,10 +1229,13 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Reads the two numbers of <see cref="HtmlDom.kFractionOfPageAttribute"/> ("0.42,0.31"). Null
-        /// for anything else, including a missing attribute and a page saved by a Bloom that
-        /// did not write one; the AI image editor then simply offers that slot no automatic
-        /// size. Parsed with the invariant culture, because the front end writes the numbers
-        /// with JavaScript, which always uses a point for the decimal separator.
+        /// for anything else, including a missing attribute. A missing attribute is not the
+        /// normal state of a page: the whole book is brought up to date, re-saving every page,
+        /// before it can be edited (BL-16852), so every slot ordinarily carries one. Null here is
+        /// hardening against that update having failed; the AI image editor then simply offers
+        /// that slot no automatic size rather than a guess. Parsed with the invariant culture,
+        /// because the front end writes the numbers with JavaScript, which always uses a point
+        /// for the decimal separator.
         /// </summary>
         internal static (double width, double height)? TryParseFractionOfPage(string value)
         {
