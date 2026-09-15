@@ -11,13 +11,30 @@ namespace Bloom.web
     /// </summary>
     public class WebProgressAdapter : IProgress
     {
-        private class NullProgressIndicator : IProgressIndicator
+        /// <summary>
+        /// Forwards the percent-done that IProgress-based code sets on its indicator to the web
+        /// progress as a "percent" event, which the React ProgressDialog shows when it was opened
+        /// as determinate (see BrowserProgressDialog.DoWorkWithProgressDialogAsync). A dialog
+        /// that was not opened that way ignores the event, so it is harmless to send.
+        /// </summary>
+        private class WebProgressIndicator : IProgressIndicator
         {
+            private readonly IWebSocketProgress _webProgress;
+
+            public WebProgressIndicator(IWebSocketProgress webProgress)
+            {
+                _webProgress = webProgress;
+            }
+
             int _percent;
             public int PercentCompleted
             {
                 get { return _percent; }
-                set { _percent = value; }
+                set
+                {
+                    _percent = value;
+                    _webProgress?.SendPercent(value);
+                }
             }
             public SynchronizationContext SyncContext
             {
@@ -37,6 +54,7 @@ namespace Bloom.web
         public WebProgressAdapter(IWebSocketProgress progress)
         {
             _webProgress = progress;
+            _indicator = new WebProgressIndicator(progress);
         }
 
         private bool _showVerbose;
@@ -52,7 +70,7 @@ namespace Bloom.web
             set { return; }
         }
 
-        private IProgressIndicator _indicator = new NullProgressIndicator();
+        private IProgressIndicator _indicator;
         public IProgressIndicator ProgressIndicator
         {
             get { return _indicator; }

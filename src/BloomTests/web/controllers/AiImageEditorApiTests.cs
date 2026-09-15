@@ -11,6 +11,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Code;
 using SIL.Core.ClearShare;
@@ -2152,6 +2153,107 @@ namespace BloomTests.web.controllers
                 Is.EqualTo(new[] { "Page 4" })
             );
         }
+
+        // A one-page book DOM whose single image slot carries the given
+        // data-fraction-of-page attribute markup (pass "" for no attribute at all).
+        private static HtmlDom MakeDomWithFractionOfPage(string fractionAttributeMarkup)
+        {
+            return new HtmlDom(
+                @"<html><head></head><body>
+                    <div id='bloomDataDiv'></div>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <div class='bloom-imageContainer' "
+                    + fractionAttributeMarkup
+                    + @"><img src='pic.png'/></div>
+                    </div></div>
+                  </body></html>"
+            );
+        }
+
+        // The fractionOfPage that EnumerateBookImages hands the AI image editor for the first
+        // (only) slot of the given DOM, as JSON. Null when it sent none.
+        private JToken FirstImagesFractionOfPage(HtmlDom dom)
+        {
+            MakePlainPng("pic.png");
+            var images = AiImageEditorApi.EnumerateBookImages(dom, _bookFolder.Path);
+            Assert.That(images, Is.Not.Empty, "setup: the slot should have been offered at all");
+            var first = JObject.FromObject(images[0]);
+            return first["fractionOfPage"];
+        }
+
+        [Test]
+        public void EnumerateBookImages_SlotRecordsItsShareOfThePage_PassesItOn()
+        {
+            // The front end wrote this when the page was last saved; C# only carries it, because
+            // turning it into a number of dots needs the page size, which only a laid-out
+            // browser page knows.
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,0.31'")
+            );
+
+            Assert.That(fraction, Is.Not.Null, "the slot's share of its page should travel");
+            Assert.That(fraction["width"].Value<double>(), Is.EqualTo(0.42).Within(0.0001));
+            Assert.That(fraction["height"].Value<double>(), Is.EqualTo(0.31).Within(0.0001));
+        }
+
+        [Test]
+        public void EnumerateBookImages_NoShareRecorded_SendsNull()
+        {
+            // A page not saved since Bloom started recording this. The AI image editor then
+            // offers that slot no automatic size, which is better than a guessed one.
+            var fraction = FirstImagesFractionOfPage(MakeDomWithFractionOfPage(""));
+
+            Assert.That(
+                fraction.Type,
+                Is.EqualTo(JTokenType.Null),
+                "a slot with no recorded share should be sent as null, not omitted"
+            );
+        }
+
+        [Test]
+        public void EnumerateBookImages_MalformedShare_SendsNull()
+        {
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,banana'")
+            );
+
+            Assert.That(fraction.Type, Is.EqualTo(JTokenType.Null));
+        }
+
+        [TestCase("0.42,0.31", 0.42, 0.31)]
+        [TestCase(" 0.42 , 0.31 ", 0.42, 0.31)]
+        [TestCase("1,1", 1.0, 1.0)]
+        public void TryParseFractionOfPage_ReadsTwoNumbers(
+            string value,
+            double expectedWidth,
+            double expectedHeight
+        )
+        {
+            var fraction = AiImageEditorApi.TryParseFractionOfPage(value);
+
+            Assert.That(fraction, Is.Not.Null, "'{0}' should parse", value);
+            Assert.That(fraction.Value.width, Is.EqualTo(expectedWidth).Within(0.0001));
+            Assert.That(fraction.Value.height, Is.EqualTo(expectedHeight).Within(0.0001));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("abc")]
+        [TestCase("1")]
+        [TestCase("0.4,x")]
+        [TestCase("0.4,0.3,0.2")]
+        [TestCase("0,0.5")]
+        [TestCase("-0.4,0.5")]
+        public void TryParseFractionOfPage_RefusesAnythingElse(string value)
+        {
+            Assert.That(
+                AiImageEditorApi.TryParseFractionOfPage(value),
+                Is.Null,
+                "'{0}' is not a share of a page",
+                value ?? "(null)"
+            );
+        }
     }
 
     /// <summary>
@@ -2348,6 +2450,375 @@ namespace BloomTests.web.controllers
                     $"'{value}' is documented as an accepted value"
                 );
             }
+        }
+    }
+
+    /// <summary>
+    /// The cropped view Bloom hands the AI image editor in place of a cropped image's file,
+    /// and the matching removal of the crop when a replacement lands on a slot the user does
+    /// not have open (BL-16868).
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorCroppingTests
+    {
+        private const string kTestImagesFolder = "src/BloomTests/ImageProcessing/images";
+
+        private TemporaryFolder _bookFolder;
+        private Size _uncroppedSize;
+
+        [SetUp]
+        public void Setup()
+        {
+            _bookFolder = new TemporaryFolder("AiImageEditorCroppingTests");
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                kTestImagesFolder,
+                "man.png"
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, "man.png"));
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out _uncroppedSize
+                ),
+                Is.True,
+                "setup: should be able to read the test image's size"
+            );
+            // The crops below take a 50x40 rectangle at (10,20), so the test image has to be
+            // bigger than that for "smaller than the original" to mean anything.
+            Assert.That(
+                _uncroppedSize.Width,
+                Is.GreaterThan(60),
+                "setup: test image is wide enough to crop"
+            );
+            Assert.That(
+                _uncroppedSize.Height,
+                Is.GreaterThan(60),
+                "setup: test image is tall enough to crop"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _bookFolder.Dispose();
+        }
+
+        /// <summary>
+        /// The markup a cropped image actually has: an img carrying width/left/top, inside an
+        /// image container, inside a canvas element whose width/height fix the visible box.
+        /// Passing no imgStyle gives an ordinary, uncropped image.
+        /// </summary>
+        private static SafeXmlElement MakeSlotImage(string imgStyle, string canvasElementStyle)
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='bloom-canvas'>
+                      <div class='bloom-canvas-element' style='"
+                    + canvasElementStyle
+                    + @"'>
+                        <div class='bloom-imageContainer'><img src='man.png' style='"
+                    + imgStyle
+                    + @"'/></div>
+                      </div>
+                    </div></div>
+                  </body></html>"
+            );
+            return dom.RawDom.SelectSingleNode("//img") as SafeXmlElement;
+        }
+
+        // An img cropped to a 50x40 rectangle at (10,20) of the full image: with the img's
+        // width left at the image's natural width the scale is 1, so the canvas element's
+        // width/height are the crop size and the img's negative left/top are its origin.
+        private SafeXmlElement MakeCroppedSlotImage()
+        {
+            return MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageIsNotCropped_ReturnsNull()
+        {
+            var element = MakeSlotImage("", "width: 50px; height: 40px;");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an uncropped image should be offered as its own file"
+            );
+        }
+
+        /// <summary>
+        /// Bloom writes width/left/top when it merely fits a background image to its canvas,
+        /// so those styles alone must not send us off re-encoding an image to produce a copy
+        /// of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageOnlyFittedToItsCanvas_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: 0px; top: 0px;",
+                $"width: {_uncroppedSize.Width}px; height: {_uncroppedSize.Height}px;"
+            );
+            // Sanity: this is the markup that would otherwise look cropped.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("width"),
+                "setup: the image carries the styles cropping uses"
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "nothing is hidden, so there is nothing to render"
+            );
+        }
+
+        /// <summary>
+        /// The rounding that makes a fitted image's rectangle miss the file's bounds happens in
+        /// CSS pixels, and the rectangle is in image pixels, so the tolerance has to grow with
+        /// the ratio between them. A big photo shown small would otherwise report itself cropped
+        /// and be re-encoded at every launch, a few rows short of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_LargeImageShownSmallWithRounding_ReturnsNull()
+        {
+            var displayedWidth = _uncroppedSize.Width / 10.0;
+            // Four tenths of a CSS pixel short in height — four image pixels at this scale.
+            var displayedHeight = _uncroppedSize.Height / 10.0 - 0.4;
+            var element = MakeSlotImage(
+                Px("width", displayedWidth) + " left: 0px; top: 0px;",
+                Px("width", displayedWidth) + " " + Px("height", displayedHeight)
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "sub-pixel rounding in the layout is not a crop"
+            );
+        }
+
+        private static string Px(string name, double value)
+        {
+            return name
+                + ": "
+                + value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+                + "px;";
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_Placeholder_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+            element.SetAttribute("src", "placeHolder.png");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an empty slot's placeholder is hidden, not cropped (BL-15201)"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_CroppedImage_RendersTheVisibleRectangle()
+        {
+            var element = MakeCroppedSlotImage();
+
+            var relativePath = AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                _bookFolder.Path,
+                element,
+                "page1",
+                2
+            );
+
+            Assert.That(relativePath, Is.Not.Null, "a cropped image should get a cropped view");
+            Assert.That(
+                relativePath,
+                Is.EqualTo(
+                    AiImageEditorApi.kWorkingFolderName
+                        + "/"
+                        + AiImageEditorApi.kCroppedViewFolderName
+                        + "/page1-2.png"
+                ),
+                "the rendering is named for the slot it came from, inside the working folder"
+            );
+
+            var renderedPath = Path.Combine(
+                _bookFolder.Path,
+                relativePath.Replace('/', Path.DirectorySeparatorChar)
+            );
+            Assert.That(
+                RobustFile.Exists(renderedPath),
+                Is.True,
+                "the rendering should be on disk"
+            );
+            Assert.That(
+                ImageUtils.TryGetImageSize(renderedPath, out var croppedSize),
+                Is.True,
+                "the rendering should be a readable image"
+            );
+            Assert.That(croppedSize.Width, Is.EqualTo(50), "the visible width");
+            Assert.That(croppedSize.Height, Is.EqualTo(40), "the visible height");
+
+            // The book's own image must come through untouched: the crop is presentational,
+            // and losing the rest of the frame would be destructive.
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out var afterSize
+                ),
+                Is.True
+            );
+            Assert.That(
+                afterSize,
+                Is.EqualTo(_uncroppedSize),
+                "the original image file must not be altered"
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_RemovesOnlyTheCropProperties()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "style",
+                element.GetAttribute("style") + " transform: rotate(3deg);"
+            );
+            // Sanity check, so the assertion below can't pass on markup that never had a crop.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("left"),
+                "setup: the image starts out cropped"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Not.Contain("width"), "crop width should be gone");
+            Assert.That(style, Does.Not.Contain("left"), "crop left should be gone");
+            Assert.That(style, Does.Not.Contain("top"), "crop top should be gone");
+            Assert.That(
+                style,
+                Does.Contain("rotate(3deg)"),
+                "styling that has nothing to do with cropping should survive"
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_NothingElseInTheStyle_RemovesTheAttribute()
+        {
+            var element = MakeCroppedSlotImage();
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "an empty style attribute is worth removing rather than leaving behind"
+            );
+        }
+
+        /// <summary>
+        /// GetImageElementOfSlot hands back the CONTAINER when it wears the picture as a
+        /// background image. Its width/height/left/top are the container's own geometry, and a
+        /// background-image slot has no crop to drop in the first place.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_ElementIsAContainer_LeavesItAlone()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'>
+                      <div class='bloom-imageContainer' style=""width: 200px; height: 100px; background-image:url('man.png')""></div>
+                    </div>
+                  </body></html>"
+            );
+            var container =
+                dom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-imageContainer')]")
+                as SafeXmlElement;
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(container, () => new Size(100, 100));
+
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("width: 200px"),
+                "the container's own geometry must survive"
+            );
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("height: 100px"),
+                "the container's own geometry must survive"
+            );
+        }
+
+        /// <summary>
+        /// A background image marked to cover its canvas is made to cover BY the crop styles,
+        /// so clearing them and stopping there would letterbox a full-bleed picture. The
+        /// replacement has to be re-centered to fill the canvas element, which the cover branch
+        /// has already sized to the whole page canvas.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackground_FillsTheCanvasElement()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 200px; height: 100px;"
+            );
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            // A 100x200 replacement in a 200x100 box: covering needs scale 2 on the width,
+            // giving a 200x400 image centered vertically at top -150.
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 200));
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Contain("width: 200px"), "wide enough to fill the box");
+            Assert.That(style, Does.Contain("left: 0px"), "no overflow to share horizontally");
+            Assert.That(style, Does.Contain("top: -150px"), "the overflow is hidden evenly");
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackgroundButSizeUnreadable_JustClearsTheCrop()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => Size.Empty);
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "without the new image's size there is nothing to compute a fill from"
+            );
         }
     }
 }

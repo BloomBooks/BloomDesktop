@@ -2492,7 +2492,11 @@ namespace Bloom.Book
                     ?.Item2.Unencoded;
             }
 
-            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+            // Not "all of them are present": the fraction-of-page value is optional, so that a
+            // book saved before it existed still gets its background image rebuilt.
+            var hasBackgroundImgData = HtmlDom.HaveDataForReconstructingBackgroundImgWrapper(
+                backgroundImgValues
+            );
 
             // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
             // we don't ever want restored. The style attribute is special, for a series of historical reasons,
