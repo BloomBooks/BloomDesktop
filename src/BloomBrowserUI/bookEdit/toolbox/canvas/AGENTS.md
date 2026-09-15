@@ -24,7 +24,7 @@ Bloom Edit Tab uses multiple iframes.
 - Do not treat top `CURRENTPAGE` frame as editable page frame.
 
 ## Canvas tool activation
-- Use `h3[data-toolid="canvasTool"]` for the Canvas tab.
+- The toolbox is a MUI accordion; use `.MuiAccordionSummary-root:has([data-toolid="canvas"])` for the Canvas tab (the header's icon span carries the tool's canonical id). See `openCanvasToolTab` in `bookEdit/canvas-e2e-tests/helpers/canvasFrames.ts`.
 - Check `#canvasToolControls` first; if already visible, do not click the tab again.
 
 ## Drag/drop testing rules

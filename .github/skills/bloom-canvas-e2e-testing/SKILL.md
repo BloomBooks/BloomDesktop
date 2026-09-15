@@ -52,7 +52,7 @@ Bloom Edit Tab has multiple iframes. Use frame names first:
 - Do not treat top `CURRENTPAGE` frame as editable page content.
 
 ## Reliable selectors and activation
-- Canvas tool tab header: `h3[data-toolid="canvasTool"]`
+- Canvas tool tab header (the toolbox is a MUI accordion; the header's icon carries the tool's canonical id): `.MuiAccordionSummary-root:has([data-toolid="canvas"])`
 - Canvas tool root: `#canvasToolControls`
 - Canvas surface: `.bloom-canvas`
 - Created elements: `.bloom-canvas-element`
