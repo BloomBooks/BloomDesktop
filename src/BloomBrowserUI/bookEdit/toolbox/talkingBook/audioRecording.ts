@@ -1369,8 +1369,48 @@ export default class AudioRecording implements IAudioRecorder {
             });
     }
 
+    // Make sure the highlight points at something that is actually on the page being shown,
+    // before anything names a file after it.
+    //
+    // highlightedElement can be left pointing at a node that is no longer in the page: CKEditor's
+    // initialization replaces the paragraph it lived in, and a page change leaves it in the
+    // previous, detached document (the same staleness reestablishCurrentHighlightIfNeeded exists to
+    // repair for the visible highlight, BL-15300). Walking up from a detached node reaches null
+    // rather than the text box, so normalising alone does not save us -- we have to re-point at the
+    // live page first. Re-point by id when the same element is still there, and otherwise fall back
+    // to the page's default selection.
+    private async ensureHighlightIsOnTheCurrentPageAsync(): Promise<void> {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return;
+        const current = this.highlightedElement;
+        if (current && pageBody.contains(current)) return;
+
+        const liveEquivalent = current?.id
+            ? pageBody.ownerDocument.getElementById(current.id)
+            : null;
+        if (liveEquivalent) {
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            return;
+        }
+        await this.setCurrentAudioElementToDefaultAsync();
+
+        // That gives up without choosing anything in several cases (most notably when the talking
+        // book tool is not the active one). Leaving the highlight pointing off-page would put us
+        // right back where we started, so fall back to the first thing on this page that can own a
+        // recording.
+        const afterDefault = this.highlightedElement;
+        if (afterDefault && pageBody.contains(afterDefault)) return;
+        const firstOwner = pageBody.querySelector(
+            `${kAudioSentenceClassSelector}, ${kBloomEditableTextBoxSelector}`,
+        );
+        if (firstOwner) this.highlightedElement = firstOwner as HTMLElement;
+    }
+
     // The id under which the current selection's audio file is stored, minting one if the element
     // has not got an id yet.
+    //
+    // Callers must have made sure the highlight is on the current page first (see
+    // ensureHighlightIsOnTheCurrentPageAsync); a detached node has no ancestors to walk up to.
     //
     // This deliberately asks getCurrentAudioSentence() rather than reading highlightedElement
     // directly. The highlight is not always on the element that OWNS the audio: in soft-split mode
@@ -4924,6 +4964,11 @@ export default class AudioRecording implements IAudioRecorder {
 
         const importPath: string = result.data;
         if (!importPath) return;
+
+        // The file we are about to write is named after the current selection, so make sure that
+        // selection is really on the page being shown before we use it (BL-16873). The recording
+        // path does the equivalent in startRecordCurrentAsync.
+        await this.ensureHighlightIsOnTheCurrentPageAsync();
 
         const resultAudioDir = await postJson(
             "fileIO/getSpecialLocation",

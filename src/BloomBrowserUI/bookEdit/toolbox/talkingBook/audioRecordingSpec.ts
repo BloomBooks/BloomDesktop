@@ -2335,6 +2335,48 @@ describe("audio recording tests", () => {
                 "Import minted a stray id onto the highlighted paragraph.",
             ).toBeFalsy();
         });
+
+        // The other way the highlight goes wrong: it points at a node that is no longer IN the
+        // page -- CKEditor replacing the paragraph it lived in, or a previous page's document
+        // after a page change (BL-15300). Walking up parentElement from a detached node reaches
+        // null, so normalising upwards is not enough on its own; the highlight has to be
+        // re-pointed at the live page first.
+        it("importRecording() names the file after the text box even when the highlight is detached", async () => {
+            const div1 =
+                '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Detach the highlighted paragraph, the way CKEditor's initialization replaces it.
+            const pageFrame = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement | null;
+            const doc = pageFrame?.contentDocument ?? document;
+            doc.querySelector("p[data-test-preselect]")?.remove();
+
+            const bookPath = "C:/Collection/Book";
+            vi.restoreAllMocks();
+            simulateBloomApiResponses("C:/elsewhere/narration.mp3", bookPath);
+
+            await recording.importRecordingAsync();
+
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(
+                decodeURIComponent(copyCall![1].to),
+                "The imported mp3 was named after a detached element, so nothing on the page owns it.",
+            ).toBe(`${bookPath}/audio/div1.mp3`);
+        });
     });
 
     it("makeAudioSentenceElementsLeaf creates new ids for duplicate text", () => {
