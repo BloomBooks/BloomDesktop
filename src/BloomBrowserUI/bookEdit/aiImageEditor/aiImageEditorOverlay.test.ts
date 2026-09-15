@@ -51,9 +51,11 @@ const openAgainstABookWithOneImage = (
             src: `http://localhost:8089/bloom/book/${kImageFile}`,
         },
     ],
-    // The book's BloomPUB image limit, as C# sends it with the launch reply. Left out
-    // altogether when not given, which is what an older C# half sends.
-    digitalScreen?: { longEdgePx: number; shortEdgePx: number },
+    // The book's BloomPUB image limit, which C# always sends with the launch reply.
+    digitalScreen: { longEdgePx: number; shortEdgePx: number } = {
+        longEdgePx: 1280,
+        shortEdgePx: 720,
+    },
 ) => {
     openAiImageEditor(target);
 
@@ -68,7 +70,7 @@ const openAgainstABookWithOneImage = (
             sessionToken: "token123",
             book: { id: "book1", title: "Test Book" },
             bookImages,
-            ...(digitalScreen ? { digitalScreen } : {}),
+            digitalScreen,
             history: [],
         },
     });
@@ -162,6 +164,8 @@ beforeEach(() => {
     });
     getEditablePageBundleExports.mockReturnValue({
         applyAiImageEditorReplacements,
+        // The real page frame always has this; a test that cares what it answers overrides it.
+        getAiImageEditorPageMetrics: () => null,
     });
     delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
         .__bloomAiImageEditorCleanup;
@@ -1112,27 +1116,6 @@ describe("aiImageEditorOverlay: the size each slot wants", () => {
         });
     });
 
-    test("a book whose limit C# did not send falls back to the BloomPUB default", () => {
-        // An older C# half sends no digitalScreen. The editor must still open, with the
-        // numbers BloomPUB uses when nobody has moved the slider.
-        getEditablePageBundleExports.mockReturnValue({
-            applyAiImageEditorReplacements,
-            getAiImageEditorPageMetrics: () => ({
-                widthPx: 378,
-                heightPx: 672,
-                isDigital: true,
-            }),
-        });
-
-        const bookImages = getBookImagesSentToEditor();
-
-        expect(bookImages[0].suggestedTarget).toEqual({
-            width: 605,
-            height: 884,
-            memo: expect.stringContaining("1280 x 720 screen"),
-        });
-    });
-
     test("a slot whose share of its page was never recorded gets no target", () => {
         getEditablePageBundleExports.mockReturnValue({
             applyAiImageEditorReplacements,
@@ -1145,8 +1128,8 @@ describe("aiImageEditorOverlay: the size each slot wants", () => {
     });
 
     test("the editor still opens when the page frame cannot say how big a page is", () => {
-        // The page bundle may not be attached yet, and an older one has no such function.
-        // The editor matters more than the size hint.
+        // The page bundle may not be attached yet. The editor matters more than the size
+        // hint.
         getEditablePageBundleExports.mockReturnValue(null);
 
         const bookImages = getBookImagesSentToEditor();

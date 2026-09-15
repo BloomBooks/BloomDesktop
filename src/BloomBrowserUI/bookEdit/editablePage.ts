@@ -107,11 +107,7 @@ export interface IPageFrameExports {
     applyAiImageEditorReplacements(
         results?: IAiImageEditorCommitResult[],
     ): IAiImageEditorApplyOutcome;
-    getAiImageEditorPageMetrics(): {
-        widthPx: number;
-        heightPx: number;
-        isDigital: boolean;
-    } | null;
+    getAiImageEditorPageMetrics(): IPageMetrics | null;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -148,6 +144,7 @@ import type {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiImageEditorShared";
+import type { IPageMetrics } from "./js/imageTargetResolution";
 export {
     getBodyContentForSavePage,
     requestPageContent,

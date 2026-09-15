@@ -15,6 +15,8 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
     kCanvasElementSelector,
+    kImageContainerClass,
+    kImageContainerSelector,
 } from "../toolbox/canvas/canvasElementConstants";
 import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 
@@ -33,15 +35,15 @@ import $ from "jquery";
 import {
     kBrowserDpi,
     kPrintDpi,
-    getDefaultDigitalScreen,
     getSuggestedImageTargetForContainer,
     IDigitalScreen,
     isDeviceLayoutPage,
     parseBloomPubImageLimit,
 } from "./imageTargetResolution";
 
-export const kImageContainerClass = "bloom-imageContainer";
-export const kImageContainerSelector = `.${kImageContainerClass}`;
+// Declared in canvasElementConstants.ts, which nothing imports anything else from, and
+// re-exported here because most of Bloom names an image slot through this module.
+export { kImageContainerClass, kImageContainerSelector };
 
 // We don't use actual placeHolder.png files anymore, but we do continue to use
 // src="placeHolder.png" to mark placeholders
@@ -954,9 +956,12 @@ interface IImageInfoResponse {
 
 // The screen a digital copy of this book is made for: the BloomPUB image limit the user set in
 // Book Settings > BloomPUB > Resolution, which is the size the publish step shrinks images to.
-// Falls back to the BloomPUB default when the request fails, so the tooltip still appears.
+// Undefined when the settings cannot be fetched, and then the tooltip says nothing about the
+// size an image wants rather than quoting a screen this book may not use.
 // Corresponds with BookSettingsApi.cs::HandleBookSettings, whose `publish` is PublishSettings.
-async function getBloomPubImageLimitAsync(): Promise<IDigitalScreen> {
+async function getBloomPubImageLimitAsync(): Promise<
+    IDigitalScreen | undefined
+> {
     const result = await getWithConfigAsync<{
         publish?: {
             bloomPUB?: {
@@ -965,7 +970,7 @@ async function getBloomPubImageLimitAsync(): Promise<IDigitalScreen> {
         };
     }>("book/settings", {});
     if (!result) {
-        return getDefaultDigitalScreen();
+        return undefined;
     }
     return parseBloomPubImageLimit(result.data.publish);
 }
@@ -991,17 +996,25 @@ async function DetermineImageTooltipAsync(
     // 300 DPI, and print advice is then left out below because it would be misleading.
     //
     // Only a screen-sized page needs the book's BloomPUB image limit, so a paper page does
-    // not pay for the extra request; the default we pass there is never used.
+    // not pay for the extra request and passes null, which that path never looks at.
     const pageElement = bloomCanvas.closest(".bloom-page");
-    const digitalScreen =
-        pageElement && isDeviceLayoutPage(pageElement)
-            ? await getBloomPubImageLimitAsync()
-            : getDefaultDigitalScreen();
-    const suggestedTarget = getSuggestedImageTargetForContainer(
-        bloomCanvas,
-        digitalScreen,
-    );
-    const isDigital = suggestedTarget?.isDigital === true;
+    const isDeviceLayout = !!pageElement && isDeviceLayoutPage(pageElement);
+    const digitalScreen = isDeviceLayout
+        ? await getBloomPubImageLimitAsync()
+        : undefined;
+    // A screen-sized page whose setting could not be read has nothing to size against, so it
+    // gets no advice at all, exactly as a container that cannot be measured does.
+    const suggestedTarget =
+        isDeviceLayout && !digitalScreen
+            ? null
+            : getSuggestedImageTargetForContainer(
+                  bloomCanvas,
+                  digitalScreen ?? null,
+              );
+    // Whether this page is read on a screen rather than printed, which decides what the
+    // rest of the tooltip may say. Taken from the layout rather than from suggestedTarget,
+    // which is absent when the container or the setting could not be read.
+    const isDigital = isDeviceLayout;
     const isPlaceHolder = isPlaceHolderImage(url);
 
     const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
@@ -1040,7 +1053,9 @@ async function DetermineImageTooltipAsync(
     }
 
     let targetLine = "";
-    if (suggestedTarget && isDigital) {
+    // digitalScreen is fetched exactly on a screen-sized page, so naming it here is both
+    // the digital/paper test and what lets the line quote the screen's size.
+    if (suggestedTarget && digitalScreen) {
         targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container on a ${digitalScreen.longEdgePx} x ${digitalScreen.shortEdgePx} screen.`;
     } else if (suggestedTarget) {
         targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container at ${kPrintDpi} DPI.`;

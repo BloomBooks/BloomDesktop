@@ -37,7 +37,6 @@ import {
 } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
-    getDefaultDigitalScreen,
     getSuggestedImageTargetForFraction,
     IDigitalScreen,
 } from "../js/imageTargetResolution";
@@ -104,8 +103,8 @@ function applyOnThePageBeingEdited(
 //
 // The one thing only the live page can say is how big the page is, which is the same for every
 // page in the book, so we ask the page frame once. Nothing here may stop the editor opening:
-// the page frame is a separate bundle that may not be attached yet (or may be an older one
-// without this function), so a miss is reported to the console and otherwise ignored.
+// the page frame is a separate bundle that may not be attached yet, so a miss is reported to
+// the console and otherwise ignored.
 //
 // `digitalScreen` is the book's BloomPUB image limit, which C# sends with the launch reply and
 // which decides how many pixels a slot on a screen-sized page is worth.
@@ -118,7 +117,7 @@ function addSuggestedTargets(
 ): void {
     try {
         const page =
-            getEditablePageBundleExports()?.getAiImageEditorPageMetrics?.();
+            getEditablePageBundleExports()?.getAiImageEditorPageMetrics();
         if (!page) return;
         bookImages.forEach((bookImage) => {
             if (!bookImage.fractionOfPage) return;
@@ -177,9 +176,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             }>;
             // The screen a digital copy of this book is made for: the BloomPUB image limit
             // from Book Settings, which is what the publish step shrinks images to. Used for
-            // the suggested targets above. Absent from an older Bloom's reply, in which case
-            // we assume the BloomPUB default (getDefaultDigitalScreen).
-            digitalScreen?: IDigitalScreen;
+            // the suggested targets above.
+            digitalScreen: IDigitalScreen;
             references?: Array<{
                 id: string;
                 src: string;
@@ -238,7 +236,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
 
         addSuggestedTargets(
             launchData.bookImages ?? [],
-            launchData.digitalScreen ?? getDefaultDigitalScreen(),
+            launchData.digitalScreen,
         );
 
         const initPayload = {

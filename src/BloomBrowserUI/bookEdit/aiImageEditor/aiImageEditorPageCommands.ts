@@ -15,7 +15,7 @@
 
 import { postJson } from "../../utils/bloomApi";
 import { kImageContainerClass } from "../js/bloomImages";
-import { getOpenPageMetrics } from "../js/imageTargetResolution";
+import { getOpenPageMetrics, IPageMetrics } from "../js/imageTargetResolution";
 import { changeImageByElement } from "../js/bloomEditing";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import {
@@ -66,6 +66,15 @@ function slotIndexOnPage(clicked: HTMLElement | undefined): number {
 // This page's image slots, in the order that gives each one its ordinal. The single place
 // that builds the list, so every caller agrees with C# (SelectImageSlotsOnPage in
 // AiImageEditorApi.cs) about which container is slot 3.
+//
+// It has to stay the FULL list, including slots the AI image editor is never offered. The
+// ordinal in "{pageId}:{ordinal}" is an index into it, and C# indexes the same list: where C#
+// decides not to offer a slot — a Bloom Games target, which merely copies its draggable's
+// picture (IsSlotInsideGameTarget in EnumerateBookImages), or a file format the editor cannot
+// open — it skips that ordinal rather than renumbering. So C# alone decides what the editor
+// may edit; filtering here would shift every later slot's identity. The one thing left out is
+// the controls Bloom injects into the live page, which no saved book has and which the save
+// strips (Cleanup in bloomEditing.ts).
 function imageSlotsOnPage(pageRoot: ParentNode): HTMLElement[] {
     return Array.from(
         pageRoot.querySelectorAll("." + kImageContainerClass),
@@ -78,11 +87,7 @@ function imageSlotsOnPage(pageRoot: ParentNode): HTMLElement[] {
 //
 // Null when there is no laid-out page, which callers treat as "we don't know" rather than as
 // an error.
-export function getAiImageEditorPageMetrics(): {
-    widthPx: number;
-    heightPx: number;
-    isDigital: boolean;
-} | null {
+export function getAiImageEditorPageMetrics(): IPageMetrics | null {
     return getOpenPageMetrics(document.querySelector(".bloom-page"));
 }
 

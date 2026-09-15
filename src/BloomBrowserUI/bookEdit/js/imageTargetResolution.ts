@@ -20,6 +20,7 @@ import {
     kBackgroundImageClass,
     kBloomCanvasClass,
     kCanvasElementClass,
+    kImageContainerClass,
 } from "../toolbox/canvas/canvasElementConstants";
 import { kScrollingLayouts } from "./scrollingLayouts";
 
@@ -43,25 +44,13 @@ export interface IDigitalScreen {
     shortEdgePx: number;
 }
 
-// What to use when a book's own setting cannot be read (an old Bloom that does not send it, or
-// a failed request). These mirror the defaults of ImagePublishSettings.MaxWidth/MaxHeight in
-// src/BloomExe/Book/PublishSettings.cs, so a book nobody has touched the slider on gets the
-// same answer either way.
-const kDefaultDigitalScreenLongEdgePx = 1280;
-const kDefaultDigitalScreenShortEdgePx = 720;
-
-// The screen limit to assume when the book's own one is unavailable; see the constants above.
-export function getDefaultDigitalScreen(): IDigitalScreen {
-    return {
-        longEdgePx: kDefaultDigitalScreenLongEdgePx,
-        shortEdgePx: kDefaultDigitalScreenShortEdgePx,
-    };
-}
-
 // This book's BloomPUB image limit, read out of the `publish` object the book/settings API
-// replies with (PublishSettings in C#, so the names here are its JsonProperty ones). Falls back
-// to getDefaultDigitalScreen when either number is missing or is not a positive number, which
-// is what an older book's settings file, or a book saved before the slider existed, gives us.
+// replies with (PublishSettings in C#, so the names here are its JsonProperty ones).
+//
+// Throws when either number is missing or is not positive. C# always sends both — every
+// BloomPubSettings builds an ImagePublishSettings, whose MaxWidth/MaxHeight have defaults — so
+// there is no book for which this is a legitimate answer, and a silent substitute would have
+// the AI image editor generate at a size nothing asked for.
 export function parseBloomPubImageLimit(
     publishSettings:
         | {
@@ -69,17 +58,20 @@ export function parseBloomPubImageLimit(
                   imageSettings?: {
                       maxWidth?: number;
                       maxHeight?: number;
-                  } | null;
-              } | null;
+                  };
+              };
           }
-        | null
         | undefined,
 ): IDigitalScreen {
     const imageSettings = publishSettings?.bloomPUB?.imageSettings;
     const longEdgePx = imageSettings?.maxWidth;
     const shortEdgePx = imageSettings?.maxHeight;
     if (!isUsableLength(longEdgePx) || !isUsableLength(shortEdgePx)) {
-        return getDefaultDigitalScreen();
+        throw new Error(
+            "This book's settings have no BloomPUB image size " +
+                `(maxWidth ${longEdgePx}, maxHeight ${shortEdgePx}); ` +
+                "C# always sends both, so something is wrong with book/settings.",
+        );
     }
     return { longEdgePx, shortEdgePx };
 }
@@ -90,15 +82,19 @@ export function parseBloomPubImageLimit(
 // editor. Named and shaped after data-imgsizebasedon (see CanvasElementResizeAdjustments.ts).
 export const kFractionOfPageAttribute = "data-fraction-of-page";
 
-// The class Bloom puts on an image slot. Spelled out here rather than imported from
-// bloomImages.ts, because that module imports this one and we do not want the two of them
-// importing each other. C# knows the same name as HtmlDom.kImageContainerClass.
-const kImageContainerClassName = "bloom-imageContainer";
-
 // How many decimal places of the fraction we keep in the HTML. Two is whole percent of the
 // page, which is as fine as this needs to be: the answer only ever chooses an image size, and
 // image models accept a handful of coarse size tiers rather than an exact pixel count.
 const kFractionDecimalPlaces = 2;
+
+// How big a laid-out page is, and whether it is one of the screen-sized layouts. This is what
+// turns a slot's share of its page into a number of dots, and only a browser with the page in
+// front of it can say any of it.
+export interface IPageMetrics {
+    widthPx: number;
+    heightPx: number;
+    isDigital: boolean;
+}
 
 // True if the given page is one of the page sizes meant to be read on a screen rather than
 // printed. The list of those layouts lives in scrollingLayouts.ts.
@@ -114,16 +110,17 @@ export function isDeviceLayoutPage(page: Element): boolean {
 // paper page it is whatever fills the slot at 300 DPI. `memo` explains the number in plain
 // words for a user; the AI image editor shows it verbatim under its size selector.
 //
-// `digitalScreen` is asked for even on a paper page, where it is unused, so that a caller
-// cannot forget it on the one path where it changes the answer.
+// A paper page ignores `digitalScreen`, so a caller that has not fetched the book's setting
+// passes null there. A screen-sized page cannot be answered without it and throws, rather than
+// quoting some other book's screen at the user.
 //
 // Returns null when the inputs do not describe a real space, which happens when a page was
 // never laid out (or, in tests, in jsdom). Callers treat that as "we don't know" rather than as
 // an error.
 export function getSuggestedImageTargetForFraction(
     fraction: { width: number; height: number },
-    page: { widthPx: number; heightPx: number; isDigital: boolean },
-    digitalScreen: IDigitalScreen,
+    page: IPageMetrics,
+    digitalScreen: IDigitalScreen | null,
 ): {
     width: number;
     height: number;
@@ -141,6 +138,12 @@ export function getSuggestedImageTargetForFraction(
     if (containerWidthPx <= 0 || containerHeightPx <= 0) return null;
 
     if (page.isDigital) {
+        if (!digitalScreen) {
+            throw new Error(
+                "A screen-sized page can only be sized against this book's BloomPUB image " +
+                    "limit, and none was supplied.",
+            );
+        }
         // Fit the whole page inside the screen on BOTH edges, then take the slot's share of
         // that. Scaling only the long edge would overshoot on the two ebook layouts that are
         // not 16x9: a 2x3 page taken to 1280 on its long edge is 853 across, and the publish
@@ -189,7 +192,7 @@ export function getSuggestedImageTargetForFraction(
 // would report the zoomed size instead of the layout size.
 export function getSuggestedImageTargetForContainer(
     container: HTMLElement,
-    digitalScreen: IDigitalScreen,
+    digitalScreen: IDigitalScreen | null,
 ): {
     width: number;
     height: number;
@@ -244,7 +247,7 @@ export function getSuggestedImageTargetForContainer(
 // currently has open. Null when there is no page, or it has not been laid out.
 export function getOpenPageMetrics(
     pageRoot?: Element | null,
-): { widthPx: number; heightPx: number; isDigital: boolean } | null {
+): IPageMetrics | null {
     const page = (pageRoot ?? document.querySelector(".bloom-page")) as
         | HTMLElement
         | null
@@ -309,27 +312,34 @@ export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
     if (!pageElement) return;
     const page = getOpenPageMetrics(pageElement);
     if (!page) return;
-    Array.from(
-        pageRoot.querySelectorAll("." + kImageContainerClassName),
-    ).forEach((slot) => {
-        // Bloom injects controls into the live page; they are not slots, and a save strips
-        // them anyway.
-        if (slot.closest(".bloom-ui")) return;
-        const container = slot as HTMLElement;
-        // The value always goes ON the container, because that is what C# enumerates
-        // (EnumerateBookImages), but for a canvas background it is the canvas that gets
-        // measured.
-        const box = getElementThatDeterminesImageSlotSize(container);
-        if (
-            !isUsableLength(box.offsetWidth) ||
-            !isUsableLength(box.offsetHeight)
-        ) {
-            return;
-        }
-        const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
-        const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
-        container.setAttribute(kFractionOfPageAttribute, `${width},${height}`);
-    });
+    Array.from(pageRoot.querySelectorAll("." + kImageContainerClass)).forEach(
+        (slot) => {
+            // Bloom injects controls into the live page; they are not slots, and a save strips
+            // them anyway.
+            if (slot.closest(".bloom-ui")) return;
+            // A Bloom Games target holds a copy of its draggable's content, so its picture is
+            // not separately editable and the AI image editor is never offered it (C#'s
+            // IsSlotInsideGameTarget, which looks for the same ancestor attribute).
+            if (slot.parentElement?.closest("[data-target-of]")) return;
+            const container = slot as HTMLElement;
+            // The value always goes ON the container, because that is what C# enumerates
+            // (EnumerateBookImages), but for a canvas background it is the canvas that gets
+            // measured.
+            const box = getElementThatDeterminesImageSlotSize(container);
+            if (
+                !isUsableLength(box.offsetWidth) ||
+                !isUsableLength(box.offsetHeight)
+            ) {
+                return;
+            }
+            const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
+            const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
+            container.setAttribute(
+                kFractionOfPageAttribute,
+                `${width},${height}`,
+            );
+        },
+    );
 }
 
 // Reads back what recordFractionOfPageOnImageSlots wrote. Null for anything that is not two

@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, test } from "vitest";
 // Bloom's digital books are published at.
 
 import {
-    getDefaultDigitalScreen,
     getOpenPageMetrics,
     getSuggestedImageTargetForContainer,
     getSuggestedImageTargetForFraction,
@@ -19,8 +18,9 @@ import {
 } from "./imageTargetResolution";
 
 // The screen limit most of these tests work with: the BloomPUB default, which is what a book
-// whose Resolution slider nobody has moved has.
-const kDefaultScreen = getDefaultDigitalScreen();
+// whose Resolution slider nobody has moved has (ImagePublishSettings.MaxWidth/MaxHeight in
+// src/BloomExe/Book/PublishSettings.cs).
+const kDefaultScreen = { longEdgePx: 1280, shortEdgePx: 720 };
 
 // jsdom lays nothing out, so offsetWidth/offsetHeight are always 0; the sizes a real browser
 // would measure have to be stated.
@@ -373,6 +373,23 @@ describe("recordFractionOfPageOnImageSlots", () => {
         expect(slots()[1].hasAttribute(kFractionOfPageAttribute)).toBe(false);
     });
 
+    test("a Bloom Games target's copy of a picture is not a slot", () => {
+        // A target holds a copy of its draggable's content, and C# never offers that copy to
+        // the AI image editor (IsSlotInsideGameTarget), so there is nothing to size.
+        makePageWithSlots(
+            `<div data-target-of="abc"><div class="bloom-imageContainer"><img src="a.png" /></div></div>`,
+        );
+        // Sanity check: the copy IS present and IS measurable, so its being skipped below is
+        // the target filter and nothing else.
+        expect(slots().length).toBe(2);
+        slots().forEach((slot) => setLayoutSize(slot, 210, 248));
+
+        recordFractionOfPageOnImageSlots(document.body);
+
+        expect(slots()[0].hasAttribute(kFractionOfPageAttribute)).toBe(true);
+        expect(slots()[1].hasAttribute(kFractionOfPageAttribute)).toBe(false);
+    });
+
     test("leaves a previous value alone when the slot cannot be measured", () => {
         // A stale share from the last save is better evidence than none, and better than a
         // guess, which would have the AI image editor generate at the wrong resolution.
@@ -553,6 +570,8 @@ describe("parseBloomPubImageLimit", () => {
         ).toEqual({ longEdgePx: 1920, shortEdgePx: 1080 });
     });
 
+    // C# always sends both numbers, so anything else is a bug in the reply rather than a book
+    // we should quietly invent a size for.
     test.each([
         ["nothing at all", undefined],
         ["settings with no BloomPUB section", {}],
@@ -573,10 +592,58 @@ describe("parseBloomPubImageLimit", () => {
                 },
             },
         ],
-    ])("falls back to the BloomPUB default given %s", (_name, settings) => {
-        // Sanity check: the fallback is a real answer, not an empty object.
-        expect(kDefaultScreen).toEqual({ longEdgePx: 1280, shortEdgePx: 720 });
+    ])("throws given %s", (_name, settings) => {
+        // Sanity check: the same call does answer a complete reply, so the throw below is
+        // about these numbers and nothing else.
+        expect(
+            parseBloomPubImageLimit({
+                bloomPUB: { imageSettings: { maxWidth: 1280, maxHeight: 720 } },
+            }),
+        ).toEqual(kDefaultScreen);
 
-        expect(parseBloomPubImageLimit(settings)).toEqual(kDefaultScreen);
+        expect(() => parseBloomPubImageLimit(settings)).toThrow(
+            /BloomPUB image size/,
+        );
+    });
+});
+
+describe("getSuggestedImageTargetForFraction without a screen limit", () => {
+    test("a screen-sized page cannot be answered and says so", () => {
+        expect(() =>
+            getSuggestedImageTargetForFraction(
+                { width: 1, height: 0.45 },
+                { widthPx: 378, heightPx: 672, isDigital: true },
+                null,
+            ),
+        ).toThrow(/BloomPUB image limit/);
+    });
+
+    test("a paper page never looks at it", () => {
+        const paperPage = { widthPx: 559, heightPx: 794, isDigital: false };
+
+        expect(
+            getSuggestedImageTargetForFraction(
+                { width: 0.42, height: 0.31 },
+                paperPage,
+                null,
+            ),
+        ).toEqual(
+            getSuggestedImageTargetForFraction(
+                { width: 0.42, height: 0.31 },
+                paperPage,
+                kDefaultScreen,
+            ),
+        );
+    });
+
+    test("a container on a paper page never looks at it either", () => {
+        const container = makePage("A5Portrait", 559, 794, 469, 546);
+
+        const suggestion = getSuggestedImageTargetForContainer(container, null);
+
+        if (!suggestion)
+            throw new Error("a sized container should be measurable");
+        expect(suggestion.width).toBe(1466);
+        expect(suggestion.height).toBe(1707);
     });
 });
