@@ -113,10 +113,23 @@ namespace Bloom.Publish
             // them off-screen behind a progress dialog, and is a no-op for a book already up to date
             // (BL-16852). It does nothing for a book we cannot save (e.g. a Team Collection book not
             // checked out), which publishes from what is already on disk.
-            BookProcessor.EnsurePerPageFixupIfNeeded(
-                _model.BookSelection.CurrentSelection,
-                _webSocketServer
-            );
+            //
+            // Deferred off the API lock: Activate runs inside the (UI-thread, sync-locked)
+            // workspace/selectTab handler, and BookProcessor.ProcessBook drives off-screen pages that
+            // make their own sync-locked API calls as they load; running it while this handler still
+            // held the lock would stall those calls. BeginInvoke lets the handler return and release
+            // the lock first (cf. external/process-book requiresSync:false). It completes before the
+            // user can trigger a build, which is a separate explicit action.
+            var shellForm = Shell.GetShellOrOtherOpenForm();
+            Action ensurePageFixup = () =>
+                BookProcessor.EnsurePerPageFixupIfNeeded(
+                    _model.BookSelection.CurrentSelection,
+                    _webSocketServer
+                );
+            if (shellForm != null && shellForm.IsHandleCreated)
+                shellForm.BeginInvoke(ensurePageFixup);
+            else
+                ensurePageFixup();
 
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
