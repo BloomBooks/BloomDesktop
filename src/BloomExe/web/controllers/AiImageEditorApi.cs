@@ -12,6 +12,8 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
@@ -63,7 +65,6 @@ namespace Bloom.web.controllers
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
-    ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
     ///      (aiImageEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
@@ -76,7 +77,7 @@ namespace Bloom.web.controllers
     ///   source of truth.
     ///
     /// SECURITY
-    ///   A per-launch session token (query param) gates /file, /commit, /saveCredentials.
+    ///   A per-launch session token (query param) gates /file and /commit.
     ///   File names are allow-listed; page/result ids are charset-restricted; reused
     ///   source URLs must resolve inside the book folder (no path traversal).
     ///
@@ -196,12 +197,6 @@ namespace Bloom.web.controllers
                 HandleCommit,
                 handleOnUiThread: true,
                 requiresSync: true
-            );
-            apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/saveCredentials",
-                HandleSaveCredentials,
-                handleOnUiThread: false,
-                requiresSync: false
             );
         }
 
@@ -494,6 +489,17 @@ namespace Bloom.web.controllers
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
+            // Whether this collection's subscription actually covers AI image editing. The
+            // book is deliberately left out of the question: a Playground book counts as
+            // Enterprise for every feature, which is what opens the editor there at all.
+            var subscriptionCoversAiImageEditing = FeatureStatus
+                .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.AiImageEditing)
+                .Enabled;
+
+            // A Playground book is a place to look around, and so is a collection whose
+            // subscription does not cover AI image editing.
+            var playgroundMode = !subscriptionCoversAiImageEditing || book.IsPlayground;
+
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it
             // from this reply and posts it to the iframe), so the whole-book image list must
@@ -512,20 +518,20 @@ namespace Bloom.web.controllers
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
-                    // obtained key back via aiImageEditor/saveCredentials. A Playground
-                    // session gets no key at all: nothing in it may reach OpenRouter, and
-                    // the editor's contract for playgroundMode is that no key is sent.
-                    apiKey = book.IsPlayground ? null : OpenRouterCredentialStore.GetApiKey(),
-                    // In a Playground template book all features are unlocked for
-                    // "try it out", so the AI image editor opens — but it's a shared demo
-                    // context with no subscription behind it. The editor calls this
-                    // "look-around" mode: it disables every tool whose run would reach
-                    // OpenRouter, and the OpenRouter credential UI with them.
-                    // HandleSaveCredentials also refuses to persist.
+                    // obtained key back to Bloom via serviceKeys/key (see ServiceKeysApi).
+                    // Nothing that costs money can be run in playground mode, so there the
+                    // key stays here: the editor's contract for playgroundMode is that no
+                    // key is sent.
+                    apiKey = playgroundMode
+                        ? null
+                        : ServiceKeyStore.Get(ServiceKeyStore.kOpenRouterName),
+                    // The editor calls this "look-around" mode: it shows its tools but
+                    // disables every one whose run would reach OpenRouter, and the
+                    // OpenRouter credential UI with them.
                     // The name must stay `playgroundMode`: that is the field the editor
                     // reads (it was called `demoOnly` before bloom-ai-image-tools 0.1.11),
-                    // and a name it doesn't know silently leaves Playground unrestricted.
-                    playgroundMode = book.IsPlayground,
+                    // and a name it doesn't know silently leaves the session unrestricted.
+                    playgroundMode,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
                     // "Local Dummy (No AI)" model, for cost-free testing). The AI image
                     // editor hides those tools unless the host opts in, so ordinary
@@ -577,46 +583,6 @@ namespace Bloom.web.controllers
                 ?.Trim();
             return optIn != null
                 && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
-        }
-
-        private class SaveCredentialsRequest
-        {
-            public string apiKey { get; set; }
-        }
-
-        /// <summary>
-        /// Receives the user's OpenRouter API key from the AI image editor (manual key entry)
-        /// and persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
-        /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
-        /// overwrite the user's stored key.
-        /// </summary>
-        private void HandleSaveCredentials(ApiRequest request)
-        {
-            if (!HasValidSession(request))
-                return;
-
-            // Defense in depth for the Playground "demo" case (see HandleLaunch): never
-            // persist a key obtained during a Playground session, even if a stray frame
-            // posts here despite the AI image editor's disabled credential UI.
-            if (_bookSelection.CurrentSelection?.IsPlayground == true)
-            {
-                request.PostSucceeded();
-                return;
-            }
-
-            SaveCredentialsRequest payload;
-            try
-            {
-                payload = request.RequiredPostObject<SaveCredentialsRequest>();
-            }
-            catch (Exception)
-            {
-                request.Failed(HttpStatusCode.BadRequest, "Invalid credentials payload");
-                return;
-            }
-
-            OpenRouterCredentialStore.Save(payload.apiKey);
-            request.PostSucceeded();
         }
 
         // Invalidates the current session. Called at the start of each launch to tear down
