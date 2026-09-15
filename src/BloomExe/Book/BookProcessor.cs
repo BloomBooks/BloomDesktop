@@ -333,6 +333,17 @@ namespace Bloom.Book
                     {
                         // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
                         // and make sure the details reach the log; the dialog shows the message to the user.
+                        //
+                        // Pages that were processed before the failure stay updated in the book's
+                        // in-memory DOM on purpose. A page is replaced only after its capture
+                        // succeeded, and each replaced page is a complete, correctly migrated page,
+                        // exactly what visiting it in the Edit tab produces, so a later ordinary save
+                        // persisting some migrated pages alongside unmigrated ones loses nothing: that
+                        // mixture is just the state every book was in before this feature. And since
+                        // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
+                        // true and a later run finishes the rest. (BloomBridge's process-book gets its
+                        // all-or-nothing behavior by reloading its own separate book object; the live
+                        // book has no need of that.)
                         s_perPageFixupFailedThisSession.Add(book.ID);
                         SIL.Reporting.Logger.WriteError(
                             "Automatic page update failed for " + book.NameBestForUserDisplay,
