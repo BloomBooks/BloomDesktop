@@ -114,23 +114,46 @@ namespace Bloom.Publish
             // (BL-16852). It does nothing for a book we cannot save (e.g. a Team Collection book not
             // checked out), which publishes from what is already on disk.
             //
-            // Deferred off the API lock: Activate runs inside the (UI-thread, sync-locked)
-            // workspace/selectTab handler, and BookProcessor.ProcessBook drives off-screen pages that
-            // make their own sync-locked API calls as they load; running it while this handler still
-            // held the lock would stall those calls. BeginInvoke lets the handler return and release
-            // the lock first (cf. external/process-book requiresSync:false). It completes before the
-            // user can trigger a build, which is a separate explicit action.
+            // Two constraints pull against each other, so mind the structure here:
+            //  - The fix-up must NOT run while this call holds Bloom's API sync lock. Activate runs
+            //    inside the (UI-thread, sync-locked) workspace/selectTab handler, and
+            //    BookProcessor.ProcessBook drives off-screen pages that make their own sync-locked API
+            //    calls as they load; running it under the held lock would stall those calls (cf.
+            //    external/process-book requiresSync:false). So it has to be deferred off the lock.
+            //  - Publishing must NOT start until the fix-up has finished, or a build could read the
+            //    book while ProcessBook is still rewriting it (BL-16852).
+            // So when the book needs the fix-up we defer BOTH it and the rest of activation together,
+            // and run the rest only after the fix-up returns. The fix-up's modal dialog blocks until
+            // it is done, so the publish tab does not go live (InPublishTab, the publish APIs, the
+            // switchToPublishTab event) until the book is migrated. When no fix-up is needed we
+            // activate synchronously as before.
+            var book = _model.BookSelection.CurrentSelection;
             var shellForm = Shell.GetShellOrOtherOpenForm();
-            Action ensurePageFixup = () =>
-                BookProcessor.EnsurePerPageFixupIfNeeded(
-                    _model.BookSelection.CurrentSelection,
-                    _webSocketServer
+            if (
+                shellForm != null
+                && shellForm.IsHandleCreated
+                && BookProcessor.NeedsPerPageFixup(book)
+            )
+            {
+                shellForm.BeginInvoke(
+                    (Action)(
+                        () =>
+                        {
+                            BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
+                            ActivatePublishTab();
+                        }
+                    )
                 );
-            if (shellForm != null && shellForm.IsHandleCreated)
-                shellForm.BeginInvoke(ensurePageFixup);
-            else
-                ensurePageFixup();
+                return;
+            }
 
+            ActivatePublishTab();
+        }
+
+        // The rest of switching to the Publish tab, after any needed per-page fix-up has finished.
+        // Split out of Activate so it can be delayed until the fix-up completes (see Activate).
+        private void ActivatePublishTab()
+        {
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
             PublishEpubApi.ControlForInvoke = hostForm;
