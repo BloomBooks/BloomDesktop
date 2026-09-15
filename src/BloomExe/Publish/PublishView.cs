@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
@@ -104,6 +105,60 @@ namespace Bloom.Publish
             // Safety net: any Edit-tab save lock must be complete before we reach Publish,
             // so ensure tab switching is enabled in case the re-enable callback was missed.
             WorkspaceView?.SetTabsEnabled(true);
+
+            // Make sure the book has had the per-page updates that normally happen only when a page
+            // is opened for editing, before we build anything (BloomPUB, ePUB, preview) from it. A
+            // book published without ever being fully edited (e.g. an old book, or one whose pages
+            // were never all visited) would otherwise publish with un-migrated pages. This applies
+            // them off-screen behind a progress dialog, and is a no-op for a book already up to date
+            // (BL-16852). It does nothing for a book we cannot save (e.g. a Team Collection book not
+            // checked out), which publishes from what is already on disk.
+            //
+            // Two constraints pull against each other, so mind the structure here:
+            //  - The fix-up must NOT run while this call holds Bloom's API sync lock. Activate runs
+            //    inside the (UI-thread, sync-locked) workspace/selectTab handler, and
+            //    BookProcessor.ProcessBook drives off-screen pages that make their own sync-locked API
+            //    calls as they load; running it under the held lock would stall those calls (cf.
+            //    external/process-book requiresSync:false). So it has to be deferred off the lock.
+            //  - Publishing must NOT start until the fix-up has finished, or a build could read the
+            //    book while ProcessBook is still rewriting it (BL-16852).
+            // So when the book needs the fix-up we defer BOTH it and the rest of activation together,
+            // and run the rest only after the fix-up returns. The fix-up's modal dialog blocks until
+            // it is done, so the publish tab does not go live (InPublishTab, the publish APIs, the
+            // switchToPublishTab event) until the book is migrated. When no fix-up is needed we
+            // activate synchronously as before.
+            var book = _model.BookSelection.CurrentSelection;
+            var shellForm = Shell.GetShellOrOtherOpenForm();
+            if (
+                shellForm != null
+                && shellForm.IsHandleCreated
+                && BookProcessor.NeedsPerPageFixup(book)
+            )
+            {
+                shellForm.BeginInvoke(
+                    (Action)(
+                        () =>
+                        {
+                            BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
+                            // The fix-up's modal blocks tab switching while it runs, but guard anyway:
+                            // if we are somehow no longer on the Publish tab by the time it returns,
+                            // don't activate the publish tab now (that would enable publishing and send
+                            // switchToPublishTab under whatever tab is actually showing).
+                            if (_tabSelection.ActiveTab == WorkspaceTab.publish)
+                                ActivatePublishTab();
+                        }
+                    )
+                );
+                return;
+            }
+
+            ActivatePublishTab();
+        }
+
+        // The rest of switching to the Publish tab, after any needed per-page fix-up has finished.
+        // Split out of Activate so it can be delayed until the fix-up completes (see Activate).
+        private void ActivatePublishTab()
+        {
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
             PublishEpubApi.ControlForInvoke = hostForm;

@@ -4358,8 +4358,10 @@ namespace Bloom.Book
             // Optional; see HaveDataForReconstructingBackgroundImgWrapper. Note that a legacy
             // cover whose image is a plain img in a bloom-canvas, with no canvas element, saves
             // none of this data and so loses the attribute when its xmatter is brought up to
-            // date; the AI image editor then simply offers that slot no automatic size until
-            // the page is next saved in the editor.
+            // date. In normal operation that is immediately repaired: bringing a book up to date
+            // is followed by the per-page pass (BL-16852), which re-saves the cover and writes
+            // the attribute again. Only if that pass fails does the AI image editor go on
+            // offering the slot no automatic size.
             if (!string.IsNullOrEmpty(backgroundImgValues[2]))
                 imageContainer.SetAttribute(kFractionOfPageAttribute, backgroundImgValues[2]);
         }
