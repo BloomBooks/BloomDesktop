@@ -19,6 +19,15 @@ House rules:
 
 ---
 
+## 2026-09-14 — add-e2e-test says the suite is not in the nightly, but it is
+
+- **Cut:** The skill's "What an e2e test is here" says "wiring the suite into the nightly
+  workflow (`.github/workflows/nightly.yml`) is planned but not done yet". `nightly.yml` has
+  run BloomE2E as a selectable suite (`run_e2e_tests`, ~9 min) for a while now. An agent asked
+  to make a test run nightly therefore starts planning workflow changes that are already done.
+- **Idea:** Delete that clause; the suite is wired in. Check the Running section for the same
+  staleness while you are there.
+
 ## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
 
 - **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.

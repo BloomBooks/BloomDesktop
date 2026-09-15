@@ -43,7 +43,8 @@ that in full.
 
 - `*.test.ts` are Vitest and run in the normal suite. `aiImageEditorOverlay.test.ts` needs no page DOM
   at all, which is one of the points of the split — keep it that way.
-- `bloom-exe-*.uitest.ts` are Playwright against a **running** `Bloom.exe`, excluded from Vitest
-  and matched by glob (`**/bloom-exe*.uitest.ts`), so they are fine anywhere in the tree. They
-  exercise the HTTP endpoints rather than this front-end code. To drive the real UI end to end,
+- `src/BloomE2E/tests/ai-image-editor.spec.ts` launches a real `Bloom.exe` and runs in the
+  nightly. It covers the two things Vitest cannot reach: that the editor app is actually staged
+  into the build and boots, and the `/file` endpoint's session and allow-list gating. It
+  exercises the HTTP endpoints rather than this front-end code. To drive the real UI end to end,
   see `.github/skills/bloom-automation/ai-image-editor-driving.md`.
