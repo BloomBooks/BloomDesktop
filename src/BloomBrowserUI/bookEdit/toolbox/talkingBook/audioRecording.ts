@@ -1,4 +1,4 @@
-// This class supports creating audio recordings for talking books.
+﻿// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -1181,7 +1181,7 @@ export default class AudioRecording implements IAudioRecorder {
             docView?.getComputedStyle(element).fontSize ?? "16",
         );
 
-        // All conditions met — get or create the icon only now that we'll show it.
+        // All conditions met â€” get or create the icon only now that we'll show it.
         const icon = this.getOrCreateIconMarker(pageDocBody);
         if (!icon) return;
 
@@ -1396,14 +1396,17 @@ export default class AudioRecording implements IAudioRecorder {
 
         // That gives up without choosing anything in several cases (most notably when the talking
         // book tool is not the active one). Leaving the highlight pointing off-page would put us
-        // right back where we started, so fall back to the first thing on this page that can own a
-        // recording.
+        // right back where we started, so fall back to the first box on this page that can own a
+        // recording. Ask getRecordableDivs() rather than querying the DOM directly: it is what
+        // every other default-selection path uses, so it applies the same exclusions (hidden
+        // language blocks, image descriptions when that tool is off, boxes with no recordable
+        // text). A raw document-order query would happily land on a box the tool will never
+        // highlight or play, which is the same "the audio belongs to nothing the user can see"
+        // outcome this method exists to prevent.
         const afterDefault = this.highlightedElement;
         if (afterDefault && pageBody.contains(afterDefault)) return;
-        const firstOwner = pageBody.querySelector(
-            `${kAudioSentenceClassSelector}, ${kBloomEditableTextBoxSelector}`,
-        );
-        if (firstOwner) this.highlightedElement = firstOwner as HTMLElement;
+        const firstOwner = this.getRecordableDivs()[0];
+        if (firstOwner) this.highlightedElement = firstOwner;
     }
 
     // The id under which the current selection's audio file is stored, minting one if the element
@@ -3298,7 +3301,7 @@ export default class AudioRecording implements IAudioRecorder {
         return async () => {
             // Save the index (position) of the highlighted sentence among its siblings
             // before markup changes the DOM.  IDs are regenerated when text changes, so
-            // we use ordinal position instead — it survives ordinary edits.
+            // we use ordinal position instead â€” it survives ordinary edits.
             let previousHighlightIndex = -1;
             if (
                 this.highlightedElement &&
@@ -4944,6 +4947,19 @@ export default class AudioRecording implements IAudioRecorder {
     };
 
     public handleImportRecordingClick(): void {
+        // Fire and forget: this is a click handler, and the interface it implements is synchronous.
+        this.handleImportRecordingClickAsync();
+    }
+
+    // Decide whether to warn about replacing an existing recording, then import.
+    //
+    // Settle the selection FIRST, because both halves have to be talking about the same element.
+    // The import re-points a stale highlight at the page being shown (BL-16873); if we asked
+    // "does a recording exist here?" before that, the answer would be about whatever the highlight
+    // happened to be stuck on, and we could skip the warning and then overwrite a real recording
+    // on the element the import actually lands on.
+    private async handleImportRecordingClickAsync(): Promise<void> {
+        await this.ensureHighlightIsOnTheCurrentPageAsync();
         if (this.doesRecordingExistForCurrentSelection()) {
             getWorkspaceBundleExports().showConfirmDialog(
                 this.confirmReplaceProps,

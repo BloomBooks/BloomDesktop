@@ -2293,7 +2293,7 @@ describe("audio recording tests", () => {
         // importRecordingAsync did not.
         it("importRecording() names the file after the text box, not a highlighted sub-element", async () => {
             const div1 =
-                '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div>';
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div></div>';
             SetupIFrameFromHtml(div1);
 
             const recording = new AudioRecording();
@@ -2343,19 +2343,25 @@ describe("audio recording tests", () => {
         // re-pointed at the live page first.
         it("importRecording() names the file after the text box even when the highlight is detached", async () => {
             const div1 =
-                '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div>';
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div></div>';
             SetupIFrameFromHtml(div1);
 
             const recording = new AudioRecording();
             setHighlightedElementFromDom(recording);
             recording.recordingMode = RecordingMode.TextBox;
 
-            // Detach the highlighted paragraph, the way CKEditor's initialization replaces it.
+            // Detach the highlighted paragraph the way CKEditor's initialization does: it
+            // REPLACES it with an equivalent one, so the old node is orphaned while the text box
+            // still holds its text (and so is still recordable). Simply removing it would leave an
+            // empty box, which is a different situation -- there would be nothing to record.
             const pageFrame = parent.window.document.getElementById(
                 "page",
             ) as HTMLIFrameElement | null;
             const doc = pageFrame?.contentDocument ?? document;
-            doc.querySelector("p[data-test-preselect]")?.remove();
+            const original = doc.querySelector("p[data-test-preselect]");
+            const replacement = doc.createElement("p");
+            replacement.textContent = original?.textContent ?? "";
+            original?.replaceWith(replacement);
 
             const bookPath = "C:/Collection/Book";
             vi.restoreAllMocks();
