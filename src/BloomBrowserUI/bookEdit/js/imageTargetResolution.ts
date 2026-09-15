@@ -292,7 +292,7 @@ export function getElementThatDeterminesImageSlotSize(
 
 // Writes each image slot's share of its page onto the slot, so that the size it wants can be
 // worked out later for a page nobody has open. Called as a page is saved (see
-// extractAndStripPageContentForSave in bloomEditing.ts), which is both the ordinary Edit-tab
+// cleanCloneOfBodyForSave in bloomEditing.ts), which is both the ordinary Edit-tab
 // save and the off-screen pass "Update Book" makes over every page.
 //
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction

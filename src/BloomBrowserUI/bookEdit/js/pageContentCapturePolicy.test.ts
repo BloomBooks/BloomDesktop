@@ -32,7 +32,7 @@ describe("externalCaptureErrorForPendingWork (BL-16870)", () => {
     });
 
     test("waits far longer than the live editor's 4 seconds but stays under the C# poll timeout", () => {
-        // The live editor's cap is 4000 ms (bloomEditing.ts kMaxWaitTimeMs); BookProcessor polls for
+        // The live editor's cap is 4000 ms (pageContentDelays.ts kMaxWaitTimeMs); BookProcessor polls for
         // our answer for 60000 ms. A regression in either direction would either give a slow image
         // no more grace than the live save does, or have C# time out before the browser answers.
         expect(kExternalCaptureMaxWaitMs).toBeGreaterThan(4000);
