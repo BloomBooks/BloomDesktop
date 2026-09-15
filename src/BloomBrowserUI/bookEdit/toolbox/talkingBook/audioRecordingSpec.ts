@@ -2210,7 +2210,12 @@ describe("audio recording tests", () => {
             });
 
             vi.spyOn(axios, "post").mockImplementation((url: string) => {
-                if (url.endsWith("fileIO/getSpecialLocation")) {
+                if (url.endsWith("fileIO/chooseFile")) {
+                    // importRecordingAsync asks for the file with postJson, i.e. a POST. The GET
+                    // mock above answers nothing it actually calls, so without this the import
+                    // gave up at its first step and the rest of the path never ran.
+                    return Promise.resolve({ data: audioToCopyFilePath });
+                } else if (url.endsWith("fileIO/getSpecialLocation")) {
                     return Promise.resolve({ data: `${bookPath}/audio` });
                 } else if (url.endsWith("fileIO/copyFile")) {
                     return Promise.resolve({});
@@ -2273,6 +2278,62 @@ describe("audio recording tests", () => {
             //         to: encodedDestPath
             //     }
             // );
+        });
+
+        // The highlight does not always sit on the text box itself: it can be on a sub-element (a
+        // sentence span in soft-split mode, or a paragraph still highlighted after switching back
+        // from By Sentence to By Whole Text Box). Bloom's narration file has to be named after the
+        // element that OWNS the audio -- the one carrying audio-sentence -- because that is the
+        // only name the tool ever looks under. Naming it after the highlighted sub-element instead
+        // writes an mp3 that belongs to nothing, and mints a stray id onto that sub-element on the
+        // way.
+        //
+        // startRecordCurrentAsync already guards against this, moving the highlight to
+        // getCurrentAudioSentence() before it asks for the id ("things could get confusing");
+        // importRecordingAsync did not.
+        it("importRecording() names the file after the text box, not a highlighted sub-element", async () => {
+            const div1 =
+                '<div class="bloom-editable audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            // The <p> is what is highlighted, and it has no id of its own.
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.TextBox;
+
+            const bookPath = "C:/Collection/Book";
+            // The test above leaves its own axios spies in place, and they answer for this one
+            // unless they are cleared first.
+            vi.restoreAllMocks();
+            simulateBloomApiResponses("C:/elsewhere/narration.mp3", bookPath);
+
+            await recording.importRecordingAsync();
+
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(
+                decodeURIComponent(copyCall![1].to),
+                "The imported mp3 was not named after the audio-sentence text box, so nothing on the page owns it.",
+            ).toBe(`${bookPath}/audio/div1.mp3`);
+
+            // And it must not have invented an id on the paragraph to name the file after.
+            const pageFrame = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement | null;
+            const paragraph = (
+                pageFrame?.contentDocument ?? document
+            ).querySelector("p[data-test-preselect]");
+            expect(
+                paragraph?.getAttribute("id"),
+                "Import minted a stray id onto the highlighted paragraph.",
+            ).toBeFalsy();
         });
     });
 
