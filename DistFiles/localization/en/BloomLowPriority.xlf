@@ -143,6 +143,46 @@
         <source xml:lang="en">Currently, Bloom does not support including audio from embedded videos in video output.</source>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.Title">
+        <source xml:lang="en">How to set up your Android phone to receive apps via USB</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.Title</note>
+        <note>Title bar of the dialog listing the steps for enabling USB debugging on an Android phone.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenSettings">
+        <source xml:lang="en">Open the Settings on your phone.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenSettings</note>
+        <note>Step 1 of 6 for enabling USB debugging. The quoted names in these steps are what Android itself shows, so translate them the way the phone does.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone">
+        <source xml:lang="en">Open &apos;About phone&apos;. On some phones, you may need to then open &apos;Software information&apos; to find the &apos;Build number&apos;.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone</note>
+        <note>Step 2 of 6 for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber">
+        <source xml:lang="en">Find &apos;Build number&apos; and tap it 7 times until Developer options are enabled.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
+        <note>Step 3 of 6 for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+        <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
+        <note>Step 4 of 6 for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging">
+        <source xml:lang="en">Turn on &apos;USB debugging&apos;.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging</note>
+        <note>Step 5 of 6 for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable">
+        <source xml:lang="en">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.ConnectCable</note>
+        <note>Step 6 of 6 for enabling USB debugging.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
+        <source xml:lang="en">How to video</source>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
+        <note>Text of a link at the bottom of the USB debugging instructions dialog; it opens a short YouTube video showing the same steps.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
@@ -353,22 +393,22 @@
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
         <note>{0} will be replaced with the name of the collection that the user currently has open for editing.</note>
       </trans-unit>
-      <trans-unit id="EditTab.CopyTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to copy that.</source>
         <note>ID: EditTab.CopyTextFailed</note>
         <note>Shown as a toast when Bloom fails to put text on the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to paste.</source>
         <note>ID: EditTab.PasteTextFailed</note>
         <note>Shown as a toast when Bloom fails to read text from the computer's clipboard, usually because some other program is momentarily holding the clipboard.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewTooLarge" translate="no">
+      <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the selected image is too big for the browser to decode for preview. The user can still choose it, so the tone should be reassuring rather than an error.</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewUnavailable" translate="no">
+      <trans-unit id="ImageLibrary.PreviewUnavailable">
         <source xml:lang="en">This image could not be previewed.</source>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
         <note>Shown in the details pane of the image chooser, in place of the image, when the preview fails to load for some reason other than the image being too large.</note>
@@ -383,7 +423,7 @@
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
         <note>One choice in the "Field Type:" menu of a text block on a custom layout page. Choosing it makes that block hold the credits (author, illustrator, etc.) that are shown on the cover.</note>
       </trans-unit>
-      <trans-unit id="ImageUtils.ShrinkingImagesFailed" translate="no">
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed">
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
         <note>Shown as a toast when the one-time shrinking of an old book's oversized pictures fails. The book still works; the pictures are just left large, and Bloom retries later. "Bloom" is a product name and must not be translated.</note>

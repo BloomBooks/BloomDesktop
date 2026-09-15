@@ -374,10 +374,24 @@ export async function readFontInformationPane(
     );
 }
 
-/** Close the information pane with its X button, and wait for it to go. */
+/**
+ * Close the information pane with its X button, and wait for it to go. A pane that has already
+ * closed itself is fine — see below — so this leaves the pane shut either way.
+ */
 export async function closeFontInformationPane(page: Page): Promise<void> {
     const pane = chooserFrame(page).locator(PANE);
-    await pane.locator(PANE_CLOSE_BUTTON).click({ timeout: 30000 });
+    // The pane is a MUI popover, which shuts on a click away — and dismissing the browser alert
+    // that showFontDetails raises counts as one. So on a slow machine the pane is often gone
+    // before we get here (seen on the nightly runner, and locally when the whole suite is
+    // running), and sometimes caught mid-unmount, where its close button is first "not stable",
+    // then detached. Waiting on a button in that state burns the whole timeout and fails a test
+    // whose subject is not the button at all. What this helper owes its caller is only that the
+    // pane ends up shut, so click the X while there is one, and treat an already-shut pane as
+    // done.
+    await expect(async () => {
+        if (!(await pane.isVisible())) return;
+        await pane.locator(PANE_CLOSE_BUTTON).click({ timeout: 3000 });
+    }).toPass({ timeout: 30000 });
     await expect(
         pane,
         "The font information pane stayed open after its close button was clicked.",
@@ -403,7 +417,12 @@ export async function showFontDetails(page: Page): Promise<string> {
             resolve(text);
         });
     });
-    await icon.click({ timeout: 30000 });
+    // The pane re-renders while the mouse rests on the list (on the nightly runner the icon was
+    // "not stable", then detached, for the whole 30 seconds of one click attempt), so try the click
+    // afresh, against the icon as it is now, rather than waiting on one that is being replaced.
+    await expect(async () => {
+        await icon.click({ timeout: 3000 });
+    }).toPass({ timeout: 30000 });
     return message;
 }
 

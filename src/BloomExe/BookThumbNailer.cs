@@ -14,6 +14,7 @@ using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using SIL.IO;
+using SIL.Reporting;
 using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom
@@ -261,20 +262,56 @@ namespace Bloom
                 var destFilePath = Path.Combine(book.StoragePageFolder, options.FileName);
                 // Writing a transparent image to a file, then reading it in again appears to be the only
                 // way to get the thumbnail image to draw with the book's cover color background reliably.
+                // It is always a .png, whatever the cover image is: only a PNG can carry the alpha
+                // channel, and ImageUtils.MakeTransparentBackground needs a .png destination. The name
+                // is random rather than the cover image's own, so thumbnails being made at the same time
+                // (two books whose covers are both "cover.jpg", say) cannot overwrite or delete each
+                // other's file.
                 transparentImageFile = Path.Combine(
                     Path.GetTempPath(),
                     "Bloom",
                     "Transparent",
-                    Path.GetFileName(imageSrc)
+                    Path.GetRandomFileName() + ".png"
                 );
                 Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
 
-                if (
-                    RuntimeImageProcessor.MakePngBackgroundTransparentIfDesirable(
-                        imageSrc,
-                        transparentImageFile
-                    )
-                )
+                // Honor the user's Transparency choice for the cover image (the bloom-opaque and
+                // bloom-transparent classes; Auto is neither) the same way the browser does when it
+                // displays the cover: Opaque never gets a transparent background, Transparent always
+                // does, and Auto gets one if the image looks like line art. The thumbnail is always
+                // drawn on the cover color, so the page counts as one that needs transparent images.
+                // See BL-16819.
+                var transparencyMode =
+                    coverImgElt == null
+                        ? ImageTransparencyMode.Auto
+                        : HtmlDom.GetImageTransparencyMode(coverImgElt, pageNeedsTransparent: true);
+                // A problem image should still get a thumbnail, just without the transparency.
+                var madeTransparent = false;
+                try
+                {
+                    switch (transparencyMode)
+                    {
+                        case ImageTransparencyMode.Force:
+                            madeTransparent = ImageUtils.MakeTransparentBackground(
+                                imageSrc,
+                                transparentImageFile
+                            );
+                            break;
+                        case ImageTransparencyMode.Auto:
+                            madeTransparent = ImageUtils.MakeTransparentBackgroundIfNeeded(
+                                imageSrc,
+                                transparentImageFile
+                            );
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteEvent(
+                        "Could not make the cover image transparent for the thumbnail: " + e.Message
+                    );
+                }
+                if (madeTransparent)
                     imageSrc = transparentImageFile;
                 using (var coverImage = PalasoImage.FromFileRobustly(imageSrc))
                 {

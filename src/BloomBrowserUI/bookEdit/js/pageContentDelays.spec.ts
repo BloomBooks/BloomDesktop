@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
     addRequestPageContentDelay,
-    getActiveDelayIdsForTesting,
+    getActiveDelayIds,
     kMaxWaitTimeMs,
     onDelayRegisterChanged,
     removeRequestPageContentDelay,
@@ -29,15 +29,14 @@ describe("pageContentDelays", () => {
     beforeEach(() => {
         vi.useFakeTimers();
         // Sanity check: nothing left over from another test, or the assertions below are meaningless.
-        expect(getActiveDelayIdsForTesting()).toEqual([]);
+        expect(getActiveDelayIds()).toEqual([]);
     });
 
     afterEach(() => {
         vi.useRealTimers();
-        if (getActiveDelayIdsForTesting().length)
+        if (getActiveDelayIds().length)
             throw new Error(
-                "test leaked delays: " +
-                    getActiveDelayIdsForTesting().join(", "),
+                "test leaked delays: " + getActiveDelayIds().join(", "),
             );
     });
 
@@ -119,14 +118,14 @@ describe("pageContentDelays", () => {
 
         const wrapped = wrapWithRequestPageContentDelay(() => work, "theWork");
         const gate = whenNoActiveDelays();
-        expect(getActiveDelayIdsForTesting()).toEqual(["theWork"]);
+        expect(getActiveDelayIds()).toEqual(["theWork"]);
         expect(await isResolved(gate)).toBe(false);
 
         releaseTheWork!();
         await wrapped;
 
         expect(await isResolved(gate)).toBe(true);
-        expect(getActiveDelayIdsForTesting()).toEqual([]);
+        expect(getActiveDelayIds()).toEqual([]);
     });
 
     it("wrapWithRequestPageContentDelay releases the gate even when the work throws", async () => {
@@ -138,7 +137,7 @@ describe("pageContentDelays", () => {
         ).rejects.toThrow("the work failed");
 
         // The point: a failed operation must not block every save from now on.
-        expect(getActiveDelayIdsForTesting()).toEqual([]);
+        expect(getActiveDelayIds()).toEqual([]);
         expect(await isResolved(whenNoActiveDelays())).toBe(true);
     });
 
@@ -189,7 +188,7 @@ describe("pageContentDelays", () => {
         removeRequestPageContentDelay("neverRegistered");
 
         expect(error).toHaveBeenCalled();
-        expect(getActiveDelayIdsForTesting()).toEqual(["realWork"]);
+        expect(getActiveDelayIds()).toEqual(["realWork"]);
         error.mockRestore();
         removeRequestPageContentDelay("realWork");
     });

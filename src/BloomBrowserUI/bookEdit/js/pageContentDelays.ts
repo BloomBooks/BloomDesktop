@@ -98,9 +98,14 @@ export async function wrapWithRequestPageContentDelay<T>(
 }
 
 // Resolves once no registered work is outstanding: immediately if there is none, otherwise as soon
-// as the last of it finishes, and after kMaxWaitTimeMs regardless -- saving a slightly stale page
-// beats not saving at all, so we warn and go on rather than block the user forever.
-export function whenNoActiveDelays(): Promise<void> {
+// as the last of it finishes, and after maxWaitMs regardless -- saving a slightly stale page beats
+// not saving at all, so we warn and go on rather than block the user forever. The live editor uses
+// the default cap; the off-screen capture, which has nobody waiting at the keyboard, passes a
+// longer one and then looks at getActiveDelayIds() to decide whether what is still pending is
+// something it can afford to capture half-done.
+export function whenNoActiveDelays(
+    maxWaitMs: number = kMaxWaitTimeMs,
+): Promise<void> {
     if (activeDelays.length === 0) return Promise.resolve();
     return new Promise<void>((resolve) => {
         let timeout: number | undefined;
@@ -111,18 +116,19 @@ export function whenNoActiveDelays(): Promise<void> {
         delayWaiters.push(release);
         timeout = window.setTimeout(() => {
             console.warn(
-                `Waited the maximum ${kMaxWaitTimeMs}ms for in-flight page changes [${activeDelays.join(
+                `Waited the maximum ${maxWaitMs}ms for in-flight page changes [${activeDelays.join(
                     ", ",
                 )}]. Gathering the page content anyway.`,
             );
             const index = delayWaiters.indexOf(release);
             if (index >= 0) delayWaiters.splice(index, 1);
             resolve();
-        }, kMaxWaitTimeMs);
+        }, maxWaitMs);
     });
 }
 
-// For tests and diagnostics only: what is currently registered.
-export function getActiveDelayIdsForTesting(): string[] {
+// What is currently registered. For tests, diagnostics, and the off-screen capture's decision
+// about what it may capture half-done (see whenNoActiveDelays).
+export function getActiveDelayIds(): string[] {
     return [...activeDelays];
 }

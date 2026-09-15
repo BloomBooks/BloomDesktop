@@ -2492,7 +2492,11 @@ namespace Bloom.Book
                     ?.Item2.Unencoded;
             }
 
-            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+            // Not "all of them are present": the fraction-of-page value is optional, so that a
+            // book saved before it existed still gets its background image rebuilt.
+            var hasBackgroundImgData = HtmlDom.HaveDataForReconstructingBackgroundImgWrapper(
+                backgroundImgValues
+            );
 
             // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
             // we don't ever want restored. The style attribute is special, for a series of historical reasons,
@@ -2544,15 +2548,23 @@ namespace Bloom.Book
         /// from the image (so, for the transparency classes, Auto is restored too). Without this,
         /// the user's choice would be lost every time the xmatter is regenerated from the template.
         /// See BL-16819.
+        /// A null savedAttributes means the data set carries no attribute information for this
+        /// image at all, not that the image has no classes, so the image is left alone (as
+        /// MergeAttrsIntoElement does). This is the normal state of the member _dataset once a page
+        /// has been saved: UpdateSingleTextVariableInDataDiv recreates its entry with the new value
+        /// but without the attribute list, and UpdateDomFromDataset() pushes that data set to the
+        /// pages (e.g. from Book.SetMultilingualContentLanguages every time the Edit tab is entered).
         /// </summary>
         private static void RestoreImgClassesFromDataDiv(
             SafeXmlElement img,
             List<Tuple<string, XmlString>> savedAttributes
         )
         {
+            if (savedAttributes == null)
+                return;
             var savedClasses =
                 savedAttributes
-                    ?.Find(a => a.Item1 == "class")
+                    .Find(a => a.Item1 == "class")
                     ?.Item2.Unencoded.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 ?? new string[0];
             foreach (var className in _imgClassesToRestoreFromDataDiv)

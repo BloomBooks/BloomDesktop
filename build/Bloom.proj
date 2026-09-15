@@ -180,6 +180,8 @@
     change in BloomFileLocatorTests.kRelativePathToBrowserFolder and XMatterHelperTests.OneTimeSetup-->
     <Exec Command='dotnet build "$(RootDir)\src\BloomTests\BloomTests.csproj" --configuration $(Configuration) --runtime win-x64 --output "$(RootDir)\output\Tests\$(Configuration)\x64" "/p:OutDir=$(RootDir)\output\Tests\$(Configuration)\x64\\" "/p:SolutionDir=$(RootDir)\"' />
 
+    <CallTarget Targets="CheckForConflictingDependencyVersions"/>
+
     <!-- Restore to Build ARM64 version for each project with proper OutDir and SolutionDir overrides
     Note! change -x- back to double hyphen (not allowed in xml comment)
     <Exec Command='dotnet build "$(RootDir)\src\BloomExe\BloomExe.csproj" -x-configuration $(Configuration) -x-runtime win-arm64 -x-output "$(RootDir)\output\$(Configuration)\arm64" "/p:OutDir=$(RootDir)\output\$(Configuration)\arm64\\" "/p:SolutionDir=$(RootDir)\"' />
@@ -194,6 +196,20 @@
     <!-- For backward compatibility, include x64 as the default -->
     <TestAssemblies Include="@(TestAssembliesX64)"/>
   </ItemGroup>
+  <!--
+    Bloom.exe, BloomPdfMaker.exe and BloomFreezeDoctor.exe are three separate .NET apps that we
+    install into ONE folder, which can hold only one copy of any DLL. Where two of them use the same
+    assembly they must use the same version of it, or the last one built silently overwrites the
+    others' copy and they run against a version their own .deps.json never named. Lower than asked
+    for is fatal: BL-16867 was the Freeze Doctor putting Microsoft.Extensions.* 6.0.0 over Bloom's
+    8.x/9.x, which broke every PDF in 6.5 inside PdfSharp, and shipped to BetaInternal unnoticed.
+
+    Nothing about that shows up as a build or test failure by itself, so we look for it here, once
+    the three are sitting in the folder together. The script explains what to do about a conflict.
+  -->
+  <Target Name="CheckForConflictingDependencyVersions">
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass -File "$(RootDir)\build\check-dependency-versions.ps1" -OutputFolder "$(RootDir)\output\$(Configuration)\x64"' />
+  </Target>
   <Target Name="Test" DependsOnTargets="Build">
     <CallTarget Targets="TestOnly"/>
   </Target>

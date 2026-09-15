@@ -85,11 +85,11 @@ importers:
                 specifier: 0.21.1
                 version: 0.21.1
             bloom-ai-image-tools:
-                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.1.7
-                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494
+                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.1
+                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0a7042380d07fe5752283ac71821b02d96d1aff8
             bloom-image-gallery:
                 specifier: github:BloomBooks/bloom-image-gallery
-                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0(@types/react@18.3.31)(supports-color@5.5.0)
+                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0)
             bloom-player:
                 specifier: alpha
                 version: 2.20.3-alpha.1
@@ -252,7 +252,7 @@ importers:
                 version: 7.18.5(supports-color@5.5.0)
             "@babel/preset-env":
                 specifier: 7.18.2
-                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-react":
                 specifier: 7.17.12
                 version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
@@ -4049,20 +4049,21 @@ packages:
                 integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==,
             }
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0a7042380d07fe5752283ac71821b02d96d1aff8:
         resolution:
             {
                 gitHosted: true,
-                integrity: sha512-F67/eh54qujL/f1XtFVfJSwiMeiVr2OsRZHpnlyfhh49g7drMaXGs0cjTBhhDYVMiA+O4UFaACN58wrFMTGyCA==,
-                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494,
+                integrity: sha512-wrDkVwCJABGhL0F6xYyqHhfz61+eMH2Ygc9TgMdzh+D1yn0orDJ0lAVBTpOrwt4nMLSxUWqwNwbCRuXJ10wUjA==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0a7042380d07fe5752283ac71821b02d96d1aff8,
             }
-        version: 0.1.7
+        version: 0.2.1
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0:
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870:
         resolution:
             {
                 gitHosted: true,
-                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0,
+                integrity: sha512-8J40cVA6KA+EQlrdLdN5SbKa+RxIKhltrAS7w8bh3bpMVKg2tSc5+XDb/n42+6HNMIDiVTNbL2tm/G2dmUT+7g==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870,
             }
         version: 0.0.4
 
@@ -11123,7 +11124,7 @@ snapshots:
             regexpu-core: 6.4.0
             semver: 6.3.1
 
-    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
+    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))":
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
             "@babel/helper-compilation-targets": 7.29.7
@@ -11684,7 +11685,7 @@ snapshots:
             "@babel/helper-create-regexp-features-plugin": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/helper-plugin-utils": 7.29.7
 
-    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
+    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))":
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
@@ -11757,7 +11758,7 @@ snapshots:
             "@babel/plugin-transform-unicode-regex": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-modules": 0.1.6(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/types": 7.29.7
-            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-corejs3: 0.5.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-regenerator: 0.3.1(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
@@ -13449,11 +13450,11 @@ snapshots:
             cosmiconfig: 7.1.0
             resolve: 1.22.12
 
-    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0):
+    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             semver: 6.3.1
         transitivePeerDependencies:
             - supports-color
@@ -13461,7 +13462,7 @@ snapshots:
     babel-plugin-polyfill-corejs3@0.5.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
         transitivePeerDependencies:
             - supports-color
@@ -13469,7 +13470,7 @@ snapshots:
     babel-plugin-polyfill-regenerator@0.3.1(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
         transitivePeerDependencies:
             - supports-color
 
@@ -13532,10 +13533,10 @@ snapshots:
             file-uri-to-path: 1.0.0
         optional: true
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/0a7042380d07fe5752283ac71821b02d96d1aff8:
         {}
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0(@types/react@18.3.31)(supports-color@5.5.0):
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0):
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
