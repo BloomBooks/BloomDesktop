@@ -1,4 +1,4 @@
-﻿// This class supports creating audio recordings for talking books.
+// This class supports creating audio recordings for talking books.
 // It is also used by the motion tool when previewing.
 // Things currently get started when the user selects the "Talking Book Tool" item in
 // the toolbox while editing. This invokes the function audioRecorder.setupForRecording()
@@ -59,6 +59,7 @@ import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
+import { wrapWithRequestPageContentDelay } from "../../js/bloomEditing";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -111,6 +112,9 @@ const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
 const kBloomVisibleClass = "bloom-visibility-code-on";
+
+// Identifies the page-save delay this tool registers while an import is writing to the page.
+const kImportRecordingDelayId = "importRecording";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 const kPlaybackOrderContainerClass: string =
@@ -1181,7 +1185,7 @@ export default class AudioRecording implements IAudioRecorder {
             docView?.getComputedStyle(element).fontSize ?? "16",
         );
 
-        // All conditions met â€” get or create the icon only now that we'll show it.
+        // All conditions met — get or create the icon only now that we'll show it.
         const icon = this.getOrCreateIconMarker(pageDocBody);
         if (!icon) return;
 
@@ -3301,7 +3305,7 @@ export default class AudioRecording implements IAudioRecorder {
         return async () => {
             // Save the index (position) of the highlighted sentence among its siblings
             // before markup changes the DOM.  IDs are regenerated when text changes, so
-            // we use ordinal position instead â€” it survives ordinary edits.
+            // we use ordinal position instead — it survives ordinary edits.
             let previousHighlightIndex = -1;
             if (
                 this.highlightedElement &&
@@ -4981,32 +4985,40 @@ export default class AudioRecording implements IAudioRecorder {
         const importPath: string = result.data;
         if (!importPath) return;
 
-        // The file we are about to write is named after the current selection, so make sure that
-        // selection is really on the page being shown before we use it (BL-16873). The recording
-        // path does the equivalent in startRecordCurrentAsync.
-        await this.ensureHighlightIsOnTheCurrentPageAsync();
+        // Everything from here changes the page across several server round trips: the owning
+        // element gets its id, and finishNewRecordingOrImportAsync rewrites the markup once the
+        // copy lands. Hold page saving off until that is finished, or a save can serialize the
+        // page before the id is written and the mp3 ends up under an id that is not in the saved
+        // book -- BL-16873's failure in a different guise. The wait starts only now, after the
+        // chooser has returned, so browsing for a file does not hold up a save.
+        await wrapWithRequestPageContentDelay(async () => {
+            // The file we are about to write is named after the current selection, so make sure
+            // that selection is really on the page being shown before we use it. The recording
+            // path does the equivalent in startRecordCurrentAsync.
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
 
-        const resultAudioDir = await postJson(
-            "fileIO/getSpecialLocation",
-            "CurrentBookAudioDirectory",
-        );
+            const resultAudioDir = await postJson(
+                "fileIO/getSpecialLocation",
+                "CurrentBookAudioDirectory",
+            );
 
-        if (!resultAudioDir) {
-            return;
-        }
+            if (!resultAudioDir) {
+                return;
+            }
 
-        // If we ever import audio file types other than .mp3, we will need to update
-        // BookCompressor.AudioFileExtensions.
-        const targetPath =
-            resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
-        await postData(
-            "fileIO/copyFile",
-            {
-                from: encodeURIComponent(importPath),
-                to: encodeURIComponent(targetPath),
-            },
-            this.finishNewRecordingOrImportAsync.bind(this),
-        );
+            // If we ever import audio file types other than .mp3, we will need to update
+            // BookCompressor.AudioFileExtensions.
+            const targetPath =
+                resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
+            await postData(
+                "fileIO/copyFile",
+                {
+                    from: encodeURIComponent(importPath),
+                    to: encodeURIComponent(targetPath),
+                },
+                this.finishNewRecordingOrImportAsync.bind(this),
+            );
+        }, kImportRecordingDelayId);
     }
 
     // Returns all elements that match CSS selector {expr} as an array.
