@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
@@ -104,6 +105,19 @@ namespace Bloom.Publish
             // Safety net: any Edit-tab save lock must be complete before we reach Publish,
             // so ensure tab switching is enabled in case the re-enable callback was missed.
             WorkspaceView?.SetTabsEnabled(true);
+
+            // Make sure the book has had the per-page updates that normally happen only when a page
+            // is opened for editing, before we build anything (BloomPUB, ePUB, preview) from it. A
+            // book published without ever being fully edited (e.g. an old book, or one whose pages
+            // were never all visited) would otherwise publish with un-migrated pages. This applies
+            // them off-screen behind a progress dialog, and is a no-op for a book already up to date
+            // (BL-16852). It does nothing for a book we cannot save (e.g. a Team Collection book not
+            // checked out), which publishes from what is already on disk.
+            BookProcessor.EnsurePerPageFixupIfNeeded(
+                _model.BookSelection.CurrentSelection,
+                _webSocketServer
+            );
+
             PublishHelper.InPublishTab = true;
             var hostForm = GetHostControlForInvoke() as Form;
             PublishEpubApi.ControlForInvoke = hostForm;

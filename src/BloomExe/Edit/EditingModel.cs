@@ -923,6 +923,17 @@ namespace Bloom.Edit
                     }
                     CurrentBook.PrepareForEditing();
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
+
+                    // The page size just changed, so every page's layout-derived measurements
+                    // (image sizing, canvas-element geometry) are stale. Re-apply the per-page
+                    // fix-up to the whole book (BL-16852). We defer it until the layout-changed page
+                    // has reloaded and we are back in a stable editing state: running the modal
+                    // progress dialog here, mid-save, would be unsafe. For an orientation change the
+                    // view rebuild above already ran OnBecomeVisible (which did it), so this finds
+                    // the book already up to date and does nothing.
+                    RunAfterNextPageLoad(_ =>
+                        BookProcessor.EnsurePerPageFixupIfNeeded(CurrentBook, _webSocketServer)
+                    );
                     return pageId;
                 },
                 () => { } // wrong state, do nothing
@@ -1031,6 +1042,13 @@ namespace Bloom.Edit
                 ErrorReport.NotifyUserOfProblem(errors);
                 return;
             }
+
+            // Before showing the pages, make sure this book has had the per-page updates that
+            // normally happen only when a page is opened for editing. For an old book (or one whose
+            // page size changed) those have never been applied to most pages, so without this the
+            // editor would show a half-migrated book. This applies them off-screen to every page at
+            // once, behind a progress dialog, and is a no-op for a book already up to date (BL-16852).
+            BookProcessor.EnsurePerPageFixupIfNeeded(_currentlyDisplayedBook, _webSocketServer);
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 

@@ -6,8 +6,11 @@ using System.Threading;
 using Bloom.Api;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.ToPalaso;
+using Bloom.web;
+using L10NSharp;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -44,6 +47,20 @@ namespace Bloom.Book
         // browser's own cap on waiting for a page's async fix-ups before it captures or gives up),
         // or we would time out on a slow page just before the browser reported it.
         private const int kReadyTimeoutMs = 60000;
+
+        // A <meta> in the book's HTML recording the Bloom version (major.minor.build, e.g. "6.5.0")
+        // whose per-page browser fix-up was last applied to this book, and one recording the page
+        // size/orientation (e.g. "A5Portrait") it was applied at. Together they let us tell whether
+        // the fix-up still needs (re-)running for editing or publishing: see NeedsPerPageFixup.
+        internal const string kPerPageFixupVersionMeta = "perPageFixupBloomVersion";
+        internal const string kPerPageFixupLayoutMeta = "perPageFixupLayout";
+
+        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeeded) was tried this
+        // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
+        // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
+        // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
+        private static readonly HashSet<string> s_perPageFixupFailedThisSession =
+            new HashSet<string>();
 
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
@@ -167,10 +184,15 @@ namespace Bloom.Book
                     // back so we keep processing quietly in the background.
                     RestoreForeground(priorForeground);
 
+                    // Localize the per-page status format once, not once per page.
+                    var pageStatusFormat = LocalizationManager.GetString(
+                        "BookProcessor.UpdatingPageStatus",
+                        "Updating page {0} of {1}..."
+                    );
                     foreach (var page in pages)
                     {
                         pageIndex++;
-                        progress.WriteStatus($"Updating page {pageIndex} of {pages.Count}...");
+                        progress.WriteStatus(pageStatusFormat, pageIndex, pages.Count);
                         if (progress.ProgressIndicator != null)
                             progress.ProgressIndicator.PercentCompleted =
                                 (pageIndex - 1) * 100 / pages.Count;
@@ -194,13 +216,162 @@ namespace Bloom.Book
                 }
             }
 
-            // 3. One full save now that every page's in-memory DOM has been updated.
+            // Record that this Bloom version has applied the per-page fix-up to this book at its
+            // current page size, so NeedsPerPageFixup can tell it need not be done again unless a
+            // newer Bloom or a page-size change makes it stale. Only reached when every page
+            // succeeded (a failure throws before here), so we never claim a half-done book is done.
+            StampPerPageFixupDone(book);
+
+            // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
             book.Save();
             if (progress.ProgressIndicator != null)
                 progress.ProgressIndicator.PercentCompleted = 100;
 
             Log($"DONE: {pages.Count} pages");
             return pages.Count;
+        }
+
+        /// <summary>
+        /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
+        /// this book before it is edited or published. A book carries the fix-up automatically once it
+        /// has been opened for editing in the current Bloom at its current page size; this catches the
+        /// books that have NOT — old books, and books whose page size changed since it was last done.
+        ///
+        /// It is "needed" when any of these holds:
+        ///  - the book has never recorded a fix-up (an old book, or one made by a Bloom without this);
+        ///  - the recorded version is older than this Bloom (a newer Bloom's DOM work is not yet applied);
+        ///  - the recorded page size/orientation differs from the book's current one (the layout-derived
+        ///    measurements — image sizing, canvas-element geometry — need recomputing).
+        ///
+        /// Returns false for a book we could not usefully process anyway: one we cannot save (e.g. a
+        /// Team Collection book not checked out — EnsureUpToDate would refuse it too), or one with
+        /// structural errors (it would show an error page rather than editable pages).
+        /// </summary>
+        public static bool NeedsPerPageFixup(Book book)
+        {
+            if (book == null || !book.IsSaveable)
+                return false;
+            if (!string.IsNullOrEmpty(book.CheckForErrors()))
+                return false;
+
+            var dom = book.OurHtmlDom;
+            var stampedVersionString = dom.GetMetaValue(kPerPageFixupVersionMeta, "");
+            if (!Version.TryParse(stampedVersionString, out var stampedVersion))
+                return true; // never done, or an unreadable stamp we should redo
+
+            if (stampedVersion < GetRunningBloomVersion())
+                return true; // last done by an older Bloom
+
+            // Same or newer Bloom did it; the only remaining reason to redo is a page-size change.
+            var stampedLayout = dom.GetMetaValue(kPerPageFixupLayoutMeta, "");
+            return stampedLayout != GetLayoutStamp(book);
+        }
+
+        /// <summary>
+        /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
+        /// due, behind a modal progress dialog, and return true if it actually ran. Called before a
+        /// book is edited (EditingModel.OnBecomeVisible), before it is published (PublishView.Activate),
+        /// and after a page-size change (EditingModel.SetLayout). No-op (returns false) when the book
+        /// does not need it, or when a run already failed for this book this session (so we don't
+        /// re-prompt on every tab switch).
+        ///
+        /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
+        /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the
+        /// pages it loads call back into Bloom's API server, so it must not run on the UI thread),
+        /// exactly like the "Update Book" command it shares ProcessBook with.
+        /// </summary>
+        public static bool EnsurePerPageFixupIfNeeded(
+            Book book,
+            BloomWebSocketServer webSocketServer
+        )
+        {
+            if (!NeedsPerPageFixup(book))
+                return false;
+            if (s_perPageFixupFailedThisSession.Contains(book.ID))
+                return false;
+
+            // Reuse the "Update Book" label: to the user this is the same operation, applied for them
+            // automatically rather than on request.
+            var title = LocalizationManager.GetString(
+                "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                "Update Book"
+            );
+            BrowserProgressDialog.DoWorkWithProgressDialog(
+                webSocketServer,
+                () =>
+                {
+                    var dlg = new ReactDialog(
+                        "progressDialogBundle",
+                        new
+                        {
+                            title,
+                            titleColor = "white",
+                            titleBackgroundColor = Palette.kBloomBlueHex,
+                            showReportButton = "if-error",
+                            determinate = true,
+                            linearProgress = true,
+                        },
+                        title
+                    );
+                    dlg.SetScaledSize(560, 400);
+                    return dlg;
+                },
+                (progress, worker) =>
+                {
+                    // Tell the user why Bloom paused to do this; they did not ask for it.
+                    progress.MessageWithoutLocalizing(
+                        LocalizationManager.GetString(
+                            "BookProcessor.AutoUpdateExplanation",
+                            "Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size."
+                        ),
+                        ProgressKind.Instruction
+                    );
+                    try
+                    {
+                        ProcessBook(book, progress: new WebProgressAdapter(progress));
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
+                        // and make sure the details reach the log; the dialog shows the message to the user.
+                        s_perPageFixupFailedThisSession.Add(book.ID);
+                        SIL.Reporting.Logger.WriteError(
+                            "Automatic page update failed for " + book.NameBestForUserDisplay,
+                            e
+                        );
+                        throw;
+                    }
+                    return false; // no error: close the dialog automatically
+                }
+            );
+            return true;
+        }
+
+        // The Bloom version (major.minor.build) whose per-page fix-up is stamped into a processed book.
+        // Shell.GetShortVersionInfo() reads it from the running assembly (e.g. "6.5.0") and parses
+        // cleanly as a Version, unlike Application.ProductVersion, which can carry a channel suffix.
+        private static Version GetRunningBloomVersion()
+        {
+            return Version.TryParse(Shell.GetShortVersionInfo(), out var v) ? v : new Version(0, 0);
+        }
+
+        // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
+        // governs the layout-derived measurements the per-page fix-up computes, so a change to it is
+        // exactly when those measurements need recomputing.
+        private static string GetLayoutStamp(Book book)
+        {
+            return book.GetLayout().SizeAndOrientation.ClassName;
+        }
+
+        // Record, in the book's HTML, that this Bloom version applied the per-page fix-up at the
+        // current page size. Written just before ProcessBook's final Save so it is persisted with it.
+        private static void StampPerPageFixupDone(Book book)
+        {
+            book.OurHtmlDom.UpdateMetaElement(
+                kPerPageFixupVersionMeta,
+                GetRunningBloomVersion().ToString()
+            );
+            book.OurHtmlDom.UpdateMetaElement(kPerPageFixupLayoutMeta, GetLayoutStamp(book));
         }
 
         /// <summary>
