@@ -421,12 +421,22 @@ export default class OverflowChecker {
     // padding-bottom in its style attribute.
     // The book title is one data-book field shown on several xmatter pages (the front cover, the
     // title page, sometimes more), and Bloom keeps the style attribute of all its copies in sync.
-    // If every page measured and stored its own padding, the copies would overwrite each other's
-    // value on every visit, and the published book would carry whichever page was looked at last,
-    // clipping the cover title when that was the title page (BL-16811). The front cover is where
-    // descender clipping matters, so only the copy there measures; the other copies inherit the
-    // cover's padding through the normal sync, which is harmless there. Other padded fields are
-    // measured wherever they are.
+    // In particular, the style attribute is used to store the padding-bottom that we compute here
+    // to prevent descenders from extending outside their box. So each time we save a page with
+    // a book-title, the padding-bottom on that page gets copied to all the other places that
+    // use the same combination of data-book and lang attributes, just like the title text.
+    // For example, if we edited the title page last, and had updated the padding to be ideal for
+    // the title there, the front cover would get the title page's padding. It would get corrected
+    // the next time we edit the front cover, but a publication made in the meantime would have
+    // things subtly the wrong size and position. (Claude thought there might even be a situation
+    // where the front cover descenders could be cut off, but I haven't been able to reproduce that.)
+    // We could not find any acceptably simple way to prevent padding migrating like this,
+    // given that content in xmatter pages is only preserved through the data-div,
+    // so we decided to kluge it by only allowing the padding to be adjusted by this code on the
+    // front cover. The other copies of the book title will inherit the front cover's padding.
+    // We may come up with a better approach in a later version.
+    // Other padded fields are measured wherever they are. None of them are currently likely to
+    // be in more than one place with a different style in each.
     public static shouldMeasurePaddingForOverflow(
         editable: HTMLElement,
     ): boolean {
