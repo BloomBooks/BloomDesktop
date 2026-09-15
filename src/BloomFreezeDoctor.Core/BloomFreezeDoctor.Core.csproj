@@ -90,8 +90,10 @@
       would settle on 6.0.0 and overwrite Bloom's copies (BL-16867, see the note above). Pinning just
       these two is enough: their closure is exactly the set BloomExe resolves, down to
       DependencyInjection 8.0.1, DependencyInjection.Abstractions 9.0.5, Options 8.0.2 and
-      Primitives 8.0.0. Bloom's versions are themselves transitive, so when they move, these follow -
-      the build will say so.
+      Primitives 8.0.0. Bloom's own versions are themselves transitive, so they can move whenever
+      anything else in Bloom's graph is updated. These pins do NOT follow when that happens; they
+      just go stale, and the dependency check in build/Bloom.proj is what catches it, failing the
+      build and naming both versions. Update them by hand to match Bloom's new ones.
     -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.5" />
