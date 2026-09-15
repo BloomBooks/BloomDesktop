@@ -240,6 +240,11 @@ async function takeSnapshot(): Promise<void> {
                 idleNoticeOwed = false;
                 void postIdleNotice(pageId);
             }
+        } else if (idleNoticeOwed) {
+            // Nothing to post: the finished page turns out to be what C# already holds. That is
+            // still what the owed idle notice was waiting to be sure of.
+            idleNoticeOwed = false;
+            void postIdleNotice(pageId);
         }
     } catch (error) {
         // Gathering the page can legitimately throw -- the BL-13120 origami guard, a missing

@@ -568,6 +568,37 @@ describe("pageSnapshot", () => {
         expect(posted[0].body).toBe("with the image sized");
     });
 
+    it("sends the owed idle notice even when the retry finds nothing new to post", async () => {
+        // The gather after the work threw, so idle was withheld; the retry reads the page and finds
+        // it identical to what C# already holds. There is no snapshot to post, but C# is still owed
+        // the idle notice, or every later save would sit out the whole wait.
+        let gatherShouldThrow = false;
+        const flakyGather = () =>
+            gatherShouldThrow
+                ? Promise.reject(new Error("the page could not be read"))
+                : Promise.resolve(contentToReport);
+        startWatchingPageForSnapshots(flakyGather);
+        await letTheBaselineSettle();
+        addRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+        await Promise.resolve();
+        posted.length = 0;
+
+        gatherShouldThrow = true;
+        removeRequestPageContentDelay("sizing an image");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+        expect(posted).toEqual([]);
+
+        gatherShouldThrow = false; // and contentToReport is unchanged from the baseline
+        vi.advanceTimersByTime(retryMsForTests);
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageIdle",
+        ]);
+    });
+
     it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.
