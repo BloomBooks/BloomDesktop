@@ -47,6 +47,6 @@ export function canToggleNoIndent(paragraph: HTMLElement): boolean {
 /** Turn "No Indent" on or off for this one paragraph. */
 export function toggleNoIndent(paragraph: HTMLElement): void {
     paragraph.classList.toggle(kNoIndentClass);
-    // The class is plain content markup inside the bloom-editable, so it is saved with the
-    // page the next time Bloom asks the browser for the page content; nothing to post here.
+    // The class is plain content markup inside the bloom-editable, so the page snapshot picks it
+    // up like any other edit and it is saved with the page; nothing to post here.
 }

@@ -39,7 +39,29 @@ export const saveStateOfCanvasElementAsCurrentLangAlternate = (
     ).find((e) => e.getAttribute("lang") === canvasElementLang);
     if (editable) {
         const bubbleData = canvasElement.getAttribute("data-bubble") ?? "";
-        const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+        // A canvas element with no data-bubble at all, or one we cannot read, must not cost the
+        // user the whole page. This runs inside the clone gather, so a throw here does not just
+        // skip one alternate: it aborts gathering the page, which means the page cannot be saved
+        // and -- since the browser now gathers after every change, not only when saving -- says so
+        // over and over. Note that the ?? "" above makes a MISSING attribute throw too, because
+        // JSON.parse("") is an error; that is the likelier of the two ways in.
+        //
+        // Skipping leaves any alternate already on the editable alone, which is the conservative
+        // choice: recording one with no tails would claim this language's copy has none, and lose
+        // the tails when the user switches to it.
+        let bubbleDataObj: { tails?: object[] };
+        try {
+            bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+        } catch (e) {
+            console.warn(
+                "Not recording a canvas-element alternate for lang " +
+                    canvasElementLang +
+                    ": its data-bubble could not be read (" +
+                    bubbleData.slice(0, 60) +
+                    ")",
+            );
+            return;
+        }
         const alternate = {
             lang: canvasElementLang,
             style: canvasElement.getAttribute("style") ?? "",

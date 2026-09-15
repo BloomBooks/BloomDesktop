@@ -292,7 +292,7 @@ export function getElementThatDeterminesImageSlotSize(
 
 // Writes each image slot's share of its page onto the slot, so that the size it wants can be
 // worked out later for a page nobody has open. Called as a page is saved (see
-// extractAndStripPageContentForSave in bloomEditing.ts), which is both the ordinary Edit-tab
+// cleanCloneOfBodyForSave in bloomEditing.ts), which is both the ordinary Edit-tab
 // save and the off-screen pass "Update Book" makes over every page.
 //
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction
@@ -305,41 +305,59 @@ export function getElementThatDeterminesImageSlotSize(
 // page, and the cost is a suggested size somewhat off rather than a broken picture. "Update
 // Book" refreshes every page's value in one pass, so there is a way out that does not depend
 // on the user visiting each page. Deliberately not re-measured any more eagerly than that.
-export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
+// The measurements come from pageRoot, which must be laid out. The attribute is written to the
+// corresponding slot under writeTo, which defaults to pageRoot itself; the live editor's save passes
+// the detached clone it is about to hand to C#, so that measuring the live page for a save does not
+// also change it. writeTo must then be an untouched copy of pageRoot, so that the Nth slot in each
+// is the same slot.
+export function recordFractionOfPageOnImageSlots(
+    pageRoot: Element,
+    writeTo: Element = pageRoot,
+): void {
     const pageElement =
         pageRoot.closest(".bloom-page") ??
         pageRoot.querySelector(".bloom-page");
     if (!pageElement) return;
     const page = getOpenPageMetrics(pageElement);
     if (!page) return;
-    Array.from(pageRoot.querySelectorAll("." + kImageContainerClass)).forEach(
-        (slot) => {
-            // Bloom injects controls into the live page; they are not slots, and a save strips
-            // them anyway.
-            if (slot.closest(".bloom-ui")) return;
-            // A Bloom Games target holds a copy of its draggable's content, so its picture is
-            // not separately editable and the AI image editor is never offered it (C#'s
-            // IsSlotInsideGameTarget, which looks for the same ancestor attribute).
-            if (slot.parentElement?.closest("[data-target-of]")) return;
-            const container = slot as HTMLElement;
-            // The value always goes ON the container, because that is what C# enumerates
-            // (EnumerateBookImages), but for a canvas background it is the canvas that gets
-            // measured.
-            const box = getElementThatDeterminesImageSlotSize(container);
-            if (
-                !isUsableLength(box.offsetWidth) ||
-                !isUsableLength(box.offsetHeight)
-            ) {
-                return;
-            }
-            const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
-            const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
-            container.setAttribute(
-                kFractionOfPageAttribute,
-                `${width},${height}`,
-            );
-        },
+    const liveSlots = Array.from(
+        pageRoot.querySelectorAll("." + kImageContainerClass),
     );
+    const targetSlots =
+        writeTo === pageRoot
+            ? liveSlots
+            : Array.from(writeTo.querySelectorAll("." + kImageContainerClass));
+    if (targetSlots.length !== liveSlots.length) {
+        throw new Error(
+            `recordFractionOfPageOnImageSlots(): the copy has ${targetSlots.length} image slots but the live page has ${liveSlots.length}. The copy must be an untouched copy of the live page.`,
+        );
+    }
+    liveSlots.forEach((slot, index) => {
+        // Bloom injects controls into the live page; they are not slots, and a save strips
+        // them anyway.
+        if (slot.closest(".bloom-ui")) return;
+        // A Bloom Games target holds a copy of its draggable's content, so its picture is
+        // not separately editable and the AI image editor is never offered it (C#'s
+        // IsSlotInsideGameTarget, which looks for the same ancestor attribute).
+        if (slot.parentElement?.closest("[data-target-of]")) return;
+        const container = slot as HTMLElement;
+        // The value always goes ON the container, because that is what C# enumerates
+        // (EnumerateBookImages), but for a canvas background it is the canvas that gets
+        // measured.
+        const box = getElementThatDeterminesImageSlotSize(container);
+        if (
+            !isUsableLength(box.offsetWidth) ||
+            !isUsableLength(box.offsetHeight)
+        ) {
+            return;
+        }
+        const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
+        const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
+        targetSlots[index].setAttribute(
+            kFractionOfPageAttribute,
+            `${width},${height}`,
+        );
+    });
 }
 
 // Reads back what recordFractionOfPageOnImageSlots wrote. Null for anything that is not two

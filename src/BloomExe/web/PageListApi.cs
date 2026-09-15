@@ -105,19 +105,29 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            // The page list sends the current page's content with the click when it can. It is
+            // absent when there is no page to collect from, or collecting threw; then the snapshot
+            // the browser last volunteered is used (see PageListController.OnPageSelectedChanged).
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
 
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
+            // Note this only measures getting the change under way; with the content in hand that
+            // is now most of the work, but the new page still has to be built and displayed.
+            using (
+                PerformanceMeasurement.Global?.Measure(
+                    label,
+                    requestData.IsDefined("detail") ? requestData.detail : ""
+                )
+            )
             {
-                //using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
-                //{
                 IPage page = PageFromId(pageId);
-                //}
 
                 if (page != null)
-                    PageList.PageClicked(page);
+                    PageList.PageClicked(page, pageContent);
             }
 
             request.PostSucceeded();
@@ -139,15 +149,34 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
+            // See HandlePageClickedRequest.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
             IPage page = PageFromId(pageId);
 
             if (page != null)
             {
-                // Execute the command asynchronously after a short delay
-                // The discard operator _ indicates we're intentionally not awaiting this
+                // The command must not run inline: "Duplicate Many Times" and "Choose Different
+                // Layout" open MODAL dialogs whose content this same server has to serve, and this
+                // handler holds the API sync lock until it returns. Running them here would
+                // deadlock.
+                //
+                // The short delay before queueing is deliberate, and is the easy thing to remove by
+                // mistake. Returning from this handler is not enough on its own: the server thread
+                // releases the sync lock a moment AFTER we return, while the UI thread is already
+                // free to pump whatever we queued -- so a dialog could ask for its content while
+                // the lock is still held. The delay makes that ordering certain rather than merely
+                // likely.
+                //
+                // The cost is a small window in which typing would miss the page snapshot that
+                // came with this request. That is a trade made knowingly: a lost keystroke is
+                // recoverable, a hung Bloom is not.
+                //
+                // The discard operator _ indicates we're intentionally not awaiting this.
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(100); // 100ms delay to let the UI respond
+                    await Task.Delay(100);
 
                     // Execute on the UI thread using the form's synchronization context
                     var form = Shell.GetShellOrOtherOpenForm();
@@ -158,7 +187,11 @@ namespace Bloom.web
                             {
                                 try
                                 {
-                                    PageList.ExecuteContextMenuCommand(page, commandId);
+                                    PageList.ExecuteContextMenuCommand(
+                                        page,
+                                        commandId,
+                                        pageContent
+                                    );
                                 }
                                 catch (Exception ex)
                                 {
@@ -174,7 +207,6 @@ namespace Bloom.web
                 });
             }
 
-            // Return success immediately without waiting for the command to execute
             request.PostSucceeded();
         }
 
@@ -184,7 +216,11 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            PageList.PageMoved(movedPage, newIndex);
+            // See HandlePageClickedRequest.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
+            PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();
         }
 

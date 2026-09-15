@@ -4,6 +4,7 @@ import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
+import { removeReaderMarkup } from "../removeReaderMarkup";
 import { LeveledReaderToolControls } from "./LeveledReaderToolControls";
 import $ from "jquery";
 
@@ -86,9 +87,18 @@ export class LeveledReaderTool extends ToolboxToolReactAdaptor {
         model.doMarkup();
     }
 
+    // Take our markup off the page we are about to save (a clone), or off the live page when we
+    // are being detached from it. See removeReaderMarkup.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        removeReaderMarkup(pageOrClone);
+    }
+
     // this function removes all markup from a page when either that page has been
     // closed or the tool has been closed.
     public detachFromPage(): void {
+        super.detachFromPage(); // takes the markup off the live page
+        // ...and this stops it coming back: it also resets the model so that further typing is
+        // not marked up.
         getTheOneReaderToolsModel().setMarkupType(0);
     }
 

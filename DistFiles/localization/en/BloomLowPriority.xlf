@@ -428,6 +428,11 @@
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
         <note>Shown as a toast when the one-time shrinking of an old book's oversized pictures fails. The book still works; the pictures are just left large, and Bloom retries later. "Bloom" is a product name and must not be translated.</note>
       </trans-unit>
+      <trans-unit id="Shell.SavingBeforeWindowsShutsDown" translate="no">
+        <source xml:lang="en">Bloom is saving your book</source>
+        <note>ID: Shell.SavingBeforeWindowsShutsDown</note>
+        <note>Shown by Windows itself, next to Bloom's name on the screen Windows displays when an application is slow to let it shut down, restart or log off. It appears only if Bloom takes more than a few seconds to finish saving. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
