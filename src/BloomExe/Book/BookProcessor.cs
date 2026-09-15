@@ -184,15 +184,13 @@ namespace Bloom.Book
                     // back so we keep processing quietly in the background.
                     RestoreForeground(priorForeground);
 
-                    // Localize the per-page status format once, not once per page.
-                    var pageStatusFormat = LocalizationManager.GetString(
-                        "BookProcessor.UpdatingPageStatus",
-                        "Updating page {0} of {1}..."
-                    );
                     foreach (var page in pages)
                     {
                         pageIndex++;
-                        progress.WriteStatus(pageStatusFormat, pageIndex, pages.Count);
+                        // We deliberately do NOT write a per-page status message here. The progress
+                        // dialog is determinate, so the percent bar below already shows how far we
+                        // are; a "Updating page N of M" line per page just fills the log with dozens
+                        // of near-identical lines that duplicate the bar (BL-16852).
                         if (progress.ProgressIndicator != null)
                             progress.ProgressIndicator.PercentCompleted =
                                 (pageIndex - 1) * 100 / pages.Count;

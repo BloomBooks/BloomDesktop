@@ -1609,11 +1609,6 @@
         <note>ID: BookProcessor.AutoUpdateExplanation</note>
         <note>Shown at the top of a progress dialog that appears automatically when Bloom opens an older book for editing, or before publishing it, and must update the book's pages. "Bloom" is the product name and must not be translated.</note>
       </trans-unit>
-      <trans-unit id="BookProcessor.UpdatingPageStatus" translate="no">
-        <source xml:lang="en">Updating page {0} of {1}...</source>
-        <note>ID: BookProcessor.UpdatingPageStatus</note>
-        <note>Progress status line in that same dialog, updated as each page is processed. {0} is the current page number and {1} is the total number of pages.</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>
