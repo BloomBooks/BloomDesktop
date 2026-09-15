@@ -497,6 +497,40 @@ describe("pageSnapshot", () => {
         expect(seqOf(notices[1].url)).toBeGreaterThan(seqOf(notices[0].url));
     });
 
+    it("withholds the idle notice until the finished page has actually been delivered", async () => {
+        // Idle means "and you already have the page as it is now". If the snapshot of the finished
+        // page fails to post, saying idle anyway would let C# save the page from before the work.
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+        addRequestPageContentDelay("sizing an image");
+        await Promise.resolve();
+        await Promise.resolve();
+        posted.length = 0;
+
+        contentToReport = "with the image sized";
+        changeThePage("with the image sized");
+        await Promise.resolve();
+        postReply = undefined; // the snapshot post fails
+        removeRequestPageContentDelay("sizing an image");
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageSnapshot",
+        ]);
+
+        // The retry delivers it; only then does idle go out.
+        postReply = { data: true };
+        vi.advanceTimersByTime(retryMsForTests);
+        await vi.runAllTicks();
+        for (let i = 0; i < 6; i++) await Promise.resolve();
+        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
+            "editView/pageSnapshot",
+            "editView/pageSnapshot",
+            "editView/pageIdle",
+        ]);
+        expect(posted[1].body).toBe("with the image sized");
+    });
+
     it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
         // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
         // and this page may simply not have reported itself ready yet.

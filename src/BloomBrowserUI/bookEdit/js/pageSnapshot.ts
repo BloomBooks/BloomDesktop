@@ -100,6 +100,13 @@ let runDone: Promise<void> = Promise.resolve();
 // a refused busy notice is offered again only while it is still true.
 let busyWith: string | undefined;
 let unsubscribeFromDelayRegister: (() => void) | undefined;
+// Set when the work finished but the snapshot of the finished page could not be delivered, so
+// the idle notice was withheld; the next delivered snapshot sends it. See tellCSharpIdle.
+let idleNoticeOwed = false;
+// What the last gather returned, delivered or not. The idle notice may go only when this is what
+// C# holds (lastPosted); otherwise C# would take "idle" as "you have the finished page" when it
+// does not.
+let lastGathered: string | undefined;
 // Numbers the busy and idle notices, so that C# can ignore one that arrives after a later one.
 // The two are separate HTTP requests and HTTP does not promise to deliver them in order, so an
 // idle notice (or its retry) can land after the busy notice for work that began afterwards; taken
@@ -177,6 +184,7 @@ async function takeSnapshot(): Promise<void> {
 
         // The page may have been unloaded, or navigated, while we were waiting.
         if (pageIdBeingWatched !== pageId) return;
+        lastGathered = content;
 
         if (content !== lastPosted) {
             const reply = await postStringQuietly(
@@ -223,6 +231,12 @@ async function takeSnapshot(): Promise<void> {
             // mean content C# never received still counted as sent: we would never retry it, and
             // the next save would write what C# still held, losing everything typed since.
             lastPosted = content;
+            if (idleNoticeOwed) {
+                // The work finished earlier but this content could not be delivered then, so the
+                // idle notice waited for it. Now C# has the finished page.
+                idleNoticeOwed = false;
+                void postIdleNotice(pageId);
+            }
         }
     } catch (error) {
         // Gathering the page can legitimately throw -- the BL-13120 origami guard, a missing
@@ -319,6 +333,14 @@ function wasTaken(reply: unknown): boolean {
 async function tellCSharpIdle(pageId: string): Promise<void> {
     if (busy) await runDone;
     await takeSnapshot();
+    if (lastGathered !== lastPosted) {
+        // The snapshot of the finished page was not delivered (the post failed, or was refused),
+        // so C# does not have it yet. Saying idle now would let a save go ahead on the content
+        // from before the work. The retry that takeSnapshot has scheduled sends the notice once
+        // the content lands.
+        idleNoticeOwed = true;
+        return;
+    }
     await postIdleNotice(pageId);
 }
 
@@ -417,6 +439,8 @@ export function startWatchingPageForSnapshots(
     pageWeReportedAFailureFor = undefined;
     consecutiveFailedPosts = 0;
     busyWith = undefined;
+    idleNoticeOwed = false;
+    lastGathered = undefined;
     unsubscribeFromDelayRegister = onDelayRegisterChanged(
         handleDelayRegisterChange,
     );
@@ -471,6 +495,8 @@ export function stopWatchingPageForSnapshots(): void {
     baselineTaken = false;
     busy = false;
     busyWith = undefined;
+    idleNoticeOwed = false;
+    lastGathered = undefined;
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
 }
