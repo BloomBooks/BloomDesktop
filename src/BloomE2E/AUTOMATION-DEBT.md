@@ -704,6 +704,29 @@ already has everything that shape of suite needs, so after the port, adding it i
 edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
 is worth keeping — page loads are the slow part either way.
 
+## import-recording.spec.ts:84 failing is a PRODUCT bug, not a flaky test — BL-16873
+
+If a nightly fails with
+
+> The imported file "i<guid>.mp3" is not named after any recordable element on the page.
+
+that is **BL-16873**, not the suite being flaky, and the test is doing its job. Bloom names a
+narration file after the id of the element that owns the audio; the Talking Book tool was reading
+the id off whatever `highlightedElement` happened to be, which is not always that element — it can
+be a sub-element, or a node no longer in the page after CKEditor replaced a paragraph or the page
+changed. The mp3 then lands under an id nothing on the page owns, or under **another page's** text
+box, so the page the user was on stays silent while a different one acquires the audio. Reproduced
+in a running Bloom, so it is user-facing, not a test artifact.
+
+It is timing-dependent (the stale-highlight window is normally repaired within 200ms), which is why
+it shows up on a loaded runner and not on a developer machine — do not expect to reproduce it
+locally, and do not write it off when you cannot.
+
+Fixed in PR #8363; as of 2026-09-15 that is still in review, so a nightly on master can still hit
+it. If it recurs **after** #8363 merges, it is a new mechanism rather than a return of this one —
+say so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes
+them.
+
 ## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
 
 `import-recording.spec.ts:84` failed in the 2026-09-15 nightly (run 34994810480) with a good
