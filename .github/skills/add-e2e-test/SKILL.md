@@ -66,6 +66,10 @@ automation (no stable selector, a native dialog, a WinForms surface):
 
 1. Check `src/BloomE2E/AUTOMATION-DEBT.md` — it may already be known, with a
    workaround or a decision.
+   For a WinForms button or tab, or an OS dialog, first see whether UI Automation reaches it
+   (`winformsUia.ps1`, "Driving WinForms and OS dialogs" in the `bloom-automation` skill); it
+   does for the Settings dialog's tabs and OK/Cancel and for the file picker, but not for the
+   Settings dialog's web content under `--e2e`.
 2. Prefer fixing Bloom: add a `data-testid` in the React code, or add a hook to
    `src/BloomExe/web/controllers/E2eTestingApi.cs` (registered only under `--e2e`).
    Ship that fix in the same PR as the test. That is a change to Bloom's production code,
@@ -209,13 +213,15 @@ Rules that hold regardless of the final API:
 - Real mouse events, not synthetic `element.click()`, for targets that need them
   (book tiles, Settings, PREVIEW); the helper layer handles this — never hand-roll
   `Input.dispatchMouseEvent` inside a test.
-- NEVER trigger native OS dialogs (the WinForms Image Toolbox, video capture, the folder
-  chooser) — Playwright cannot dismiss them and the run hangs. The one exception is the "choose
+- NEVER let a native OS dialog open unprepared (video capture, the file and folder choosers):
+  Playwright cannot see or dismiss it, so the run hangs. The one exception is the "choose
   a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
   `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
   answers with that path instead of showing a dialog. It answers one dialog only, so arm it
   immediately before the click; a path armed and never used would otherwise answer some later
-  test's chooser.
+  test's chooser. When a dialog the hook does not cover has to be driven, or a run has to read
+  an unexpected message box, `winformsUia.ps1` in the `bloom-automation` skill does it over UI
+  Automation (proven on Bloom's image picker); arming is still the first choice in a test.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
