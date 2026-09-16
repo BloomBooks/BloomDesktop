@@ -898,6 +898,10 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
+            // Set by the save callback for the benefit of doAfterSaveToDisk, which needs to know
+            // which page we left and whether the pass is actually going to run.
+            string pageIdWeLeft = null;
+            Book.Book bookToUpdate = null;
             SaveThen(
                 () =>
                 {
@@ -927,20 +931,28 @@ namespace Bloom.Edit
                     // The measurements each page records (image sizing, canvas-element geometry) are
                     // relative to the page, so changing its size leaves them stale and makes the book
                     // due for the per-page pass again -- its recorded layout no longer matches
-                    // (BL-16852). Kick that off here rather than from RunAfterNextPageLoad: the
-                    // queued-action route does not reliably fire for the page load that follows a
-                    // layout change, so the pass silently never happened. RunOffTheApiLock defers it
-                    // past this save and the API lock the request holds, which is all it needs.
-                    if (BookProcessor.NeedsPerPageFixup(CurrentBook))
-                    {
-                        var bookToUpdate = CurrentBook;
-                        RunOffTheApiLock(() =>
-                            BookProcessor.EnsurePerPageFixupIfNeeded(bookToUpdate, _webSocketServer)
-                        );
-                    }
-                    return pageId;
+                    // (BL-16852). When it is due, return null so the editor empties, and let
+                    // doAfterSaveToDisk run the pass and bring us back, exactly as the AI image
+                    // editor does. ProcessBook must have the book to itself: it rewrites the book's
+                    // DOM from a worker thread, and every page it loads off-screen is a full editing
+                    // page that announces itself as loaded -- including one carrying the very page id
+                    // a live editor would be waiting on, which the editor would then accept in place
+                    // of the real page. Emptying the editor first is what makes those announcements
+                    // ignorable. (Do NOT queue this with RunAfterNextPageLoad instead: that action
+                    // does not reliably fire for the page load that follows a layout change, so the
+                    // pass silently never ran.)
+                    pageIdWeLeft = pageId;
+                    if (!BookProcessor.NeedsPerPageFixup(CurrentBook))
+                        return pageId;
+                    bookToUpdate = CurrentBook;
+                    return null;
                 },
-                () => { } // wrong state, do nothing
+                () => { }, // wrong state, do nothing
+                doAfterSaveToDisk: () =>
+                {
+                    if (bookToUpdate != null)
+                        RunPerPageFixupThenReturnToPage(bookToUpdate, pageIdWeLeft, null);
+                }
             );
         }
 
@@ -1109,23 +1121,45 @@ namespace Bloom.Edit
                     });
                 },
                 doAfterSaveToDisk: () =>
-                    RunOffTheApiLock(() =>
-                    {
-                        BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
-                        // The user may have switched books or left the tab while the dialog was up.
-                        if (!Visible || CurrentBook != book)
-                            return;
-                        // ProcessBook rebuilt the pages, so the IPage objects and editable areas
-                        // need redoing before we show one again.
-                        book.PrepareForEditing();
-                        var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
-                        if (page == null)
-                            return; // the page went away; nothing sensible to go back to
-                        RunAfterNextPageLoad(_ => afterPageReloaded());
-                        _view.GoToPage(page);
-                        _view.UpdatePageList(true);
-                    })
+                    RunPerPageFixupThenReturnToPage(book, pageId, afterPageReloaded)
             );
+        }
+
+        /// <summary>
+        /// Bring <paramref name="book"/> up to the current browser maintenance level, then go back to
+        /// <paramref name="pageId"/> and, if one is given, run <paramref name="afterPageReloaded"/>
+        /// once that page has loaded. Call this only from a save whose callback returned null, so the
+        /// editor is empty by the time the pass starts.
+        /// </summary>
+        /// <remarks>
+        /// Shared by the two things that trigger the pass, because both have to do all of this, not
+        /// just the first line. The pass runs deferred off the API sync lock (see RunOffTheApiLock),
+        /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
+        /// also what puts it after the state machine has finished emptying the editor.
+        /// </remarks>
+        private void RunPerPageFixupThenReturnToPage(
+            Book.Book book,
+            string pageId,
+            Action afterPageReloaded
+        )
+        {
+            RunOffTheApiLock(() =>
+            {
+                BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
+                // The user may have switched books or left the tab while the dialog was up.
+                if (!Visible || CurrentBook != book)
+                    return;
+                // ProcessBook rebuilt the pages, so the IPage objects and editable areas
+                // need redoing before we show one again.
+                book.PrepareForEditing();
+                var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
+                if (page == null)
+                    return; // the page went away; nothing sensible to go back to
+                if (afterPageReloaded != null)
+                    RunAfterNextPageLoad(_ => afterPageReloaded());
+                _view.GoToPage(page);
+                _view.UpdatePageList(true);
+            });
         }
 
         /// <summary>
