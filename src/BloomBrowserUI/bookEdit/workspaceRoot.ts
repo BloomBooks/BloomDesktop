@@ -175,9 +175,16 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     // document, so without the check a keystroke meant for the thing on top would replace the
     // picture behind it.
     if (contentWindow.isModalOpen(document)) return;
-    // Origami and the toolbox get first refusal here too, in handleUndo's order. The tool's
-    // undo is performed rather than merely deferred to, because nothing else would do it.
-    if (contentWindow.origamiCanUndo()) return;
+    // Origami and the toolbox get first refusal here too, in handleUndo's order. Both undos are
+    // performed here rather than merely deferred to, because nothing else would do them: the
+    // keystroke arrived in THIS window, and origami's own handler is bound to the page frame's
+    // html element, so it never sees this event. (The page frame's handler can simply stand
+    // aside for origami, because there that handler does fire.)
+    if (contentWindow.origamiCanUndo()) {
+        e.preventDefault();
+        contentWindow.origamiUndo();
+        return;
+    }
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow?.canUndo()) {
         e.preventDefault();
