@@ -923,6 +923,21 @@ namespace Bloom.Edit
                     }
                     CurrentBook.PrepareForEditing();
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
+
+                    // The measurements each page records (image sizing, canvas-element geometry) are
+                    // relative to the page, so changing its size leaves them stale and makes the book
+                    // due for the per-page pass again -- its recorded layout no longer matches
+                    // (BL-16852). Kick that off here rather than from RunAfterNextPageLoad: the
+                    // queued-action route does not reliably fire for the page load that follows a
+                    // layout change, so the pass silently never happened. RunOffTheApiLock defers it
+                    // past this save and the API lock the request holds, which is all it needs.
+                    if (BookProcessor.NeedsPerPageFixup(CurrentBook))
+                    {
+                        var bookToUpdate = CurrentBook;
+                        RunOffTheApiLock(() =>
+                            BookProcessor.EnsurePerPageFixupIfNeeded(bookToUpdate, _webSocketServer)
+                        );
+                    }
                     return pageId;
                 },
                 () => { } // wrong state, do nothing
@@ -1052,7 +1067,9 @@ namespace Bloom.Edit
         /// Save the current page, bring the whole book up to the current browser maintenance level
         /// (BL-16852), and then come back to the page we were on and run
         /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
-        /// needs every page's recorded data, not just the pages someone happens to have visited.
+        /// needs every page's recorded data, not just the pages someone happens to have visited,
+        /// (A page-size change also leaves the book due, but SetLayout runs the pass directly rather
+        /// than through here, because it has no page to return to afterwards.)
         /// </summary>
         /// <remarks>
         /// The sequence exists to give BookProcessor.ProcessBook the book to itself. It rewrites the
