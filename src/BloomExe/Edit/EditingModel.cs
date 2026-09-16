@@ -1083,6 +1083,12 @@ namespace Bloom.Edit
         public void BringBookToCurrentBrowserLevelThen(string pageId, Action afterPageReloaded)
         {
             var book = CurrentBook;
+            // Deliberately no failureAction. It fires only on the exception paths, where leaving the
+            // editor closed is what we want anyway (the book DOM is stale and the user has already
+            // seen "Bloom had trouble saving a page"). It would NOT cover the one case that ends
+            // badly -- a discarded in-flight save, which skips doAfterSaveToDisk and leaves the
+            // editor empty -- and that is reachable only from ReloadCurrentBookDiscardingEdits,
+            // which takes the user out of the Edit tab regardless.
             SaveThen(
                 () => null, // empty the editor: ProcessBook must have the book to itself
                 doIfNotInRightStateToSave: () =>
