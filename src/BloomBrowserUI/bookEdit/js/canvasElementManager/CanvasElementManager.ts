@@ -1759,7 +1759,14 @@ export class CanvasElementManager {
                 setElementBox(canvasElement, cropInfo.canvasElement);
             }
         }
-        const isNewImage = !cropInfo;
+        // Only a picture that HAD cropping needs us to keep any, and saying "not a new image"
+        // costs something: it also switches off the wait for the restored src to load. The img
+        // goes on reporting the OUTGOING picture's naturalWidth/naturalHeight until the
+        // restored one decodes, and the sizing code reads those whenever there is no crop to
+        // work from. So an undo back to an uncropped picture is handled exactly as a new image
+        // is, which is what it did before this fix and is right: there is no crop to lose, and
+        // it gets the real dimensions. (BL-16868)
+        const isNewImage = !cropInfo?.width;
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(

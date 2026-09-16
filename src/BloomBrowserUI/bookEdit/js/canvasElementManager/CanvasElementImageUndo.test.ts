@@ -104,6 +104,34 @@ describe("updateCanvasElementForChangedImage", () => {
         expect(canvasElement.style.height).toBe("80px");
     });
 
+    // An undo back to a picture that had no cropping has nothing to preserve, and must not be
+    // told "this is not a new image" — that would also switch off the wait for the restored
+    // src to load, leaving the sizing code reading the outgoing picture's dimensions.
+    test("an undo of an uncropped picture puts no cropping back", () => {
+        const { canvasElement, img } = makeCroppedPicture();
+        // The replacement cropped it; the undo takes it back to a picture that was not cropped.
+        img.style.width = "300px";
+        img.style.left = "-60px";
+        expect(img.style.width).toBe("300px"); // sanity check before the undo
+
+        manager.updateCanvasElementForChangedImage(img, {
+            width: "",
+            height: "",
+            left: "",
+            top: "",
+            canvasElement: {
+                width: "100px",
+                height: "80px",
+                left: "10px",
+                top: "20px",
+            },
+        });
+
+        expect(img.style.width).toBe("");
+        expect(img.style.left).toBe("");
+        expect(canvasElement.style.width).toBe("100px");
+    });
+
     test("replacing the picture drops the cropping", () => {
         const { img } = makeCroppedPicture();
         expect(img.style.width).toBe("150px"); // sanity check: it starts cropped
