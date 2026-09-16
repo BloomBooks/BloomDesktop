@@ -1152,12 +1152,22 @@ namespace Bloom.Edit
                 // ProcessBook rebuilt the pages, so the IPage objects and editable areas
                 // need redoing before we show one again.
                 book.PrepareForEditing();
+                // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
+                // layout change may have run it too, which regenerates the xmatter pages with fresh
+                // ids. We returned null from the save callback, so the editor is empty and nothing
+                // else will put a page back in it -- landing on the first page is much better than
+                // leaving the user looking at a blank editor, which reads as Bloom having lost the
+                // book. (StartNavigationToEditPage falls back the same way.)
                 var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
-                if (page == null)
-                    return; // the page went away; nothing sensible to go back to
-                if (afterPageReloaded != null)
+                var pageToShow = page ?? book.FirstPage;
+                if (pageToShow == null)
+                    return; // a book with no pages at all; nothing we can do
+                // Only hand on when we got the page that was actually asked for. The caller's action
+                // is about that page -- the AI image editor opens on a slot in it -- so running it on
+                // a fallback page would act on the wrong thing.
+                if (page != null && afterPageReloaded != null)
                     RunAfterNextPageLoad(_ => afterPageReloaded());
-                _view.GoToPage(page);
+                _view.GoToPage(pageToShow);
                 _view.UpdatePageList(true);
             });
         }
