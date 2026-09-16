@@ -332,7 +332,7 @@ describe("recordFractionOfPageOnImageSlots", () => {
             document.querySelectorAll(".bloom-imageContainer"),
         ) as HTMLElement[];
 
-    test("writes each slot's share of the page, to two decimals", () => {
+    test("writes each slot's share of the page, to four decimals", () => {
         makePageWithSlots();
         setLayoutSize(slots()[0], 210, 248);
         // Sanity check: nothing is recorded yet, so anything found below was written now.
@@ -354,8 +354,26 @@ describe("recordFractionOfPageOnImageSlots", () => {
 
         // 211/500 is 0.422 and 249/800 is 0.31125.
         expect(slots()[0].getAttribute(kFractionOfPageAttribute)).toBe(
-            "0.42,0.31",
+            "0.422,0.3113",
         );
+    });
+
+    // Four decimals exist so that the size the AI image editor is offered for a slot is the
+    // size the tooltip quotes for the same slot. Two decimals rounded each edge separately by
+    // up to half a percent of the page, which moved the shape as well as the size (BL-16742).
+    test("keeps enough precision to reproduce the container's own size", () => {
+        makePageWithSlots();
+        const page = document.querySelector(".bloom-page") as HTMLElement;
+        setLayoutSize(page, 559, 794);
+        setLayoutSize(slots()[0], 469, 352);
+
+        recordFractionOfPageOnImageSlots(document.body);
+
+        const fraction = parseFractionOfPage(
+            slots()[0].getAttribute(kFractionOfPageAttribute),
+        )!;
+        expect(Math.round(fraction.width * 559)).toBe(469);
+        expect(Math.round(fraction.height * 794)).toBe(352);
     });
 
     test("a control Bloom injects into the live page is not a slot", () => {
