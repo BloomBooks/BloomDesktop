@@ -79,7 +79,7 @@ namespace BloomTests.Publish.Epub
             PublishHelper.ExternalPageChecksBrowserForTests = null;
             s_pageChecksBrowser.Dispose();
             s_pageChecksBrowser = null;
-            s_testServer.Dispose();
+            RetiredTestServers.Retire(s_testServer);
         }
 
         internal static BloomServer GetTestServer()

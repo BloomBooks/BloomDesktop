@@ -25,6 +25,7 @@ namespace BloomTests.Spreadsheet
         protected IEnumerable<SpreadsheetRow> AllRows;
         protected List<ContentRow> PageContentRows;
         protected SpreadsheetExporter _exporter;
+        protected TemporaryFolder _testFolder;
         protected TemporaryFolder _spreadsheetFolder;
         protected TemporaryFolder _bookFolder;
         protected ProgressSpy _progressSpy;
@@ -126,8 +127,11 @@ namespace BloomTests.Spreadsheet
                 StartOfFile.Replace("{0}", title) + pagesContent + EndOfFile,
                 true
             );
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
-            _bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
+            // Named after the actual (subclass) fixture, so that the several fixtures sharing
+            // this base class each get folders of their own.
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
                 .Setup(x => x.GetLanguageDisplayName("en"))
@@ -169,8 +173,8 @@ namespace BloomTests.Spreadsheet
 
         protected void TearDown()
         {
-            _spreadsheetFolder?.Dispose();
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
     }
 

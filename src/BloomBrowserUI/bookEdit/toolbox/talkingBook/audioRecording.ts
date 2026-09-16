@@ -1723,11 +1723,31 @@ export default class AudioRecording implements IAudioRecorder {
     // audio recordings for the page, whenever the adjust timing
     // button in the talking book tool is pressed.
     public async showAdjustTimingsDialog(): Promise<void> {
-        const mediaPlayer = this.getMediaPlayer();
-        mediaPlayer.pause();
-        if (!this.highlightedElement) return;
+        // Merely pausing the audio is not enough: while playback is in progress the
+        // highlight sits on the sentence being played rather than on the text box,
+        // and the dialog would then have no segments and no audio file to show
+        // (BL-16276). Stopping properly also puts back the text we temporarily
+        // restructured for highlighting.
+        await this.stopPlaybackAsync();
+
+        // Which text box we end up on is not necessarily the one that was current when
+        // the user pressed Listen: "Listen to the whole page" walks through every box,
+        // and this button's enabled state is not recalculated as it goes. So on a page
+        // that mixes recording modes we can arrive here with a by-sentence box current,
+        // which would give us the very empty dialog this bug is about. The button-state
+        // refresh kicked off by stopPlaybackAsync() disables this button a moment
+        // later, so the user can see why nothing opened. (BL-16276)
+        if (!this.canAdjustTimingsForCurrentTextBox()) {
+            return;
+        }
+
+        // Pass the enclosing text box, not this.highlightedElement, because during playback
+        // the highlight can be on a sentence within the box; getCurrentTextBox() knows to
+        // walk up to the box the dialog needs (BL-16276). The check above just verified the
+        // current text box exists.
+        const currentTextBox = this.getCurrentTextBox()!;
         getWorkspaceBundleExports().showAdjustTimingsDialogFromWorkspaceRoot(
-            this.highlightedElement,
+            currentTextBox,
             this.split,
             this.editTimingsFileAsync,
             this.applyTimingsFileAsync,
@@ -1888,11 +1908,75 @@ export default class AudioRecording implements IAudioRecorder {
 
     // This is currently used in Motion, which removes all the current
     // audio markup afterwards. If we use it in this tool, we need to do more,
-    // such as setting the current state of controls.
+    // such as setting the current state of controls. See stopPlaybackAsync().
     public stopListen(): void {
         this.listening = false;
         this.clearSubElementHighlightTimeout();
         this.getMediaPlayer().pause();
+    }
+
+    /**
+     * Does the Adjust Timings dialog apply to the text box that currently has the recording
+     * highlight? It only makes sense for a whole-text-box recording: a by-sentence box has one
+     * audio file per sentence and no whole-box timings, so the dialog would have no waveform
+     * and no segments to show. We ask the box itself rather than trusting the recordingMode
+     * field, which is re-derived as playback moves from box to box. (BL-16276)
+     */
+    public canAdjustTimingsForCurrentTextBox(): boolean {
+        const currentTextBox = this.getCurrentTextBox();
+        return (
+            !!currentTextBox &&
+            this.getRecordingModeOfTextBox(currentTextBox) ===
+                RecordingMode.TextBox
+        );
+    }
+
+    /**
+     * Fully stops any playback in progress (Play/Check or Listen to the Whole Page),
+     * leaving things in the state they would be in had the playback finished normally:
+     * no pending highlight timeouts, empty play queues, the highlight back on the element
+     * we RECORD rather than on whichever sub-segment was being played, the temporary
+     * highlighting markup reverted, and the buttons no longer showing play as active.
+     * Callers that need the page to be in a settled state before they do something else
+     * (e.g. opening the Adjust Timings dialog, BL-16276) should await this. What the returned
+     * promise guarantees is that the PAGE has settled; refreshing the toolbox buttons is
+     * deliberately left to finish on its own (see the last line).
+     */
+    public async stopPlaybackAsync(): Promise<void> {
+        this.stopListen();
+        // Rewind and empty the play queues, so that a later Play starts over rather than
+        // trying to resume something we have now discarded.
+        this.resetAudioIfPaused();
+
+        // While playing in text box mode we move the recording highlight onto each
+        // sub-segment (sentence) in turn. Put it back on the recording element, since that is
+        // what the rest of the tool, and the Adjust Timings dialog, expect to find it on.
+        // The conditions here are the same ones playEndedAsync() uses: in sentence mode the
+        // highlight is already on the element we record, so leave it wherever it was, and
+        // don't reset (and thereby activate) an element in a motion preview.
+        if (this.recordingMode === RecordingMode.TextBox) {
+            const currentTextBox = this.getCurrentTextBox();
+            if (
+                currentTextBox &&
+                !currentTextBox.closest("." + animateStyleName)
+            ) {
+                await this.setCurrentAudioElementBasedOnRecordingModeAsync(
+                    currentTextBox,
+                    false,
+                );
+            }
+        }
+
+        this.revertFixHighlighting();
+
+        // As in playEndedAsync(), Split is the natural next step. ("next" is automatically
+        // substituted for "split" if we're in a mode where "split" does not apply.)
+        // Deliberately NOT awaited. This only refreshes the toolbox buttons, but it does so via
+        // API calls; if we made the returned promise wait on those, a single failed request would
+        // reject it, and our caller would never get as far as opening the Adjust Timings dialog --
+        // the click would appear to do nothing. Firing it un-awaited is also what the other
+        // callers in this file do, including this method's own caller in the #audio-split handler.
+        this.changeStateAndSetExpectedAsync("split");
     }
 
     private async playEndedAsync(): Promise<void> {

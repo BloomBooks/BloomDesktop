@@ -76,22 +76,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex images may be difficult to understand.</source>
         <target xml:lang="ne-NP" state="final">चित्रहरूले कथा बुझ्न सजिलो बनाउँछन्। कथामा प्रयेाग भएका चित्रहरूले स्‍तर अनुसार अर्थ दिन्छ। <g id="genid-5" ctype="x-html-em">स्तरमा</g> विभिन्न किसिमका पाठकहरूको लागि कथाले विभिन्न खाले अर्थ प्रदान गर्दछ (तल हेर्नुहोस्)। प्रायः खासै धेरै छापिएका सामग्रीहरू नभएका  संस्कृतिहरूमा जटिल तस्बिरहरूलाई बुझ्न गाह्रो हुन्छ भन्ने कुरा याद राख्नुहोस्।</target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the images should closely match the storyline. The reader should be able to predict the story line just by looking at the images. The illustrations at this level should be simple.</source>
         <target xml:lang="ne-NP" state="final"><g id="genid-6" ctype="x-html-strong">उदगामी पाठकहरूका लागि</g>  तस्बिरहरू कथावस्तुसँग निकट रूपमा सम्बन्धित हुनुपर्छ। पाठकले तस्बिरलाई हेरेर मात्र पनि कथावस्‍तु ठम्याउन सक्नुपर्छ। यस स्तरमा चित्रहरू सरल हुनुपर्छ।</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the images should offer some support to the story line. As the amount of text increases, the reader is less reliant on the images and gets more meaning from the text. The illustrations can be more complex.</source>
         <target xml:lang="ne-NP" state="final"><g id="genid-7" ctype="x-html-strong">प्रारम्भिक पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा केही सहायता प्रदान गरेको हुनुपर्छ। पाठको मात्रा बढ्दै जाँदा, पाठकले तस्बिरहरूको सहायता लिने क्रम घट्दै जान्छ र उनीहरूले पाठबाटै बढी अर्थ पाउँछन्। यो स्तरमा चित्रहरू बढी जटिल हुन सक्छन्।</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the images should offer little or no support to the story line. The reader relies more on the text than the images for meaning. The illustrations can be even more complex.</source>
         <target xml:lang="ne-NP" state="final"><g id="genid-8" ctype="x-html-strong">प्रवीण पाठकहरूका लागि</g> तस्बिरहरूले कथावस्तु बुझाइमा थोरै वा कुनै सहायता प्रदान गर्नु हुँदैन। अर्थ बुझ्नको लागि पाठक तस्बिरमा भन्दा बढी पाठमा निर्भर हुन्छ। यो स्तरमा चित्रहरू झनै बढी जटिल हुन सक्छन्।</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>

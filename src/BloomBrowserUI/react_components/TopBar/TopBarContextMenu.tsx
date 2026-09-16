@@ -30,6 +30,9 @@ export const TopBarContextMenu: React.FunctionComponent<{
         React.useState(false);
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
+    const [canChooseDevBloomLibrary, setCanChooseDevBloomLibrary] =
+        React.useState(false);
+    const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
 
     const onClose = React.useCallback(() => {
         setMenuPoint(undefined);
@@ -49,6 +52,14 @@ export const TopBarContextMenu: React.FunctionComponent<{
         // the back end for the current value.
         getBoolean("app/isMeddlingWithNewFiles", (value) => {
             setIsMeddlingWithNewFiles(value);
+        });
+        // Only some builds offer the choice of web site, and only the back end knows
+        // which web site this run of Bloom uses.
+        getBoolean("app/canChooseDevBloomLibrary", (value) => {
+            setCanChooseDevBloomLibrary(value);
+        });
+        getBoolean("app/useDevBloomLibrary", (value) => {
+            setUseDevBloomLibrary(value);
         });
 
         const target = props.targetRef.current;
@@ -86,7 +97,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
     }
 
     const menuItems = React.useMemo<ITopBarContextMenuItem[]>(() => {
-        return [
+        const items: ITopBarContextMenuItem[] = [
             {
                 label: "1024 x 586 Low-end netbook with windows Task bar",
                 onClick: () => {
@@ -153,7 +164,28 @@ export const TopBarContextMenu: React.FunctionComponent<{
                 },
             },
         ];
-    }, [alwaysMeasurePerformance, currentlyMeasuring, isMeddlingWithNewFiles]);
+        if (canChooseDevBloomLibrary) {
+            items.push({ label: "-" });
+            items.push({
+                // Changing this restarts Bloom, because the upload destination and the login
+                // belong to one run only.
+                label: "Use dev.BloomLibrary.org (restarts Bloom)",
+                selected: useDevBloomLibrary,
+                onClick: () => {
+                    const newValue = !useDevBloomLibrary;
+                    postBoolean("app/useDevBloomLibrary", newValue);
+                    setUseDevBloomLibrary(newValue);
+                },
+            });
+        }
+        return items;
+    }, [
+        alwaysMeasurePerformance,
+        currentlyMeasuring,
+        isMeddlingWithNewFiles,
+        canChooseDevBloomLibrary,
+        useDevBloomLibrary,
+    ]);
 
     return (
         <Menu

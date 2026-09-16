@@ -22,6 +22,16 @@ export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
 export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
 
+// What C# (WorkspaceView.GetTabInfo) tells us about workspace navigation.
+export interface IWorkspaceTabInfo {
+    tabStates: TabStates;
+    // True while some operation has made itself modal by locking navigation: a BloomLibrary
+    // upload, a Reading App Builder action, or an Edit-tab modal dialog. Screens with their own
+    // navigation (notably the Publish tab's switcher between publish tools) use this to lock in
+    // step with the main tabs.
+    navigationLocked: boolean;
+}
+
 interface ITabDefinition {
     id: WorkspaceTabId;
     l10nId: string;
@@ -57,21 +67,28 @@ export function getActiveWorkspaceTab(tabStates: TabStates): WorkspaceTabId {
     );
 }
 
-export const defaultWorkspaceTabState: { tabStates: TabStates } = {
+export const defaultWorkspaceTabState: IWorkspaceTabInfo = {
     tabStates: {
         collection: "active",
         edit: "hidden",
         publish: "hidden",
     },
+    navigationLocked: false,
 };
 
-export const TopBar: React.FunctionComponent = () => {
-    const state = useWatchApiObject<{ tabStates: TabStates }>(
+// Subscribes to what C# says about workspace navigation, kept in one place because several
+// screens in different browser controls need the same answer.
+export function useWorkspaceTabInfo(): IWorkspaceTabInfo {
+    return useWatchApiObject<IWorkspaceTabInfo>(
         "workspace/tabs",
         defaultWorkspaceTabState,
         "workspace",
         "tabs",
     );
+}
+
+export const TopBar: React.FunctionComponent = () => {
+    const state = useWorkspaceTabInfo();
     const topBarRef = React.useRef<HTMLDivElement>(null);
 
     const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
@@ -113,6 +130,10 @@ export const TopBar: React.FunctionComponent = () => {
         <ScopedCssBaseline>
             <div
                 ref={topBarRef}
+                // How automation recognizes Bloom's shell document among the WebView2's CDP
+                // targets, and the one stable marker on the top bar as a whole. See
+                // src/BloomE2E/fixtures/bloomTest.ts (SHELL_MARKER).
+                data-testid="workspace-top-bar"
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;
@@ -145,6 +166,9 @@ const Tab: React.FunctionComponent<{
         <li role="presentation">
             <a
                 role="tab"
+                // Automation clicks tabs by this id. The visible label is localized, so matching
+                // on it would confine every test to an English UI.
+                data-testid={`workspace-tab-${props.tab.id}`}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
@@ -206,6 +230,7 @@ export const BloomTabs: React.FunctionComponent<{
     return (
         <ul
             role="tablist"
+            data-testid="workspace-tabs"
             css={
                 // style as tabs
                 css`

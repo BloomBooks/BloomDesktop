@@ -33,11 +33,18 @@ namespace Bloom.Book
             //First update the images themselves
 
             int completed = 0;
-            var imgElements = GetImagePaths(folderPath);
+            // ToList matters, twice over. GetImagePaths is an iterator that reads the embedded
+            // metadata of every candidate file (to skip images from official collections), and the
+            // percentage below asks for its Count on every pass -- which re-ran the whole thing,
+            // so a 400-image book did ~160,000 metadata reads instead of 400 and appeared frozen
+            // for minutes. It also re-decided which files to include as it went, while this very
+            // loop is writing metadata INTO those files, so the count it divided by could change
+            // underneath it. Enumerate once, up front, and both problems go away.
+            var imgElements = GetImagePaths(folderPath).ToList();
             foreach (string path in imgElements)
             {
                 progress.ProgressIndicator.PercentCompleted = (int)(
-                    100.0 * (float)completed / imgElements.Count()
+                    100.0 * (float)completed / imgElements.Count
                 );
                 progress.WriteStatus("Copying to " + Path.GetFileName(path));
 

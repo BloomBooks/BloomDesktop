@@ -125,7 +125,15 @@ namespace Bloom.web.controllers
             var collections = new List<dynamic>();
 
             const int maxMruItems = 10;
-            var collectionsToShow = Settings.Default.MruProjects.Paths.Take(maxMruItems).ToList();
+            // Normalize the remembered paths: one saved by an older Bloom can have a trailing period
+            // on the folder name that the folder itself doesn't have (BL-16679). Left as-is, such a
+            // path neither matches the same collection found by the folder scan below nor another
+            // spelling of itself, so the collection would be listed twice.
+            var collectionsToShow = Settings
+                .Default.MruProjects.Paths.Select(MiscUtils.GetFullPath)
+                .Distinct()
+                .Take(maxMruItems)
+                .ToList();
 
             // Always include the MRU items first.
             collections.AddRange(collectionsToShow.Select(path => MakeCollectionInfoObject(path)));
@@ -141,11 +149,8 @@ namespace Bloom.web.controllers
                 collections.AddRange(
                     Directory
                         .GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections)
-                        .Select(d =>
-                            //Avoiding use of Path.ChangeExtension as it's just possible the collectionName could have a period.
-                            CollectionSettings.GetSettingsFilePath(d)
-                        )
-                        .Where(path => RobustFile.Exists(path) && !collectionsToShow.Contains(path))
+                        .Select(d => CollectionSettings.GetSettingsFilePath(d))
+                        .Where(path => path != null && !collectionsToShow.Contains(path))
                         .OrderByDescending(path =>
                             Directory.GetLastWriteTime(Path.GetDirectoryName(path))
                         )

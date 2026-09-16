@@ -125,7 +125,7 @@ namespace BloomTests.Utils
                     Is.True,
                     "dot-folders other than .ai-image-editor should still be archived"
                 );
-                // The AI editor working folder's contents must NOT be archived.
+                // The AI image editor working folder's contents must NOT be archived.
                 Assert.That(
                     entryNames.Any(n => n.Contains(".ai-image-editor")),
                     Is.False,

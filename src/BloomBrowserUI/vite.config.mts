@@ -656,7 +656,7 @@ export default defineConfig(async ({ command }) => {
                               },
                               // Copy the AI Image Editor's prebuilt app (dist-app/) so Bloom
                               // serves it at /bloom/aiImageEditor/. Mirrors the dev-time
-                              // staging in go.mjs/aiEditorBuild.mjs.
+                              // staging in go.mjs/aiImageEditorBuild.mjs.
                               {
                                   src: "node_modules/bloom-ai-image-tools/dist-app/*",
                                   dest: "./aiImageEditor/",

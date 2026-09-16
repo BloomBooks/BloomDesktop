@@ -1,4 +1,5 @@
 import bloomQtipUtils from "./bloomQtipUtils";
+import { EditableDivUtils } from "./editableDivUtils";
 import $ from "jquery";
 
 // For testing and debugging, functionality to replace invisible characters with symbols.
@@ -94,6 +95,13 @@ export function showInvisibles(e) {
         return;
     }
     inShowInvisiblesMode = true;
+    // Rewriting the editable's HTML below destroys the selection, which made the
+    // cursor jump to the start of the box (BL-16616). Save the caret position as a
+    // character offset and restore it afterwards; offsets stay valid because each
+    // invisible character is replaced by a single visible symbol character.
+    const selectionIndex = EditableDivUtils.getElementSelectionIndex(
+        editable.get(0),
+    );
     editable.html((i, html) => {
         // for each replacement, replace all instances of the invisible char/entity with the symbol
         invisibles.forEach(function (invisibleType) {
@@ -111,6 +119,14 @@ export function showInvisibles(e) {
         });
         return html;
     });
+    if (selectionIndex >= 0) {
+        EditableDivUtils.makeSelectionIn(
+            editable.get(0),
+            selectionIndex,
+            -1,
+            true,
+        );
+    }
     // Make one qtip per type of invisible character to explain the symbol to the user without cluttering the page too much
     const invisibleCharTypesWithQtips = new Set();
 
@@ -157,6 +173,12 @@ export function hideInvisibles(e) {
 
         // restore all the original characters
         const editable = $(e.target).closest(".bloom-editable");
+        // As in showInvisibles, preserve the caret across the HTML rewrite.
+        // On blur the selection has already left the editable, so this returns -1
+        // and we correctly don't yank the selection back.
+        const selectionIndex = EditableDivUtils.getElementSelectionIndex(
+            editable.get(0),
+        );
         editable.html((i, html) => {
             return html.replace(
                 /<span class="invisibles"[^<>]*data-original="(?:\\u(....)|(&[a-z,0-9]*;))"[^<>]*>.<\/span>/g,
@@ -166,5 +188,13 @@ export function hideInvisibles(e) {
                 },
             );
         });
+        if (selectionIndex >= 0) {
+            EditableDivUtils.makeSelectionIn(
+                editable.get(0),
+                selectionIndex,
+                -1,
+                true,
+            );
+        }
     }
 }

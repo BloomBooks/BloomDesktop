@@ -19,7 +19,6 @@ using Bloom.Publish.BloomLibrary;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Microsoft.VisualBasic;
 using SIL.Extensions;
@@ -94,7 +93,7 @@ namespace Bloom.WebLibraryIntegration
                     return ""; // user cancelled
                 LastBookDownloadedPath = destinationPath;
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "DownloadedBook-Success",
                     new Dictionary<string, string>()
                     {
@@ -110,7 +109,7 @@ namespace Bloom.WebLibraryIntegration
                 {
                     // We want to try this before we give a report that may terminate the program. But if something
                     // more goes wrong, ignore it.
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "DownloadedBook-Failure",
                         new Dictionary<string, string>()
                         {
@@ -118,7 +117,7 @@ namespace Bloom.WebLibraryIntegration
                             { "title", bookTitleForAnalytics },
                         }
                     );
-                    Analytics.ReportException(e);
+                    BloomAnalytics.ReportException(e);
                 }
                 catch (Exception) { }
                 var showSendReport = true;

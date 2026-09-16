@@ -102,10 +102,7 @@ namespace Bloom.web.controllers
                 : sizeAndOrientation.IsLandScape ? "landscape"
                 : "portrait";
 
-            addPageSettings.templateBooks = GetBookTemplatePaths(
-                    GetPathToCurrentTemplateHtml(),
-                    GetCurrentAndSourceBookPaths()
-                )
+            addPageSettings.templateBooks = GetTemplateBookPathsForAddPage()
                 .Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
             // Never used on the javascript side.
             // addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
@@ -117,6 +114,21 @@ namespace Bloom.web.controllers
 
             var json = JsonConvert.SerializeObject(addPageSettings);
             request.ReplyWithJson(json);
+        }
+
+        /// <summary>
+        /// The html files of the template books the Add Page dialog offers for the selected book,
+        /// in the order the dialog receives them: the book's own template first (or a placeholder
+        /// path under "missingPageTemplate/" when that template is not on this machine), then
+        /// every source book that has a "template" folder. E2eTestingApi reads this list so a test
+        /// can add a page from any of these books the way the dialog would.
+        /// </summary>
+        public List<string> GetTemplateBookPathsForAddPage()
+        {
+            return GetBookTemplatePaths(
+                GetPathToCurrentTemplateHtml(),
+                GetCurrentAndSourceBookPaths()
+            );
         }
 
         /// <summary>
@@ -139,6 +151,13 @@ namespace Bloom.web.controllers
             return collections
                 .Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
                 .SelectMany(ProjectContext.SafeGetDirectories) // get all the (book) folders in those collections
+                // A folder can go away between being listed above and being looked at below --
+                // a sync client (Dropbox etc.), an antivirus tool, or the user can delete one
+                // while we are part way through a collection. FindBookHtmlInFolder throws for a
+                // folder that does not exist (that check is there for the save path, where a
+                // missing book folder really is the user's problem), and one such folder would
+                // otherwise abort the whole scan. Skipping it is all we want here. (BL-16661)
+                .Where(Directory.Exists)
                 .Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
         }
 

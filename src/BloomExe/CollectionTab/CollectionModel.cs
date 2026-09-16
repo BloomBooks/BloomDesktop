@@ -20,7 +20,6 @@ using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -1010,7 +1009,7 @@ namespace Bloom.CollectionTab
                         // show it
                         Logger.WriteEvent("Showing BloomPack on disk");
                         ProcessExtra.ShowFileInExplorerInFront(outputPath);
-                        Analytics.Track("Create BloomPack");
+                        BloomAnalytics.Track("Create BloomPack");
                     }
                     finally
                     {
@@ -1222,7 +1221,7 @@ namespace Bloom.CollectionTab
                 //enhance: would be nice to know if this is a new shell
                 if (!sourceBook.IsInEditableCollection)
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "Create Book",
                         new Dictionary<string, string>()
                         {

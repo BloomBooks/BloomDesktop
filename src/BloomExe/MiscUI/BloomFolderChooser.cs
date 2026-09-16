@@ -14,6 +14,17 @@ namespace Bloom.MiscUI
     {
         public static string ChooseFolder(string initialFolderPath, string description = null)
         {
+            // Under --e2e, answer with the folder a test armed rather than showing the dialog,
+            // which no automation can dismiss. See BloomOpenFileDialog, which shares the armed
+            // path, so a test arms one path whichever kind of chooser the feature opens.
+            if (BloomOpenFileDialog.TryTakeNextPathToChooseInE2eTests(out var armedPath))
+            {
+                if (!System.IO.Directory.Exists(armedPath))
+                    throw new System.IO.DirectoryNotFoundException(
+                        $"The e2e test armed the folder chooser with a folder that does not exist: {armedPath}"
+                    );
+                return armedPath;
+            }
             // Note, this is Windows only.
             CommonOpenFileDialog dialog = new CommonOpenFileDialog
             {

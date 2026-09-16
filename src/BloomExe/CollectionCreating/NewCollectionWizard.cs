@@ -9,7 +9,6 @@ using Bloom.Properties;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
@@ -299,7 +298,7 @@ namespace Bloom.CollectionCreating
             _collectionInfo.SetAnalyticsProperties();
 
             Logger.WriteEvent("Finshed New Collection Wizard");
-            Analytics.Track("Create New Vernacular Collection");
+            BloomAnalytics.Track("Create New Vernacular Collection");
 
             Close();
         }

@@ -3,7 +3,9 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.Edit;
 using Bloom.SubscriptionAndFeatures;
+using SIL.IO;
 using SIL.Progress;
 
 namespace Bloom.web.controllers
@@ -24,18 +26,30 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private readonly PublishApi _publishApi;
         private readonly CollectionModel _collectionModel;
+        private readonly PageTemplatesApi _pageTemplatesApi;
+        private readonly SourceCollectionsList _sourceCollectionsList;
+        private readonly EditingModel _editingModel;
+        private readonly AccountApi _accountApi;
 
         public E2eTestingApi(
             CollectionSettings collectionSettings,
             BookSelection bookSelection,
             PublishApi publishApi,
-            CollectionModel collectionModel
+            CollectionModel collectionModel,
+            PageTemplatesApi pageTemplatesApi,
+            SourceCollectionsList sourceCollectionsList,
+            EditingModel editingModel,
+            AccountApi accountApi
         )
         {
             _collectionSettings = collectionSettings;
             _bookSelection = bookSelection;
             _publishApi = publishApi;
             _collectionModel = collectionModel;
+            _pageTemplatesApi = pageTemplatesApi;
+            _sourceCollectionsList = sourceCollectionsList;
+            _editingModel = editingModel;
+            _accountApi = accountApi;
         }
 
         /// <summary>
@@ -86,24 +100,210 @@ namespace Bloom.web.controllers
                 null, // read only
                 false // does not need the UI thread
             );
+
+            // GET returns true once the Edit tab has finished loading the page it shows and is
+            // editing it. While the Edit tab is still navigating to a page, it silently ignores any
+            // command that begins with saving the page (duplicate, delete, jump to another page),
+            // and a test that sends one in that window sees nothing happen. There is no signal in
+            // the UI for this, so a test polls this before such a command. Read-only.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kApiUrlPart + "isEditingPage",
+                request => _editingModel.StateMachine.Editing,
+                null, // read only
+                false // does not need the UI thread
+            );
+
+            // GET returns the selected book's pages as JSON: id, caption, and whether the page is
+            // front or back matter. A test needs page ids to navigate (editView/jumpToPage takes
+            // one), and the page-list thumbnails do not expose which pages are xmatter, so without
+            // this a test has to guess from thumbnail markup.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "pages",
+                HandleGetPages,
+                false // does not need the UI thread
+            );
+
+            // GET returns the pages the Add Page dialog would offer for the selected book: the
+            // path of its template book, and the id and label of each template page. A test needs
+            // these to call the production "addPage" endpoint, and the dialog itself reads them
+            // out of the template book's HTML, so there is no other way to ask for them.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "templatePages",
+                HandleGetTemplatePages,
+                false // does not need the UI thread
+            );
+
+            // GET returns the URL of the workspace root document Bloom drives, or an empty string
+            // before that browser exists. A run has more than one document carrying the workspace
+            // root's markup, so the top bar's test id alone does not identify the right one, and a
+            // test that attaches to the wrong one is silently broken: its own typing and clicking
+            // work, while every page Bloom loads goes somewhere it cannot see. Compare on the file
+            // name, which is unique per document; the rest of the URL is escaped differently by
+            // Bloom and by the debugging protocol. Needs the UI thread to read the browser.
+            apiHandler.RegisterEndpointHandler(kApiUrlPart + "shellUrl", HandleGetShellUrl, true);
+
+            // POST {"email": ...}: which Bloom Library login state Bloom should REPORT. A test
+            // needs this because the real login lives in machine-wide settings shared with the
+            // developer's own Bloom: signing out for real would sign the developer out, and
+            // signing in needs an external browser and real credentials. Only the report changes,
+            // so a test can check that the upload screen offers Upload only to a signed-in user;
+            // an actual upload still needs a real login. It runs off the UI thread like the rest
+            // of the login state's plumbing (see AccountApi's own broadcasts).
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "loginState",
+                HandleSetLoginState,
+                false // does not need the UI thread
+            );
+
+            // There is deliberately no endpoint here for setting the collection's subscription
+            // tier. Several parts of Bloom keep the Subscription object they were handed at
+            // startup (FeatureStatusApi is one), so a tier replaced later is invisible to them,
+            // and a test that set it that way would still find tier-gated features hidden. A test
+            // that needs a tier launches the collection with a real subscription code in its
+            // .bloomCollection instead; see kEnterpriseSubscriptionCode in BloomE2E.
+
+            // POST body is the full path of a file or folder, and it makes the NEXT file or folder
+            // chooser Bloom would open answer with that path instead of showing a native dialog,
+            // which hangs a run (see AUTOMATION-DEBT.md, "Native OS dialogs hang automation").
+            // Every one of Bloom's choosers goes through BloomOpenFileDialog or
+            // BloomFolderChooser, and both consume the same armed path, so this covers choosing a
+            // video, an image file, a spreadsheet, a reader file or a folder alike. Arming the
+            // answer rather than short-circuiting the feature means the test still drives the real
+            // UI and Bloom still runs all of its post-dialog code: for a video, the copy into the
+            // book folder, the ffmpeg re-encode, the progress dialog and the update of the video
+            // container. Off the UI thread: it only stores a string.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "nextFileToChoose",
+                HandleSetNextFileToChoose,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// POST e2e/nextFileToChoose: answer the next file or folder chooser with this path rather
+        /// than opening a dialog (see the registration above).
+        /// </summary>
+        private void HandleSetNextFileToChoose(ApiRequest request)
+        {
+            MiscUI.BloomOpenFileDialog.SetNextPathToChooseInE2eTests(request.RequiredPostString());
+            request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Reply with the URL of the workspace root document Bloom drives (see the registration
+        /// above), or an empty string if the main browser is not up yet.
+        /// </summary>
+        private void HandleGetShellUrl(ApiRequest request)
+        {
+            request.ReplyWithText(Workspace.WorkspaceView.MainBrowserForE2eTests?.Url ?? "");
+        }
+
+        /// <summary>
+        /// What POST e2e/loginState takes: the email to report as signed in, the empty string to
+        /// report as signed out, or null (an absent member) to stop pretending altogether and
+        /// report the real login again. The three have to be distinguishable, so this is JSON
+        /// rather than a bare string, in which "signed out" and "no pretense" would both be empty.
+        /// </summary>
+        private class E2eLoginState
+        {
+            public string Email;
+        }
+
+        /// <summary>
+        /// POST e2e/loginState: report a pretended Bloom Library login state instead of the real
+        /// one. See AccountApi.SetLoginStateForE2eTests.
+        /// </summary>
+        private void HandleSetLoginState(ApiRequest request)
+        {
+            _accountApi.SetLoginStateForE2eTests(request.RequiredPostObject<E2eLoginState>().Email);
+            request.PostSucceeded();
         }
 
         /// <summary>
         /// True if the editable collection is loaded and its book list is available. Mirrors what
         /// selecting a book needs (see CollectionApi.GetCollectionOfRequest), so a test can wait
         /// for this before selecting. Any exception means "not ready yet", so we swallow it.
+        /// An EMPTY collection is ready: a test that creates its own collection starts with no
+        /// books and then makes one, so "has at least one book" would never come true for it.
         /// </summary>
         private bool IsCollectionReady()
         {
             try
             {
                 var editable = _collectionModel.TheOneEditableCollection;
-                return editable != null && editable.GetBookInfos().Any();
+                if (editable == null)
+                    return false;
+                // Enumerate the list rather than merely asking for it: that is the part that
+                // throws while the collection is still loading, which is what we are waiting out.
+                editable.GetBookInfos().ToList();
+                return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Reply with the pages of the selected book, in order. `isContentPage` is false for the
+        /// front and back matter, which a test normally wants to skip over.
+        /// </summary>
+        private void HandleGetPages(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            if (book == null)
+            {
+                request.ReplyWithJson(new object[0]);
+                return;
+            }
+            var pages = book.GetPages()
+                .Select(page => new
+                {
+                    id = page.Id,
+                    caption = page.Caption,
+                    isContentPage = !page.IsXMatter,
+                })
+                .ToArray();
+            request.ReplyWithJson(pages);
+        }
+
+        /// <summary>
+        /// Reply with the template pages the Add Page dialog would offer the selected book, in the
+        /// dialog's order: the book's own template first, then every other template book that has a
+        /// "template" folder (Basic Book and the rest). Each page carries the path and title of the
+        /// template book that holds it. A book made from a template starts with no content page,
+        /// because every page of a template is a template page, so a test that needs one adds it.
+        /// A template that is not on this machine is simply absent from the list.
+        /// </summary>
+        private void HandleGetTemplatePages(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            if (book == null)
+            {
+                request.ReplyWithJson(new object[0]);
+                return;
+            }
+            var pages = _pageTemplatesApi
+                .GetTemplateBookPathsForAddPage()
+                .Where(RobustFile.Exists)
+                .Select(path => _sourceCollectionsList.FindAndCreateTemplateBookByFullPath(path))
+                .Where(templateBook => templateBook != null)
+                .SelectMany(templateBook =>
+                {
+                    var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
+                    var templateBookTitle = templateBook.Title;
+                    return templateBook
+                        .GetTemplatePagesIdDictionary()
+                        .Select(pair => new
+                        {
+                            id = pair.Key,
+                            label = pair.Value.Caption,
+                            templateBookPath,
+                            templateBookTitle,
+                        });
+                })
+                .ToArray();
+            request.ReplyWithJson(pages);
         }
 
         /// <summary>

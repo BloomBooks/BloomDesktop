@@ -83,6 +83,57 @@ namespace BloomTests
         }
 
         [Test]
+        public void ParseStartupPortArguments_StoresExperimentalFeaturesUnderE2e()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--e2e",
+                    "--experimental-features",
+                    "team-collections,experimental-source-books",
+                    @"C:\Temp\Example.bloomcollection",
+                },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.RunningE2eTests, Is.True);
+            Assert.That(
+                Program.StartupExperimentalFeatures,
+                Is.EqualTo("team-collections,experimental-source-books")
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_LeavesExperimentalFeaturesNullWhenNotGiven()
+        {
+            Program.ParseStartupPortArguments(new[] { "--e2e" }, out var errorMessage);
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupExperimentalFeatures, Is.Null);
+        }
+
+        /// <summary>
+        /// The switch exists for e2e runs only: a person turns features on in Settings, and the
+        /// switch would otherwise be a way for a stray shortcut to enable one silently.
+        /// </summary>
+        [Test]
+        public void ParseStartupPortArguments_RejectsExperimentalFeaturesWithoutE2e()
+        {
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--experimental-features", "team-collections" },
+                out var errorMessage
+            );
+
+            Assert.That(
+                errorMessage,
+                Is.EqualTo("Bloom only accepts --experimental-features together with --e2e.")
+            );
+            Assert.That(remainingArgs, Is.Empty);
+        }
+
+        [Test]
         public void ParseStartupPortArguments_RejectsDuplicateAutomationArguments()
         {
             var remainingArgs = Program.ParseStartupPortArguments(

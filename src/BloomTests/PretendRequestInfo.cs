@@ -5,9 +5,11 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using Bloom;
+using Bloom.Api;
 using SIL.IO;
 
-namespace Bloom.Api
+namespace BloomTests
 {
     public class PretendRequestInfo : IRequestInfo
     {
@@ -36,14 +38,33 @@ namespace Bloom.Api
             RawUrl = url.Replace(BloomServer.ServerUrl, "");
 
             // Reducing the /// emulates a behavior of the real HttpListener
-            var urlToDecode = url.Replace(BloomServer.ServerUrl, "")
+            var path = url.Replace(BloomServer.ServerUrl, "")
                 .Replace("/bloom/OriginalImages///", "/bloom/OriginalImages/")
-                .Replace("/bloom///", "/bloom/")
-                .UnescapeFileNameForHttp();
-            // Use the same decoding logic as in the "real" RequestInfo.
+                .Replace("/bloom///", "/bloom/");
+
+            // Decode EXACTLY ONCE, and drop the query string first, because that is what the real
+            // RequestInfo.LocalPathWithoutQuery does. This used to decode twice -- once here via
+            // UnescapeFileNameForHttp and again via UrlDecode -- which made the tests a poor model
+            // of the server, so a file whose name genuinely contains "%41" resolved in production
+            // but not here. (BL-16669)
+            //
+            // Production does decode a second time, in BloomServer.ProcessAnyFileContent, which is
+            // why HandleDoubleEncodedUrls still passes. The difference is that production's second
+            // decode is kept only when it finds the file, where this one was unconditional -- so
+            // the old divergence showed up on any name that merely looked doubly encoded.
+            var queryStart = path.IndexOf("?", StringComparison.Ordinal);
+            var urlToDecode = queryStart == -1 ? path : path.Substring(0, queryStart);
             var pathWithoutLiteralPlusSigns = urlToDecode.Replace("+", "%2B");
             LocalPathWithoutQuery = System.Web.HttpUtility.UrlDecode(pathWithoutLiteralPlusSigns);
+
+            var startOfQuery = RawUrl.IndexOf('?');
+            _queryParameters =
+                startOfQuery < 0
+                    ? new NameValueCollection()
+                    : System.Web.HttpUtility.ParseQueryString(RawUrl.Substring(startOfQuery + 1));
         }
+
+        private readonly NameValueCollection _queryParameters;
 
         public string LocalPathWithoutQuery { get; set; }
 
@@ -105,9 +126,14 @@ namespace Bloom.Api
             StatusCode = errorCode;
         }
 
+        /// <summary>
+        /// The query parameters of the url this was constructed with. This used to always be empty,
+        /// which made any request the server routes on a query parameter (such as the assetv one it
+        /// adds to every JS request) impossible to test.
+        /// </summary>
         public NameValueCollection GetQueryParameters()
         {
-            return new NameValueCollection();
+            return _queryParameters;
         }
 
         public NameValueCollection GetPostDataWhenFormEncoded()

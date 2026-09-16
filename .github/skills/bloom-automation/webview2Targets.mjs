@@ -1,4 +1,5 @@
 import {
+    asksForHelp,
     fetchBloomInstanceInfo,
     findRunningStandardBloomInstance,
     normalizeBloomInstanceInfo,
@@ -7,8 +8,26 @@ import {
     toLocalOrigin,
 } from "./bloomProcessCommon.mjs";
 
+const usage = `List the WebView2 debugging targets of a running Bloom.
+
+  node webview2Targets.mjs [options]
+
+  --help, -h              Print this and exit.
+  --json                  Report the targets as JSON.
+  --all                   List every target, not only Bloom's own documents.
+  --running-bloom         Find the Bloom that is running, rather than naming a port.
+  --http-port <port>      The Bloom whose server answers on this port.
+  --host <name>           The host to ask for targets (default: localhost).
+  --port <port>           The CDP port to ask directly.
+  --wait                  Wait for a target to appear.
+  --timeout-ms <ms>       How long to wait (default: 15000).`;
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
+    if (asksForHelp(args)) {
+        console.log(usage);
+        process.exit(0);
+    }
     const options = {
         host: "localhost",
         port: undefined,
@@ -85,7 +104,15 @@ const parseArgs = () => {
         if (arg === "--timeout-ms") {
             options.timeoutMs = Number(args[i + 1] || options.timeoutMs);
             i++;
+            continue;
         }
+
+        // A typo must not be ignored: an option this script does not know is a request it
+        // cannot carry out, so say so rather than do something else.
+        console.error(`Unknown option ${arg}.
+
+${usage}`);
+        process.exit(2);
     }
 
     return options;

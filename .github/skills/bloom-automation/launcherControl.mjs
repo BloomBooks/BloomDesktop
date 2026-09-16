@@ -26,6 +26,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import {
+    asksForHelp,
     getDefaultRepoRoot,
     requireOptionValue,
 } from "./bloomProcessCommon.mjs";
@@ -43,8 +44,25 @@ const actionNames = [
     "--ensure-running",
 ];
 
+const usage = `Command the go.sh launcher for this worktree.
+
+  node launcherControl.mjs <action> [options]
+
+  actions: ${actionNames.join(", ")}
+  options: --json, --wait-ready, --repo-root <path>, --timeout-ms <n>
+           --help, -h   Print this and exit without commanding anything.
+
+  --restart rebuilds and relaunches; --quit-bloom stops Bloom and leaves the launcher;
+  --shutdown stops Bloom, the launcher, and Vite.`;
+
 const parseArgs = () => {
     const args = process.argv.slice(2);
+    // Asking a destructive script how to use it must never be the destructive move, and the
+    // request counts wherever it sits: see asksForHelp.
+    if (asksForHelp(args)) {
+        console.log(usage);
+        process.exit(0);
+    }
     const options = {
         action: undefined,
         json: false,
@@ -55,6 +73,13 @@ const parseArgs = () => {
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
+        // Print the usage and stop, before any action can run. Asking a destructive script how to
+        // use it must never be the destructive move.
+        if (arg === "--help" || arg === "-h") {
+            console.log(usage);
+            process.exit(0);
+        }
 
         if (actionNames.includes(arg)) {
             if (options.action) {

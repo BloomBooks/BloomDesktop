@@ -76,22 +76,22 @@ Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div"
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex images may be difficult to understand.</source>
         <target xml:lang="bn" state="final">ছবি গল্পকে সহায়তা প্রদান করে।ছবি বিভিন্নভাবে বিভিন্ন উপায়ে গল্পকে বর্ণনা করে <g id="genid-5" ctype="x-html-em">পর্যায়সমূহ</g> এবং বিভিন্ন ধরনের পাঠকদের জন্য (নীচে দেখুন)মনে রাখতে হবে যে অনেক সংস্কৃতিতে পর্যাপ্ত পরিমাণ ছাপানো উপকরণ নেই, জটিল ছবিগুলো বোঝা কঠিন হতে পারে।</target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the images should closely match the storyline. The reader should be able to predict the story line just by looking at the images. The illustrations at this level should be simple.</source>
         <target xml:lang="bn" state="final">অত্যাবশ্যক <g id="genid-6" ctype="x-html-strong">পাঠকের জন্য</g> ছবিগুলো কাহিনী সূত্রের সাথে মিল থাকা উচিত।যেন পাঠক শুধুমাত্র ছবিগুলো দেখেই গল্পের মূলভাব অনুমান করতে পারে।এই পর্যায়ে ছবি খুব সাধারণ হতে হবে।</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the images should offer some support to the story line. As the amount of text increases, the reader is less reliant on the images and gets more meaning from the text. The illustrations can be more complex.</source>
         <target xml:lang="bn" state="final">প্রথম দিকের <g id="genid-7" ctype="x-html-strong">নব্য পাঠকদের জন্য</g> ছবিগুলোর উচিত গল্পের মূলভাবে কিছু সহায়তা প্রদান করা।যেহেতু লেখার পরিমাণ বৃদ্ধি হয়েছে, পাঠকরা ছবির দিকে কম নির্ভরশীল হবে এবং লেখা থেকে বেশি পাবে।চিত্রণটি আরো জটিল হতে পারে।</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the images should offer little or no support to the story line. The reader relies more on the text than the images for meaning. The illustrations can be even more complex.</source>
         <target xml:lang="bn" state="final">দক্ষ <g id="genid-8" ctype="x-html-strong">সাবলীল পাঠকদের জন্য</g> ছবিগুলোর উচিত গল্পের মূলভাবে কম সহায়তা প্রদান অথবা কোন সহায়তা প্রদান না করা।পাঠকরা অর্থের জন্য ছবির চেয়ে লেখার উপর বেশি নির্ভর করে।চিত্রণটি আরো জটিল হতে পারে।</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>
