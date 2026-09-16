@@ -1834,12 +1834,14 @@ export const kNotOurUndoSelector = "input, textarea, [contenteditable=true]";
 
 // Is a modal open over the page? While one is, the thing the user is typing into or looking
 // at is the modal, not the picture behind it, so Ctrl+Z must not reach past it and replace a
-// picture they cannot even see. Covers our own dialogs (MUI renders a .MuiDialog-container)
-// and the AI Image Editor's overlay, whose own content is an iframe but whose frame and close
-// button are elements of the host document.
+// picture they cannot even see. Bloom puts modals up three ways and this has to catch all of
+// them: the React dialogs (MUI renders a .MuiDialog-container), the older jQuery UI ones such
+// as Reader Setup (.ui-dialog, with .ui-widget-overlay behind it), and the AI Image Editor,
+// whose own content is an iframe but whose frame and close button are elements of the host
+// document.
 export function isModalOpen(doc: Document): boolean {
     return !!doc.querySelector(
-        ".MuiDialog-container, #ai-image-editor-overlay",
+        ".MuiDialog-container, .ui-dialog, .ui-widget-overlay, #ai-image-editor-overlay",
     );
 }
 
@@ -1860,7 +1862,15 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     // Origami's handler is bound to this frame's html element, so without that check one
     // keystroke would run both undos.
     if (origamiCanUndo()) return;
-    if (getToolboxBundleExports()?.canUndo()) return;
+    const toolbox = getToolboxBundleExports();
+    if (toolbox?.canUndo()) {
+        // Do the tool's undo here rather than just standing aside: no tool listens for the
+        // keystroke itself, so bowing out would leave Ctrl+Z doing nothing at all.
+        e.preventDefault();
+        toolbox.undo();
+        toolbox.updateMarkupAfterUndoOrRedo();
+        return;
+    }
     if (!imageOperationCanUndo()) return;
     e.preventDefault();
     imageOperationUndo();
