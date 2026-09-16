@@ -168,11 +168,16 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     if (!e.ctrlKey || e.altKey || e.shiftKey) return;
     if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
     const target = e.target as HTMLElement | null;
-    if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
     const contentWindow = getEditablePageBundleExports();
+    if (!contentWindow) return;
+    if (target?.closest?.(contentWindow.kNotOurUndoSelector)) return;
+    // Not while a dialog or the AI Image Editor is open over the page: those live in THIS
+    // document, so without the check a keystroke meant for the thing on top would replace the
+    // picture behind it.
+    if (contentWindow.isModalOpen(document)) return;
     // Origami gets first refusal here too, for the same reason handleUndo gives it: while
     // layout mode is on, Ctrl+Z belongs to the layout undo, not the image one.
-    if (!contentWindow || contentWindow.origamiCanUndo()) return;
+    if (contentWindow.origamiCanUndo()) return;
     if (!contentWindow.imageOperationCanUndo()) return;
     e.preventDefault();
     contentWindow.imageOperationUndo();

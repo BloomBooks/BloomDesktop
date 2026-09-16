@@ -1827,6 +1827,22 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     }
 });
 
+// Where Ctrl+Z belongs to something other than the image undo: a text field or a rich-text
+// editable keeps the undo that comes with it (native for a form field, ckeditor for a
+// bloom-editable).
+export const kNotOurUndoSelector = "input, textarea, [contenteditable=true]";
+
+// Is a modal open over the page? While one is, the thing the user is typing into or looking
+// at is the modal, not the picture behind it, so Ctrl+Z must not reach past it and replace a
+// picture they cannot even see. Covers our own dialogs (MUI renders a .MuiDialog-container)
+// and the AI Image Editor's overlay, whose own content is an iframe but whose frame and close
+// button are elements of the host document.
+export function isModalOpen(doc: Document): boolean {
+    return !!doc.querySelector(
+        ".MuiDialog-container, #ai-image-editor-overlay",
+    );
+}
+
 // Ctrl+Z over a picture. Text gets its undo from the ckeditor instance that has focus, and
 // the origami layout mode binds its own handler, but an image change had neither: the only
 // way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
@@ -1840,7 +1856,8 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     if (!e.ctrlKey || e.altKey || e.shiftKey) return;
     if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
     const target = e.target as HTMLElement | null;
-    if (target?.closest?.("[contenteditable=true]")) return;
+    if (target?.closest?.(kNotOurUndoSelector)) return;
+    if (isModalOpen(document)) return;
     if (origamiCanUndo()) return;
     if (!imageOperationCanUndo()) return;
     e.preventDefault();
