@@ -75,10 +75,51 @@ Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.
 Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
 settings endpoints it only records a pending change on the open dialog.
 
+investigated 2026-09-16, which splits this entry in two:
+
+- **The WinForms half is drivable now.** Windows UI Automation reaches every WinForms control
+  by its designer name with no pointer, keystroke or focus change:
+  `.github/skills/bloom-automation/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
+  that skill's SKILL.md). Verified on the Settings dialog: `select` on the "Book Making" tab item
+  and `invoke` on `_cancelButton` both worked, headless. The `WireUpForWinforms` dialogs'
+  OK/Cancel buttons and the Settings tab strip are therefore no longer a reason a step stays
+  manual. Still out of reach: WinForms `LinkLabel`s (the "Change..." language links), which
+  expose no UIA pattern.
+
+- **The web half crashes an `--e2e` Bloom, so no test can open Settings yet.** Twice on
+  2026-09-16 an `--e2e` Bloom died the moment Settings opened, with the "Bloom was unable to
+  initialize the WebView2 browser" `MessageBox` from `WebView2Browser.SetupEventHandling`, which
+  then calls `Environment.Exit(1)`. Cause, measured in a parallel session on the same day:
+  `WorkspaceView.OpenLegacySettingsDialog` creates the dialog inside
+  `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (thread set to System-DPI-aware), and a WebView2
+  browser process takes the DPI awareness of its *host window*, not of the process, so the
+  dialog's WebView2 comes up System-aware while the shell's is PerMonitorV2. WebView2 refuses a
+  controller whose awareness differs from the browser process already using the same user data
+  folder (`ERROR_INVALID_STATE`, 0x8007139F, "mismatch in DPI awareness"). Outside `--e2e` each
+  ReactControl gets its own environment and process, so there is nothing to conflict with; under
+  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) *is* the conflict. Six call sites
+  enter that DPI scope, but only the three whose dialog hosts a browser can hit this: the
+  Settings dialog (WorkspaceView), `ConfigurationDialog` (Configurator) and `LicenseDialog`
+  (Program). The other three open a plain WinForms dialog or a file picker
+  (`ScriptSettingsDialog`, `JpegWarningDialog`, `BloomOpenFileDialog`). Fix direction: give a WebView2
+  created under the legacy DPI scope its own environment even in `--e2e`, or stop entering that
+  scope for dialogs that host a ReactControl. **Do not** fix it by making dialogs share the main
+  window's environment outside `--e2e`: that reproduces the crash for every user. Until it is
+  fixed, an e2e test must not open the Settings dialog; `helpers/collectionSettings.ts` and the
+  `e2e/*` hooks remain the route. The exact exception text has not been captured yet; the
+  `winformsUia.ps1` `tree -Window Error` command is how to read it before the box is dismissed.
+
 ## Native OS dialogs hang automation
 
-File pickers, the Image Toolbox, and video capture open native windows Playwright
-cannot dismiss; a test that triggers one hangs the run. Tests must avoid them (the
+File pickers and video capture open native windows that Playwright cannot see or dismiss; a
+test that triggers one unprepared hangs the run. (The WinForms Image Toolbox this entry used
+to name is gone: choosing an image is a web dialog now, and only its "Open File..." button
+under "This Computer", and changing a GIF, reach a native file picker.) Since 2026-09-16 the
+picker itself is no longer undrivable: `.github/skills/bloom-automation/winformsUia.ps1`
+fills its "File name:" box and presses Open over UI Automation, proven against Bloom's own
+image picker. A test should still prefer `e2e/nextFileToChoose` (below), which never shows
+the dialog; UIA is the fallback for whatever that hook does not cover, and for reading a
+message box a test did not expect. Tests must avoid them (the
 `add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
 `E2eTestingApi` for the common cases (choose image file, choose video), so journeys
 that need them become automatable.
@@ -103,7 +144,7 @@ showing the dialog, and Bloom goes back to showing the real one afterwards.
 deliberately does NOT remember the chosen folder in `FilePathMemory` under `--e2e`, which is
 machine-wide settings shared with the developer's own Bloom.
 
-Still open on this entry: video capture and the Image Toolbox are untouched. And a microphone is still a microphone: recording audio
+Still open on this entry: video capture is untouched, and it needs a camera, not just buttons. And a microphone is still a microphone: recording audio
 cannot be automated at all, which is why `helpers/talkingBook.ts` has `addNarration` (put the mp3
 where a recording would have gone) alongside the Import Recording path.
 
