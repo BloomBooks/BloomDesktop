@@ -1816,6 +1816,21 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     }
 });
 
+// Ctrl+Z over a picture. Text gets its undo from the ckeditor instance that has focus, and
+// the origami layout mode binds its own handler, but an image change had neither: the only
+// way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
+// nothing (BL-16868). We take the key only when there is an image change to undo and the
+// keystroke did not come from inside text, so ckeditor keeps every case that is its own.
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!e.ctrlKey || e.altKey || e.shiftKey) return;
+    if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest?.("[contenteditable=true]")) return;
+    if (!imageOperationCanUndo()) return;
+    e.preventDefault();
+    imageOperationUndo();
+});
+
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
     if (
