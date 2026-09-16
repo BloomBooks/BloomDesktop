@@ -158,6 +158,23 @@ export function handleUndo(): void {
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
 
+// Ctrl+Z when the keystroke arrives here rather than in the page. That is where it arrives
+// right after the AI Image Editor closes, because the editor's overlay lives in this window,
+// so without this the key did nothing until the user clicked back into the page (BL-16868).
+// The page has the same handler for when it has the focus; both take the key only for an
+// image change, leaving text to the ckeditor instance that has it. A dialog's own text field
+// keeps the browser's native undo.
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!e.ctrlKey || e.altKey || e.shiftKey) return;
+    if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
+    const contentWindow = getEditablePageBundleExports();
+    if (!contentWindow?.imageOperationCanUndo()) return;
+    e.preventDefault();
+    contentWindow.imageOperationUndo();
+});
+
 // We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
 export function switchThumbnailPage(newSource: string) {
     const iframe = <HTMLIFrameElement>document.getElementById("pageList");
