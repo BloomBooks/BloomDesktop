@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Bloom.Api;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
+using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.ToPalaso;
+using Bloom.web;
+using L10NSharp;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -45,6 +49,21 @@ namespace Bloom.Book
         // or we would time out on a slow page just before the browser reported it.
         private const int kReadyTimeoutMs = 60000;
 
+        // A <meta> in the book's HTML recording the BookStorage.kBrowserMaintenanceLevel this book
+        // has successfully been brought to, alongside maintenanceLevel and mediaMaintenanceLevel,
+        // and one recording the page size/orientation (e.g. "A5Portrait") it was brought there at.
+        // Together they let us tell whether the fix-up still needs (re-)running for editing or
+        // publishing: see NeedsPerPageFixup.
+        internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
+        internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
+
+        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeeded) was tried this
+        // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
+        // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
+        // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
+        private static readonly HashSet<string> s_perPageFixupFailedThisSession =
+            new HashSet<string>();
+
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
         /// date (xmatter/layout migrations; this also ensures the needed CSS file links are present,
@@ -72,10 +91,11 @@ namespace Bloom.Book
         /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
         /// fitImageOverTextSplits() in bloomEditing.ts.
         ///
-        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages and
-        /// then one per page ("Updating page 3 of 22..."), plus the percent done on its indicator (if
-        /// it has one), so a progress dialog can show where we are. It may be called on whatever
-        /// thread this runs on; the progress objects we use marshal for themselves.
+        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages,
+        /// plus the percent done on its indicator (if it has one) as the per-page pass advances, so a
+        /// determinate progress dialog can show where we are. (It deliberately gets no per-page text
+        /// message: the bar already shows that, and a line per page just floods the log.) It may be
+        /// called on whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
             Book book,
@@ -170,7 +190,10 @@ namespace Bloom.Book
                     foreach (var page in pages)
                     {
                         pageIndex++;
-                        progress.WriteStatus($"Updating page {pageIndex} of {pages.Count}...");
+                        // We deliberately do NOT write a per-page status message here. The progress
+                        // dialog is determinate, so the percent bar below already shows how far we
+                        // are; a "Updating page N of M" line per page just fills the log with dozens
+                        // of near-identical lines that duplicate the bar (BL-16852).
                         if (progress.ProgressIndicator != null)
                             progress.ProgressIndicator.PercentCompleted =
                                 (pageIndex - 1) * 100 / pages.Count;
@@ -194,13 +217,209 @@ namespace Bloom.Book
                 }
             }
 
-            // 3. One full save now that every page's in-memory DOM has been updated.
+            // Record that this book has been brought to the current browser maintenance level at its
+            // current page size, so NeedsPerPageFixup can tell it need not be done again unless we
+            // bump that level or the page size changes. Only reached when every page succeeded (a
+            // failure throws before here), so we never claim a half-done book is done.
+            StampPerPageFixupDone(book);
+
+            // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
             book.Save();
             if (progress.ProgressIndicator != null)
                 progress.ProgressIndicator.PercentCompleted = 100;
 
             Log($"DONE: {pages.Count} pages");
             return pages.Count;
+        }
+
+        /// <summary>
+        /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
+        /// this book before it is edited or published. A book records the browser maintenance level it
+        /// has been brought to, and the page size it was brought there at; this catches the books that
+        /// are behind — old books, books from before a fix-up we have since added, and books whose page
+        /// size changed since.
+        ///
+        /// It is "needed" when any of these holds:
+        ///  - the book records no browser maintenance level (an old book, or one made by a Bloom
+        ///    without this), or a level we cannot read;
+        ///  - the recorded level is below BookStorage.kBrowserMaintenanceLevel (we have since added
+        ///    fix-ups this book has not been through);
+        ///  - the recorded page size/orientation differs from the book's current one (the layout-derived
+        ///    measurements — image sizing, canvas-element geometry — need recomputing).
+        ///
+        /// Note that this deliberately does NOT compare Bloom versions. Version numbers are not
+        /// comparable across channels (release, alpha and BetaInternal use different sequences), and
+        /// keying off them would reprocess every book on every build instead of only when we change
+        /// something that matters.
+        ///
+        /// Returns false for a book we could not usefully process anyway: one we cannot save (e.g. a
+        /// Team Collection book not checked out — EnsureUpToDate would refuse it too), or one with
+        /// structural errors (it would show an error page rather than editable pages).
+        /// </summary>
+        public static bool NeedsPerPageFixup(Book book)
+        {
+            if (book == null || !book.IsSaveable)
+                return false;
+            if (!string.IsNullOrEmpty(book.CheckForErrors()))
+                return false;
+
+            var dom = book.OurHtmlDom;
+            if (!int.TryParse(dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "0"), out var level))
+                level = 0; // missing or unreadable: treat as never done
+            if (level < BookStorage.kBrowserMaintenanceLevel)
+                return true;
+
+            // The book is at (or beyond) the current level, so the only remaining reason to redo it
+            // is that the page size has changed since: the measurements the fix-up records are
+            // relative to the page, so they are stale at a new size.
+            var stampedLayout = dom.GetMetaValue(kBrowserMaintenanceLayoutMeta, "");
+            return stampedLayout != GetLayoutStamp(book);
+        }
+
+        /// <summary>
+        /// True if the book records a browser maintenance level higher than this Bloom knows how to
+        /// produce. A missing or unreadable level is not "above ours"; NeedsPerPageFixup already
+        /// treats that as never done, which is the safe answer.
+        /// </summary>
+        internal static bool RecordsBrowserMaintenanceLevelAboveOurs(HtmlDom dom)
+        {
+            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
+            return int.TryParse(recorded, out var level)
+                && level > BookStorage.kBrowserMaintenanceLevel;
+        }
+
+        /// <summary>
+        /// If the book records a browser maintenance level HIGHER than this Bloom knows how to
+        /// produce, bring the record down to ours. Called as we save a book (BookStorage.Save).
+        /// </summary>
+        /// <remarks>
+        /// A newer Bloom may have taken the book past what our editing JavaScript does. The moment we
+        /// write the book ourselves we may have added or changed pages that its extra fix-ups would
+        /// have handled, so the book is no longer really at that level -- but the recorded level would
+        /// tell the newer Bloom there was nothing to do, and the pages we touched would stay behind
+        /// for good. Recording our own level instead makes that Bloom see the book as due and run its
+        /// pass again. Deliberately one-way: a level at or below ours is left alone, because raising
+        /// it would claim work we never did.
+        /// </remarks>
+        internal static void ClampBrowserMaintenanceLevelToOurs(HtmlDom dom)
+        {
+            if (!RecordsBrowserMaintenanceLevelAboveOurs(dom))
+                return;
+            dom.UpdateMetaElement(
+                kBrowserMaintenanceLevelMeta,
+                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+            );
+        }
+
+        /// <summary>
+        /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
+        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
+        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
+        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
+        /// need it, or when a run already failed for this book this session (so we don't re-prompt
+        /// every time).
+        ///
+        /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
+        /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the
+        /// pages it loads call back into Bloom's API server, so it must not run on the UI thread),
+        /// exactly like the "Update Book" command it shares ProcessBook with.
+        /// </summary>
+        public static bool EnsurePerPageFixupIfNeeded(
+            Book book,
+            BloomWebSocketServer webSocketServer
+        )
+        {
+            if (!NeedsPerPageFixup(book))
+                return false;
+            if (s_perPageFixupFailedThisSession.Contains(book.ID))
+                return false;
+
+            // Reuse the "Update Book" label: to the user this is the same operation, applied for them
+            // automatically rather than on request.
+            var title = LocalizationManager.GetString(
+                "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                "Update Book"
+            );
+            BrowserProgressDialog.DoWorkWithProgressDialog(
+                webSocketServer,
+                () =>
+                {
+                    var dlg = new ReactDialog(
+                        "progressDialogBundle",
+                        new
+                        {
+                            title,
+                            titleColor = "white",
+                            titleBackgroundColor = Palette.kBloomBlueHex,
+                            showReportButton = "if-error",
+                            determinate = true,
+                            linearProgress = true,
+                        },
+                        title
+                    );
+                    dlg.SetScaledSize(560, 400);
+                    return dlg;
+                },
+                (progress, worker) =>
+                {
+                    // Tell the user why Bloom paused to do this; they did not ask for it.
+                    progress.MessageWithoutLocalizing(
+                        LocalizationManager.GetString(
+                            "BookProcessor.AutoUpdateExplanation",
+                            "Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size."
+                        ),
+                        ProgressKind.Instruction
+                    );
+                    try
+                    {
+                        ProcessBook(book, progress: new WebProgressAdapter(progress));
+                    }
+                    catch (Exception e)
+                    {
+                        // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
+                        // and make sure the details reach the log; the dialog shows the message to the user.
+                        //
+                        // Pages that were processed before the failure stay updated in the book's
+                        // in-memory DOM on purpose. A page is replaced only after its capture
+                        // succeeded, and each replaced page is a complete, correctly migrated page,
+                        // exactly what visiting it in the Edit tab produces, so a later ordinary save
+                        // persisting some migrated pages alongside unmigrated ones loses nothing: that
+                        // mixture is just the state every book was in before this feature. And since
+                        // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
+                        // true and a later run finishes the rest. (BloomBridge's process-book gets its
+                        // all-or-nothing behavior by reloading its own separate book object; the live
+                        // book has no need of that.)
+                        s_perPageFixupFailedThisSession.Add(book.ID);
+                        SIL.Reporting.Logger.WriteError(
+                            "Automatic page update failed for " + book.NameBestForUserDisplay,
+                            e
+                        );
+                        throw;
+                    }
+                    return false; // no error: close the dialog automatically
+                }
+            );
+            return true;
+        }
+
+        // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
+        // governs the layout-derived measurements the per-page fix-up computes, so a change to it is
+        // exactly when those measurements need recomputing.
+        private static string GetLayoutStamp(Book book)
+        {
+            return book.GetLayout().SizeAndOrientation.ClassName;
+        }
+
+        // Record, in the book's HTML, that the book has been brought to the current browser
+        // maintenance level at the current page size. Written just before ProcessBook's final Save
+        // so it is persisted with it.
+        private static void StampPerPageFixupDone(Book book)
+        {
+            book.OurHtmlDom.UpdateMetaElement(
+                kBrowserMaintenanceLevelMeta,
+                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+            );
+            book.OurHtmlDom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, GetLayoutStamp(book));
         }
 
         /// <summary>
