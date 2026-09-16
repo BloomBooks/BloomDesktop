@@ -17,6 +17,8 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import { installRedoKeyBinding } from "./undo/redoKeyBinding";
+import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -382,6 +384,10 @@ $(document).ready(() => {
     // just signals that bootstrap itself has run and it is safe to ask for the content. Harmless no-op
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
+
+    // Ctrl+Y reaches the one undo stack's Redo from here, as the last resort behind the handlers
+    // that already claim it (see undo/redoKeyBinding.ts). Null in the off-screen context.
+    installRedoKeyBinding(document, tryGetWorkspaceBundleExports);
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
