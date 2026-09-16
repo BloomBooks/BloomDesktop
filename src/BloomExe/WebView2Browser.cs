@@ -432,15 +432,23 @@ namespace Bloom
                     return;
                 if (have.Right - have.Left == wantWidth && have.Bottom - have.Top == wantHeight)
                     return; // WebView2 got it right; leave it alone
-                SetWindowPos(
-                    hostWindow,
-                    IntPtr.Zero,
-                    0,
-                    0,
-                    wantWidth,
-                    wantHeight,
-                    kSwpNoMove | kSwpNoZOrder | kSwpNoActivate
-                );
+                // SetWindowPos reports failure by returning false, not by throwing, so without this
+                // check a rejected resize (e.g. WebView2 destroyed the host window between our
+                // finding it and our resizing it) would leave the dialog clipped and say nothing.
+                if (
+                    !SetWindowPos(
+                        hostWindow,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        wantWidth,
+                        wantHeight,
+                        kSwpNoMove | kSwpNoZOrder | kSwpNoActivate
+                    )
+                )
+                {
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                }
             }
             catch (Exception e)
             {
