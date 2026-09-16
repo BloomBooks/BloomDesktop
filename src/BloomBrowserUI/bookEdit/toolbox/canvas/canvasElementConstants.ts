@@ -21,3 +21,10 @@ export const kBloomCanvasSelector = `.${kBloomCanvasClass}`;
 export const kImageFitModeAttribute = "data-image-fit";
 export const kImageFitModeContainValue = "contain";
 export const kImageFitModeCoverValue = "cover";
+
+// The class Bloom puts on an image slot, and the selector for it. Lives here rather than in
+// bloomImages.ts so that modules which must not drag that file (and everything it imports)
+// into their bundle can still name a slot; bloomImages.ts re-exports both. C# knows the same
+// name as HtmlDom.kImageContainerClass.
+export const kImageContainerClass = "bloom-imageContainer";
+export const kImageContainerSelector = `.${kImageContainerClass}`;

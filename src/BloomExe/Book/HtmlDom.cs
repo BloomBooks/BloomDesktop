@@ -671,6 +671,17 @@ namespace Bloom.Book
         public static string kBackgroundImageClass = "bloom-backgroundImage";
         public static string kImageContainerClass = "bloom-imageContainer";
 
+        /// <summary>
+        /// How much of its page an image slot covers, written onto every image container by the
+        /// front end when a page is saved; see kFractionOfPageAttribute /
+        /// recordFractionOfPageOnImageSlots in imageTargetResolution.ts. It is the only record
+        /// of how big a slot ends up on screen, because the book's HTML otherwise says nothing
+        /// about that, and it is what lets the AI image editor suggest a size for images on
+        /// pages nobody has open. (For a canvas background image the front end measures the
+        /// whole bloom-canvas, but the value still lands on the container.)
+        /// </summary>
+        public const string kFractionOfPageAttribute = "data-fraction-of-page";
+
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
             var canvasElement =
@@ -4220,7 +4231,9 @@ namespace Bloom.Book
             {
                 if (ce.HasClass(HtmlDom.kCanvasElementClass))
                 {
-                    result.Add(Tuple.Create("data-canvas-element-style", ce.GetAttribute("style")));
+                    result.Add(
+                        Tuple.Create(kCanvasElementStyleTupleName, ce.GetAttribute("style"))
+                    );
                 }
 
                 var bloomCanvas = ce.ParentElement;
@@ -4228,22 +4241,59 @@ namespace Bloom.Book
                 {
                     result.Add(
                         Tuple.Create(
-                            "data-canvas-imgsizebasedon",
+                            kCanvasImgSizeBasedOnTupleName,
                             bloomCanvas.GetAttribute("data-imgsizebasedon")
                         )
                     );
+                    // The image container's share of its page, which the front end can only
+                    // measure while the page is laid out in the editor. Without carrying it
+                    // here, bringing a book's xmatter up to date would throw the cover's value
+                    // away and the AI image editor could no longer say how big a cover image
+                    // ought to be. It is optional: a book saved before this attribute existed
+                    // has none, and reconstruction must still work for it.
+                    var fractionOfPage = node.ParentElement?.GetAttribute(kFractionOfPageAttribute);
+                    if (!string.IsNullOrEmpty(fractionOfPage))
+                    {
+                        result.Add(Tuple.Create(kContainerFractionOfPageTupleName, fractionOfPage));
+                    }
                 }
             }
 
             return result;
         }
 
+        // The names under which the data-div keeps the things GetDataForReconstructingBackgroundImgWrapper
+        // saves. Each says where the value lives in the structure being rebuilt, and none of
+        // them is the name of the attribute it ends up as, because the data-div holds them all
+        // as attributes of one element (the coverImage entry).
+        public const string kCanvasImgSizeBasedOnTupleName = "data-canvas-imgsizebasedon";
+        public const string kCanvasElementStyleTupleName = "data-canvas-element-style";
+        public const string kContainerFractionOfPageTupleName = "data-container-fraction-of-page";
+
         /// <summary>
         /// Returns a list of the tuple names created by GetDataForReconstructingBackgroundImgWrapper
         /// and whose data is passed to ReconstructBackgroundImgWrapper
         /// </summary>
         public static string[] BackgroundImgTupleNames =>
-            new string[] { "data-canvas-imgsizebasedon", "data-canvas-element-style" };
+            new string[]
+            {
+                kCanvasImgSizeBasedOnTupleName,
+                kCanvasElementStyleTupleName,
+                kContainerFractionOfPageTupleName,
+            };
+
+        /// <summary>
+        /// Whether the values gathered under <see cref="BackgroundImgTupleNames"/> describe a
+        /// background image whose wrapper we can rebuild. Only the first two are required: the
+        /// third is extra information about the rebuilt container rather than part of the
+        /// structure, and a book last saved by a Bloom that did not write it has none.
+        /// </summary>
+        public static bool HaveDataForReconstructingBackgroundImgWrapper(
+            string[] backgroundImgValues
+        )
+        {
+            return backgroundImgValues[0] != null && backgroundImgValues[1] != null;
+        }
 
         /// <summary>
         /// Use the data saved by GetDataForReconstructingBackgroundImgWrapper to restore the background
@@ -4305,6 +4355,13 @@ namespace Bloom.Book
             bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
             bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
             canvasElement.SetAttribute("style", backgroundImgValues[1]);
+            // Optional; see HaveDataForReconstructingBackgroundImgWrapper. Note that a legacy
+            // cover whose image is a plain img in a bloom-canvas, with no canvas element, saves
+            // none of this data and so loses the attribute when its xmatter is brought up to
+            // date; the AI image editor then simply offers that slot no automatic size until
+            // the page is next saved in the editor.
+            if (!string.IsNullOrEmpty(backgroundImgValues[2]))
+                imageContainer.SetAttribute(kFractionOfPageAttribute, backgroundImgValues[2]);
         }
 
         public static bool IsInCustomLayoutPage(SafeXmlElement node)
