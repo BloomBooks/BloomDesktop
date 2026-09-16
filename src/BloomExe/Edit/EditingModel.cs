@@ -906,24 +906,13 @@ namespace Bloom.Edit
                         CurrentBook.GetLayout().SizeAndOrientation.IsLandScape
                         != layout.SizeAndOrientation.IsLandScape;
                     CurrentBook.SetLayout(layout);
-                    // The page size just changed, so every page's layout-derived measurements
-                    // (image sizing, canvas-element geometry) are stale and the whole-book per-page
-                    // update is due again: the book's layout stamp no longer matches (BL-16852).
-                    var needsPageUpdate = BookProcessor.NeedsPerPageFixup(CurrentBook);
-                    if (changedOrientation || needsPageUpdate)
+                    if (changedOrientation)
                     {
-                        if (changedOrientation)
-                        {
-                            // We need to update the xmatter, since this process selects images to display based on orientation.
-                            // (Here we need to do it even if we already brought this book up to date when it was selected.)
-                            CurrentBook.BringBookUpToDate(new NullProgress());
-                        }
-                        // That wrecks everything (in particular guids stored in Page objects are
-                        // obsolete), and the per-page update needs the book to itself: ProcessBook
-                        // rewrites the DOM from a worker thread, so no live page may be loaded while it
-                        // runs. Simulate switching to collection mode, force discarding everything
-                        // problematic, and reinitialize; OnBecomeVisible then runs the per-page update,
-                        // when it is due, BEFORE it shows a page.
+                        // We need to update the xmatter, since this process selects images to display based on orientation.
+                        // (Here we need to do it even if we already brought this book up to date when it was selected.)
+                        CurrentBook.BringBookUpToDate(new NullProgress());
+                        // That wrecks everything. In particular guids stored in Page objects are obsolete.
+                        // Simulate switching to collection mode, force discarding everything problematic, and reinitialize.
                         _view.OnVisibleChanged(false);
                         _currentlyDisplayedBook = null;
                         _previouslySelectedPage = null;
@@ -934,11 +923,7 @@ namespace Bloom.Edit
                     }
                     CurrentBook.PrepareForEditing();
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
-
-                    // When the per-page update is due, OnBecomeVisible (called above) owns the
-                    // navigation: it shows the page only after the update has finished. Returning
-                    // a page here would navigate to it now and put a live page under ProcessBook.
-                    return needsPageUpdate ? null : pageId;
+                    return pageId;
                 },
                 () => { } // wrong state, do nothing
             );
@@ -1049,70 +1034,81 @@ namespace Bloom.Edit
 
             ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
-            // Before the user works with the pages, make sure this book has had the per-page updates
-            // that normally happen only when a page is opened for editing. For an old book (or one
-            // whose page size changed) those have never been applied to most pages, so without this
-            // the editor and the publish path would use a half-migrated book. This applies them
-            // off-screen to every page at once, behind a progress dialog, and is a no-op for a book
-            // already up to date (BL-16852).
-            //
-            // The first page is shown only AFTER that update has finished. ProcessBook rewrites the
-            // book's DOM from a worker thread and requires that nothing else touch the book while it
-            // runs; a live page loading at the same time would be making API calls against that very
-            // DOM. So when the update is needed, the whole sequence (update, then first page) is
-            // deferred off the API lock together (see RunOffTheApiLock), and the editor stays empty
-            // until the dialog closes.
-            var book = _currentlyDisplayedBook;
-            if (BookProcessor.NeedsPerPageFixup(book))
-            {
-                RunOffTheApiLock(() =>
-                {
-                    BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
-                    // The user may have left the tab or changed books while the dialog was up.
-                    if (!Visible || _currentlyDisplayedBook != book)
-                        return;
-                    // ProcessBook rebuilt the pages; redo the editable-area preparation on them.
-                    book.PrepareForEditing();
-                    ShowInitialPage(book, forceThumbnailRefresh: true);
-                });
-                return;
-            }
+            // BL-2339: try to choose the last edited page
+            var page =
+                _currentlyDisplayedBook.GetPageByIndex(
+                    _currentlyDisplayedBook.UserPrefs.MostRecentPage
+                ) ?? _currentlyDisplayedBook.FirstPage;
 
-            ShowInitialPage(book, forceThumbnailRefresh: false);
-        }
-
-        /// <summary>
-        /// Show the page the user was last on (BL-2339), or the first page, and refresh the page list.
-        /// This is the tail of OnBecomeVisible, split out so it can be delayed until an automatic
-        /// per-page update has finished (see there).
-        /// </summary>
-        private void ShowInitialPage(Book.Book book, bool forceThumbnailRefresh)
-        {
-            var page = book.GetPageByIndex(book.UserPrefs.MostRecentPage) ?? book.FirstPage;
             if (page != null)
                 _view.GoToPage(page);
             if (_view != null)
             {
-                _view.UpdatePageList(forceThumbnailRefresh);
+                _view.UpdatePageList(false);
             }
         }
 
         /// <summary>
-        /// Run <paramref name="action"/> on the next UI-idle turn, after the current API request has
-        /// returned and released Bloom's global API sync lock, instead of right now. Used to run the
-        /// automatic per-page update (BL-16852) and the page display that must follow it.
+        /// Save the current page, bring the whole book up to the current browser maintenance level
+        /// (BL-16852), and then come back to the page we were on and run
+        /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
+        /// needs every page's recorded data, not just the pages someone happens to have visited.
         /// </summary>
         /// <remarks>
-        /// OnBecomeVisible is reached from an API handler that runs on the UI thread AND holds the
-        /// global API sync lock (workspace/selectTab is registered requiresSync, as is the
-        /// editView/pageContent save whose callback re-enters OnBecomeVisible on a page-size change).
-        /// BookProcessor.ProcessBook drives off-screen editing pages that make their own sync-locked
-        /// API calls as they load (image sizing, language tips, etc.); if we ran it while the
-        /// triggering handler still held that lock, those calls would block behind us and the update
-        /// would stall, badly on an image-heavy book. Deferring with BeginInvoke lets the handler
-        /// return and release the lock first, so the off-screen pages' calls run normally. This is the
-        /// same reason external/process-book runs with requiresSync:false. When there is no shell
-        /// form (e.g. under test) the action just runs inline.
+        /// The sequence exists to give BookProcessor.ProcessBook the book to itself. It rewrites the
+        /// book's DOM from a worker thread and requires that nothing else touch the book while it
+        /// runs, so no live page may be loaded. Returning null from the save callback is what
+        /// arranges that: the state machine then goes to NoPage and the editor is empty. Only then
+        /// does the update run, deferred off the API sync lock (see RunOffTheApiLock), because the
+        /// off-screen pages it loads make their own sync-locked API calls and would otherwise block
+        /// behind the handler that got us here. Finally we navigate back and hand control on.
+        /// </remarks>
+        public void BringBookToCurrentBrowserLevelThen(string pageId, Action afterPageReloaded)
+        {
+            var book = CurrentBook;
+            SaveThen(
+                () => null, // empty the editor: ProcessBook must have the book to itself
+                doIfNotInRightStateToSave: () =>
+                {
+                    // Nothing was saved and nothing failed; we are on our way to a page load anyway.
+                    // Don't migrate from here: a page is (or is about to be) live. The next launch
+                    // will find the book still behind and do it then.
+                    afterPageReloaded();
+                },
+                doAfterSaveToDisk: () =>
+                    RunOffTheApiLock(() =>
+                    {
+                        BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
+                        // The user may have switched books or left the tab while the dialog was up.
+                        if (!Visible || CurrentBook != book)
+                            return;
+                        // ProcessBook rebuilt the pages, so the IPage objects and editable areas
+                        // need redoing before we show one again.
+                        book.PrepareForEditing();
+                        var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
+                        if (page == null)
+                            return; // the page went away; nothing sensible to go back to
+                        RunAfterNextPageLoad(_ => afterPageReloaded());
+                        _view.GoToPage(page);
+                        _view.UpdatePageList(true);
+                    })
+            );
+        }
+
+        /// <summary>
+        /// Run <paramref name="action"/> on the next UI-idle turn, after the current API request has
+        /// returned and released Bloom's global API sync lock, instead of right now.
+        /// </summary>
+        /// <remarks>
+        /// The handler that leads here runs on the UI thread AND holds the global API sync lock (the
+        /// editView/pageContent save that drives SaveThen is registered requiresSync, as are the tab
+        /// and AI-editor endpoints). BookProcessor.ProcessBook drives off-screen editing pages that
+        /// make their own sync-locked API calls as they load (image sizing, language tips, etc.); if
+        /// we ran it while the triggering handler still held that lock, those calls would block
+        /// behind us and the update would stall, badly on an image-heavy book. Deferring with
+        /// BeginInvoke lets the handler return and release the lock first, so the off-screen pages'
+        /// calls run normally. This is the same reason external/process-book runs with
+        /// requiresSync:false. When there is no shell form (e.g. under test) the action runs inline.
         /// </remarks>
         private void RunOffTheApiLock(Action action)
         {

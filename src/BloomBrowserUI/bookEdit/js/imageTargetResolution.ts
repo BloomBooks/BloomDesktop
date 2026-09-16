@@ -293,22 +293,20 @@ export function getElementThatDeterminesImageSlotSize(
 // Writes each image slot's share of its page onto the slot, so that the size it wants can be
 // worked out later for a page nobody has open. Called as a page is saved (see
 // extractAndStripPageContentForSave in bloomEditing.ts): the ordinary Edit-tab save, and the
-// off-screen pass over every page that Bloom runs by itself whenever a book needs it, before
-// editing or publishing and after a page-size change (BL-16852), and that "Update Book" runs on
-// demand.
+// off-screen pass over every page that "Update Book" runs on demand and that Bloom runs by itself
+// when the AI image editor is launched on a book that has not had it (BL-16852).
 //
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction
 // from the last save is better evidence than none, and guessing would have the AI image editor
 // generate at the wrong resolution.
 //
-// A value recorded under one page size or layout is not left behind by a change to either: a
-// page-size change re-runs the whole-book per-page update (BL-16852), which re-saves every page
-// and so re-measures every slot's share at the new size. The same update runs whenever a book
-// is opened for editing or is about to be published, so in normal operation every page carries
-// a current value without anyone visiting it. If that update ever fails, a slot keeps its old
-// share, which is only wrong where the new layout gives it a different proportion of its page,
-// and the cost is a suggested size somewhat off rather than a broken picture. That is the one
-// remaining reason not to guess here.
+// For the same reason, a value recorded under one page size or layout survives a change to
+// either, and a page nobody reopens keeps it until it is next saved. A share is a proportion, so
+// it only goes wrong where the new layout gives that slot a different proportion of its page, and
+// the cost is a suggested size somewhat off rather than a broken picture. Both the whole-book
+// passes above put it right in one go -- and a page-size change makes the book due for that pass
+// again, so the next AI image editor launch re-measures every slot at the new size. Deliberately
+// not re-measured any more eagerly than that.
 export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
     const pageElement =
         pageRoot.closest(".bloom-page") ??

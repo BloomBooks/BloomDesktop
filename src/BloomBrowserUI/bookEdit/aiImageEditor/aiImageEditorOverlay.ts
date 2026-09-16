@@ -96,13 +96,13 @@ function applyOnThePageBeingEdited(
 //
 // It can answer for EVERY page, not just the open one, because Bloom records each slot's share
 // of its page in the HTML whenever the page is saved (recordFractionOfPageOnImageSlots), and
-// C# hands that back with each book image. In normal operation every page carries the value:
-// before a book can be edited (and so before this editor can open on it) Bloom brings the whole
-// book up to date, re-saving every page off-screen (BL-16852), and it does the same before
-// publishing and after a page-size change. A slot with no value is therefore not the ordinary
-// state of an unvisited page but a sign that the update did not run or failed; the editor
-// then offers that slot no "Auto" option rather than a guess. Every editor launch also saves
-// the page being edited first (see HandleSaveThenLaunch), so that page at least always has it.
+// C# hands that back with each book image. By the time this editor opens, every page carries the
+// value: launching it on a book that has not been through the off-screen per-page pass runs that
+// pass first, re-saving every page, and only then opens the editor (HandleSaveThenLaunch, via
+// EditingModel.BringBookToCurrentBrowserLevelThen; BL-16852). A slot with no value is therefore
+// not the ordinary state of an unvisited page but a sign that the pass did not run or failed; the
+// editor then offers that slot no "Auto" option rather than a guess. Every editor launch also
+// saves the page being edited first, so that page at least always has it.
 //
 // The one thing only the live page can say is how big the page is, which is the same for every
 // page in the book, so we ask the page frame once. Nothing here may stop the editor opening:
@@ -162,9 +162,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 height?: number;
                 isPlaceholder?: boolean;
                 // How much of its page this slot covers, as C# read it out of the book's
-                // HTML. Normally always present, because the whole book is brought up to date
-                // (every page re-saved) before it can be edited (BL-16852); null only if that
-                // update did not run or failed, and the slot then gets no "Auto" size.
+                // HTML. Normally always present, because launching this editor first puts the
+                // book through the per-page pass when it needs it (BL-16852); null only if that
+                // pass did not run or failed, and the slot then gets no "Auto" size.
                 fractionOfPage?: { width: number; height: number } | null;
                 // What size this slot would like its image to be, worked out below from
                 // fractionOfPage, how big the pages of this book are, and the book's
