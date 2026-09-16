@@ -277,6 +277,34 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// If the book records a browser maintenance level HIGHER than this Bloom knows how to
+        /// produce, bring the record down to ours. Called as we save a book (BookStorage.Save).
+        /// </summary>
+        /// <remarks>
+        /// A newer Bloom may have taken the book past what our editing JavaScript does. The moment we
+        /// write the book ourselves we may have added or changed pages that its extra fix-ups would
+        /// have handled, so the book is no longer really at that level -- but the recorded level would
+        /// tell the newer Bloom there was nothing to do, and the pages we touched would stay behind
+        /// for good. Recording our own level instead makes that Bloom see the book as due and run its
+        /// pass again. Deliberately one-way: a level at or below ours is left alone, because raising
+        /// it would claim work we never did.
+        /// </remarks>
+        internal static void ClampBrowserMaintenanceLevelToOurs(HtmlDom dom)
+        {
+            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
+            // Absent or unreadable: leave it. NeedsPerPageFixup already treats that as never done,
+            // which is the safe answer; writing a number here would only invent history.
+            if (!int.TryParse(recorded, out var level))
+                return;
+            if (level <= BookStorage.kBrowserMaintenanceLevel)
+                return;
+            dom.UpdateMetaElement(
+                kBrowserMaintenanceLevelMeta,
+                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+            );
+        }
+
+        /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
         /// due, behind a modal progress dialog, and return true if it actually ran. Called before a
         /// book is edited (EditingModel.OnBecomeVisible), before it is published (PublishView.Activate),

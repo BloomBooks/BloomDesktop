@@ -127,6 +127,73 @@ namespace BloomTests.Book
             Assert.That(BookProcessor.NeedsPerPageFixup(bookAtNewSize), Is.True);
         }
 
+        // The clamp works on a DOM alone, so these need no book.
+        private static HtmlDom DomWithLevel(string level)
+        {
+            var dom = new HtmlDom("<html><head></head><body></body></html>");
+            if (level != null)
+                dom.UpdateMetaElement(BookProcessor.kBrowserMaintenanceLevelMeta, level);
+            return dom;
+        }
+
+        private static string LevelIn(HtmlDom dom) =>
+            dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, "");
+
+        [Test]
+        public void ClampBrowserMaintenanceLevel_HigherThanOurs_ComesDownToOurs()
+        {
+            var higher = BookStorage.kBrowserMaintenanceLevel + 7;
+            var dom = DomWithLevel(higher.ToString(CultureInfo.InvariantCulture));
+
+            // SANITY: it really is above ours before we clamp, or this proves nothing.
+            Assert.That(
+                int.Parse(LevelIn(dom)),
+                Is.GreaterThan(BookStorage.kBrowserMaintenanceLevel),
+                "SANITY: the test level should start above ours"
+            );
+
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(dom);
+
+            Assert.That(
+                LevelIn(dom),
+                Is.EqualTo(
+                    BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                )
+            );
+        }
+
+        [Test]
+        public void ClampBrowserMaintenanceLevel_AtOrBelowOurs_IsLeftAlone()
+        {
+            // The clamp is one-way. Raising a lower level would claim work we never did, and the
+            // book would then never get the pass it still needs.
+            var lower = (BookStorage.kBrowserMaintenanceLevel - 1).ToString(
+                CultureInfo.InvariantCulture
+            );
+            var domLower = DomWithLevel(lower);
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domLower);
+            Assert.That(LevelIn(domLower), Is.EqualTo(lower), "a lower level must not be raised");
+
+            var same = BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture);
+            var domSame = DomWithLevel(same);
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domSame);
+            Assert.That(LevelIn(domSame), Is.EqualTo(same));
+        }
+
+        [Test]
+        public void ClampBrowserMaintenanceLevel_MissingOrUnreadable_StaysThatWay()
+        {
+            // Absent means "never done", which NeedsPerPageFixup already handles; inventing a number
+            // here would tell a later Bloom the pass had run when it had not.
+            var domMissing = DomWithLevel(null);
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domMissing);
+            Assert.That(LevelIn(domMissing), Is.Empty);
+
+            var domJunk = DomWithLevel("not a number");
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domJunk);
+            Assert.That(LevelIn(domJunk), Is.EqualTo("not a number"));
+        }
+
         [Test]
         public void NeedsPerPageFixup_BookWithErrors_IsFalse()
         {

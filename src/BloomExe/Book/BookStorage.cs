@@ -660,6 +660,9 @@ namespace Bloom.Book
                 "Generator",
                 "Bloom " + ErrorReport.GetVersionForErrorReporting()
             );
+            // We are about to write this book with our editing code, so it cannot honestly claim a
+            // browser maintenance level beyond what we know how to produce. See the method.
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
             var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
             if (!Program.RunningUnitTests)
             {
