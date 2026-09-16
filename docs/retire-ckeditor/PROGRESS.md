@@ -33,20 +33,21 @@ answer is `vp`, never Volta, and the intermediate states are all misleading.
 > [PLAN.md](PLAN.md) is rewritten around a long-lived integration branch. Read §5 before doing any
 > branch work; the short version is the table below.
 
-> ## ⚠ `Version6.5` has been cut (2026-09-04) — the merge window may be open
+> ## ✅ The merge window is open (decided 2026-09-16): stage PRs go to `master`
 >
-> The constraint below was "nothing merges to `master` until a `Version6.5` branch is cut". That
-> branch now exists (`origin/Version6.5`, first commit 2026-09-04; master is 160 commits past it).
-> Master's `AGENTS.md` carries a temporary header saying ordinary new work should target
-> `Version6.5`, not `master`, during the transition — which is about 6.5 fixes. This project is 6.6
-> work, so `master` is presumably now its correct target, and the integration branch could open its
-> PR. **Nothing has been merged or retargeted; that is John's call**, and it changes §5's economics
-> (stage PRs could go straight to master again). Raised in the 2026-09-07 entry.
+> `Version6.5` was cut on 2026-09-04, so the constraint below no longer applies. John decided on
+> 2026-09-16: this project targets `master` (6.6). Stage 0's PR (#8153) has been synced with master
+> and is in human review there, on its own card **BL-16878**. **After #8153 merges, retarget Stage
+> 1's PR (#8317) from `BL-6681-ckeditor` to `master` and give it its own card**, which is the
+> "stage PRs straight to master" economics §5 originally had; the integration branch then becomes
+> unnecessary and §5 should be rewritten back. The 2026-08-06 rewrite below is kept for the record.
 
-Stage 0's PR is reviewed-ready and awaiting a human; its card is in *Ready For Code Review*, the QA
-test-ideas comment is posted, and Devin is clean against HEAD `6bd49463`. **Stage 1 is live and
-verified in a running Bloom** (2026-09-07): the Undo button and Ctrl+Y go through the one stack, and
-four live checks show each legacy mechanism is reached exactly as before. It has no PR yet.
+Stage 0's PR (#8153) is in human review against `master`, on card **BL-16878** (a subtask of BL-6681,
+which is back in *In Progress* as the umbrella card): synced with master `3a8120745` on 2026-09-16,
+Devin clean against HEAD `464876949a`, QA test-ideas and the preflight report on the card. **Stage 1
+is live and verified in a running Bloom** (2026-09-07): the Undo button and Ctrl+Y go through the one
+stack, and four live checks show each legacy mechanism is reached exactly as before. Its PR is #8317
+(draft, into the integration branch until Stage 0 merges — see the callout above).
 
 **Branch topology** — one integration branch tracks `master`; each stage is a short-lived branch off
 it, PR'd into it and **squash-merged**, so integration carries one commit per stage:
@@ -54,8 +55,8 @@ it, PR'd into it and **squash-merged**, so integration carries one commit per st
 | Branch | What | State |
 | --- | --- | --- |
 | **`BL-6681-ckeditor`** | The project's trunk. The only branch that merges `master` in. Eventually one PR into `master`. | Pushed. Synced to master `f0d9f1472` (2026-09-07) |
-| **`BL-6681-stage1-undostack`** | ← **the working tip.** `bookEdit/undo/` — the one undo stack, **active**: `handleUndo`/`canUndo` delegate to it, Ctrl+Y bound in the page frame | Pushed (rebased onto integration 2026-09-07 — allowed: unreviewed, no PR). Green: 52 undo tests, full suite, typecheck. Live-verified. No PR yet; when there is one it targets `BL-6681-ckeditor`, not master |
-| `BL-6681-stage0-inventory` | PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153) — docs, characterization tests, the `toolbox.ts` seam | Pushed; ready for review, awaiting a human. Left targeting `master` on purpose (§5.6). **Don't push more to it** — it would restart the review |
+| **`BL-6681-stage1-undostack`** | ← **the working tip.** `bookEdit/undo/` — the one undo stack, **active**: `handleUndo`/`canUndo` delegate to it, Ctrl+Y bound in the page frame | Pushed. Draft PR [#8317](https://github.com/BloomBooks/BloomDesktop/pull/8317) into `BL-6681-ckeditor`; **to be retargeted to `master` and given its own card once #8153 merges** (decided 2026-09-16). Green: 52 undo tests, full suite, typecheck. Live-verified |
+| `BL-6681-stage0-inventory` | PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153) — docs, characterization tests, the `toolbox.ts` seam. Card **BL-16878** | Synced with master 2026-09-16 (merge, not rebase); ready for review on `master`, awaiting a human. **Don't push more to it** — it would restart the review |
 
 **Master-sync log** (§5.3 — record every sync here so the next drift check has a start point):
 
@@ -1047,11 +1048,13 @@ working tree. Bloom can be launched from this worktree with the `run-bloom` skil
 
 ### Decisions John needs to make
 
-- **The merge window.** `Version6.5` exists. Does the project now target `master` (6.6)? If so, §5
-  could go back to "stage PRs straight to master" — cheaper than the integration branch — and the
-  integration branch's first PR could open now. Nothing done pending the answer.
-- **Restore the three hook-reformatted master files** in the sync merge (needs one `--no-verify`
-  commit)? Or leave the noise.
+- ~~The merge window~~ — **decided 2026-09-16: the project targets `master`.** After #8153 merges,
+  retarget #8317 to `master`, give it its own card (as Stage 0 has BL-16878), and rewrite §5 back to
+  stage-PRs-straight-to-master; the integration branch is then retired.
+- ~~Restore the hook-reformatted master files~~ — **decided 2026-09-16: leave them.** Master's own
+  copies (`crowdin.yml`, SIL-Niger `branding.less`) are not prettier-clean under the repo's config,
+  so every commit through the hook reformats them; whitespace-only, and restoring them would need a
+  hook-bypassing commit.
 - **File the bugs found today** — in priority order: (1) the **paste-filter bypass** (BL-12357's
   `cke/id` test admits every paste containing a styled span; tables/iframes/images/divs get in) —
   confirm with a real clipboard first; (2) Ctrl+Z with a reader tool active runs two undos and breaks
@@ -1089,8 +1092,11 @@ Active, tested (52 tests) and live-verified. What remains:
    first caller by design.
 6. ~~Where `clearPageScopedEntries()` hangs off~~ — settled: `switchContentPage`, which every
    page-frame navigation goes through.
-7. **PR the branch into `BL-6681-ckeditor`** (or into `master`, if John opens the window — see the
-   decisions above) and run `preflight` on it. Then squash-merge and delete the branch (§5.2).
+7. ~~PR the branch~~ — done: draft PR #8317 into `BL-6681-ckeditor`, preflighted 2026-09-07. **Next:
+   once #8153 has merged to `master`, merge `origin/master` into this branch, retarget #8317 to
+   `master`, create its card (subtask of BL-6681) and re-run `preflight`** (decided 2026-09-16). The
+   Stage 0 commits will then reach this branch through master, so expect the merge to reconcile them
+   with the copies already here (same content; git should see them as identical). Do not squash.
 
 ### Stage 2 — after the Stage 1 PR
 
