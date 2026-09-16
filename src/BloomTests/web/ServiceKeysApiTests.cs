@@ -1,4 +1,6 @@
+﻿using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
@@ -6,6 +8,7 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.TestUtilities;
 
 namespace BloomTests.web
@@ -135,6 +138,52 @@ namespace BloomTests.web
             Assert.That(ServiceKeyStore.Get("imageGallery.pixabay"), Is.EqualTo("new"));
             Assert.That(ServiceKeyStore.Get("imageGallery.goneNow"), Is.Null);
             Assert.That(ServiceKeyStore.Get("openRouter"), Is.EqualTo("or"));
+        }
+
+        /// <summary>
+        /// The user can only clear a read-only or locked file if we tell them which file it is,
+        /// so the failure reply must name the path rather than leaving the front end to say
+        /// "Error in /bloom/api/serviceKeys/keys?prefix=..." (BL-16820).
+        /// </summary>
+        [Test]
+        public void PostNamespace_WhenTheFileCannotBeWritten_FailsWithAMessageNamingTheFile()
+        {
+            ServiceKeyStore.Set("imageGallery.pixabay", "old");
+            Assert.That(
+                RobustFile.Exists(ServiceKeyStore.FilePath),
+                Is.True,
+                "setup: there must be a file to make read-only"
+            );
+            RobustFile.SetAttributes(ServiceKeyStore.FilePath, FileAttributes.ReadOnly);
+            try
+            {
+                // Bloom puts the message in the 503's reason phrase, which is what the front
+                // end shows; the client surfaces it as the exception message.
+                var failure = Assert.Throws<HttpRequestException>(() =>
+                    ApiTest.PostString(
+                        _server,
+                        "serviceKeys/keys?prefix=imageGallery.",
+                        "{\"version\":1,\"pixabay\":\"new\"}",
+                        ApiTest.ContentType.JSON
+                    )
+                );
+
+                Assert.That(
+                    failure.Message,
+                    Does.Contain(ServiceKeyStore.FilePath),
+                    "the message the user sees must name the file that could not be updated"
+                );
+                Assert.That(
+                    ServiceKeyStore.Get("imageGallery.pixabay"),
+                    Is.EqualTo("old"),
+                    "nothing should have changed on disk"
+                );
+            }
+            finally
+            {
+                // Leave it writable, or the TemporaryFolder cannot be deleted.
+                RobustFile.SetAttributes(ServiceKeyStore.FilePath, FileAttributes.Normal);
+            }
         }
     }
 }

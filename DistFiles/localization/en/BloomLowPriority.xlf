@@ -12,6 +12,11 @@
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
         <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
       </trans-unit>
+      <trans-unit id="Errors.CannotSaveServiceKey" translate="no">
+        <source xml:lang="en">Bloom could not save the key you entered, because it could not update this file: {0}. The file may be read-only, or another program may have it open.</source>
+        <note>ID: Errors.CannotSaveServiceKey</note>
+        <note>Shown when Bloom fails to write the file where it keeps the API keys the user got from other services (for example Pixabay, for picture search). The placeholder {0} is replaced with the full path of that file on this computer. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <note>ID: Errors.CorruptImageFile</note>

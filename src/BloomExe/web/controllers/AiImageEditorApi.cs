@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -12,7 +12,6 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
-using Bloom.SubscriptionAndFeatures;
 using Bloom.Utils;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -489,16 +488,12 @@ namespace Bloom.web.controllers
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
 
-            // Whether this collection's subscription actually covers AI image editing. The
-            // book is deliberately left out of the question: a Playground book counts as
-            // Enterprise for every feature, which is what opens the editor there at all.
-            var subscriptionCoversAiImageEditing = FeatureStatus
-                .GetFeatureStatus(book.CollectionSettings.Subscription, FeatureName.AiImageEditing)
-                .Enabled;
-
-            // A Playground book is a place to look around, and so is a collection whose
-            // subscription does not cover AI image editing.
-            var playgroundMode = !subscriptionCoversAiImageEditing || book.IsPlayground;
+            // A Playground book is a place to look around: the editor opens and shows its
+            // tools, but nothing that would reach OpenRouter can be run. Reaching the editor
+            // at all still takes a subscription that covers AI image editing (the "Edit with
+            // AI..." menu command is gated on FeatureName.AiImageEditing), and a Playground
+            // book passes that gate because it counts as Enterprise for every feature.
+            var playgroundMode = book.IsPlayground;
 
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it

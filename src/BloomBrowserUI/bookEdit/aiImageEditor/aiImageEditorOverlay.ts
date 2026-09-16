@@ -117,8 +117,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Set for a Playground book, and whenever the subscription does not
-            // cover AI image editing: the AI Image Editor goes into "look-around"
+            // Set for a Playground book: the AI Image Editor goes into "look-around"
             // mode -- every tool that would call OpenRouter is disabled, as is the
             // "set OpenRouter API key" UI. Rides through the `...launchData` spread
             // below into the AI Image Editor's init payload, so the name must match

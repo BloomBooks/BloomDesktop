@@ -1,8 +1,13 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Bloom.Utils;
+using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -65,8 +70,9 @@ namespace Bloom.web.controllers
             // take the body exactly as it was posted. The default unescape would turn a "+"
             // into a space and decode a percent escape, and Bloom would store a key the
             // service then rejects.
-            ServiceKeyStore.Set(name, request.RequiredPostString(unescape: false));
-            request.PostSucceeded();
+            var secret = request.RequiredPostString(unescape: false);
+            if (TrySave(request, () => ServiceKeyStore.Set(name, secret)))
+                request.PostSucceeded();
         }
 
         /// <summary>
@@ -96,28 +102,91 @@ namespace Bloom.web.controllers
             }
 
             var posted = JObject.Parse(request.RequiredPostJson());
-            var postedShortNames = new HashSet<string>();
-            foreach (var property in posted.Properties())
-            {
-                if (property.Name == kVersionPropertyName)
-                    continue;
-                postedShortNames.Add(property.Name);
-                ServiceKeyStore.Set(prefix + property.Name, (string)property.Value);
-            }
+            var saved = TrySave(
+                request,
+                () =>
+                {
+                    var postedShortNames = new HashSet<string>();
+                    foreach (var property in posted.Properties())
+                    {
+                        if (property.Name == kVersionPropertyName)
+                            continue;
+                        postedShortNames.Add(property.Name);
+                        ServiceKeyStore.Set(prefix + property.Name, (string)property.Value);
+                    }
 
-            // The caller sends the whole namespace, so a name missing from the post is a key
-            // the user removed. A key this version cannot read is a different case: it never
-            // reached the caller, so its absence from the post says nothing about what the
-            // user wants, and deleting it would throw away a key a newer Bloom put there.
-            foreach (var name in ServiceKeyStore.GetNames(prefix))
+                    // The caller sends the whole namespace, so a name missing from the post is
+                    // a key the user removed. A key this version cannot read is a different
+                    // case: it never reached the caller, so its absence from the post says
+                    // nothing about what the user wants, and deleting it would throw away a key
+                    // a newer Bloom put there.
+                    foreach (var name in ServiceKeyStore.GetNames(prefix))
+                    {
+                        if (postedShortNames.Contains(name.Substring(prefix.Length)))
+                            continue;
+                        if (!ServiceKeyStore.CanRead(name))
+                            continue;
+                        ServiceKeyStore.Set(name, null);
+                    }
+                }
+            );
+            if (saved)
+                request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Makes a change to the store, and turns a failure to write the file into something
+        /// the user can act on. <see cref="ServiceKeyStore"/> deliberately throws rather than
+        /// pretend a key was saved, and without this the generic API error handler would say
+        /// only "Error in /bloom/api/serviceKeys/keys?prefix=...", which tells the user nothing
+        /// they can do anything about (BL-16820). The usual causes -- the file is read-only, or
+        /// some other program has it open -- are ones only the user can clear, and they cannot
+        /// clear them without being told which file it is, so the message names the path.
+        /// Returns false when the change did not happen, having already replied to the request.
+        /// </summary>
+        private static bool TrySave(ApiRequest request, Action change)
+        {
+            try
             {
-                if (postedShortNames.Contains(name.Substring(prefix.Length)))
-                    continue;
-                if (!ServiceKeyStore.CanRead(name))
-                    continue;
-                ServiceKeyStore.Set(name, null);
+                change();
+                return true;
             }
-            request.PostSucceeded();
+            catch (Exception error)
+            {
+                var message = string.Format(
+                    LocalizationManager.GetString(
+                        "Errors.CannotSaveServiceKey",
+                        "Bloom could not save the key you entered, because it could not update this file: {0}. The file may be read-only, or another program may have it open.",
+                        "{0} is the full path of a file."
+                    ),
+                    ServiceKeyStore.FilePath
+                );
+                // Not shown to the user: the permission and antivirus details that local tech
+                // support needs to work out what is holding the file.
+                Logger.WriteError(
+                    MiscUtils.GetExtendedFileCopyErrorInformation(
+                        ServiceKeyStore.FilePath,
+                        "Could not save a service key to " + ServiceKeyStore.FilePath
+                    ),
+                    error
+                );
+                // Report after a delay, so this API call can finish first: the problem dialog
+                // is itself served by this server.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(
+                        ModalIf.All,
+                        PassiveIf.None,
+                        message,
+                        error.Message,
+                        error,
+                        showSendReport: false
+                    );
+                });
+                request.Failed(message);
+                return false;
+            }
         }
     }
 }
