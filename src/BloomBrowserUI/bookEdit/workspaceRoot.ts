@@ -175,9 +175,9 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     // document, so without the check a keystroke meant for the thing on top would replace the
     // picture behind it.
     if (contentWindow.isModalOpen(document)) return;
-    // Origami gets first refusal here too, for the same reason handleUndo gives it: while
-    // layout mode is on, Ctrl+Z belongs to the layout undo, not the image one.
+    // Origami and the toolbox get first refusal here too, in handleUndo's order.
     if (contentWindow.origamiCanUndo()) return;
+    if (getToolboxBundleExports()?.canUndo()) return;
     if (!contentWindow.imageOperationCanUndo()) return;
     e.preventDefault();
     contentWindow.imageOperationUndo();

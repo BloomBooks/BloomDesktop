@@ -1837,17 +1837,19 @@ export function isModalOpen(doc: Document): boolean {
 // way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
 // nothing (BL-16868). We take the key only when there is an image change to undo and the
 // keystroke did not come from inside text, so ckeditor keeps every case that is its own.
-//
-// Origami gets first refusal, exactly as it does for the Undo button (handleUndo). Its
-// handler is bound to this frame's html element while layout mode is on, so without this
-// check one keystroke would run both undos: the layout change AND the image change.
 document.addEventListener("keydown", (e: KeyboardEvent) => {
     if (!e.ctrlKey || e.altKey || e.shiftKey) return;
     if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
     const target = e.target as HTMLElement | null;
     if (target?.closest?.(kNotOurUndoSelector)) return;
     if (isModalOpen(document)) return;
+    // Origami and the toolbox both get first refusal, in the same order the Undo button's
+    // handleUndo gives them: while layout mode is on Ctrl+Z belongs to the layout undo, and a
+    // tool that has something to undo (the reader tools do) owns it over an image change.
+    // Origami's handler is bound to this frame's html element, so without that check one
+    // keystroke would run both undos.
     if (origamiCanUndo()) return;
+    if (getToolboxBundleExports()?.canUndo()) return;
     if (!imageOperationCanUndo()) return;
     e.preventDefault();
     imageOperationUndo();
