@@ -38,6 +38,7 @@ vi.mock("../js/bloomImages", () => ({
 
 import {
     applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
     launchAiImageEditor,
 } from "./aiImageEditorPageCommands";
 
@@ -379,5 +380,60 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
         expect(outcome.applied).toBe(1);
         expect(outcome.expected).toBe(2);
         expect(outcome.error).toContain("kaboom");
+    });
+});
+
+describe("aiImageEditorPageCommands: how big the open page is", () => {
+    // jsdom lays nothing out, so a page's size has to be stated for it to be measurable.
+    const setLayoutSize = (el: HTMLElement, width: number, height: number) => {
+        Object.defineProperty(el, "offsetWidth", {
+            value: width,
+            configurable: true,
+        });
+        Object.defineProperty(el, "offsetHeight", {
+            value: height,
+            configurable: true,
+        });
+    };
+
+    const makePage = (pageClass: string) => {
+        document.body.innerHTML = `<div class="bloom-page ${pageClass}" id="${kPageId}"></div>`;
+        return document.querySelector(".bloom-page") as HTMLElement;
+    };
+
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("reports a paper page's size in layout pixels", () => {
+        const page = makePage("A5Portrait");
+        setLayoutSize(page, 559, 794);
+        // Sanity check: without this a wrong answer below could just mean jsdom reported 0.
+        expect(page.offsetWidth).toBe(559);
+
+        expect(getAiImageEditorPageMetrics()).toEqual({
+            widthPx: 559,
+            heightPx: 794,
+            isDigital: false,
+        });
+    });
+
+    test("says a screen-sized layout is digital", () => {
+        const page = makePage("Device16x9Portrait");
+        setLayoutSize(page, 378, 672);
+
+        expect(getAiImageEditorPageMetrics()?.isDigital).toBe(true);
+    });
+
+    test("a page that is not laid out has no metrics", () => {
+        makePage("A5Portrait");
+
+        expect(getAiImageEditorPageMetrics()).toBeNull();
+    });
+
+    test("no page at all has no metrics", () => {
+        document.body.innerHTML = "";
+
+        expect(getAiImageEditorPageMetrics()).toBeNull();
     });
 });
