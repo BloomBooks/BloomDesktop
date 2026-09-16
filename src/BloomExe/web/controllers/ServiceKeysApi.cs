@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.Utils;
-using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SIL.Reporting;
@@ -157,12 +156,12 @@ namespace Bloom.web.controllers
             catch (Exception error)
                 when (error is IOException || error is UnauthorizedAccessException)
             {
+                // English on purpose, not localized. Getting here takes a file the user has
+                // made read-only or that another program is holding open -- rare enough, and
+                // far enough from anything Bloom does by itself, that it is not worth a string
+                // in every language, and the part that actually helps is the path.
                 var message = string.Format(
-                    LocalizationManager.GetString(
-                        "Errors.CannotSaveServiceKey",
-                        "Bloom could not save the key you entered, because it could not update this file: {0}. The file may be read-only, or another program may have it open.",
-                        "{0} is the full path of a file."
-                    ),
+                    "Bloom could not save the key you entered, because it could not update this file: {0}. The file may be read-only, or another program may have it open.",
                     ServiceKeyStore.FilePath
                 );
                 // Not shown to the user: the permission and antivirus details that local tech
