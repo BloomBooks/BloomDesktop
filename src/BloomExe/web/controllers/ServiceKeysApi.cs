@@ -174,8 +174,10 @@ namespace Bloom.web.controllers
                     ),
                     error
                 );
-                // Report after a delay, so this API call can finish first: the problem dialog
-                // is itself served by this server.
+                // Fire-and-forget, so nothing about reporting can hold up the reply. The
+                // message box itself is NonFatalProblem's business: these endpoints are
+                // registered with handleOnUIThread false, so we are on a server worker, and
+                // it marshals the box to the UI thread rather than blocking us.
                 _ = Task.Run(async () =>
                 {
                     await Task.Delay(100);

@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using Bloom.Api;
 using Bloom.Book;
@@ -161,19 +163,37 @@ namespace BloomTests.web
             RobustFile.SetAttributes(ServiceKeyStore.FilePath, FileAttributes.ReadOnly);
             try
             {
-                // Bloom puts the message in the 503's reason phrase, which is what the front
-                // end shows; the client surfaces it as the exception message.
-                var failure = Assert.Throws<HttpRequestException>(() =>
-                    ApiTest.PostString(
-                        _server,
-                        "serviceKeys/keys?prefix=imageGallery.",
+                // Read the body rather than the status description: RequestInfo.WriteError
+                // sends the message both ways, but the description is squeezed into ASCII
+                // (so a path under a non-ASCII Windows user name arrives full of "?"), and
+                // the body is the UTF-8 copy that client code actually reads.
+                _server.EnsureListening();
+                var url =
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash
+                    + "api/serviceKeys/keys?prefix=imageGallery.";
+                HttpStatusCode status;
+                string body;
+                using (var client = new HttpClient())
+                using (
+                    var content = new StringContent(
                         "{\"version\":1,\"pixabay\":\"new\"}",
-                        ApiTest.ContentType.JSON
+                        Encoding.UTF8,
+                        "application/json"
                     )
-                );
+                )
+                using (var response = AsyncUtil.RunSync(() => client.PostAsync(url, content)))
+                {
+                    status = response.StatusCode;
+                    body = AsyncUtil.RunSync(() => response.Content.ReadAsStringAsync());
+                }
 
                 Assert.That(
-                    failure.Message,
+                    status,
+                    Is.EqualTo(HttpStatusCode.ServiceUnavailable),
+                    "the save must be reported as failed, not quietly succeed"
+                );
+                Assert.That(
+                    body,
                     Does.Contain(ServiceKeyStore.FilePath),
                     "the message the user sees must name the file that could not be updated"
                 );
