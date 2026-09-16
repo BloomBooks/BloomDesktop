@@ -195,9 +195,25 @@ namespace Bloom.Book
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
+        /// History of kBrowserMaintenanceLevel (introduced in 6.5)
+        ///   The migrations above are all done by C# on the DOM. This one tracks the quite
+        ///   different set of fix-ups that only the editing JavaScript can do, because they need a
+        ///   real browser that has laid the page out: converting an old-style image to the
+        ///   background canvas element, recording each image slot's share of its page, canvas
+        ///   element geometry, and so on. They used to happen only when the user opened a page in
+        ///   the Edit tab, so a book carried them on the pages someone had visited and nowhere
+        ///   else. BookProcessor now applies them to every page off-screen when this level says
+        ///   the book is behind. See NeedsPerPageFixup.
+        ///              0 = missing: no page has reliably been through the editing JavaScript
+        ///   Bloom 6.5: 1 = every page has been through it (BL-16852)
+        ///   BUMP THIS whenever a change to the editing JavaScript means existing books need to be
+        ///   put through it again. Deliberately NOT tied to the Bloom version: version numbers are
+        ///   not comparable across channels (release 6.5.1, alpha and BetaInternal all use
+        ///   different sequences), and we do not want to reprocess every book for every build.
         /// </summary>
         public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
+        public const int kBrowserMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
         private IChangeableFileLocator _fileLocator;
