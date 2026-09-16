@@ -277,6 +277,18 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// True if the book records a browser maintenance level higher than this Bloom knows how to
+        /// produce. A missing or unreadable level is not "above ours"; NeedsPerPageFixup already
+        /// treats that as never done, which is the safe answer.
+        /// </summary>
+        internal static bool RecordsBrowserMaintenanceLevelAboveOurs(HtmlDom dom)
+        {
+            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
+            return int.TryParse(recorded, out var level)
+                && level > BookStorage.kBrowserMaintenanceLevel;
+        }
+
+        /// <summary>
         /// If the book records a browser maintenance level HIGHER than this Bloom knows how to
         /// produce, bring the record down to ours. Called as we save a book (BookStorage.Save).
         /// </summary>
@@ -291,12 +303,7 @@ namespace Bloom.Book
         /// </remarks>
         internal static void ClampBrowserMaintenanceLevelToOurs(HtmlDom dom)
         {
-            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
-            // Absent or unreadable: leave it. NeedsPerPageFixup already treats that as never done,
-            // which is the safe answer; writing a number here would only invent history.
-            if (!int.TryParse(recorded, out var level))
-                return;
-            if (level <= BookStorage.kBrowserMaintenanceLevel)
+            if (!RecordsBrowserMaintenanceLevelAboveOurs(dom))
                 return;
             dom.UpdateMetaElement(
                 kBrowserMaintenanceLevelMeta,
@@ -306,11 +313,11 @@ namespace Bloom.Book
 
         /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind a modal progress dialog, and return true if it actually ran. Called before a
-        /// book is edited (EditingModel.OnBecomeVisible), before it is published (PublishView.Activate),
-        /// and after a page-size change (EditingModel.SetLayout). No-op (returns false) when the book
-        /// does not need it, or when a run already failed for this book this session (so we don't
-        /// re-prompt on every tab switch).
+        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
+        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
+        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
+        /// need it, or when a run already failed for this book this session (so we don't re-prompt
+        /// every time).
         ///
         /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
         /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the

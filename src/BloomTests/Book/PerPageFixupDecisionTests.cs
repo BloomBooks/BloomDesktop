@@ -1,5 +1,7 @@
 using System.Globalization;
 using Bloom.Book;
+using Bloom.SafeXml;
+using Moq;
 using NUnit.Framework;
 
 namespace BloomTests.Book
@@ -192,6 +194,53 @@ namespace BloomTests.Book
             var domJunk = DomWithLevel("not a number");
             BookProcessor.ClampBrowserMaintenanceLevelToOurs(domJunk);
             Assert.That(LevelIn(domJunk), Is.EqualTo("not a number"));
+        }
+
+        // The ordinary single-page save streams the existing file through and replaces one page, so
+        // it never rewrites the head. A book carrying a level from a newer Bloom therefore has to be
+        // pushed onto the full-save path, which is where the clamp lives.
+        private void SavePageWithRecordedLevel(int level, out Mock<IBookStorage> storage)
+        {
+            SetSinglePageDom("A5Portrait");
+            var book = CreateBook();
+            book.OurHtmlDom.UpdateMetaElement(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                level.ToString(CultureInfo.InvariantCulture)
+            );
+            var page = book.OurHtmlDom.SelectSingleNode("//div[@id='guid1']");
+            Assert.That(page, Is.Not.Null, "SANITY: the test page should be findable");
+
+            book.SavePageToDisk(page, reallyNeedFullSave: false);
+            storage = _storage;
+        }
+
+        [Test]
+        public void SavePageToDisk_LevelAboveOurs_TakesTheFullSavePath()
+        {
+            SavePageWithRecordedLevel(BookStorage.kBrowserMaintenanceLevel + 1, out var storage);
+
+            storage.Verify(
+                s => s.Save(),
+                Times.Once,
+                "a level above ours must force the full save, which is what brings it down"
+            );
+            storage.Verify(
+                s => s.SaveForPageChanged(It.IsAny<string>(), It.IsAny<SafeXmlElement>()),
+                Times.Never
+            );
+        }
+
+        [Test]
+        public void SavePageToDisk_LevelAtOrBelowOurs_KeepsTheFastPath()
+        {
+            // SANITY/contrast: the promotion above must not cost every book the efficient save.
+            SavePageWithRecordedLevel(BookStorage.kBrowserMaintenanceLevel, out var storage);
+
+            storage.Verify(
+                s => s.SaveForPageChanged(It.IsAny<string>(), It.IsAny<SafeXmlElement>()),
+                Times.Once
+            );
+            storage.Verify(s => s.Save(), Times.Never);
         }
 
         [Test]

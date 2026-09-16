@@ -1090,7 +1090,17 @@ namespace Bloom.Edit
                     // Nothing was saved and nothing failed; we are on our way to a page load anyway.
                     // Don't migrate from here: a page is (or is about to be) live. The next launch
                     // will find the book still behind and do it then.
-                    afterPageReloaded();
+                    //
+                    // Wait for that page load rather than running now. "On our way to a page load"
+                    // is precisely the moment HandleSaveThenLaunch's header warns about: the
+                    // navigation is not always confined to the page iframe, so anything we open
+                    // here can be destroyed by it, silently. Ignore a load of some other page --
+                    // the user navigated meanwhile, so what we were asked to act on is not there.
+                    RunAfterNextPageLoad(loadedPageId =>
+                    {
+                        if (loadedPageId == pageId)
+                            afterPageReloaded();
+                    });
                 },
                 doAfterSaveToDisk: () =>
                     RunOffTheApiLock(() =>
