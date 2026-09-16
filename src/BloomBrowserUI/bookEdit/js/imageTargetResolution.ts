@@ -299,19 +299,21 @@ export function getElementThatDeterminesImageSlotSize(
 
 // Writes each image slot's share of its page onto the slot, so that the size it wants can be
 // worked out later for a page nobody has open. Called as a page is saved (see
-// extractAndStripPageContentForSave in bloomEditing.ts), which is both the ordinary Edit-tab
-// save and the off-screen pass "Update Book" makes over every page.
+// extractAndStripPageContentForSave in bloomEditing.ts): the ordinary Edit-tab save, and the
+// off-screen pass over every page that "Update Book" runs on demand and that Bloom runs by itself
+// when the AI image editor is launched on a book that has not had it (BL-16852).
 //
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction
 // from the last save is better evidence than none, and guessing would have the AI image editor
 // generate at the wrong resolution.
 //
 // For the same reason, a value recorded under one page size or layout survives a change to
-// either, and a page nobody reopens keeps it until it is next saved. A share is a proportion,
-// so it only goes wrong where the new layout gives that slot a different proportion of its
-// page, and the cost is a suggested size somewhat off rather than a broken picture. "Update
-// Book" refreshes every page's value in one pass, so there is a way out that does not depend
-// on the user visiting each page. Deliberately not re-measured any more eagerly than that.
+// either, and a page nobody reopens keeps it until it is next saved. A share is a proportion, so
+// it only goes wrong where the new layout gives that slot a different proportion of its page, and
+// the cost is a suggested size somewhat off rather than a broken picture. Both the whole-book
+// passes above put it right in one go -- and a page-size change makes the book due for that pass
+// again, so the next AI image editor launch re-measures every slot at the new size. Deliberately
+// not re-measured any more eagerly than that.
 export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
     const pageElement =
         pageRoot.closest(".bloom-page") ??
