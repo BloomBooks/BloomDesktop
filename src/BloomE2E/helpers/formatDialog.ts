@@ -176,6 +176,65 @@ export async function isFormatDialogOpen(page: Page): Promise<boolean> {
     return editablePageFrame(page).locator(DIALOG).isVisible();
 }
 
+/** The Format dialog's tabs, named as the dialog labels them. Not every box offers every tab. */
+export type FormatDialogTab =
+    | "styleName"
+    | "characters"
+    | "paragraph"
+    | "highlighting"
+    | "canvasText";
+
+/**
+ * A control that lives on each tab's page, which is how a page is told apart: the dialog's tab
+ * plugin (lib/tabpane.js) gives the pages no ids of their own, moves each page's heading into a
+ * tab row in page order, and Bloom removes the pages a box does not need before that happens.
+ */
+const TAB_PAGE_CONTENT: Record<FormatDialogTab, string> = {
+    styleName: "#styleSelect",
+    characters: "#fontSelectComponent",
+    paragraph: "#para-spacing-select",
+    highlighting: "#audioHilitePage",
+    canvasText: "#canvasFormatPage",
+};
+/** The pages of the dialog's tab control, in the order their tabs appear. */
+const TAB_PAGES = `${DIALOG} #tabRoot > .tab-page`;
+/** The tabs themselves, in the same order. */
+const TABS = `${DIALOG} .tab-row .tab`;
+
+/**
+ * Click one of the Format dialog's tabs and wait for its page to show. The dialog opens on the
+ * Style Name tab (or on the tab it was last on: the plugin remembers it in a session cookie).
+ * Throws, naming the tabs the dialog does have, when it has no such tab for this box.
+ */
+export async function showFormatDialogTab(
+    page: Page,
+    tab: FormatDialogTab,
+): Promise<void> {
+    const frame = editablePageFrame(page);
+    const pages = frame.locator(TAB_PAGES);
+    await expect(
+        pages.first(),
+        "The Format dialog is not open, or has no tabs.",
+    ).toBeAttached({ timeout: 30000 });
+    const count = await pages.count();
+    let index = -1;
+    for (let i = 0; i < count && index < 0; i++) {
+        if ((await pages.nth(i).locator(TAB_PAGE_CONTENT[tab]).count()) > 0)
+            index = i;
+    }
+    if (index < 0) {
+        const tabs = await frame.locator(TABS).allTextContents();
+        throw new Error(
+            `The Format dialog has no "${tab}" tab for this box. Its tabs: ${tabs.map((t) => t.trim()).join(", ")}.`,
+        );
+    }
+    await frame.locator(TABS).nth(index).click({ timeout: 30000 });
+    await expect(
+        pages.nth(index),
+        `Clicking the Format dialog's "${tab}" tab did not show its page.`,
+    ).toBeVisible({ timeout: 30000 });
+}
+
 /**
  * Click on the page outside the Format dialog, the way a person dismisses it, and wait for the
  * dialog to go away.

@@ -31,6 +31,14 @@ to `output/bloom-launcher.log`). Never launch `./go.sh` tied to your own
 shell except when debugging the launcher itself, and never run an
 already-built `Bloom.exe` directly (stale).
 
+A cold first build outlasts `--wait-ready`'s default patience: the wait can
+give up while `--status` still says `state:"building"`, and that is not a
+failure. Pass `--timeout-ms 600000`, run the command as a background task and
+act on its completion notification — never sleep-poll `--status`, and never
+re-invoke `--ensure-running` after a timeout without checking `--status`
+first (a timed-out *wait* leaves the launcher building; re-invoking against a
+*dead* launcher starts the whole build over).
+
 ## 2. Get a .NET change into Bloom
 
 ```bash

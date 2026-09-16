@@ -20,7 +20,6 @@ import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
-    findBookFolder,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -43,10 +42,11 @@ test.use({
 
 test.describe.configure({ mode: "serial" });
 
-const BOOK_TITLE = "Import Recording Test";
-
-// The book both tests work on, and where its audio would go. Read back from Bloom by the first
-// test, which is the only thing that knows the folder Bloom chose.
+// The book both tests work on, and where its audio would go. The book is given no title: it is
+// left in the folder Bloom made for it, so that folder is where the audio goes for the rest of
+// the file. (Bloom renames a book's folder after its title. On the CI runner a title typed on the
+// cover of a book made under this branding never reached the collection; see AUTOMATION-DEBT.md,
+// "A title typed on the cover of a new book can fail to reach the collection".)
 let bookFolder: string;
 let audioFolder: string;
 
@@ -65,8 +65,8 @@ test.describe("importing a recording made outside Bloom", () => {
         // whole point of that test.
         await setBranding(page, "Sample-Pro");
 
-        await makeBookFromTemplate(page, "Basic Book");
-        await typeInGroup(page, ".bookTitle", "en", BOOK_TITLE);
+        bookFolder = await makeBookFromTemplate(page, "Basic Book");
+        audioFolder = Path.join(bookFolder, "audio");
         await addPage(page, "Just Text", 1);
         await setContentLanguages(page, ["en"]);
         const contentPages = await getContentPages(page);
@@ -79,10 +79,13 @@ test.describe("importing a recording made outside Bloom", () => {
         );
 
         await openToolboxWithTalkingBook(page);
-        bookFolder = await findBookFolder(page, BOOK_TITLE);
-        audioFolder = Path.join(bookFolder, "audio");
 
-        // Sanity check: nothing is narrated yet, so a file appearing later is an import's work.
+        // Sanity check: the book is still where Bloom made it, and nothing is narrated yet, so a
+        // file appearing later is an import's work.
+        expect(
+            fs.existsSync(bookFolder),
+            `The book's folder ${bookFolder} is gone; Bloom must have renamed it.`,
+        ).toBe(true);
         expect(
             fs.existsSync(audioFolder) ? fs.readdirSync(audioFolder) : [],
             "The book already had audio files before anything was imported.",

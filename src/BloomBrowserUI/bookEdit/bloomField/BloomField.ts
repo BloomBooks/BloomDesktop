@@ -7,7 +7,7 @@ import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import $ from "jquery";
-import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
 
@@ -401,6 +401,9 @@ export default class BloomField {
 
         ckeditor.addCommand("setupHyperlink", {
             exec: function (edt) {
+                // Shown from the workspace root so its backdrop covers the page list too.
+                const showLinkTargetChooserDialog =
+                    getWorkspaceBundleExports().showLinkTargetChooserDialog;
                 showLinkTargetChooserDialog("", (url) => {
                     if (!url) return;
                     get("app/selectedBookInfo", (bookInfo) => {

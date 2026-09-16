@@ -10,16 +10,37 @@ import {
     DialogTitle,
 } from "../../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../../react_components/BloomDialog/commonDialogComponents";
+import { useL10n } from "../../react_components/l10nHooks";
 
 const usbDebuggingHowToVideoUrl = "https://www.youtube.com/shorts/Vox832sN_D4";
 
-const usbDebuggingSteps = [
-    "Open the Settings on your phone.",
-    "Open 'About phone'. On some phones, you may need to then open 'Software information' to find the 'Build number'.",
-    "Find 'Build number' and tap it 7 times until Developer options are enabled.",
-    "Go back to Settings and open 'Developer options'.",
-    "Turn on 'USB debugging'.",
-    "Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.",
+// The steps a user follows on the phone itself. Each is its own localizable
+// string; the hooks are called unconditionally and in a fixed order.
+const useUsbDebuggingSteps = (): string[] => [
+    useL10n(
+        "Open the Settings on your phone.",
+        "PublishTab.Apps.UsbDebuggingDialog.OpenSettings",
+    ),
+    useL10n(
+        "Open 'About phone'. On some phones, you may need to then open 'Software information' to find the 'Build number'.",
+        "PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone",
+    ),
+    useL10n(
+        "Find 'Build number' and tap it 7 times until Developer options are enabled.",
+        "PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber",
+    ),
+    useL10n(
+        "Go back to Settings and open 'Developer options'.",
+        "PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions",
+    ),
+    useL10n(
+        "Turn on 'USB debugging'.",
+        "PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging",
+    ),
+    useL10n(
+        "Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.",
+        "PublishTab.Apps.UsbDebuggingDialog.ConnectCable",
+    ),
 ];
 
 const UsbDebuggingStepIcon: React.FunctionComponent<StepIconProps> = (
@@ -50,6 +71,15 @@ export const UsbDebuggingHelpDialog: React.FunctionComponent<{
     open: boolean;
     onClose: () => void;
 }> = (props) => {
+    const usbDebuggingSteps = useUsbDebuggingSteps();
+    const dialogTitle = useL10n(
+        "How to set up your Android phone to receive apps via USB",
+        "PublishTab.Apps.UsbDebuggingDialog.Title",
+    );
+    const howToVideoLabel = useL10n(
+        "How to video",
+        "PublishTab.Apps.UsbDebuggingDialog.HowToVideo",
+    );
     return (
         <BloomDialog
             open={props.open}
@@ -58,7 +88,7 @@ export const UsbDebuggingHelpDialog: React.FunctionComponent<{
             maxWidth={"sm"}
             fullWidth={true}
         >
-            <DialogTitle title="How to set up your Android phone to receive apps via USB" />
+            <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`
                     width: 100%;
@@ -94,7 +124,7 @@ export const UsbDebuggingHelpDialog: React.FunctionComponent<{
                     `}
                 >
                     <MuiLink href={usbDebuggingHowToVideoUrl} underline="hover">
-                        How to video
+                        {howToVideoLabel}
                     </MuiLink>
                 </div>
             </DialogMiddle>

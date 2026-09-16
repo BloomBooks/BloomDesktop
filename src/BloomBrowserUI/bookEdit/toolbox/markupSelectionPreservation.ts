@@ -20,6 +20,12 @@
 // tool active, nothing is inserted at all. The caller decides that (it knows whether a tool is
 // active), and passes it in.
 //
+// Restoring the caret from a bookmark is also a CKEditor re-select, which in the Chromium-based
+// WebView2 plants a zero-width "filling char" (U+200B) whenever the caret sits next to an inline
+// element such as the bloom-linebreak span; a later rewrite of the box orphans it and it gets
+// saved (BL-16808). That is one more reason to record the caret only when something might
+// actually rewrite the box.
+//
 // THE PLANNED IMPLEMENTATION records the caret as a character offset into the editable's text
 // instead, which perturbs nothing and therefore fixes that mis-analysis rather than preserving it.
 // When that lands, only the four functions below change; toolbox.ts should not need to.
