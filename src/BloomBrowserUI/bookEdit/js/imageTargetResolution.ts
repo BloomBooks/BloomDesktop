@@ -77,15 +77,22 @@ export function parseBloomPubImageLimit(
 }
 
 // How much of its page an image slot takes up, as two numbers between 0 and 1 separated by a
-// comma, e.g. "0.42,0.31". Bloom writes this onto every image container when a page is saved,
+// comma, e.g. "0.4177,0.3125". Bloom writes this onto every image container when a page is saved,
 // which is the only way the size a slot wants can be known for a page that is not open in the
 // editor. Named and shaped after data-imgsizebasedon (see CanvasElementResizeAdjustments.ts).
 export const kFractionOfPageAttribute = "data-fraction-of-page";
 
-// How many decimal places of the fraction we keep in the HTML. Two is whole percent of the
-// page, which is as fine as this needs to be: the answer only ever chooses an image size, and
-// image models accept a handful of coarse size tiers rather than an exact pixel count.
-const kFractionDecimalPlaces = 2;
+// How many decimal places of the fraction we keep in the HTML. Four is a hundredth of a
+// percent of the page, which is finer than a pixel on any page we lay out, so the size worked
+// out from the fraction matches the size worked out by measuring the container directly.
+//
+// Two decimals is not enough, even though the answer only chooses an image size. It rounds each
+// edge independently by up to half a percent of the page, so the two edges can move in opposite
+// directions and change the SHAPE the AI image editor is asked for: a 469 x 352 container came
+// out as 1468 x 1088 in the editor while the tooltip, measuring the same container, said
+// 1466 x 1100 (BL-16742). Two numbers for one container, visibly disagreeing, is worth four
+// characters of HTML.
+const kFractionDecimalPlaces = 4;
 
 // How big a laid-out page is, and whether it is one of the screen-sized layouts. This is what
 // turns a slot's share of its page into a number of dots, and only a browser with the page in
@@ -229,7 +236,7 @@ export function getSuggestedImageTargetForContainer(
         );
     }
 
-    // Pass the exact ratio rather than the two-decimal one we would write into the HTML, so
+    // Pass the exact ratio rather than the rounded one we would write into the HTML, so
     // that the tooltip keeps giving the same answer it always has for the page in front of the
     // user.
     return getSuggestedImageTargetForFraction(
@@ -332,8 +339,8 @@ export function recordFractionOfPageOnImageSlots(pageRoot: Element): void {
             ) {
                 return;
             }
-            const width = roundToTwoDecimals(box.offsetWidth / page.widthPx);
-            const height = roundToTwoDecimals(box.offsetHeight / page.heightPx);
+            const width = roundFraction(box.offsetWidth / page.widthPx);
+            const height = roundFraction(box.offsetHeight / page.heightPx);
             container.setAttribute(
                 kFractionOfPageAttribute,
                 `${width},${height}`,
@@ -380,8 +387,8 @@ function multiplyWithoutFloatingPointNoise(
     return Math.round(fraction * lengthPx * 1000000) / 1000000;
 }
 
-// The fraction as it goes into the HTML: whole percent of the page.
-function roundToTwoDecimals(value: number): number {
+// The fraction as it goes into the HTML, to kFractionDecimalPlaces.
+function roundFraction(value: number): number {
     const scale = Math.pow(10, kFractionDecimalPlaces);
     return Math.round(value * scale) / scale;
 }
