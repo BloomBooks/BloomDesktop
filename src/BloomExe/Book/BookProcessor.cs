@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Bloom.Api;
@@ -48,12 +49,13 @@ namespace Bloom.Book
         // or we would time out on a slow page just before the browser reported it.
         private const int kReadyTimeoutMs = 60000;
 
-        // A <meta> in the book's HTML recording the Bloom version (major.minor.build, e.g. "6.5.0")
-        // whose per-page browser fix-up was last applied to this book, and one recording the page
-        // size/orientation (e.g. "A5Portrait") it was applied at. Together they let us tell whether
-        // the fix-up still needs (re-)running for editing or publishing: see NeedsPerPageFixup.
-        internal const string kPerPageFixupVersionMeta = "perPageFixupBloomVersion";
-        internal const string kPerPageFixupLayoutMeta = "perPageFixupLayout";
+        // A <meta> in the book's HTML recording the BookStorage.kBrowserMaintenanceLevel this book
+        // has successfully been brought to, alongside maintenanceLevel and mediaMaintenanceLevel,
+        // and one recording the page size/orientation (e.g. "A5Portrait") it was brought there at.
+        // Together they let us tell whether the fix-up still needs (re-)running for editing or
+        // publishing: see NeedsPerPageFixup.
+        internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
+        internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
 
         // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeeded) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
@@ -215,10 +217,10 @@ namespace Bloom.Book
                 }
             }
 
-            // Record that this Bloom version has applied the per-page fix-up to this book at its
-            // current page size, so NeedsPerPageFixup can tell it need not be done again unless a
-            // newer Bloom or a page-size change makes it stale. Only reached when every page
-            // succeeded (a failure throws before here), so we never claim a half-done book is done.
+            // Record that this book has been brought to the current browser maintenance level at its
+            // current page size, so NeedsPerPageFixup can tell it need not be done again unless we
+            // bump that level or the page size changes. Only reached when every page succeeded (a
+            // failure throws before here), so we never claim a half-done book is done.
             StampPerPageFixupDone(book);
 
             // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
@@ -232,15 +234,23 @@ namespace Bloom.Book
 
         /// <summary>
         /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
-        /// this book before it is edited or published. A book carries the fix-up automatically once it
-        /// has been opened for editing in the current Bloom at its current page size; this catches the
-        /// books that have NOT — old books, and books whose page size changed since it was last done.
+        /// this book before it is edited or published. A book records the browser maintenance level it
+        /// has been brought to, and the page size it was brought there at; this catches the books that
+        /// are behind — old books, books from before a fix-up we have since added, and books whose page
+        /// size changed since.
         ///
         /// It is "needed" when any of these holds:
-        ///  - the book has never recorded a fix-up (an old book, or one made by a Bloom without this);
-        ///  - the recorded version is older than this Bloom (a newer Bloom's DOM work is not yet applied);
+        ///  - the book records no browser maintenance level (an old book, or one made by a Bloom
+        ///    without this), or a level we cannot read;
+        ///  - the recorded level is below BookStorage.kBrowserMaintenanceLevel (we have since added
+        ///    fix-ups this book has not been through);
         ///  - the recorded page size/orientation differs from the book's current one (the layout-derived
         ///    measurements — image sizing, canvas-element geometry — need recomputing).
+        ///
+        /// Note that this deliberately does NOT compare Bloom versions. Version numbers are not
+        /// comparable across channels (release, alpha and BetaInternal use different sequences), and
+        /// keying off them would reprocess every book on every build instead of only when we change
+        /// something that matters.
         ///
         /// Returns false for a book we could not usefully process anyway: one we cannot save (e.g. a
         /// Team Collection book not checked out — EnsureUpToDate would refuse it too), or one with
@@ -254,15 +264,15 @@ namespace Bloom.Book
                 return false;
 
             var dom = book.OurHtmlDom;
-            var stampedVersionString = dom.GetMetaValue(kPerPageFixupVersionMeta, "");
-            if (!Version.TryParse(stampedVersionString, out var stampedVersion))
-                return true; // never done, or an unreadable stamp we should redo
+            if (!int.TryParse(dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "0"), out var level))
+                level = 0; // missing or unreadable: treat as never done
+            if (level < BookStorage.kBrowserMaintenanceLevel)
+                return true;
 
-            if (stampedVersion < Shell.GetShortVersion())
-                return true; // last done by an older Bloom
-
-            // Same or newer Bloom did it; the only remaining reason to redo is a page-size change.
-            var stampedLayout = dom.GetMetaValue(kPerPageFixupLayoutMeta, "");
+            // The book is at (or beyond) the current level, so the only remaining reason to redo it
+            // is that the page size has changed since: the measurements the fix-up records are
+            // relative to the page, so they are stale at a new size.
+            var stampedLayout = dom.GetMetaValue(kBrowserMaintenanceLayoutMeta, "");
             return stampedLayout != GetLayoutStamp(book);
         }
 
@@ -365,15 +375,16 @@ namespace Bloom.Book
             return book.GetLayout().SizeAndOrientation.ClassName;
         }
 
-        // Record, in the book's HTML, that this Bloom version applied the per-page fix-up at the
-        // current page size. Written just before ProcessBook's final Save so it is persisted with it.
+        // Record, in the book's HTML, that the book has been brought to the current browser
+        // maintenance level at the current page size. Written just before ProcessBook's final Save
+        // so it is persisted with it.
         private static void StampPerPageFixupDone(Book book)
         {
             book.OurHtmlDom.UpdateMetaElement(
-                kPerPageFixupVersionMeta,
-                Shell.GetShortVersion().ToString()
+                kBrowserMaintenanceLevelMeta,
+                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
             );
-            book.OurHtmlDom.UpdateMetaElement(kPerPageFixupLayoutMeta, GetLayoutStamp(book));
+            book.OurHtmlDom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, GetLayoutStamp(book));
         }
 
         /// <summary>

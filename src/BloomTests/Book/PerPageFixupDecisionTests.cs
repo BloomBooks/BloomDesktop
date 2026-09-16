@@ -1,4 +1,4 @@
-using System;
+using System.Globalization;
 using Bloom.Book;
 using NUnit.Framework;
 
@@ -24,19 +24,17 @@ namespace BloomTests.Book
             );
         }
 
-        // The running Bloom version, formatted the same way the stamp is (major.minor.build).
-        private static string RunningVersion()
+        private void Stamp(Bloom.Book.Book book, int level, string layout)
         {
-            var ok = Version.TryParse(Bloom.Shell.GetShortVersionInfo(), out var v);
-            Assert.That(ok, Is.True, "SANITY: the running Bloom version should parse");
-            return v.ToString();
+            book.OurHtmlDom.UpdateMetaElement(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                level.ToString(CultureInfo.InvariantCulture)
+            );
+            book.OurHtmlDom.UpdateMetaElement(BookProcessor.kBrowserMaintenanceLayoutMeta, layout);
         }
 
-        private void Stamp(Bloom.Book.Book book, string version, string layout)
-        {
-            book.OurHtmlDom.UpdateMetaElement(BookProcessor.kPerPageFixupVersionMeta, version);
-            book.OurHtmlDom.UpdateMetaElement(BookProcessor.kPerPageFixupLayoutMeta, layout);
-        }
+        private static string CurrentLayoutOf(Bloom.Book.Book book) =>
+            book.GetLayout().SizeAndOrientation.ClassName;
 
         [Test]
         public void NeedsPerPageFixup_NeverStamped_IsTrue()
@@ -45,71 +43,86 @@ namespace BloomTests.Book
             var book = CreateBook();
 
             // SANITY: the book must be saveable and error-free, or NeedsPerPageFixup short-circuits
-            // to false for a reason unrelated to the stamp we are testing.
+            // to false for a reason unrelated to the level we are testing.
             Assert.That(book.IsSaveable, Is.True, "SANITY: test book should be saveable");
             Assert.That(book.CheckForErrors(), Is.Empty, "SANITY: test book should have no errors");
             Assert.That(
-                book.OurHtmlDom.GetMetaValue(BookProcessor.kPerPageFixupVersionMeta, ""),
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, ""),
                 Is.Empty,
-                "SANITY: a fresh book should carry no fix-up stamp"
+                "SANITY: a fresh book should carry no browser maintenance level"
             );
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedThisVersionAndLayout_IsFalse()
+        public void NeedsPerPageFixup_StampedCurrentLevelAndLayout_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, RunningVersion(), book.GetLayout().SizeAndOrientation.ClassName);
+            Stamp(book, BookStorage.kBrowserMaintenanceLevel, CurrentLayoutOf(book));
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedOlderVersion_IsTrue()
+        public void NeedsPerPageFixup_StampedEarlierLevel_IsTrue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            // Older than any real Bloom, so it is unambiguously behind the running version.
-            Stamp(book, "1.0.0", book.GetLayout().SizeAndOrientation.ClassName);
+            // A book brought to an earlier level than this Bloom knows about needs redoing, which is
+            // exactly what bumping kBrowserMaintenanceLevel is for.
+            Stamp(book, BookStorage.kBrowserMaintenanceLevel - 1, CurrentLayoutOf(book));
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedNewerVersion_IsFalse()
+        public void NeedsPerPageFixup_StampedLaterLevel_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            var running = Version.Parse(RunningVersion());
-            var newer = new Version(running.Major + 1, 0, 0).ToString();
-            Stamp(book, newer, book.GetLayout().SizeAndOrientation.ClassName);
+            // A newer Bloom took this book past what we know how to do; leave it alone rather than
+            // dragging it back.
+            Stamp(book, BookStorage.kBrowserMaintenanceLevel + 1, CurrentLayoutOf(book));
 
-            // A book a newer Bloom already processed should be left alone (the user's choice in BL-16852).
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
         }
 
         [Test]
-        public void NeedsPerPageFixup_SameVersionButLayoutChanged_IsTrue()
+        public void NeedsPerPageFixup_UnreadableLevel_IsTrue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            // Stamp says it was done at A5Portrait...
-            Stamp(book, RunningVersion(), "A5Portrait");
+            // Hand-edited or corrupt: we cannot tell what was done, so redo it.
+            Stamp(book, 0, CurrentLayoutOf(book));
+            book.OurHtmlDom.UpdateMetaElement(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                "not a number"
+            );
 
-            // SANITY: with a matching stamp it is not due.
+            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+        }
+
+        [Test]
+        public void NeedsPerPageFixup_CurrentLevelButLayoutChanged_IsTrue()
+        {
+            SetSinglePageDom("A5Portrait");
+            var book = CreateBook();
+            Stamp(book, BookStorage.kBrowserMaintenanceLevel, "A5Portrait");
+
+            // SANITY: with a matching level and layout it is not due.
             Assert.That(
                 BookProcessor.NeedsPerPageFixup(book),
                 Is.False,
-                "SANITY: a book stamped at its current version and layout is not due"
+                "SANITY: a book at the current level and its current layout is not due"
             );
 
-            // ...but the page size has since changed, so the layout-derived measurements are stale.
+            // ...but the page size has since changed, so the layout-derived measurements are stale
+            // even though the level is current.
             SetSinglePageDom("A4Landscape");
             var bookAtNewSize = CreateBook();
-            Stamp(bookAtNewSize, RunningVersion(), "A5Portrait");
+            Stamp(bookAtNewSize, BookStorage.kBrowserMaintenanceLevel, "A5Portrait");
 
             Assert.That(BookProcessor.NeedsPerPageFixup(bookAtNewSize), Is.True);
         }

@@ -347,21 +347,10 @@ namespace Bloom
 
         public static string GetShortVersionInfo()
         {
-            return GetShortVersion().ToString();
-        }
+            var asm = Assembly.GetExecutingAssembly();
+            var ver = asm.GetName().Version;
 
-        /// <summary>
-        /// The running Bloom's version as major.minor.build -- the same three parts
-        /// <see cref="GetShortVersionInfo"/> formats, but as a <see cref="Version"/>, for callers
-        /// that need to compare it rather than show it. Use this in preference to
-        /// Application.ProductVersion, which can carry a non-numeric channel suffix and so does
-        /// not parse. Returns 0.0 if the assembly somehow reports no version, so that a comparison
-        /// against it simply makes everything look newer instead of throwing.
-        /// </summary>
-        public static Version GetShortVersion()
-        {
-            var ver = Assembly.GetExecutingAssembly().GetName().Version;
-            return ver == null ? new Version(0, 0) : new Version(ver.Major, ver.Minor, ver.Build);
+            return string.Format("{0}.{1}.{2}", ver.Major, ver.Minor, ver.Build);
         }
 
         public bool UserWantsToOpenADifferentProject { get; set; }
