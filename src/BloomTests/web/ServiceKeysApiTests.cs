@@ -149,6 +149,10 @@ namespace BloomTests.web
         public void PostNamespace_WhenTheFileCannotBeWritten_FailsWithAMessageNamingTheFile()
         {
             ServiceKeyStore.Set("imageGallery.pixabay", "old");
+            // Absent from the post below, so a successful save would remove it: it is here so
+            // the assertions cover what a failed save must not delete, not only what it must
+            // not store.
+            ServiceKeyStore.Set("imageGallery.goneNow", "bye");
             Assert.That(
                 RobustFile.Exists(ServiceKeyStore.FilePath),
                 Is.True,
@@ -177,6 +181,11 @@ namespace BloomTests.web
                     ServiceKeyStore.Get("imageGallery.pixabay"),
                     Is.EqualTo("old"),
                     "nothing should have changed on disk"
+                );
+                Assert.That(
+                    ServiceKeyStore.Get("imageGallery.goneNow"),
+                    Is.EqualTo("bye"),
+                    "a failed save must not remove keys either"
                 );
             }
             finally

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.MiscUI;
@@ -102,35 +103,34 @@ namespace Bloom.web.controllers
             }
 
             var posted = JObject.Parse(request.RequiredPostJson());
-            var saved = TrySave(
-                request,
-                () =>
-                {
-                    var postedShortNames = new HashSet<string>();
-                    foreach (var property in posted.Properties())
-                    {
-                        if (property.Name == kVersionPropertyName)
-                            continue;
-                        postedShortNames.Add(property.Name);
-                        ServiceKeyStore.Set(prefix + property.Name, (string)property.Value);
-                    }
+            var postedShortNames = new HashSet<string>();
+            // Gathered as one set and applied in a single write, so a failure part way cannot
+            // store some of the user's keys and drop the rest.
+            var changes = new List<KeyValuePair<string, string>>();
+            foreach (var property in posted.Properties())
+            {
+                if (property.Name == kVersionPropertyName)
+                    continue;
+                postedShortNames.Add(property.Name);
+                changes.Add(
+                    new KeyValuePair<string, string>(prefix + property.Name, (string)property.Value)
+                );
+            }
 
-                    // The caller sends the whole namespace, so a name missing from the post is
-                    // a key the user removed. A key this version cannot read is a different
-                    // case: it never reached the caller, so its absence from the post says
-                    // nothing about what the user wants, and deleting it would throw away a key
-                    // a newer Bloom put there.
-                    foreach (var name in ServiceKeyStore.GetNames(prefix))
-                    {
-                        if (postedShortNames.Contains(name.Substring(prefix.Length)))
-                            continue;
-                        if (!ServiceKeyStore.CanRead(name))
-                            continue;
-                        ServiceKeyStore.Set(name, null);
-                    }
-                }
-            );
-            if (saved)
+            // The caller sends the whole namespace, so a name missing from the post is a key
+            // the user removed. A key this version cannot read is a different case: it never
+            // reached the caller, so its absence from the post says nothing about what the
+            // user wants, and deleting it would throw away a key a newer Bloom put there.
+            foreach (var name in ServiceKeyStore.GetNames(prefix))
+            {
+                if (postedShortNames.Contains(name.Substring(prefix.Length)))
+                    continue;
+                if (!ServiceKeyStore.CanRead(name))
+                    continue;
+                changes.Add(new KeyValuePair<string, string>(name, null));
+            }
+
+            if (TrySave(request, () => ServiceKeyStore.SetMany(changes)))
                 request.PostSucceeded();
         }
 
@@ -143,6 +143,9 @@ namespace Bloom.web.controllers
         /// some other program has it open -- are ones only the user can clear, and they cannot
         /// clear them without being told which file it is, so the message names the path.
         /// Returns false when the change did not happen, having already replied to the request.
+        /// Only failures to reach the file are caught: anything else -- a failure to encrypt,
+        /// say -- is unexpected, and belongs in the generic API handler, which reports it to us
+        /// rather than telling the user to go looking at file permissions.
         /// </summary>
         private static bool TrySave(ApiRequest request, Action change)
         {
@@ -152,6 +155,7 @@ namespace Bloom.web.controllers
                 return true;
             }
             catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
             {
                 var message = string.Format(
                     LocalizationManager.GetString(
