@@ -170,7 +170,10 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
     if (target?.closest?.("input, textarea, [contenteditable=true]")) return;
     const contentWindow = getEditablePageBundleExports();
-    if (!contentWindow?.imageOperationCanUndo()) return;
+    // Origami gets first refusal here too, for the same reason handleUndo gives it: while
+    // layout mode is on, Ctrl+Z belongs to the layout undo, not the image one.
+    if (!contentWindow || contentWindow.origamiCanUndo()) return;
+    if (!contentWindow.imageOperationCanUndo()) return;
     e.preventDefault();
     contentWindow.imageOperationUndo();
 });
