@@ -8,10 +8,11 @@ To resume after an interruption, issue **`/resume-ckeditor`** (see
 
 ## Current state
 
-**Phase: Stage 0 preflighted and open as a draft PR.**
-**PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153)** (draft), branch
-**`BL-6681-stage0-inventory`**, pushed and rebased onto master. Card linked; QA test-ideas posted;
-Devin consultation logged. All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime,
+**Phase: Stage 0 PR open for review, on its own card.**
+**PR [#8153](https://github.com/BloomBooks/BloomDesktop/pull/8153)**, branch **`BL-6681-stage0-inventory`**,
+tracked by card **BL-16878** (a subtask of BL-6681, which stays open as the umbrella card for the
+whole project). Synced to master `3a8120745` on 2026-09-16 (see the log). Card linked; QA test-ideas
+posted; Devin consultation logged. All of PLAN.md §10 is decided except the Stage-5 legacy-cleanup lifetime,
 which blocks nothing.
 
 **Not yet merged, and three Stage 0 verification items are deliberately still open** — they are
@@ -667,3 +668,27 @@ lowest-signal tier is not always noise:
 **G3 (longpress) is now verified too** — John spot-checked it manually and reports it basically
 works. So of the G rows, G1 and G3 are verified, and **G2 (async markup path / BL-10133) is the one
 still open**, along with the new G6/G7 highlight rows.
+
+### 2026-09-16 — Stage 0 moved to its own card (BL-16878); synced to master after the 6.5 cut
+
+- `Version6.5` was cut on 2026-09-04, so the "nothing merges to master" constraint no longer
+  applies. John asked for this PR to be brought up to date with `master` (its base) and
+  re-preflighted.
+- BL-6681 is the umbrella card for the whole project and is back in *In Progress*. Each stage's PR
+  gets its own card; this PR's is **BL-16878**. Preflight's automatic ticket detection reads the
+  branch name (BL-6681), so the card-side steps for this PR — PR link, test ideas, report link —
+  are done against BL-16878 by hand.
+- Merged `origin/master` in two steps: first `f0d9f1472`, the point the integration branch
+  `BL-6681-ckeditor` had already synced to, so `git rerere` replayed that branch's resolution of
+  the BL-16717 conflict in `toolbox.ts` (and `markupSelectionPreservation.ts` was taken from it);
+  then current master `3a8120745`, whose BL-16808 change touched the bookmark code the seam had
+  moved. Resolved by keeping the seam and carrying the BL-16808 note into
+  `markupSelectionPreservation.ts`'s header comment. `toolbox.ts` now differs from master only
+  by the seam.
+- Merge, not rebase, on purpose: these commits are the base of the integration branch, and
+  rewriting them would make its history diverge (PLAN.md §5.2). For the same reason
+  `pr-ready-for-human`'s squash is skipped for this PR (§5.6).
+- Two master files came out reformatted by the pre-commit hook's repo-wide prettier pass
+  (`crowdin.yml` indentation; `src/content/branding/SIL-Niger/branding.less`). Master's copies are
+  not prettier-clean under the repo's config, so any commit through the hook reformats them. Left
+  as is and flagged in the preflight report.
