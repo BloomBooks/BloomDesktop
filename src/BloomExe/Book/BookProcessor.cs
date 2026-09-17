@@ -385,9 +385,11 @@ namespace Bloom.Book
         /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
         /// due, behind a modal progress dialog, and return true if it actually ran. Called on entering
-        /// the Edit tab (EditingModel.OnBecomeVisible) and the Publish tab (PublishView.Activate),
-        /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen),
-        /// and after a page-size change (EditingModel.SetLayout). No-op (returns false) when the book
+        /// the Edit tab (EditingModel.OnBecomeVisible), when the AI image editor is launched
+        /// (EditingModel.BringBookToCurrentBrowserLevelThen), and after a page-size change
+        /// (EditingModel.SetLayout). Publishing does not come here directly: it goes through
+        /// Book.EnsureReadyForUserWork, which reaches this via EnsurePerPageFixupIfNeededOnAnyThread
+        /// because its callers are not on the UI thread. No-op (returns false) when the book
         /// does not need it, or when a run already failed for this book this session (so we don't
         /// re-prompt every time).
         ///
