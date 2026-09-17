@@ -1185,6 +1185,23 @@ namespace Bloom.Publish.Rab
             var booksToExport = bookInfos.ToList();
             var bloomPubPathsToKeep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            // Like the other publish paths, refuse to publish a book in a language its copyright holder
+            // has not licensed (BL-16833). Check every book, including ones whose BloomPUB we would
+            // merely reuse, before touching anything on disk.
+            EnsureBooksAreLicensedForPublishing(
+                booksToExport.Select(bookInfo =>
+                {
+                    var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+                    return (
+                        book,
+                        GetBookTitleForRab(book, bookInfo),
+                        BloomPubPublishSettings
+                            .GetPublishSettingsForBook(_bookServer, bookInfo)
+                            .LanguagesToInclude.ToArray()
+                    );
+                })
+            );
+
             foreach (var bookInfo in booksToExport)
             {
                 var existing =
@@ -1266,6 +1283,34 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        /// <summary>
+        /// Stops Prepare/Build when any book headed into the app may not be published in the languages its
+        /// BloomPUB would include (see LicenseChecker), by throwing with the LicenseChecker message; the
+        /// caller's ReportFailure puts that in the Apps screen log. Each problem is on its own line and
+        /// names the book, because an app usually holds several books and LicenseChecker's message only
+        /// says "this book" (BL-16833). This mirrors the check the BloomPUB, ePUB, and PDF publish paths
+        /// make before they publish.
+        /// </summary>
+        internal static void EnsureBooksAreLicensedForPublishing(
+            IEnumerable<(global::Bloom.Book.Book Book, string Title, string[] Languages)> books
+        )
+        {
+            var checker = new LicenseChecker();
+            var problems = books
+                .Select(book => (book.Title, Message: checker.CheckBook(book.Book, book.Languages)))
+                .Where(problem => problem.Message != null)
+                .ToList();
+            if (problems.Count == 0)
+                return;
+
+            throw new ApplicationException(
+                string.Join(
+                    Environment.NewLine,
+                    problems.Select(problem => $"{problem.Title}: {problem.Message}")
+                )
+            );
         }
 
         internal static string ResolveBloomPubPath(

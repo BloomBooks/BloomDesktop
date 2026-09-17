@@ -1,7 +1,37 @@
 import { describe, it, expect } from "vitest";
-import { cleanUpNbsps, removeCommentsFromEditableHtml } from "./toolbox";
+import {
+    cleanUpNbsps,
+    editableMightBeRewritten,
+    removeCommentsFromEditableHtml,
+} from "./toolbox";
 
 describe("toolbox tests", () => {
+    // This gate decides whether we take a ckeditor bookmark, which in the Chromium-based WebView2
+    // plants a zero-width filling char at the caret. Saying "no" when one of the clean-ups would
+    // in fact rewrite the
+    // box would lose the user's insertion point, so it must catch everything they act on.
+    it("editableMightBeRewritten says no for ordinary text", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>overflow</p><p>plain text, nothing to clean up</p>";
+
+        expect(editableMightBeRewritten(div)).toBe(false);
+    });
+
+    it("editableMightBeRewritten says yes for anything the clean-ups act on", () => {
+        const withComment = document.createElement("div");
+        withComment.innerHTML = "<p>text</p>";
+        withComment.firstChild!.appendChild(document.createComment("x"));
+        // sanity check: this is the case removeCommentsFromEditableHtml rewrites
+        expect(withComment.innerHTML).toContain("<!--");
+        expect(editableMightBeRewritten(withComment)).toBe(true);
+
+        const withNbsp = document.createElement("div");
+        withNbsp.innerHTML = "<p>a&nbsp;b</p>";
+        // sanity check: the nbsp really did survive into the html cleanUpNbsps scans
+        expect(withNbsp.innerHTML).toContain("&nbsp;");
+        expect(editableMightBeRewritten(withNbsp)).toBe(true);
+    });
+
     it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", () => {
         const p = document.createElement("p");
         const span1 = document.createElement("span");
@@ -123,5 +153,57 @@ describe("toolbox tests", () => {
         // Ideally, we would remove the nbsp here, but in this corner case, the most
         // important thing is to do no harm.
         runNbspTest('<span data-attr="&nbsp;yuck!">A&nbsp;B</span>');
+    });
+
+    // runNbspTest only compares serialized html, which cannot tell "we left the DOM alone" apart
+    // from "we rebuilt it into something that serializes the same". These two check the actual
+    // nodes, because rebuilding matters: it detaches the text node ckeditor is tracking for its
+    // filling char, which then never gets removed and ends up saved in the book (BL-16808).
+    it("cleanUpNbsps keeps the same text node when there is nothing to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A b&nbsp;</p>"; // trailing nbsp, so nothing to convert
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: we mean to be watching a text node.
+        expect(textNodeBefore?.nodeType).toBe(Node.TEXT_NODE);
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b&nbsp;</p>");
+        expect(div.querySelector("p")!.firstChild).toBe(textNodeBefore);
+    });
+
+    it("cleanUpNbsps does rebuild the content when there is something to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A&nbsp;b c</p>";
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: this nbsp is one we expect to be converted.
+        expect(textNodeBefore?.textContent).toBe("A\u00A0b c");
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b c</p>");
+        expect(div.querySelector("p")!.firstChild).not.toBe(textNodeBefore);
+    });
+
+    // cleanUpNbsps empties any ckeditor bookmark span while it works and refills it at the end.
+    // That refill has to happen whether or not the box was rewritten.
+    it("cleanUpNbsps restores bookmark content on both the rewritten and the untouched path", () => {
+        const bookmark =
+            '<span data-cke-bookmark="1" id="cke_bm_1A" style="display: none;">&nbsp;</span>';
+
+        // Nothing to convert: the nodes are left alone and the bookmark keeps its content.
+        const untouched = document.createElement("div");
+        untouched.innerHTML = `<p>A b&nbsp;${bookmark}</p>`;
+        const textNodeBefore = untouched.querySelector("p")!.firstChild;
+        expect(textNodeBefore?.nodeType).toBe(Node.TEXT_NODE);
+        cleanUpNbsps(untouched);
+        expect(untouched.innerHTML).toBe(`<p>A b&nbsp;${bookmark}</p>`);
+        expect(untouched.querySelector("p")!.firstChild).toBe(textNodeBefore);
+
+        // Something to convert: the box is rewritten and the bookmark still gets its content back.
+        const rewritten = document.createElement("div");
+        rewritten.innerHTML = `<p>A&nbsp;b ${bookmark}c</p>`;
+        cleanUpNbsps(rewritten);
+        expect(rewritten.innerHTML).toBe(`<p>A b ${bookmark}c</p>`);
     });
 });
