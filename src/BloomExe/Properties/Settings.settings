@@ -26,9 +26,6 @@
     <Setting Name="ImageHandler" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">http</Value>
     </Setting>
-    <Setting Name="ImageGalleryProviderKeys" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="ShowSendReceive" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -101,6 +98,9 @@
     <Setting Name="AlwaysMeasurePerformance" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="RunFreezeDoctor" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="AutoUpdate" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
@@ -120,9 +120,6 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ExportImportFileFolder" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="OpenRouterApiKey" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="CollectionTabSplitterSizes" Provider="SIL.Settings.CrossPlatformSettingsProvider" Type="System.String" Scope="User">

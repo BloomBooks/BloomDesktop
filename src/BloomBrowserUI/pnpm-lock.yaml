@@ -85,11 +85,11 @@ importers:
                 specifier: 0.21.1
                 version: 0.21.1
             bloom-ai-image-tools:
-                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.1.7
-                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494
+                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.4
+                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c
             bloom-image-gallery:
-                specifier: github:BloomBooks/bloom-image-gallery#e376463bcd21b1558750570b63269a2e133b46c0
-                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0(@types/react@18.3.31)(supports-color@5.5.0)
+                specifier: github:BloomBooks/bloom-image-gallery#c5a539b9b77849d5f90de1bcb93c8ab522328870
+                version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0)
             bloom-player:
                 specifier: 2.20.2
                 version: 2.20.2
@@ -4049,20 +4049,21 @@ packages:
                 integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==,
             }
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c:
         resolution:
             {
                 gitHosted: true,
-                integrity: sha512-F67/eh54qujL/f1XtFVfJSwiMeiVr2OsRZHpnlyfhh49g7drMaXGs0cjTBhhDYVMiA+O4UFaACN58wrFMTGyCA==,
-                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494,
+                integrity: sha512-nA5FPEVeVYbFNlyP2gf9Y2V7MYLmGwxWJxxrLCRG2dm9mINMl80zUXCOowfdY9dlu3J+fW70hpapDMt3iMaVKQ==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c,
             }
-        version: 0.1.7
+        version: 0.2.4
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0:
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870:
         resolution:
             {
                 gitHosted: true,
-                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0,
+                integrity: sha512-8J40cVA6KA+EQlrdLdN5SbKa+RxIKhltrAS7w8bh3bpMVKg2tSc5+XDb/n42+6HNMIDiVTNbL2tm/G2dmUT+7g==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870,
             }
         version: 0.0.4
 
@@ -13532,10 +13533,10 @@ snapshots:
             file-uri-to-path: 1.0.0
         optional: true
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/a24e636bd05a943b1b909811210c9803be091494:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c:
         {}
 
-    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/e376463bcd21b1558750570b63269a2e133b46c0(@types/react@18.3.31)(supports-color@5.5.0):
+    bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0):
         dependencies:
             "@emotion/react": 11.14.0(@types/react@18.3.31)(react@18.3.1)
             "@emotion/styled": 11.14.1(@emotion/react@11.14.0(@types/react@18.3.31)(react@18.3.1))(@types/react@18.3.31)(react@18.3.1)
