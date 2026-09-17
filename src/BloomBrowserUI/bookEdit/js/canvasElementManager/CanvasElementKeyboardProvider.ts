@@ -15,8 +15,10 @@ const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
 
 // The z-order (Layer menu) shortcuts: Ctrl+] brings forward, Ctrl+[ sends backward, and
 // adding Alt goes all the way to the front or back. These are the shortcuts the Layer submenu
-// displays (see makeLayerMenuItem). We match on the physical key (event.code) rather than the
-// character, so the shortcut is the same key on every keyboard layout.
+// displays (see makeLayerMenuItem). We accept either the physical bracket keys of a US layout
+// (event.code), which stay put on layouts where those keys produce other characters, or the
+// bracket characters themselves (event.key), which is what a user on such a layout gets from
+// the key the menu names.
 // Returns the move the event asks for, or undefined if it is not one of these shortcuts.
 export const getZOrderMoveForShortcut = (
     event: KeyboardEvent,
@@ -24,10 +26,10 @@ export const getZOrderMoveForShortcut = (
     if (!(event.ctrlKey || event.metaKey) || event.shiftKey) {
         return undefined;
     }
-    if (event.code === "BracketRight") {
+    if (event.code === "BracketRight" || event.key === "]") {
         return event.altKey ? "front" : "forward";
     }
-    if (event.code === "BracketLeft") {
+    if (event.code === "BracketLeft" || event.key === "[") {
         return event.altKey ? "back" : "backward";
     }
     return undefined;
@@ -98,8 +100,10 @@ export class CanvasElementKeyboardProvider {
             return;
         }
 
+        // Only claim the layer shortcuts while a canvas element is selected; otherwise the
+        // keystroke is left for whatever else might want it.
         const zOrderMove = getZOrderMoveForShortcut(event);
-        if (zOrderMove) {
+        if (zOrderMove && activeElement) {
             this.actions.moveActiveCanvasElementInZOrder(zOrderMove);
             event.preventDefault();
             return;

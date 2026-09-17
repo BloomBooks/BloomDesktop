@@ -456,6 +456,37 @@ describe("CanvasElementZOrder", () => {
             );
         });
 
+        test("a family with one draggable member moves whole, in the draggable band", () => {
+            // Parent p (fixed) and child p2 (made draggable afterwards) share level 3.
+            const bloomCanvas = makeBloomCanvas([
+                { id: "bg", level: 1, background: true },
+                { id: "fixed", level: 2 },
+                { id: "p", level: 3, order: 1 },
+                { id: "p2", level: 3, order: 2 },
+                { id: "drag", level: 4 },
+            ]);
+            byId("p2").setAttribute("data-draggable-id", "d2");
+            byId("drag").setAttribute("data-draggable-id", "d1");
+
+            // Selecting the fixed parent still finds the whole family, which counts as
+            // draggable, so it can pass the draggable above it but not go below the fixed one.
+            expect(canSendCanvasElementBackward(byId("p"))).toBe(false);
+            expect(canBringCanvasElementForward(byId("p"))).toBe(true);
+            expect(moveCanvasElementInZOrder(byId("p"), "forward")).toBe(true);
+
+            expect(childIds(bloomCanvas)).toEqual([
+                "canvas",
+                "bg",
+                "fixed",
+                "drag",
+                "p",
+                "p2",
+                "canvas-element-control-frame",
+            ]);
+            expect(levelOf("p")).toBe(4);
+            expect(levelOf("p2")).toBe(4);
+        });
+
         test("elements still move among their own kind", () => {
             const bloomCanvas = makeGameCanvas();
             expect(canSendCanvasElementBackward(byId("drag2"))).toBe(true);

@@ -55,15 +55,12 @@ export const getMovableCanvasElements = (
         (canvasElement) => !isBackgroundImage(canvasElement),
     );
 
-// The canvas elements that canvasElement can change places with: the movable ones of its own
-// kind, draggable game pieces or ordinary elements (see the note at the top of the file).
-const getMovableCanvasElementsOfSameKind = (
-    canvasElement: HTMLElement,
-    bloomCanvas: HTMLElement,
-): HTMLElement[] =>
-    getMovableCanvasElements(bloomCanvas).filter(
-        (other) => isDraggable(other) === isDraggable(canvasElement),
-    );
+// A unit counts as a draggable game piece if any of its members is one. (Draggability is set
+// per element, so a family can in principle be mixed; it still moves as one unit, and lands in
+// the draggable band, which is where adjustCanvasElementOrdering would put its draggable
+// member anyway.)
+const isDraggableUnit = (unit: HTMLElement[]): boolean =>
+    unit.some((member) => isDraggable(member));
 
 // The level and family order from the element's data-bubble spec, or nothing if it has no spec.
 // The attribute holds the spec as JSON with backticks in place of double quotes, which is how
@@ -108,8 +105,9 @@ export const getZOrderUnits = (
     return units;
 };
 
-// The units canvasElement can change places with, and the index of the unit it belongs to
-// (-1 if it is not movable, e.g. the background image).
+// The units canvasElement can change places with (those of its own kind, draggable game pieces
+// or ordinary elements, see the note at the top of the file), and the index of the unit it
+// belongs to (-1 if it is not movable, e.g. the background image).
 const getUnitsAndIndex = (
     canvasElement: HTMLElement,
 ): { units: HTMLElement[][]; index: number } => {
@@ -117,11 +115,16 @@ const getUnitsAndIndex = (
     if (!bloomCanvas || isBackgroundImage(canvasElement)) {
         return { units: [], index: -1 };
     }
-    const units = getZOrderUnits(
-        getMovableCanvasElementsOfSameKind(canvasElement, bloomCanvas),
+    // Group into families first, so that a family is never split by the kind filter.
+    const allUnits = getZOrderUnits(getMovableCanvasElements(bloomCanvas));
+    const ownUnit = allUnits.find((unit) => unit.includes(canvasElement));
+    if (!ownUnit) {
+        return { units: [], index: -1 };
+    }
+    const units = allUnits.filter(
+        (unit) => isDraggableUnit(unit) === isDraggableUnit(ownUnit),
     );
-    const index = units.findIndex((unit) => unit.includes(canvasElement));
-    return { units, index };
+    return { units, index: units.indexOf(ownUnit) };
 };
 
 // True if "Bring Forward" or "Bring to Front" would change anything for this canvas element:

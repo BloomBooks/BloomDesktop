@@ -49,6 +49,20 @@ describe("getZOrderMoveForShortcut", () => {
         ).toBe("back");
     });
 
+    test("the bracket characters count too, for layouts where they live on other keys", () => {
+        // e.g. a German layout, where ] is AltGr+9: the code is the digit key.
+        expect(
+            getZOrderMoveForShortcut(
+                makeKeyEvent({ key: "]", code: "Digit9", ctrlKey: true }),
+            ),
+        ).toBe("forward");
+        expect(
+            getZOrderMoveForShortcut(
+                makeKeyEvent({ key: "[", code: "Digit8", ctrlKey: true }),
+            ),
+        ).toBe("backward");
+    });
+
     test("the Command key counts as Ctrl", () => {
         expect(
             getZOrderMoveForShortcut(
@@ -146,6 +160,16 @@ describe("CanvasElementKeyboardProvider layer shortcuts", () => {
 
         const event = makeKeyEvent({ code: "BracketRight", ctrlKey: true });
         activeElement.dispatchEvent(event);
+
+        expect(actions.moveActiveCanvasElementInZOrder).not.toHaveBeenCalled();
+        expect(event.defaultPrevented).toBe(false);
+    });
+
+    test("the shortcut is left alone when no canvas element is selected", () => {
+        actions.getActiveCanvasElement = () => null;
+
+        const event = makeKeyEvent({ code: "BracketRight", ctrlKey: true });
+        document.body.dispatchEvent(event);
 
         expect(actions.moveActiveCanvasElementInZOrder).not.toHaveBeenCalled();
         expect(event.defaultPrevented).toBe(false);
