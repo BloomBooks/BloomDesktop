@@ -13,7 +13,10 @@ const devScriptPath = path.join(browserUIRoot, "scripts", "dev.mjs");
 const exeScriptPath = path.join(repoRoot, "scripts", "watchBloomExe.mjs");
 process.env.feedback = "off";
 const startupQuietMs = 1500;
-const viteHealthTimeoutMs = 15000;
+// Vite prints its "ready"/"Local:" banner long before it can actually serve a request:
+// measured here at ~1s for the banner but ~13s before /@vite/client answers. Keep this
+// window comfortably wider than that warm-up, or startup fails on a busy machine.
+const viteHealthTimeoutMs = 90000;
 const viteHealthPollMs = 250;
 const maxRandomVitePortAttempts = 10;
 const gracefulShutdownMs = 1500;
@@ -218,7 +221,7 @@ const pickRandomAvailablePort = () =>
 const isViteClientReachable = async (port) => {
     try {
         const response = await fetch(`${toViteOrigin(port)}/@vite/client`, {
-            signal: AbortSignal.timeout(500),
+            signal: AbortSignal.timeout(3000),
         });
         return response.ok;
     } catch {
