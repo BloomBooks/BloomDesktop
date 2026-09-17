@@ -820,15 +820,24 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         // clicks, so that a click made just after the command cannot overtake it while its content
         // is being gathered and leave it acting on the newly selected page.
         const postCommand = () =>
-            queuePageListRequest(async () =>
-                postJson("pageList/contextMenuItemClicked", {
+            queuePageListRequest(async () => {
+                await postJson("pageList/contextMenuItemClicked", {
                     pageId,
                     commandId,
                     pageContent: await collectCurrentPageContent(
                         `the ${commandId} command`,
                     ),
-                }),
-            );
+                });
+                // C# answers this request before it runs the command: it queues the command
+                // behind a short delay so that the two commands which open modal dialogs cannot
+                // deadlock the server (see PageListApi.HandleContextMenuItemClickedRequest). So
+                // the reply does not mean the command has happened, and a click released now
+                // could still overtake it and leave it declined mid-navigation. Hold the queue
+                // for a little longer than that delay.
+                await new Promise((resolve) =>
+                    window.setTimeout(resolve, kContextCommandSettleMs),
+                );
+            });
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
         } else {
@@ -1094,6 +1103,10 @@ function onDragStop(
 // The work is awaited, not just issued: C# has not seen a request until its post comes back, and
 // releasing the queue when the request was merely sent would let the next one overtake it.
 let pageListRequests: Promise<void> = Promise.resolve();
+
+// How long a context-menu command holds the page-list queue after C# has acknowledged it; see
+// postCommand in openContextMenu. Longer than the 100 ms C# waits before running the command.
+const kContextCommandSettleMs = 150;
 
 function queuePageListRequest(work: () => Promise<unknown>): Promise<void> {
     pageListRequests = pageListRequests
