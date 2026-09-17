@@ -440,6 +440,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     justify-content: space-between !important; // move sub-menu arrow to right
                 `}
                 key={props.l10nId}
+                disabled={props.disabled}
                 label={
                     props.icon ? (
                         // This is a nuisance. We should just be able to pass on props.icon.

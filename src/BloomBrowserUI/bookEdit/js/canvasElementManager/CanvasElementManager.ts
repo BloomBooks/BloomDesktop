@@ -94,6 +94,10 @@ import {
     removeDetachedTargets,
 } from "./CanvasElementDraggableIntegration";
 import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension";
+import {
+    moveCanvasElementInZOrder,
+    type ZOrderMove,
+} from "./CanvasElementZOrder";
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
@@ -315,6 +319,8 @@ export class CanvasElementManager {
                     this.deleteCurrentCanvasElement.bind(this),
                 moveActiveCanvasElement:
                     this.moveActiveCanvasElement.bind(this),
+                moveActiveCanvasElementInZOrder:
+                    this.moveActiveCanvasElementInZOrder.bind(this),
                 getActiveCanvasElement: this.getActiveElement.bind(this),
             },
             this.snapProvider,
@@ -3059,6 +3065,27 @@ export class CanvasElementManager {
         if (active) {
             this.deleteCanvasElement(active);
         }
+    }
+
+    // The Layer menu commands (and their keyboard shortcuts): move the active canvas element,
+    // together with any child bubbles in its family, one step forward or backward in the
+    // stacking order, or all the way to the front or back. Does nothing for the background
+    // image, or when the element is already as far as it can go. See CanvasElementZOrder.ts.
+    public moveActiveCanvasElementInZOrder(move: ZOrderMove): void {
+        // "this" might be a menu item that was clicked.  Calling explicitly again fixes that.  See BL-13928.
+        if (this !== theOneCanvasElementManager) {
+            theOneCanvasElementManager.moveActiveCanvasElementInZOrder(move);
+            return;
+        }
+        const active = this.getActiveElement();
+        if (!active || !moveCanvasElementInZOrder(active, move)) {
+            return;
+        }
+        // Moving the element rebuilt Comical's bubbles, so make sure the active one gets its
+        // handles back. Aligning the control frame also re-renders the context controls, so a
+        // reopened menu shows which layer moves are still possible.
+        Comical.activateElement(active);
+        this.alignControlFrameWithActiveElement();
     }
 
     public duplicateCanvasElement(): HTMLElement | undefined {

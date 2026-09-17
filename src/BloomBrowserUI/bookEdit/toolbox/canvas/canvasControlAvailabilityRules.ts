@@ -170,6 +170,17 @@ export const bubbleAvailabilityRules: AvailabilityRulesMap = {
     },
 };
 
+export const layerAvailabilityRules: AvailabilityRulesMap = {
+    layer: {
+        // The background image is always at the very back, so it has no layer to change.
+        visible: (ctx) => !ctx.isBackgroundImage,
+        // The whole submenu is disabled when there is nothing to move past, i.e. this is the
+        // only movable element on its canvas. Each command inside it is further disabled in
+        // the direction the element cannot go (see makeLayerMenuItem).
+        enabled: (ctx) => ctx.canBringForward || ctx.canSendBackward,
+    },
+};
+
 export const wholeElementAvailabilityRules: AvailabilityRulesMap = {
     duplicate: {
         visible: (ctx) => !ctx.isBackgroundImage && !ctx.isSpecialGameElement,
