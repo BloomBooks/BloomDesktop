@@ -249,8 +249,8 @@
         <note>ID: Settings.Subscription.NotValid</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.UnknownCode">
-        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-        <target xml:lang="kw" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <source xml:lang="en">This version of Bloom does not contain any special branding artwork for this subscription.</source>
+        <target xml:lang="kw" state="needs-translation">This version of Bloom does not contain any special branding artwork for this subscription.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
       <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
