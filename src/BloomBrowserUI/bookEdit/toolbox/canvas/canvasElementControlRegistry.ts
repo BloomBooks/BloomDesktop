@@ -15,6 +15,10 @@
 // Design intent: keep each element type's control configuration explicit and
 // readable, while leaving the concrete command/panel implementations in
 // `canvasControlRegistry.ts`.
+//
+// Every element type lists the `layer` section (the "Layer" submenu that changes stacking
+// order) just before `wholeElement`; its availability rules hide it for the background image,
+// which must always stay at the back.
 import { CanvasElementType } from "./canvasElementTypes";
 import {
     ICanvasElementControlConfiguration,
@@ -24,6 +28,7 @@ import {
     audioAvailabilityRules,
     bubbleAvailabilityRules,
     imageAvailabilityRules,
+    layerAvailabilityRules,
     textAvailabilityRules,
     videoAvailabilityRules,
     wholeElementAvailabilityRules,
@@ -44,7 +49,7 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     // also as game pieces created from the Game tool.
     // `gameDraggable` is intentionally listed here so game pages can surface
     // draggable commands; availability rules/context keep it hidden on non-game pages.
-    menuSections: ["image", "audio", "gameDraggable", "wholeElement"],
+    menuSections: ["image", "audio", "gameDraggable", "layer", "wholeElement"],
     toolbar: [
         "missingMetadata",
         "chooseImage",
@@ -58,6 +63,7 @@ export const imageCanvasElementControls: ICanvasElementControlConfiguration = {
     availabilityRules: mergeRules(
         imageAvailabilityRules,
         audioAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -68,11 +74,12 @@ export const videoCanvasElementControls: ICanvasElementControlConfiguration = {
     // and as game pieces on game pages.
     // `gameDraggable` is game-only in practice; non-game pages resolve this
     // section to no visible rows via runtime availability.
-    menuSections: ["video", "gameDraggable", "wholeElement"],
+    menuSections: ["video", "gameDraggable", "layer", "wholeElement"],
     toolbar: ["chooseVideo", "recordVideo", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         videoAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -83,11 +90,12 @@ export const soundCanvasElementControls: ICanvasElementControlConfiguration = {
     // can also participate in game layouts.
     // `gameDraggable` is included for game contexts and intentionally resolves
     // to no rows on non-game pages.
-    menuSections: ["audio", "gameDraggable", "wholeElement"],
+    menuSections: ["audio", "gameDraggable", "layer", "wholeElement"],
     toolbar: ["duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         audioAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -97,13 +105,14 @@ export const rectangleBubbleCanvasElementControls: ICanvasElementControlConfigur
         type: "rectangle",
         // Shared definition: rectangular bubble elements are used in standard canvas
         // pages and can also appear as fixed game pieces.
-        menuSections: ["audio", "bubble", "text", "wholeElement"],
+        menuSections: ["audio", "bubble", "text", "layer", "wholeElement"],
         toolbar: ["format", "spacer", "duplicate", "delete"],
         toolPanel: ["bubble", "text", "outline"],
         availabilityRules: mergeRules(
             audioAvailabilityRules,
             bubbleAvailabilityRules,
             textAvailabilityRules,
+            layerAvailabilityRules,
             wholeElementAvailabilityRules,
         ),
     };
@@ -114,13 +123,21 @@ export const speechCanvasElementControls: ICanvasElementControlConfiguration = {
     // are also a primary game piece type.
     // `gameDraggable` is listed so game pages can expose drag-specific commands;
     // it remains hidden outside game context.
-    menuSections: ["audio", "bubble", "gameDraggable", "text", "wholeElement"],
+    menuSections: [
+        "audio",
+        "bubble",
+        "gameDraggable",
+        "text",
+        "layer",
+        "wholeElement",
+    ],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: ["bubble", "text", "outline"],
     availabilityRules: mergeRules(
         audioAvailabilityRules,
         bubbleAvailabilityRules,
         textAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };
@@ -137,6 +154,7 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
             "bubble",
             "gameDraggable",
             "text",
+            "layer",
             "wholeElement",
         ],
         toolbar: ["format", "spacer", "duplicate", "delete"],
@@ -145,16 +163,18 @@ export const captionCanvasElementControls: ICanvasElementControlConfiguration =
             audioAvailabilityRules,
             bubbleAvailabilityRules,
             textAvailabilityRules,
+            layerAvailabilityRules,
             wholeElementAvailabilityRules,
         ),
     };
 
 export const bookLinkGridControls: ICanvasElementControlConfiguration = {
     type: "book-link-grid",
-    menuSections: ["linkGrid", "wholeElement"],
+    menuSections: ["linkGrid", "layer", "wholeElement"],
     toolbar: ["linkGridChooseBooks", "spacer", "duplicate", "delete"],
     toolPanel: ["text"],
     availabilityRules: {
+        ...layerAvailabilityRules,
         textColor: "exclude",
     },
 };
@@ -162,7 +182,7 @@ export const bookLinkGridControls: ICanvasElementControlConfiguration = {
 export const navigationImageButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-button",
-        menuSections: ["url", "image", "wholeElement"],
+        menuSections: ["url", "image", "layer", "wholeElement"],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -176,6 +196,7 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
             ...mergeRules(
                 imageAvailabilityRules,
                 textAvailabilityRules,
+                layerAvailabilityRules,
                 wholeElementAvailabilityRules,
             ),
             setDestination: {
@@ -209,7 +230,7 @@ export const navigationImageButtonControls: ICanvasElementControlConfiguration =
 export const navigationImageWithLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-image-with-label-button",
-        menuSections: ["url", "image", "text", "wholeElement"],
+        menuSections: ["url", "image", "text", "layer", "wholeElement"],
         toolbar: [
             "setDestination",
             "chooseImage",
@@ -223,6 +244,7 @@ export const navigationImageWithLabelButtonControls: ICanvasElementControlConfig
             ...mergeRules(
                 imageAvailabilityRules,
                 textAvailabilityRules,
+                layerAvailabilityRules,
                 wholeElementAvailabilityRules,
             ),
             setDestination: {
@@ -256,11 +278,15 @@ export const navigationImageWithLabelButtonControls: ICanvasElementControlConfig
 export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
     {
         type: "navigation-label-button",
-        menuSections: ["url", "text", "wholeElement"],
+        menuSections: ["url", "text", "layer", "wholeElement"],
         toolbar: ["setDestination", "spacer", "duplicate", "delete"],
         toolPanel: ["text"],
         availabilityRules: {
-            ...mergeRules(textAvailabilityRules, wholeElementAvailabilityRules),
+            ...mergeRules(
+                textAvailabilityRules,
+                layerAvailabilityRules,
+                wholeElementAvailabilityRules,
+            ),
             setDestination: {
                 visible: true,
             },
@@ -272,11 +298,12 @@ export const navigationLabelButtonControls: ICanvasElementControlConfiguration =
 
 export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
     type: "none",
-    menuSections: ["formatTarget", "wholeElement"],
+    menuSections: ["formatTarget", "layer", "wholeElement"],
     toolbar: ["format", "spacer", "duplicate", "delete"],
     toolPanel: [],
     availabilityRules: mergeRules(
         textAvailabilityRules,
+        layerAvailabilityRules,
         wholeElementAvailabilityRules,
     ),
 };

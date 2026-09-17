@@ -19,6 +19,16 @@ House rules:
 
 ---
 
+## 2026-09-17 — agent-vite.ps1 reports exit code 1 for a successful build
+- **Cut:** Under Windows PowerShell 5.1, `build/agent-vite.ps1` sets `$ErrorActionPreference = 'Stop'`,
+  so the first stderr line from `pnpm exec vite build` (Vite's "[plugin commonjs] The namedExports
+  option ... is deprecated" warning) becomes a NativeCommandError and the script exits 1, although the
+  bundle and post-build step complete. Running the same `vite build` directly with `BLOOM_UI_OUTDIR`
+  set exits 0, so an agent trusting the wrapper's verdict wrongly concludes the bundle is broken.
+- **Idea:** Drop the `Stop` preference around the native call (or run it via `cmd /c` / check only
+  `$LASTEXITCODE`), and/or silence the deprecated `namedExports` option in vite.config.mts.
+- **Context:** BL-15992 branch, Canvas-element-z-order worktree.
+
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
   {"message":"Unexpected promise failure ..."}` lines, all inside the React component-test step —

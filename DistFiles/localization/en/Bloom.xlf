@@ -2271,6 +2271,31 @@
         <note>If "Canvas Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of an image. These may be used to give dialogue or to give more information about a specific part of the image.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer" translate="no">
+        <source xml:lang="en">Layer</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer</note>
+        <note>Label of a submenu in the menu of a selected canvas element (the "..." button below it). The commands in the submenu change which of several overlapping canvas elements is drawn in front of the others, like the "Arrange" or "Order" menus in drawing programs.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringForward" translate="no">
+        <source xml:lang="en">Bring Forward</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringForward</note>
+        <note>Command in the "Layer" submenu of a canvas element. Moves the selected element one step closer to the front, so it is drawn in front of the element that used to cover it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.BringToFront" translate="no">
+        <source xml:lang="en">Bring to Front</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.BringToFront</note>
+        <note>Command in the "Layer" submenu of a canvas element. Moves the selected element in front of all the other canvas elements.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendBackward" translate="no">
+        <source xml:lang="en">Send Backwards</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendBackward</note>
+        <note>Command in the "Layer" submenu of a canvas element. Moves the selected element one step further back, so the element that was behind it is now drawn in front of it.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.CanvasTool.Layer.SendToBack" translate="no">
+        <source xml:lang="en">Send to Back</source>
+        <note>ID: EditTab.Toolbox.CanvasTool.Layer.SendToBack</note>
+        <note>Command in the "Layer" submenu of a canvas element. Moves the selected element behind all the other canvas elements (but never behind the background image).</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
         <source xml:lang="en">Change Shape</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>

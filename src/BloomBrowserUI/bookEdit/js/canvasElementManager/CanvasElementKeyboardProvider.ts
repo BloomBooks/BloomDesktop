@@ -1,14 +1,36 @@
-// Keyboard interactions for moving/deleting the active canvas element.
+// Keyboard interactions for moving/deleting the active canvas element, and for moving it
+// forward or backward in the stacking order.
 // We currently use CanvasSnapProvider for step size only; movement still uses
 // CanvasElementManager constraints to keep elements visible in the parent canvas.
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
+import { ZOrderMove } from "./CanvasElementZOrder";
 
 const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
     ArrowUp: { dx: 0, dy: -1 },
     ArrowDown: { dx: 0, dy: 1 },
     ArrowLeft: { dx: -1, dy: 0 },
     ArrowRight: { dx: 1, dy: 0 },
+};
+
+// The z-order (Layer menu) shortcuts: Ctrl+] brings forward, Ctrl+[ sends backward, and
+// adding Alt goes all the way to the front or back. These are the shortcuts the Layer submenu
+// displays (see makeLayerMenuItem). We match on the physical key (event.code) rather than the
+// character, so the shortcut is the same key on every keyboard layout.
+// Returns the move the event asks for, or undefined if it is not one of these shortcuts.
+export const getZOrderMoveForShortcut = (
+    event: KeyboardEvent,
+): ZOrderMove | undefined => {
+    if (!(event.ctrlKey || event.metaKey) || event.shiftKey) {
+        return undefined;
+    }
+    if (event.code === "BracketRight") {
+        return event.altKey ? "front" : "forward";
+    }
+    if (event.code === "BracketLeft") {
+        return event.altKey ? "back" : "backward";
+    }
+    return undefined;
 };
 
 export interface ICanvasElementKeyboardActions {
@@ -18,6 +40,7 @@ export interface ICanvasElementKeyboardActions {
         dy: number,
         event?: KeyboardEvent,
     ) => void;
+    moveActiveCanvasElementInZOrder: (move: ZOrderMove) => void;
     getActiveCanvasElement: () => HTMLElement | null;
 }
 
@@ -72,6 +95,13 @@ export class CanvasElementKeyboardProvider {
         if (event.key === "Delete" || event.key === "Backspace") {
             this.actions.deleteCurrentCanvasElement();
             event.preventDefault(); // Prevent default browser back navigation on Backspace
+            return;
+        }
+
+        const zOrderMove = getZOrderMoveForShortcut(event);
+        if (zOrderMove) {
+            this.actions.moveActiveCanvasElementInZOrder(zOrderMove);
+            event.preventDefault();
             return;
         }
 

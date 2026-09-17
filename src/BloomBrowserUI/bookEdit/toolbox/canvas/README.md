@@ -84,6 +84,7 @@ The registry and UI both use `CanvasElementMenuSection` (in `canvasElementContro
 - `audio`
 - `bubble` (e.g. “Add Child Bubble”)
 - `text`
+- `layer` (the "Layer" submenu: Bring Forward / Bring to Front / Send Backwards / Send to Back)
 - `wholeElementCommands`
 
 The `orderedMenuSections` list in `CanvasElementContextControls.tsx` is the authoritative menu section order.
