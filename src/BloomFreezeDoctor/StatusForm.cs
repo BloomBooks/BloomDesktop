@@ -847,8 +847,14 @@ public sealed class StatusForm : Form
         // The dialog can sit open for as long as the person likes, and Bloom may have gone in the
         // meantime. A process id is not an identity (see ProcessIdentity): once the watcher lets go of a
         // dead Bloom, Windows can hand its id to a stranger, and gathering on the id alone would dump and
-        // file whatever now owns it. So ask the supervisor again, which checks the start time as well.
-        if (_supervisor.LiveWatchedBlooms().All(b => b.ProcessId != target.ProcessId))
+        // file whatever now owns it. So ask the supervisor again, and compare the start time as well as
+        // the id: the stranger could even be a new Bloom the Doctor has since adopted, which the person
+        // was not asked about.
+        if (
+            _supervisor
+                .LiveWatchedBlooms()
+                .All(b => b.ProcessId != target.ProcessId || b.StartTime != target.StartTime)
+        )
         {
             _lastEvent.Text = "Report not gathered: that Bloom is no longer running.";
             return;
