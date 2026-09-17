@@ -1618,6 +1618,10 @@
         <source xml:lang="en">Bloom may have missed some changes your teammates made. Please click "Reload Collection" to be sure you have the latest.</source>
         <note>ID: TeamCollection.MayHaveMissedChanges</note>
         <note>Used both as a pop-up notification (toast) and in the Team Collection status dialog, when so many files changed at once that Bloom's file-change notifications overflowed and some were lost. "Reload Collection" is the label of a button in that dialog and should match its translation there. "Bloom" is a product name and must not be translated.</note>
+      <trans-unit id="BookProcessor.AutoUpdateExplanation" translate="no">
+        <source xml:lang="en">Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size.</source>
+        <note>ID: BookProcessor.AutoUpdateExplanation</note>
+        <note>Shown at the top of a progress dialog that appears automatically when Bloom must bring a book's pages up to date: when the AI image editor is launched on a book that has not been through that process, or after the page size has been changed. "Bloom" is the product name and must not be translated.</note>
       </trans-unit>
     </body>
   </file>

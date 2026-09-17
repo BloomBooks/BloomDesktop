@@ -72,13 +72,15 @@ export async function startCollectionUpload(page: Page): Promise<void> {
  *
  * The child Bloom makes a thumbnail, a PDF preview, a PDF from the HTML and a Ghostscript
  * compression pass for every book it uploads, and then sends each one to dev.bloomlibrary.org, so a
- * round that really uploads four books is minutes of work — on a runner that is slower than a
- * developer machine and often busy with the rest of the suite. This was 180s, which the runner did
- * not manage even for the first of the four books: its log stopped inside "Compressing PDF" on book
- * 1. So this is deliberately generous. An upload that is merely slow should finish; only one that
- * is genuinely stuck should reach this.
+ * round is real work on a runner that is slower than a developer machine and often busy with the
+ * rest of the suite. Rounds land between a few seconds and a couple of minutes.
+ *
+ * This is about three times the slowest round measured. Its real job is to bound how long a STUCK
+ * upload burns runner time before failing, so keep it near that rather than padding it for
+ * headroom: a round that approaches this is far more likely to be hung than slow. Read the
+ * `[bulk upload] finished in Ns` line from a recent green run before changing the number.
  */
-const kBulkUploadTimeoutMs = 600000;
+const kBulkUploadTimeoutMs = 300000;
 
 /**
  * Wait until the bulk-upload child process has finished and return its tally. It writes the log as

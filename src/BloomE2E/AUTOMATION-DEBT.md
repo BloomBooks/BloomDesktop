@@ -75,10 +75,51 @@ Format dialog, so the test drives it in the Format dialog (`helpers/fontChooser.
 Settings route stays manual. `settings/setFontForLanguage` is not a way round it: like the other
 settings endpoints it only records a pending change on the open dialog.
 
+investigated 2026-09-16, which splits this entry in two:
+
+- **The WinForms half is drivable now.** Windows UI Automation reaches every WinForms control
+  by its designer name with no pointer, keystroke or focus change:
+  `.github/skills/bloom-automation/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
+  that skill's SKILL.md). Verified on the Settings dialog: `select` on the "Book Making" tab item
+  and `invoke` on `_cancelButton` both worked, headless. The `WireUpForWinforms` dialogs'
+  OK/Cancel buttons and the Settings tab strip are therefore no longer a reason a step stays
+  manual. Still out of reach: WinForms `LinkLabel`s (the "Change..." language links), which
+  expose no UIA pattern.
+
+- **The web half crashes an `--e2e` Bloom, so no test can open Settings yet.** Twice on
+  2026-09-16 an `--e2e` Bloom died the moment Settings opened, with the "Bloom was unable to
+  initialize the WebView2 browser" `MessageBox` from `WebView2Browser.SetupEventHandling`, which
+  then calls `Environment.Exit(1)`. Cause, measured in a parallel session on the same day:
+  `WorkspaceView.OpenLegacySettingsDialog` creates the dialog inside
+  `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (thread set to System-DPI-aware), and a WebView2
+  browser process takes the DPI awareness of its *host window*, not of the process, so the
+  dialog's WebView2 comes up System-aware while the shell's is PerMonitorV2. WebView2 refuses a
+  controller whose awareness differs from the browser process already using the same user data
+  folder (`ERROR_INVALID_STATE`, 0x8007139F, "mismatch in DPI awareness"). Outside `--e2e` each
+  ReactControl gets its own environment and process, so there is nothing to conflict with; under
+  `--e2e` the shared environment from 64e91dc8c6 (2026-09-03) *is* the conflict. Six call sites
+  enter that DPI scope, but only the three whose dialog hosts a browser can hit this: the
+  Settings dialog (WorkspaceView), `ConfigurationDialog` (Configurator) and `LicenseDialog`
+  (Program). The other three open a plain WinForms dialog or a file picker
+  (`ScriptSettingsDialog`, `JpegWarningDialog`, `BloomOpenFileDialog`). Fix direction: give a WebView2
+  created under the legacy DPI scope its own environment even in `--e2e`, or stop entering that
+  scope for dialogs that host a ReactControl. **Do not** fix it by making dialogs share the main
+  window's environment outside `--e2e`: that reproduces the crash for every user. Until it is
+  fixed, an e2e test must not open the Settings dialog; `helpers/collectionSettings.ts` and the
+  `e2e/*` hooks remain the route. The exact exception text has not been captured yet; the
+  `winformsUia.ps1` `tree -Window Error` command is how to read it before the box is dismissed.
+
 ## Native OS dialogs hang automation
 
-File pickers, the Image Toolbox, and video capture open native windows Playwright
-cannot dismiss; a test that triggers one hangs the run. Tests must avoid them (the
+File pickers and video capture open native windows that Playwright cannot see or dismiss; a
+test that triggers one unprepared hangs the run. (The WinForms Image Toolbox this entry used
+to name is gone: choosing an image is a web dialog now, and only its "Open File..." button
+under "This Computer", and changing a GIF, reach a native file picker.) Since 2026-09-16 the
+picker itself is no longer undrivable: `.github/skills/bloom-automation/winformsUia.ps1`
+fills its "File name:" box and presses Open over UI Automation, proven against Bloom's own
+image picker. A test should still prefer `e2e/nextFileToChoose` (below), which never shows
+the dialog; UIA is the fallback for whatever that hook does not cover, and for reading a
+message box a test did not expect. Tests must avoid them (the
 `add-e2e-test` skill forbids it). Fix direction: `--e2e`-mode alternatives via
 `E2eTestingApi` for the common cases (choose image file, choose video), so journeys
 that need them become automatable.
@@ -103,7 +144,7 @@ showing the dialog, and Bloom goes back to showing the real one afterwards.
 deliberately does NOT remember the chosen folder in `FilePathMemory` under `--e2e`, which is
 machine-wide settings shared with the developer's own Bloom.
 
-Still open on this entry: video capture and the Image Toolbox are untouched. And a microphone is still a microphone: recording audio
+Still open on this entry: video capture is untouched, and it needs a camera, not just buttons. And a microphone is still a microphone: recording audio
 cannot be automated at all, which is why `helpers/talkingBook.ts` has `addNarration` (put the mp3
 where a recording would have gone) alongside the Import Recording path.
 
@@ -703,3 +744,72 @@ fixtures (`bloomTest` plus a prepared collection holding a known canvas page); t
 already has everything that shape of suite needs, so after the port, adding it is a config
 edit. Its shared mode (reuse one live page, clean elements back to baseline between tests)
 is worth keeping — page loads are the slow part either way.
+
+## import-recording.spec.ts:84 failing is a PRODUCT bug, not a flaky test — BL-16873
+
+If a nightly fails with
+
+> The imported file "i<guid>.mp3" is not named after any recordable element on the page.
+
+that is **BL-16873**, not the suite being flaky, and the test is doing its job. Bloom names a
+narration file after the id of the element that owns the audio; the Talking Book tool was reading
+the id off whatever `highlightedElement` happened to be, which is not always that element — it can
+be a sub-element, or a node no longer in the page after CKEditor replaced a paragraph or the page
+changed. The mp3 then lands under an id nothing on the page owns, or under **another page's** text
+box, so the page the user was on stays silent while a different one acquires the audio. Reproduced
+in a running Bloom, so it is user-facing, not a test artifact.
+
+It is timing-dependent (the stale-highlight window is normally repaired within 200ms), which is why
+it shows up on a loaded runner and not on a developer machine — do not expect to reproduce it
+locally, and do not write it off when you cannot.
+
+Fixed in PR #8363; as of 2026-09-15 that is still in review, so a nightly on master can still hit
+it. If it recurs **after** #8363 merges, it is a new mechanism rather than a return of this one —
+say so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes
+them.
+
+## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
+
+`import-recording.spec.ts:84` failed in the 2026-09-15 nightly (run 34994810480) with a good
+message — it named the imported file's id and the ids actually on the page — but that alone does
+not say whether the test or Bloom is wrong. What settled it was the **order of Bloom's own API
+calls**: `checkForAnyRecording?ids=i40279cf0…` repeatedly before the import, `fileIO/copyFile`
+naming `i69cdb056…`, and then `checkForAnyRecording?ids=i69cdb056…` — an id that appears in no
+page query anywhere in the trace. That sequence is what proved a real product bug (BL-16873,
+Import Recording naming the mp3 after an element that is not the one owning the audio) rather
+than a flaky test, and it is what told us *which* of two possible mechanisms had fired.
+
+Getting at it meant downloading the artifact, unzipping `trace.zip`, and writing a throwaway
+Node script: `0-trace.network` is newline-delimited JSON with a `startedDateTime` on every
+entry, so sorting the `bloom/api/` requests by time reconstructs what the tool did. Playwright's
+HTML report has the same data behind a GUI, which is no use to a terminal session or to anyone
+reading a CI artifact. That cost most of an hour, and it is the third nightly investigation this
+month to need it.
+
+Fix direction: a small `src/BloomE2E/tools/apiTimeline.mjs` that takes a `trace.zip` (or a
+`test-results/<test>/` folder) and prints the `bloom/api/` calls in time order; and have
+`keepEvidenceOnFailure` write that timeline beside the kept collection, so the artifact carries
+it and nobody unzips anything. (Found 2026-09-15.)
+
+## Nothing reproduces a loaded-runner race on a developer machine
+
+Three investigations this month — the cover-title loss, the font-chooser pane, and BL-16873 —
+all turned on a failure that the CI runner produces and a developer box does not, and in each
+one "try it locally" was the first thing tried and the least informative. For BL-16873 the local
+attempts were worse than uninformative: of about a dozen runs, only six actually completed an
+import (all correct), because the two more interesting setups never got that far — after a page
+change the Import button was not clickable within 5s, and under CDP `Emulation.setCPUThrottlingRate`
+at 20x the *By Whole Text Box* radio stayed disabled, so the run died before the step under test.
+Throttling the renderer hard enough to widen the race also disables the controls the test needs,
+which is why the cover-title entry's "six with the WebView renderer throttled 6x" found nothing
+either.
+
+So the suite has no honest way to ask "does this fail when the machine is busy?", and a negative
+local result gets reported with more confidence than it earns.
+
+Fix direction: a suite-level slow mode that reproduces runner *contention* rather than clamping
+the renderer — background CPU load while the test runs at normal speed, plus an env var
+(`BLOOM_E2E_SLOW=1`) that the fixtures honour by raising the action timeouts to match, so the UI
+stays drivable while the app's own async work gets pushed around. Worth pairing with a way to
+run one spec N times under that load, since these failures are all intermittent.
+(Found 2026-09-15.)
