@@ -1123,14 +1123,29 @@ namespace Bloom.Book
             BloomWebSocketServer webSocketServerForDialog = null
         )
         {
-            progress = progress ?? new NullProgress();
-            EnsureUpToDate(progress);
-            BookProcessor.EnsurePerPageFixupIfNeededOnAnyThread(
-                this,
-                webSocketServerForDialog,
-                progress
-            );
+            // Serialized because two callers really do arrive at once: the publish tab asks on both
+            // its mount effect and the switchToPublishTab event, and app/ensureBookReady is
+            // requiresSync:false (it has to be), so nothing else keeps them apart. Two book updates
+            // running together is precisely the BL-3166 hazard EnsureUpToDateMemory nags about, and
+            // in a DEBUG build that nag is a MessageBox on a background thread, which hangs Bloom
+            // behind the progress dialog. Whoever gets here second finds the work already done and
+            // falls straight through.
+            lock (s_ensureReadyForUserWorkLock)
+            {
+                progress = progress ?? new NullProgress();
+                EnsureUpToDate(progress);
+                BookProcessor.EnsurePerPageFixupIfNeededOnAnyThread(
+                    this,
+                    webSocketServerForDialog,
+                    progress
+                );
+            }
         }
+
+        // Guards EnsureReadyForUserWork. Static, not per-book: only one book is ever being prepared
+        // for the user at a time, and a shared lock also keeps two different books from updating at
+        // once, which is the same hazard.
+        private static readonly object s_ensureReadyForUserWorkLock = new object();
 
         /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom

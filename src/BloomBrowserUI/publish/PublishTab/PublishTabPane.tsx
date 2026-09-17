@@ -141,9 +141,10 @@ export const PublishTabPane: React.FunctionComponent = () => {
         // whose pages have never been through the browser fix-up this runs that pass, behind its own
         // progress dialog, and everything below then describes a fully migrated book (BL-16877).
         // It is a separate call from getInitialPublishTabInfo because the fix-up must not hold
-        // Bloom's API sync lock, while getInitialPublishTabInfo must keep it -- see PublishApi.
+        // Bloom's API sync lock, while getInitialPublishTabInfo must keep it -- see AppApi. It is
+        // the same call the Edit tab makes (see goToEditTab), for the same reason.
         // Normally a no-op, in which case this costs one quick round trip.
-        post("publish/ensureBookReady", () => {
+        post("app/ensureBookReady", () => {
             get("publish/getInitialPublishTabInfo", (result) => {
                 // There should be a current selection by now but just in case:
                 if (!result.data) {

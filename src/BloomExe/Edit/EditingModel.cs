@@ -1067,30 +1067,13 @@ namespace Bloom.Edit
                     _currentlyDisplayedBook.UserPrefs.MostRecentPage
                 ) ?? _currentlyDisplayedBook.FirstPage;
 
-            // Before the user works with the pages, make sure the book has had the per-page updates
-            // that normally happen only when a page is opened for editing. On an old book most pages
-            // have never had them, so without this the editor works on a half-migrated book
-            // (BL-16852). No-op for a book already up to date, which is the normal case.
-            //
-            // The pass rewrites the book's DOM from a worker thread and must have the book to itself:
-            // every page it loads off-screen announces itself as loaded, including one carrying the
-            // id a live editor would be waiting on. Requiring NoPage is what makes that true, and it
-            // is precisely the case this trigger is for -- switching into the Edit tab, where leaving
-            // the tab has already emptied the editor.
-            //
-            // It also keeps us out of the one path that reaches here with work already in flight:
-            // SetLayout's orientation branch calls _view.OnVisibleChanged(true) from inside a save,
-            // so the state is SavedAndStripped, and SetLayout schedules the pass itself a few lines
-            // later (with the editor emptied first). Starting one here as well would have the two
-            // overlap, because the progress dialog blocks in ShowDialog, which pumps the message loop
-            // and so dispatches the second BeginInvoke inside the first one's dialog (BL-16877).
-            var book = _currentlyDisplayedBook;
-            if (_stateMachine.NoPage && BookProcessor.NeedsPerPageFixup(book))
-            {
-                RunPerPageFixupThenReturnToPage(book, page?.Id, null);
-                return;
-            }
-
+            // Note: the per-page browser fix-up (BL-16852) is deliberately NOT run here. Everything
+            // that brings the user to this tab asks for it first, while the Edit tab is not yet
+            // showing -- see app/ensureBookReady and its callers. Doing it here instead would put a
+            // modal progress dialog on the activation path, with no page yet selected, which is how
+            // BL-16877 first hung Bloom: the front end asked for editView/frameSources, that threw
+            // for want of a current page, and the resulting problem dialog opened inside the
+            // progress dialog's message pump, where neither could be dismissed.
             if (page != null)
                 _view.GoToPage(page);
             if (_view != null)

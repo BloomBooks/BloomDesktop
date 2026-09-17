@@ -7,6 +7,8 @@ import {
     useApiString,
     useWatchString,
 } from "../utils/bloomApi";
+import { AxiosResponse } from "axios";
+import { goToEditTab } from "../utils/goToEditTab";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
@@ -412,10 +414,14 @@ export const BookButton: React.FunctionComponent<{
     // that is not selected and we get another click that we think should be treated as a double.)
     const handleDoubleClick = () => {
         awaitingDoubleClick.current = false; // the next click is definitely a first-click
+        // This selects the book; going to the Edit tab is our step, through the one sequence
+        // every route into Edit uses (see goToEditTab).
         postString(
             `collections/selectAndEditBook?${collectionQuery}`,
             props.book.id,
-        );
+        ).then((response) => {
+            if ((response as AxiosResponse)?.data?.goToEditTab) goToEditTab();
+        });
     };
 
     const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {
