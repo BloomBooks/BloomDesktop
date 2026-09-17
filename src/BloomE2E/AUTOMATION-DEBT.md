@@ -763,10 +763,13 @@ It is timing-dependent (the stale-highlight window is normally repaired within 2
 it shows up on a loaded runner and not on a developer machine — do not expect to reproduce it
 locally, and do not write it off when you cannot.
 
-Fixed in PR #8363; as of 2026-09-15 that is still in review, so a nightly on master can still hit
-it. If it recurs **after** #8363 merges, it is a new mechanism rather than a return of this one —
-say so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes
-them.
+Fixed in PR #8363, which is still in review — so until that merges, this is the expected state of
+master's nightly, and it is not occasional: it failed two of the last three (09-15 fail, 09-16
+pass, 09-17 fail). A red nightly whose only failure is this one needs no investigation; check the
+occurrence log on BL-16873 and move on.
+
+If it recurs **after** #8363 merges, that is a new mechanism rather than a return of this one — say
+so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes them.
 
 ## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
 
