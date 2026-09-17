@@ -115,6 +115,11 @@ export const useBookSettingsAreaDefinition = (
         "BookSettings.WhatToShowOnCover",
     );
 
+    const allCoverPagesLabel = useL10n(
+        "All Cover Pages",
+        "BookSettings.AllCoverPagesGroupLabel",
+    );
+
     const showLanguageNameLabel = useL10n(
         "Show Language Name",
         "BookSettings.ShowLanguageName",
@@ -461,7 +466,7 @@ export const useBookSettingsAreaDefinition = (
                         )}
                     />
                 </ConfigrGroup>
-                <ConfigrGroup label={"All Cover Pages"}>
+                <ConfigrGroup label={allCoverPagesLabel}>
                     <ConfigrCustomStringInput
                         label={coverBackgroundColorLabel}
                         control={coverColorPickerControl}

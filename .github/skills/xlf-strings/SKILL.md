@@ -28,7 +28,13 @@ Strings that are only meant to be seen by developers or if code bugs occur shoul
 
 ## Adding a new entry
 
-1. **Ask the user which priority file to use, with your recommendation.** Explain why you prefer one based on the table above. You may present several strings as a single question if they occur in the same context.
+1. **Stop and ask the user which priority file to use, with your recommendation.** Explain why
+   you prefer one based on the table above. You may present several strings as a single question
+   if they occur in the same context. **Do not proceed until they answer**, and do not settle it
+   yourself by copying where neighbouring ids happen to live -- proximity is not the criterion,
+   how important the string is to the user is. This holds however you got here: a task that began
+   as something else (a review, a bug fix) and turned into adding a string still owes the
+   question.
 2. Add the entry in the chosen file:
 
 ```xml

@@ -185,7 +185,13 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         bloomApp,
     }) => {
         skipIfNoLibraryPassword();
-        test.setTimeout(900000);
+        // Four upload rounds, two of which really send four books, and every book uploaded costs
+        // the child Bloom a thumbnail, a PDF preview, a PDF render and a Ghostscript pass. The
+        // budget has to clear the sum of those, or it, rather than the per-upload timeout in
+        // helpers/bulkUpload.ts, becomes what fails a merely-slow run. A healthy run takes about
+        // six minutes; this is three times that, which also bounds what a wedged test costs the
+        // nightly.
+        test.setTimeout(1200000);
 
         // Clean the account first, so a crashed earlier run's books do not turn this run's "4 new"
         // into "some updated", and get the login this test signs in and cleans up with.

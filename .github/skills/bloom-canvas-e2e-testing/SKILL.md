@@ -67,13 +67,20 @@ Before clicking the canvas tool header, first check whether `#canvasToolControls
   - element count increase (`.bloom-canvas-element`)
   - position/rect checks where relevant
 
-## Critical safety rule (Image Toolbox)
-- Do **not** run any action that opens the native Image Toolbox window.
-- In Canvas context menus/toolbars, never invoke commands that route to `doImageCommand(..., "change")`.
-- In practice, do not click:
-  - `Choose image from your computer...`
-  - `Change image`
-- Do **not** invoke native video capture/file-picker commands either.
+## Critical safety rule (native dialogs)
+- Do **not** let a native OS dialog open unprepared: Playwright cannot see or dismiss it and the run hangs.
+- `Change image` and the context-menu item `Choose image from your computer...` are the same
+  command (`doImageCommand(..., "change")`) and are safe: they open the web image gallery dialog.
+  (Bloom no longer has the WinForms Image Toolbox.) What reaches a native file picker is the
+  gallery's `Open File...` button under `This Computer`, and either command on a GIF, which skips
+  the gallery and goes straight to the picker. This suite attaches to an ordinary running Bloom,
+  not one started with `--e2e`, so the `e2e/nextFileToChoose` hook that the BloomE2E suite arms
+  is **not registered** here (posting to it raises Bloom's missing-endpoint problem dialog). The
+  way to get past a picker in this suite is `winformsUia.ps1` in the `bloom-automation` skill:
+  it fills the picker's "File name:" box and presses Open, or Cancel, over UI Automation, with no
+  pointer or keyboard input. Use `armFileChooser` (`src/BloomE2E/helpers/talkingBook.ts`) only
+  when the Bloom under test was launched with `--e2e`.
+- Do **not** invoke native video capture commands either.
 - In practice, do not click:
   - `Choose Video from your Computer...`
   - `Record yourself...`
