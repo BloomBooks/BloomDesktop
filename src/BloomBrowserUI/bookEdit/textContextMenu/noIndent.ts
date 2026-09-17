@@ -1,4 +1,5 @@
-// The logic behind the "No Indent" command on the text context menu (BL-16649).
+// The logic behind the "Do Not Indent This Paragraph" command on the text context
+// menu (BL-16649).
 // Kept separate from the React component so it can be unit tested against a plain DOM.
 
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementUtils";
@@ -24,14 +25,14 @@ export function findParagraphForTextContextMenu(
     return paragraph;
 }
 
-/** Is "No Indent" currently turned on for this paragraph? */
+/** Is "Do Not Indent This Paragraph" currently turned on for this paragraph? */
 export function isNoIndentOn(paragraph: HTMLElement): boolean {
     return paragraph.classList.contains(kNoIndentClass);
 }
 
 /**
- * "No Indent" is worth offering only if it is already on (so the user can turn it back off),
- * or if something is actually indenting the paragraph, so that turning it on would do
+ * "Do Not Indent This Paragraph" is worth offering only if it is already on (so the
+ * user can turn it back off), or if something is actually indenting the paragraph, so that turning it on would do
  * something visible. A paragraph whose style has no first-line indent gets a disabled item.
  */
 export function canToggleNoIndent(paragraph: HTMLElement): boolean {
@@ -44,7 +45,7 @@ export function canToggleNoIndent(paragraph: HTMLElement): boolean {
     return !!indent && parseFloat(indent) !== 0;
 }
 
-/** Turn "No Indent" on or off for this one paragraph. */
+/** Turn "Do Not Indent This Paragraph" on or off for this one paragraph. */
 export function toggleNoIndent(paragraph: HTMLElement): void {
     paragraph.classList.toggle(kNoIndentClass);
     // The class is plain content markup inside the bloom-editable, so it is saved with the

@@ -55,7 +55,7 @@ const TextContextMenu: React.FunctionComponent<{
                 `}
             >
                 <LocalizableSelectableMenuItem
-                    english="No Indent"
+                    english="Do Not Indent This Paragraph"
                     l10nId="EditTab.TextContextMenu.NoIndent"
                     selected={noIndentIsOn}
                     disabled={!canToggleNoIndent(props.paragraph)}
