@@ -313,11 +313,20 @@ namespace Bloom.Book
 
         /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
-        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
-        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
-        /// need it, or when a run already failed for this book this session (so we don't re-prompt
-        /// every time).
+        /// due, behind a modal progress dialog, and return true if it actually ran. Called on entering
+        /// the Edit tab (EditingModel.OnBecomeVisible) and the Publish tab (PublishView.Activate),
+        /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen),
+        /// and after a page-size change (EditingModel.SetLayout). No-op (returns false) when the book
+        /// does not need it, or when a run already failed for this book this session (so we don't
+        /// re-prompt every time).
+        ///
+        /// THE CALLER MUST ENSURE no other pass is already running for this book and no live page is
+        /// loaded. This method does not check either, and cannot: NeedsPerPageFixup stays true for
+        /// the whole of a run, since the level is stamped only at the end. The callers arrange it by
+        /// starting only from a state where the editor has no page -- see EditingStateMachine.NoPage.
+        /// It matters because the modal below blocks in ShowDialog, which pumps the message loop and
+        /// so dispatches anything queued behind it; two runs would rewrite one book's DOM from two
+        /// worker threads at once.
         ///
         /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
         /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the
