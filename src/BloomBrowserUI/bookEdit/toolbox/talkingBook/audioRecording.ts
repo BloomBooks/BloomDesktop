@@ -5022,6 +5022,12 @@ export default class AudioRecording implements IAudioRecorder {
         // page before the id is written and the mp3 ends up under an id that is not in the saved
         // book -- BL-16873's failure in a different guise. The wait starts only now, after the
         // chooser has returned, so browsing for a file does not hold up a save.
+        //
+        // This narrows the window rather than closing it: requestPageContent abandons any delay
+        // after kMaxWaitTimeMs (4s) and captures the page anyway, so an import slow enough to
+        // exceed that -- a large mp3 on a slow disk -- can still be caught half-done. That cap is
+        // a property of the delay mechanism itself and applies to every user of it, so raising it
+        // is not this change's call to make.
         await wrapWithRequestPageContentDelay(async () => {
             // The file we are about to write is named after the current selection, so make sure
             // that selection is really on the page being shown before we use it. The recording
