@@ -25,7 +25,6 @@ namespace BloomTests.TestDoubles.CollectionTab
                 new BookSelection(),
                 GetDefaultSourceCollectionsList(),
                 BookCollectionFactory,
-                null,
                 new CreateFromSourceBookCommand(),
                 new FakeBookServer(),
                 new CurrentEditableCollectionSelection(),

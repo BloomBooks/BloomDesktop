@@ -270,7 +270,17 @@ export const BookButton: React.FunctionComponent<{
             {
                 label: "Make a book using this source",
                 l10nId: "CollectionTab.MakeBookUsingThisTemplate",
-                command: "app/makeFromSelectedBook",
+                // Not the generic `command:` dispatch, which posts and ignores the reply. This
+                // endpoint makes and selects the book but no longer navigates -- going to the Edit
+                // tab is the front end's step now, through the one sequence every route uses
+                // (goToEditTab). Without this the new book would be made and left sitting on the
+                // Collections tab.
+                onClick: () => {
+                    handleClose();
+                    post("app/makeFromSelectedBook", (response) => {
+                        if (response?.data?.goToEditTab) goToEditTab();
+                    });
+                },
                 // Only show on template books that are in the editable collection (provided the book is checked out, if applicable)
                 hide: () =>
                     !props.collection.isEditableCollection ||
