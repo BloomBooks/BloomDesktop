@@ -1481,18 +1481,35 @@ namespace Bloom.Collection
             //
             // Route it through GetLanguageNameWithScriptVariants like the four branches above, so
             // this path keeps BL-8174's script/region distinctions: GetBestLanguageName answers
-            // with the BASE language's name, so on its own it would label a zh-TW row and a zh-CN
-            // row both "Chinese". nameIsCustom is false because nobody chose this name, which also
-            // keeps us out of that method's one branch that calls GetLanguageName.
+            // with the base language's name, so on its own an nsk-Latn row would read just
+            // "Naskapi". nameIsCustom is false because nobody chose this name, which also keeps
+            // us out of that method's one branch that calls GetLanguageName.
+            //
+            // Chinese is the one case this does not fully rescue: GetBestLanguageName lower-cases
+            // the tag before matching and libpalaso's Simplified/Traditional special cases are
+            // case-sensitive, so zh-CN arrives here as plain "Chinese" and stays that way. It is
+            // still distinct from zh-TW, but it no longer says "Simplified"; see the test cases
+            // on GetDisplayNameForLanguage_LanguageNotInCollection_KeepsScriptVariantDistinctions.
             try
             {
                 if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
+                {
+                    // For an unlisted language (qaa-x-foo), GetBestLanguageName has already
+                    // built the whole label -- it appends the full tag, giving
+                    // "Language Not Listed (qaa-x-foo)". Wrapping that in script variants
+                    // would nest it inside itself, so take it as it stands.
+                    if (
+                        IetfLanguageTag.GetGeneralCode(langTag.ToLowerInvariant())
+                        == WellKnownSubtags.UnlistedLanguage
+                    )
+                        return bestName;
                     return GetLanguageNameWithScriptVariants(
                         langTag,
                         bestName,
                         false,
                         metadataLanguageTag
                     );
+                }
             }
             catch (Exception e)
             {
