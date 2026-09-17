@@ -1484,14 +1484,21 @@ namespace Bloom.Collection
             // with the base language's name, so on its own an nsk-Latn row would read just
             // "Naskapi". nameIsCustom is false because nobody chose this name, which also keeps
             // us out of that method's one branch that calls GetLanguageName.
-            //
-            // Chinese is the one case this does not fully rescue: GetBestLanguageName lower-cases
-            // the tag before matching and libpalaso's Simplified/Traditional special cases are
-            // case-sensitive, so zh-CN arrives here as plain "Chinese" and stays that way. It is
-            // still distinct from zh-TW, but it no longer says "Simplified"; see the test cases
-            // on GetDisplayNameForLanguage_LanguageNotInCollection_KeepsScriptVariantDistinctions.
             try
             {
+                // LibPalaso names three tags in special cases that run BEFORE it consults ICU:
+                // zh-CN, zh-TW and prs. For those, and only those, GetLocalizedLanguageName answers the
+                // same way on every machine, so it is safe here -- it is the machine-dependent ICU
+                // branch below them that this method exists to avoid. Ask for the name in English,
+                // which is the standard name this fallback returns everywhere else.
+                //
+                // Without this they come out wrong, because GetBestLanguageName lower-cases the tag
+                // before matching while LibPalaso's Simplified/Traditional checks are case-sensitive:
+                // zh-CN fell through to the base name "Chinese", losing the only thing that said which
+                // Chinese it was, and zh-TW came out as "Chinese-TW (Chinese)".
+                var generalCode = IetfLanguageTag.GetGeneralCode(langTag);
+                if (generalCode == "zh-CN" || generalCode == "zh-TW" || generalCode == "prs")
+                    return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
                 if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
                 {
                     // For an unlisted language (qaa-x-foo), GetBestLanguageName has already

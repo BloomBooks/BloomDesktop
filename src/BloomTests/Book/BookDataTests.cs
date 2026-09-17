@@ -2593,15 +2593,12 @@ namespace BloomTests.Book
         /// A language the collection does not name still shows its script/region distinction
         /// (BL-8174). The lookup behind the fallback answers with the base language's name, so
         /// without the script-variant routing a nsk-Latn row would just say "Naskapi".
-        ///
-        /// zh-CN is the exception, and is here to pin that: the lookup lower-cases the tag
-        /// before matching, and libpalaso's Simplified/Traditional special cases are
-        /// case-sensitive, so zh-CN reaches us as plain "Chinese" and the zh-CN branch of
-        /// GetLanguageNameWithScriptVariants then leaves it alone. It stays distinct from
-        /// zh-TW, but it no longer says "Simplified".
         /// </summary>
-        [TestCase("zh-TW", "Chinese-TW (Chinese)")]
-        [TestCase("zh-CN", "Chinese")]
+        // LibPalaso names these three before it ever consults ICU, so they are the same on
+        // every machine and we ask it for them directly.
+        [TestCase("zh-CN", "Chinese (Simplified)")]
+        [TestCase("zh-TW", "Chinese (Traditional)")]
+        [TestCase("prs", "Dari")]
         // An unlisted language already carries its whole tag in the name the lookup
         // returns, so it must not also be wrapped in script variants.
         [TestCase("qaa-x-foo", "Language Not Listed (qaa-x-foo)")]
