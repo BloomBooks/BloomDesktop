@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -391,76 +392,143 @@ namespace Bloom.Publish.Video
             // Windows DLL external methods this function uses.
             if (Platform.IsLinux)
                 return false;
-            // If we can't use this function, we just won't bother with a warning about scaling.
-            // Hopefully not many older systems have high-DPI monitors.
-            if (!CanUseSetThreadDpiAwarenesPerMonitorV2())
-                return false;
 
-            var scaledWidth = Screen.PrimaryScreen.Bounds.Width;
-            int bloomScaledWidth = scaledWidth;
+            // Use the actual DPI of the screen where Bloom is running.
             var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-            if (mainWindow != null)
+            if (mainWindow != null && mainWindow.IsHandleCreated)
             {
-                bloomScaledWidth = Screen.FromControl(mainWindow).Bounds.Width;
+                var monitorScalePercent = TryGetWindowScalePercent(mainWindow.Handle);
+                if (monitorScalePercent.HasValue)
+                    return monitorScalePercent.Value != 100;
+
+                var windowDpi = TryGetWindowDpi(mainWindow.Handle);
+                if (windowDpi.HasValue)
+                    return windowDpi.Value != 96;
+
+                // Fallback for environments where GetDpiForWindow is unavailable.
+                if (mainWindow.DeviceDpi != 96)
+                    return true;
             }
 
-            var originalAwareness = SetThreadDpiAwarenessContext(
-                ThreadDpiAwareContext.PerMonitorAwareV2
-            );
+            var systemDpi = TryGetSystemDpi();
+            if (systemDpi.HasValue)
+                return systemDpi.Value != 96;
+
+            // Fallback for paths where we don't have the shell form yet.
+            using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                return Math.Abs(graphics.DpiX - 96f) > 0.5f;
+            }
+        }
+
+        /// <summary>
+        /// Returns the DPI for a specific window when supported by this Windows version.
+        /// </summary>
+        private static uint? TryGetWindowDpi(IntPtr handle)
+        {
             try
             {
-                // In my testing, this did NOT give the real width, but the scaledWidth.
-                // Leaving it in in case there may be some combination of monitor settings
-                // where it indicates a difference, because I think we may well have a problem
-                // if the main monitor is scaled, even if the one Bloom is on is not.
-                // If we determine that we definitely need to check this screen as well as the
-                // one where the Bloom Window is, it may work to make a dummy window while in
-                // this thread mode, put it on that screen, and then use Screen.FromControl on that.
-                // Yet another approach would be to maximize the dummy window and then get its size.
-                if (Screen.PrimaryScreen.Bounds.Width != scaledWidth)
-                    return true;
-                // We definitely have a problem if the screen that the preview will be on,
-                // the same one as Bloom, is scaled.
-                if (
-                    mainWindow != null
-                    && Screen.FromControl(mainWindow).Bounds.Width != bloomScaledWidth
-                )
-                    return true;
+                return GetDpiForWindow(handle);
             }
-            finally
+            catch (EntryPointNotFoundException)
             {
-                SetThreadDpiAwarenessContext(originalAwareness);
+                return null;
             }
-
-            return false;
         }
 
-        private static bool CanUseSetThreadDpiAwarenesPerMonitorV2()
+        /// <summary>
+        /// Returns the system DPI when supported by this Windows version.
+        /// </summary>
+        private static uint? TryGetSystemDpi()
         {
-            // Create a reference to the OS version of Windows 10 Creators Update.
-            // This is the first version of Windows that can use SetThreadDpiAwarenessContext
-            Version OsMinVersion = new Version(10, 0, 15063, 0);
-            return Environment.OSVersion.Version.CompareTo(OsMinVersion) >= 0;
+            try
+            {
+                return GetDpiForSystem();
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
         }
 
-        // Possible values for SetThreadDpiAwarenessContext
-        static class ThreadDpiAwareContext
+        /// <summary>
+        /// Returns monitor scale percentage (for example, 100, 125, 150) for the monitor
+        /// containing the specified window, when supported by this Windows version.
+        /// </summary>
+        private static uint? TryGetWindowScalePercent(IntPtr handle)
         {
-            public static readonly nint Invalid = 0;
-            public static readonly nint Unaware = (nint)(-1);
-            public static readonly nint SystemAware = (nint)(-2);
-            public static readonly nint PerMonitorAware = (nint)(-3);
+            try
+            {
+                var monitor = MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST);
+                if (monitor == IntPtr.Zero)
+                    return null;
 
-            /* Fails if used before Creators Update. */
-            public static readonly nint PerMonitorAwareV2 = (nint)(-4);
+                return GetScaleFactorForMonitor(monitor, out var scaleFactor) == 0
+                    ? scaleFactor
+                    : null;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return null;
+            }
+            catch (DllNotFoundException)
+            {
+                return null;
+            }
         }
 
-        // Use with care...Windows only! And the option we want to use only works after the 'creators update'
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+
         [DllImport("user32.dll")]
-        static extern nint SetThreadDpiAwarenessContext(nint newContext);
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("Shcore.dll")]
+        private static extern int GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForSystem();
 
         private void RecordVideo(ApiRequest request)
         {
+            string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
+            if (format != "mp3" && IsScalingActive())
+            {
+                var messageBoxButtons = new[]
+                {
+                    new MessageBoxButton()
+                    {
+                        Text = LocalizationManager.GetString(
+                            "PublishTab.RecordVideo.DisplaySettings",
+                            "Open Display Settings"
+                        ),
+                        Id = "openSettings",
+                    },
+                    new MessageBoxButton()
+                    {
+                        Text = LocalizationManager.GetString("Common.Cancel", "Cancel"),
+                        Id = "cancel",
+                        Default = true,
+                    },
+                };
+
+                if (
+                    BloomMessageBox.Show(
+                        null,
+                        $"<p><b>{LocalizationManager.GetString("PublishTab.RecordVideo.DisableScaling", "Disable Display Scaling")}</b></p><p>{LocalizationManager.GetString("PublishTab.RecordVideo.ChangeScale100", "Please change your display scaling to 100% while making videos.")}</p>",
+                        messageBoxButtons,
+                        MessageBoxIcon.Warning
+                    ) == "openSettings"
+                )
+                {
+                    ProcessExtra.SafeStartInFront("desk.cpl");
+                }
+
+                return;
+            }
+
             _recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
             var anyVideoHasAudio = _recordVideoWindow.AnyVideoHasAudio(request.CurrentBook);
             if (anyVideoHasAudio)
@@ -496,7 +564,6 @@ namespace Bloom.Publish.Video
                     return;
                 }
             }
-            string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
             _recordVideoWindow.SetFormat(
                 format,
                 ShouldRecordAsLandscape(request.CurrentBook, format),

@@ -107,6 +107,21 @@
         <source xml:lang="en">Bloom Accessibility Checker</source>
         <note>ID: AccessibilityCheck.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="AccountMenu.Account">
+        <source xml:lang="en">Account</source>
+        <note>ID: AccountMenu.Account</note>
+        <note>Tooltip and accessible label for the round avatar button in the top bar of the main window.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignIn">
+        <source xml:lang="en">Sign in</source>
+        <note>ID: AccountMenu.SignIn</note>
+        <note>Button in the top bar of the main window. Clicking it opens the web browser to sign in to BloomLibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="AccountMenu.SignOut">
+        <source xml:lang="en">Sign out</source>
+        <note>ID: AccountMenu.SignOut</note>
+        <note>Menu item shown under the user's avatar in the top bar; signs the user out of BloomLibrary.org.</note>
+      </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true">
         <source xml:lang="en">Software Updates</source>
         <note>ID: AutoUpdateSoftwareDialog.SoftwareUpdates</note>
@@ -314,27 +329,52 @@
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
       </trans-unit>
-      <trans-unit id="Collection.CollectionRequiresNewerVersion" translate="no">
+      <trans-unit id="Collection.CollectionRequiresNewerVersion">
         <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
         <note>ID: Collection.CollectionRequiresNewerVersion</note>
         <note>{0} is the name of the collection, {1} is the version it requires, {2} is the version of Bloom that is running.</note>
       </trans-unit>
-      <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true" translate="no">
+      <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true">
         <source xml:lang="en">This collection needs a newer version of Bloom.</source>
         <note>ID: Collection.NewerVersionNeededHeader</note>
       </trans-unit>
-      <trans-unit id="Collection.NothingNewerAvailable" translate="no">
+      <trans-unit id="Collection.NothingNewerAvailable">
         <source xml:lang="en">This collection needs Bloom {0}, but you already have the newest Bloom available to you.</source>
         <note>ID: Collection.NothingNewerAvailable</note>
         <note>{0} is the version the collection requires.</note>
       </trans-unit>
-      <trans-unit id="Collection.OpenDifferentCollection" translate="no">
+      <trans-unit id="Collection.OpenDifferentCollection">
         <source xml:lang="en">Open a Different Collection</source>
         <note>ID: Collection.OpenDifferentCollection</note>
       </trans-unit>
-      <trans-unit id="Collection.UpgradeBloom" translate="no">
+      <trans-unit id="Collection.UpgradeBloom">
         <source xml:lang="en">Upgrade Bloom</source>
         <note>ID: Collection.UpgradeBloom</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountSingular">
+        <source xml:lang="en">{0} book</source>
+        <note>ID: CollectionChooser.BookCountSingular</note>
+        <note>{0} is the number of books; use this entry when the count is exactly 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.BookCountPlural">
+        <source xml:lang="en">{0} books</source>
+        <note>ID: CollectionChooser.BookCountPlural</note>
+        <note>{0} is the number of books; use this entry when the count is 0 or more than 1.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.CheckedOutCount">
+        <source xml:lang="en">{0} checked out to you</source>
+        <note>ID: CollectionChooser.CheckedOutCount</note>
+        <note>{0} is the number of books checked out to the current user in a team collection.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedToBloomLibrary">
+        <source xml:lang="en">Books not yet published to BloomLibrary.org</source>
+        <note>ID: CollectionChooser.UnpublishedToBloomLibrary</note>
+        <note>Hover tooltip on the unpublished-count label of a collection card in the Open/Create Collections dialog. "BloomLibrary.org" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionChooser.UnpublishedShort">
+        <source xml:lang="en">{0} unpublished</source>
+        <note>ID: CollectionChooser.UnpublishedShort</note>
+        <note>Short label shown on a status chip on a collection card in the Open/Create Collections dialog. {0} is the number of books not yet published to BloomLibrary.org. The phrase "Books not yet published to BloomLibrary.org" appears as the chip's hover tooltip.</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AboutBloomSubscriptions">
         <source xml:lang="en">About Bloom Subscriptions</source>
@@ -639,12 +679,6 @@
         <source xml:lang="en">Province</source>
         <note>ID: CollectionSettingsDialog.ProjectInformationTab.Province</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.RequiresSubscription_ToolTip_" sil:dynamic="true">
-        <source xml:lang="en">To use this feature, you'll need a Bloom Subscription.</source>
-        <note>ID: CollectionSettingsDialog.RequiresSubscription_ToolTip_</note>
-        <note>Same as the text for "EditTab.RequiresSubscription"</note>
-        <note>Obsolete as of 6.2</note>
-      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.Restart">
         <source xml:lang="en">Restart</source>
         <note>ID: CollectionSettingsDialog.Restart</note>
@@ -666,11 +700,6 @@
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.Applying">
-        <source xml:lang="en">Applying updates</source>
-        <note>ID: CollectionTab.Applying</note>
-        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BloomLibraryLinkLabel">
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
@@ -840,11 +869,6 @@
         <source xml:lang="en">Open or Create Another Collection</source>
         <note>ID: CollectionTab.OpenCreateCollectionMenuItem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.Progress">
-        <source xml:lang="en">({0}% complete)</source>
-        <note>ID: CollectionTab.Progress</note>
-        <note>obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.RemoveThisGroup">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
         <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
@@ -906,11 +930,6 @@
       <trans-unit id="CollectionTab.UpdateCheckInProgress">
         <source xml:lang="en">Bloom is already working on checking for updates.</source>
         <note>ID: CollectionTab.UpdateCheckInProgress</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.UpdateFailed">
-        <source xml:lang="en">A new version appears to be available, but Bloom could not install it.</source>
-        <note>ID: CollectionTab.UpdateFailed</note>
-        <note>obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="CollectionTab.UpdateInstalled">
         <source xml:lang="en">Update for {0} is ready</source>
@@ -1034,11 +1053,6 @@
         <source xml:lang="en">Done</source>
         <note>ID: Common.Done</note>
         <note>Shown in a list of messages when Bloom has completed a task.</note>
-      </trans-unit>
-      <trans-unit id="Common.SubscriptionRequired">
-        <source xml:lang="en">Subscription Required</source>
-        <note>ID: Common.SubscriptionRequired</note>
-        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="Common.HigherSubscriptionTierRequired">
         <source xml:lang="en">Feature Requires Higher Subscription Tier</source>
@@ -1378,11 +1392,6 @@
         <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
         <note>ID: EditTab.ContentLanguagesDropdown.ToolTip</note>
       </trans-unit>
-      <trans-unit id="EditTab.ContentLanguagesDropdown_ToolTip_">
-        <source xml:lang="en">Choose language to make this a bilingual or trilingual book</source>
-        <note>ID: EditTab.ContentLanguagesDropdown_ToolTip_</note>
-        <note>Obsolete as of 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.CopyButton">
         <source xml:lang="en">Copy</source>
         <note>ID: EditTab.CopyButton</note>
@@ -1434,11 +1443,6 @@
         <note>ID: EditTab.CustomPage.Or</note>
         <note>Shown between 'Image' and 'Text' when Custom Page is in Layout mode</note>
         <note xml:lang="en">OLD TEXT (before 3.9, surrounding spaces):  or </note>
-      </trans-unit>
-      <trans-unit id="EditTab.CustomPage.Picture" sil:dynamic="true">
-        <source xml:lang="en">Picture</source>
-        <note>ID: EditTab.CustomPage.Picture</note>
-        <note>Obsolete as of 6.3</note>
       </trans-unit>
       <trans-unit id="EditTab.CustomPage.Image" sil:dynamic="true">
         <source xml:lang="en">Image</source>
@@ -1503,6 +1507,11 @@
         <note>ID: EditTab.DirectFormatting.Underline</note>
         <note>This is for the 4-button panel that pops up when the user selects more than one character in a textbox.</note>
       </trans-unit>
+      <trans-unit id="EditTab.DirectFormatting.RemoveFormat" sil:dynamic="true">
+        <source xml:lang="en">Remove Formatting</source>
+        <note>ID: EditTab.DirectFormatting.RemoveFormat</note>
+        <note>Tooltip for the "clear formatting" button in the panel that pops up when the user selects more than one character in a textbox. Clicking it strips bold/italic/underline/superscript/color from the selection.</note>
+      </trans-unit>
       <trans-unit id="EditTab.DirectFormatting.labelForDefaultColor" sil:dynamic="true">
         <source xml:lang="en">Default for style</source>
         <note>ID:EditTab.DirectFormatting.labelForDefaultColor</note>
@@ -1553,12 +1562,6 @@
       <trans-unit id="EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong" sil:dynamic="true">
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
-      </trans-unit>
-      <trans-unit id="EditTab.SubscriptionEnabled" sil:dynamic="true">
-        <source xml:lang="en">Your subscription includes this feature.</source>
-        <note>ID: EditTab.SubscriptionEnabled</note>
-        <note>Appears in a tooltip on the Subscription button when the user DOES have a subscription (cf EditTab.RequiresSubscription).</note>
-        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="EditTab.SubscriptionSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Subscription Settings</source>
@@ -1930,11 +1933,6 @@
         <note>ID: EditTab.FrontMatter.TranslatedAcknowledgmentsPrompt</note>
         <note>Put {lang} in your translation, so it can be replaced by the language name. Do NOT translate "lang".</note>
       </trans-unit>
-      <trans-unit id="EditTab.HowToUseHyperlink">
-        <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
-        <note>ID: EditTab.HowToUseHyperlink</note>
-        <note>Obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.HyperlinkPasteFailure">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
         <note>ID: EditTab.HyperlinkPasteFailure</note>
@@ -1980,11 +1978,6 @@
         <note>ID: EditTab.ImageMetadata.Corrupt.MoreInfo</note>
         <note>label of a button to click to display a website with more information</note>
       </trans-unit>
-      <trans-unit id="EditTab.Image.CutImage" sil:dynamic="true">
-        <source xml:lang="en">Cut image</source>
-        <note>ID: EditTab.Image.CutImage</note>
-        <note>Obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.Image.EditMetadata" sil:dynamic="true">
         <source xml:lang="en">Edit image credits, copyright, &amp; license</source>
         <note>ID: EditTab.Image.EditMetadata</note>
@@ -2017,6 +2010,26 @@
         <source xml:lang="en">Reset image</source>
         <note>ID: EditTab.Image.Reset</note>
         <note>Removes cropping from image</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Transparency">
+        <source xml:lang="en">Transparency</source>
+        <note>ID: EditTab.Image.Transparency</note>
+        <note>Submenu for controlling whether the image background is made transparent</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Transparency.Auto">
+        <source xml:lang="en">Auto</source>
+        <note>ID: EditTab.Image.Transparency.Auto</note>
+        <note>Image background transparency is automatic: transparent when the image looks like line art</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Transparency.Transparent">
+        <source xml:lang="en">Transparent</source>
+        <note>ID: EditTab.Image.Transparency.Transparent</note>
+        <note>Always make the image background transparent regardless of its content</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Transparency.Opaque">
+        <source xml:lang="en">Opaque</source>
+        <note>ID: EditTab.Image.Transparency.Opaque</note>
+        <note>Never make the image background transparent</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.TooLarge" sil:dynamic="true">
         <source xml:lang="en">Bloom ran out of memory loading this image ({0}), which is quite large ({1} by {2} pixels). Click Help for suggestions.</source>
@@ -2061,7 +2074,7 @@
         <note>Default file and folder name when you make a new book, but haven't given it a title yet.</note>
       </trans-unit>
       <trans-unit id="EditTab.NoImageFoundOnClipboard">
-        <source xml:lang="en">Before you can paste an image, copy one onto your 'clipboard', from another program.</source>
+        <source xml:lang="en">Bloom did not find an image on your clipboard. Copy one first, then paste again.</source>
         <note>ID: EditTab.NoImageFoundOnClipboard</note>
       </trans-unit>
       <trans-unit id="EditTab.NoValidImageFoundOnClipboard">
@@ -2072,6 +2085,31 @@
         <source xml:lang="en">There are no other options for this template.</source>
         <note>ID: EditTab.NoOtherLayouts</note>
         <note>Shown in the size/orientation chooser dropdown of the edit tab, if there was only a single choice</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Ebooks">
+        <source xml:lang="en">Ebooks</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Ebooks</note>
+        <note>Heading for the ebook-size column in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Other">
+        <source xml:lang="en">Other</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Other</note>
+        <note>Heading for the catch-all group in the page size and orientation chooser dropdown on the edit tab. It lists any sizes a template offers that don't fit the standard metric, ebook, or imperial groups.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Portrait">
+        <source xml:lang="en">Portrait</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Portrait</note>
+        <note>Section heading for portrait page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Landscape">
+        <source xml:lang="en">Landscape</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Landscape</note>
+        <note>Section heading for landscape page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.LayoutChoicesMenu.Square">
+        <source xml:lang="en">Square</source>
+        <note>ID: EditTab.LayoutChoicesMenu.Square</note>
+        <note>Section heading for square page sizes in the page size and orientation chooser dropdown on the edit tab.</note>
       </trans-unit>
       <trans-unit id="EditTab.Overflow" sil:dynamic="true">
         <source xml:lang="en">This box has more text than will fit</source>
@@ -2233,11 +2271,6 @@
         <note>If "Canvas Tool" is hard to translate, "Floating Object Tool" is an alternate.</note>
         <note>This tool allows users to insert speech bubbles or callouts, which are pieces of text connected by a line, arrow, or other graphic to a part of an image. These may be used to give dialogue or to give more information about a specific part of the image.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.DragInstructions" sil:dynamic="true">
-        <source xml:lang="en">Drag any of these elements onto the image:</source>
-        <note>ID: EditTab.Toolbox.ComicTool.DragInstructions</note>
-        <note>obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.ChangeShape" sil:dynamic="true">
         <source xml:lang="en">Change Shape</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.ChangeShape</note>
@@ -2358,12 +2391,6 @@
         <source xml:lang="en">Show Tail</source>
         <note>ID: EditTab.Toolbox.ComicTool.Options.ShowTail</note>
         <note>This checkbox indicates if a line tail should be shown or not.</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.ComicTool.Options.Style" sil:dynamic="true">
-        <source xml:lang="en">Style</source>
-        <note>ID: EditTab.Toolbox.ComicTool.Options.Style</note>
-        <note>Refers to the STYLE of bubble used by the callout</note>
-        <note>obsolete as of 6.3, replaced by following</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ComicTool.Options.ElementType" sil:dynamic="true">
         <source xml:lang="en">Element Type</source>
@@ -2578,6 +2605,7 @@
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport" sil:dynamic="true">
         <source xml:lang="en">Generate a letter and word list report</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.MakeLetterWordReport</note>
+        <note>Obsolete as of 6.5 — shortened to "Generate Report" (DecodableReaderTool.GenerateReport) and moved into an outline button at the bottom of the tool.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.SampleWordsInThisStage" sil:dynamic="true">
         <source xml:lang="en">Sample words in this stage</source>
@@ -2603,6 +2631,7 @@
         <source xml:lang="en">Stage {0} of {1}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into DecodableReaderTool.StageNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ImageDescriptionTool" sil:dynamic="true">
         <source xml:lang="en">Image Description Tool</source>
@@ -2711,6 +2740,7 @@
         <source xml:lang="en">Level {0} of {1}</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelNofM</note>
         <note>{0} is replaced with the current level, and {1} with the total number of levels</note>
+        <note>Obsolete as of 6.5 — split into LeveledReaderTool.LevelNumber + ReaderTools.OfCount so the two parts can be styled separately in the toolbox.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Max" sil:dynamic="true">
         <source xml:lang="en">Max</source>
@@ -2986,12 +3016,6 @@
         <source xml:lang="en">There is nothing to undo</source>
         <note>ID: EditTab.UndoButton.ToolTipWhenDisabled</note>
       </trans-unit>
-      <trans-unit id="EditTab.UsingHyperlink">
-        <source xml:lang="en">Using a hyperlink</source>
-        <note>ID: EditTab.UsingHyperlink</note>
-        <note>Title for dialog box showing the message for EditTab.HowToUseHyperlink</note>
-        <note>Obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="EditTab.Widget.ChooseWidget" sil:dynamic="true">
         <source xml:lang="en">Choose Widget</source>
         <note>ID: EditTab.Widget.ChooseWidget</note>
@@ -3005,11 +3029,6 @@
       <trans-unit id="ErrorReport.Pre10WindowsNotSupported">
         <source xml:lang="en">We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.</source>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
-      </trans-unit>
-      <trans-unit id="Errors.PathTooLong">
-        <source xml:lang="en">Please give your collection a shorter name or move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by one of two things: 1) the collection has a very long name, or 2) the collection is too deeply nested inside many folders on your hard drive.</source>
-        <note>ID: Errors.PathTooLong</note>
-        <note>obsolete as of 6.3, replaced by following</note>
       </trans-unit>
       <trans-unit id="Errors.PathTooLong2">
         <source xml:lang="en">A file Bloom was working with had a path that was too long. You may need to give it a shorter name, or give your collection a shorter name, or move your collection closer to the root of your hard drive.</source>
@@ -3282,6 +3301,77 @@
       <trans-unit id="HelpMenu.trainingVideos">
         <source xml:lang="en">Training Videos</source>
         <note>ID: HelpMenu.trainingVideos</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.CollectionsOnThisComputer">
+        <source xml:lang="en">Collections on this Computer</source>
+        <note>ID: ImageLibrary.CollectionsOnThisComputer</note>
+        <note>Section heading in the image library's local-images tab, above the list of installed image collections (e.g. Art of Reading).</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ImageChooser">
+        <source xml:lang="en">Image Chooser</source>
+        <note>ID: ImageLibrary.ImageChooser</note>
+        <note>Title bar of the dialog for finding and choosing a picture, from the user's computer or from online sources.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OnlineSources">
+        <source xml:lang="en">Online Sources</source>
+        <note>ID: ImageLibrary.OnlineSources</note>
+        <note>Tab or section header in the image library dialog for online image providers such as Pixabay and Openverse.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.OpenFile">
+        <source xml:lang="en">Open File...</source>
+        <note>ID: ImageLibrary.OpenFile</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.Search">
+        <source xml:lang="en">Search</source>
+        <note>ID: ImageLibrary.Search</note>
+        <note>Label for the search input field in the image library.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.ThisComputer">
+        <source xml:lang="en">This Computer</source>
+        <note>ID: ImageLibrary.ThisComputer</note>
+        <note>Tab or section header in the image library dialog for browsing locally installed image collections.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.UseThisImage">
+        <source xml:lang="en">Use this image</source>
+        <note>ID: ImageLibrary.UseThisImage</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PasteApiKeyFromClipboard">
+        <source xml:lang="en">Paste API key from clipboard</source>
+        <note>ID: ImageLibrary.PasteApiKeyFromClipboard</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyInstructions">
+        <source xml:lang="en">To use Pixabay, you need an API key:</source>
+        <note>ID: ImageLibrary.PixabayApiKeyInstructions</note>
+        <note>Introductory sentence for a numbered list of steps to obtain a Pixabay API key.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayApiKeyLabel">
+        <source xml:lang="en">Pixabay API Key</source>
+        <note>ID: ImageLibrary.PixabayApiKeyLabel</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayFindKey">
+        <source xml:lang="en">Copy the API key shown on that page, next to &quot;Your API key:&quot;</source>
+        <note>ID: ImageLibrary.PixabayFindKey</note>
+        <note>Step 2 of 3 in the Pixabay API key instructions. "That page" is the Pixabay API documentation page opened in step 1; "Your API key:" is English text shown on that Pixabay page, so leave it in English.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayGoToApiKeyPage">
+        <source xml:lang="en">go to the API key page</source>
+        <note>ID: ImageLibrary.PixabayGoToApiKeyPage</note>
+        <note>Clickable link text completing the sentence "or, if already logged in, go to the API key page" in the Pixabay API key instructions.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayLogIn">
+        <source xml:lang="en">Log in to Pixabay</source>
+        <note>ID: ImageLibrary.PixabayLogIn</note>
+        <note>Text of a link, in step 1 of the Pixabay API key instructions, that opens the Pixabay login page. It is substituted into {0} of ImageLibrary.PixabayOrIfLoggedIn. "Pixabay" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayOrIfLoggedIn">
+        <source xml:lang="en">{0} or, if already logged in, {1}</source>
+        <note>ID: ImageLibrary.PixabayOrIfLoggedIn</note>
+        <note>Sentence in the Pixabay API key instructions. {0} is replaced with a "Log in to Pixabay" link; {1} is replaced with a "go to the API key page" link.</note>
+      </trans-unit>
+      <trans-unit id="ImageLibrary.PixabayStep4">
+        <source xml:lang="en">Paste it below</source>
+        <note>ID: ImageLibrary.PixabayStep4</note>
+        <note>Step 3 of 3 in the Pixabay API key instructions. "It" refers to the API key copied in step 2; "below" refers to the text input field below the instruction list.</note>
       </trans-unit>
       <trans-unit id="ImageUtils.PreparingImage">
         <source xml:lang="en">Preparing image: {0}</source>
@@ -3621,10 +3711,6 @@
         <source xml:lang="en">Click 'Next' to get started.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine3</note>
       </trans-unit>
-      <trans-unit id="OpenCreateCloneControl.InDropboxMessage">
-        <source xml:lang="en">Bloom detected that this collection is located in your Dropbox folder. This can cause problems as Dropbox sometimes locks Bloom out of its own files. If you have problems, we recommend that you move your collection somewhere else or disable Dropbox while using Bloom.</source>
-        <note>ID: OpenCreateCloneControl.InDropboxMessage</note>
-      </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InSourceCollectionMessage">
         <source xml:lang="en">This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.</source>
         <note>ID: OpenCreateCloneControl.InSourceCollectionMessage</note>
@@ -3637,6 +3723,11 @@
       <trans-unit id="OpenCreateNewCollectionsDialog.BrowseForOtherCollections">
         <source xml:lang="en">Browse for another collection on this computer</source>
         <note>ID: OpenCreateNewCollectionsDialog.BrowseForOtherCollections</note>
+      </trans-unit>
+      <trans-unit id="OpenCreateNewCollectionsDialog.BrowseOnThisComputer">
+        <source xml:lang="en">Browse on this computer</source>
+        <note>ID: OpenCreateNewCollectionsDialog.BrowseOnThisComputer</note>
+        <note>Text button at the bottom-left of the Open/Create Collections dialog. Clicking it opens a file browser so the user can find a Bloom collection stored elsewhere on their computer.</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.CopyFromChorusHub">
         <source xml:lang="en">Copy From Chorus Hub on Local Network</source>
@@ -3655,7 +3746,7 @@
         <note>ID: OpenCreateNewCollectionsDialog.CreateNewCollection</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle">
-        <source xml:lang="en">Open/Create Collections</source>
+        <source xml:lang="en">Open / Create Collections</source>
         <note>ID: OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle</note>
       </trans-unit>
       <trans-unit id="OpenCreateNewCollectionsDialog.ReadMoreLink">
@@ -3676,19 +3767,9 @@
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Activity">
-        <source xml:lang="en">Activity</source>
-        <note>ID: PublishTab.Activity</note>
-        <note>obsolete as of Bloom 6.2</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Game">
         <source xml:lang="en">Game</source>
         <note>ID: PublishTab.Game</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Comic">
-        <source xml:lang="en">Comic</source>
-        <note>ID: PublishTab.Comic</note>
-        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>
@@ -3945,12 +4026,6 @@
         <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
         <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
         <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook" sil:dynamic="true">
-        <source xml:lang="en">Replacing existing "{0}"...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
-        <note>{0} is a book title</note>
-        <note>Obsolete as of Bloom 6.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
         <source xml:lang="en">Sending "{0}" to your Android device...</source>
@@ -4372,12 +4447,6 @@
         <note>ID: PublishTab.PdfMaker.ErrorSaving</note>
         <note>Message briefly displayed to the user in a toast</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.FullBleed">
-        <source xml:lang="en">Full Bleed</source>
-        <note>ID: PublishTab.PdfMaker.FullBleed</note>
-        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
-        <note>Obsolete as of 6.3</note>
-      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
@@ -4511,11 +4580,6 @@
         <source xml:lang="en">about {0} minutes</source>
         <note>ID: PublishTab.RecordVideo.AboutNMinutes</note>
         <note>{0} is a number of minutes</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
-        <source xml:lang="en">Activities will be skipped</source>
-        <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
-        <note>Obsolete as of 6.2</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.GamesSkipped">
         <source xml:lang="en">Games will be skipped</source>
@@ -5385,11 +5449,6 @@ Do you want to go ahead?</note>
         <note>ID: ReaderTemplateBloomPackDialog.ExplanationParagraph</note>
         <note xml:lang="en">OLD TEXT (before 3.9, remove unwanted backslashes): In addition, this Bloom Pack will carry your latest decodable and leveled reader settings for the \"{0}\" language. Anyone opening this Bloom Pack, who then opens a \"{0}\" collection, will have their current decodable and leveled reader settings replaced by the settings in this Bloom Pack. They will also get the current set of words for use in decodable readers.</note>
       </trans-unit>
-      <trans-unit id="ReaderTemplateBloomPackDialog.HelpButtonLabel">
-        <source xml:lang="en">Help</source>
-        <note>ID: ReaderTemplateBloomPackDialog.HelpButtonLabel</note>
-        <note>Obsolete as of Bloom 6.3</note>
-      </trans-unit>
       <trans-unit id="ReaderTemplateBloomPackDialog.IntroLabel">
         <source xml:lang="en">The following books will be made into templates:</source>
         <note>ID: ReaderTemplateBloomPackDialog.IntroLabel</note>
@@ -5836,17 +5895,32 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Please check out this book from the Team Collection before publishing it.</source>
         <note>ID: TeamCollection.CheckoutRequiredExplanation</note>
       </trans-unit>
+      <trans-unit id="SignInInvitationDialog.Title">
+        <source xml:lang="en">Please sign in to Bloom</source>
+        <note>ID: SignInInvitationDialog.Title</note>
+        <note>Title of the dialog that invites a Team Collection user to sign in to their BloomLibrary.org account. It appears when Bloom opens a Team Collection and nobody is signed in. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.Message">
+        <source xml:lang="en">We're simplifying how teams work together in Bloom. Nothing changes for your collection yet, but signing in now will get you ready.</source>
+        <note>ID: SignInInvitationDialog.Message</note>
+        <note>The body text of the dialog that invites a Team Collection user to sign in. It reassures them that nothing about their collection is changing today. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.LearnAboutCollaboration">
+        <source xml:lang="en">Learn about Bloom Collaboration</source>
+        <note>ID: SignInInvitationDialog.LearnAboutCollaboration</note>
+        <note>Text of a link, next to a question-mark icon, in the dialog that invites a Team Collection user to sign in. Clicking it opens a documentation web page. "Bloom Collaboration" is a feature name and should probably not be translated.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.NotAbleYet">
+        <source xml:lang="en">I'm not able to yet</source>
+        <note>ID: SignInInvitationDialog.NotAbleYet</note>
+        <note>Label of the button that dismisses the dialog inviting a Team Collection user to sign in, without signing in. The user is saying they cannot sign in at the moment. Shown in capital letters by the button itself, so do not capitalize it here.</note>
+      </trans-unit>
+      <trans-unit id="SignInInvitationDialog.SignIn">
+        <source xml:lang="en">Sign in to BloomLibrary.org</source>
+        <note>ID: SignInInvitationDialog.SignIn</note>
+        <note>Label of the main button in the dialog inviting a Team Collection user to sign in; it opens the BloomLibrary.org login page in the user's web browser. "BloomLibrary.org" is a web address and must not be translated. Shown in capital letters by the button itself, so do not capitalize it here.</note>
+      </trans-unit>
 -->
-      <trans-unit id="TemplateBooks.BookName.Activity" sil:dynamic="true">
-        <source xml:lang="en">Activity</source>
-        <note>ID: TemplateBooks.BookName.Activity</note>
-        <note>obsolete as of Bloom 6.2</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Arithmetic" sil:dynamic="true">
-        <source xml:lang="en">Arithmetic</source>
-        <note>ID: TemplateBooks.BookName.Arithmetic</note>
-        <note>obsolete as of Bloom 6.2</note>
-      </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Arithmetic Pages" sil:dynamic="true">
         <source xml:lang="en">Arithmetic Pages</source>
         <note>ID: TemplateBooks.BookName.Arithmetic Pages</note>
@@ -5902,16 +5976,6 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.BookName.Sign Language" sil:dynamic="true">
         <source xml:lang="en">Sign Language</source>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
-        <source xml:lang="en">Sign Language Pages</source>
-        <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
-        <note>obsolete as of Bloom 6.2</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Special" sil:dynamic="true">
-        <source xml:lang="en">Special</source>
-        <note>ID: TemplateBooks.BookName.Special</note>
-        <note>obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true">
         <source xml:lang="en">Special Pages</source>
@@ -5991,11 +6055,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">For use with Landscape orientation.</source>
         <note>ID: TemplateBooks.PageDescription.Image on Right</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Quiz Page" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with a question and some answers. Works on the web and Bloom Reader. When used with Bloom Reader, your project's dashboard can show aggregated comprehension scores.</source>
-        <note>ID: TemplateBooks.PageDescription.Quiz Page</note>
-        <note>Obsolete as of Bloom 6.2</note>
-      </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Choose Image from Word" sil:dynamic="true">
         <source xml:lang="en">Readers see one word and three images. They choose the image that matches the word. The image order changes each time the game is played.</source>
         <note>ID: TemplateBooks.PageDescription.Choose Image from Word</note>
@@ -6003,16 +6062,6 @@ is mostly status, which shows on the Collection Tab -->
       <trans-unit id="TemplateBooks.PageDescription.Choose Word from Image" sil:dynamic="true">
         <source xml:lang="en">Readers see one image and three words. They pick the word that matches the image. The word order changes each time the game is played.</source>
         <note>ID: TemplateBooks.PageDescription.Choose Word from Image</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Picture from Word" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with a text and some picture buttons.</source>
-        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
-        <note>Obsolete as of Bloom 6.2</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageDescription.Choose Word from Picture" sil:dynamic="true">
-        <source xml:lang="en">An interactive page with an image and some text buttons.</source>
-        <note>ID: TemplateBooks.PageDescription.Choose Word from Picture</note>
-        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageDescription.Drag Images to Shadows" sil:dynamic="true">
         <source xml:lang="en">
@@ -6254,16 +6303,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Choose Word from Image</source>
         <note>ID: TemplateBooks.PageLabel.Choose Word from Image</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Picture from Word" sil:dynamic="true">
-        <source xml:lang="en">Choose Picture from Word</source>
-        <note>ID: TemplateBooks.PageLabel.Choose Picture from Word</note>
-        <note>Obsolete as of Bloom 6.2</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Choose Word from Picture" sil:dynamic="true">
-        <source xml:lang="en">Choose Word from Picture</source>
-        <note>ID: TemplateBooks.PageLabel.Choose Word from Picture</note>
-        <note>Obsolete as of Bloom 6.2</note>
-      </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.Comic" sil:dynamic="true">
         <source xml:lang="en">Comic</source>
         <note>ID: TemplateBooks.PageLabel.Comic</note>
@@ -6442,11 +6481,6 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">Quiz</source>
         <note>ID: TemplateBooks.PageLabel.Quiz</note>
         <note>Used in page preview for Comprehension Question pages. Should be short.</note>
-      </trans-unit>
-      <trans-unit id="TemplateBooks.PageLabel.Quiz Page" sil:dynamic="true">
-        <source xml:lang="en">Quiz Page</source>
-        <note>ID: TemplateBooks.PageLabel.Quiz Page</note>
-        <note>Obsolete as of Bloom 6.2</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.PageLabel.SIL-Cameroon" sil:dynamic="true">
         <source xml:lang="en">SIL-Cameroon</source>

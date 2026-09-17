@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -19,8 +20,8 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -84,6 +85,16 @@ namespace Bloom.CollectionTab
 
         public BookCollection CurrentEditableCollection =>
             _currentEditableCollectionSelection.CurrentSelection;
+
+        /// <summary>
+        /// True if the open editable collection is a Team Collection (even if it is currently
+        /// disconnected or disabled). BloomBridge's external write endpoints (add/update/process-book)
+        /// refuse to operate on a Team Collection: doing so safely would require honoring checkout
+        /// state, preserving the TeamCollection.status file, and notifying the TC of renames, which
+        /// BloomBridge does not do. See ExternalApi.
+        /// </summary>
+        public bool IsEditableCollectionATeamCollection =>
+            _tcManager?.CurrentCollectionEvenIfDisconnected != null;
 
         /// <summary>
         /// The constructor of BookCommandsApi calls this to work around an Autofac circularity problem.
@@ -186,6 +197,162 @@ namespace Bloom.CollectionTab
                     $"Duplicated from existing book \"{book.Title}\""
                 );
                 newBook.UserPrefs.UploadAgreementsAccepted = false;
+            }
+        }
+
+        /// <summary>
+        /// Copies a book folder from an arbitrary location on disk into the open editable collection,
+        /// reloads the collection, and selects the new book. Used by external automation (e.g. the
+        /// BloomBridge "keep this book" flow) to add a book it produced/processed elsewhere.
+        /// The book keeps its existing bookInstanceId. If a book with that same bookInstanceId is
+        /// already in the collection (e.g. this is a re-conversion of a book we imported before), the
+        /// existing folder is sent to the OS recycle bin and replaced by the incoming one. Otherwise,
+        /// only the destination folder name is made unique (and the main .htm renamed to match) if it
+        /// would collide with an unrelated existing book folder.
+        /// Returns the new Book, or null if it could not be located after the copy.
+        ///
+        /// Assumes the open collection is NOT a Team Collection: it strips the TeamCollection.status
+        /// file, recycles any same-id book without checking it out, and does not notify a TC of the
+        /// resulting add/rename. The only caller (external/add-book) refuses Team Collections up front
+        /// (see ExternalApi.RefuseIfTeamCollection), so that case never reaches here.
+        /// </summary>
+        public Book.Book AddBookFromFolder(string sourceBookFolderPath)
+        {
+            if (
+                string.IsNullOrEmpty(sourceBookFolderPath)
+                || !Directory.Exists(sourceBookFolderPath)
+            )
+                throw new ArgumentException(
+                    "No book folder at " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+            // Trim any trailing separator so GetFileName/GetDirectoryName behave.
+            sourceBookFolderPath = sourceBookFolderPath.TrimEnd(
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar
+            );
+            if (!RobustFile.Exists(Path.Combine(sourceBookFolderPath, "meta.json")))
+                throw new ArgumentException(
+                    "Folder is not a Bloom book (no meta.json): " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+
+            var collectionDir = TheOneEditableCollection.PathToDirectory;
+
+            // It's an error to import from a source folder that is itself inside this collection:
+            // that would be copying a book onto itself. (This is a different situation from the
+            // same-bookInstanceId replacement handled below, where the source lives OUTSIDE the
+            // collection but an existing book in the collection shares its id and/or folder name.)
+            if (
+                string.Equals(
+                    Path.GetDirectoryName(sourceBookFolderPath),
+                    collectionDir.TrimEnd(
+                        Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar
+                    ),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+                throw new ArgumentException(
+                    "Book is already in the collection: " + sourceBookFolderPath,
+                    nameof(sourceBookFolderPath)
+                );
+
+            // If this is a re-import of a book we already have (same bookInstanceId), send the existing
+            // copy to the recycle bin so the incoming one replaces it rather than piling up beside it
+            // under a uniquified name. We match on id (not folder name) so a retitled re-conversion still
+            // replaces its predecessor. The recycle is recoverable from the OS trash if it was a mistake.
+            var incomingId = TryGetBookInstanceId(sourceBookFolderPath);
+            if (!string.IsNullOrEmpty(incomingId))
+            {
+                var existing = TheOneEditableCollection
+                    .GetBookInfos()
+                    .Where(info => info.Id == incomingId)
+                    .ToList();
+                foreach (var info in existing)
+                {
+                    // If the book we're about to replace is the current selection, drop the selection
+                    // first so we don't leave it pointing at a folder that's headed for the trash.
+                    if (_bookSelection.CurrentSelection?.FolderPath == info.FolderPath)
+                        _bookSelection.SelectBook(null);
+                    // Abort the import if we can't actually remove the existing copy. Continuing would
+                    // leave two books sharing incomingId, which breaks later id-based targeting (and is
+                    // the opposite of the intended replace). Recycle has already notified the user of the
+                    // underlying failure; the throw surfaces it to the external caller too.
+                    if (!ConfirmRecycleDialog.Recycle(info.FolderPath))
+                        throw new IOException(
+                            $"Could not recycle the existing book at \"{info.FolderPath}\" to replace it; "
+                                + "aborting import to avoid creating a duplicate book id."
+                        );
+                    TheOneEditableCollection.HandleBookDeletedFromCollection(info.FolderPath);
+                }
+            }
+
+            var baseName = Path.GetFileName(sourceBookFolderPath);
+            // Keep the clean folder name when it's free; only fall back to a unique (TC-safe) name on
+            // collision, as DuplicateBook does. (After the recycle above, a re-import normally reclaims
+            // its original clean name.)
+            var newBookName = Directory.Exists(Path.Combine(collectionDir, baseName))
+                ? BookStorage.GetUniqueBookFolderName(collectionDir, baseName)
+                : baseName;
+            var newBookDir = Path.Combine(collectionDir, newBookName);
+
+            // Copy everything except the throwaway/derived files BookStorage.Duplicate also skips.
+            BookStorage.CopyDirectory(
+                sourceBookFolderPath,
+                newBookDir,
+                new[] { ".bak", ".bloombookorder", ".pdf", ".map" }
+            );
+
+            // If we had to uniquify the folder name, the main .htm inside still has the old name. Rename
+            // it to match the new folder so Bloom finds it cleanly (mirrors BookStorage.Duplicate).
+            if (!string.Equals(newBookName, baseName, StringComparison.Ordinal))
+            {
+                var oldHtm = Path.Combine(newBookDir, baseName + ".htm");
+                if (!RobustFile.Exists(oldHtm))
+                    // Fall back to whatever single book htm we copied.
+                    oldHtm = Directory
+                        .GetFiles(newBookDir, "*.htm")
+                        .FirstOrDefault(p => !Path.GetFileName(p).StartsWith("."));
+                if (oldHtm != null && RobustFile.Exists(oldHtm))
+                    RobustFile.Move(oldHtm, Path.Combine(newBookDir, newBookName + ".htm"));
+            }
+
+            // Strip any Team-Collection / local-only status copied from the source, so Bloom treats
+            // this as a normal local book.
+            BookStorage.RemoveLocalOnlyFiles(newBookDir);
+
+            ReloadEditableCollection();
+
+            var newInfo = TheOneEditableCollection
+                .GetBookInfos()
+                .FirstOrDefault(info => info.FolderPath == newBookDir);
+            if (newInfo == null)
+                return null;
+
+            var newBook = GetBookFromBookInfo(newInfo);
+            SelectBook(newBook);
+            BookHistory.AddEvent(
+                newBook,
+                BookHistoryEventType.Created,
+                $"Imported book from \"{sourceBookFolderPath}\""
+            );
+            return newBook;
+        }
+
+        /// <summary>
+        /// Reads just the bookInstanceId from a book folder's meta.json without the side effects of
+        /// constructing a full BookInfo. Returns null if the folder has no readable metadata.
+        /// </summary>
+        private static string TryGetBookInstanceId(string bookFolderPath)
+        {
+            try
+            {
+                return BookMetaData.FromFolder(bookFolderPath)?.Id;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -542,19 +709,63 @@ namespace Bloom.CollectionTab
             }
         }
 
-        public void BringBookUpToDate()
+        /// <summary>
+        /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
+        /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind the collection
+        /// tab's embedded React progress dialog, and reselects the book once the dialog closes so
+        /// the collection shows the result.
+        /// </summary>
+        /// <remarks>
+        /// The per-page part used to be done by driving the live Edit tab through the pages
+        /// (BL-16595). That saved each page the instant it loaded, which could capture a page in the
+        /// middle of an asynchronous fix-up (BL-16870). ProcessBook's off-screen capture waits for
+        /// those to finish, and it is all-or-nothing: a failure on any page leaves the book as the
+        /// whole-book update left it rather than half-processed.
+        ///
+        /// The work runs on the progress dialog's background worker: ProcessBook blocks on its own
+        /// off-screen browser thread, and the pages it loads call back into Bloom's API server, so
+        /// it must not run on the UI thread. Like the other embedded-dialog callers, this returns
+        /// as soon as the dialog is open, not when the work is done. If ProcessBook throws, the
+        /// dialog shows the error and stays open with Close and Report buttons; either way the book
+        /// is reselected when the dialog closes.
+        /// </remarks>
+        public async Task BringBookUpToDateAsync()
         {
             var b = _bookSelection.CurrentSelection;
-            _bookSelection.SelectBook(null);
+            if (b == null)
+                return;
+            // Deselect while we rewrite the book, so nothing (e.g. the preview) holds its files.
+            SelectBookOnUiThread(null);
 
-            using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
-            {
-                // Since the user explicitly told us to do this again, we will, even if we think
-                // it's already been done.
-                dlg.ShowAndDoWork(progress => b.BringBookUpToDate(progress));
-            }
-
-            _bookSelection.SelectBook(b);
+            await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
+                _webSocketServer,
+                (progress, worker) =>
+                {
+                    try
+                    {
+                        // Since the user explicitly told us to do this again, we will, even if we
+                        // think it's already been done. (ProcessBook calls BringBookUpToDate, which
+                        // forces a full update.)
+                        BookProcessor.ProcessBook(b, progress: new WebProgressAdapter(progress));
+                    }
+                    catch (Exception e)
+                    {
+                        // The dialog will show the message; make sure the details reach the log too.
+                        Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
+                        throw;
+                    }
+                    return Task.FromResult(false); // false => close the dialog when we finish
+                },
+                "collectionTab",
+                // Same string (and id) as the menu command that got us here.
+                LocalizationManager.GetString(
+                    "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                    "Update Book"
+                ),
+                showCancelButton: false,
+                doWhenDialogCloses: () => SelectBookOnUiThread(b),
+                determinate: true
+            );
         }
 
         /// <summary>
@@ -844,7 +1055,7 @@ namespace Bloom.CollectionTab
                         // show it
                         Logger.WriteEvent("Showing BloomPack on disk");
                         ProcessExtra.ShowFileInExplorerInFront(outputPath);
-                        Analytics.Track("Create BloomPack");
+                        BloomAnalytics.Track("Create BloomPack");
                     }
                     finally
                     {
@@ -1056,7 +1267,7 @@ namespace Bloom.CollectionTab
                 //enhance: would be nice to know if this is a new shell
                 if (!sourceBook.IsInEditableCollection)
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "Create Book",
                         new Dictionary<string, string>()
                         {

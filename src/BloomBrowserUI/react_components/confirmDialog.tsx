@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../utils/reactRender";
 import { useL10n } from "./l10nHooks";
 import { getWorkspaceBundleExports } from "../bookEdit/js/workspaceFrames";
 import { postBoolean } from "../utils/bloomApi";
@@ -108,7 +108,7 @@ const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     }
 
     try {
-        ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
+        renderRootSync(<ConfirmDialog {...props} />, modalContainer);
     } catch (error) {
         console.error(error);
     }

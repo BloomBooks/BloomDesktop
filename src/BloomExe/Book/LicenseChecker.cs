@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.Api;
 using L10NSharp;
 using SIL.IO;
@@ -23,6 +24,16 @@ namespace Bloom.Book
     // For offline checking we cache the keys whenever we read it.
     public class LicenseChecker
     {
+        // A single shared HttpClient is the recommended pattern; reusing it avoids socket exhaustion.
+        private static HttpClient s_httpClient = new HttpClient();
+
+        // Test seam: lets tests inject an HttpClient backed by a fake handler (e.g. to simulate a
+        // network failure and exercise the offline-cache fallback).
+        internal static void SetHttpClientForTests(HttpClient client)
+        {
+            s_httpClient = client;
+        }
+
         private static string _offlineFolderPath = ProjectContext.GetBloomAppDataFolder(); // normally stays here except in unit tests
         private static bool _allowInternetAccess = true;
         public static string kUnlicenseLanguageMessage =
@@ -63,8 +74,10 @@ namespace Bloom.Book
             {
                 try
                 {
-                    permissionsJson = new WebClient().DownloadString(
-                        "https://content-licenses.bloomlibrary.org"
+                    // RunSync executes on the thread pool so we don't deadlock if called on a
+                    // thread with a synchronization context (e.g. the WinForms UI thread).
+                    permissionsJson = Bloom.Utils.AsyncUtil.RunSync(() =>
+                        s_httpClient.GetStringAsync("https://content-licenses.bloomlibrary.org")
                     );
                     if (!string.IsNullOrEmpty(_offlineFolderPath))
                     {
@@ -80,8 +93,9 @@ namespace Bloom.Book
                         }
                     }
                 }
-                catch (WebException w)
+                catch (Exception w) when (w is HttpRequestException || w is TaskCanceledException)
                 {
+                    // A network failure (or timeout) reaching the license server: fall back to any cached copy.
                     Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(w);
                     if (!TryGetOfflineCache(out permissionsJson))
                     {

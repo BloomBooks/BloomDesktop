@@ -24,6 +24,76 @@ namespace Bloom.ToPalaso
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentProcessId();
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
+
+        [DllImport("user32.dll")]
+        private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
+
+        [DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hWnd);
+
+        /// <summary>
+        /// Really make this window the foreground window, even though some other application currently
+        /// holds the foreground. Windows refuses a plain SetForegroundWindow in that case: the window is
+        /// left where it was in the z-order and only its taskbar button flashes. Briefly attaching our
+        /// input queue to the foreground window's thread makes Windows treat us as entitled to the
+        /// foreground, which is the standard way around that rule.
+        ///
+        /// Only call this where the user has just asked Bloom to do something that makes its window the
+        /// thing they want to look at (BL-16784: switching collections closes Bloom's window and opens a
+        /// new one, and whatever was behind Bloom -- Chrome, say -- gets the foreground in between).
+        /// Don't use it to pull Bloom in front of an application the user has deliberately moved on to.
+        /// </summary>
+        public static void ForceWindowToForeground(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero || !Platform.IsWindows)
+                return;
+            var foregroundWindow = GetForegroundWindow();
+            if (foregroundWindow == hWnd)
+                return;
+            var ourThread = GetCurrentThreadId();
+            var foregroundThread = GetWindowThreadProcessId(foregroundWindow, out _);
+            // Attaching a thread to itself fails, and there would be nothing to gain anyway.
+            var attached =
+                foregroundThread != 0
+                && foregroundThread != ourThread
+                && AttachThreadInput(ourThread, foregroundThread, true);
+            try
+            {
+                BringWindowToTop(hWnd);
+                SetForegroundWindow(hWnd);
+            }
+            finally
+            {
+                if (attached)
+                    AttachThreadInput(ourThread, foregroundThread, false);
+            }
+        }
+
+        /// <summary>
+        /// True if the given window belongs to this (Bloom) process. Used to decide whether it is safe
+        /// to steal the OS foreground back: if Bloom currently holds it (e.g. an off-screen browser
+        /// grabbed it) we may restore the prior window, but if some other application now holds the
+        /// foreground the user has moved on and we must not yank focus away from them.
+        /// </summary>
+        public static bool IsWindowInCurrentProcess(IntPtr hWnd)
+        {
+            if (hWnd == IntPtr.Zero)
+                return false;
+            GetWindowThreadProcessId(hWnd, out uint processId);
+            return processId == GetCurrentProcessId();
+        }
+
         /// <summary>
         /// Safely start the process when the program code merely supplies the URL (or a command).
         /// </summary>

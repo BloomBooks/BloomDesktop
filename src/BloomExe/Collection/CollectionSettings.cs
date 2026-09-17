@@ -151,7 +151,7 @@ namespace Bloom.Collection
         /// <summary>
         /// Generate the path to the collection settings file given the collection folder.
         /// </summary>
-        public static string GetSettingsFilePath(string collectionFolder)
+        public static string GetDefaultSettingsFilePath(string collectionFolder)
         {
             return Path.Combine(collectionFolder, CollectionSettings.GetFileName(collectionFolder));
         }
@@ -171,26 +171,75 @@ namespace Bloom.Collection
         /// <returns>
         /// true if the file exists, false otherwise.
         /// </returns>
+        /// <remarks>
+        /// Listing a folder can throw, and callers are often working through a list of them, so an
+        /// unreadable or just-deleted folder is reported as "no collection here" rather than thrown:
+        /// one bad folder must not cost the user the whole Open/Create dialog.
+        /// </remarks>
         public static bool TryGetSettingsFilePath(
             string collectionFolder,
             out string settingsFilePath
         )
         {
-            // Return the path to the standard collection settings file if it exists.
-            // Otherwise, return the path to the first file that matches the wild search pattern or null
-            // if no files match.
-            settingsFilePath = GetSettingsFilePath(collectionFolder);
-            if (!RobustFile.Exists(settingsFilePath))
+            try
             {
-                // If the collection folder is not the same as the settings file, we may have a problem.
-                // But we can try to find it by searching for the file with the wild search pattern.
-                // This is used, for example, when joining a Team Collection, where the settings file is
-                // in a different place.
-                settingsFilePath = Directory
-                    .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
-                    .FirstOrDefault();
+                // Return the path to the standard collection settings file if it exists.
+                // Otherwise, return the path to the first file that matches the wild search pattern or null
+                // if no files match.
+                settingsFilePath = GetDefaultSettingsFilePath(collectionFolder);
+                if (!RobustFile.Exists(settingsFilePath))
+                {
+                    // If the collection folder is not the same as the settings file, we may have a problem.
+                    // But we can try to find it by searching for the file with the wild search pattern.
+                    // This is used, for example, when joining a Team Collection, where the settings file is
+                    // in a different place.
+                    settingsFilePath = Directory
+                        .EnumerateFiles(collectionFolder, CollectionSettings.kWildSearchPattern)
+                        .FirstOrDefault();
+                }
+                return settingsFilePath != null;
             }
-            return settingsFilePath != null;
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
+            {
+                SIL.Reporting.Logger.WriteMinorEvent(
+                    $"TryGetSettingsFilePath could not look inside {collectionFolder}: {e.Message}"
+                );
+                settingsFilePath = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The path of the .bloomCollection file in this folder, or null if there isn't one (or we
+        /// can't look).
+        /// </summary>
+        /// <remarks>
+        /// We ask what is really in the folder rather than just looking for a file named after it,
+        /// because the two don't always agree: renaming a collection folder leaves the old file name,
+        /// and a collection whose name ends with a period gets a folder without it (BL-16679). Such a
+        /// collection is perfectly usable, so it belongs in this list; looking only for the
+        /// name-matching file silently hid it.
+        /// </remarks>
+        public static string GetSettingsFilePath(string folder)
+        {
+            return TryGetSettingsFilePath(folder, out var settingsPath) ? settingsPath : null;
+        }
+
+        public static string GetSettingsFilePathOrThrow(string folderPath)
+        {
+            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
+            {
+                return settingsFilePath;
+            }
+            else
+            {
+                throw new ApplicationException(
+                    string.Format(
+                        "Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.",
+                        folderPath
+                    )
+                );
+            }
         }
 
         public CollectionSettings()
@@ -233,7 +282,6 @@ namespace Bloom.Collection
             Country = collectionInfo.Country;
             Province = collectionInfo.Province;
             District = collectionInfo.District;
-            IsSourceCollection = collectionInfo.IsSourceCollection;
             XMatterPackName = collectionInfo.XMatterPackName;
             PageNumberStyle = collectionInfo.PageNumberStyle;
             Subscription = collectionInfo.Subscription;
@@ -324,12 +372,6 @@ namespace Bloom.Collection
         }
 
         /// <summary>
-        /// Intended for making shell books and templates, not vernacular
-        /// </summary>
-        [Obsolete("We never distinguish source collections anymore, so this is obsolete.")]
-        public virtual bool IsSourceCollection { get; set; }
-
-        /// <summary>
         /// Get the name of the language whose tag is the first argument, if possible in the language specified by the second.
         /// If the language tag is unknown, return it unchanged.
         /// </summary>
@@ -397,7 +439,6 @@ namespace Bloom.Collection
             xml.Add(languagesElement);
             SignLanguage.SaveToXElement(xml, isSignLanguage: true);
             xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
-            xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
             xml.Add(new XElement("XMatterPack", XMatterPackName));
             xml.Add(new XElement("PageNumberStyle", PageNumberStyle));
 
@@ -533,6 +574,38 @@ namespace Bloom.Collection
                 omitDirection
             );
             Language1.AddSelectorCssRule(sb, omitDirection);
+            // Content marked lang="*" is deliberately language-independent -- arithmetic equations,
+            // and similar template text that isn't in any language (BL-5616). Because our font
+            // machinery is keyed by language tag, no rule above matches it, so before BL-16624 it
+            // inherited whatever font the surrounding document happened to supply. That differed per
+            // surface: Bloom's UI font in the Edit tab, something else in the preview, and a system
+            // fallback once published. Give it L1's font so every surface agrees.
+            // Font only, deliberately:
+            //  - no direction, because digits and math symbols are not the writing system's text and
+            //    should not be flipped when L1 is right-to-left;
+            //  - no line-height (-1 suppresses it), for the reason given above about basePage.css.
+            // It must stay L1's font rather than becoming its own setting: GetUsedFontsCommand finds
+            // fonts through DefaultLangStylesCssRegex, whose language group is [-a-zA-Z]* and so never
+            // matches "*". A font used ONLY here would be invisible to that scan and could go
+            // unembedded by the harvester. Sharing L1's font means it is always already reported.
+            // Scoped to content pages on purpose. Xmatter must NOT be caught by this: XMatterHelper
+            // sets lang=<metadata language> on every xmatter page div specifically so that fields
+            // with no useful lang -- including lang="*" ones like the ISBN and the branding html
+            // blocks -- inherit the metadata language's font (BL-8545). A rule matching those
+            // elements directly would beat that inheritance and silently switch them to L1's font.
+            // Also no word-break: whatever L1 does about breaking lines only at spaces is about its
+            // script, and has nothing to say about digits and math symbols.
+            // ePUB needs no special case here: its export writes the resolved font inline before
+            // deleting the lang="*" attribute the validator rejects.
+            WritingSystem.AddSelectorCssRule(
+                sb,
+                ".bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) [lang='*']",
+                Language1.FontName,
+                Language1.IsRightToLeft,
+                -1, // suppresses line-height
+                false, // breakOnlyAtSpaces
+                true // omitDirection
+            );
             if (Language2Tag != Language1Tag)
                 Language2.AddSelectorCssRule(sb, omitDirection);
             if (
@@ -581,10 +654,8 @@ namespace Bloom.Collection
                 {
                     new[] { "LanguageName", "Language1Name" }, // but NOT SignLanguageName -> SignLanguage1Name !!
                     new[] { "SignLanguage1Name", "SignLanguageName" }, // un-migrate SignLanguageName
-                    new[] { "IsShellLibrary", "IsSourceCollection" },
                     new[] { "National1Iso639Code", "Language2Iso639Code" },
                     new[] { "National2Iso639Code", "Language3Iso639Code" },
-                    new[] { "IsShellMakingProject", "IsSourceCollection" },
                     new[] { "Local Community", "Local-Community" }, // migrate for 4.4
                 };
 
@@ -682,7 +753,6 @@ namespace Bloom.Collection
                 // behaves the same way, and making this the one exception would be more surprising
                 // than the behavior itself. See BL-16691.
                 AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
-                IsSourceCollection = ReadBoolean(xml, "IsSourceCollection", false);
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
                 TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;
@@ -1051,6 +1121,12 @@ namespace Bloom.Collection
             string newCollectionName
         )
         {
+            // Windows drops trailing periods and spaces when it creates a folder, so if we let them
+            // through here, the path we hand out and remember would never match the folder that
+            // actually gets created, and the settings file name would no longer match its folder name
+            // (which GetDefaultSettingsFilePath assumes). Trailing periods also break the FileSystemWatchers
+            // we set up on the collection folder. See BL-16679.
+            newCollectionName = newCollectionName.TrimEnd('.', ' ');
             return parentFolderPath.CombineForPath(
                 newCollectionName,
                 CollectionSettings.GetFileName(newCollectionName)
@@ -1059,6 +1135,11 @@ namespace Bloom.Collection
 
         public static string RenameCollection(string fromDirectory, string toDirectory)
         {
+            // Windows drops trailing periods and spaces when it creates a folder, so asking it for
+            // one leaves us naming the settings file after a folder that doesn't exist -- the
+            // mismatch that BL-16679 is about. Rename to the folder we will really get.
+            toDirectory = toDirectory.TrimEnd('.', ' ');
+
             if (!Directory.Exists(fromDirectory))
             {
                 throw new ApplicationException(
@@ -1066,6 +1147,13 @@ namespace Bloom.Collection
                         + fromDirectory
                 );
             }
+
+            // A rename that only adds a trailing period or space asks for the folder we already have,
+            // so there is nothing to do on disk. Say that, rather than falling into the "there is
+            // already a directory with the new name" complaint below, which would stop Bloom from
+            // reopening. Compared exactly, so that a change of letter case is still a real rename.
+            if (toDirectory == fromDirectory)
+                return GetSettingsFilePathOrThrow(fromDirectory);
 
             if (Directory.Exists(toDirectory)) //there's already a folder taking this name
             {
@@ -1076,14 +1164,14 @@ namespace Bloom.Collection
             }
 
             //this is just a sanity check, it will throw if the existing directory doesn't have a collection
-            FindSettingsFileInFolder(fromDirectory);
+            GetSettingsFilePathOrThrow(fromDirectory);
 
             //first rename the directory, as that is the part more likely to fail (because *any* locked file in there will cause a failure)
             SIL.IO.RobustIO.MoveDirectory(fromDirectory, toDirectory);
             string collectionSettingsPath;
             try
             {
-                collectionSettingsPath = FindSettingsFileInFolder(toDirectory);
+                collectionSettingsPath = GetSettingsFilePathOrThrow(toDirectory);
             }
             catch (Exception)
             {
@@ -1093,7 +1181,7 @@ namespace Bloom.Collection
             try
             {
                 //we now make a default name based on the name of the directory
-                string destinationPath = CollectionSettings.GetSettingsFilePath(toDirectory);
+                string destinationPath = CollectionSettings.GetDefaultSettingsFilePath(toDirectory);
                 if (!RobustFile.Exists(destinationPath))
                     RobustFile.Move(collectionSettingsPath, destinationPath);
 
@@ -1110,23 +1198,6 @@ namespace Bloom.Collection
                         toDirectory
                     ),
                     error
-                );
-            }
-        }
-
-        public static string FindSettingsFileInFolder(string folderPath)
-        {
-            if (TryGetSettingsFilePath(folderPath, out string settingsFilePath))
-            {
-                return settingsFilePath;
-            }
-            else
-            {
-                throw new ApplicationException(
-                    string.Format(
-                        "Bloom expected to find a .bloomCollectionFile in {0}, but there isn't one.",
-                        folderPath
-                    )
                 );
             }
         }

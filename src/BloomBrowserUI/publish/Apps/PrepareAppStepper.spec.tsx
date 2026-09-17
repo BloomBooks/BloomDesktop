@@ -1,6 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { act } from "react-dom/test-utils";
+import { renderRoot, unmountRoot } from "../../utils/reactRender";
+import { act } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
     PrepareAppStepper,
@@ -18,7 +18,7 @@ describe("PrepareAppStepper", () => {
 
     afterEach(() => {
         if (container) {
-            ReactDOM.unmountComponentAtNode(container);
+            unmountRoot(container);
             container.remove();
             container = null;
         }
@@ -30,7 +30,7 @@ describe("PrepareAppStepper", () => {
         }
 
         act(() => {
-            ReactDOM.render(ui, container);
+            renderRoot(ui, container);
         });
 
         return container;

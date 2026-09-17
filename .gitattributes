@@ -36,3 +36,9 @@
 *.d.ts -whitespace
 src/BloomBrowserUI/compilerconfig.json -whitespace
 changelog -whitespace
+
+# pnpm rewrites these with LF whenever an install does real work, so let git check
+# them out as LF too; otherwise (with core.autocrlf=true) they sit in the working
+# tree as phantom modifications with an empty diff after every such install.
+src/BloomBrowserUI/package.json text eol=lf
+src/BloomBrowserUI/pnpm-lock.yaml text eol=lf

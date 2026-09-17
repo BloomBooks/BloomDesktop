@@ -37,14 +37,14 @@ namespace Bloom.Edit
 			this._warningText = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "EditTab.JpegWarningDialog";
-			// 
+			//
 			// _photographRadioButton
-			// 
+			//
 			this._photographRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._photographRadioButton.AutoSize = true;
 			this._photographRadioButton.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -57,9 +57,9 @@ namespace Bloom.Edit
 			this._photographRadioButton.TabIndex = 0;
 			this._photographRadioButton.Text = "Use the JPEG file";
 			this._photographRadioButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _cancelRadioButton
-			// 
+			//
 			this._cancelRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this._cancelRadioButton.AutoSize = true;
 			this._cancelRadioButton.Checked = true;
@@ -74,9 +74,9 @@ namespace Bloom.Edit
 			this._cancelRadioButton.TabStop = true;
 			this._cancelRadioButton.Text = "Cancel this import";
 			this._cancelRadioButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _okButton
-			// 
+			//
 			this._okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._okButton.AutoSize = true;
 			this._okButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
@@ -91,11 +91,11 @@ namespace Bloom.Edit
 			this._okButton.Text = "OK";
 			this._okButton.UseVisualStyleBackColor = true;
 			this._okButton.Click += new System.EventHandler(this._okButton_Click);
-			// 
+			//
 			// _warningText
-			// 
-			this._warningText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			//
+			this._warningText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
 			this._warningText.BackColor = System.Drawing.SystemColors.Control;
 			this._warningText.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -111,11 +111,11 @@ namespace Bloom.Edit
 			this._warningText.Size = new System.Drawing.Size(558, 195);
 			this._warningText.TabIndex = 6;
 			this._warningText.Text = "This is set in code.";
-			// 
+			//
 			// JpegWarningDialog
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.ClientSize = new System.Drawing.Size(582, 295);
 			this.Controls.Add(this._warningText);
 			this.Controls.Add(this._okButton);

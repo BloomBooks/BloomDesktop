@@ -425,16 +425,22 @@ namespace Bloom.Collection
 
             // They want a different collection -- or they wanted to upgrade and we couldn't manage
             // it, and have already been told why. This is the same route as Open/Create Collection
-            // on the toolbar: it closes the current one and puts up the chooser.
-            if (Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell))
-                return true;
-
-            // They cancelled the chooser. Staying in this collection is the one thing they can't
-            // do -- but quitting must stay possible. Someone with nothing newer to upgrade to and
-            // no other collection to open would otherwise have no way out of Bloom at all except
-            // Task Manager, since this dialog deliberately has no close box. Cancelling here means
-            // "none of the above", which is exactly how the startup path reads it too.
-            ProgramExit.Exit();
+            // on the toolbar: it closes the current one and puts up the chooser. Cancelling that
+            // chooser exits Bloom (see ChooseACollection): staying in this collection is the one
+            // thing they can't do, but quitting must stay possible -- someone with nothing newer
+            // to upgrade to and no other collection to open would otherwise have no way out of
+            // Bloom at all except Task Manager, since this dialog deliberately has no close box.
+            var shell = Shell.GetShellOrOtherOpenForm() as Shell;
+            if (shell != null)
+            {
+                Program.CloseCurrentCollectionAndChooseAnother(shell);
+            }
+            else
+            {
+                // No window to close (not expected mid-session, but don't strand the user):
+                // put up the chooser directly.
+                Program.ChooseACollection();
+            }
             return true;
         }
 

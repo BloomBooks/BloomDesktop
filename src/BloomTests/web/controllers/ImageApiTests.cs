@@ -390,6 +390,89 @@ namespace BloomTests.web.controllers
         }
 
         [Test]
+        public void GetCreditableImageFileNamesInBook_FiltersAndOrders()
+        {
+            const string xhtml =
+                @"
+<body>
+	<div class='bloom-page bloom-frontMatter cover' data-page-number=''>
+		<div data-after-content='' class='pageLabel' lang='en'>
+			Front Cover
+		</div >
+		<div class='marginBox'>
+			<div class='bloom-canvas bloom-background-image-in-style-attr' style='background-image:url(""AOR_aa013m.png"")'/>
+		</div>
+	</div>
+	<div class='bloom-page bloom-frontMatter' data-page-number=''>
+		<div data-after-content='' class='pageLabel' lang='en'>
+			Credits Page
+		</div >
+		<div class='marginBox'>
+			<div class='bloom-metaData licenseAndCopyrightBlock' lang='en'>
+				<div class='licenseBlock'>
+					<img class='licenseImage' src='license.png'/>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class='bloom-page numberedPage' lang='' data-page-number='1'>
+		<div class='marginBox'>
+			<div class='bloom-canvas'>
+				<img data-license='cc-by' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
+			</div>
+			<div class='bloom-canvas'>
+				<img src='placeHolder.png'/>
+			</div>
+		</div>
+	</div>
+	<div class='bloom-page numberedPage' lang='' data-page-number='2'>
+		<div class='marginBox'>
+			<div class='bloom-canvas'>
+				<img data-license='cc-by-nd' src='AOR_EAG00864.png'/>
+			</div>
+			<!-- repeat of an earlier image should not appear twice -->
+			<div class='bloom-canvas'>
+				<img data-license='cc-by' src='The%20Moon%20and%20The%20Cap_Page%20041.jpg'/>
+			</div>
+		</div>
+	</div>
+</body>";
+
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(xhtml);
+            // Sanity check: the raw (unfiltered) list still includes the images we expect to be filtered.
+            var unfiltered = ImageApi.GetWhichImagesAreUsedOnWhichPages(
+                dom.SelectSingleNode("//body"),
+                new[] { "en" }
+            );
+            Assert.IsTrue(
+                unfiltered.ContainsKey("license.png"),
+                "Setup check: license.png should be in the unfiltered list"
+            );
+            Assert.IsTrue(
+                unfiltered.ContainsKey("placeHolder.png"),
+                "Setup check: placeHolder.png should be in the unfiltered list"
+            );
+
+            var names = ImageApi.GetCreditableImageFileNamesInBook(
+                dom.SelectSingleNode("//body"),
+                new[] { "en" }
+            );
+
+            Assert.AreEqual(
+                new List<string>
+                {
+                    "AOR_aa013m.png",
+                    "The Moon and The Cap_Page 041.jpg",
+                    "AOR_EAG00864.png",
+                },
+                names,
+                "Should return creditable images once each, in order of first occurrence, "
+                    + "with license and placeholder images filtered out"
+            );
+        }
+
+        [Test]
         public void CollectFormattedCredits_SingleCredit_Works()
         {
             _creditsToFormat.Add("my credit", new List<string> { "Front Cover", "2" });

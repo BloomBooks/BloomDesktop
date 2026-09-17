@@ -80,6 +80,7 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
                     HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 
@@ -359,6 +360,11 @@ namespace Bloom.web.controllers
             else
             {
                 issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+                // Tell any Freeze Doctor that this problem has already been reported, so it does not file a
+                // second card about the same trouble. Cheap insurance against duplicate reports, since a
+                // user reporting a problem by hand and a Doctor noticing the same problem are exactly the
+                // situation where both would fire.
+                FreezeDoctor.FreezeDoctorSupport.NoteBloomReportedAProblem(issueId);
                 if (includeBook || _additionalPathsToInclude?.Any() == true)
                 {
                     try
@@ -721,20 +727,21 @@ namespace Bloom.web.controllers
                             dlg.ControlBox = true; // Add controls like the X button back to the top bar
                             dlg.Text = ""; // Remove the title from the WinForms top bar
 
-                            dlg.Width = 731;
-                            dlg.Height = height;
+                            var owner = GetParentFormForErrorDialogs();
+                            dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
+                            using (BloomServer._theOneInstance.ReportThreadBlocking())
                             {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(GetParentFormForErrorDialogs());
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
+                                try
+                                {
+                                    // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                    dlg.ShowDialog(owner);
+                                }
+                                finally
+                                {
+                                    _additionalPathsToInclude = null;
+                                }
                             }
                         }
                     }
@@ -1058,10 +1065,6 @@ namespace Bloom.web.controllers
 
         private const uint PW_RENDERFULLCONTENT = 0x00000002;
 
-        /// <summary>Returns the handle of the window currently in the foreground.</summary>
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
         /// <summary>Returns the thread and process that created the given window.</summary>
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -1072,7 +1075,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private static bool IsBloomProcessInForeground()
         {
-            var fgWindow = GetForegroundWindow();
+            var fgWindow = ProcessExtra.GetForegroundWindow();
             if (fgWindow == IntPtr.Zero)
                 return false;
             GetWindowThreadProcessId(fgWindow, out uint fgProcessId);
@@ -1564,10 +1567,10 @@ namespace Bloom.web.controllers
 
         private static void AppendTimeZone(StringBuilder bldr)
         {
-            var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now)
-                ? TimeZone.CurrentTimeZone.DaylightName
-                : TimeZone.CurrentTimeZone.StandardName;
-            var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var tzName = TimeZoneInfo.Local.IsDaylightSavingTime(DateTime.Now)
+                ? TimeZoneInfo.Local.DaylightName
+                : TimeZoneInfo.Local.StandardName;
+            var tzOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
             bldr.AppendLine(
                 "User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")"

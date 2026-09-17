@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using Sentry;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
@@ -34,6 +33,11 @@ namespace Bloom
     /// </summary>
     public class NonFatalProblem
     {
+        // Guard against reentrant calls (e.g. ShowToast → SendBundle → ReportConnectionError → Report)
+        // which cause infinite mutual recursion leading to a StackOverflowException.
+        [ThreadStatic]
+        private static bool s_isReporting;
+
         /// <summary>
         /// Always log, possibly inform the user, possibly throw the exception
         /// </summary>
@@ -104,10 +108,21 @@ namespace Bloom
                 //thousands of exceptions we were getting as with BL-3280
                 if (modalThreshold != ModalIf.None)
                 {
-                    Analytics.ReportException(exception);
+                    BloomAnalytics.ReportException(exception);
                 }
 
                 Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);
+
+                if (Program.RunningE2eTests)
+                {
+                    // During an e2e/visual-regression run there is no human to dismiss a dialog, so a
+                    // modal (or even a toast) here would hang the whole test run. The problem is
+                    // already logged above, and the API call that triggered it has failed, which is
+                    // what fails the test. Echo it to stderr so it shows in the test output, then
+                    // return without showing any UI.
+                    Console.Error.WriteLine($"Nonfatal problem (e2e): {fullDetailedMessage}");
+                    return;
+                }
 
                 if (Program.RunningInConsoleMode)
                 {
@@ -164,15 +179,24 @@ namespace Bloom
                 if (
                     !string.IsNullOrEmpty(shortUserLevelMessage)
                     && Matches(passive).Any(s => channel.Contains(s))
+                    && !s_isReporting
                 )
                 {
-                    ShowToast(
-                        shortUserLevelMessage,
-                        exception,
-                        fullDetailedMessage,
-                        showSendReport,
-                        showRequestDetails
-                    );
+                    s_isReporting = true;
+                    try
+                    {
+                        ShowToast(
+                            shortUserLevelMessage,
+                            exception,
+                            fullDetailedMessage,
+                            showSendReport,
+                            showRequestDetails
+                        );
+                    }
+                    finally
+                    {
+                        s_isReporting = false;
+                    }
                 }
             }
             catch (Exception errorWhileReporting)
@@ -255,12 +279,18 @@ namespace Bloom
         /// <param name="exception">The exception to report to Sentry</param>
         /// <param name="message">An optional message to send with the exception to provide more context</param>
         /// <param name="throwOnException">If true, will rethrow any exception which occurs while reporting to Sentry.</param>
+        /// <param name="configureScope">If supplied, gets a chance to add tags, extras, or a fingerprint to
+        /// this one report. Note that <paramref name="message"/> becomes a breadcrumb, which Sentry neither
+        /// indexes for searching nor uses when grouping events into issues; so when you need to be able to
+        /// find these reports, or to keep them from being lumped in with superficially similar ones, set a
+        /// tag or a fingerprint here instead of relying on the message.</param>
         /// <remarks>Note, some previous Sentry reports were adding the message as a fullDetailedMessage tag, but when we refactored
         /// to create this method, we decided to standardize on the more versatile breadcrumbs approach.</remarks>
         public static void ReportSentryOnly(
             Exception exception,
             string message = null,
-            bool throwOnException = false
+            bool throwOnException = false,
+            Action<Scope> configureScope = null
         )
         {
             if (ApplicationUpdateSupport.IsDev)
@@ -275,9 +305,31 @@ namespace Bloom
             }
             try
             {
-                if (!string.IsNullOrWhiteSpace(message))
-                    SentrySdk.AddBreadcrumb(message);
-                SentrySdk.CaptureException(exception);
+                if (configureScope == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(message))
+                        SentrySdk.AddBreadcrumb(message);
+                    SentrySdk.CaptureException(exception);
+                }
+                else
+                {
+                    // WithScope gives us a temporary scope, so whatever the caller sets applies to
+                    // this event alone rather than leaking onto everything reported afterwards.
+                    // UPGRADE WARNING: this depends on Sentry 3.x semantics, where WithScope pushes
+                    // a scope that the CaptureException inside the callback then picks up. Sentry
+                    // 4.x deprecated WithScope in favour of CaptureException(exception, scope => ...).
+                    // If you upgrade, port this too: otherwise the tags and fingerprints callers set
+                    // here would silently stop being applied, and nothing would tell you - the
+                    // callers' own unit tests configure a Scope directly and would still pass, while
+                    // in production the events would quietly go back to being indistinguishable.
+                    SentrySdk.WithScope(scope =>
+                    {
+                        configureScope(scope);
+                        if (!string.IsNullOrWhiteSpace(message))
+                            SentrySdk.AddBreadcrumb(message);
+                        SentrySdk.CaptureException(exception);
+                    });
+                }
             }
             catch (Exception err)
             {

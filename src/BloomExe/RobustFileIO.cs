@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using Bloom.ImageProcessing;
 using SIL.Code;
+using SIL.Core.ClearShare;
 using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 
@@ -50,9 +52,48 @@ namespace Bloom
             return RetryUtility.Retry(() => Metadata.FromFile(path));
         }
 
+        /// <summary>
+        /// Create a TagLib file for reading or writing image metadata, retrying if the file is
+        /// temporarily locked. TagLib# keeps mutable static state that is not thread-safe (see
+        /// MetadataCore.RunUnderTagLibLock in libpalaso), so this serializes the underlying
+        /// TagLib.File.Create behind the same process-wide lock that libpalaso's ClearShare
+        /// metadata code uses. Any Save() on the returned file must likewise go through
+        /// SaveTaglibFile so that it too is serialized against all other TagLib access.
+        /// </summary>
         public static TagLib.File CreateTaglibFile(string path)
         {
-            return RetryUtility.Retry(() => TagLib.File.Create(path));
+            return MetadataCore.RunUnderTagLibLock(() =>
+                RetryUtility.Retry(() => TagLib.File.Create(path))
+            );
+        }
+
+        /// <summary>
+        /// Save a TagLib file (such as one obtained from <see cref="CreateTaglibFile"/>), retrying
+        /// if the file is temporarily locked. Saving renders the metadata, which mutates TagLib's
+        /// shared static state, so it runs under the same lock as CreateTaglibFile. Use this rather
+        /// than calling file.Save() directly on a TagLib file.
+        /// </summary>
+        public static void SaveTaglibFile(TagLib.File file)
+        {
+            MetadataCore.RunUnderTagLibLock(() => RetryUtility.Retry(() => file.Save()));
+        }
+
+        /// <summary>
+        /// Attempts to delete a directory once. Returns false if an exception prevents deletion,
+        /// rather than retrying or throwing — suitable for best-effort cleanup during shutdown.
+        /// </summary>
+        public static bool TryDeleteDirectory(string path, bool recursive = false)
+        {
+            try
+            {
+                Directory.Delete(path, recursive);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+                return false;
+            }
         }
     }
 }

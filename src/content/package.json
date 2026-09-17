@@ -1,5 +1,12 @@
 {
     "license": "MIT",
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "24.13.0",
+            "onFail": "download"
+        }
+    },
     "scripts": {
         "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:appearance build:appearanceMigrations",
         "watch": "npm-run-all watch:pug watch:branding:files",
@@ -15,7 +22,8 @@
         "The -a option says to run them all before watching": "",
         "watch:pug": "onchange -j 9 -a \"**/*.pug\" -- pug {{file}} --pretty --out ../../output/browser/{{fileDir}}",
         "//": "______________________________________________________________________________________________________",
-        "build:pageSizes": "ts-node pageSizes.ts",
+        "// build:pageSizes runs the .ts directly via Node's native type stripping (no ts-node). --experimental-strip-types is required for earlier versions of Node (default only from 22.18); the disable-warning flags silence the harmless experimental and typeless-package.json notices": "",
+        "build:pageSizes": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON pageSizes.ts",
         "build:less": "npm-run-all build:pageSizes build:less-inner",
         "build:less-inner": "node ../BloomBrowserUI/scripts/watchLess.mjs --scope=content --once",
         "// there is no current way to exclude node_modules, so we can't just do the whole directory.": "https://github.com/jonycheung/deadsimple-less-watch-compiler/issues/72",
@@ -32,9 +40,9 @@
         "watch:branding:files": "onchange -k -i -a \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" -- node ./scripts/copyContentFile.mjs {{file}} branding branding",
         "build:appearanceMigrations": "cpx \"appearanceMigrations/**\" ../../output/browser/appearanceMigrations",
         "watch:appearanceMigrations": "onchange -k -i -a \"appearanceMigrations/**\" -- node ./scripts/copyContentFile.mjs {{file}} appearanceMigrations appearanceMigrations",
-        "watch:branding:less": "onchange -k -i -a \"branding/**/*.less\" -- yarn build:branding:less",
-        "watch:templates:less": "onchange -k -i -a \"templates/**/*.less\" -- yarn build:templates:less",
-        "watch:layout:less": "onchange -k -i -a \"bookLayout/**/*.less\" -- yarn build:layout:less:main",
+        "watch:branding:less": "onchange -k -i -a \"branding/**/*.less\" -- pnpm run build:branding:less",
+        "watch:templates:less": "onchange -k -i -a \"templates/**/*.less\" -- pnpm run build:templates:less",
+        "watch:layout:less": "onchange -k -i -a \"bookLayout/**/*.less\" -- pnpm run build:layout:less:main",
         "///": "______________________________________________________________________________________________________",
         "//This is  slow compared to less-watch-compiler: watch:less": "onchange -a \"**/*.less\" -- lessc {{file}} ../../output/browser/{{fileDir}}",
         "//Note that this is really slow compared to cpx with the glob (buildBrandingFiles/watchBrandingFiles)": "//",
@@ -44,28 +52,24 @@
         "less": "We are using 3.x because 4.0 changed the rules for division handling and did not provide migration instructions. See the `math` option."
     },
     "devDependencies": {
-        "cpx": "^1.5.0",
+        "cpx": "1.5.0",
         "less": "3.13.1",
-        "less-watch-compiler": "^1.13.0",
-        "lessc": "^1.0.2",
-        "lessc-glob": "^1.0.9",
-        "npm-run-all": "^4.1.5",
-        "onchange": "^7.1.0",
-        "prettier": "^3.6.2",
-        "pug": "^3.0.2",
-        "pug-cli": "^1.0.0-alpha6",
-        "rimraf": "^5.0.5",
-        "ts-node": "^10.9.2"
+        "less-watch-compiler": "1.16.3",
+        "lessc": "1.0.2",
+        "lessc-glob": "1.0.9",
+        "npm-run-all": "4.1.5",
+        "onchange": "7.1.0",
+        "prettier": "3.6.2",
+        "pug": "3.0.2",
+        "pug-cli": "1.0.0-alpha6",
+        "rimraf": "5.0.5"
     },
     "dependencies": {
-        "@types/node": "^22.11.0",
-        "typescript": "^5.0"
+        "@types/node": "24.13.0",
+        "typescript": "6.0.3"
     },
     "lint-staged": {
         "*": "prettier --write"
     },
-    "volta": {
-        "node": "22.21.1",
-        "yarn": "1.22.22"
-    }
+    "packageManager": "pnpm@11.5.2"
 }

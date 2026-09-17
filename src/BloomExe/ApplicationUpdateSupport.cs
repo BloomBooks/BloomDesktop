@@ -10,14 +10,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.web;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Reporting;
 #if !__MonoCS__
 using Bloom.ErrorReporter;
-using SIL.Reporting;
 using Velopack;
 #endif
 

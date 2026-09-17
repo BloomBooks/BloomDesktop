@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import * as path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
-// When called via yarn, the component name is passed as an argument after "--"
+// When called via pnpm, the component name is passed as an argument after "--"
 // We need to find it in process.argv
 const rawArgs = process.argv
     .slice(2)
@@ -37,7 +37,7 @@ const detectComponentFromDirectory = (): string | undefined => {
     }
 
     // If we're in the component-tester directory, look at the INIT_CWD environment variable
-    // which is set by yarn when running from a different directory
+    // which is set by pnpm when running from a different directory
     const originalCwd = process.env.INIT_CWD;
     if (originalCwd) {
         const originalConfigPath = path.join(

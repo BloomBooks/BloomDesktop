@@ -110,7 +110,7 @@ namespace Bloom.Publish.BloomPub.wifi
                     {
                         break;
                     }
-                    catch (SocketException se) when (!ct.IsCancellationRequested)
+                    catch (SocketException) when (!ct.IsCancellationRequested)
                     {
                         throw;
                     }

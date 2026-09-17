@@ -358,16 +358,6 @@ namespace Bloom.Publish.BloomLibrary
             }
         }
 
-        internal void LogIn()
-        {
-            BloomLibraryAuthentication.LogIn();
-        }
-
-        internal void LogOut()
-        {
-            _uploader.Logout();
-        }
-
         internal LicenseState LicenseType
         {
             get

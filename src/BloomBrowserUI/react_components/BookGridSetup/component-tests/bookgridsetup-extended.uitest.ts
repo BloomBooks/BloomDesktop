@@ -1,7 +1,7 @@
 /**
  * Extended Tests for BookGridSetup
  * These tests cover advanced functionality like Add All Books, Remove, Disabled states, etc.
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { expect, test } from "../../component-tester/playwrightTest";

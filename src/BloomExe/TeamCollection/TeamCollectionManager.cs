@@ -129,7 +129,7 @@ namespace Bloom.TeamCollection
                     // But (a) we're not trying to be perfectly foolproof, and (b) we
                     // don't make the change that this case handles if the repo settings
                     // are newer than the most recent sync.
-                    var projectSettingsPath = CollectionSettings.GetSettingsFilePath(
+                    var projectSettingsPath = CollectionSettings.GetDefaultSettingsFilePath(
                         _localCollectionFolder
                     );
                     settings = ProjectContext.GetCollectionSettings(projectSettingsPath);

@@ -1,9 +1,9 @@
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import {
-    getCanvasElementManager,
     kBloomCanvasClass,
     kCanvasElementClass,
-} from "./canvasElementUtils";
+} from "./canvasElementConstants";
 
 const kDefaultMinimumRightMarginDistance = 10;
 const kDefaultMinimumBottomMarginDistance = 10;

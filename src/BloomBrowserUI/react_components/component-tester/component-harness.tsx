@@ -7,12 +7,13 @@
  * - Renders components based on __TEST_ELEMENT__ injection (for automated tests)
  * - Dynamically loads components defined via Playwright or manual configuration
  *
- * To run: `yarn dev` from the component-tester folder
- * Then open http://127.0.0.1:5173/ in your browser
+ * To run: `pnpm dev` from the component-tester folder
+ * Then open http://127.0.0.1:5183/ in your browser
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import $ from "jquery";
+import { renderRoot } from "../../utils/reactRender";
 // import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 // import { lightTheme } from "../../../../bloomMaterialUITheme";
 import { ComponentRenderRequest } from "./componentTypes";
@@ -22,52 +23,21 @@ import {
 } from "./component-registry";
 import { bypassLocalization } from "../../lib/localizationManager/localizationManager";
 
-// Mock jQuery for localization system
-// The localization system uses jQuery promises ($.Deferred) which need done/fail methods
-(window as any).$ = (window as any).jQuery = {
-    Deferred: () => {
-        let resolveCallback: any;
-        let rejectCallback: any;
-        const promise = new Promise((resolve, reject) => {
-            resolveCallback = resolve;
-            rejectCallback = reject;
-        });
-
-        // Create the jQuery-style promise with done/fail methods
-        const jQueryPromise = {
-            done: (callback: any) => {
-                promise.then(callback);
-                return jQueryPromise;
-            },
-            fail: (callback: any) => {
-                promise.catch(callback);
-                return jQueryPromise;
-            },
-            then: (callback: any) => {
-                promise.then(callback);
-                return jQueryPromise;
-            },
-        };
-
-        const deferred = {
-            resolve: (value: any) => {
-                resolveCallback(value);
-                return deferred;
-            },
-            reject: (reason: any) => {
-                rejectCallback(reason);
-                return deferred;
-            },
-            fail: (callback: any) => {
-                promise.catch(callback);
-                return deferred;
-            },
-            promise: () => jQueryPromise,
-        };
-
-        return deferred;
-    },
-};
+// Expose the real jQuery as a global for the components under test.
+//
+// The localization system needs jQuery promises ($.Deferred), which real jQuery provides,
+// so there is nothing here worth mocking. It matters that this is the genuine jQuery: some
+// of our dependencies are jQuery *plugins* that attach themselves to $.fn at import time,
+// reading the global rather than any module import. select2 is the case that bit us — under
+// Vite it loads as an optimized ESM dep, so `module` is undefined and its UMD wrapper falls
+// through to the browser-globals branch, which does `factory(jQuery)` against window.jQuery.
+// A stand-in object with only Deferred on it has no `.fn`, so select2 threw at import time
+// and took down every component whose graph reaches StyleEditor (e.g. anything under the
+// toolbox). Assigning the real jQuery here keeps those plugins working.
+//
+// This runs before any component module is loaded: components are pulled in lazily by
+// renderRequest() below, well after this module's top-level code.
+window.$ = window.jQuery = $;
 
 const manualConfigModules = import.meta.glob<ManualConfigModule>(
     "./manualConfig.ts",
@@ -116,14 +86,14 @@ if (pendingError) {
 } else if (!pendingRequest) {
     renderInstructions();
 } else {
-    ReactDOM.render(<div>Loading component…</div>, rootElement);
+    renderRoot(<div>Loading component…</div>, rootElement);
     void renderRequest(pendingRequest);
 }
 
 function renderInstructions(message?: string) {
     const componentNames = listComponentNames();
 
-    ReactDOM.render(
+    renderRoot(
         <div style={{ fontFamily: "sans-serif" }}>
             <h1>Bloom React Component Tester</h1>
             {message ? <p>{message}</p> : null}
@@ -155,7 +125,7 @@ async function renderRequest(request: ComponentRenderRequest<any>) {
         const Component = await loadComponent(request.descriptor);
         const element = React.createElement(Component, request.props ?? {});
 
-        ReactDOM.render(
+        renderRoot(
             // <StyledEngineProvider injectFirst>
             //     <ThemeProvider theme={lightTheme}>{element}</ThemeProvider>
             // </StyledEngineProvider>,
@@ -221,7 +191,7 @@ function renderError(error: unknown) {
             ? (error.stack ?? error.message)
             : JSON.stringify(error, null, 2);
 
-    ReactDOM.render(
+    renderRoot(
         <div>
             <h1>Component Tester Error</h1>
             <pre>{message}</pre>

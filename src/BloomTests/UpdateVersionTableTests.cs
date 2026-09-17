@@ -1,5 +1,7 @@
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Bloom;
 using Moq;
 using NUnit.Framework;
@@ -225,6 +227,89 @@ namespace BloomTests
             );
             Assert.That(errorResult.URL, Is.EqualTo(string.Empty));
             Assert.That(errorResult.Error.Message, Does.StartWith("Internet connection"));
+        }
+
+        // The following three tests deterministically pin the translation of HttpClient failures into the
+        // WebException/WebExceptionStatus that UpdateTableLookupResult exposes (and that IsConnectivityError
+        // and callers depend on), using the IBloomWebClient seam instead of relying on live-network behavior.
+
+        [Test]
+        public void CanGetVersionTableFromWeb_NameResolutionError_MapsToNameResolutionFailure()
+        {
+            var t = new UpdateVersionTable();
+            var mockClient = new Mock<IBloomWebClient>();
+            var thrown = new HttpRequestException(
+                HttpRequestError.NameResolutionError,
+                "dns failed"
+            );
+            mockClient.Setup(x => x.DownloadString(It.IsAny<string>())).Throws(thrown);
+
+            var result = t.CanGetVersionTableFromWeb(
+                mockClient.Object,
+                out TableLookupResult errorResult
+            );
+
+            Assert.That(result, Is.False);
+            Assert.That(errorResult.Error, Is.Not.Null);
+            Assert.That(
+                errorResult.Error.Status,
+                Is.EqualTo(WebExceptionStatus.NameResolutionFailure)
+            );
+            Assert.That(errorResult.IsConnectivityError, Is.True);
+            Assert.That(
+                errorResult.Error.InnerException,
+                Is.SameAs(thrown),
+                "the original exception should be preserved for diagnostics"
+            );
+        }
+
+        [Test]
+        public void CanGetVersionTableFromWeb_HttpStatusError_MapsToProtocolError()
+        {
+            var t = new UpdateVersionTable();
+            var mockClient = new Mock<IBloomWebClient>();
+            // GetStringAsync's EnsureSuccessStatusCode throws an HttpRequestException with StatusCode set;
+            // the production code maps any exception carrying a StatusCode to ProtocolError.
+            mockClient
+                .Setup(x => x.DownloadString(It.IsAny<string>()))
+                .Throws(new HttpRequestException("not found", null, HttpStatusCode.NotFound));
+
+            var result = t.CanGetVersionTableFromWeb(
+                mockClient.Object,
+                out TableLookupResult errorResult
+            );
+
+            Assert.That(result, Is.False);
+            Assert.That(errorResult.Error, Is.Not.Null);
+            Assert.That(errorResult.Error.Status, Is.EqualTo(WebExceptionStatus.ProtocolError));
+            // A protocol error means we reached the server, so it is not a connectivity error.
+            Assert.That(errorResult.IsConnectivityError, Is.False);
+        }
+
+        [Test]
+        public void CanGetVersionTableFromWeb_Timeout_MapsToTimeout()
+        {
+            var t = new UpdateVersionTable();
+            var mockClient = new Mock<IBloomWebClient>();
+            // HttpClient surfaces a timeout as TaskCanceledException.
+            mockClient
+                .Setup(x => x.DownloadString(It.IsAny<string>()))
+                .Throws(new TaskCanceledException());
+
+            var result = t.CanGetVersionTableFromWeb(
+                mockClient.Object,
+                out TableLookupResult errorResult
+            );
+
+            Assert.That(result, Is.False);
+            Assert.That(errorResult.Error, Is.Not.Null);
+            Assert.That(errorResult.Error.Status, Is.EqualTo(WebExceptionStatus.Timeout));
+            Assert.That(errorResult.IsConnectivityError, Is.True);
+            Assert.That(
+                errorResult.Error.InnerException,
+                Is.TypeOf<TaskCanceledException>(),
+                "the original exception should be preserved for diagnostics"
+            );
         }
 
         private static IBloomWebClient GetMockWebClient()

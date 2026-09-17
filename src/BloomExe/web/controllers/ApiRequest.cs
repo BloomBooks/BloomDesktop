@@ -214,7 +214,7 @@ namespace Bloom.Api
                     _requestInfo.WriteError(_statusCodeInt, text);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debug.Fail("could not WriteError to requestInfo (is it disposed?)");
             }
@@ -263,6 +263,7 @@ namespace Bloom.Api
                         if (
                             endpointRegistration.HandleOnUIThread
                             && formForSynchronizing != null
+                            && !formForSynchronizing.IsDisposed
                             && formForSynchronizing.InvokeRequired
                         )
                         {
@@ -338,28 +339,44 @@ namespace Bloom.Api
         {
             Exception handlerException = null;
 
-            BloomServer._theOneInstance.RegisterThreadBlocking();
-
-            // This will block until the UI thread is done invoking this.
-            await (Task)
-                formForSynchronizing.Invoke(
-                    new Func<ApiRequest, Task>(
-                        async (req) =>
-                        {
-                            try
-                            {
-                                await endpointRegistration.Handle(req);
-                            }
-                            catch (Exception error)
-                            {
-                                handlerException = error;
-                            }
-                        }
-                    ),
-                    request
-                );
-
-            BloomServer._theOneInstance.RegisterThreadUnblocked();
+            // The scope is what ends the reported block, and it has to be, for two reasons that both used
+            // to bite here (BL-16612). First, the await below can resume on a different thread than the one
+            // that reported the block -- a server worker has no synchronization context, so the
+            // continuation lands on the thread pool -- and the old code decided whether to decrement by
+            // looking at the thread it happened to be running on, so it silently skipped it and left the
+            // count permanently high. Second, disposal covers every exit: previously an exception out of
+            // Invoke other than ObjectDisposedException left the block reported forever.
+            using (BloomServer._theOneInstance.ReportThreadBlocking())
+            {
+                try
+                {
+                    // This will block until the UI thread is done invoking this.
+                    await (Task)
+                        formForSynchronizing.Invoke(
+                            new Func<ApiRequest, Task>(
+                                async (req) =>
+                                {
+                                    try
+                                    {
+                                        await endpointRegistration.Handle(req);
+                                    }
+                                    catch (Exception error)
+                                    {
+                                        handlerException = error;
+                                    }
+                                }
+                            ),
+                            request
+                        );
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The form was disposed between the IsDisposed check and the actual Invoke call.
+                    // This can happen when Bloom reloads after a UI language change. Fail silently.
+                    request.Failed("Shell disposed during API request handling");
+                    return false;
+                }
+            }
 
             if (handlerException != null)
             {
@@ -394,6 +411,11 @@ namespace Bloom.Api
 
         public string RequestContentType => _requestInfo.RequestContentType;
 
+        /// <remarks>
+        /// Unencoded, because Parameters comes from HttpUtility.ParseQueryString, which has
+        /// already decoded the value once. (Nothing calls this at present; the two handlers that
+        /// used to decode a second time here were fixed for BL-16669.)
+        /// </remarks>
         public UrlPathString RequiredFileNameOrPath(string name)
         {
             if (Parameters.AllKeys.Contains(name))

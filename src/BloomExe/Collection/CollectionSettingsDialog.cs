@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -49,7 +50,6 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
-        internal bool PendingAllowAppBuilder;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -116,9 +116,6 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
-            );
-            PendingAllowAppBuilder = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kAppBuilder
             );
 
             if (
@@ -275,7 +272,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage1.Tag = args.LanguageTag;
-                PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage1.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
@@ -290,7 +289,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage2.Tag = args.LanguageTag;
-                PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage2.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
@@ -305,7 +306,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage3.Tag = args.LanguageTag;
-                PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage3.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
@@ -330,8 +333,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingSignLanguage.Tag = args.LanguageTag;
-                var slIsCustom = args.DefaultName != args.DesiredName;
-                PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
+                // Unlike Language1-3 above, args.IsRtl is deliberately ignored: a sign language
+                // has no text direction.
+                PendingSignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
@@ -374,10 +378,9 @@ namespace Bloom.Collection
                 )
             )
             {
-                dlg.Width = 1000;
-                dlg.Height = 580;
-
-                dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
+                var owner = Shell.GetShellOrOtherOpenForm();
+                dlg.SetScaledSize(1000, 580);
+                dlg.ShowDialog(owner);
             }
         }
 
@@ -407,9 +410,9 @@ namespace Bloom.Collection
 
             Settings.Default.AutoUpdate =
                 PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
+            Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
-            UpdateAppBuilderAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -770,6 +773,7 @@ namespace Bloom.Collection
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
                 frm.LanguageName = pendingLanguage.Name;
@@ -777,7 +781,7 @@ namespace Bloom.Collection
                 frm.LanguageLineSpacing = pendingLanguage.LineHeight;
                 frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
                 frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
-                frm.ShowDialog();
+                frm.ShowDialog(this);
 
                 // get the changes
 
@@ -821,12 +825,6 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
-        }
-
-        private void UpdateAppBuilderAllowed()
-        {
-            // NB: This change does not require a restart.
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, PendingAllowAppBuilder);
         }
     }
 }

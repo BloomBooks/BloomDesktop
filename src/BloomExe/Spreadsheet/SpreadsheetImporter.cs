@@ -2279,7 +2279,7 @@ namespace Bloom.Spreadsheet
                 {
                     duration = GetDuration(src);
                 }
-                catch (InvalidDataException ex)
+                catch (InvalidDataException)
                 {
                     _progress.MessageWithParams(
                         "InvalidMp3",

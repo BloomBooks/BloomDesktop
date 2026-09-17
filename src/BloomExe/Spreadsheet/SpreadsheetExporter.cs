@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -174,8 +175,6 @@ namespace Bloom.Spreadsheet
             _spreadsheet.SortHiddenContentRowsToTheBottom();
             return _spreadsheet;
         }
-
-        private bool _reportedImageDescription;
 
         private void AddContentRows(
             SafeXmlElement page,
@@ -411,6 +410,21 @@ namespace Bloom.Spreadsheet
                     "<span class=\"bloom-audio-split-marker\">\u200B</span>",
                     "|"
                 );
+                // Replace <br> line breaks with a space rather than removing them outright, so
+                // that words on either side of a soft line break (e.g. Shift+Enter in a paragraph)
+                // are not run together in the exported text.
+                content = content.Replace("<br>", " ");
+                content = content.Replace("<br />", " ");
+                // Collapse runs of ordinary (breaking) whitespace to a single space. We deliberately
+                // do NOT use \s here: in .NET, \s also matches non-breaking spaces (U+00A0, U+202F,
+                // etc.), which are meaningful (e.g. French punctuation spacing, keeping words
+                // together) and must be preserved in the export.
+                content = Regex.Replace(content, "[ \t\r\n\f\v]+", " ");
+                // Trim leading/trailing breaking whitespace (not meaningful), but only the same
+                // set the collapse above targets. We must NOT use parameterless Trim() here:
+                // Char.IsWhiteSpace is true for non-breaking spaces (U+00A0, U+202F, ...), so Trim()
+                // would strip the very NBSPs we deliberately preserved just above.
+                content = content.Trim(' ', '\t', '\r', '\n', '\f', '\v');
                 // Don't just test content, it typically contains paragraph markup.
                 if (String.IsNullOrWhiteSpace(editable.InnerText))
                 {

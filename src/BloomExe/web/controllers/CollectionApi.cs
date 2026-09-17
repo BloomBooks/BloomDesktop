@@ -10,12 +10,14 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionChoosing;
 using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
@@ -407,11 +409,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                kApiUrlPart + "removeSourceFolder",
-                HandleRemoveSourceFolder,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "getBookOnBloomBadgeInfo",
                 GetBookOnBloomBadgeInfo,
                 false
@@ -452,24 +449,6 @@ namespace Bloom.web.controllers
             }
         }
 
-        bool _updateAfterExplorerOpened;
-
-        private void HandleRemoveSourceFolder(ApiRequest request)
-        {
-            var collectionFolderPath = request.RequiredPostString();
-            if (Directory.Exists(collectionFolderPath))
-            {
-                request.PostSucceeded();
-                _updateAfterExplorerOpened = true;
-                ProcessExtra.SafeStartInFront(collectionFolderPath);
-            }
-            else
-            {
-                request.Failed();
-                return;
-            }
-        }
-
         // Currently only used by Books on Blorg Progress Bar
         private void HandleGetBookCountByLanguage(ApiRequest request)
         {
@@ -492,7 +471,7 @@ namespace Bloom.web.controllers
 
         internal void CheckForCollectionUpdates()
         {
-            if (_updateAfterExplorerOpened)
+            if (CollectionChooserApi.UpdateAfterExplorerOpened)
             {
                 // trigger a list request?.
                 _collectionModel.ReloadCollections();
@@ -505,7 +484,7 @@ namespace Bloom.web.controllers
 
         internal void ResetUpdatingList()
         {
-            _updateAfterExplorerOpened = false;
+            CollectionChooserApi.UpdateAfterExplorerOpened = false;
         }
 
         private void HandleAddSourceCollection(ApiRequest request)

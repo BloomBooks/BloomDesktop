@@ -7,7 +7,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import StyleEditor from "./StyleEditor";
 import { useL10n } from "../../react_components/l10nHooks";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../utils/reactRender";
 import { ColorDisplayButton } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 
@@ -124,7 +124,7 @@ export function RenderRoot(
     // update this after the dialog closed. If we can't find the place to render into,
     // just don't do it.
     if (root) {
-        ReactDOM.render(
+        renderRoot(
             <AudioHilitePage
                 styleName={uiStyleName ?? ""}
                 color={color}

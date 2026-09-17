@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderForInstance } from "../../../utils/reactRender";
 import { Label } from "../../../react_components/l10nComponents";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -19,10 +19,8 @@ import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
-import {
-    getCanvasElementManager,
-    kCanvasElementSelector,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import $ from "jquery";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
@@ -859,10 +857,10 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     public static setup(root): SignLanguageToolControls {
-        return ReactDOM.render(
+        return renderForInstance<SignLanguageToolControls>(
             <SignLanguageToolControls />,
             root,
-        ) as unknown as SignLanguageToolControls;
+        );
     }
 }
 

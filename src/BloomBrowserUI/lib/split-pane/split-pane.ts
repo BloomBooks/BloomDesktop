@@ -23,7 +23,7 @@ import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
 import jQuery from "jquery";
-import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementUtils";
+import { kBloomCanvasClass } from "../../bookEdit/toolbox/canvas/canvasElementConstants";
 import { shouldHideToolsOverImages } from "../../bookEdit/js/editablePageUtils";
 
 var SPLITPANERESIZE_HANDLER = "_splitpaneparentresizeHandler";
@@ -254,7 +254,7 @@ export function splitPane($splitPanes: JQuery): void {
     }
 
     function mousedblclickHandler(event) {
-        // Handling double-click doesn't have any negative impact on the usuability of
+        // Handling double-click doesn't have any negative impact on the usability of
         // the motion tool, but since we disabled all the indications that there is
         // a splitter active, it might be surprising. May as well disable it also.
         if (shouldHideToolsOverImages()) {

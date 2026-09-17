@@ -14,6 +14,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -148,6 +149,33 @@ namespace Bloom
         {
             base.OnDeactivate(e);
             _audioRecording.PauseMonitoringAudio(true);
+        }
+
+        /// <summary>
+        /// Keep the main workspace layout in sync when the window moves to a monitor with
+        /// a different DPI, or when monitor scaling changes while Bloom is running.
+        /// </summary>
+        protected override void OnDpiChanged(DpiChangedEventArgs e)
+        {
+            base.OnDpiChanged(e);
+            if (AppIsShuttingDown || Disposing || IsDisposed)
+                return;
+
+            Logger.WriteMinorEvent($"Shell DPI changed from {e.DeviceDpiOld} to {e.DeviceDpiNew}");
+            NotifyDpiChanged();
+        }
+
+        /// <summary>
+        /// Refreshes layout and notifies browser UI listeners that DPI-related state changed.
+        /// </summary>
+        private void NotifyDpiChanged()
+        {
+            if (_workspaceView == null || _workspaceView.Disposing || _workspaceView.IsDisposed)
+                return;
+
+            BloomWebSocketServer.Instance?.SendEvent("recordVideo", "dpiChanged");
+            _workspaceView.PerformLayout();
+            _workspaceView.Invalidate(true);
         }
 
         public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
@@ -358,7 +386,7 @@ namespace Bloom
                     (Action)(
                         () =>
                         {
-                            shell.ReallyComeToFront();
+                            shell.FinishPuttingShellInFront();
                         }
                     )
                 );
@@ -366,16 +394,22 @@ namespace Bloom
         }
 
         /// <summary>
-        /// we let the Program call this after it closes the splash screen
+        /// we let the Program call this after it closes the splash screen, and after opening a
+        /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
+        ///
+        /// Code review asked whether this still earns its keep, now that BringToFrontNow does the
+        /// raising, and suggested inlining it (BL-16784). We kept it, because coming to the front
+        /// is not all it does: it also sets _finishedLoading, which is what allows the window size
+        /// and location to be saved afterwards. And it has three callers -- ComeToFront just above,
+        /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
+        /// would mean repeating that pairing in each of them.
         /// </summary>
-        public void ReallyComeToFront()
+        public void FinishPuttingShellInFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
-
+            // An instant toggle is what we used to do here, and it is why Bloom could come up
+            // behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this works better.
+            this.BringToFrontNow();
+            // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
 
@@ -507,6 +541,7 @@ namespace Bloom
         public void SetAlwaysMeasurePerformance(bool value)
         {
             Settings.Default.AlwaysMeasurePerformance = value;
+            Settings.Default.Save();
             UpdatePerformanceMeasurementStatus();
         }
 
@@ -527,6 +562,31 @@ namespace Bloom
             {
                 FileMeddlerManager.Stop();
             }
+        }
+
+        /// <summary>
+        /// Records the user's choice between bloomlibrary.org and dev.bloomlibrary.org, then
+        /// restarts Bloom if the choice differs from the web site of this run.  A restart is
+        /// necessary because the upload destination and the login belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// The restart waits for the idle loop, as the change of the user interface language
+        /// does in WorkspaceView.SetUiLanguage.  We are on the user interface thread inside an
+        /// API request that holds the server's lock, and a restart closes the collection, which
+        /// makes more API requests.
+        /// </remarks>
+        public void SetUseDevBloomLibrary(bool useDevSite)
+        {
+            if (!BookUpload.SetUserChoiceOfDevWebSite(useDevSite))
+                return;
+            Application.Idle -= RestartForWebSiteChange;
+            Application.Idle += RestartForWebSiteChange;
+        }
+
+        private void RestartForWebSiteChange(object sender, EventArgs e)
+        {
+            Application.Idle -= RestartForWebSiteChange;
+            Program.RestartBloom(false);
         }
 
         private void UpdatePerformanceMeasurementStatus()

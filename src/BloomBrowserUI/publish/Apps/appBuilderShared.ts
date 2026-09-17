@@ -34,6 +34,12 @@ export interface IAppBuilderStatus {
     rabRoot?: string;
     trackedBookTitles?: string[];
     trackedBooks: IAppBuilderTrackedBook[];
+    /** The action currently running on the server, or undefined if idle. */
+    activeAction?: AppBuilderAction;
+    /** Last progress stage reported by the server (e.g. "building-android-app"). */
+    activeActionProgressStage?: string;
+    /** Last progress percent (0–100) reported by the server. */
+    activeActionProgressPercent?: number;
 }
 
 export type AppBuilderPrepareStepId =
@@ -74,6 +80,12 @@ export interface IAppBuilderStatusApi {
     apkSizeBytes?: number;
     rabRoot?: string;
     trackedBookTitles?: string[];
+    activeAction?: string;
+    activeActionProgressStage?: string;
+    activeActionProgressPercent?: number;
+    ActiveAction?: string;
+    ActiveActionProgressStage?: string;
+    ActiveActionProgressPercent?: number;
     RabInstalled?: boolean;
     ProjectExists?: boolean;
     ApkExists?: boolean;
@@ -128,6 +140,10 @@ export interface IProgressStageLabels {
 }
 
 export const kAppBuilderWebSocketContext = "publish-rab";
+
+/// Websocket event id sent by the C# side when a prepare/build/install completes.
+/// The message payload is "{action}:success" or "{action}:failure".
+export const kAppBuilderActionCompleteEventId = "actionComplete";
 
 export type AppBuilderAction = "prepare" | "build" | "install";
 
@@ -209,6 +225,16 @@ export function normalizeStatus(
         getDefaultPrepareSteps()
     ).map(normalizePrepareStepStatus);
 
+    const rawActiveAction =
+        status?.activeAction ?? status?.ActiveAction ?? undefined;
+    const rawProgressStage =
+        status?.activeActionProgressStage ??
+        status?.ActiveActionProgressStage ??
+        undefined;
+    const rawProgressPercent =
+        status?.activeActionProgressPercent ??
+        status?.ActiveActionProgressPercent ??
+        undefined;
     return {
         rabInstalled: status?.rabInstalled ?? status?.RabInstalled ?? false,
         projectExists: status?.projectExists ?? status?.ProjectExists ?? false,
@@ -230,6 +256,9 @@ export function normalizeStatus(
         trackedBooks: (status?.trackedBooks ?? status?.TrackedBooks ?? []).map(
             normalizeTrackedBook,
         ),
+        activeAction: rawActiveAction as AppBuilderAction | undefined,
+        activeActionProgressStage: rawProgressStage,
+        activeActionProgressPercent: rawProgressPercent,
     };
 }
 

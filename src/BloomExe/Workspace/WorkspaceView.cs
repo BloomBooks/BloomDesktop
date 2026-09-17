@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.MiscUI;
@@ -64,6 +67,12 @@ namespace Bloom.Workspace
 
         internal Browser MainBrowser => _mainBrowser;
 
+        /// <summary>
+        /// The currently active WorkspaceView, or null when no project is loaded (e.g. at startup).
+        /// Used by CollectionChooserApi to distinguish startup mode from mid-session.
+        /// </summary>
+        public static WorkspaceView Current { get; private set; }
+
         //autofac uses this
 
         public WorkspaceView(
@@ -93,6 +102,7 @@ namespace Bloom.Workspace
             TeamCollectionApi teamCollectionApi
         )
         {
+            Current = this;
             _model = model;
             _settingsDialogFactory = settingsDialogFactory;
             _selectedTabAboutToChangeEvent = selectedTabAboutToChangeEvent;
@@ -202,6 +212,13 @@ namespace Bloom.Workspace
             // We'll need to do something even trickier if there start to be slow things that
             // happen in response to the book selection changed websocket message.
             bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
+
+            // Remembering the selection for the next launch belongs here rather than in
+            // SelectBook() (BL-16660). It goes on the ordinary (low) priority list because saving
+            // settings writes a file, and per the comment above the button highlighting must not
+            // wait for that.
+            bookSelection.SelectionChanged += PersistSelectedBookPath;
+
             bookStatusChangeEvent.Subscribe(args =>
             {
                 HandleBookStatusChange(args);
@@ -308,8 +325,7 @@ namespace Bloom.Workspace
                     return;
                 }
 
-                Settings.Default.CurrentBookPath = resolvedPath;
-                Settings.Default.Save();
+                SaveCurrentBookPath(resolvedPath);
             }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
             {
@@ -354,21 +370,105 @@ namespace Bloom.Workspace
             }
         }
 
+        /// <summary>
+        /// Remember the newly selected book, so that SelectBookAtStartup can restore it next time.
+        /// </summary>
+        /// <remarks>
+        /// BookSelection.SelectBook() used to do this itself, which meant that anything selecting a
+        /// book wrote global, persisted settings: unit tests left later tests looking at books in
+        /// deleted temporary folders, and the command-line bulk uploader replaced the user's
+        /// remembered book with each book it uploaded. See BL-16660. Doing it here means only the
+        /// running UI persists a selection, and only one that startup could actually make use of.
+        /// </remarks>
+        private void PersistSelectedBookPath(object sender, BookSelectionChangedEventArgs e)
+        {
+            // We are one link in the SelectionChanged chain, so anything that escapes from here
+            // escapes from SelectBook() to whoever selected the book. Deciding whether the book is
+            // worth remembering reads the collection folders from disk, so it can fail for reasons
+            // that have nothing to do with the user's actual task; and failing to remember the
+            // book is not worth interrupting that task over.
+            try
+            {
+                var book = _bookSelection.CurrentSelection;
+                if (book == null)
+                {
+                    // Nothing is selected (e.g. the selected book was just deleted), so there is
+                    // nothing to restore next time.
+                    SaveCurrentBookPath(null);
+                    return;
+                }
+                // SelectBookAtStartup applies this same test and refuses to restore a book that
+                // fails it, so storing such a path could only do harm: a path we can't use is a
+                // known source of trouble (BL-11678, BL-16327). We leave any good value already
+                // stored alone rather than clearing it, because the main way to get here is the
+                // stale selection left over from the previous collection while we are switching
+                // collections (BL-14313).
+                if (IsSelectedBookObsoleteOrInvalid(book.FolderPath))
+                    return;
+                SaveCurrentBookPath(book.FolderPath);
+            }
+            catch (Exception error)
+                when (error is IOException
+                    || error is UnauthorizedAccessException
+                    || error is ArgumentException
+                    || error is COMException
+                )
+            {
+                // ArgumentException because IsSelectedBookObsoleteOrInvalid calls
+                // Path.GetDirectoryName, and COMException because listing the source collections
+                // resolves .lnk shortcuts. Note this is belt-and-braces rather than the thing
+                // standing between the user and a crash: HandleBookSelectionChanged is on the
+                // high-priority list, so it calls the same predicate, unguarded, before we run.
+                Logger.WriteError("Unable to work out which book to remember.", error);
+            }
+        }
+
+        /// <summary>
+        /// Store a new value for the remembered book path, doing nothing if it is already correct.
+        /// Pass null or "" to mean "nothing to restore"; they are stored identically, so that
+        /// callers using one don't cause a pointless rewrite for callers using the other.
+        /// </summary>
+        private static void SaveCurrentBookPath(string path)
+        {
+            path = path ?? "";
+            if ((Settings.Default.CurrentBookPath ?? "") == path)
+                return; // no change, so no need to rewrite the settings file
+            var previous = Settings.Default.CurrentBookPath;
+            try
+            {
+                Settings.Default.CurrentBookPath = path;
+                Settings.Default.Save();
+            }
+            catch (Exception e)
+                when (e is IOException
+                    || e is UnauthorizedAccessException
+                    || e is ArgumentException
+                    || e is ConfigurationErrorsException
+                )
+            {
+                // Failing to remember the book is not worth interrupting the user's work over.
+                // ArgumentException belongs here because Save() throws it when the path contains a
+                // surrogate pair, i.e. the book's folder name contains an emoji or similar; the
+                // shutdown code at the end of Program.Run has to cope with the same thing. Without
+                // this, selecting such a book would throw out of SelectBook to whoever called it,
+                // and the recovery path in SelectBookAtStartup below could not do its job.
+                // Put the old value back: Save() writes the whole settings object, so leaving the
+                // value we could not save in it would make every later Settings.Default.Save()
+                // anywhere in Bloom fail the same way, turning this into a broken Collection
+                // Settings dialog, publish tab, or rename. The old value saved before, so it is
+                // safe to go back to.
+                Settings.Default.CurrentBookPath = previous;
+                Logger.WriteError("Unable to save the current book path.", e);
+            }
+        }
+
         private static void ClearCurrentBookPathIfMissing()
         {
             var currentBookPath = Settings.Default.CurrentBookPath;
             if (string.IsNullOrEmpty(currentBookPath) || Directory.Exists(currentBookPath))
                 return;
 
-            try
-            {
-                Settings.Default.CurrentBookPath = null;
-                Settings.Default.Save();
-            }
-            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException)
-            {
-                Logger.WriteError("Unable to clear stale current book path.", e);
-            }
+            SaveCurrentBookPath(null);
         }
 
         private static ReactControlAdditionalHtml GetWorkspaceAdditionalHtml()
@@ -556,8 +656,8 @@ window.showWorkspaceInitializationFailure = function(message) {
                 // We certainly don't want to crash because we had a problem doing so.
                 // One scenario we know of which causes this is if the book at
                 // Settings.Default.CurrentBookPath gets corrupted, such as having no .htm file.
-                // See BL-11678.
-                Settings.Default.CurrentBookPath = null;
+                // See BL-11678. Save it, or we would meet the same book again next launch.
+                SaveCurrentBookPath(null);
 
                 MiscUtils.SuppressUnusedExceptionVarWarning(e);
             }
@@ -727,6 +827,14 @@ window.showWorkspaceInitializationFailure = function(message) {
             tabInfo.tabStates.collection = GetTabStateForUi("collection", activeTabId);
             tabInfo.tabStates.edit = GetTabStateForUi("edit", activeTabId);
             tabInfo.tabStates.publish = GetTabStateForUi("publish", activeTabId);
+            // True while something has locked navigation to make itself modal: a BloomLibrary
+            // upload, a Reading App Builder action, or an Edit-tab modal dialog. The tabStates
+            // above already encode this for the main tabs, but the Publish tab also has its own
+            // switcher between publish tools (in a different browser control, so nothing we do
+            // here disables it for free). Reporting the lock itself, rather than making the
+            // Publish tab infer it from the tab states, lets that switcher lock and unlock in
+            // exact step with the main tabs. See BL-16654.
+            tabInfo.navigationLocked = !_tabsEnabled;
             return tabInfo;
         }
 
@@ -781,7 +889,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             return zoomInfo;
         }
 
-        public string GetCurrentUiLanguageLabel()
+        public static string GetCurrentUiLanguageLabel()
         {
             var lang = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(lang))
@@ -796,7 +904,10 @@ window.showWorkspaceInitializationFailure = function(message) {
             if (onlyActiveItem)
             {
                 if (String.IsNullOrEmpty(Settings.Default.UserInterfaceLanguage))
+                {
                     Settings.Default.UserInterfaceLanguage = "en"; // See BL-13545.
+                    Settings.Default.Save();
+                }
                 items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
             }
             else
@@ -817,13 +928,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             return items;
         }
 
-        public object GetAvailableUiLanguageNames()
+        public static object GetAvailableUiLanguageNames()
         {
             var languageItems = GetLanguageItems(onlyActiveItem: false);
             return languageItems.Select(item => item.MenuText).ToList();
         }
 
-        public void HandleUiLanguageAction(string action, string languageName = null)
+        public static void HandleUiLanguageAction(string action, string languageName = null)
         {
             if (String.IsNullOrEmpty(action))
                 return;
@@ -837,7 +948,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                     ?.LangTag;
                 if (String.IsNullOrEmpty(langTag))
                     return;
-                SetUiLanguage(langTag);
+                var current = Current;
+                if (current != null)
+                    current.SetUiLanguage(langTag); // reopens the project for full localization refresh
+                else
+                    ApplyUiLanguageChange(langTag); // startup: apply the change, no project to reopen
                 return;
             }
 
@@ -853,12 +968,12 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
-        public bool GetShowUnapprovedTranslations()
+        public static bool GetShowUnapprovedTranslations()
         {
             return Settings.Default.ShowUnapprovedLocalizations;
         }
 
-        public void SetShowUnapprovedTranslations(bool showUnapproved)
+        public static void SetShowUnapprovedTranslations(bool showUnapproved)
         {
             if (Settings.Default.ShowUnapprovedLocalizations == showUnapproved)
                 return;
@@ -945,8 +1060,12 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             var current = Settings.Default.UserInterfaceLanguage;
             if (String.IsNullOrEmpty(current))
+            {
+                // Store the default we are falling back to, so the rest of Bloom sees it too.
                 current = "en";
-            Settings.Default.UserInterfaceLanguage = current;
+                Settings.Default.UserInterfaceLanguage = current;
+                Settings.Default.Save();
+            }
             return current;
         }
 
@@ -993,7 +1112,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
         }
 
-        private void ToggleShowingOnlyApprovedTranslations()
+        private static void ToggleShowingOnlyApprovedTranslations()
         {
             Settings.Default.ShowUnapprovedLocalizations = !Settings
                 .Default
@@ -1001,10 +1120,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             LocalizationManager.ReturnOnlyApprovedStrings = !Settings
                 .Default
                 .ShowUnapprovedLocalizations;
-            FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
-            // until L10nSharp changes to allow dynamic response to setting change
+            Current?.FinishUiLanguageMenuItemClick(); // apply newly revealed/hidden localizations
             Settings.Default.Save();
-            Program.RestartBloom(false);
+            // until L10nSharp changes to allow dynamic response to setting change
+            // Skip the restart at startup (no project loaded); CollectionChooserApi
+            // handles that case by reopening the dialog to refresh the language list.
+            if (Current != null)
+                Program.RestartBloom(false);
         }
 
         /// <summary>
@@ -1053,7 +1175,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
-        private static void ApplyUiLanguageChange(string langTag)
+        internal static void ApplyUiLanguageChange(string langTag)
         {
             try
             {
@@ -1243,43 +1365,64 @@ window.showWorkspaceInitializationFailure = function(message) {
             SendBookSelectionChanged(forceNotSaveable: true);
         }
 
-        public void OpenCreateCollection()
+        /// <summary>
+        /// Switches directly to the specified collection without showing the chooser dialog.
+        /// Called from the React-based collection chooser when the user clicks a collection card.
+        /// </summary>
+        public void OpenSpecificCollection(string collectionPath)
         {
             var previousTab = GetWorkspaceTab(_previouslySelectedTabArea);
             _selectedTabAboutToChangeEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
-
             _selectedTabChangedEvent.Raise(
                 new TabChangedDetails() { FromTab = previousTab, ToTab = null }
             );
 
-            var oldSelectedTab = previousTab;
-
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        var didOpen = Program.ChooseACollection(
-                            Shell.GetShellOrOtherOpenForm() as Shell
-                        );
-                        if (!didOpen)
-                        {
-                            // We want to resume whatever tab we were in.
-                            // There is some overkill here...the old tab can only be the collection tab,
-                            // and currently it doesn't care about these events. The critical thing is to
-                            // restore tab identity in subsequent tab-change event payloads.
-                            // If we're not shutting down, we're switching the previously selected tab back on.
-                            _selectedTabAboutToChangeEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                            _selectedTabChangedEvent.Raise(
-                                new TabChangedDetails() { FromTab = null, ToTab = oldSelectedTab }
-                            );
-                        }
-                    }
-                )
+            Invoke(() =>
+                Program.SwitchToCollection(collectionPath, Shell.GetShellOrOtherOpenForm() as Shell)
             );
+        }
+
+        /// <summary>
+        /// Runs the New Collection Wizard and, if the user completes it, opens the new collection.
+        /// Called from the React-based collection chooser "Create New Collection" button.
+        /// </summary>
+        public void CreateNewCollection()
+        {
+            var shell = Shell.GetShellOrOtherOpenForm() as Shell;
+            var path = NewCollectionWizard.CreateNewCollection(null, shell);
+            if (path != null)
+                OpenSpecificCollection(path);
+        }
+
+        /// <summary>
+        /// Shows a file picker for .bloomCollection files and opens the selected collection.
+        /// Called from the React-based collection chooser "Browse" button.
+        /// </summary>
+        public void BrowseForAndOpenCollection()
+        {
+            if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+                Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+
+            string selectedPath;
+            using (var dlg = new BloomOpenFileDialog())
+            {
+                dlg.Title = LocalizationManager.GetString(
+                    "CollectionTab.ChooseCollection",
+                    "Choose Collection",
+                    "Title of the file-open dialog for choosing a Bloom collection"
+                );
+                dlg.Filter = CollectionSettings.GetFileDialogFilterString();
+                dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+                if (
+                    dlg.ShowDialog() == DialogResult.Cancel
+                    || MiscUtils.ReportIfInvalidCollection(dlg.FileName)
+                )
+                    return;
+                selectedPath = dlg.FileName;
+            }
+            OpenSpecificCollection(selectedPath);
         }
 
         private CollectionSettingsDialog _currentlyOpenSettingsDialog;
@@ -1315,6 +1458,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();
+                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
                     using (var dlg = _settingsDialogFactory())
                     {
                         dlg.FixingEnterpriseSubscriptionCode = forFixingEnterpriseSubscription;
@@ -1369,7 +1513,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
         /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
         /// probably wants to change too, and perhaps other things.
-        /// Note that we don't want to make any actual changes of state until the PostponedWork callback runs
+        /// Note that we don't want to make any actual changes of state until the CompleteTheChange callback runs
         /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
         /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
         /// until any changes are saved if we are leaving the edit tab.
@@ -1401,11 +1545,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                 {
                     FromTab = previousTab,
                     ToTab = currentTab,
-                    PostponedWork = () =>
+                    CompleteTheChange = () =>
                     {
                         CurrentTabView = view;
 
-                        // Mark the tab active only when postponed work actually runs.
+                        // Mark the tab active only when we actually complete the change.
                         // When leaving Edit this is delayed until pending save completes.
                         if (currentTab.HasValue)
                         {
@@ -1432,6 +1576,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
+                    // Starting over means re-running this whole method, so the "already on the
+                    // desired tab" check at the top makes it a no-op if some other path has
+                    // meanwhile switched to the tab we wanted. See BL-16766.
+                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
@@ -1499,7 +1647,6 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void WorkspaceView_Load(object sender, EventArgs e)
         {
             _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
-            CheckDPISettings();
             ShowAutoUpdateDialogIfNeeded();
             ShowForumInvitationDialogIfNeeded();
             // Check whether the last Velopack update attempt actually succeeded. Shows a toast if not.
@@ -1510,6 +1657,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
             // Whether we showed the dialog or not we'll check for a new version in 1 minute.
             _applicationUpdateCheckTimer.Enabled = true;
+            // Dev only: does nothing unless the go.sh launcher started this Bloom.
+            DevLauncher.StartMonitoringForSourceChanges();
             SendTopBarState();
         }
 
@@ -1518,6 +1667,11 @@ window.showWorkspaceInitializationFailure = function(message) {
         private void ShowAutoUpdateDialogIfNeeded()
         {
             if (Platform.IsLinux)
+                return;
+            // An automated run has nobody to dismiss a modal dialog. This one is shown as a startup
+            // action, so it would sit on the UI thread in its own message loop for the whole run --
+            // exactly the "dialog nobody can dismiss" that Program.RunningE2eTests exists to avoid.
+            if (Program.RunningE2eTests)
                 return;
             // If Bloom is newly installed or we only had old versions before, this should be 0.
             var isShown = Settings.Default.AutoUpdateDialogShown;
@@ -1533,8 +1687,7 @@ window.showWorkspaceInitializationFailure = function(message) {
                             var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update")
                         )
                         {
-                            dlg.Height = 250;
-                            dlg.Width = 500;
+                            dlg.SetScaledSize(500, 250);
                             dlg.ShowDialog(this);
                         }
                     },
@@ -1602,29 +1755,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     waitForMilestone: "collectionButtonsDrawn",
                     maxTickWaitForMilestone: 100
                 );
-            }
-        }
-
-        private void CheckDPISettings()
-        {
-            Graphics g = this.CreateGraphics();
-            try
-            {
-                var dx = g.DpiX;
-                DPIOfThisAccount = dx;
-                var dy = g.DpiY;
-                if (dx != 96 || dy != 96)
-                {
-                    ErrorReport.NotifyUserOfProblem(
-                        new ShowOncePerSessionBasedOnExactMessagePolicy(),
-                        "The \"text size (DPI)\" or \"Screen Magnification\" of the display on this computer is set to a special value, {0}. With that setting, some thing won't look right in Bloom. Possibly books won't lay out correctly. If this is a problem, change the DPI back to 96 (the default on most computers), using the 'Display' Control Panel.",
-                        dx
-                    );
-                }
-            }
-            finally
-            {
-                g.Dispose();
             }
         }
 
@@ -1711,21 +1841,12 @@ window.showWorkspaceInitializationFailure = function(message) {
                 if (InEditMode)
                 {
                     _editingView.Model.SaveThen(
-                        () =>
+                        () => _editingView.Model.CurrentPage.Id,
+                        ReportAndLogProblem, // wrong state: show dialog without saving
+                        doAfterSaveToDisk: () =>
                         {
-                            // To test the Problem Dialog with a fatal error, uncomment this next line.
-                            // throw new ApplicationException("I just felt like an error!");
-
-                            // To test the Problem Dialog with a nonfatal error, uncomment this next line.
-                            // NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "My test 'yellow screen' error", "Any more details here?");
-                            // To test clicking 'Report' in a toast, uncomment the line above, but use ModalIf.None.
-
-                            // To test the old ErrorReport.NotifyUserOfProblem, uncomment this next line.
-                            // ErrorReport.NotifyUserOfProblem(new ApplicationException("internal exception message"), "My main message");
                             ReportAndLogProblem();
-                            return _editingView.Model.CurrentPage.Id;
-                        },
-                        () => { } // wrong state, do nothing
+                        }
                     );
                 }
                 else
@@ -1746,6 +1867,16 @@ window.showWorkspaceInitializationFailure = function(message) {
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
+        /// <summary>
+        /// Ask the tab bar to stop offering the tabs (or to offer them again).
+        /// </summary>
+        /// <remarks>
+        /// ADVISORY, not a lock: this only pushes new tab states to the React top bar over a
+        /// websocket, and nothing checks _tabsEnabled when a workspace/selectTab request arrives.
+        /// So a click made (or already in flight) before the browser catches up still gets acted
+        /// on — see BL-16766. Whatever must not happen mid-operation has to be handled where it
+        /// happens, not assumed to have been prevented here.
+        /// </remarks>
         public void SetTabsEnabled(bool enable)
         {
             _tabsEnabled = enable;

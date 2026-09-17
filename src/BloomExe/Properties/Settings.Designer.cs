@@ -414,6 +414,19 @@ namespace Bloom.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RunFreezeDoctor {
+            get {
+                return ((bool)(this["RunFreezeDoctor"]));
+            }
+            set {
+                this["RunFreezeDoctor"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool AutoUpdate {
             get {
@@ -510,6 +523,19 @@ namespace Bloom.Properties {
             }
             set {
                 this["CollectionTabSplitterSizes"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.SettingsProviderAttribute(typeof(SIL.Settings.CrossPlatformSettingsProvider))]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string WebSiteDestinationOverride {
+            get {
+                return ((string)(this["WebSiteDestinationOverride"]));
+            }
+            set {
+                this["WebSiteDestinationOverride"] = value;
             }
         }
     }

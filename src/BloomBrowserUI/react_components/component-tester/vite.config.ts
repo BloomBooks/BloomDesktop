@@ -8,7 +8,7 @@
  * - Serves component-harness.html at the root path
  *
  * Used by both:
- * - Manual testing: `yarn dev` then open http://127.0.0.1:5183
+ * - Manual testing: `pnpm dev` then open http://127.0.0.1:5183
  * - Playwright tests: Automatically started by test runner
  *
  * Note:

@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
+import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -33,7 +34,16 @@ export interface IWorkspaceExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showLinkTargetChooserDialog(
+        currentUrl: string,
+        onSetUrl: (url: string) => void,
+    ): void;
+    showBookGridSetupDialog(
+        currentLinks: Link[],
+        setLinksCallback: (links: Link[]) => void,
+    ): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
+        currentTextBox: HTMLElement,
         // The split and applyTimingsFile calls both return a list of new timings,
         // such as we might find in data-audioRecordingEndTimes
         split: (timingFilePath: string) => Promise<string | undefined>,
@@ -50,6 +60,8 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
+    openAiImageEditor(target: IAiImageEditorTarget): void;
 }
 
 export function SayHello() {
@@ -67,6 +79,13 @@ import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+// These two are launched from code that runs in the page iframe. They must be shown from here,
+// the workspace root, so that their modal backdrop covers the whole workspace including the
+// page list; rendered in the page iframe the backdrop covers only the book pane (BL-16809).
+import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+export { showLinkTargetChooserDialog };
+import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
+export { showBookGridSetupDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
@@ -76,10 +95,17 @@ export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
 export { showAboutDialog };
 import { reportError } from "../lib/errorHandler";
-import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
+import type { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
-import * as ReactDOM from "react-dom";
+import { showImageGalleryDialog as doShowImageGalleryDialog } from "../react_components/image-gallery/ImageGalleryDialog";
+// The AI Image Editor overlay belongs up here, not in the page iframe, because saving the
+// page reloads that iframe and would strand the overlay; C# calls this once it has saved.
+// See aiImageEditorOverlay.ts.
+import { openAiImageEditor } from "./aiImageEditor/aiImageEditorOverlay";
+import type { IAiImageEditorTarget } from "./aiImageEditor/aiImageEditorShared";
+export { openAiImageEditor };
+import { renderRoot } from "../utils/reactRender";
 import { FunctionComponentElement } from "react";
 import { ToastDebugInput, toastDebugEvents } from "../toast/toastUtils";
 
@@ -104,6 +130,11 @@ export function handleUndo(): void {
     const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
+        // The reader tools' undo restores a saved innerHTML, which replaces the text nodes
+        // their highlights are painted over. Nothing else will notice: unlike Ctrl+Z, a click
+        // on this button produces no keystroke in the page, so the usual keyup markup update
+        // never happens and the highlights would stay dead. (BL-16558)
+        toolboxWindow.updateMarkupAfterUndoOrRedo();
         return;
     }
     // In an ideal world, we would have all undo information stored in the order of the operations.
@@ -118,6 +149,11 @@ export function handleUndo(): void {
         contentWindow.imageOperationUndo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
         contentWindow.ckeditorUndo();
+        // As above: this undo replaces the content of an editable, and there is no keystroke
+        // to trigger the markup update that repaints the tools' highlights over the new text
+        // nodes. (We call ckeditor's undoManager directly rather than its undo command, so the
+        // afterCommandExec handler in attachToCkEditor doesn't see this one.)
+        toolboxWindow?.updateMarkupAfterUndoOrRedo();
     }
     // See also Browser.Undo; if all else fails we ask the C# browser object to Undo.
 }
@@ -296,7 +332,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
     // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
     // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
-    ReactDOM.render(dialog, root);
+    renderRoot(dialog, root);
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {
@@ -328,6 +364,13 @@ export function showRequiresSubscriptionDialog(featureName: string): void {
 
 export function showRegistrationDialogFromWorkspaceRoot() {
     showRegistrationDialogForEditTab();
+}
+
+export function showImageGalleryDialog(
+    img: HTMLElement,
+    searchLang: string,
+): void {
+    doShowImageGalleryDialog(img, searchLang);
 }
 
 const updateWorkspaceUrlParam = (name: string, value: string): void => {
@@ -373,7 +416,7 @@ export function setZoom(zoom: number): void {
         "page-scaling-container",
     );
     if (container) {
-        container.style.transform = `scale(${zoom.toString()}`;
+        container.style.transform = `scale(${zoom.toString()})`;
         // This produces something like calc((100% - 5px) / 0.8)
         const newWidth = `calc((100% - 5px) / ${zoom.toString()})`;
         // But if you read it back it will be something like calc(125% - 6.25px)
@@ -416,10 +459,14 @@ interface WorkspaceBundleApi {
     showRequiresSubscriptionDialog: typeof showRequiresSubscriptionDialog;
     showRegistrationDialogFromWorkspaceRoot: typeof showRegistrationDialogFromWorkspaceRoot;
     showAdjustTimingsDialogFromWorkspaceRoot: typeof showAdjustTimingsDialogFromWorkspaceRoot;
+    showImageGalleryDialog: typeof showImageGalleryDialog;
+    openAiImageEditor: typeof openAiImageEditor;
     setZoom: typeof setZoom;
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
     showPageChooserDialog: typeof showPageChooserDialog;
+    showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
+    showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
@@ -459,11 +506,15 @@ window.workspaceBundle = {
     showRegistrationDialogFromWorkspaceRoot,
     showAdjustTimingsDialogFromWorkspaceRoot:
         showAdjustTimingsDialogFromWorkspaceRoot,
+    showImageGalleryDialog,
+    openAiImageEditor,
     setZoom,
     // re-exported cross-frame helpers
     getToolboxBundleExports,
     getEditablePageBundleExports,
     showPageChooserDialog,
+    showLinkTargetChooserDialog,
+    showBookGridSetupDialog,
     showBookSettingsDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,

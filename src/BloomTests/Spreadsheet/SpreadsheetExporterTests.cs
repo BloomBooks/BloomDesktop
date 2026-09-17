@@ -73,6 +73,7 @@ namespace BloomTests.Spreadsheet
         private List<ContentRow> _rows;
         private List<ContentRow> _pageContentRows;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _spreadsheetFolder;
         private TemporaryFolder _bookFolder;
         private ProgressSpy _progressSpy;
@@ -82,8 +83,9 @@ namespace BloomTests.Spreadsheet
         {
             var dom = new HtmlDom(bookHtml, true);
 
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetExporterTests");
-            _bookFolder = new TemporaryFolder("SpreadsheetExporterTests_Book");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
@@ -119,8 +121,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _spreadsheetFolder?.Dispose();
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]
@@ -129,13 +131,13 @@ namespace BloomTests.Spreadsheet
             Assert.That(
                 _pageContentRows[0].GetCell("[en]").Text,
                 Is.EqualTo(
-                    "Is this really a cat?  The nose looks too long for it to be a cat.  But perching on a limb doesn't look like a dog either.  So what is it?  I can't really tell from first glance!"
+                    "Is this really a cat? The nose looks too long for it to be a cat. But perching on a limb doesn't look like a dog either. So what is it? I can't really tell from first glance!"
                 )
             );
             Assert.That(
                 _pageContentRows[0].GetCell("[es-x-ai-google]").Text,
                 Is.EqualTo(
-                    "¿Es esto realmente un gato?  La nariz parece demasiado larga para ser un gato.  Pero posado sobre una rama tampoco parece un perro.  Entonces, ¿qué es?  ¡Realmente no puedo decirlo a primera vista!"
+                    "¿Es esto realmente un gato? La nariz parece demasiado larga para ser un gato. Pero posado sobre una rama tampoco parece un perro. Entonces, ¿qué es? ¡Realmente no puedo decirlo a primera vista!"
                 )
             );
         }
@@ -165,6 +167,139 @@ namespace BloomTests.Spreadsheet
                 insideBackCoverRow.GetCell("[es-x-ai-google]").Text,
                 Is.EqualTo("Esto es del interior de la contraportada del libro.")
             );
+        }
+
+        [Test]
+        public void ExportNormalizesContent_SpacesOutLineBreaks_CollapsesWhitespace_PreservesNbsp()
+        {
+            // Input exercises all three normalization behaviors at once: a soft line break
+            // between two words, a run of ordinary spaces, and a non-breaking space (U+00A0).
+            const string editableInnerXml = "<p>Some  words<br />joined\u00A0text   here</p>";
+
+            // Sanity checks on the test data so a green result can't be a false pass.
+            Assert.That(
+                editableInnerXml,
+                Does.Contain("<br />"),
+                "test setup: input should contain a line break"
+            );
+            Assert.That(
+                editableInnerXml,
+                Does.Contain("\u00A0"),
+                "test setup: input should contain a non-breaking space"
+            );
+            Assert.That(
+                editableInnerXml.Contains("Some  words"),
+                Is.True,
+                "test setup: input should contain a run of ordinary spaces"
+            );
+
+            var text = ExportSingleEnglishContentCellText(editableInnerXml);
+
+            // The line break becomes a single space (words are NOT run together), the run of
+            // ordinary spaces collapses to one space, and the non-breaking space survives.
+            Assert.That(text, Is.EqualTo("Some words joined\u00A0text here"));
+            Assert.That(
+                text,
+                Does.Not.Contain("wordsjoined"),
+                "a line break must not fuse the words on either side of it"
+            );
+            Assert.That(
+                text,
+                Does.Contain("\u00A0"),
+                "a non-breaking space must be preserved, not collapsed to an ordinary space"
+            );
+        }
+
+        [Test]
+        public void ExportNormalizesContent_PreservesLeadingAndTrailingNbsp()
+        {
+            // A bare-text editable whose content begins and ends with a non-breaking space,
+            // with an ordinary trailing space that SHOULD be trimmed. Regression guard: a
+            // parameterless string.Trim() would strip the boundary NBSPs too (Char.IsWhiteSpace
+            // is true for U+00A0), undoing the NBSP preservation the collapse step guarantees.
+            const string editableInnerXml = "\u00A0\u00A0Indented text\u00A0 ";
+
+            // Sanity checks on the test data so a green result can't be a false pass.
+            Assert.That(
+                editableInnerXml.StartsWith("\u00A0"),
+                Is.True,
+                "test setup: input should start with a non-breaking space"
+            );
+            Assert.That(
+                editableInnerXml.EndsWith(" "),
+                Is.True,
+                "test setup: input should end with an ordinary space that must be trimmed"
+            );
+
+            var text = ExportSingleEnglishContentCellText(editableInnerXml);
+
+            // The leading and trailing non-breaking spaces survive; only the ordinary trailing
+            // space is trimmed away.
+            Assert.That(text, Is.EqualTo("\u00A0\u00A0Indented text\u00A0"));
+            Assert.That(
+                text.StartsWith("\u00A0\u00A0"),
+                Is.True,
+                "leading non-breaking spaces must be preserved, not stripped by Trim()"
+            );
+            Assert.That(
+                text.EndsWith("\u00A0"),
+                Is.True,
+                "a trailing non-breaking space must be preserved, not stripped by Trim()"
+            );
+        }
+
+        /// <summary>
+        /// Exports a minimal one-page book whose single English bloom-editable has the given
+        /// inner XML, and returns the exported [en] page-content cell's text.
+        /// </summary>
+        private static string ExportSingleEnglishContentCellText(string editableInnerXml)
+        {
+            var html =
+                @"<html>
+<head></head>
+<body data-l1=""en"" data-l2="""" data-l3="""">
+    <div id=""bloomDataDiv""></div>
+    <div class=""bloom-page numberedPage customPage"" data-page-number=""1"">
+        <div class=""marginBox"">
+            <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                <div class=""bloom-editable normal-style bloom-visibility-code-on bloom-content1"" lang=""en"" contenteditable=""true"">"
+                + editableInnerXml
+                + @"</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+            var dom = new HtmlDom(html, true);
+
+            var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+            mockLangDisplayNameResolver
+                .Setup(x => x.GetLanguageDisplayName("en"))
+                .Returns("English");
+            var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+
+            // This method is static, so it can't use the fixture's own folder.
+            using (
+                var testFolder = SpreadsheetTestFolders.MakeFolderNamed(
+                    "SpreadsheetExporterTests_Norm"
+                )
+            )
+            {
+                var bookFolder = new TemporaryFolder(testFolder, "Book");
+                var sheetFolder = new TemporaryFolder(testFolder, "Sheet");
+                var sheet = exporter.ExportToFolder(
+                    dom,
+                    bookFolder.FolderPath,
+                    sheetFolder.FolderPath,
+                    out _,
+                    new ProgressSpy(),
+                    OverwriteOptions.Overwrite
+                );
+                var contentRow = sheet.ContentRows.First(r =>
+                    r.MetadataKey == InternalSpreadsheet.PageContentRowLabel
+                );
+                return contentRow.GetCell("[en]").Text;
+            }
         }
     }
 }

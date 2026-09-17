@@ -20,7 +20,7 @@ type FieldHelper = {
     getValue: () => Promise<string>;
     fill: (value: string) => Promise<void>;
     clear: () => Promise<void>;
-    markedInvalid: Promise<boolean>;
+    expectMarkedInvalid: (expected: boolean) => Promise<void>;
 };
 
 // Field name constants for registration form
@@ -78,22 +78,31 @@ function createFieldHelper(testId: string): FieldHelper {
                 .first()
                 .clear();
         },
-        get markedInvalid(): Promise<boolean> {
+        // Asserts whether the field is showing its error state (aria-invalid on the input).
+        // This deliberately retries rather than reading the attribute once: React 18's
+        // createRoot commits asynchronously, so a state change made by (say) a blur handler
+        // is not guaranteed to be in the DOM by the time the next Playwright command runs. A
+        // one-shot getAttribute races that re-render and fails intermittently. The retry uses
+        // Playwright's configured expect timeout, so there is no hand-rolled wait.
+        expectMarkedInvalid: async (expected: boolean) => {
             if (!currentPage) {
                 throw new Error(
                     "Page not initialized. Call setupRegistrationComponent first.",
                 );
             }
-            return (async () => {
-                // Check aria-invalid on the actual input element
-                const inputElement = currentPage
-                    .getByTestId(testId)
-                    .locator("input,textarea")
-                    .first();
-                const ariaInvalid =
-                    await inputElement.getAttribute("aria-invalid");
-                return ariaInvalid === "true";
-            })();
+            const inputElement = currentPage
+                .getByTestId(testId)
+                .locator("input,textarea")
+                .first();
+            // aria-invalid is absent (not "false") when the field is valid in some MUI
+            // versions, so compare the normalized boolean rather than the raw attribute.
+            await expect
+                .poll(async () => {
+                    const ariaInvalid =
+                        await inputElement.getAttribute("aria-invalid");
+                    return ariaInvalid === "true";
+                })
+                .toBe(expected);
         },
     };
 }
@@ -170,13 +179,4 @@ export async function waitForAndClickOptOutButton(page: Page) {
         timeout: kTestOptOutTimeoutMs,
     });
     await optOutButton.click();
-}
-
-export async function getMarkedInvalid(
-    page: Page,
-    fieldHelper: FieldHelper,
-): Promise<boolean> {
-    const field = page.getByTestId(fieldHelper.name);
-    const ariaInvalid = await field.getAttribute("aria-invalid");
-    return ariaInvalid === "true";
 }

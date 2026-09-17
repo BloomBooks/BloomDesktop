@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useState } from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../../../utils/reactRender";
 
 import {
     BloomDialog,
@@ -39,6 +39,7 @@ const timingsMenuId = "timingsMenuAnchor";
 
 export const AdjustTimingsDialog: React.FunctionComponent<{
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    currentTextBox: HTMLElement;
     split: (timingFilePath: string) => Promise<string | undefined>;
     editTimingsFile: (timingsFilePath?: string) => Promise<void>;
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>;
@@ -114,10 +115,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
     );
     const [timingsFilePath, setTimingsFilePath] = useState<string>();
 
-    // Tell edit tab to disable everything when the dialog is up.
-    // (Without this, the page list is not disabled since the modal
-    // div only exists in the book pane. Once the whole edit tab is inside
-    // one browser, this would not be necessary.)
+    // Tell C# to lock the workspace tabs while the dialog is up.
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
         postBoolean("editView/setModalState", propsForBloomDialog.open);
@@ -153,7 +151,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         // if we have one. This really wants to not happen again, since it would discard any changes
         // the user has made.
         setAudioRecordingEndTimes(
-            getCurrentTextBox()?.getAttribute("data-audiorecordingendtimes"),
+            props.currentTextBox?.getAttribute("data-audiorecordingendtimes"),
         );
         // This is supposed to execute exactly once, when the dialog is first opened.
         // React insists it must have this dependency, even though I set up a useCallback
@@ -166,7 +164,7 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         // will be passed to the control to tell it to fine tune the segments based on the audio.
         // gets set back to false when the control sends us the adjusted times.
         setShouldAdjustSegments(true);
-        const bloomEditable = getCurrentTextBox();
+        const bloomEditable = props.currentTextBox;
 
         const segmentElements = Array.from(
             bloomEditable.getElementsByClassName(kHighlightSegmentClass),
@@ -179,9 +177,9 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
 
     React.useEffect(() => {
         if (!propsForBloomDialog.open) return;
-        const bloomEditable = getCurrentTextBox();
+        const bloomEditable = props.currentTextBox;
         async function getTimingsFileData() {
-            setTimingsFilePath(await getTimingsFileName());
+            setTimingsFilePath(await getTimingsFileName(props.currentTextBox));
         }
         getTimingsFileData();
         const ff = (
@@ -245,13 +243,21 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
         >
             <DialogTitle title={dialogTitle} />
             <DialogMiddle>
-                <AdjustTimingsControl
-                    segments={segments!}
-                    audioFileUrl={audioFileUrl!}
-                    setEndTimes={(endTimes) => updateEndTimes(endTimes)}
-                    fontFamily={fontFamily}
-                    shouldAdjustSegments={shouldAdjustSegments}
-                />
+                {/* Don't render the control until both inputs are actually ready.
+                    They are populated asynchronously in the open effect above; rendering
+                    sooner would mount the control with undefined props (the non-null
+                    assertions would be false), causing WaveSurfer to load the literal
+                    "undefined" URL and the server to report a missing Temp/undefined
+                    file (BL-16447). */}
+                {segments && audioFileUrl && (
+                    <AdjustTimingsControl
+                        segments={segments}
+                        audioFileUrl={audioFileUrl}
+                        setEndTimes={(endTimes) => updateEndTimes(endTimes)}
+                        fontFamily={fontFamily}
+                        shouldAdjustSegments={shouldAdjustSegments}
+                    />
+                )}
                 <div
                     id={timingsMenuId}
                     css={css`
@@ -352,7 +358,11 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
                         l10nId="EditTab.Toolbox.TalkingBookTool.EditTimingsFile"
                         onClick={() => {
                             closeMoreMenu();
-                            exportTimingsFile(timingsFilePath!, endTimes);
+                            exportTimingsFile(
+                                timingsFilePath!,
+                                endTimes,
+                                props.currentTextBox,
+                            );
                             props.editTimingsFile(timingsFilePath);
                         }}
                         icon={<EditIcon />}
@@ -378,9 +388,9 @@ export const AdjustTimingsDialog: React.FunctionComponent<{
             <DialogBottomButtons>
                 <DialogOkButton
                     onClick={() => {
-                        // Update the data-audiorecordingendtimes attribute in the getCurrentTextBox() div to match
+                        // Update the data-audiorecordingendtimes attribute in the props.currentTextBox div to match
                         // the current state of the adjustments.
-                        const bloomEditable = getCurrentTextBox();
+                        const bloomEditable = props.currentTextBox;
                         bloomEditable.setAttribute(
                             "data-audiorecordingendtimes",
                             endTimes.join(" "),
@@ -403,14 +413,16 @@ let show: () => void = () => {
 };
 
 export function showAdjustTimingsDialog(
+    currentTextBox: HTMLElement,
     split: (timingFilePath: string) => Promise<string | undefined>,
     editTimingsFile: (timingsFilePath?: string) => Promise<void>,
     applyTimingsFile: (timingsFilePath?: string) => Promise<string | undefined>,
     closing: (canceling: boolean) => void,
 ) {
     try {
-        ReactDOM.render(
+        renderRootSync(
             <AdjustTimingsDialog
+                currentTextBox={currentTextBox}
                 split={split}
                 editTimingsFile={editTimingsFile}
                 applyTimingsFile={applyTimingsFile}
@@ -439,19 +451,13 @@ function getModalContainer(): HTMLElement {
     return modalDialogContainer;
 }
 
-// The text box whose timings this dialog adjusts: the one that has the audio recording
-// highlight. We delegate to the audio recorder's method of the same name rather than just
-// taking the element that has ui-audioCurrent, because during playback the highlight is on
-// a sentence within the text box, and that method knows to walk up to the box (BL-16276).
-function getCurrentTextBox(): HTMLElement {
-    return getAudioRecorder().getCurrentTextBox()!;
-}
-
 // Existing code wants to be passed the actual path (not a BloomServer url) to the timings file.
 // Rather than try to rework all that, I made an api that allows us to get such a path
 // from a path starting at the current book's folder.
-async function getTimingsFileName(): Promise<string> {
-    const bloomEditable = getCurrentTextBox();
+async function getTimingsFileName(
+    currentTextBox: HTMLElement,
+): Promise<string> {
+    const bloomEditable = currentTextBox;
     const fileName = `audio/${bloomEditable.getAttribute("id")}_timings.txt`;
     // id should be a guid, so should not need encoding.
     const result = await postJsonAsync("fileIO/completeRelativePath?", {
@@ -503,8 +509,9 @@ const computeSegments = (
 const exportTimingsFile = async (
     timingsFileName: string,
     endTimes: number[],
+    currentTextBox: HTMLElement,
 ) => {
-    const bloomEditable = getCurrentTextBox();
+    const bloomEditable = currentTextBox;
     const segmentElements = Array.from(
         bloomEditable.getElementsByClassName(kHighlightSegmentClass),
     ) as HTMLElement[];

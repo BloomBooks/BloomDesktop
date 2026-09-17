@@ -209,12 +209,15 @@ namespace BloomTests.ErrorReporter
                 .Build();
 
             // System Under Test
+            // This deliberately exercises the obsolete legacy overload.
+#pragma warning disable 618
             reporter.NotifyUserOfProblem(
                 new ShowAlwaysPolicy(),
                 "Details",
                 ErrorResult.Yes,
                 "message"
             );
+#pragma warning restore 618
 
             mockFactory.Verify(x =>
                 x.CreateReactDialog(

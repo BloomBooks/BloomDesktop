@@ -67,7 +67,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Bloom",
                 null,
-                "",
                 new string[] { }
             );
             _palasoLocalizationManager = LocalizationManagerWinforms.Create(
@@ -78,7 +77,6 @@ namespace BloomTests.Book
                 localizationDirectory,
                 "SIL/Palaso",
                 null,
-                "",
                 new string[] { }
             );
         }
@@ -365,6 +363,86 @@ namespace BloomTests.Book
             Assert.That(sizeBasedOnDefault.Item2.Unencoded, Is.EqualTo("649,231"));
         }
 
+        // The markup of GatherDataItemsFromXElement_BackgroundImage_GathersCroppingData, with
+        // whatever extra attributes the test wants on the image container. The container's
+        // data-fraction-of-page is how big the slot is on the page (see
+        // HtmlDom.kFractionOfPageAttribute); it has to survive a trip through the data-div,
+        // because bringing a book's xmatter up to date rebuilds the cover from there.
+        private HtmlDom MakeDomWithBackgroundCoverImage(string imageContainerAttributes)
+        {
+            return new HtmlDom(
+                @"<html ><head></head><body>
+                <div id='bloomDataDiv'>
+
+                </div>
+                <div class='bloom-page' id='guid2'>
+                    <div class=""bloom-canvas bloom-has-canvas-element"" data-imgsizebasedon=""649,231"" >
+                        <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 254.663px; top: 0px; left: 197.168px; height: 231px;"">
+                            <div class=""bloom-imageContainer"" "
+                    + imageContainerAttributes
+                    + @">
+                                <img data-book=""coverImage"" src=""macaw.jpg""/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </body></html>"
+            );
+        }
+
+        private List<Tuple<string, XmlString>> GatherCoverImageAttributes(HtmlDom dom)
+        {
+            var data = new DataSet();
+            var bookData = new BookData(
+                new HtmlDom("<html><body></body></html>"),
+                _collectionSettings,
+                null
+            );
+            bookData.GatherDataItemsFromXElement(
+                data,
+                dom.RawDom.DocumentElement,
+                new HashSet<Tuple<string, string>>()
+            );
+            Assert.That(
+                data.TextVariables.TryGetValue("coverImage", out DataSetElementValue dsv),
+                Is.True
+            );
+            return dsv.GetAttributeList("*");
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_BackgroundImage_GathersFractionOfPage()
+        {
+            var dom = MakeDomWithBackgroundCoverImage(@"data-fraction-of-page=""0.8,0.75""");
+
+            var attributes = GatherCoverImageAttributes(dom);
+
+            var fraction = attributes.FirstOrDefault(x =>
+                x.Item1 == HtmlDom.kContainerFractionOfPageTupleName
+            );
+            Assert.That(fraction, Is.Not.Null);
+            Assert.That(fraction.Item2.Unencoded, Is.EqualTo("0.8,0.75"));
+        }
+
+        [Test]
+        public void GatherDataItemsFromXElement_NoFractionOfPage_GathersNone()
+        {
+            var dom = MakeDomWithBackgroundCoverImage("");
+
+            var attributes = GatherCoverImageAttributes(dom);
+
+            // Sanity check: the rest of the background data WAS gathered, so the absence below
+            // is about this attribute and not about the gathering having failed altogether.
+            Assert.That(
+                attributes.Any(x => x.Item1 == HtmlDom.kCanvasElementStyleTupleName),
+                Is.True
+            );
+            Assert.That(
+                attributes.Any(x => x.Item1 == HtmlDom.kContainerFractionOfPageTupleName),
+                Is.False
+            );
+        }
+
         [Test]
         public void UpdateImageFromDataSet_CreatesBackgroundCanvasElement()
         {
@@ -424,6 +502,67 @@ namespace BloomTests.Book
             Assert.That(bloomCanvas.HasClass("bloom-canvas"), Is.True);
             Assert.That(bloomCanvas.HasClass("bloom-has-canvas-element"), Is.True);
             Assert.That(bloomCanvas.GetAttribute("data-imgsizebasedon"), Is.EqualTo("649,231"));
+            // A book saved before data-fraction-of-page existed has none, and reconstruction
+            // must still work for it rather than inventing a value.
+            Assert.That(imageContainer.HasAttribute(HtmlDom.kFractionOfPageAttribute), Is.False);
+        }
+
+        [Test]
+        public void UpdateImageFromDataSet_RestoresFractionOfPageOnContainer()
+        {
+            DataSet data = new DataSet();
+            var htmlDom = new HtmlDom(
+                @"
+<html><body>
+    <div id='bloomDataDiv'>
+    </div>
+    <div class='bloom-page' id='guid2'>
+        <div class=""bloom-canvas"" >
+            <img data-book=""coverImage"" src=""placeHolder.png""/>
+        </div>
+    </div>
+
+</body></html>"
+            );
+            var bookData = new BookData(htmlDom, _collectionSettings, null);
+            var dsv = new DataSetElementValue(new MultiTextBase(), false);
+            data.TextVariables["coverImage"] = dsv;
+            dsv.SetAttributeList(
+                "*",
+                new List<Tuple<string, XmlString>>
+                {
+                    Tuple.Create(
+                        HtmlDom.kCanvasElementStyleTupleName,
+                        XmlString.FromUnencoded(
+                            "width: 254.663px; top: 0px; left: 197.168px; height: 231px;"
+                        )
+                    ),
+                    Tuple.Create(
+                        HtmlDom.kCanvasImgSizeBasedOnTupleName,
+                        XmlString.FromUnencoded("649,231")
+                    ),
+                    Tuple.Create(
+                        HtmlDom.kContainerFractionOfPageTupleName,
+                        XmlString.FromUnencoded("0.8,0.75")
+                    ),
+                }
+            );
+            var imgNode =
+                htmlDom.RawDom.SelectSingleNode(
+                    "//div[@class='bloom-canvas']//img[@data-book='coverImage']"
+                ) as SafeXmlElement;
+            // Sanity check: the structure that carries the attribute does not exist yet, so
+            // anything found below was built by the method under test.
+            Assert.That(imgNode.ParentElement.HasClass(HtmlDom.kImageContainerClass), Is.False);
+
+            bookData.UpdateImageFromDataSet(data, imgNode, "coverImage");
+
+            var imageContainer = imgNode.ParentElement;
+            Assert.That(imageContainer.HasClass(HtmlDom.kImageContainerClass), Is.True);
+            Assert.That(
+                imageContainer.GetAttribute(HtmlDom.kFractionOfPageAttribute),
+                Is.EqualTo("0.8,0.75")
+            );
         }
 
         [Test]
@@ -3316,6 +3455,231 @@ namespace BloomTests.Book
             {
                 Assert.That(dataDivImage.GetAttribute("style"), Is.Empty);
             }
+        }
+
+        /// <summary>
+        /// BL-16819: the user's Transparency choice for the cover image (Opaque or Transparent, as
+        /// opposed to Auto) is stored as a class on the img. It must survive the round trip through
+        /// the data-div that happens every time the book is opened and the xmatter is regenerated,
+        /// and so must a later change of that choice, including back to Auto (no class at all).
+        /// </summary>
+        [TestCase("bloom-opaque", "bloom-transparent")]
+        [TestCase("bloom-transparent", "bloom-opaque")]
+        [TestCase("bloom-opaque", "")]
+        [TestCase("bloom-transparent", "")]
+        public void SuckInDataFromEditedDom_ThenSynchronize_CoverImageTransparencyChoiceSurvives(
+            string firstChoice,
+            string secondChoice
+        )
+        {
+            // Like a real book, the data-div entry has lang='*', so that saving the page updates
+            // that entry in place (merging attributes) rather than creating a new one.
+            var bookDom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='old.png'>old.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='old.png'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(bookDom, _collectionSettings, null);
+            var dataDivImageXpath = "//div[@id='bloomDataDiv']/div[@data-book='coverImage']";
+            var pageImageXpath = "//div[@class='bloom-page']//img[@data-book='coverImage']";
+
+            // The user picks a Transparency option from the image menu and Bloom saves the page.
+            void SaveCoverWithTransparencyChoice(string transparencyClass)
+            {
+                var editedPageDom = new HtmlDom(
+                    $@"<html ><head></head><body>
+					<div class='bloom-page'>
+						 <div class='bloom-canvas'>
+							<img data-book='coverImage' src='new.png' class='{transparencyClass}'></img>
+						</div>
+					</div>
+				 </body></html>"
+                );
+                data.SuckInDataFromEditedDom(editedPageDom);
+            }
+
+            // Simulate reopening the book: the xmatter is regenerated from the template (whose
+            // img has no transparency class), then filled in from the data-div.
+            SafeXmlElement ReopenBookAndGetCoverImage()
+            {
+                var templateImage = (SafeXmlElement)
+                    bookDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+                templateImage.RemoveAttribute("class");
+                data.SynchronizeDataItemsThroughoutDOM();
+                return (SafeXmlElement)bookDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            }
+
+            SaveCoverWithTransparencyChoice(firstChoice);
+            var dataDivImages = bookDom.SafeSelectNodes(dataDivImageXpath);
+            Assert.That(dataDivImages.Length, Is.EqualTo(1), "sanity check");
+            Assert.That(dataDivImages[0].GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(
+                dataDivImages[0].GetAttribute("class"),
+                Contains.Substring(firstChoice),
+                "the transparency choice should be saved in the data-div"
+            );
+
+            var pageImage = ReopenBookAndGetCoverImage();
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(
+                pageImage.HasClass(firstChoice),
+                Is.True,
+                $"{firstChoice} should be restored to the cover image from the data-div"
+            );
+
+            // Now the user changes their mind.
+            SaveCoverWithTransparencyChoice(secondChoice);
+            pageImage = ReopenBookAndGetCoverImage();
+            foreach (var transparencyClass in new[] { "bloom-opaque", "bloom-transparent" })
+            {
+                Assert.That(
+                    pageImage.HasClass(transparencyClass),
+                    Is.EqualTo(transparencyClass == secondChoice),
+                    $"after changing from {firstChoice} to '{secondChoice}' and reopening, "
+                        + $"{transparencyClass} should {(transparencyClass == secondChoice ? "" : "not ")}be on the cover image"
+                );
+            }
+        }
+
+        /// <summary>
+        /// BL-16819: UpdateDomFromDataset() pushes the member data set, gathered when the BookData
+        /// was constructed, back to the pages. That must not disturb the cover image's Transparency
+        /// choice when the data set agrees with the page.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataset_CoverImageOpaque_KeepsClass()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='aor.png' class=' bloom-imageLoadError bloom-opaque'>aor.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='aor.png' class='bloom-opaque'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.UpdateDomFromDataset();
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "class attribute is '" + pageImage.GetAttribute("class") + "'"
+            );
+        }
+
+        /// <summary>
+        /// BL-16819: after a page save, the member data set's entry for the cover image has been
+        /// recreated with the new value but without any attribute list. UpdateDomFromDataset() (which
+        /// Book.SetMultilingualContentLanguages runs every time the Edit tab is entered) must then
+        /// leave the image's Transparency choice alone rather than treating the missing attribute
+        /// list as "no classes" and stripping the choice the user just saved.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataset_AfterSavingOpaqueChoice_KeepsClass()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' lang='*' src='aor.png' class='bloom-imageLoadError'>aor.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='aor.png'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            var editedPageDom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='new.png' class='bloom-opaque'></img>
+					</div>
+				</div>
+				 </body></html>"
+            );
+            data.SuckInDataFromEditedDom(editedPageDom);
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "sanity: save should put the class on the page image"
+            );
+            data.UpdateDomFromDataset();
+            pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@class='bloom-page']//img[@data-book='coverImage']"
+                );
+            Assert.That(
+                pageImage.GetAttribute("src"),
+                Is.EqualTo("new.png"),
+                "the saved image url should be kept"
+            );
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the saved Opaque choice should be kept; class attribute is '"
+                    + pageImage.GetAttribute("class")
+                    + "'"
+            );
+        }
+
+        /// <summary>
+        /// BL-16819: the data-div is authoritative, so if it says the cover image is on Auto (no
+        /// transparency class), a stale override on the page image must be removed. And copying the
+        /// transparency classes must not start copying other classes; in particular
+        /// bloom-imageLoadError is deliberately re-derived each time the book is opened (BL-14241).
+        /// </summary>
+        [Test]
+        public void SynchronizeDataItemsThroughoutDOM_DataDivCoverImageIsAuto_RemovesStaleTransparencyClass_CopiesNoOtherClasses()
+        {
+            var dom = new HtmlDom(
+                @"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='coverImage' src='new.png' class='bloom-imageLoadError'>new.png</div>
+				</div>
+				<div class='bloom-page'>
+					 <div class='bloom-canvas'>
+						<img data-book='coverImage' src='placeholder.png' class='bloom-opaque bloom-transparent someOtherClass'></img>
+					</div>
+				</div>
+				</body></html>"
+            );
+            var data = new BookData(dom, _collectionSettings, null);
+            data.SynchronizeDataItemsThroughoutDOM();
+            var pageImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS("//img[@data-book='coverImage']");
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("new.png"));
+            Assert.That(pageImage.HasClass("bloom-opaque"), Is.False);
+            Assert.That(pageImage.HasClass("bloom-transparent"), Is.False);
+            Assert.That(
+                pageImage.HasClass("someOtherClass"),
+                Is.True,
+                "unrelated classes on the page image should be left alone"
+            );
+            Assert.That(
+                pageImage.HasClass("bloom-imageLoadError"),
+                Is.False,
+                "classes other than the transparency ones should not be copied from the data-div"
+            );
         }
 
         [Test]

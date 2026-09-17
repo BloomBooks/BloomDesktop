@@ -189,13 +189,21 @@ namespace Bloom.Edit
             pageListDom = Model.CurrentBook.GetHtmlDomForPageList(pageListDom);
 
             _baseForRelativePaths = pageListDom.BaseForRelativePaths;
+
+            // Notify the browser side on this full-rebuild path too. Historically only the
+            // early-abort branch above sent this message, so a caller that reached this branch
+            // without also navigating the iframe to a regenerated document (e.g.
+            // UpdatePageList(false) after the Book object had been replaced) never triggered
+            // any repaint at all. When the caller *does* navigate the iframe
+            // (UpdatePageList(true)), this message is redundant but harmless: at worst the old
+            // document refreshes its list just before being replaced.
+            WebSocketServer.SendString("pageThumbnailList", "pageListNeedsRefresh", "");
             return result.ToList();
         }
 
         internal void PageClicked(IPage page)
         {
-            if (Enabled)
-                InvokePageSelectedChanged(page);
+            InvokePageSelectedChanged(page);
         }
 
         /// <summary>
@@ -208,7 +216,7 @@ namespace Bloom.Edit
         /// </remarks>
         internal bool IsContextMenuCommandEnabled(IPage page, string commandId)
         {
-            if (!Enabled || page == null)
+            if (page == null)
                 return false;
 
             switch (commandId)
@@ -252,8 +260,8 @@ namespace Bloom.Edit
                     Model.PastePage(page);
                     break;
                 case "removePage":
-                    if (ConfirmRemovePageDialog.Confirm())
-                        Model.DeletePage(page);
+                    // The browser side has already confirmed with the user (BL-16421).
+                    Model.DeletePage(page);
                     break;
                 case "chooseDifferentLayout":
                     Model.GetEditingBrowser().Focus();
@@ -263,7 +271,6 @@ namespace Bloom.Edit
         }
 
         private PageListApi _pageListApi;
-        internal bool Enabled = true;
 
         // This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.
         // newIndex is the (zero-based) index that the page is moving to

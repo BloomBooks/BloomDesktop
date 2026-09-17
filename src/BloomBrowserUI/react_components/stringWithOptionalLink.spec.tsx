@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import * as ReactDOM from "react-dom";
+import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { renderToStaticMarkup } from "react-dom/server";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 
 vi.mock("../utils/bloomApi", () => ({
     post: vi.fn(),
@@ -24,10 +24,7 @@ describe("StringWithOptionalLink", () => {
 
         const target = container;
         act(() => {
-            ReactDOM.render(
-                <StringWithOptionalLink message={message} />,
-                target,
-            );
+            renderRoot(<StringWithOptionalLink message={message} />, target);
         });
         return target;
     };
@@ -40,7 +37,7 @@ describe("StringWithOptionalLink", () => {
 
     afterEach(() => {
         if (container) {
-            ReactDOM.unmountComponentAtNode(container);
+            unmountRoot(container);
             container.remove();
             container = null;
         }

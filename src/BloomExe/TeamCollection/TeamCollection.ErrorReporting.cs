@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Bloom.History;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 
 namespace Bloom.TeamCollection
@@ -80,7 +79,7 @@ namespace Bloom.TeamCollection
             {
                 ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
                 var msgForAnalytics = string.Format(message, param0, param1);
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionError",
                     new Dictionary<string, string> { { "message", msgForAnalytics } }
                 );
@@ -107,7 +106,7 @@ namespace Bloom.TeamCollection
 
             var msg =
                 $"{string.Format(message, param0, param1)}\n\n{kDropboxSettingsWarningEnglish}";
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "TeamCollectionError",
                 new Dictionary<string, string> { { "message", msg } }
             );

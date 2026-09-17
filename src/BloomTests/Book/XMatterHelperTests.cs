@@ -23,8 +23,37 @@ namespace BloomTests.Book
         public void OneTimeSetup()
         {
             _factoryXMatter = BloomFileLocator.GetFactoryXMatterDirectory();
-            var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
-            _testXmatter = $"{codeBaseDir}/../../../src/BloomTests/xMatter";
+            _testXmatter = FindTestXMatterDirectory();
+        }
+
+        /// <summary>
+        /// Locates the xmatter packs checked in at src/BloomTests/xMatter (Test-XMatter
+        /// and Test-Device-XMatter), which several tests here use to exercise xmatter
+        /// selection without depending on the shipping packs.
+        /// Found by walking up from the test assembly rather than by a fixed number of
+        /// "../" steps: the assembly sits three levels below the repo root in a normal
+        /// build (output/Tests/Debug/AnyCPU) but four in the isolated tree the agent
+        /// build wrapper uses (output/agent/&lt;key&gt;/bin), and a hard-coded depth
+        /// silently resolved to a nonexistent folder there.
+        /// </summary>
+        private static string FindTestXMatterDirectory()
+        {
+            const string relativePath = "src/BloomTests/xMatter";
+            var directory = new DirectoryInfo(BloomFileLocator.GetCodeBaseFolder());
+
+            while (directory != null)
+            {
+                var candidate = Path.Combine(directory.FullName, relativePath);
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                directory = directory.Parent;
+            }
+
+            Assert.Fail(
+                $"Could not find {relativePath} above {BloomFileLocator.GetCodeBaseFolder()}."
+            );
+            return null; // unreachable; keeps the compiler happy
         }
 
         [SetUp]
