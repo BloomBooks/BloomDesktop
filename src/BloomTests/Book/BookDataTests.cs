@@ -2505,7 +2505,8 @@ namespace BloomTests.Book
             // fr is this collection's Language3, so its name comes from that WritingSystem rather
             // than from the not-in-this-collection fallback, and is still machine-sensitive: that
             // path is not what this change touches, and in real collections the name is written in
-            // the .bloomCollection.
+            // the .bloomCollection. Making it machine-independent too means opting out of ICU in
+            // libpalaso, which is tracked as BL-15471.
             Assert.That(
                 data.GetDisplayNameForLanguage("fr"),
                 Is.EqualTo("français").Or.EqualTo("Französisch")
