@@ -145,11 +145,12 @@ namespace Bloom.web
             request.PostSucceeded();
         }
 
-        // Work handed to the UI thread in the order it arrived. A context-menu command joins this
-        // chain with a delay (see HandleContextMenuItemClickedRequest for why); a page click that
-        // arrives while such a command is still on its way joins it without one, so that the two
-        // reach the UI thread in the order the user made them. Guarded by _deferredWorkLock; the
-        // handlers run on the UI thread but the chain's continuations do not.
+        // Work handed to the UI thread in the order it arrived, each item running only after the
+        // previous one has finished. A context-menu command joins this chain with a delay (see
+        // HandleContextMenuItemClickedRequest for why); a page click or move that arrives while
+        // such a command is still pending joins it without one, so that the two happen in the order
+        // the user made them, and never in the middle of the command's dialog. Guarded by
+        // _deferredWorkLock; the handlers run on the UI thread but the chain's continuations do not.
         private Task _deferredWork = Task.CompletedTask;
         private readonly object _deferredWorkLock = new object();
 
@@ -163,9 +164,14 @@ namespace Bloom.web
         }
 
         /// <summary>
-        /// Queue action to run on the UI thread after everything already queued this way, waiting
-        /// delayMs first if asked. Ordering is by BeginInvoke: each item posts to the UI thread only
-        /// once the previous item has posted, so the UI thread runs them in queueing order.
+        /// Queue action to run on the UI thread after everything already queued this way has
+        /// FINISHED, waiting delayMs first if asked. Finished, not merely posted: two of the
+        /// context-menu commands open a modal dialog, which pumps the UI thread, so an item posted
+        /// as soon as the command was posted would run while that dialog was up -- and a page click
+        /// or move that changed the selection then would make the dialog act on the wrong page.
+        /// Each item therefore posts to the UI thread only once the previous item's action has
+        /// returned. The waiting happens on a thread-pool continuation, so it never blocks the UI
+        /// thread the dialog is pumping.
         /// </summary>
         private void RunOnUiThreadAfterDeferredWork(Action action, int delayMs = 0)
         {
@@ -177,8 +183,25 @@ namespace Bloom.web
                         if (delayMs > 0)
                             await Task.Delay(delayMs);
                         var form = Shell.GetShellOrOtherOpenForm();
-                        if (form != null && !form.IsDisposed)
-                            form.BeginInvoke(action);
+                        if (form == null || form.IsDisposed)
+                            return;
+                        var finished = new TaskCompletionSource<bool>();
+                        form.BeginInvoke(
+                            (Action)(
+                                () =>
+                                {
+                                    try
+                                    {
+                                        action();
+                                    }
+                                    finally
+                                    {
+                                        finished.TrySetResult(true);
+                                    }
+                                }
+                            )
+                        );
+                        await finished.Task;
                     })
                     .Unwrap();
             }
