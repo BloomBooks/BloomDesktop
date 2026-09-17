@@ -127,10 +127,61 @@ namespace Bloom.web
                 IPage page = PageFromId(pageId);
 
                 if (page != null)
-                    PageList.PageClicked(page, pageContent);
+                {
+                    // A context-menu command runs on the UI thread a moment after its request was
+                    // answered (see HandleContextMenuItemClickedRequest), so a click that arrives
+                    // in that moment must queue behind it, or it would change pages first and the
+                    // command would find the editor mid-navigation and be declined. When nothing is
+                    // pending, the click runs right here, as it always has.
+                    if (DeferredWorkIsPending)
+                        RunOnUiThreadAfterDeferredWork(() =>
+                            PageList.PageClicked(page, pageContent)
+                        );
+                    else
+                        PageList.PageClicked(page, pageContent);
+                }
             }
 
             request.PostSucceeded();
+        }
+
+        // Work handed to the UI thread in the order it arrived. A context-menu command joins this
+        // chain with a delay (see HandleContextMenuItemClickedRequest for why); a page click that
+        // arrives while such a command is still on its way joins it without one, so that the two
+        // reach the UI thread in the order the user made them. Guarded by _deferredWorkLock; the
+        // handlers run on the UI thread but the chain's continuations do not.
+        private Task _deferredWork = Task.CompletedTask;
+        private readonly object _deferredWorkLock = new object();
+
+        private bool DeferredWorkIsPending
+        {
+            get
+            {
+                lock (_deferredWorkLock)
+                    return !_deferredWork.IsCompleted;
+            }
+        }
+
+        /// <summary>
+        /// Queue action to run on the UI thread after everything already queued this way, waiting
+        /// delayMs first if asked. Ordering is by BeginInvoke: each item posts to the UI thread only
+        /// once the previous item has posted, so the UI thread runs them in queueing order.
+        /// </summary>
+        private void RunOnUiThreadAfterDeferredWork(Action action, int delayMs = 0)
+        {
+            lock (_deferredWorkLock)
+            {
+                _deferredWork = _deferredWork
+                    .ContinueWith(async _ =>
+                    {
+                        if (delayMs > 0)
+                            await Task.Delay(delayMs);
+                        var form = Shell.GetShellOrOtherOpenForm();
+                        if (form != null && !form.IsDisposed)
+                            form.BeginInvoke(action);
+                    })
+                    .Unwrap();
+            }
         }
 
         private void HandleContextMenuItemEnabled(ApiRequest request)
@@ -173,38 +224,26 @@ namespace Bloom.web
                 // came with this request. That is a trade made knowingly: a lost keystroke is
                 // recoverable, a hung Bloom is not.
                 //
-                // The discard operator _ indicates we're intentionally not awaiting this.
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(100);
-
-                    // Execute on the UI thread using the form's synchronization context
-                    var form = Shell.GetShellOrOtherOpenForm();
-                    if (form != null && !form.IsDisposed)
+                // Because this request is answered before the command runs, a page click can
+                // arrive in between; HandlePageClickedRequest queues such a click behind us.
+                RunOnUiThreadAfterDeferredWork(
+                    () =>
                     {
-                        form.BeginInvoke(
-                            new Action(() =>
-                            {
-                                try
-                                {
-                                    PageList.ExecuteContextMenuCommand(
-                                        page,
-                                        commandId,
-                                        pageContent
-                                    );
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log the error.  Should we notify the user as well?
-                                    Logger.WriteEvent(
-                                        $"Error executing content menu command for {commandId} on page {pageId}"
-                                    );
-                                    Logger.WriteError(ex);
-                                }
-                            })
-                        );
-                    }
-                });
+                        try
+                        {
+                            PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error.  Should we notify the user as well?
+                            Logger.WriteEvent(
+                                $"Error executing content menu command for {commandId} on page {pageId}"
+                            );
+                            Logger.WriteError(ex);
+                        }
+                    },
+                    delayMs: 100
+                );
             }
 
             request.PostSucceeded();
