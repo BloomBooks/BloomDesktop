@@ -3404,6 +3404,12 @@ namespace Bloom.TeamCollection
                 }
 
                 Application.Idle -= HandleRemoteBookChangesOnIdle;
+
+                // Ordinary message writes give up quickly on a busy log file, so as not to stall
+                // the UI thread, and leave what they could not write for the next message. This
+                // is the last chance for anything still outstanding to reach the file, and by
+                // now there is no UI left to keep responsive, so it may take its time.
+                _tcLog.Flush();
             }
         }
 
