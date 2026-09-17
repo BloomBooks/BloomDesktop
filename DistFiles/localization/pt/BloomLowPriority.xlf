@@ -249,7 +249,7 @@
         <note>ID: Settings.Subscription.NotValid</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.UnknownCode" approved="yes">
-        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
+        <source xml:lang="en">This version of Bloom does not contain any special branding artwork for this subscription.</source>
         <target xml:lang="pt-PT" state="final">Esta versão do Bloom não tem as imagens relacionadas com essa assinatura.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
