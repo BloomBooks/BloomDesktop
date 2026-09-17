@@ -10,19 +10,19 @@ test.describe("Bloom exe CDP top bar", () => {
         const connection = await connectToBloomExe();
 
         try {
-            await clickWorkspaceTab(connection.page, "Collections");
+            await clickWorkspaceTab(connection.page, "collection");
             await waitForActiveWorkspaceTab("collection");
             await expect(connection.page.locator("body")).toHaveClass(
                 /collection-mode/,
             );
 
-            await clickWorkspaceTab(connection.page, "Publish");
+            await clickWorkspaceTab(connection.page, "publish");
             await waitForActiveWorkspaceTab("publish");
             await expect(connection.page.locator("body")).toHaveClass(
                 /publish-mode/,
             );
 
-            await clickWorkspaceTab(connection.page, "Edit");
+            await clickWorkspaceTab(connection.page, "edit");
             await waitForActiveWorkspaceTab("edit");
             await expect(connection.page.locator("body")).toHaveClass(
                 /edit-mode/,
@@ -56,7 +56,7 @@ test.describe("Bloom exe CDP top bar", () => {
                 )
                 .toBe(true);
 
-            await clickWorkspaceTab(connection.page, "Publish");
+            await clickWorkspaceTab(connection.page, "publish");
             await waitForActiveWorkspaceTab("publish");
 
             await expect
@@ -67,7 +67,7 @@ test.describe("Bloom exe CDP top bar", () => {
                 )
                 .toBe(true);
 
-            await clickWorkspaceTab(connection.page, "Edit");
+            await clickWorkspaceTab(connection.page, "edit");
             await waitForActiveWorkspaceTab("edit");
         } finally {
             await connection.browser.close();

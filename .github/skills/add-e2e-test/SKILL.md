@@ -66,6 +66,10 @@ automation (no stable selector, a native dialog, a WinForms surface):
 
 1. Check `src/BloomE2E/AUTOMATION-DEBT.md` — it may already be known, with a
    workaround or a decision.
+   For a WinForms button or tab, or an OS dialog, first see whether UI Automation reaches it
+   (`winformsUia.ps1`, "Driving WinForms and OS dialogs" in the `bloom-automation` skill); it
+   does for the Settings dialog's tabs and OK/Cancel and for the file picker, but not for the
+   Settings dialog's web content under `--e2e`.
 2. Prefer fixing Bloom: add a `data-testid` in the React code, or add a hook to
    `src/BloomExe/web/controllers/E2eTestingApi.cs` (registered only under `--e2e`).
    Ship that fix in the same PR as the test. That is a change to Bloom's production code,
@@ -191,10 +195,13 @@ The worker-scoped fixture launches Bloom on a temp copy of that collection and y
 
 - `page` — Playwright's `page`, overridden to be Bloom's shell document (the top bar and
   the showing tab). Most tests need nothing else.
-- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir, restart }`. Build book
-  paths from `collectionDir`, never from `output/testing-inputs`. `restart(callback)`
+- `bloomApp` — `{ page, httpPort, cdpPort, bloomPid, collectionDir, userSettingsDir, restart }`.
+  Build book paths from `collectionDir`, never from `output/testing-inputs`. `restart(callback)`
   stops Bloom, runs the callback, and starts it again, which is how a test changes what
-  Bloom reads only at startup, such as the collection's languages.
+  Bloom reads only at startup, such as the collection's languages. `userSettingsDir` is where
+  this Bloom keeps its user settings (`user.config`): a folder of its own in the temp folder,
+  empty at launch, so a test's Bloom starts from default settings and shares none with the
+  developer's Bloom or the previous run. `helpers/userSettings.ts` reads what it saved there.
 
 The fixture also watches for the "Bloom had a problem" dialog and fails the test with the
 exception it scrapes from behind the dialog's own "Learn More" link. See
@@ -206,8 +213,15 @@ Rules that hold regardless of the final API:
 - Real mouse events, not synthetic `element.click()`, for targets that need them
   (book tiles, Settings, PREVIEW); the helper layer handles this — never hand-roll
   `Input.dispatchMouseEvent` inside a test.
-- NEVER trigger native OS dialogs (file pickers, the WinForms Image Toolbox, video
-  capture) — Playwright cannot dismiss them and the run hangs.
+- NEVER let a native OS dialog open unprepared (video capture, the file and folder choosers):
+  Playwright cannot see or dismiss it, so the run hangs. The one exception is the "choose
+  a file" or "choose a folder" dialog: arm `armFileChooser` (helpers/talkingBook.ts, over the
+  `e2e/nextFileToChoose` hook) with the path you want BEFORE the click that opens it, and Bloom
+  answers with that path instead of showing a dialog. It answers one dialog only, so arm it
+  immediately before the click; a path armed and never used would otherwise answer some later
+  test's chooser. When a dialog the hook does not cover has to be driven, or a run has to read
+  an unexpected message box, `winformsUia.ps1` in the `bloom-automation` skill does it over UI
+  Automation (proven on Bloom's image picker); arming is still the first choice in a test.
 - NEVER submit a problem report. The fixture fails the test with gathered detail when
   a "Bloom had a problem" dialog appears; do not loop-dismiss it.
 - Waits are event/state-based (poll an API, await a selector), never fixed sleeps.
@@ -313,9 +327,25 @@ Dependencies point down only:
      templates of its own in the list.
    - `helpers/files.ts` — `fingerprintFolder`, `isInsideFolder`. Files on disk; nothing
      here talks to Bloom.
-   - `helpers/publish.ts` — `openPublishDestination`, `getTextLanguageRows`,
-     `expectTextLanguageRows`, `clickTextLanguage`, `showBloomPubPreview`,
-     `getPreviewLanguages`, `getLanguagesInBook`, `getTooltipForLanguage`.
+   - `helpers/publish.ts` — `openPublishDestination`, `getLanguageRows`,
+     `expectLanguageRows`, `expectLanguageRowsInAnyOrder`, `clickLanguage`,
+     `getTooltipForLanguage`, `showBloomPubPreview`,
+     `getPreviewLanguages`, `getLanguagesInBook`, `isTalkingBookFeatureOn`,
+     `expectTalkingBookFeature`, `stageBloomPub`, `getStagedNarrationIds`. The Publish tab has
+     TWO language lists — Text Languages and Talking Book Languages — rendered by the same
+     component, so every reader takes which one it means (`"text"` or `"audio"`) right after
+     `page`. Assertions on a list must use the polled `expectLanguageRows`, not a bare `expect`
+     on `getLanguageRows`: the lists are filled from `publish/languagesInBook` after the screen
+     mounts, and reading once races that answer.
+   - `helpers/talkingBook.ts` — `openToolboxWithTalkingBook`, `getNarrationSentences`,
+     `addNarration`, `getNarratedLanguages`, `importNarration`, `armFileChooser`,
+     `isImportRecordingEnabled`, `setRecordingMode`, `openAdvancedSection`. Narration cannot be
+     RECORDED in a test (it needs
+     a microphone), so a test that needs a book with audio calls `addNarration`, which puts an
+     mp3 where a recording would have gone — the sentence ids it is named after come from
+     Bloom's own tool, which marks them when the toolbox opens. `importNarration` drives the
+     real Import Recording button instead, and is only for the test whose subject that is: Bloom
+     offers it solely in whole-text-box mode and solely to a Pro subscription.
    This list is a map, not the index. The folder is the index: new modules appear there
    before anyone updates this file.
 3. **Tests**, which call surface helpers and nothing lower.
@@ -338,11 +368,39 @@ pnpm exec playwright test tests/workspace-tabs.spec.ts   # one file
 pnpm exec playwright test -g "switching workspace tabs"  # one test by title
 ```
 
-A run opens a real Bloom window; that is expected. It needs a built `Bloom.exe` under
-`output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself; see "Build Bloom whenever it
-helps") and the inputs at `output/testing-inputs`. Point
+A run launches a real Bloom and its window appears on the developer's desktop, unless
+`BLOOM_AUTOMATION_MONITOR` says otherwise. That one variable decides where every window a run
+opens goes, the splash screen included: `headless`, or `0`, puts them all off every monitor; a
+1-based monitor number puts them on that monitor; and any other value, unset included, leaves Bloom
+to place them as it always does. `headless` moves the window off-screen rather than minimizing it,
+because WebView2 stops painting a minimized window and every screenshot then comes back blank.
+`--debug` clears a `headless` setting, so a debug session has a window to step through. The monitor
+number counts left to right, so 1 is the leftmost monitor; it is **not** the number Windows Settings
+shows beside each display, and no API reproduces those. Bloom writes the whole mapping to its log at
+startup. See `src/BloomE2E/README.md` for the table and that log line.
+
+A run needs a built `Bloom.exe` under `output/{Debug,Release}/{x64,AnyCPU,}/` (build it yourself;
+see "Build Bloom whenever it helps") and the inputs at `output/testing-inputs`. Point
 `BLOOM_TESTING_INPUTS_DIR` at a bloom-testing-inputs checkout to use your own in-progress
 collections instead of the pinned ones.
+
+The launched Bloom serves its React UI from the built `output/browser`, so **an edit to a `.tsx`
+file does not reach a run until that bundle is rebuilt.** To test the working tree instead, start
+a dev server and name its port in `BLOOM_E2E_VITE_PORT`; the fixture passes `--vite-port` and
+Bloom loads every React control from it. Set `PORT` as well as `--port`, or the dev server's
+HMR and React-Refresh URLs still point at 5173 and the page fails to load its entry module.
+
+```bash
+PORT=5173 pnpm exec vite --port 5173 --strictPort   # in src/BloomBrowserUI
+BLOOM_E2E_VITE_PORT=5173 pnpm test                  # in src/BloomE2E
+```
+
+**Use 5173, and set the variable.** The page list and the toolbox write `http://localhost:5173`
+into their own imports, so on any other port those two frames load nothing and come up empty,
+which reads as the feature being missing. And leaving the variable unset does not mean "no dev
+server": a dev build of Bloom probes 5173 by itself, so an unset variable and a server elsewhere
+means the run quietly tests the built bundle, however old it is. Stop a Bloom that already holds
+5173 rather than moving the dev server. See AUTOMATION-DEBT.md.
 
 `.github/workflows/nightly.yml` does not run this suite yet. The step it will need is the
 same `pnpm test` in that folder, after the Release build and the testing-inputs fetch that

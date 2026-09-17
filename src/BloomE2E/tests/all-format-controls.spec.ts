@@ -42,7 +42,7 @@ import {
     getTextBoxFormattingOnPages,
     openFormatDialog,
     scrollFormatGearIntoView,
-    switchFormatDialogTab,
+    showFormatDialogTab,
     toggleEmphasis,
     type IBookTextBoxFormatting,
     type ITextBoxFormatting,
@@ -144,12 +144,12 @@ const openFormatDialogOn = async (
     page: Parameters<typeof clickInGroup>[0],
     lang: string,
     groupIndex: number,
-    tab: Parameters<typeof switchFormatDialogTab>[1],
+    tab: Parameters<typeof showFormatDialogTab>[1],
 ) => {
     await clickInGroup(page, GROUP, lang, groupIndex);
     await scrollFormatGearIntoView(page);
     await openFormatDialog(page);
-    await switchFormatDialogTab(page, tab);
+    await showFormatDialogTab(page, tab);
 };
 
 test.describe("All Format Controls", () => {
@@ -197,7 +197,7 @@ test.describe("All Format Controls", () => {
     }) => {
         test.setTimeout(600000);
         await goToPage(page, pages[0].id);
-        await openFormatDialogOn(page, L1, 0, "Characters");
+        await openFormatDialogOn(page, L1, 0, "characters");
         const boxOnPage = async (lang: string) =>
             (await getTextBoxFormatting(page)).find((b) => b.lang === lang)!;
 
@@ -247,7 +247,7 @@ test.describe("All Format Controls", () => {
         test.setTimeout(600000);
         const customSize = 17;
         await goToPage(page, pages[1].id);
-        await openFormatDialogOn(page, L1, 0, "Characters");
+        await openFormatDialogOn(page, L1, 0, "characters");
         expect(
             await getFontSizeChoices(page),
             "the size chosen must not already be in the list",
@@ -278,7 +278,7 @@ test.describe("All Format Controls", () => {
         test.setTimeout(600000);
         const before = await getTextBoxFormattingOnPages(page, pages);
         await goToPage(page, pages[0].id);
-        await openFormatDialogOn(page, L2, 0, "Characters");
+        await openFormatDialogOn(page, L2, 0, "characters");
         await chooseFont(page, L2_CHARACTERS.fontFamily);
         await chooseFontSize(page, L2_CHARACTERS.fontSizePt);
         await chooseLineSpacing(page, "1.2");
@@ -304,7 +304,7 @@ test.describe("All Format Controls", () => {
     }) => {
         test.setTimeout(600000);
         await goToPage(page, pages[0].id);
-        await openFormatDialogOn(page, L2, 0, "Paragraph");
+        await openFormatDialogOn(page, L2, 0, "paragraph");
         await chooseIndent(page, PARAGRAPH.indent);
         await chooseAlignment(page, PARAGRAPH.alignment);
         await chooseParagraphSpacing(page, "1");
@@ -324,7 +324,7 @@ test.describe("All Format Controls", () => {
     }) => {
         test.setTimeout(600000);
         await goToPage(page, pages[2].id);
-        await openFormatDialogOn(page, L1, 0, "Highlighting");
+        await openFormatDialogOn(page, L1, 0, "highlighting");
         await chooseHighlightBackgroundColor(page, PALE_GREEN);
         await chooseHighlightTextColor(page, PURPLE);
         await closeFormatDialog(page);
@@ -348,7 +348,7 @@ test.describe("All Format Controls", () => {
         expect(before.map((b) => b.group)).toEqual([0, 0, 1, 1]);
         for (const box of before) expect(box.style).toBe(NORMAL);
 
-        await openFormatDialogOn(page, L1, 0, "Style Name");
+        await openFormatDialogOn(page, L1, 0, "styleName");
         expect(await getStyleMenuEntries(page)).not.toContain(TESTING);
         await createStyle(page, TESTING);
 
@@ -390,12 +390,12 @@ test.describe("All Format Controls", () => {
         await closeFormatDialog(page);
         const before = await getTextBoxFormattingOnPages(page, pages);
         await goToPage(page, pages[1].id);
-        await openFormatDialogOn(page, L1, 0, "Characters");
+        await openFormatDialogOn(page, L1, 0, "characters");
         await chooseFontSize(page, TESTING_CHANGES.fontSizePt);
         expect(await toggleEmphasis(page, "italic")).toBe(
             TESTING_CHANGES.italic,
         );
-        await switchFormatDialogTab(page, "Paragraph");
+        await showFormatDialogTab(page, "paragraph");
         await chooseAlignment(page, TESTING_CHANGES.alignment);
         await chooseIndent(page, TESTING_CHANGES.indent);
         await closeFormatDialog(page);
@@ -421,7 +421,7 @@ test.describe("All Format Controls", () => {
         const before = await getTextBoxFormatting(page);
         for (const box of before) expect(box.style).toBe(NORMAL);
 
-        await openFormatDialogOn(page, L2, 0, "Style Name");
+        await openFormatDialogOn(page, L2, 0, "styleName");
         await applyStyle(page, TESTING);
         await closeFormatDialog(page);
 

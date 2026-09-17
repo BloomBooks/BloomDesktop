@@ -35,6 +35,29 @@ const { chromium } = createRequire(path.join(componentTester, "package.json"))(
 );
 
 const args = process.argv.slice(2);
+
+const usage = `Drive the "Edit with AI…" image editor of a running Bloom over CDP.
+
+  node driveAiImageEditor.mjs [options] [command]
+
+  frames                  List every frame of the Edit tab (the default command).
+  images                  Report the images of the current page.
+  credits                 Report each book image's credits, read from the file metadata.
+  dummy-edit              Open the editor, edit with the Local Dummy model, and commit.
+
+  --help, -h              Print this and exit.
+  --http-port <port>      The Bloom whose server answers on this port (default: 8092).
+  --cdp-port <port>       The debugging port to attach to (default: --http-port plus 2).
+  --match <text>          Part of the src of the image to edit (default: ai-image).
+  --shot <path>           Where to write the screenshot of a dummy-edit run.`;
+
+// The usage counts wherever the request sits, and this script attaches to a running Bloom, so
+// answer it before anything reaches that Bloom.
+if (args.some((arg) => arg === "--help" || arg === "-h")) {
+    console.log(usage);
+    process.exit(0);
+}
+
 const opt = (name, def) => {
     const i = args.indexOf(name);
     return i >= 0 && args[i + 1] ? args[i + 1] : def;
@@ -44,8 +67,16 @@ const valueFlags = new Set(["--http-port", "--cdp-port", "--match", "--shot"]);
 const positional = [];
 for (let i = 0; i < args.length; i++) {
     if (args[i].startsWith("--")) {
-        if (valueFlags.has(args[i])) i++; // skip its value
-        continue;
+        if (valueFlags.has(args[i])) {
+            i++; // skip its value
+            continue;
+        }
+        // A typo must not be ignored: this script attaches to a running Bloom and does things
+        // to the book being edited, so an option it does not know stops the run.
+        console.error(`Unknown option ${args[i]}.
+
+${usage}`);
+        process.exit(2);
     }
     positional.push(args[i]);
 }

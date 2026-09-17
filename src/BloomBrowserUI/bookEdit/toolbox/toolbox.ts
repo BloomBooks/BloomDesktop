@@ -1685,7 +1685,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 // avoiding: even though removing the bookmark and rejoining the text leaves the
                 // DOM exactly as it was, Chromium goes on painting the paragraph's old glyphs
                 // where a ligature straddled the split, so letters the user typed stop being
-                // drawn until something else forces a repaint (BL-16717).
+                // drawn until something else forces a repaint (BL-16717). Restoring the bookmark
+                // is also a ckeditor re-select, which in the Chromium-based WebView2 plants a
+                // zero-width "filling char" (U+200B) whenever the caret sits next to an inline
+                // element such as the bloom-linebreak span; a later rewrite of the box orphans
+                // it and it gets saved (BL-16808).
                 // Nothing below rewrites this box unless a tool is active, or there is actually
                 // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
                 // selection to preserve. So only pay for a bookmark when one of those is true,
@@ -1718,9 +1722,11 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
+                        if (bookmarks) {
+                            ckeditorOfThisBox
+                                .getSelection()
+                                .selectBookmarks(bookmarks);
+                        }
                         ckeditorSelection = ckeditorOfThisBox.getSelection();
                         bookmarks = ckeditorSelection.createBookmarks(true);
 
@@ -1851,6 +1857,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // We'll put them back in at the end.
     const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
 
+    // If we end up rewriting the box (below), the html we write back must not carry ckeditor's
+    // zero-width "filling char" as ordinary text, or it is orphaned and saved into the book
+    // (BL-16490; and see removeTrackedCkEditorFillingChar). So take it out of the DOM first,
+    // before we read the html. We don't yet know whether we will convert anything, so this
+    // over-estimates the same way editableMightBeRewritten does: any nbsp at all. The only cost
+    // of a false yes is removing a character ckeditor was about to remove itself.
+    if (editableDiv.innerHTML.includes("&nbsp;")) {
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editableDiv);
+    }
+
     let editableDivHtml = editableDiv.innerHTML;
     // innerText does not include hidden text; innerHTML does.
     // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
@@ -1863,7 +1879,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
     // even when the string is unchanged, which loses the selection and collapses any Range
     // pointing into the old text nodes -- and the reader tools' highlights and the Talking Book
-    // tool's audio highlights are live Ranges. Almost every keystroke leaves nothing to convert,
+    // tool's audio highlights are live Ranges. It also detaches the text node holding
+    // ckeditor's zero-width "filling char", which ckeditor removes by node reference; once
+    // detached, the U+200B stays in the text and gets saved into the book, where a line break
+    // next to it renders as nothing (BL-16808). Almost every keystroke leaves nothing to convert,
     // so only write when there is something to write.
     let replacedAnNbsp = false;
 
@@ -1963,11 +1982,16 @@ export function editableMightBeRewritten(editable: HTMLElement): boolean {
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     // [\s\S] is a hack representing every character (including newline)
-    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    const commentRegex = /<!--[\s\S]*?-->/g;
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (fixedHtml !== editable.innerHTML) {
-        editable.innerHTML = fixedHtml;
+    if (editable.innerHTML.replace(commentRegex, "") !== editable.innerHTML) {
+        // Don't bake ckeditor's zero-width filling char into the html we write back, where it
+        // would be orphaned and saved into the book (BL-16490). See
+        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
+        // changes the html, so read it again afterwards.
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
+        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
     }
 }
 

@@ -334,6 +334,10 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                 ${props.showOuterRectangle ? buttonBorder : ""}
             `}
             draggable={true}
+            // The palette icons are SVGs and localized tooltips, so a test that had to find one by
+            // its picture or its label would break the next time either changed. See
+            // BloomE2E/helpers/canvasElements.ts.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -514,6 +518,8 @@ export const CanvasElementItem: React.FunctionComponent<{
             `}
             src={props.src}
             draggable={true}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -551,6 +557,8 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
         <Span
             l10nKey={props.l10nKey}
             className={props.className}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             draggable={true}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
