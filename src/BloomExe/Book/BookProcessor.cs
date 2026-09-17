@@ -64,6 +64,12 @@ namespace Bloom.Book
         private static readonly HashSet<string> s_perPageFixupFailedThisSession =
             new HashSet<string>();
 
+        // Books whose per-page pass is running right now. NeedsPerPageFixup cannot stand in for this:
+        // the level is stamped only once the whole pass has finished, so it stays true for the entire
+        // run, and a second caller arriving mid-run would see a book that still "needs" the pass.
+        // Keyed by book id. Only ever touched on the UI thread (see EnsurePerPageFixupIfNeeded).
+        private static readonly HashSet<string> s_perPageFixupInProgress = new HashSet<string>();
+
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
         /// date (xmatter/layout migrations; this also ensures the needed CSS file links are present,
@@ -333,7 +339,37 @@ namespace Bloom.Book
                 return false;
             if (s_perPageFixupFailedThisSession.Contains(book.ID))
                 return false;
+            // A pass already running for this book must not be joined by a second one. This really
+            // happens: the triggers defer their work with BeginInvoke, and the progress dialog below
+            // blocks in ShowDialog, which pumps the message loop and so dispatches any BeginInvoke
+            // queued after ours. An orientation change queues two -- one from OnBecomeVisible (via
+            // SetLayout's rebuild branch) and one from SetLayout itself -- and the second would land
+            // inside the first one's dialog. Two ProcessBook runs over one Book would rewrite its DOM
+            // from two worker threads at once, and whichever finished first would load a live page
+            // while the other was still loading off-screen ones, which is the very thing the whole
+            // empty-the-editor dance exists to prevent.
+            if (!s_perPageFixupInProgress.Add(book.ID))
+                return false;
+            try
+            {
+                RunPerPageFixupBehindDialog(book, webSocketServer);
+            }
+            finally
+            {
+                s_perPageFixupInProgress.Remove(book.ID);
+            }
+            return true;
+        }
 
+        /// <summary>
+        /// The body of EnsurePerPageFixupIfNeeded, once it has decided the pass is due and claimed
+        /// the book. Separated so the claim can be released in a finally without indenting all of it.
+        /// </summary>
+        private static void RunPerPageFixupBehindDialog(
+            Book book,
+            BloomWebSocketServer webSocketServer
+        )
+        {
             // Reuse the "Update Book" label: to the user this is the same operation, applied for them
             // automatically rather than on request.
             var title = LocalizationManager.GetString(
@@ -399,7 +435,6 @@ namespace Bloom.Book
                     return false; // no error: close the dialog automatically
                 }
             );
-            return true;
         }
 
         // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
