@@ -29,6 +29,7 @@
 // rejections are not dropped when handlers are called from click events.
 
 import * as React from "react";
+import { SvgIconProps } from "@mui/material";
 import { default as ArrowDownwardIcon } from "@mui/icons-material/ArrowDownward";
 import { default as ArrowUpwardIcon } from "@mui/icons-material/ArrowUpward";
 import { default as CheckIcon } from "@mui/icons-material/Check";
@@ -37,6 +38,7 @@ import { default as CopyIcon } from "@mui/icons-material/ContentCopy";
 import { default as PasteIcon } from "@mui/icons-material/ContentPaste";
 import { default as CopyrightIcon } from "@mui/icons-material/Copyright";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
+import { default as LayersOutlinedIcon } from "@mui/icons-material/LayersOutlined";
 import { default as SearchIcon } from "@mui/icons-material/Search";
 import { default as VolumeUpIcon } from "@mui/icons-material/VolumeUp";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
@@ -62,6 +64,13 @@ import {
 import { CogIcon } from "../../js/CogIcon";
 import { DuplicateIcon } from "../../js/DuplicateIcon";
 import { FillSpaceIcon } from "../../js/FillSpaceIcon";
+import {
+    BringForwardIcon,
+    BringToFrontIcon,
+    SendBackwardIcon,
+    SendToBackIcon,
+} from "../../js/LayerIcons";
+import type { ZOrderMove } from "../../js/canvasElementManager/CanvasElementZOrder";
 import { LinkIcon } from "../../js/LinkIcon";
 import { MissingMetadataIcon } from "../../js/MissingMetadataIcon";
 import StyleEditor from "../../StyleEditor/StyleEditor";
@@ -478,7 +487,98 @@ export const makeChooseAudioMenuItemForImage = (
     };
 };
 
+// One command row of the "Layer" submenu. The command itself runs in the page frame's
+// CanvasElementManager, which reorders the DOM and keeps the Comical bubble levels in step.
+const makeLayerCommandRow = (
+    id: "bringForward" | "bringToFront" | "sendBackward" | "sendToBack",
+    l10nId: string,
+    englishLabel: string,
+    icon: React.FunctionComponent<SvgIconProps>,
+    shortcutDisplay: string,
+    move: ZOrderMove,
+    enabled: (ctx: IControlContext) => boolean,
+): IControlMenuCommandRow => ({
+    id,
+    l10nId,
+    englishLabel,
+    icon: React.createElement(icon, null),
+    shortcut: {
+        id: `${id}.defaultShortcut`,
+        display: shortcutDisplay,
+    },
+    availability: { enabled },
+    onSelect: () => {
+        getCanvasElementManager()?.moveActiveCanvasElementInZOrder(move);
+    },
+});
+
+// The "Layer" submenu: the four commands that change where the selected canvas element sits
+// in the stacking order (BL-15992). The forward commands are disabled when the element is
+// already at the front, the backward ones when it is already at the back; the whole submenu
+// is disabled by layerAvailabilityRules when there is nothing to move past. The keyboard
+// shortcuts shown here are handled by CanvasElementKeyboardProvider.
+// Exported for unit testing.
+export const makeLayerMenuItem = (
+    _ctx: IControlContext,
+    _runtime: IControlRuntime,
+): IControlMenuCommandRow => ({
+    id: "layer",
+    l10nId: "EditTab.Toolbox.CanvasTool.Layer",
+    englishLabel: "Layer",
+    onSelect: () => {},
+    subMenuItems: [
+        makeLayerCommandRow(
+            "bringForward",
+            "EditTab.Toolbox.CanvasTool.Layer.BringForward",
+            "Bring Forward",
+            BringForwardIcon,
+            "Ctrl+]",
+            "forward",
+            (ctx) => ctx.canBringForward,
+        ),
+        makeLayerCommandRow(
+            "bringToFront",
+            "EditTab.Toolbox.CanvasTool.Layer.BringToFront",
+            "Bring to Front",
+            BringToFrontIcon,
+            "Ctrl+Alt+]",
+            "front",
+            (ctx) => ctx.canBringForward,
+        ),
+        makeLayerCommandRow(
+            "sendBackward",
+            "EditTab.Toolbox.CanvasTool.Layer.SendBackward",
+            "Send Backwards",
+            SendBackwardIcon,
+            "Ctrl+[",
+            "backward",
+            (ctx) => ctx.canSendBackward,
+        ),
+        makeLayerCommandRow(
+            "sendToBack",
+            "EditTab.Toolbox.CanvasTool.Layer.SendToBack",
+            "Send to Back",
+            SendToBackIcon,
+            "Ctrl+Alt+[",
+            "back",
+            (ctx) => ctx.canSendBackward,
+        ),
+    ],
+});
+
 export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
+    layer: {
+        kind: "command",
+        id: "layer",
+        l10nId: "EditTab.Toolbox.CanvasTool.Layer",
+        englishLabel: "Layer",
+        icon: LayersOutlinedIcon,
+        // Only a submenu; selecting the row itself does nothing.
+        action: () => {},
+        menu: {
+            buildMenuItem: makeLayerMenuItem,
+        },
+    },
     chooseImage: {
         kind: "command",
         id: "chooseImage",
@@ -1422,6 +1522,12 @@ export const controlSections: Record<SectionId, IControlSection> = {
                 "fieldType",
             ],
             toolPanel: ["textColor", "backgroundColor"],
+        },
+    },
+    layer: {
+        id: "layer",
+        controlsBySurface: {
+            menu: ["layer"],
         },
     },
     wholeElement: {
