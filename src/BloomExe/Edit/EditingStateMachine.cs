@@ -135,6 +135,13 @@ public class EditingStateMachine
     /// <summary>
     /// True if we are in the process of navigating to a new page.
     /// </summary>
+    /// <summary>
+    /// True when no page is loaded in the editor. Work that needs the book to itself -- the
+    /// per-page browser pass, which rewrites the book's DOM from another thread -- may only start
+    /// in this state (BL-16852, BL-16877).
+    /// </summary>
+    public bool NoPage => _currentState == State.NoPage;
+
     public bool Navigating => _currentState == State.Navigating;
 
     /// <summary>

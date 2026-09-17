@@ -1072,14 +1072,20 @@ namespace Bloom.Edit
             // have never had them, so without this the editor works on a half-migrated book
             // (BL-16852). No-op for a book already up to date, which is the normal case.
             //
-            // We have not shown a page yet, which is exactly the state the pass needs: it rewrites the
-            // book's DOM from a worker thread and must have the book to itself, and every page it
-            // loads off-screen announces itself as loaded -- including one carrying the id a live
-            // editor would be waiting on. So go straight to the shared path, which runs the pass off
-            // the API sync lock and only then shows the page. Returning here means no page is shown
-            // until the dialog closes.
+            // The pass rewrites the book's DOM from a worker thread and must have the book to itself:
+            // every page it loads off-screen announces itself as loaded, including one carrying the
+            // id a live editor would be waiting on. Requiring NoPage is what makes that true, and it
+            // is precisely the case this trigger is for -- switching into the Edit tab, where leaving
+            // the tab has already emptied the editor.
+            //
+            // It also keeps us out of the one path that reaches here with work already in flight:
+            // SetLayout's orientation branch calls _view.OnVisibleChanged(true) from inside a save,
+            // so the state is SavedAndStripped, and SetLayout schedules the pass itself a few lines
+            // later (with the editor emptied first). Starting one here as well would have the two
+            // overlap, because the progress dialog blocks in ShowDialog, which pumps the message loop
+            // and so dispatches the second BeginInvoke inside the first one's dialog (BL-16877).
             var book = _currentlyDisplayedBook;
-            if (BookProcessor.NeedsPerPageFixup(book))
+            if (_stateMachine.NoPage && BookProcessor.NeedsPerPageFixup(book))
             {
                 RunPerPageFixupThenReturnToPage(book, page?.Id, null);
                 return;
