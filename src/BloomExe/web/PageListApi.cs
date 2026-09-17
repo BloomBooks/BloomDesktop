@@ -255,11 +255,17 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            // See HandlePageClickedRequest.
+            // See HandlePageClickedRequest, including for why a move that arrives while a
+            // context-menu command is still on its way to the UI thread queues behind it.
             string pageContent = requestData.IsDefined("pageContent")
                 ? requestData.pageContent
                 : null;
-            PageList.PageMoved(movedPage, newIndex, pageContent);
+            if (DeferredWorkIsPending)
+                RunOnUiThreadAfterDeferredWork(() =>
+                    PageList.PageMoved(movedPage, newIndex, pageContent)
+                );
+            else
+                PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();
         }
 
