@@ -652,7 +652,7 @@ namespace Bloom.TeamCollection
             // enumerates to de-duplicate and then appends to, and the UI reads that same list,
             // so writing to it from here directly could duplicate entries or throw. Hand the
             // work to the UI thread, exactly as the disconnect path does.
-            TeamCollectionManager.RunOnUiThreadLater(() =>
+            Program.RunOnUiThreadLater(() =>
             {
                 // By the time this runs, a racing watcher failure may have disconnected us. The
                 // manager has then swapped in a DisconnectedTeamCollection with its own message
@@ -2417,7 +2417,7 @@ namespace Bloom.TeamCollection
             return status.IsCheckedOutHereBy(whoBy);
         }
 
-        bool IsBloomBookFolder(string folderPath)
+        protected bool IsBloomBookFolder(string folderPath)
         {
             return !string.IsNullOrEmpty(BookStorage.FindBookHtmlInFolder(folderPath));
         }

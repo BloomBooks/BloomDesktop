@@ -1114,7 +1114,7 @@ namespace Bloom.TeamCollection
             // Starting the watcher and announcing the books we find raises the same events the
             // watcher itself raises, which reach the UI, so hand the work to the UI thread
             // rather than doing it on the heartbeat's thread-pool thread.
-            TeamCollectionManager.RunOnUiThreadLater(() =>
+            Program.RunOnUiThreadLater(() =>
             {
                 // Re-check: we may have been stopped or disconnected while this was queued.
                 if (!_booksWatcherDeferred || !IsMonitoring || !IsLiveCollection)
@@ -1133,7 +1133,9 @@ namespace Bloom.TeamCollection
         /// Whatever is in the Books folder now got there while we had no watcher on it, so no
         /// Created event was ever raised for any of it. From the point of view of watching that
         /// folder these books are all new since Bloom started, so tell the rest of Bloom about
-        /// them exactly as the watcher would have.
+        /// them exactly as the watcher would have. Books that went away while we were not
+        /// watching need the same treatment; see
+        /// NoticeBooksThatLeftTheRepoBeforeWeStartedWatching.
         /// </summary>
         private void NoticeBooksThatArrivedBeforeWeStartedWatching()
         {
@@ -1157,6 +1159,71 @@ namespace Bloom.TeamCollection
                     HandleModifiedFile(
                         new BookRepoChangeEventArgs { BookFileName = bookName + ".bloom" }
                     );
+            }
+
+            NoticeBooksThatLeftTheRepoBeforeWeStartedWatching(bookNames);
+        }
+
+        /// <summary>
+        /// The other half of NoticeBooksThatArrivedBeforeWeStartedWatching: a book that was
+        /// deleted from the repo while we had no watcher raised no Deleted event either, so
+        /// nothing has told us the local copy is obsolete. Raise the event for each local book
+        /// whose repo counterpart is missing, exactly as OnDeleted would have.
+        /// </summary>
+        /// <remarks>
+        /// We deliberately do not decide here whether the book really was deleted. A Books
+        /// folder that Dropbox is still restoring can be missing books that are perfectly
+        /// alive, so "absent from the repo" is not evidence of anything. HandleDeletedRepoFile
+        /// is where that judgment already lives: it waits, re-checks the repo, and only
+        /// recycles the local copy if it finds a tombstone saying someone deliberately deleted
+        /// the book. That also makes the event harmless for a book that was renamed remotely
+        /// (a rename leaves no tombstone), whose new name the loop above has already announced
+        /// as a new book, which is how a remote rename is normally detected.
+        /// </remarks>
+        private void NoticeBooksThatLeftTheRepoBeforeWeStartedWatching(string[] repoBookNames)
+        {
+            // The Directory.Exists() test above is case-insensitive on Windows, and a book
+            // whose local name differs from the repo's only by case is not a deletion, so
+            // match names the same way here.
+            var namesInRepo = new HashSet<string>(repoBookNames, StringComparer.OrdinalIgnoreCase);
+            string[] localFolders;
+            try
+            {
+                localFolders = Directory.GetDirectories(_localCollectionFolder);
+            }
+            catch (Exception ex)
+            {
+                NonFatalProblem.ReportSentryOnly(ex);
+                return;
+            }
+            foreach (var folderPath in localFolders)
+            {
+                var bookName = Path.GetFileName(folderPath);
+                if (namesInRepo.Contains(bookName))
+                    continue;
+                try
+                {
+                    if (!IsBloomBookFolder(folderPath))
+                        continue;
+                    // A book created here and never checked in has no repo counterpart to
+                    // lose. Deliberately, such a book has no local status file until it is
+                    // checked in; that is exactly how we tell it from one deleted remotely.
+                    if (!IsBookKnownToTeamCollection(folderPath))
+                        continue;
+                    // A book renamed here but not yet checked in is still in the repo under
+                    // its old name, so it has not gone anywhere.
+                    var oldName = GetLocalStatus(bookName).oldName;
+                    if (!string.IsNullOrEmpty(oldName) && namesInRepo.Contains(oldName))
+                        continue;
+                }
+                catch (Exception ex)
+                {
+                    // A book we cannot read is a book we have no business deleting; leave it
+                    // for the next reload to sort out.
+                    NonFatalProblem.ReportSentryOnly(ex);
+                    continue;
+                }
+                RaiseDeleteRepoBookFile(bookName + ".bloom");
             }
         }
 

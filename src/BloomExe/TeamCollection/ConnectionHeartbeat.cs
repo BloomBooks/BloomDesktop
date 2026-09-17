@@ -56,14 +56,14 @@ namespace Bloom.TeamCollection
             // A one-shot timer that re-arms itself at the end of each tick (rather than a
             // repeating one) makes overlapping ticks structurally impossible, so a probe that
             // blocks for forty seconds on a dead share cannot pile up behind itself.
-            _timer = new Timer(Tick, null, IntervalMs, Timeout.Infinite);
+            _timer = new Timer(UpdateTcConnectionStatus, null, IntervalMs, Timeout.Infinite);
         }
 
         /// <summary>
         /// Runs on a threadpool thread. Internal so tests can drive the policy directly, with
         /// no timer involved.
         /// </summary>
-        internal void Tick(object unused)
+        internal void UpdateTcConnectionStatus(object unused)
         {
             var delayUntilNextTick = IntervalMs;
             try

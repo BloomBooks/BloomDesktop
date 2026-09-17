@@ -41,7 +41,7 @@ namespace BloomTests.TeamCollection
 
         /// <summary>
         /// Set InterceptCheckConnection to have CheckConnection report PretendConnectionProblem
-        /// instead of really looking, so a test can drive ConnectionHeartbeat.Tick with no
+        /// instead of really looking, so a test can drive ConnectionHeartbeat.UpdateTcConnectionStatus with no
         /// network and no real repo. Left off, the real implementation runs.
         /// </summary>
         public bool InterceptCheckConnection;

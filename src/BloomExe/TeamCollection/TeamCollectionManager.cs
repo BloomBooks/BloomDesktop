@@ -509,7 +509,7 @@ namespace Bloom.TeamCollection
             // flag would have to be cleared by the queued delegate, and a delegate that never
             // runs (the form's handle is destroyed before it is dispatched) would then latch
             // us into a state where we could never disconnect again.
-            RunOnUiThreadLater(() =>
+            Program.RunOnUiThreadLater(() =>
             {
                 try
                 {
@@ -539,45 +539,6 @@ namespace Bloom.TeamCollection
         private const string kNoLongerSeeingChangesId = "TeamCollection.NoLongerSeeingChanges";
         private const string kNoLongerSeeingChangesEnglish =
             "Bloom can no longer see the Team Collection folder, so you will not see changes made by your teammates.";
-
-        /// <summary>
-        /// Run the action on the UI thread on a LATER turn of the message pump.
-        ///
-        /// It must be later, not inline, because one caller is TryStartWatching in the middle of
-        /// StartMonitoring: disconnecting inline there would tear the watchers down while that
-        /// method is still setting them up. And it must not block, because the other callers are
-        /// on a file system watcher's thread or the heartbeat's, where a synchronous invoke can
-        /// deadlock against a UI thread waiting on the BloomServer.
-        ///
-        /// Program.MainContext is the WinForms synchronization context, captured once at startup.
-        /// Post satisfies both requirements, is safe to call from any thread, and -- unlike
-        /// looking a form up -- never enumerates Application.OpenForms, which is not thread-safe
-        /// and which every caller here would be enumerating from a background thread.
-        /// </summary>
-        internal static void RunOnUiThreadLater(Action action)
-        {
-            var uiContext = Program.MainContext;
-            if (uiContext == null)
-            {
-                // No UI thread exists: unit tests, or startup before Application.Run. Nobody can
-                // be racing us, and the state change matters more than the notification, so just
-                // do it here.
-                action();
-                return;
-            }
-            try
-            {
-                uiContext.Post(_ => action(), null);
-            }
-            catch (Exception ex)
-            {
-                // The context is torn down, i.e. we are shutting down. Deliberately NOT falling
-                // back to running inline: this work exists to be done on the UI thread, and
-                // doing it on a watcher thread instead would trade a missed notification for a
-                // data race. At this point there is nobody left to notify anyway.
-                NonFatalProblem.ReportSentryOnly(ex);
-            }
-        }
 
         /// <inheritdoc />
         public void ShowStatusDialog()

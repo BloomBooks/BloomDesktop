@@ -11,6 +11,7 @@ using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.web;
 using BloomTemp;
+using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -2074,6 +2075,10 @@ namespace BloomTests.TeamCollection
                     EventHandler<NewBookEventArgs> handler = (sender, args) =>
                         newBooks.Add(args.BookFileName);
                     tc.NewBook += handler;
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
                     try
                     {
                         // Nothing to find while the folder is still absent.
@@ -2096,6 +2101,11 @@ namespace BloomTests.TeamCollection
                         tc.RetryDeferredWatching();
 
                         Assert.That(newBooks, Is.EqualTo(new[] { "Arrived book.bloom" }));
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "there are no local books, so nothing can have been deleted"
+                        );
 
                         // And it is idempotent: a second tick must not announce it again.
                         newBooks.Clear();
@@ -2109,10 +2119,207 @@ namespace BloomTests.TeamCollection
                     finally
                     {
                         tc.NewBook -= handler;
+                        tc.DeleteRepoBookFile -= deleteHandler;
                         tc.StopMonitoring();
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// A book deleted from the repo while we had no watcher raised no Deleted event either,
+        /// so nothing has told us our local copy is obsolete. Once the Books folder arrives we
+        /// must raise that event ourselves -- and, exactly as for an event from the watcher, the
+        /// local book must only really go away if the repo has a tombstone showing that someone
+        /// deliberately deleted it. See BL-16729.
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void RetryDeferredWatching_BookDeletedWhileNotWatching_AnnouncedAndRemovedOnlyIfTombstoned(
+            bool makeTombstone
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder("BookDeletedWhileNotWatching_Coll"))
+            using (var repoFolder = new TemporaryFolder("BookDeletedWhileNotWatching_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    // Two books that really are in the collection, both checked in, so each has
+                    // a genuine local status file and a genuine .bloom in the repo.
+                    var keptPath = MakeLocalBook(collectionFolder.FolderPath, "Kept book");
+                    var doomedPath = MakeLocalBook(collectionFolder.FolderPath, "Doomed book");
+                    tc.PutBook(keptPath);
+                    tc.PutBook(doomedPath);
+
+                    // A teammate deletes one of them. It is the notification of this, not the
+                    // deletion itself, that never reaches us.
+                    tc.DeleteBookFromRepo(doomedPath, makeTombstone);
+
+                    // Dropbox has not delivered the Books folder to this machine yet. (The
+                    // tombstone lives at the repo root, so it is not stashed with it.)
+                    var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                    var stashPath = Path.Combine(repoFolder.FolderPath, "StashedBooks");
+                    Directory.Move(booksPath, stashPath);
+
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder, so watching is deferred
+
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
+                    try
+                    {
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "setup problem: there is no Books folder yet, so nothing to announce"
+                        );
+
+                        // Dropbox delivers the folder, now without the deleted book.
+                        Directory.Move(stashPath, booksPath);
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            deletedBooks,
+                            Is.EqualTo(new[] { "Doomed book.bloom" }),
+                            "the book missing from the repo should be announced as deleted, and "
+                                + "the one still there should not be"
+                        );
+
+                        // Follow the announcement through to what it actually does. (Only the
+                        // five-second pause before this is untestable, which is why the logic
+                        // lives in HandleDeletedRepoFile.)
+                        tc.HandleDeletedRepoFile("Doomed book.bloom");
+                        Assert.That(
+                            Directory.Exists(doomedPath),
+                            Is.EqualTo(!makeTombstone),
+                            makeTombstone
+                                ? "a tombstoned deletion should remove the local book"
+                                : "without a tombstone we have no evidence of a deliberate "
+                                    + "deletion, so the local book must survive"
+                        );
+                        Assert.That(
+                            Directory.Exists(keptPath),
+                            Is.True,
+                            "the book still in the repo must not be touched"
+                        );
+                    }
+                    finally
+                    {
+                        tc.DeleteRepoBookFile -= deleteHandler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// A local book that has no counterpart in the repo is not necessarily a deleted one:
+        /// it may never have been checked in, or it may be checked out and renamed here, in
+        /// which case the repo still has it under its old name. Neither should be announced as
+        /// deleted when the Books folder finally arrives. See BL-16729.
+        /// </summary>
+        [Test]
+        public void RetryDeferredWatching_BooksWithNoRepoCounterpart_NotAnnouncedAsDeleted()
+        {
+            using (var collectionFolder = new TemporaryFolder("NoRepoCounterpart_Coll"))
+            using (var repoFolder = new TemporaryFolder("NoRepoCounterpart_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    // A book created here and never checked in. Deliberately it has no local
+                    // status file; that is how we tell it from one deleted remotely.
+                    var localOnlyPath = MakeLocalBook(
+                        collectionFolder.FolderPath,
+                        "Local only book"
+                    );
+
+                    // A book checked out here and renamed, but not yet checked in, so the repo
+                    // still holds it under its old name.
+                    var originalPath = MakeLocalBook(collectionFolder.FolderPath, "My book");
+                    tc.PutBook(originalPath);
+                    tc.AttemptLock("My book", "fred@nowhere.org");
+                    var renamedPath = Path.Combine(collectionFolder.FolderPath, "Renamed book");
+                    Directory.Move(originalPath, renamedPath);
+                    tc.HandleBookRename("My book", "Renamed book");
+                    Assert.That(
+                        tc.GetLocalStatus("Renamed book").oldName,
+                        Is.EqualTo("My book"),
+                        "setup problem: the local rename should have recorded the repo's name"
+                    );
+
+                    // Dropbox has not delivered the Books folder to this machine yet.
+                    var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                    var stashPath = Path.Combine(repoFolder.FolderPath, "StashedBooks");
+                    Directory.Move(booksPath, stashPath);
+
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder, so watching is deferred
+
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
+                    try
+                    {
+                        // Dropbox delivers the folder, holding only "My book.bloom".
+                        Directory.Move(stashPath, booksPath);
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "neither a never-checked-in book nor one renamed here has lost a "
+                                + "repo counterpart"
+                        );
+                        Assert.That(
+                            Directory.Exists(localOnlyPath) && Directory.Exists(renamedPath),
+                            Is.True,
+                            "sanity check: neither local book should have been touched"
+                        );
+                    }
+                    finally
+                    {
+                        tc.DeleteRepoBookFile -= deleteHandler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes a minimal but real book folder (an htm, so it counts as a Bloom book, and a
+        /// meta.json, so it has an ID that tombstones can be keyed on) into the collection.
+        /// </summary>
+        /// <returns>The path to the book folder.</returns>
+        private static string MakeLocalBook(string collectionFolderPath, string title)
+        {
+            return new BookFolderBuilder()
+                .WithRootFolder(collectionFolderPath)
+                .WithTitle(title)
+                .WithHtm("<html></html>")
+                .Build()
+                .BuiltBookFolderPath;
         }
 
         [Test]
@@ -2499,7 +2706,7 @@ namespace BloomTests.TeamCollection
         }
 
         /// <summary>
-        /// Drives ConnectionHeartbeat.Tick directly -- no timer, no network, no real repo -- so
+        /// Drives ConnectionHeartbeat.UpdateTcConnectionStatus directly -- no timer, no network, no real repo -- so
         /// the confirm-then-act policy, the guards, and disposal are all covered. Devin flagged
         /// this integration as unverified on PR #8338.
         /// </summary>
@@ -2555,7 +2762,7 @@ namespace BloomTests.TeamCollection
                 {
                     tc.PretendConnectionProblem = null;
 
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     Assert.That(
                         tc.CheckConnectionCallCount,
@@ -2583,7 +2790,7 @@ namespace BloomTests.TeamCollection
                 {
                     tc.PretendConnectionProblem = AProblem();
 
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     mockTcManager.Verify(
                         m =>
@@ -2607,8 +2814,8 @@ namespace BloomTests.TeamCollection
                 {
                     tc.PretendConnectionProblem = AProblem();
 
-                    heartbeat.Tick(null);
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     mockTcManager.Verify(
                         m =>
@@ -2632,12 +2839,12 @@ namespace BloomTests.TeamCollection
                 (heartbeat, tc, mockTcManager) =>
                 {
                     tc.PretendConnectionProblem = AProblem();
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
                     tc.PretendConnectionProblem = null;
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
                     tc.PretendConnectionProblem = AProblem();
 
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     mockTcManager.Verify(
                         m =>
@@ -2660,11 +2867,11 @@ namespace BloomTests.TeamCollection
                 (heartbeat, tc, mockTcManager) =>
                 {
                     tc.PretendConnectionProblem = AProblem();
-                    heartbeat.Tick(null); // one failure on the record
+                    heartbeat.UpdateTcConnectionStatus(null); // one failure on the record
                     var callsBefore = tc.CheckConnectionCallCount;
 
                     tc.PretendIsWritingToRepo = true;
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     Assert.That(
                         tc.CheckConnectionCallCount,
@@ -2674,7 +2881,7 @@ namespace BloomTests.TeamCollection
 
                     // The skipped tick breaks the run, so the next failure starts over.
                     tc.PretendIsWritingToRepo = false;
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     mockTcManager.Verify(
                         m =>
@@ -2703,16 +2910,16 @@ namespace BloomTests.TeamCollection
                 (heartbeat, tc, mockTcManager) =>
                 {
                     tc.PretendConnectionProblem = AProblem();
-                    heartbeat.Tick(null); // strike one
+                    heartbeat.UpdateTcConnectionStatus(null); // strike one
 
                     tc.PretendCheckConnectionThrows = true;
                     Assert.DoesNotThrow(
-                        () => heartbeat.Tick(null),
+                        () => heartbeat.UpdateTcConnectionStatus(null),
                         "a throwing probe must not escape the tick"
                     );
                     tc.PretendCheckConnectionThrows = false;
 
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     mockTcManager.Verify(
                         m =>
@@ -2726,7 +2933,7 @@ namespace BloomTests.TeamCollection
 
                     // Sanity check that the tracker is merely reset, not broken: two clean
                     // failures in a row after this should still disconnect.
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
                     mockTcManager.Verify(
                         m =>
                             m.NoticeConnectionProblem(
@@ -2749,8 +2956,8 @@ namespace BloomTests.TeamCollection
                     tc.PretendConnectionProblem = AProblem();
                     tc.PretendIsLiveCollection = false; // e.g. we already disconnected from it
 
-                    heartbeat.Tick(null);
-                    heartbeat.Tick(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
 
                     Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
                     mockTcManager.Verify(
@@ -2775,10 +2982,10 @@ namespace BloomTests.TeamCollection
                     tc.PretendConnectionProblem = AProblem();
                     heartbeat.Dispose();
 
-                    // Timer.Dispose does not wait for a callback already under way, so a Tick
+                    // Timer.Dispose does not wait for a callback already under way, so a UpdateTcConnectionStatus
                     // can still arrive after this point. It must be inert.
-                    Assert.DoesNotThrow(() => heartbeat.Tick(null));
-                    Assert.DoesNotThrow(() => heartbeat.Tick(null));
+                    Assert.DoesNotThrow(() => heartbeat.UpdateTcConnectionStatus(null));
+                    Assert.DoesNotThrow(() => heartbeat.UpdateTcConnectionStatus(null));
 
                     Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
                     mockTcManager.Verify(
