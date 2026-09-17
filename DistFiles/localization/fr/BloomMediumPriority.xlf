@@ -55,9 +55,9 @@
         <target xml:lang="fr" state="needs-translation">Canvas Background</target>
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
-      <trans-unit id="EditTab.TextContextMenu.NoIndent" approved="yes">
+      <trans-unit id="EditTab.TextContextMenu.NoIndent">
         <source xml:lang="en">No Indent</source>
-        <target xml:lang="fr" state="final">Aucun Retrait</target>
+        <target xml:lang="fr" state="translated">Ne pas indenter ce paragraphe</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
