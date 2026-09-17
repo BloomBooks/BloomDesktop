@@ -19,6 +19,19 @@ House rules:
 
 ---
 
+## 2026-09-16 — The React component tests log 249 errors in a fully green run
+- **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
+  {"message":"Unexpected promise failure ..."}` lines, all inside the React component-test step —
+  150 bare `404`s and 99 on `/bloom/api/editView/setModalState`. Nothing fails on them, and they
+  are not new. The cost is that a *real* error of that shape is now invisible: nobody can pick one
+  new "Unexpected promise failure" out of 249 expected ones, so the one place those errors would be
+  noticed is the one place they cannot be.
+- **Idea:** Either stub those endpoints in the component-test harness, or have the components skip
+  the calls when no Bloom server is behind them — then a line of that shape in the log means
+  something again. Failing that, assert the count so a jump is visible.
+- **Context:** Found while reading a *passing* nightly for what it could teach; the same lines are
+  in the previous night's failing run, so this is long-standing, not a regression.
+
 ## 2026-09-11 — The Bloom log an e2e failure keeps is only reachable by unzipping the trace
 
 - **Cut:** #8343's `keepEvidenceOnFailure` attaches Bloom's `Log.txt` with `testInfo.attach({body})`.

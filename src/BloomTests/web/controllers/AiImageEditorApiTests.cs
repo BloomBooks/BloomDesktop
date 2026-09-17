@@ -2199,8 +2199,10 @@ namespace BloomTests.web.controllers
         [Test]
         public void EnumerateBookImages_NoShareRecorded_SendsNull()
         {
-            // A page not saved since Bloom started recording this. The AI image editor then
-            // offers that slot no automatic size, which is better than a guessed one.
+            // A page with no share recorded. Not the normal state (the whole-book update
+            // re-saves every page before editing, BL-16852); this is the hardening for when
+            // that update did not run or failed. The AI image editor then offers that slot no
+            // automatic size, which is better than a guessed one.
             var fraction = FirstImagesFractionOfPage(MakeDomWithFractionOfPage(""));
 
             Assert.That(

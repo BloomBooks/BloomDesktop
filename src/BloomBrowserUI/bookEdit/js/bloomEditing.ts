@@ -1618,6 +1618,12 @@ export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {
     window.__bloomExternalPageContent = undefined;
+    // This page is a throwaway copy in an off-screen browser, but it is a full editing page, so
+    // it has started volunteering snapshots and busy/idle notices to the live EditingModel like
+    // any other. C# refuses them (they carry a page load it is not showing), and refused notices
+    // are offered again every second for as long as the page lives. Stop that here; nothing this
+    // page has to say belongs to the live editor.
+    stopWatchingPageForSnapshots();
 
     // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
     // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus

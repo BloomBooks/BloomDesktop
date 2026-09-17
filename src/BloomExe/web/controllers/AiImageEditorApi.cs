@@ -346,6 +346,32 @@ namespace Bloom.web.controllers
             }
             payload.pageId = pageId;
 
+            // The AI image editor answers for EVERY page in the book, not just the open one: it
+            // offers each slot a size worked out from the share of its page that slot covers, which
+            // Bloom records only when a page is saved. A book that has not been through the per-page
+            // pass carries that on the pages someone happened to visit and nowhere else, so most of
+            // the book would get no suggested size. So if this book is behind the current browser
+            // maintenance level, bring the whole book up to it first, then open the editor on the
+            // page we were on. That path does its own save, so it replaces the one below. It is a
+            // no-op for a book already up to date, which is the normal case (BL-16852).
+            if (BookProcessor.NeedsPerPageFixup(model.CurrentBook))
+            {
+                if (
+                    !model.BringBookToCurrentBrowserLevelThen(
+                        pageId,
+                        () => OpenEditorInBrowser(payload)
+                    )
+                )
+                {
+                    request.Failed(
+                        "Bloom could not save the page, so the AI Image Editor was not opened."
+                    );
+                    return;
+                }
+                request.PostSucceeded();
+                return;
+            }
+
             // Save before opening, because everything the editor is told about the book is read
             // from the saved DOM. Saving is synchronous now (see PageSnapshot), so the answer is
             // available right here: it throws if the save went wrong (the user has then already
@@ -1198,10 +1224,14 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// Reads the two numbers of <see cref="HtmlDom.kFractionOfPageAttribute"/> ("0.42,0.31"). Null
-        /// for anything else, including a missing attribute and a page saved by a Bloom that
-        /// did not write one; the AI image editor then simply offers that slot no automatic
-        /// size. Parsed with the invariant culture, because the front end writes the numbers
-        /// with JavaScript, which always uses a point for the decimal separator.
+        /// for anything else, including a missing attribute. A missing attribute is not the normal
+        /// state of a page by the time the editor sees it: launching the editor first puts the book
+        /// through the per-page pass when it needs it, re-saving every page (BL-16852), so every
+        /// slot ordinarily carries one. Null here is hardening against that pass having failed; the
+        /// AI image editor then simply offers that slot no automatic size rather than a guess,
+        /// which is better than a made-up one. Parsed with the invariant culture,
+        /// because the front end writes the numbers with JavaScript, which always uses a point
+        /// for the decimal separator.
         /// </summary>
         internal static (double width, double height)? TryParseFractionOfPage(string value)
         {

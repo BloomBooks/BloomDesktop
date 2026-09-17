@@ -346,6 +346,11 @@ namespace Bloom.Edit
         {
             if (details.FromTab == Workspace.WorkspaceTab.edit)
             {
+                // Leaving the tab means no page will load to run whatever was queued for the next
+                // page load (see RunAfterNextPageLoad), and it was queued for the page we are
+                // leaving, so it must not spring to life if the user comes back to that page later.
+                _doAfterNextPageLoad = null;
+
                 // When an external tool has overwritten the current book on disk (see
                 // ReloadCurrentBookDiscardingEdits), we are leaving the Edit tab specifically to
                 // discard the unsaved page. In that case reload from disk instead of saving, so the
@@ -777,7 +782,11 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            MergeCurrentPageThenSave(() =>
+            // Set by the action for the code after the save, which needs to know which page we
+            // left and whether the per-page pass is actually going to run.
+            string pageIdWeLeft = null;
+            Book.Book bookToUpdate = null;
+            var outcome = MergeCurrentPageThenSave(() =>
             {
                 var pageId = _pageSelection.CurrentSelection.Id;
                 var changedOrientation =
@@ -801,8 +810,27 @@ namespace Bloom.Edit
                 }
                 CurrentBook.PrepareForEditing();
                 _view.UpdatePageList(true); //counting on this to redo the thumbnails
-                return pageId;
+
+                // The measurements each page records (image sizing, canvas-element geometry) are
+                // relative to the page, so changing its size leaves them stale and makes the book
+                // due for the per-page pass again -- its recorded layout no longer matches
+                // (BL-16852). When it is due, return null so the editor empties, and run the pass
+                // once the save has returned, exactly as the AI image editor does. ProcessBook must
+                // have the book to itself: it rewrites the book's DOM from a worker thread, and
+                // every page it loads off-screen is a full editing page that announces itself as
+                // loaded -- including one carrying the very page id a live editor would be waiting
+                // on, which the editor would then accept in place of the real page. Emptying the
+                // editor first is what makes those announcements ignorable.
+                pageIdWeLeft = pageId;
+                if (!BookProcessor.NeedsPerPageFixup(CurrentBook))
+                    return pageId;
+                bookToUpdate = CurrentBook;
+                return null;
             });
+            // Only after a save that actually completed: a failed one leaves the page in the editor,
+            // and the pass must not run over a live page.
+            if (outcome == SaveOutcome.Saved && bookToUpdate != null)
+                RunPerPageFixupThenReturnToPage(bookToUpdate, pageIdWeLeft, null);
         }
 
         /// <summary>
@@ -919,6 +947,114 @@ namespace Bloom.Edit
             {
                 _view.UpdatePageList(false);
             }
+        }
+
+        /// <summary>
+        /// Save the current page, bring the whole book up to the current browser maintenance level
+        /// (BL-16852), and then come back to the page we were on and run
+        /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
+        /// needs every page's recorded data, not just the pages someone happens to have visited.
+        /// (A page-size change also leaves the book due, but SetLayout runs the pass directly rather
+        /// than through here, because it has no action to run afterwards.)
+        ///
+        /// Returns false, having done nothing, if we were not in a state to save -- the user may
+        /// have begun changing pages -- or if the save failed; the caller must then not carry on.
+        /// </summary>
+        /// <remarks>
+        /// The sequence exists to give BookProcessor.ProcessBook the book to itself. It rewrites the
+        /// book's DOM from a worker thread and requires that nothing else touch the book while it
+        /// runs, so no live page may be loaded. Returning null from the save's action is what
+        /// arranges that: the state machine goes to NoPage and the editor is empty by the time the
+        /// save returns. Only then does the update run, deferred off the API sync lock (see
+        /// RunOffTheApiLock), because the off-screen pages it loads make their own sync-locked API
+        /// calls and would otherwise block behind the handler that got us here. Finally we navigate
+        /// back and hand control on.
+        /// </remarks>
+        public bool BringBookToCurrentBrowserLevelThen(string pageId, Action afterPageReloaded)
+        {
+            var book = CurrentBook;
+            var outcome = MergeCurrentPageThenSave(
+                () => null, // empty the editor: ProcessBook must have the book to itself
+                // Emptying the editor changes nothing in the book.
+                actionChangesTheBook: false
+            );
+            if (outcome != SaveOutcome.Saved)
+                return false;
+            RunPerPageFixupThenReturnToPage(book, pageId, afterPageReloaded);
+            return true;
+        }
+
+        /// <summary>
+        /// Bring <paramref name="book"/> up to the current browser maintenance level, then go back to
+        /// <paramref name="pageId"/> and, if one is given, run <paramref name="afterPageReloaded"/>
+        /// once that page has loaded. Call this only after a completed save whose action returned
+        /// null, so the editor is empty when the pass starts.
+        /// </summary>
+        /// <remarks>
+        /// Shared by the two things that trigger the pass, because both have to do all of this, not
+        /// just the first line. The pass runs deferred off the API sync lock (see RunOffTheApiLock),
+        /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
+        /// also what puts it after the state machine has finished emptying the editor.
+        /// </remarks>
+        private void RunPerPageFixupThenReturnToPage(
+            Book.Book book,
+            string pageId,
+            Action afterPageReloaded
+        )
+        {
+            RunOffTheApiLock(() =>
+            {
+                BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
+                // The user may have switched books or left the tab while the dialog was up.
+                if (!Visible || CurrentBook != book)
+                    return;
+                // ProcessBook rebuilt the pages, so the IPage objects and editable areas
+                // need redoing before we show one again.
+                book.PrepareForEditing();
+                // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
+                // layout change may have run it too, which regenerates the xmatter pages with fresh
+                // ids. We returned null from the save callback, so the editor is empty and nothing
+                // else will put a page back in it -- landing on the first page is much better than
+                // leaving the user looking at a blank editor, which reads as Bloom having lost the
+                // book. (StartNavigationToEditPage falls back the same way.)
+                var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
+                var pageToShow = page ?? book.FirstPage;
+                if (pageToShow == null)
+                    return; // a book with no pages at all; nothing we can do
+                // Only hand on when we got the page that was actually asked for. The caller's action
+                // is about that page -- the AI image editor opens on a slot in it -- so running it on
+                // a fallback page would act on the wrong thing.
+                if (page != null && afterPageReloaded != null)
+                    RunAfterNextPageLoad(_ => afterPageReloaded());
+                _view.GoToPage(pageToShow);
+                _view.UpdatePageList(true);
+            });
+        }
+
+        /// <summary>
+        /// Run <paramref name="action"/> on the next UI-idle turn, after the current API request has
+        /// returned and released Bloom's global API sync lock, instead of right now.
+        /// </summary>
+        /// <remarks>
+        /// The handler that leads here runs on the UI thread AND holds the global API sync lock (the
+        /// AI-editor and layout endpoints are registered requiresSync, as is the tab switch).
+        /// BookProcessor.ProcessBook drives off-screen editing pages that
+        /// make their own sync-locked API calls as they load (image sizing, language tips, etc.); if
+        /// we ran it while the triggering handler still held that lock, those calls would block
+        /// behind us and the update would stall, badly on an image-heavy book. Deferring with
+        /// BeginInvoke lets the handler return and release the lock first, so the off-screen pages'
+        /// calls run normally. This is the same reason external/process-book runs with
+        /// requiresSync:false. When there is no shell form (e.g. under test) the action runs inline.
+        /// </remarks>
+        private void RunOffTheApiLock(Action action)
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (form == null || !form.IsHandleCreated)
+            {
+                action();
+                return;
+            }
+            form.BeginInvoke(action);
         }
 
         /// <summary>
@@ -1665,7 +1801,9 @@ namespace Bloom.Edit
         /// brought it along (see getPageContentForSaveWhenReady() in the browser). Otherwise we use
         /// whatever the browser last volunteered; a null snapshot means the page has not changed
         /// since it loaded, not "we do not know".</param>
-        public void MergeCurrentPageThenSave(
+        /// <returns>What happened, for the few callers that have work to do only after a save that
+        /// completed (see SaveOutcome). Most callers ignore it.</returns>
+        public SaveOutcome MergeCurrentPageThenSave(
             Func<string> changeBookBeforeWriting,
             Action ifNotInAStateToSave = null,
             bool actionChangesTheBook = true,
@@ -1675,7 +1813,7 @@ namespace Bloom.Edit
             if (CannotSavePage() || !_havePageToSave)
             {
                 ifNotInAStateToSave?.Invoke();
-                return;
+                return SaveOutcome.Declined;
             }
             var outcome = _stateMachine.SaveThenNavigate(
                 pageContent ?? TakeCurrentPageSnapshot(),
@@ -1699,6 +1837,7 @@ namespace Bloom.Edit
             );
             if (outcome == SaveOutcome.Declined)
                 ifNotInAStateToSave?.Invoke();
+            return outcome;
         }
 
         /// <summary>
@@ -2399,7 +2538,36 @@ namespace Bloom.Edit
             // Only for a notification we accepted, i.e. for the page we are now editing; see
             // PageSnapshot.AcceptSnapshotsFromLoad for why a late one must not be adopted.
             if (nowEditing)
+            {
                 _pageSnapshot.AcceptSnapshotsFromLoad(loadId);
+                // Run whatever was queued for "the browser has a page again" (see
+                // RunAfterNextPageLoad). Taken and cleared before invoking, so it fires at most
+                // once even if it throws.
+                var afterPageLoad = _doAfterNextPageLoad;
+                _doAfterNextPageLoad = null;
+                afterPageLoad?.Invoke(pageId);
+            }
+        }
+
+        // The one action queued by RunAfterNextPageLoad, or null.
+        private Action<string> _doAfterNextPageLoad;
+
+        /// <summary>
+        /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
+        /// the browser, passing it that page's id.
+        ///
+        /// A save no longer navigates, so almost nothing needs this any more. It exists for the
+        /// per-page fix-up (RunPerPageFixupThenReturnToPage), which empties the editor, rewrites
+        /// the book off-screen and navigates back -- and whose caller, the AI image editor, must
+        /// open only once that page is showing again, because EditingView.StartNavigationToEditPage
+        /// can reload the whole workspace root (when Bloom is short of memory), which would destroy
+        /// anything opened sooner. Only one action is held; queueing a second replaces the first.
+        /// Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load to run
+        /// it and the caller's page is no longer on screen.
+        /// </summary>
+        private void RunAfterNextPageLoad(Action<string> action)
+        {
+            _doAfterNextPageLoad = action;
         }
 
         // This speeds up developing brandings. It may speed up other things, but I haven't tested those.

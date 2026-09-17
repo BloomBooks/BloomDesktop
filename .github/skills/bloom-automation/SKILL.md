@@ -190,6 +190,86 @@ node "$repo_root/.claude/skills/run-bloom/screenshotBloom.mjs" --http-port <http
 
 (Lives in the Claude-specific run-bloom skill directory but works for any agent; output/ is gitignored.)
 
+## Driving WinForms and OS dialogs (UI Automation, no pointer)
+
+CDP reaches only the web content inside Bloom's WebView2s. Everything around it — the
+collection Settings dialog's tabs and OK/Cancel/Help buttons, any other WinForms `Form`, and
+the **native OS dialogs** Bloom opens (the file picker, a raw `MessageBox`) — is driven over
+Windows UI Automation instead, with `.github/skills/bloom-automation/winformsUia.ps1` (stock
+PowerShell 5.1, nothing to install). It uses `InvokePattern`, `SelectionItemPattern`,
+`ValuePattern` and `WindowPattern`, so it never moves the pointer, sends a keystroke or takes
+focus; it works on an off-screen (`headless`) window and while the developer is typing in
+another app. Never fall back to synthesizing mouse or keyboard input for these.
+
+```bash
+P=.github/skills/bloom-automation/winformsUia.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File $P windows  -ProcessId <bloomPid>
+powershell -NoProfile -ExecutionPolicy Bypass -File $P tree     -ProcessId <bloomPid> -Window CollectionSettingsDialog -Depth 2
+powershell -NoProfile -ExecutionPolicy Bypass -File $P select   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control "Book Making"
+powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window CollectionSettingsDialog -Control _cancelButton
+powershell -NoProfile -ExecutionPolicy Bypass -File $P setvalue -ProcessId <bloomPid> -Window Open -Control "File name:" -Value "C:\full\path\image.png"
+powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window Open -Control Open
+```
+
+Proven 2026-09-16, each against a real `./go.sh` Bloom:
+
+- **A WinForms dialog.** Settings opened from the top bar (a CDP click on the web "Settings"
+  button); `select` switched to the Book Making tab; `invoke` on `_cancelButton` closed it.
+- **Bloom's own OS file picker.** The image gallery's picker (`ImageGalleryApi`, a
+  `BloomOpenFileDialog`) came up as `[Window] name='Open'`; `setvalue` on "File name:" plus
+  `invoke` on "Open" closed it, and Bloom's API returned the chosen path.
+- **A message box inside a real process.** Given a relative path, that picker raised its own
+  "file not found" box, owned by the picker; `tree` read its text and `invoke ... -Control OK`
+  dismissed it.
+
+What to know:
+
+- **Addressing.** A WinForms control's UIA `AutomationId` is its designer `Name`, so the
+  dialog is `CollectionSettingsDialog`, its buttons `_okButton`/`_cancelButton`/`_helpButton`,
+  its tab strip `_tab` with tab items whose `Name` is the visible caption ("Languages", "Book
+  Making", ...). OS dialogs have no useful ids; use the visible names ("Open", "File name:",
+  "Cancel", "OK"). `-Window` and `-Control` accept either. `tree` shows both, so dump first
+  when unsure. When several controls share a name (the picker's "File name:" is a label, a
+  ComboBox and an Edit), the script takes the outermost one that supports the command.
+- **A modal dialog is not a top-level window in UIA.** A WinForms dialog sits under its owner
+  (the `Shell` window) as a descendant, and a message box raised by a dialog sits under that
+  dialog; an OS file picker is top-level. `list` shows only top-level windows, `windows` shows
+  all of them, and every command searches both places.
+- **Win32 controls need the client-side proxies, and PowerShell does not load them.** Without
+  them every control in a file picker or message box is an inert `[Pane]` with no patterns.
+  The script registers them itself, through a compiled C# shim, because doing it from
+  PowerShell throws. If a `tree` of an OS dialog shows only panes, that registration failed
+  (the script says so on stderr). The proxies can also attach a beat late: the first dump
+  right after a dialog appears once showed its "Open" button as a pane, and the next query
+  showed it as a `[Button]`; re-query before concluding a control is not drivable.
+- **Give the file picker an absolute path.** A relative one makes the dialog raise a
+  "file not found" box and stay open; dismiss that with `invoke -Window <dialog> -Control OK`
+  and set the value again.
+- **In an e2e test, still prefer arming the answer.** `e2e/nextFileToChoose` makes
+  `BloomOpenFileDialog`/`BloomFolderChooser` answer without showing anything, which is
+  faster and cannot be upset by whatever else is on the screen. UIA is for the cases that
+  hook does not cover and for interactive/diagnostic driving.
+- **Not reachable this way:** WinForms `LinkLabel`s (the "Change..." language links on the
+  Languages tab) expose no pattern at all, and the web content on the other tabs is a WebView2
+  — drive that over CDP. `tree` prunes WebView2 subtrees on purpose.
+- **Reading a raw `MessageBox`.** It appears as a `[Window]` named by its caption (`Error` for
+  the one `WebView2Browser` shows when a WebView2 fails to initialize), class `#32770`, owned
+  by the Shell; `tree -Window Error -Depth 3` prints its `[Text]` children, which is the whole
+  message, and `invoke -Window Error -Control OK` dismisses it. Read before dismissing: that
+  particular one exits Bloom on close. A raw `MessageBox` ignores `BLOOM_AUTOMATION_MONITOR`,
+  so it lands on the developer's screen even in a headless run.
+- **`close` really closes.** `close -Window Shell` shuts Bloom down exactly like the title-bar
+  X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
+- **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
+  WebView2 environment and browser process, and each is given the same
+  `--remote-debugging-port`. Seen once on 2026-09-16: while the Book Making tab was showing,
+  the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
+  closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
+  dialog opens or closes rather than holding on to a page handle.
+- **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
+  are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
+  awareness mismatch against the shared e2e environment) before writing a test that opens it.
+
 ## Driving Bloom HTTP APIs over CDP (host-header + IPv6 gotchas)
 
 Sometimes you need to drive Bloom through its HTTP API (e.g. `editView/topBar/layoutChoiceChange`, `editView/jumpToPage`) rather than by clicking, for example when scripting a batch of layout/page changes for screenshots. Two gotchas bite hard here, and they pull in opposite directions:

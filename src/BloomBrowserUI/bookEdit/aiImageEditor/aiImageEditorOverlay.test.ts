@@ -1034,7 +1034,9 @@ describe("aiImageEditorOverlay: the size each slot wants", () => {
         {
             id: `${kPageId}:1`,
             src: "http://localhost:8089/bloom/book/second.png",
-            // Never saved since Bloom started recording the share, so nothing is known.
+            // No share recorded. Not the normal state (the whole-book update re-saves every
+            // page before editing, BL-16852); this exercises the hardening for when that
+            // update did not run or failed, so nothing is known.
             fractionOfPage: null,
         },
         {

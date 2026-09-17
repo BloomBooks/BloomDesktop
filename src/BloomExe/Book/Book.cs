@@ -4350,7 +4350,16 @@ namespace Bloom.Book
             {
                 try
                 {
-                    if (pageToSaveToDisk != null && !reallyNeedFullSave)
+                    // A book still recording a browser maintenance level above ours has to go
+                    // through the full Save, which is what brings that level down to what we can
+                    // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
+                    // and replaces one page, so it would leave the old level in the head. This costs
+                    // one full save: afterwards the level is ours and the fast path resumes.
+                    if (
+                        pageToSaveToDisk != null
+                        && !reallyNeedFullSave
+                        && !BookProcessor.RecordsBrowserMaintenanceLevelAboveOurs(OurHtmlDom)
+                    )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.
