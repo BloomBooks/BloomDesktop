@@ -1119,8 +1119,28 @@ namespace Bloom.TeamCollection
                 // Re-check: we may have been stopped or disconnected while this was queued.
                 if (!_booksWatcherDeferred || !IsMonitoring || !IsLiveCollection)
                     return;
+                // Dropbox can take the folder away again between the test above, which ran on
+                // the heartbeat's thread, and this, which runs later on the UI thread. Giving a
+                // watcher a Path that is not there throws, and nothing catches an exception out
+                // of a posted callback, so that would take Bloom down. Stay deferred instead and
+                // let the next tick try again.
+                if (!Directory.Exists(booksPath))
+                    return;
                 _booksWatcherDeferred = false;
-                if (!StartBooksWatcher(booksPath))
+                bool startedWatching;
+                try
+                {
+                    startedWatching = StartBooksWatcher(booksPath);
+                }
+                catch (Exception ex)
+                {
+                    // The same race, in the much narrower window between the test just above and
+                    // the watcher taking hold of the folder.
+                    _booksWatcherDeferred = true;
+                    NonFatalProblem.ReportSentryOnly(ex);
+                    return;
+                }
+                if (!startedWatching)
                     return;
                 Logger.WriteEvent(
                     $"Team Collection: \"{booksPath}\" has appeared; now watching it for book changes."

@@ -725,6 +725,14 @@ namespace Bloom.TeamCollection
         public void Dispose()
         {
             CurrentCollection?.Dispose();
+            // After a disconnect, CurrentCollection is null and the DisconnectedTeamCollection
+            // that stands in for it has a message log of its own -- the one holding the "you are
+            // now disconnected" messages. Nothing else disposes that object, so without this its
+            // log would never be flushed, and any message whose quick append had failed would be
+            // lost at shutdown (BL-16729). While we are connected the two are the same object, so
+            // only dispose it when it is a different one.
+            if (!ReferenceEquals(CurrentCollectionEvenIfDisconnected, CurrentCollection))
+                CurrentCollectionEvenIfDisconnected?.Dispose();
             // A collection we disconnected from part way through the session. MakeDisconnected
             // has already stopped its watchers, but it still holds the objects (BL-16729).
             _collectionAwaitingDisposal?.Dispose();
