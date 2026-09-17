@@ -1067,6 +1067,24 @@ namespace Bloom.Edit
                     _currentlyDisplayedBook.UserPrefs.MostRecentPage
                 ) ?? _currentlyDisplayedBook.FirstPage;
 
+            // Before the user works with the pages, make sure the book has had the per-page updates
+            // that normally happen only when a page is opened for editing. On an old book most pages
+            // have never had them, so without this the editor works on a half-migrated book
+            // (BL-16852). No-op for a book already up to date, which is the normal case.
+            //
+            // We have not shown a page yet, which is exactly the state the pass needs: it rewrites the
+            // book's DOM from a worker thread and must have the book to itself, and every page it
+            // loads off-screen announces itself as loaded -- including one carrying the id a live
+            // editor would be waiting on. So go straight to the shared path, which runs the pass off
+            // the API sync lock and only then shows the page. Returning here means no page is shown
+            // until the dialog closes.
+            var book = _currentlyDisplayedBook;
+            if (BookProcessor.NeedsPerPageFixup(book))
+            {
+                RunPerPageFixupThenReturnToPage(book, page?.Id, null);
+                return;
+            }
+
             if (page != null)
                 _view.GoToPage(page);
             if (_view != null)
