@@ -1327,6 +1327,20 @@ export default class AudioRecording implements IAudioRecorder {
         // and suppress the yellow current highlight we want to show as Speak starts.
         this.clearAudioSplit();
 
+        // This recording is about to be named after the current selection, so make sure that
+        // selection is on the page being shown before the normalising step below uses it. That
+        // step walks UP from whatever is highlighted, and walking up from a node that is no
+        // longer in the page reaches nothing -- so it would hand back that same off-page node and
+        // then install it as the selection, and the recording would be filed under an id nothing
+        // on the page owns. Same failure as BL-16873 on the import side.
+        //
+        // Guarded by the synchronous check so the normal case adds no await here: everything below
+        // is timing-sensitive, and delaying `recording = true` by even one microtask means a fast
+        // mouseup can arrive before this method has armed anything for it to cancel.
+        if (this.isHighlightStale()) {
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
+        }
+
         // If we were paused highlighting one sentence but are recording in text box mode,
         // things could get confusing. At least make sure the selection reflects what we
         // actually want to record.
@@ -1383,6 +1397,20 @@ export default class AudioRecording implements IAudioRecorder {
     // rather than the text box, so normalising alone does not save us -- we have to re-point at the
     // live page first. Re-point by id when the same element is still there, and otherwise fall back
     // to the page's default selection.
+    // Whether there IS a selection and it points somewhere other than the page being shown --
+    // precisely the BL-16873 state. Having no selection at all is not this: that is the ordinary
+    // "nothing chosen yet" case, which the usual default-selection code already handles.
+    //
+    // Synchronous on purpose, so a caller in a timing-sensitive path (startRecordCurrentAsync,
+    // where an extra await delays `recording = true` past a fast mouseup) can skip the async
+    // repair entirely unless there is really something to repair.
+    private isHighlightStale(): boolean {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return false;
+        const current = this.highlightedElement;
+        return !!current && !pageBody.contains(current);
+    }
+
     private async ensureHighlightIsOnTheCurrentPageAsync(): Promise<void> {
         const pageBody = this.getPageDocBody();
         if (!pageBody) return;
@@ -1399,18 +1427,25 @@ export default class AudioRecording implements IAudioRecorder {
         await this.setCurrentAudioElementToDefaultAsync();
 
         // That gives up without choosing anything in several cases (most notably when the talking
-        // book tool is not the active one). Leaving the highlight pointing off-page would put us
-        // right back where we started, so fall back to the first box on this page that can own a
-        // recording. Ask getRecordableDivs() rather than querying the DOM directly: it is what
-        // every other default-selection path uses, so it applies the same exclusions (hidden
-        // language blocks, image descriptions when that tool is off, boxes with no recordable
-        // text). A raw document-order query would happily land on a box the tool will never
-        // highlight or play, which is the same "the audio belongs to nothing the user can see"
-        // outcome this method exists to prevent.
+        // book tool is not the active one), so we may still be pointing off-page. Take one last
+        // step, but ONLY when the page leaves nothing to guess between: a single recordable box is
+        // unambiguously the one the user meant.
+        //
+        // We deliberately do NOT pick "the first of several". The caller is about to name an audio
+        // file after whatever this leaves selected, and on a page with more than one text box
+        // (origami splits, a bilingual page) the first in document order is a guess -- one that
+        // could put the narration on a box the user was not working in and overwrite what was
+        // already there. Getting that wrong is the very thing this method exists to prevent, and a
+        // wrong guess is worse than the old behaviour, which merely produced an orphaned file.
+        // Leaving the selection alone here keeps the old behaviour for that case instead.
+        //
+        // getRecordableDivs() rather than a DOM query, so we apply the same exclusions as every
+        // other selection path (hidden language blocks, image descriptions when that tool is off,
+        // boxes with no recordable text).
         const afterDefault = this.highlightedElement;
         if (afterDefault && pageBody.contains(afterDefault)) return;
-        const firstOwner = this.getRecordableDivs()[0];
-        if (firstOwner) this.highlightedElement = firstOwner;
+        const recordable = this.getRecordableDivs();
+        if (recordable.length === 1) this.highlightedElement = recordable[0];
     }
 
     // The id under which the current selection's audio file is stored, minting one if the element
@@ -4950,20 +4985,16 @@ export default class AudioRecording implements IAudioRecorder {
         },
     };
 
-    public handleImportRecordingClick(): void {
-        // Fire and forget: this is a click handler, and the interface it implements is synchronous.
-        this.handleImportRecordingClickAsync();
-    }
-
-    // Decide whether to warn about replacing an existing recording, then import.
+    // KNOWN LIMITATION (pre-existing, deliberately not addressed here): this asks
+    // doesRecordingExistForCurrentSelection(), which reads the CACHED Play-button status rather
+    // than asking whether the element the import is about to write to already has a recording. So
+    // if the status is out of date with respect to the current selection, the "replace this
+    // recording?" warning can be skipped and an existing recording replaced without being asked.
     //
-    // Settle the selection FIRST, because both halves have to be talking about the same element.
-    // The import re-points a stale highlight at the page being shown (BL-16873); if we asked
-    // "does a recording exist here?" before that, the answer would be about whatever the highlight
-    // happened to be stuck on, and we could skip the warning and then overwrite a real recording
-    // on the element the import actually lands on.
-    private async handleImportRecordingClickAsync(): Promise<void> {
-        await this.ensureHighlightIsOnTheCurrentPageAsync();
+    // Settling the selection first does not fix it -- the value read is stale whenever it is read
+    // -- so the real fix is to ask the server about the element being written to. That is a
+    // separate change; this path is left as it has always behaved.
+    public handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
             getWorkspaceBundleExports().showConfirmDialog(
                 this.confirmReplaceProps,
