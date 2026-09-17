@@ -26,11 +26,15 @@ export const getZOrderMoveForShortcut = (
     if (!(event.ctrlKey || event.metaKey) || event.shiftKey) {
         return undefined;
     }
+    // On a layout where a bracket needs AltGr (German: ] is AltGr+9), Windows reports AltGr as
+    // Ctrl+Alt, so a plain Ctrl+] arrives with altKey set. That Alt is part of typing the
+    // bracket, not a request for the all-the-way variant.
+    const altForAllTheWay = event.altKey && !event.getModifierState("AltGraph");
     if (event.code === "BracketRight" || event.key === "]") {
-        return event.altKey ? "front" : "forward";
+        return altForAllTheWay ? "front" : "forward";
     }
     if (event.code === "BracketLeft" || event.key === "[") {
-        return event.altKey ? "back" : "backward";
+        return altForAllTheWay ? "back" : "backward";
     }
     return undefined;
 };

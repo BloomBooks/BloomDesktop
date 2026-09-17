@@ -63,6 +63,32 @@ describe("getZOrderMoveForShortcut", () => {
         ).toBe("backward");
     });
 
+    test("a bracket typed with AltGr is the one-step shortcut, not the all-the-way one", () => {
+        // Windows reports AltGr as Ctrl+Alt with the AltGraph modifier state set.
+        expect(
+            getZOrderMoveForShortcut(
+                makeKeyEvent({
+                    key: "]",
+                    code: "Digit9",
+                    ctrlKey: true,
+                    altKey: true,
+                    modifierAltGraph: true,
+                }),
+            ),
+        ).toBe("forward");
+        // Whereas a real Ctrl+Alt on the physical bracket key still goes all the way.
+        expect(
+            getZOrderMoveForShortcut(
+                makeKeyEvent({
+                    key: "+",
+                    code: "BracketRight",
+                    ctrlKey: true,
+                    altKey: true,
+                }),
+            ),
+        ).toBe("front");
+    });
+
     test("the Command key counts as Ctrl", () => {
         expect(
             getZOrderMoveForShortcut(
