@@ -76,7 +76,7 @@ See `joinMenuSectionsWithSingleDividers()`.
 
 ### The “section” model
 
-The registry and UI both use `CanvasElementMenuSection` (in `canvasElementControlRegistry.ts`). Current menu sections:
+The registry and UI both use `SectionId` (in `canvasControlTypes.ts`). Current menu sections:
 
 - `url`
 - `video`
@@ -87,7 +87,7 @@ The registry and UI both use `CanvasElementMenuSection` (in `canvasElementContro
 - `layer` (the "Layer" submenu: Bring Forward / Bring to Front / Send Backwards / Send to Back)
 - `wholeElementCommands`
 
-The `orderedMenuSections` list in `CanvasElementContextControls.tsx` is the authoritative menu section order.
+Each element type's `menuSections` list in `canvasElementControlRegistry.ts` is the authoritative menu section order for that type.
 
 ### Mini-toolbar
 

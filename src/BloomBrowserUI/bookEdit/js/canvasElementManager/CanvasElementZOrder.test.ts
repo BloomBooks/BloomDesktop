@@ -378,25 +378,26 @@ describe("CanvasElementZOrder", () => {
             expect(levelOf("p2")).toBe(4);
         });
 
-        test("an element brought forward past a family lands above all of it", () => {
+        test("an element brought forward past a straddling family moves exactly one step: the family is gathered at its parent, and the element lands just above it", () => {
             const bloomCanvas = makeBloomCanvas(kFamilyCanvas);
 
             expect(moveCanvasElementInZOrder(byId("a"), "forward")).toBe(true);
 
+            // a passed the family but not x, which the family used to straddle.
             expect(childIds(bloomCanvas)).toEqual([
                 "canvas",
                 "bg",
                 "p",
-                "x",
                 "p2",
                 "a",
+                "x",
                 "top",
                 "canvas-element-control-frame",
             ]);
             expect(levelOf("p")).toBe(2);
             expect(levelOf("p2")).toBe(2);
-            expect(levelOf("x")).toBe(3);
-            expect(levelOf("a")).toBe(4);
+            expect(levelOf("a")).toBe(3);
+            expect(levelOf("x")).toBe(4);
             expect(levelOf("top")).toBe(5);
         });
 
@@ -411,6 +412,70 @@ describe("CanvasElementZOrder", () => {
             expect(canBringCanvasElementForward(byId("p2"))).toBe(false);
             expect(canSendCanvasElementBackward(byId("p"))).toBe(true);
             expect(moveCanvasElementInZOrder(byId("p"), "forward")).toBe(false);
+        });
+    });
+
+    describe("draggable game pieces stay above fixed ones", () => {
+        // Two fixed elements below two draggables, as adjustCanvasElementOrdering leaves a
+        // game page.
+        const makeGameCanvas = (): HTMLElement => {
+            const bloomCanvas = makeBloomCanvas([
+                { id: "bg", level: 1, background: true },
+                { id: "fixed1", level: 2 },
+                { id: "fixed2", level: 3 },
+                { id: "drag1", level: 4 },
+                { id: "drag2", level: 5 },
+            ]);
+            byId("drag1").setAttribute("data-draggable-id", "d1");
+            byId("drag2").setAttribute("data-draggable-id", "d2");
+            return bloomCanvas;
+        };
+
+        test("the top fixed element cannot be brought in front of a draggable", () => {
+            const bloomCanvas = makeGameCanvas();
+            expect(canBringCanvasElementForward(byId("fixed2"))).toBe(false);
+            expect(moveCanvasElementInZOrder(byId("fixed2"), "front")).toBe(
+                false,
+            );
+            expect(childIds(bloomCanvas)).toEqual([
+                "canvas",
+                "bg",
+                "fixed1",
+                "fixed2",
+                "drag1",
+                "drag2",
+                "canvas-element-control-frame",
+            ]);
+        });
+
+        test("the bottom draggable cannot be sent behind a fixed element", () => {
+            makeGameCanvas();
+            expect(canSendCanvasElementBackward(byId("drag1"))).toBe(false);
+            expect(moveCanvasElementInZOrder(byId("drag1"), "back")).toBe(
+                false,
+            );
+        });
+
+        test("elements still move among their own kind", () => {
+            const bloomCanvas = makeGameCanvas();
+            expect(canSendCanvasElementBackward(byId("drag2"))).toBe(true);
+            expect(moveCanvasElementInZOrder(byId("drag2"), "back")).toBe(true);
+            expect(moveCanvasElementInZOrder(byId("fixed1"), "front")).toBe(
+                true,
+            );
+            expect(childIds(bloomCanvas)).toEqual([
+                "canvas",
+                "bg",
+                "fixed2",
+                "fixed1",
+                "drag2",
+                "drag1",
+                "canvas-element-control-frame",
+            ]);
+            expect(levelOf("fixed2")).toBe(2);
+            expect(levelOf("fixed1")).toBe(3);
+            expect(levelOf("drag2")).toBe(4);
+            expect(levelOf("drag1")).toBe(5);
         });
     });
 

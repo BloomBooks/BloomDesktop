@@ -15,12 +15,18 @@
 // Bubbles that share a level and have an `order` are a ComicalJS "family": a parent bubble
 // and its child bubbles, drawn joined together. A family must keep a single level, so the layer
 // commands move a whole family as one unit.
+//
+// In a drag game the draggable pieces are always kept above the fixed ones
+// (adjustCanvasElementOrdering re-establishes that whenever a game page is opened), so an
+// element only ever moves among the elements of its own kind: a fixed piece cannot be brought
+// in front of a draggable, nor a draggable sent behind a fixed piece.
 
 import { Bubble, Comical } from "comicaljs";
 import {
     kBackgroundImageClass,
     kCanvasElementClass,
 } from "../../toolbox/canvas/canvasElementConstants";
+import { isDraggable } from "../../toolbox/canvas/canvasElementDraggables";
 
 // The four layer commands. "forward" and "backward" move one step; "front" and "back" move
 // all the way.
@@ -47,6 +53,16 @@ export const getMovableCanvasElements = (
 ): HTMLElement[] =>
     getCanvasElementsInZOrder(bloomCanvas).filter(
         (canvasElement) => !isBackgroundImage(canvasElement),
+    );
+
+// The canvas elements that canvasElement can change places with: the movable ones of its own
+// kind, draggable game pieces or ordinary elements (see the note at the top of the file).
+const getMovableCanvasElementsOfSameKind = (
+    canvasElement: HTMLElement,
+    bloomCanvas: HTMLElement,
+): HTMLElement[] =>
+    getMovableCanvasElements(bloomCanvas).filter(
+        (other) => isDraggable(other) === isDraggable(canvasElement),
     );
 
 // The level and family order from the element's data-bubble spec, or nothing if it has no spec.
@@ -92,23 +108,24 @@ export const getZOrderUnits = (
     return units;
 };
 
-// The movable units of the bloom-canvas containing canvasElement, and the index of the unit
-// canvasElement belongs to (-1 if it is not movable, e.g. the background image).
+// The units canvasElement can change places with, and the index of the unit it belongs to
+// (-1 if it is not movable, e.g. the background image).
 const getUnitsAndIndex = (
     canvasElement: HTMLElement,
-): { units: HTMLElement[][]; index: number; movable: HTMLElement[] } => {
+): { units: HTMLElement[][]; index: number } => {
     const bloomCanvas = canvasElement.parentElement;
     if (!bloomCanvas || isBackgroundImage(canvasElement)) {
-        return { units: [], index: -1, movable: [] };
+        return { units: [], index: -1 };
     }
-    const movable = getMovableCanvasElements(bloomCanvas);
-    const units = getZOrderUnits(movable);
+    const units = getZOrderUnits(
+        getMovableCanvasElementsOfSameKind(canvasElement, bloomCanvas),
+    );
     const index = units.findIndex((unit) => unit.includes(canvasElement));
-    return { units, index, movable };
+    return { units, index };
 };
 
 // True if "Bring Forward" or "Bring to Front" would change anything for this canvas element:
-// it is movable and something movable is stacked above it.
+// it is movable and something it can change places with is stacked above it.
 export const canBringCanvasElementForward = (
     canvasElement: HTMLElement,
 ): boolean => {
@@ -117,7 +134,7 @@ export const canBringCanvasElementForward = (
 };
 
 // True if "Send Backward" or "Send to Back" would change anything for this canvas element:
-// it is movable and something movable is stacked below it.
+// it is movable and something it can change places with is stacked below it.
 export const canSendCanvasElementBackward = (
     canvasElement: HTMLElement,
 ): boolean => {
@@ -162,6 +179,22 @@ export const syncBubbleLevelsToDomOrder = (bloomCanvas: HTMLElement): void => {
     Comical.update(bloomCanvas);
 };
 
+// Put the members of each family next to each other in the DOM, right after the family's first
+// (lowest) member, keeping their order. A child bubble is appended to the end of the canvas when
+// it is created, so a family whose parent was made before some other element straddles that
+// element in the DOM; Comical nevertheless draws the whole family at the parent's level, below
+// that element. Gathering the family makes the DOM agree with Comical, and means a layer move
+// past the family is exactly one step. Only family members (text bubbles) ever move here.
+const gatherFamilies = (bloomCanvas: HTMLElement, units: HTMLElement[][]) => {
+    units.forEach((unit) => {
+        let anchor = unit[0];
+        unit.slice(1).forEach((member) => {
+            bloomCanvas.insertBefore(member, anchor.nextSibling);
+            anchor = member;
+        });
+    });
+};
+
 // Move the canvas element (together with the rest of its ComicalJS family, if it has one) in
 // the stacking order, then bring the bubble levels back into line with the DOM order.
 // Returns false, having changed nothing, if the move is not possible: the element is the
@@ -170,7 +203,7 @@ export const moveCanvasElementInZOrder = (
     canvasElement: HTMLElement,
     move: ZOrderMove,
 ): boolean => {
-    const { units, index, movable } = getUnitsAndIndex(canvasElement);
+    const { units, index } = getUnitsAndIndex(canvasElement);
     if (index < 0) {
         return false;
     }
@@ -198,27 +231,18 @@ export const moveCanvasElementInZOrder = (
     }
 
     const bloomCanvas = canvasElement.parentElement as HTMLElement;
-    const unit = units[index];
-    // Only the elements of the moving unit change place in the DOM (moving a node detaches and
-    // re-attaches it, which e.g. resets a playing video, so we leave everything else alone).
-    // The units we are passing over may not be contiguous in the DOM (a family whose child
-    // bubbles were added after other elements), so the spot to land on is the extreme DOM
-    // position among all of them, found from `movable`, which is in DOM order.
-    const unitsPassedOver =
+    gatherFamilies(bloomCanvas, units);
+
+    // Every unit is now contiguous, so the place to land is just past the unit we are moving
+    // to. Only the moving unit's members change place (moving a node detaches and re-attaches
+    // it, which e.g. resets a playing video, so we leave everything else alone). Inserting each
+    // member before one fixed marker node keeps the members in their order.
+    const targetUnit = units[targetIndex];
+    const marker: Node | null =
         targetIndex > index
-            ? units.slice(index + 1, targetIndex + 1)
-            : units.slice(targetIndex, index);
-    const passedOverPositions = unitsPassedOver
-        .flat()
-        .map((passedOver) => movable.indexOf(passedOver));
-    // Inserting each member before one fixed marker node keeps the members in their order.
-    let marker: Node | null;
-    if (targetIndex > index) {
-        marker = movable[Math.max(...passedOverPositions)].nextSibling;
-    } else {
-        marker = movable[Math.min(...passedOverPositions)];
-    }
-    unit.forEach((member) => bloomCanvas.insertBefore(member, marker));
+            ? targetUnit[targetUnit.length - 1].nextSibling
+            : targetUnit[0];
+    units[index].forEach((member) => bloomCanvas.insertBefore(member, marker));
 
     syncBubbleLevelsToDomOrder(bloomCanvas);
     return true;
