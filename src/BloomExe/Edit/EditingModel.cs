@@ -803,6 +803,13 @@ namespace Bloom.Edit
                     _view.OnVisibleChanged(false);
                     _currentlyDisplayedBook = null;
                     _previouslySelectedPage = null;
+                    // Note that this starts the browser loading a page, and returning null below
+                    // does not stop it: the state machine ends at NoPage, but the browser goes on
+                    // loading a real editing page whose load-time API calls read the book while the
+                    // per-page pass (if it runs) rewrites it. Its "page loaded" notice and its
+                    // snapshots are refused, so it cannot disturb the editor, and the concurrent
+                    // read has never been seen to cause trouble; but it is a race, and inherited
+                    // from before the pass existed.
                     _view.OnVisibleChanged(true);
                     // If the Add Page dialog is open, we can still change layout.  The OnVisibleChanged calls close the dialog,
                     // but can leave the PageListView disabled.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6554.
@@ -1025,7 +1032,11 @@ namespace Bloom.Edit
                 // is about that page -- the AI image editor opens on a slot in it -- so running it on
                 // a fallback page would act on the wrong thing.
                 if (page != null && afterPageReloaded != null)
-                    RunAfterNextPageLoad(_ => afterPageReloaded());
+                    RunAfterNextPageLoad(loadedPageId =>
+                    {
+                        if (loadedPageId == pageId)
+                            afterPageReloaded();
+                    });
                 _view.GoToPage(pageToShow);
                 _view.UpdatePageList(true);
             });
@@ -1036,9 +1047,10 @@ namespace Bloom.Edit
         /// returned and released Bloom's global API sync lock, instead of right now.
         /// </summary>
         /// <remarks>
-        /// The handler that leads here runs on the UI thread AND holds the global API sync lock (the
-        /// AI-editor and layout endpoints are registered requiresSync, as is the tab switch).
-        /// BookProcessor.ProcessBook drives off-screen editing pages that
+        /// The handler that leads here runs on the UI thread and may hold the global API sync lock
+        /// (the layout endpoint and the tab switch are registered requiresSync; the AI-editor
+        /// endpoint is not, but deferring costs it nothing and still lets its request complete
+        /// before the modal dialog opens). BookProcessor.ProcessBook drives off-screen editing pages that
         /// make their own sync-locked API calls as they load (image sizing, language tips, etc.); if
         /// we ran it while the triggering handler still held that lock, those calls would block
         /// behind us and the update would stall, badly on an image-heavy book. Deferring with

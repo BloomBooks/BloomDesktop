@@ -816,15 +816,19 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
 
         const pageId = contextMenuPoint.pageId;
         // Most of these commands (duplicate, copy, paste, remove) have to save the current page
-        // first, so send its content along. See collectCurrentPageContent().
-        const postCommand = async () =>
-            postJson("pageList/contextMenuItemClicked", {
-                pageId,
-                commandId,
-                pageContent: await collectCurrentPageContent(
-                    `the ${commandId} command`,
-                ),
-            });
+        // first, so send its content along. See collectCurrentPageContent(). Queued with the page
+        // clicks, so that a click made just after the command cannot overtake it while its content
+        // is being gathered and leave it acting on the newly selected page.
+        const postCommand = () =>
+            queuePageListRequest(async () =>
+                postJson("pageList/contextMenuItemClicked", {
+                    pageId,
+                    commandId,
+                    pageContent: await collectCurrentPageContent(
+                        `the ${commandId} command`,
+                    ),
+                }),
+            );
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
         } else {
@@ -1067,24 +1071,40 @@ function onDragStop(
     const newIndex = newItem.y * 2 + newItem.x;
 
     // Moving a page saves the current one first; see collectCurrentPageContent().
-    void collectCurrentPageContent("the page move").then((pageContent) =>
+    void queuePageListRequest(async () =>
         postJson("pageList/pageMoved", {
             movedPageId,
             newIndex,
-            pageContent,
+            pageContent: await collectCurrentPageContent("the page move"),
         }),
     );
 }
 
-// One click's work at a time, so that the posts reach C# in the order the user clicked.
+// One page-list request at a time -- a click, a context-menu command, a move -- so that they reach
+// C# in the order the user made them.
 //
-// This used to be free: the click posted immediately, so two clicks arrived in the order they were
+// This used to be free: each request posted immediately, so two arrived in the order they were
 // made. Gathering the outgoing page's content first put an await in front of the post, and two
-// clicks in quick succession would then be two overlapping gathers whose posts could arrive in
+// requests in quick succession would then be two overlapping gathers whose posts could arrive in
 // either order -- so C#, which takes the first and declines the second while it navigates, could
-// act on the earlier click rather than the later one. Chaining costs the second click the first's
+// act on the earlier one rather than the later one, or a command could land after a click had
+// already changed the selection it was about. Queueing costs the second request the first's
 // gather, which is well under a millisecond.
-let pageClickWork: Promise<void> = Promise.resolve();
+//
+// The work is awaited, not just issued: C# has not seen a request until its post comes back, and
+// releasing the queue when the request was merely sent would let the next one overtake it.
+let pageListRequests: Promise<void> = Promise.resolve();
+
+function queuePageListRequest(work: () => Promise<unknown>): Promise<void> {
+    pageListRequests = pageListRequests
+        .then(work)
+        .then(() => undefined)
+        // One request that somehow failed must not stop every later one from being sent.
+        .catch((error) => {
+            console.warn("could not send a page-list request to Bloom", error);
+        });
+    return pageListRequests;
+}
 
 // Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
 // can save the page we are leaving in the same step. See collectCurrentPageContent().
@@ -1093,25 +1113,14 @@ function postPageClicked(
     detail: string,
     onSuccess?: () => void,
 ): Promise<void> {
-    pageClickWork = pageClickWork
-        .then(async () => {
-            const pageContent =
-                await collectCurrentPageContent("the page change");
-            // Awaited, not just issued: the point of the chain is that C# sees the clicks in the
-            // order they were made, and it has not seen this one until the post comes back.
-            // Releasing the queue when the request was merely sent would let the next click's post
-            // overtake it, which is the ordering we are here to prevent.
-            await postJson(
-                "pageList/pageClicked",
-                { pageId, detail, pageContent },
-                onSuccess,
-            );
-        })
-        // One click that somehow failed must not stop every later click from being sent.
-        .catch((error) => {
-            console.warn("could not tell Bloom about a page click", error);
-        });
-    return pageClickWork;
+    return queuePageListRequest(async () => {
+        const pageContent = await collectCurrentPageContent("the page change");
+        await postJson(
+            "pageList/pageClicked",
+            { pageId, detail, pageContent },
+            onSuccess,
+        );
+    });
 }
 
 function ContinueAutomatedPageClicking(

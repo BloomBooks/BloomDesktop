@@ -17,6 +17,7 @@ namespace BloomTests.Edit
         private List<string> _navigatedTo;
         private List<string> _updatedWith;
         private int _saveBookCount;
+        private bool _saveBookSucceeds;
         private List<Exception> _reportedFailures;
         private EditingStateMachine _stateMachine;
 
@@ -26,11 +27,16 @@ namespace BloomTests.Edit
             _navigatedTo = new List<string>();
             _updatedWith = new List<string>();
             _saveBookCount = 0;
+            _saveBookSucceeds = true;
             _reportedFailures = new List<Exception>();
             _stateMachine = new EditingStateMachine(
                 navigate: pageId => _navigatedTo.Add(pageId),
                 updateBookWithPageContents: (_, data) => _updatedWith.Add(data),
-                saveBook: () => _saveBookCount++,
+                saveBook: () =>
+                {
+                    _saveBookCount++;
+                    return _saveBookSucceeds;
+                },
                 hidePage: () => { }
             );
         }
@@ -158,6 +164,32 @@ namespace BloomTests.Edit
                 _navigatedTo,
                 Is.Empty,
                 "going on to the clicked page would silently discard the edits we failed to save"
+            );
+        }
+
+        [Test]
+        public void SaveThenNavigate_WriteFails_ReportsFailedButStillNavigates()
+        {
+            // The write reports its own failure and the book stays marked as needing a full write,
+            // so we go on to the page as usual -- but the caller must know the save did not reach
+            // disk, because some callers do things only after one that did (running the per-page
+            // pass, opening the AI image editor on the saved book).
+            GoToEditing("page1");
+            _navigatedTo.Clear();
+            _saveBookSucceeds = false;
+
+            var result = SaveThenGoTo("content", "page2");
+
+            Assert.That(result, Is.EqualTo(SaveOutcome.Failed));
+            Assert.That(
+                _navigatedTo,
+                Is.EqualTo(new[] { "page2" }),
+                "we still go where we were told"
+            );
+            Assert.That(
+                _reportedFailures,
+                Is.Empty,
+                "the write reported itself; nothing more to tell the user"
             );
         }
 

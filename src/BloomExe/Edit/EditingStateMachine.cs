@@ -30,9 +30,12 @@ public enum SaveOutcome
     // Saved, and on the way to the next page.
     Saved,
 
-    // We started and something threw. The browser's content may already be in the book DOM and
-    // changeBookBeforeWriting may have run and changed the book. The failure has been reported to the
-    // user; the caller must NOT fall back, or the action happens twice.
+    // The save did not reach disk. Either something threw -- then it has been reported, and we did
+    // not navigate -- or the write itself was refused or failed, which the write reports for itself,
+    // and we navigated anyway (see RunActionThenSaveAndNavigate). Either way the browser's content
+    // may already be in the book DOM and changeBookBeforeWriting may have run and changed the book,
+    // so the caller must NOT fall back, or the action happens twice; and anything a caller does only
+    // after a save that reached disk must not happen.
     Failed,
 }
 
@@ -65,7 +68,7 @@ public class EditingStateMachine
     private Action<string> _navigate; // arg is (pageId)
 
     private Action<string, string> _updateBookWithPageContents; // args are (pageId, pageContent)
-    private Action _saveBook;
+    private Func<bool> _saveBook; // returns whether whatever needed writing reached disk
 
     // Set only while SaveThenNavigate is running its changeBookBeforeWriting. In that window the
     // browser's content is already in the book DOM, so ToNavigating's "cannot navigate while
@@ -81,12 +84,13 @@ public class EditingStateMachine
     /// </summary>
     /// <param name="navigate">Called to start navigation to another (or the same) page. String is page ID.</param>
     /// <param name="updateBookWithPageContents">Called with page ID and pageContent to update the main DOM with current page content</param>
-    /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
+    /// <param name="saveBook">Called to save the current state of the DOM to disk. Returns false if
+    /// something needed writing and the write failed (which it reports itself).</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
     public EditingStateMachine(
         Action<string> navigate,
         Action<string, string> updateBookWithPageContents,
-        Action saveBook,
+        Func<bool> saveBook,
         Action hidePage
     )
     {
@@ -293,14 +297,16 @@ public class EditingStateMachine
                         _updateBookWithPageContents(_pageId, pageContent);
                     }
                     _pageIdWeFailedToSave = null;
-                    RunActionThenSaveAndNavigate(changeBookBeforeWriting);
-                    return SaveOutcome.Saved;
+                    return RunActionThenSaveAndNavigate(changeBookBeforeWriting)
+                        ? SaveOutcome.Saved
+                        : SaveOutcome.Failed;
                 case State.NoPage:
                     // There is no browser content to merge, but the action can still change the
                     // book (it may duplicate or delete a page), and that has to reach disk just
                     // the same: run the action, save the book, then navigate.
-                    RunActionThenSaveAndNavigate(changeBookBeforeWriting);
-                    return SaveOutcome.Saved;
+                    return RunActionThenSaveAndNavigate(changeBookBeforeWriting)
+                        ? SaveOutcome.Saved
+                        : SaveOutcome.Failed;
                 case State.Navigating:
                     LogIgnore("save then navigate");
                     return SaveOutcome.Declined;
@@ -337,33 +343,35 @@ public class EditingStateMachine
     /// <summary>
     /// The middle of SaveThenNavigate, from the point where the browser's content is safely in the
     /// book DOM: run the caller's action, write the book, and go to the page the action named.
-    /// Separated out only so that _runningSaveThenNavigateAction is obviously scoped to the action,
-    /// and obviously cleared even if it throws.
+    /// Returns whether the write reached disk. Separated out only so that
+    /// _runningSaveThenNavigateAction is obviously scoped to the action, and obviously cleared even
+    /// if it throws.
     /// </summary>
-    private void RunActionThenSaveAndNavigate(Func<string> changeBookBeforeWriting)
+    private bool RunActionThenSaveAndNavigate(Func<string> changeBookBeforeWriting)
     {
         _runningSaveThenNavigateAction = true;
         try
         {
             var pageIdToGoTo = changeBookBeforeWriting();
-            // If the write fails we still navigate. The action has already changed the book in
-            // memory, and the page list already shows the result; the user has been told about the
-            // failure, and EditingModel.SaveBookToDisk keeps the book marked as needing a full
-            // write, so the next save retries it. Staying put would leave the editor showing a page
-            // the list no longer agrees with.
-            _saveBook();
+            // If the write fails we still navigate, but we do tell the caller (the false return).
+            // The action has already changed the book in memory, and the page list already shows
+            // the result; the user has been told about the failure, and EditingModel.SaveBookToDisk
+            // keeps the book marked as needing a full write, so the next save retries it. Staying
+            // put would leave the editor showing a page the list no longer agrees with.
+            var written = _saveBook();
             if (pageIdToGoTo == null)
             {
                 // The contract: the action returns null to say "leave the editor blank". Trying
                 // to navigate to no page would just leave a broken editor.
                 ToNoPage();
-                return;
+                return written;
             }
             // Via ToNavigating rather than StartNavigating so that an action which already
             // navigated to this very page (as relocating one does) is not made to do it twice.
             // While _runningSaveThenNavigateAction is set, ToNavigating accepts being called from
             // Editing, which is the state we are still in if the action did not navigate.
             ToNavigating(pageIdToGoTo);
+            return written;
         }
         finally
         {
