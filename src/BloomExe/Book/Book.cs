@@ -1094,6 +1094,45 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Everything that must have happened before a person works with this book or it is
+        /// published: the structural update of EnsureUpToDate, and then the per-page browser
+        /// fix-up if that is due (BL-16852, BL-16877).
+        /// </summary>
+        /// <remarks>
+        /// Call this -- rather than EnsureUpToDate -- from the places that mean "someone is about
+        /// to edit or publish this book", so that every such path produces the same result,
+        /// including the ones that never go near the Bloom UI. EnsureUpToDate deliberately does
+        /// NOT do the fix-up itself: it is called from previews, imports, bulk collection
+        /// operations and throwaway copies, none of which want a whole-book browser pass, and
+        /// ProcessBook begins by calling BringBookUpToDate, so doing it there would recurse.
+        ///
+        /// The fix-up repeats the structural update internally (ProcessBook starts with
+        /// BringBookUpToDate, deliberately, since it must run on a book that is already current).
+        /// That costs a second structural pass on the books that need fixing up, which is small
+        /// beside the browser work itself.
+        ///
+        /// Pass <paramref name="webSocketServerForDialog"/> from a context that has a window, and the
+        /// fix-up runs behind the usual modal progress dialog (marshalled to the UI thread for you);
+        /// leave it null from the command line and it runs silently, reporting to
+        /// <paramref name="progress"/>. Either way the caller must guarantee the two things
+        /// BookProcessor's remarks describe: no live page of this book loaded, and no API sync lock
+        /// held.
+        /// </remarks>
+        public void EnsureReadyForUserWork(
+            IProgress progress = null,
+            BloomWebSocketServer webSocketServerForDialog = null
+        )
+        {
+            progress = progress ?? new NullProgress();
+            EnsureUpToDate(progress);
+            BookProcessor.EnsurePerPageFixupIfNeededOnAnyThread(
+                this,
+                webSocketServerForDialog,
+                progress
+            );
+        }
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).

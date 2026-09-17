@@ -312,6 +312,77 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Run the per-page browser fix-up if it is due, showing the modal progress dialog, from a
+        /// caller that may be on any thread. Where there is no window to show a dialog on -- the
+        /// command line -- it falls back to the no-UI form, so the work still happens rather than
+        /// being silently skipped. Returns true if it actually ran.
+        /// </summary>
+        /// <remarks>
+        /// The caller must NOT hold Bloom's global API sync lock. This blocks until the fix-up is
+        /// finished, and the off-screen pages it loads make their own sync-locked API calls, so a
+        /// held lock would deadlock them against us. That is why publish/getInitialPublishTabInfo,
+        /// which reaches this through Book.EnsureReadyForUserWork, is registered requiresSync:false.
+        ///
+        /// Marshalling with Invoke rather than BeginInvoke is deliberate: the caller is reporting on
+        /// a book it is about to use, so it has to wait for the fix-up rather than race it.
+        /// </remarks>
+        public static bool EnsurePerPageFixupIfNeededOnAnyThread(
+            Book book,
+            BloomWebSocketServer webSocketServer,
+            IProgress progress
+        )
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (webSocketServer == null || form == null || !form.IsHandleCreated)
+                return EnsurePerPageFixupIfNeededNoUI(book, progress);
+            if (!form.InvokeRequired)
+                return EnsurePerPageFixupIfNeeded(book, webSocketServer);
+            return (bool)
+                form.Invoke((Func<bool>)(() => EnsurePerPageFixupIfNeeded(book, webSocketServer)));
+        }
+
+        /// <summary>
+        /// Run the per-page browser fix-up on <paramref name="book"/> if it is due, with no UI of its
+        /// own, reporting to <paramref name="progress"/>. Returns true if it actually ran.
+        /// </summary>
+        /// <remarks>
+        /// This is the form for code that is not a Windows Forms context: the command line, and any
+        /// caller already inside its own progress UI. It runs on whatever thread it is called on --
+        /// ProcessBook drives its own off-screen browser thread and merely blocks on it -- so unlike
+        /// the dialog form below there is no UI-thread requirement.
+        ///
+        /// Two things the caller must still guarantee, because this cannot check either: that no
+        /// live page of this book is loaded (ProcessBook rewrites its DOM, and every page it loads
+        /// off-screen announces itself as loaded), and that it does not hold Bloom's global API sync
+        /// lock (those off-screen pages make their own sync-locked API calls as they load, and would
+        /// block behind it).
+        ///
+        /// A failure is recorded against the book, as for the dialog form, and then rethrown: a
+        /// caller with no dialog to show it in needs to hear about it.
+        /// </remarks>
+        public static bool EnsurePerPageFixupIfNeededNoUI(Book book, IProgress progress)
+        {
+            if (!NeedsPerPageFixup(book))
+                return false;
+            if (s_perPageFixupFailedThisSession.Contains(book.ID))
+                return false;
+            try
+            {
+                ProcessBook(book, progress: progress);
+            }
+            catch (Exception e)
+            {
+                s_perPageFixupFailedThisSession.Add(book.ID);
+                SIL.Reporting.Logger.WriteError(
+                    "Automatic page update failed for " + book.NameBestForUserDisplay,
+                    e
+                );
+                throw;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
         /// due, behind a modal progress dialog, and return true if it actually ran. Called on entering
         /// the Edit tab (EditingModel.OnBecomeVisible) and the Publish tab (PublishView.Activate),

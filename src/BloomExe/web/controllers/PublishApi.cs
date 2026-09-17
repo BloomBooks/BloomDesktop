@@ -87,10 +87,31 @@ namespace Bloom.web.controllers
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
+            // Deliberately kept synchronized: this assigns the static PublishApi.Model and
+            // LibraryPublishApi.Model, and PublishModel._currentlyLoadedBook, all of which the other
+            // (synchronized) publish endpoints read. Preventing those from racing is what the sync
+            // lock is for.
             apiHandler.RegisterEndpointHandler(
                 "publish/getInitialPublishTabInfo",
                 getInitialPublishTabInfo,
                 false
+            );
+
+            // The per-page browser fix-up, as its own endpoint, because it is the one part of
+            // preparing to publish that must NOT hold the sync lock: the off-screen pages it loads
+            // make their own sync-locked API calls as they load, and would block behind a lock held
+            // for the whole of a handler (this is why external/process-book is registered the same
+            // way). It is safe unsynchronized precisely because it is small and shares nothing --
+            // it touches only the book, which it is arranging to have exclusive access to, and
+            // everything else happens inside its own private WebView2.
+            //
+            // The publish UI calls this first and waits for it, then getInitialPublishTabInfo, so
+            // the model that call builds is built from an already-migrated book.
+            apiHandler.RegisterEndpointHandler(
+                "publish/ensureBookReady",
+                HandleEnsureBookReady,
+                handleOnUiThread: false,
+                requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
                 "publish/switchingPublishMode",
@@ -423,6 +444,27 @@ namespace Bloom.web.controllers
                 null,
                 false
             );
+        }
+
+        /// <summary>
+        /// Bring the selected book to the state publishing needs: structurally up to date, and
+        /// through the per-page browser fix-up if that is due (BL-16852, BL-16877). The publish UI
+        /// awaits this before asking for anything else, so nothing is built from, or shown about, a
+        /// half-migrated book.
+        /// </summary>
+        /// <remarks>
+        /// Registered requiresSync:false -- see the registration for why that is both necessary and
+        /// safe here. Keep this handler that way: small, and touching nothing that other API calls
+        /// share.
+        /// </remarks>
+        private void HandleEnsureBookReady(ApiRequest request)
+        {
+            var book = _publishModel.BookSelection.CurrentSelection;
+            if (book != null && book.IsSaveable)
+                book.EnsureReadyForUserWork(
+                    webSocketServerForDialog: _webSocketServer as BloomWebSocketServer
+                );
+            request.PostSucceeded();
         }
 
         public void getInitialPublishTabInfo(ApiRequest request)

@@ -137,19 +137,27 @@ export const PublishTabPane: React.FunctionComponent = () => {
     const appBuilderFeatureStatus = useGetFeatureStatus("AppBuilder");
     const setup = () => {
         setTabIndex(kWaitForUserToChooseTabIndex);
-        get("publish/getInitialPublishTabInfo", (result) => {
-            // There should be a current selection by now but just in case:
-            if (!result.data) {
-                return;
-            }
-            setPublishTabInfo({
-                checkoutNeeded: result.data.cannotPublishWithoutCheckout,
-                canUpload: result.data.canUpload,
-                bookTitle: result.data.titleForDisplay,
-                featurePreventingPublishing:
-                    result.data.featurePreventingPublishing,
+        // Get the book into the state publishing needs BEFORE asking anything about it. On a book
+        // whose pages have never been through the browser fix-up this runs that pass, behind its own
+        // progress dialog, and everything below then describes a fully migrated book (BL-16877).
+        // It is a separate call from getInitialPublishTabInfo because the fix-up must not hold
+        // Bloom's API sync lock, while getInitialPublishTabInfo must keep it -- see PublishApi.
+        // Normally a no-op, in which case this costs one quick round trip.
+        post("publish/ensureBookReady", () => {
+            get("publish/getInitialPublishTabInfo", (result) => {
+                // There should be a current selection by now but just in case:
+                if (!result.data) {
+                    return;
+                }
+                setPublishTabInfo({
+                    checkoutNeeded: result.data.cannotPublishWithoutCheckout,
+                    canUpload: result.data.canUpload,
+                    bookTitle: result.data.titleForDisplay,
+                    featurePreventingPublishing:
+                        result.data.featurePreventingPublishing,
+                });
+                setPublishTabReady(true);
             });
-            setPublishTabReady(true);
         });
     };
     // User is switching to publish tab from another tab
