@@ -69,6 +69,12 @@ On top of that:
   `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so every save makes the same
   "nothing / just this page / whole book" decision and clears the same flags.
 
+One thing a save can still lead to is a navigation: the automatic per-page fix-up (BL-16852)
+empties the editor, rewrites the book off-screen, and navigates back. Its callers run it after
+`MergeCurrentPageThenSave` returns `Saved` with an action that returned null, and the AI image editor
+opens only once the page has loaded again, through a single `RunAfterNextPageLoad` hook kept for
+that one purpose. Nothing else waits on a page load any more.
+
 ### What the page list sends
 
 Everything the **page list frame** initiates sends the current page's content along with its
