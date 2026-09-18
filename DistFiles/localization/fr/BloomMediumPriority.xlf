@@ -42,7 +42,7 @@
       </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
-        <target xml:lang="fr" state="needs-translation">Edit Images with AI</target>
+        <target xml:lang="fr" state="translated">Modifier les images avec l'IA</target>
         <note>ID: Feature.AiImageEditing</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI" approved="yes">
