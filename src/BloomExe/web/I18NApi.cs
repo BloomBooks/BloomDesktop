@@ -263,7 +263,16 @@ namespace Bloom.Api
 
         public static string GetTranslation(string id)
         {
-            if (LocalizationManager.UILanguageId != "en")
+            var uiLanguage = LocalizationManager.UILanguageId;
+            // The sentinel trick below cannot work in the pseudo-locale, so don't try it there.
+            // L10NSharp pseudolocalizes the caller-supplied default rather than consulting the
+            // cache, so GetString hands back a transformed *sentinel*
+            // ("[***doon'tuusethiis***]"), which of course does not equal the sentinel -- and we
+            // would then return that as the string to show the user. Falling through to the XLF
+            // English below and transforming that is both correct and what the rest of the
+            // pseudo-locale does. See BL-16748.
+            var isPseudoLocale = uiLanguage == LocalizationManager.PseudoLocalizationLanguageId;
+            if (uiLanguage != "en" && !isPseudoLocale)
             {
                 // Try to get a localization normally, but if we don't find one, it will fall back to
                 // the "English" passed as the second argument, rather than the English in the XLF.
@@ -279,7 +288,8 @@ namespace Bloom.Api
             {
                 return id; // sometimes this might be OK
             }
-            return result2;
+            // An id is not English prose, so the early return above is deliberately left alone.
+            return PseudoLocalizeIfPseudoLocale(uiLanguage, result2);
         }
 
         private static string GetLocalizedStringInOneLanguage(string id, string langId)
