@@ -347,6 +347,10 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 
 ## Field-verified gotchas (all hit in real agent runs)
 
+- **Coordinates differ between frames.** The Edit tab is several iframes with their own
+  screen/client/page coordinate systems, and page scaling (`transform: scale(...)`) changes
+  what `getBoundingClientRect()` returns. When measuring a drop point against a created
+  element, compare in one consistent coordinate space and test at more than one zoom level.
 - **WMI/wmic can go blind mid-session.** `bloomProcessStatus.mjs` (plain
   mode) and `killBloomProcess.mjs` enumerate processes via `wmic`; WMI has
   stopped answering partway through a session — status reported zero Bloom
