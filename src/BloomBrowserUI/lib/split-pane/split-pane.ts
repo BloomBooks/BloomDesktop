@@ -949,12 +949,22 @@ export function splitPane($splitPanes: JQuery): void {
         return [snapped, dividerPositionForDisplay(snapped, true) + "%", false];
     }
 
+    // event.pageX/pageY can legitimately be 0 (dragging to the very edge), so check for
+    // null/undefined rather than falsiness — otherwise a 0 wrongly falls through. And
+    // event.originalEvent is undefined for a native (non-jQuery) event, so guard it before
+    // dereferencing instead of crashing the drag (Sentry BLOOM-DESKTOP-FPW/FJ0/DTS).
     function pageXof(event) {
-        return event.pageX || event.originalEvent.pageX;
+        if (event.pageX != null) return event.pageX;
+        if (event.originalEvent && event.originalEvent.pageX != null)
+            return event.originalEvent.pageX;
+        return 0;
     }
 
     function pageYof(event) {
-        return event.pageY || event.originalEvent.pageY;
+        if (event.pageY != null) return event.pageY;
+        if (event.originalEvent && event.originalEvent.pageY != null)
+            return event.originalEvent.pageY;
+        return 0;
     }
 
     function minHeight(element) {
