@@ -56,7 +56,7 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
-        <source xml:lang="en">No Indent</source>
+        <source xml:lang="en">Do Not Indent This Paragraph</source>
         <target xml:lang="fr" state="translated">Ne pas indenter ce paragraphe</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
