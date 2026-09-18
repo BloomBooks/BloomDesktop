@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
@@ -196,102 +197,106 @@ namespace Bloom
             _workspaceView.Invalidate(true);
         }
 
-        public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
+        public bool AppIsShuttingDown => _closing;
 
-        private bool _startedClosingEvent;
-        private bool _finishedClosingEvent;
+        private bool _closing;
 
-        protected override void OnClosing(CancelEventArgs e)
+        // Tell Windows why we are slow to answer a shutdown, so that the shutdown screen says
+        // "Bloom is saving your book" against our name rather than that we are not responding.
+        // Windows shows it only if we take longer than it likes (about five seconds); otherwise
+        // nobody sees it. Must be called on the thread that owns the window, i.e. the UI thread.
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool ShutdownBlockReasonCreate(IntPtr hWnd, string reason);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ShutdownBlockReasonDestroy(IntPtr hWnd);
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            // We want to get everything saved (under the old collection name, if we are changing the name and restarting).
-            // This is tricky because we may need to save current changes to a book we are editing, and this
-            // involves an inherently asynchronous process (thanks to WebView2). We tried endless ways to
-            // wait for the data we need from the page we're editing, and nothing worked reliably.
-            // If we go ahead and close the Shell, the message we eventually get on our API with the data to save
-            // tries to use Invoke on the Shell to get on the UI thread, but the Shell is already disposed.
-            // So, the first time OnClosing is called, we raise an event that will do the saving, and cancel
-            // the close. In case the user manages to click the Close button again before the saving is done,
-            // we set a flag to say it is in progress, so that we can ignore any subsequent OnClosing events
-            // until we are done saving. When we ARE done saving, we set a flag to say so, and then call Close()
-            // to actually get the window closed.
-            if (_finishedClosingEvent)
-            {
-                base.OnClosing(e);
-                return;
-            }
-
-            if (_startedClosingEvent)
-            {
-                e.Cancel = true;
-                return;
-            }
-
+            // Everything here is synchronous, which it did not used to be. Saving the page being
+            // edited meant asking the browser for it and waiting for the answer on another API
+            // call, and that could not be done from inside the closing handler: if we let the close
+            // proceed, the reply arrived to a disposed Shell. So this cancelled the close, kicked
+            // off the save, and called Close() again when it finished -- with two flags to swallow
+            // the clicks the user got in meanwhile, and a FailureAction to unstick things when the
+            // save failed and left Bloom unclosable.
+            //
+            // None of that is needed now: the browser volunteers the page as it is edited (see
+            // PageSnapshot), so EditingModel already has what it needs and the closing event
+            // returns with the book on disk.
+            _closing = true;
             Logger.WriteMinorEvent("starting to shut Bloom down");
 
-            _startedClosingEvent = true;
+            // This is OnFormClosing rather than OnClosing for the sake of the close reason. When
+            // Windows itself is shutting down, restarting or logging off, it gives us about five
+            // seconds to answer before treating us as hung, and the browser is being shut down
+            // alongside us -- so the save must not wait on the browser for anything (see
+            // EditingModel.SaveEverythingBeforeClosing), and we tell Windows what we are doing in
+            // case the write itself runs long. Windows-only API; Linux has nothing comparable.
+            var windowsIsShuttingDown = e.CloseReason == CloseReason.WindowsShutDown;
+            var toldWindowsWhy =
+                windowsIsShuttingDown
+                && SIL.PlatformUtilities.Platform.IsWindows
+                && ShutdownBlockReasonCreate(
+                    Handle,
+                    L10NSharp.LocalizationManager.GetString(
+                        "Shell.SavingBeforeWindowsShutsDown",
+                        "Bloom is saving your book"
+                    )
+                );
+            try
+            {
+                _collectionClosingEvent.Raise(windowsIsShuttingDown);
+            }
+            finally
+            {
+                if (toldWindowsWhy)
+                    ShutdownBlockReasonDestroy(Handle);
+            }
 
-            _collectionClosingEvent.Raise(
-                new CollectionClosingArgs()
+            if (
+                !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
+                && _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName
+                && UserWantsToOpeReopenProject
+            )
+            {
+                // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
+                // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application..Exit().
+                UserWantsToOpeReopenProject = false;
+                //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
+                //when this run isn't holding onto anything.
+                try
                 {
-                    PostponedWork = () =>
-                    {
-                        if (
-                            !string.IsNullOrEmpty(_nameToChangeCollectionUponClosing)
-                            && _nameToChangeCollectionUponClosing
-                                != _collectionSettings.CollectionName
-                            && UserWantsToOpeReopenProject
+                    var existingDirectoryPath = Path.GetDirectoryName(
+                        _collectionSettings.SettingsFilePath
+                    );
+                    var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
+                    var newDirectoryPath = Path.Combine(
+                        parentDirectory,
+                        _nameToChangeCollectionUponClosing
+                    );
+
+                    Program.RestartBloom(
+                        true,
+                        string.Format(
+                            "--rename \"{0}\" \"{1}\" ",
+                            existingDirectoryPath,
+                            newDirectoryPath
                         )
-                        {
-                            // Without checking and resetting this flag, Linux endlessly spawns new instances. Apparently the Mono runtime
-                            // calls OnClosing again as a result of calling Program.RestartBloom() which calls Application..Exit().
-                            UserWantsToOpeReopenProject = false;
-                            //Actually restart Bloom with a parameter requesting this name change. It's way more likely to succeed
-                            //when this run isn't holding onto anything.
-                            try
-                            {
-                                var existingDirectoryPath = Path.GetDirectoryName(
-                                    _collectionSettings.SettingsFilePath
-                                );
-                                var parentDirectory = Path.GetDirectoryName(existingDirectoryPath);
-                                var newDirectoryPath = Path.Combine(
-                                    parentDirectory,
-                                    _nameToChangeCollectionUponClosing
-                                );
-
-                                Program.RestartBloom(
-                                    true,
-                                    string.Format(
-                                        "--rename \"{0}\" \"{1}\" ",
-                                        existingDirectoryPath,
-                                        newDirectoryPath
-                                    )
-                                );
-                            }
-                            catch (Exception error)
-                            {
-                                SIL.Reporting.ErrorReport.NotifyUserOfProblem(
-                                    error,
-                                    "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
-                                    _nameToChangeCollectionUponClosing
-                                );
-                            }
-                        }
-
-                        _finishedClosingEvent = true;
-                        Logger.WriteMinorEvent("closing the Shell");
-                        Close();
-                    },
-                    FailureAction = () =>
-                    {
-                        // We didn't want a second attempt at saving if the user clicks the close box while we are
-                        // still trying to save after the first click on Close. But if the first attempt fails,
-                        // we don't want to stay in a state where all attempts to close the program are ignored.
-                        _startedClosingEvent = false;
-                    },
+                    );
                 }
-            );
-            e.Cancel = true;
-            base.OnClosing(e);
+                catch (Exception error)
+                {
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                        error,
+                        "Sorry, Bloom failed to even prepare for the rename of the project to '{0}'",
+                        _nameToChangeCollectionUponClosing
+                    );
+                }
+            }
+
+            Logger.WriteMinorEvent("closing the Shell");
+            base.OnFormClosing(e);
         }
 
         public void SetWindowText(string bookName)

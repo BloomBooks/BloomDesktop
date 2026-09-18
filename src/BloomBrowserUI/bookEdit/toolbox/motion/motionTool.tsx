@@ -279,25 +279,34 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.setupResizeObserver();
     }
 
+    // The start/end rectangles are the one bit of this tool's editing markup that isn't bloom-ui,
+    // so they would be saved if we didn't take them out. (Their positions are already stored in the
+    // bloom-canvas's data-initialrect/data-finalrect attributes by updateDataAttributes(), so
+    // removing the rectangles loses nothing.) We also drop the audio highlight this tool's preview
+    // leaves behind.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        pageOrClone.querySelector("#animationStart")?.remove();
+        pageOrClone.querySelector("#animationEnd")?.remove();
+        MotionTool.removeCurrentAudioMarkup(pageOrClone);
+    }
+
     public detachFromPage() {
+        // This must come first: while a preview is playing, the rectangles have been moved into the
+        // animation canvas, and cleanupAnimation() is what puts the page back together.
         if (this.rootControl.state.playing) {
             this.rootControl.setState({ playing: false });
             window.clearTimeout(this.stopPreviewTimeout);
             this.cleanupAnimation();
         }
 
-        const page = this.getPage();
-        if (page) {
-            this.removeElt(page.getElementById("animationStart"));
-            this.removeElt(page.getElementById("animationEnd"));
-        }
+        super.detachFromPage(); // removeToolMarkup: the rectangles and the audio highlight
+
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (!bloomCanvasToAnimate) {
             return;
         }
         EnableImageEditing(bloomCanvasToAnimate);
-        this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
         }
@@ -306,13 +315,11 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    private removeCurrentAudioMarkup(): void {
-        const page = this.getPage();
-        if (!page) return;
-        const currentAudioElts = page.getElementsByClassName("ui-audioCurrent");
-        if (currentAudioElts.length) {
-            currentAudioElts[0].classList.remove("ui-audioCurrent");
-        }
+    // Static, and taking the root to work in, so that removeToolMarkup() can use it on a clone.
+    private static removeCurrentAudioMarkup(pageOrClone: ParentNode): void {
+        pageOrClone
+            .querySelector(".ui-audioCurrent")
+            ?.classList.remove("ui-audioCurrent");
     }
 
     public id(): string {
@@ -903,7 +910,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (this.narrationPlayer) {
             this.narrationPlayer.stopListen();
         }
-        this.removeCurrentAudioMarkup();
+        MotionTool.removeCurrentAudioMarkup(page);
         // stop background music
         this.getPlayer().pause();
     }
