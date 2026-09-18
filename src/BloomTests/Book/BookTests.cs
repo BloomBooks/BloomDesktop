@@ -3214,6 +3214,29 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateCharacterStyleMarkup_PreservesHyperlinkHref()
+        {
+            // A hyperlink is an <a> inside the paragraph; stripping its href would silently destroy the link (BL-16892).
+            // The character-style markup nested inside it should still be cleaned up.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>See <a href='https://bloomlibrary.org/page#frag'><b style='color:red'>this book</b></a> now.</p></div></body></html>"
+            );
+            var para = GetFirstEditableParagraph(dom);
+            Assert.That(
+                para.InnerXml,
+                Does.Contain("href=\"https://bloomlibrary.org/page#frag\""),
+                "sanity check: test data has the link"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                para.InnerXml,
+                Is.EqualTo(
+                    "See <a href=\"https://bloomlibrary.org/page#frag\"><strong>this book</strong></a> now."
+                )
+            );
+        }
+
+        [Test]
         public void UpdateCharacterStyleMarkup_DoesNotAffectNonEditableDivs()
         {
             // Only <p> elements inside bloom-editable divs should be processed.
