@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -660,12 +660,6 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// The AI image editor's persistence endpoint: GET/POST/DELETE of individual files
-        /// under the book's .ai-image-editor folder. File names are restricted to the
-        /// AllowedFileName allow-list, so the AI image editor can only ever touch its own
-        /// state/history files.
-        /// </summary>
-        /// <summary>
         /// Translates the editor's whole string table in one round-trip. The editor POSTs every
         /// localization id with its English default; we answer with the ids we have a
         /// translation for, and the editor shows its own English for the rest.
@@ -703,6 +697,12 @@ namespace Bloom.web.controllers
             );
         }
 
+        /// <summary>
+        /// The AI image editor's persistence endpoint: GET/POST/DELETE of individual files
+        /// under the book's .ai-image-editor folder. File names are restricted to the
+        /// AllowedFileName allow-list, so the AI image editor can only ever touch its own
+        /// state/history files.
+        /// </summary>
         private void HandleFile(ApiRequest request)
         {
             // Answer the CORS preflight before the session gate: the browser sends OPTIONS

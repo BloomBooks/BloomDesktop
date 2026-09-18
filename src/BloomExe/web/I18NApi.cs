@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -239,6 +239,24 @@ namespace Bloom.Api
         // whether it's missing from the xliff, report if so, and use the default).
         // So, we loop over the interesting language IDs, and when we find one that has a result,
         // we have to try GetDynamicString on each of the appIds until we find it.
+        static bool GetSomeTranslation(string id, string initialLangId, out string val)
+        {
+            var langsToTry = new List<string>();
+            langsToTry.Add(initialLangId);
+            langsToTry.AddRange(LocalizationManager.FallbackLanguageIds.Except(new[] { "en" }));
+            foreach (var langId in langsToTry)
+            {
+                if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
+                {
+                    val = GetLocalizedStringInOneLanguage(id, langId);
+                    return true;
+                }
+            }
+
+            val = null;
+            return false;
+        }
+
         /// <summary>
         /// The translations we already have for these ids, and nothing else: an id we have no
         /// translation for is simply left out, and no missing-string machinery runs -- no
@@ -266,24 +284,6 @@ namespace Bloom.Api
                     found.Add(id, translation);
             }
             return found;
-        }
-
-        static bool GetSomeTranslation(string id, string initialLangId, out string val)
-        {
-            var langsToTry = new List<string>();
-            langsToTry.Add(initialLangId);
-            langsToTry.AddRange(LocalizationManager.FallbackLanguageIds.Except(new[] { "en" }));
-            foreach (var langId in langsToTry)
-            {
-                if (LocalizationManager.GetIsStringAvailableForLangId(id, langId))
-                {
-                    val = GetLocalizedStringInOneLanguage(id, langId);
-                    return true;
-                }
-            }
-
-            val = null;
-            return false;
         }
 
         public static string GetTranslation(string id)
