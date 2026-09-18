@@ -1248,9 +1248,10 @@ namespace Bloom.web.controllers
         /// <summary>
         /// Reads the two numbers of <see cref="HtmlDom.kFractionOfPageAttribute"/> ("0.42,0.31"). Null
         /// for anything else, including a missing attribute. A missing attribute is not the normal
-        /// state of a page by the time the editor sees it: launching the editor first puts the book
-        /// through the per-page pass when it needs it, re-saving every page (BL-16852), so every
-        /// slot ordinarily carries one. Null here is hardening against that pass having failed; the
+        /// state of a page by the time the editor sees it: a book is put through the per-page pass
+        /// before it can be edited or published, and again if its page size changes, re-saving every
+        /// page (BL-16852), so every slot ordinarily carries one. Null here is hardening against that
+        /// pass having failed; the
         /// AI image editor then simply offers that slot no automatic size rather than a guess,
         /// which is better than a made-up one. Parsed with the invariant culture,
         /// because the front end writes the numbers with JavaScript, which always uses a point

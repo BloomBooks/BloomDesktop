@@ -23,8 +23,8 @@ namespace Bloom.Api
         private const string kAppUrlPrefix = "app/";
 
         private readonly BookSelection _bookSelection;
-        private readonly EditBookCommand _editBookCommand;
         private readonly CreateFromSourceBookCommand _createFromSourceBookCommand;
+        private readonly BloomWebSocketServer _webSocketServer;
         public WorkspaceView WorkspaceView;
 
         // This is used by the app/closeDialog api call to keep track of which dialogs are open
@@ -34,13 +34,13 @@ namespace Bloom.Api
 
         public AppApi(
             BookSelection bookSelection,
-            EditBookCommand editBookCommand,
-            CreateFromSourceBookCommand createFromSourceBookCommand
+            CreateFromSourceBookCommand createFromSourceBookCommand,
+            BloomWebSocketServer webSocketServer
         )
         {
             _bookSelection = bookSelection;
-            _editBookCommand = editBookCommand;
             _createFromSourceBookCommand = createFromSourceBookCommand;
+            _webSocketServer = webSocketServer;
         }
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -79,6 +79,24 @@ namespace Bloom.Api
                     request.ExternalLinkSucceeded();
                 },
                 true
+            );
+
+            // Everything that takes the user somewhere that works with the whole book -- the Edit
+            // tab, the Publish tab -- calls this first and waits for it, so the book is ready before
+            // it gets there (BL-16852, BL-16877).
+            //
+            // requiresSync:false is both necessary and safe here. Necessary because the fix-up loads
+            // the book's pages in an off-screen browser and those make their own sync-locked API
+            // calls, which would block behind a lock held for the whole of this handler (the same
+            // reason external/process-book is registered that way). Safe because this handler is
+            // small and shares nothing: it touches only the book, which it is arranging to have
+            // exclusive access to, and everything else happens inside its own private WebView2.
+            // Please keep it that way.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "ensureBookReady",
+                HandleEnsureBookReady,
+                handleOnUiThread: false,
+                requiresSync: false
             );
 
             /* It's not totally clear if these kinds of things fit well in this App api, or if we
@@ -255,9 +273,44 @@ namespace Bloom.Api
                 );
             }
 
+            // On success the command selected the new book, which (being in the editable collection)
+            // is saveable; on failure the selection is still the source, which is not. So this also
+            // answers "did we actually make one?" without the command having to report back.
+            request.ReplyWithJson(
+                new { goToEditTab = _bookSelection.CurrentSelection?.IsSaveable == true }
+            );
+        }
+
+        /// <summary>
+        /// Bring the selected book to the state the Edit and Publish tabs need: structurally up to
+        /// date, and through the per-page browser fix-up if that is due (BL-16852, BL-16877). Shows
+        /// a progress dialog while it works, and is a no-op for a book already up to date, which is
+        /// the normal case.
+        /// </summary>
+        /// <remarks>
+        /// Callers await this BEFORE taking the user to the tab. Doing it afterwards would put the
+        /// dialog on the activation path, which is what hung Bloom in BL-16877. See the registration
+        /// for why it is (and must remain) requiresSync:false.
+        /// </remarks>
+        private void HandleEnsureBookReady(ApiRequest request)
+        {
+            var book = _bookSelection.CurrentSelection;
+            if (book != null && book.IsSaveable)
+                book.EnsureReadyForUserWork(webSocketServerForDialog: _webSocketServer);
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// Make a book from the selected source if that is what the button means here, and otherwise
+        /// just confirm the selected book can be edited. Either way the caller is told whether to go
+        /// on to the Edit tab; it does not take the user there itself.
+        /// </summary>
+        /// <remarks>
+        /// Handing the "now start editing it" step back to the front end is what lets every route
+        /// into the Edit tab share one sequence: prepare the book (app/ensureBookReady), then select
+        /// the tab. It matters most for the make-a-book case, where the book to prepare does not
+        /// exist until this call has run, so the front end could not have prepared it beforehand.
+        /// </remarks>
         private void HandleMakeOrEditBook(ApiRequest request)
         {
             if (_bookSelection.CurrentSelection == null)
@@ -275,14 +328,7 @@ namespace Bloom.Api
 
             // This can happen if the UI briefly has stale selectedBookInfo and leaves Edit enabled.
             // In that case, do nothing rather than trying to enter edit mode for a non-saveable book.
-            if (!_bookSelection.CurrentSelection.IsSaveable)
-            {
-                request.PostSucceeded();
-                return;
-            }
-
-            _editBookCommand.Raise(_bookSelection.CurrentSelection);
-            request.PostSucceeded();
+            request.ReplyWithJson(new { goToEditTab = _bookSelection.CurrentSelection.IsSaveable });
         }
 
         // Get requests should have queryparam settingName

@@ -312,12 +312,95 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Run the per-page browser fix-up if it is due, showing the modal progress dialog, from a
+        /// caller that may be on any thread. Where there is no window to show a dialog on -- the
+        /// command line -- it falls back to the no-UI form, so the work still happens rather than
+        /// being silently skipped. Returns true if it actually ran.
+        /// </summary>
+        /// <remarks>
+        /// The caller must NOT hold Bloom's global API sync lock. This blocks until the fix-up is
+        /// finished, and the off-screen pages it loads make their own sync-locked API calls, so a
+        /// held lock would deadlock them against us. That is why publish/getInitialPublishTabInfo,
+        /// which reaches this through Book.EnsureReadyForUserWork, is registered requiresSync:false.
+        ///
+        /// Marshalling with Invoke rather than BeginInvoke is deliberate: the caller is reporting on
+        /// a book it is about to use, so it has to wait for the fix-up rather than race it.
+        /// </remarks>
+        public static bool EnsurePerPageFixupIfNeededOnAnyThread(
+            Book book,
+            BloomWebSocketServer webSocketServer,
+            IProgress progress
+        )
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (webSocketServer == null || form == null || !form.IsHandleCreated)
+                return EnsurePerPageFixupIfNeededNoUI(book, progress);
+            if (!form.InvokeRequired)
+                return EnsurePerPageFixupIfNeeded(book, webSocketServer);
+            return (bool)
+                form.Invoke((Func<bool>)(() => EnsurePerPageFixupIfNeeded(book, webSocketServer)));
+        }
+
+        /// <summary>
+        /// Run the per-page browser fix-up on <paramref name="book"/> if it is due, with no UI of its
+        /// own, reporting to <paramref name="progress"/>. Returns true if it actually ran.
+        /// </summary>
+        /// <remarks>
+        /// This is the form for code that is not a Windows Forms context: the command line, and any
+        /// caller already inside its own progress UI. It runs on whatever thread it is called on --
+        /// ProcessBook drives its own off-screen browser thread and merely blocks on it -- so unlike
+        /// the dialog form below there is no UI-thread requirement.
+        ///
+        /// Two things the caller must still guarantee, because this cannot check either: that no
+        /// live page of this book is loaded (ProcessBook rewrites its DOM, and every page it loads
+        /// off-screen announces itself as loaded), and that it does not hold Bloom's global API sync
+        /// lock (those off-screen pages make their own sync-locked API calls as they load, and would
+        /// block behind it).
+        ///
+        /// A failure is recorded against the book, as for the dialog form, and then rethrown: a
+        /// caller with no dialog to show it in needs to hear about it.
+        /// </remarks>
+        public static bool EnsurePerPageFixupIfNeededNoUI(Book book, IProgress progress)
+        {
+            if (!NeedsPerPageFixup(book))
+                return false;
+            if (s_perPageFixupFailedThisSession.Contains(book.ID))
+                return false;
+            try
+            {
+                ProcessBook(book, progress: progress);
+            }
+            catch (Exception e)
+            {
+                s_perPageFixupFailedThisSession.Add(book.ID);
+                SIL.Reporting.Logger.WriteError(
+                    "Automatic page update failed for " + book.NameBestForUserDisplay,
+                    e
+                );
+                throw;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
-        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
-        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
-        /// need it, or when a run already failed for this book this session (so we don't re-prompt
-        /// every time).
+        /// due, behind a modal progress dialog, and return true if it actually ran. Called directly
+        /// only from the UI thread: when the AI image editor is launched
+        /// (EditingModel.BringBookToCurrentBrowserLevelThen) and after a page-size change
+        /// (EditingModel.SetLayout). Entering the Edit or Publish tab comes here the other way, via
+        /// Book.EnsureReadyForUserWork and EnsurePerPageFixupIfNeededOnAnyThread, because those
+        /// callers are on an API worker thread -- and because they run BEFORE the tab is showing, so
+        /// that this dialog is never on a tab's activation path (BL-16877). No-op (returns false) when the book
+        /// does not need it, or when a run already failed for this book this session (so we don't
+        /// re-prompt every time).
+        ///
+        /// THE CALLER MUST ENSURE no other pass is already running for this book and no live page is
+        /// loaded. This method does not check either, and cannot: NeedsPerPageFixup stays true for
+        /// the whole of a run, since the level is stamped only at the end. The callers arrange it by
+        /// starting only from a state where the editor has no page -- see EditingStateMachine.NoPage.
+        /// It matters because the modal below blocks in ShowDialog, which pumps the message loop and
+        /// so dispatches anything queued behind it; two runs would rewrite one book's DOM from two
+        /// worker threads at once.
         ///
         /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
         /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the

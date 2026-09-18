@@ -1094,6 +1094,60 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Everything that must have happened before a person works with this book or it is
+        /// published: the structural update of EnsureUpToDate, and then the per-page browser
+        /// fix-up if that is due (BL-16852, BL-16877).
+        /// </summary>
+        /// <remarks>
+        /// Call this -- rather than EnsureUpToDate -- from the places that mean "someone is about
+        /// to edit or publish this book", so that every such path produces the same result,
+        /// including the ones that never go near the Bloom UI. EnsureUpToDate deliberately does
+        /// NOT do the fix-up itself: it is called from previews, imports, bulk collection
+        /// operations and throwaway copies, none of which want a whole-book browser pass, and
+        /// ProcessBook begins by calling BringBookUpToDate, so doing it there would recurse.
+        ///
+        /// The fix-up repeats the structural update internally (ProcessBook starts with
+        /// BringBookUpToDate, deliberately, since it must run on a book that is already current).
+        /// That costs a second structural pass on the books that need fixing up, which is small
+        /// beside the browser work itself.
+        ///
+        /// Pass <paramref name="webSocketServerForDialog"/> from a context that has a window, and the
+        /// fix-up runs behind the usual modal progress dialog (marshalled to the UI thread for you);
+        /// leave it null from the command line and it runs silently, reporting to
+        /// <paramref name="progress"/>. Either way the caller must guarantee the two things
+        /// BookProcessor's remarks describe: no live page of this book loaded, and no API sync lock
+        /// held.
+        /// </remarks>
+        public void EnsureReadyForUserWork(
+            IProgress progress = null,
+            BloomWebSocketServer webSocketServerForDialog = null
+        )
+        {
+            // Serialized because two callers really do arrive at once: the publish tab asks on both
+            // its mount effect and the switchToPublishTab event, and app/ensureBookReady is
+            // requiresSync:false (it has to be), so nothing else keeps them apart. Two book updates
+            // running together is precisely the BL-3166 hazard EnsureUpToDateMemory nags about, and
+            // in a DEBUG build that nag is a MessageBox on a background thread, which hangs Bloom
+            // behind the progress dialog. Whoever gets here second finds the work already done and
+            // falls straight through.
+            lock (s_ensureReadyForUserWorkLock)
+            {
+                progress = progress ?? new NullProgress();
+                EnsureUpToDate(progress);
+                BookProcessor.EnsurePerPageFixupIfNeededOnAnyThread(
+                    this,
+                    webSocketServerForDialog,
+                    progress
+                );
+            }
+        }
+
+        // Guards EnsureReadyForUserWork. Static, not per-book: only one book is ever being prepared
+        // for the user at a time, and a shared lock also keeps two different books from updating at
+        // once, which is the same hazard.
+        private static readonly object s_ensureReadyForUserWorkLock = new object();
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
