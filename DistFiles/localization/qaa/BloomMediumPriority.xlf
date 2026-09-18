@@ -56,8 +56,8 @@
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
-        <source xml:lang="en">No Indent</source>
-        <target xml:lang="qaa-x-test" state="needs-translation">No Indent</target>
+        <source xml:lang="en">Do Not Indent This Paragraph</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Do Not Indent This Paragraph</target>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
