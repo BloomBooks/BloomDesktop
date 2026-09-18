@@ -18,19 +18,17 @@ The heavy loop is pure Node driving Bloom's HTTP API + headless-Chrome CDP — *
 
 ## Prerequisites
 
-1. **Bloom running from source** via `./go.sh` (a Debug build). It must include:
-   - the DEBUG-only multi-axis set-state handler on `POST /bloom/api/settings/branding`
-     (accepts `{branding,layout,xmatter}` JSON; see `CollectionSettingsApi.cs`), and
-   - the update-guard `try/finally` in `Book.cs` (`BringBookUpToDate`) so a failing cell can't
-     wedge the book / pop the "two updates at once" dialog.
-   Both ship on branch `BL-16370`. If Bloom was already running before those (or the BL-16370
-   badge changes in `BookStorage.cs`) were added, **fully restart it** — hot-reload leaves the new
-   `BrandingBadgeHtmlByToken` static field null, which NREs every capture (see `README-gotchas.md`).
+1. **Bloom running from source** via `./go.sh` (a Debug build). The survey relies on the
+   DEBUG-only multi-axis set-state handler on `POST /bloom/api/settings/branding` (accepts
+   `{branding,layout,xmatter}` JSON; see `CollectionSettingsApi.cs`). If a static field in the
+   branding code was added or changed while Bloom was running, **fully restart it**; hot-reload
+   leaves a new static field null and every capture NREs (see `README-gotchas.md`).
 2. A collection open with at least one book (any book works; branding shows mainly on
    cover/title/credits/back-cover pages).
 3. Google Chrome installed (path in `survey.mjs` `CHROME`).
 
-Confirm Bloom is up: `curl http://localhost:8089/bloom/testconnection` → `OK`.
+Confirm Bloom is up and get its port from `launcherControl.mjs --status --json` (`bloom-automation`
+skill); 8089 is first-come across worktrees, so pass the reported port via `--base`.
 
 ## Axes / parameters (`survey.mjs`)
 
