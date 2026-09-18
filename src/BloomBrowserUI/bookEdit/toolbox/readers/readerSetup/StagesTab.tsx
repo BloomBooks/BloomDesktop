@@ -21,9 +21,7 @@ import {
     cloneReaderSettings,
     hasOnlyKnownGraphemes,
 } from "./decodableStagesUtils";
-import {
-    updateSettings,
-} from "./readerDialogShared";
+import { updateSettings } from "./readerDialogShared";
 
 export const StagesTab: React.FunctionComponent<{
     settings: ReaderSettings;
@@ -348,7 +346,6 @@ export const StagesTab: React.FunctionComponent<{
                 ) : (
                     <StageAllowedWordsFile
                         stage={stage}
-                        allowedWords={allowedWords}
                         updateStage={updateStage}
                         removeAllowedWordsFile={removeAllowedWordsFile}
                     />

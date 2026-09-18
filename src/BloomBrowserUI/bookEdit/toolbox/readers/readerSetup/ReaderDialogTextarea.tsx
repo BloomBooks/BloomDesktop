@@ -6,11 +6,6 @@ import { css, SerializedStyles } from "@emotion/react";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 
 export const ReaderDialogTextarea: React.FunctionComponent<{
-    /**
-     * Called with the box's new text. Named for what it does rather than what the callers do
-     * with it: they all happen to write settings, but this component knows nothing about
-     * settings, and the shared updateSettings helper is a different thing entirely.
-     */
     onValueChange: (value: string) => void;
     value: string;
     extraStyles: SerializedStyles;

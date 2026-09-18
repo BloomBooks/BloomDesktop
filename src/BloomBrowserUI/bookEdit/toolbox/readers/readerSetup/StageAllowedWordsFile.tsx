@@ -21,7 +21,6 @@ import { commonHeaderStyles, commonTextStyles } from "./readerDialogShared";
  */
 export const StageAllowedWordsFile: React.FunctionComponent<{
     stage: ReaderStage;
-    allowedWords: string[];
     updateStage: (change: (updatedStage: ReaderStage) => void) => void;
     removeAllowedWordsFile: () => void;
 }> = (props) => {
@@ -30,99 +29,96 @@ export const StageAllowedWordsFile: React.FunctionComponent<{
         "ReaderSetup.RemoveWordList",
     );
     return (
-                    <div
+        <div
+            css={css`
+                min-width: 0;
+                padding: 22px;
+            `}
+        >
+            <div
+                css={css`
+                    margin-bottom: 7px;
+                    ${commonHeaderStyles}
+                `}
+            >
+                <Span l10nKey="ReaderSetup.AllowedWordsFile">
+                    Allowed Words File
+                </Span>
+            </div>
+            {props.stage.allowedWordsFile === "" ? (
+                <BloomButton
+                    l10nKey="ReaderSetup.ChooseAllowedWordsFile"
+                    hasText={true}
+                    enabled={true}
+                    variant="outlined"
+                    onClick={() =>
+                        get(
+                            "readers/ui/chooseAllowedWordsListFile",
+                            (result) => {
+                                if (result.data) {
+                                    props.updateStage((updatedStage) => {
+                                        updatedStage.allowedWordsFile =
+                                            result.data;
+                                    });
+                                }
+                            },
+                        )
+                    }
+                >
+                    Choose...
+                </BloomButton>
+            ) : (
+                <div
+                    css={css`
+                        display: flex;
+                        align-items: center;
+                        min-height: 42px;
+                        box-sizing: border-box;
+                        border: 1px solid #e1e4e6;
+                        border-radius: 7px;
+                        ${commonTextStyles}
+                    `}
+                >
+                    <InsertDriveFileOutlinedIcon
+                        css={css`
+                            margin: 0 12px;
+                            color: #8a949d;
+                            font-size: 19px;
+                        `}
+                    />
+                    <span
                         css={css`
                             min-width: 0;
-                            padding: 22px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         `}
                     >
-                        <div
-                            css={css`
-                                margin-bottom: 7px;
-                                ${commonHeaderStyles}
-                            `}
-                        >
-                            <Span l10nKey="ReaderSetup.AllowedWordsFile">
-                                Allowed Words File
-                            </Span>
-                        </div>
-                        {props.stage.allowedWordsFile === "" ? (
-                            <BloomButton
-                                l10nKey="ReaderSetup.ChooseAllowedWordsFile"
-                                hasText={true}
-                                enabled={true}
-                                variant="outlined"
-                                onClick={() =>
-                                    get(
-                                        "readers/ui/chooseAllowedWordsListFile",
-                                        (result) => {
-                                            if (result.data) {
-                                                props.updateStage((updatedStage) => {
-                                                    updatedStage.allowedWordsFile =
-                                                        result.data;
-                                                });
-                                            }
-                                        },
-                                    )
-                                }
-                            >
-                                Choose...
-                            </BloomButton>
-                        ) : (
-                            <div
+                        {props.stage.allowedWordsFile}
+                    </span>
+                    <div
+                        css={css`
+                            margin-left: auto;
+                            margin-right: 4px;
+                        `}
+                    >
+                        <BloomTooltip tip={removeTooltip} placement="top-end">
+                            <IconButton
+                                aria-label="Remove allowed words file"
+                                onClick={props.removeAllowedWordsFile}
                                 css={css`
-                                    display: flex;
-                                    align-items: center;
-                                    min-height: 42px;
-                                    box-sizing: border-box;
-                                    border: 1px solid #e1e4e6;
-                                    border-radius: 7px;
-                                    ${commonTextStyles}
+                                    color: #858a8e;
+                                    .MuiSvgIcon-root {
+                                        font-size: 18px;
+                                    }
                                 `}
                             >
-                                <InsertDriveFileOutlinedIcon
-                                    css={css`
-                                        margin: 0 12px;
-                                        color: #8a949d;
-                                        font-size: 19px;
-                                    `}
-                                />
-                                <span
-                                    css={css`
-                                        min-width: 0;
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
-                                        white-space: nowrap;
-                                    `}
-                                >
-                                    {props.stage.allowedWordsFile}
-                                </span>
-                                <div
-                                    css={css`
-                                        margin-left: auto;
-                                        margin-right: 4px;
-                                    `}
-                                >
-                                    <BloomTooltip
-                                        tip={removeTooltip}
-                                        placement="top-end"
-                                    >
-                                        <IconButton
-                                            aria-label="Remove allowed words file"
-                                            onClick={props.removeAllowedWordsFile}
-                                            css={css`
-                                                color: #858a8e;
-                                                .MuiSvgIcon-root {
-                                                    font-size: 18px;
-                                                }
-                                            `}
-                                        >
-                                            <DeleteOutlineIcon />
-                                        </IconButton>
-                                    </BloomTooltip>
-                                </div>
-                            </div>
-                        )}
+                                <DeleteOutlineIcon />
+                            </IconButton>
+                        </BloomTooltip>
                     </div>
-);
+                </div>
+            )}
+        </div>
+    );
 };

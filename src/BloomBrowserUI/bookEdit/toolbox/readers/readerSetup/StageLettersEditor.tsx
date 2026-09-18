@@ -138,7 +138,7 @@ export const StageLettersEditor: React.FunctionComponent<{
             `}
         >
             <Span l10nKey="ReaderSetup.ClickLetter">
-                Click on letters to add them to this props.stage.
+                Click on letters to add them to this stage.
             </Span>
         </div>
     </div>
