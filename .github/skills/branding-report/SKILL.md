@@ -1,3 +1,9 @@
+---
+name: branding-report
+description: Screenshot a Bloom book across a matrix of branding × page × layout × xmatter by driving the running Bloom, then explore the results in a viewer or bake a shareable HTML report. Use when asked to "survey the brandings", "show every branding's back cover", or compare a branding across layouts or xmatters.
+argument-hint: "which brandings, pages, layouts and xmatters to capture"
+---
+
 # branding-report
 
 Render a Bloom book's pages across a matrix of **branding × page × layout × xmatter** by driving

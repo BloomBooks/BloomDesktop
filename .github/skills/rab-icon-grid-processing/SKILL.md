@@ -2,7 +2,6 @@
 name: rab-icon-grid-processing
 description: 'Process an incoming grid or batch of icon images into usable Reading App Builder icons. Use when RAB icon assets arrive as a grid, sprite sheet, nested folders, or padded PNGs that need splitting, cropping, repadding, flattening, compatibility updates, and sample-first validation.'
 argument-hint: 'incoming icon source, target subset, and whether to do a sample pass or full batch'
-user-invocable: true
 ---
 
 # RAB Icon Grid Processing

@@ -2,7 +2,6 @@
 name: edit-bloom-book
 description: Use when an agent needs to edit or repair a Bloom book HTML file while preserving the strict Bloom.html schema used by Bloom Desktop.
 argument-hint: "Bloom.html path and requested change or repair"
-user-invocable: true
 ---
 
 # Edit Bloom book

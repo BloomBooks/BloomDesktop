@@ -2,7 +2,6 @@
 name: branding-page-sizes
 description: Use when adding or tuning page sizes/layouts for a Bloom enterprise/subscription branding pack (e.g. MXB-Book-Literacy, MXB-Book-Scripture, MXB-Book-Literacy-Prepub) so the dense front/back matter looks polished at every size — and when producing a real-Bloom screenshot PDF that proves it. Covers unlocking page sizes, the spacing-vs-font tuning rules, a live overflow-measuring iteration loop, the CDP capture pipeline, removing edit-view artifacts, and assembling the verification PDF.
 argument-hint: "branding pack + sample book folder, and which sizes/pages to polish"
-user-invocable: true
 ---
 
 # Branding page sizes: layouts, per-size polish, verification & PDF
