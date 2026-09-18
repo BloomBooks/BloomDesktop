@@ -418,6 +418,264 @@
         <target xml:lang="es-ES" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
+        <source xml:lang="en">{0} used of {1} account credits</source>
+        <target xml:lang="es" state="translated">{0} usados de los {1} de crédito de la cuenta</target>
+        <note>ID: AiImageEditor.Credits.AccountCreditsUsed</note>
+        <note>Line under the money meter when the spending limit is the whole account balance. {0} is what has been spent and {1} the total, both amounts of money like '$4.20'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountLeft">
+        <source xml:lang="en">{0} left</source>
+        <target xml:lang="es" state="translated">{0} restantes</target>
+        <note>ID: AiImageEditor.Credits.AmountLeft</note>
+        <note>Money still available for making pictures, shown by the meter at the top of the editor. {0} is an amount like '$4.20'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountOfAmount">
+        <source xml:lang="en">{0} of {1}</source>
+        <target xml:lang="es" state="translated">{0} de {1}</target>
+        <note>ID: AiImageEditor.Credits.AmountOfAmount</note>
+        <note>Two amounts of money, as in '$1.20 of $5.00'. {0} is what is spent, {1} the limit.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountTotal">
+        <source xml:lang="en">{0} total</source>
+        <target xml:lang="es" state="translated">{0} en total</target>
+        <note>ID: AiImageEditor.Credits.AmountTotal</note>
+        <note>Total money spent, shown under the meter at the top of the editor. {0} is an amount like '$4.20'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountUsed">
+        <source xml:lang="en">{0} used</source>
+        <target xml:lang="es" state="translated">{0} usados</target>
+        <note>ID: AiImageEditor.Credits.AmountUsed</note>
+        <note>Money already spent on making pictures, shown by the meter at the top of the editor. {0} is an amount like '$4.20'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.Label">
+        <source xml:lang="en">AI image generator credits</source>
+        <target xml:lang="es" state="translated">Créditos del generador de imágenes con IA</target>
+        <note>ID: AiImageEditor.Credits.Label</note>
+        <note>Small heading over the meter showing how much money is left for making pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.CouldNotLoadImage">
+        <source xml:lang="en">Could not load image. Please try again.</source>
+        <target xml:lang="es" state="translated">No se pudo cargar la imagen. Inténtelo de nuevo.</target>
+        <note>ID: AiImageEditor.Error.CouldNotLoadImage</note>
+        <note>Message when the picture the user chose to work on could not be read.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.FailedToProcess">
+        <source xml:lang="en">Failed to process image.</source>
+        <target xml:lang="es" state="translated">No se pudo procesar la imagen.</target>
+        <note>ID: AiImageEditor.Error.FailedToProcess</note>
+        <note>Message when making the picture failed and we have nothing more specific to say.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.History.DeleteFromHistory">
+        <source xml:lang="en">Delete from history</source>
+        <target xml:lang="es" state="translated">Eliminar del historial</target>
+        <note>ID: AiImageEditor.History.DeleteFromHistory</note>
+        <note>Tip on the small button that removes one picture from the History strip, the strip holding every picture made in this session.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.ExtraHigh">
+        <source xml:lang="en">Extra high</source>
+        <target xml:lang="es" state="translated">Muy alto</target>
+        <note>ID: AiImageEditor.Level.ExtraHigh</note>
+        <note>Choice in the menu for how much care the model puts into the picture, one step above the choice labelled 'High'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.High">
+        <source xml:lang="en">High</source>
+        <target xml:lang="es" state="translated">Alto</target>
+        <note>ID: AiImageEditor.Level.High</note>
+        <note>Choice in the reasoning-effort and quality menus: a lot.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Low">
+        <source xml:lang="en">Low</source>
+        <target xml:lang="es" state="translated">Mínimo</target>
+        <note>ID: AiImageEditor.Level.Low</note>
+        <note>Choice in the reasoning-effort and quality menus: the least.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Max">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="es" state="translated">Máximo</target>
+        <note>ID: AiImageEditor.Level.Max</note>
+        <note>Choice in the menu for how much care the model puts into the picture: the highest there is.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Medium">
+        <source xml:lang="en">Medium</source>
+        <target xml:lang="es" state="translated">Intermedio</target>
+        <note>ID: AiImageEditor.Level.Medium</note>
+        <note>Choice in the reasoning-effort and quality menus: in between.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.None">
+        <source xml:lang="en">None</source>
+        <target xml:lang="es" state="translated">Nada</target>
+        <note>ID: AiImageEditor.Level.None</note>
+        <note>Choice in the reasoning-effort menu, and the name of the 'no art style' choice: nothing, or none.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.Estimate">
+        <source xml:lang="en">Estimate {0}{1}</source>
+        <target xml:lang="es" state="translated">Aprox. {0}{1}</target>
+        <note>ID: AiImageEditor.Model.Estimate</note>
+        <note>What this model is expected to cost for this run. {0} is an amount like '$0.04', {1} is empty or ', ~12s'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.LastMeasured">
+        <source xml:lang="en">Last measured: {0}</source>
+        <target xml:lang="es" state="translated">Última medición: {0}</target>
+        <note>ID: AiImageEditor.Model.LastMeasured</note>
+        <note>What this model cost and how long it took the last time it ran. {0} is like '$0.04, ~12s'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.PickerTooltip">
+        <source xml:lang="en">Choose which AI image engine to use</source>
+        <target xml:lang="es" state="translated">Elija qué motor de imágenes con IA usar</target>
+        <note>ID: AiImageEditor.Model.PickerTooltip</note>
+        <note>Tip on the button that opens the list of AI models, the engines that make the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.RecommendedChip">
+        <source xml:lang="en">recommended for this tool</source>
+        <target xml:lang="es" state="translated">recomendado para esta herramienta</target>
+        <note>ID: AiImageEditor.Model.RecommendedChip</note>
+        <note>Small tag on the models we suggest for this particular tool. Shown in lower case.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.AvailableBalance">
+        <source xml:lang="en">, {0} available</source>
+        <target xml:lang="es" state="translated">, {0} disponibles</target>
+        <note>ID: AiImageEditor.OpenRouter.AvailableBalance</note>
+        <note>Tail of the message after a key is checked, saying how much money is left. {0} is an amount of money like '$4.20'. Keep the comma and space at the start.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
+        <source xml:lang="en">Forget Key</source>
+        <target xml:lang="es" state="translated">Olvidar la clave</target>
+        <note>ID: AiImageEditor.OpenRouter.ForgetKey</note>
+        <note>Button that deletes the stored key from this computer.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed">
+        <source xml:lang="en">Key verification failed</source>
+        <target xml:lang="es" state="translated">No se pudo verificar la clave</target>
+        <note>ID: AiImageEditor.OpenRouter.KeyVerificationFailed</note>
+        <note>Message shown after the key the user pasted has been checked and does not work.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerified">
+        <source xml:lang="en">Key verified{0}</source>
+        <target xml:lang="es" state="translated">Clave verificada{0}</target>
+        <note>ID: AiImageEditor.OpenRouter.KeyVerified</note>
+        <note>Message after the key is checked and works. {0} is either empty or ', $4.20 available'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.Testing">
+        <source xml:lang="en">Testing…</source>
+        <target xml:lang="es" state="translated">Probando…</target>
+        <note>ID: AiImageEditor.OpenRouter.Testing</note>
+        <note>Replaces the 'Test Key' button's own text while the key is being checked, so the user can see something is happening.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.OriginalComic">
+        <source xml:lang="en">Original Comic</source>
+        <target xml:lang="es" state="translated">Cómic original</target>
+        <note>ID: AiImageEditor.Panel.OriginalComic</note>
+        <note>Heading over the picture being changed, when the tool cuts a comic strip into separate pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.ZoomHint">
+        <source xml:lang="en">Ctrl + mouse wheel to resize the images</source>
+        <target xml:lang="es" state="translated">Ctrl + rueda del ratón para cambiar el tamaño de las imágenes</target>
+        <note>ID: AiImageEditor.Preview.ZoomHint</note>
+        <note>Tip in the gallery window, which shows every picture of one strip at full size, saying how to make the pictures bigger or smaller. 'Ctrl' is the name of a key on the keyboard and stays as it is.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Quality.Label">
+        <source xml:lang="en">Quality</source>
+        <target xml:lang="es" state="translated">Calidad</target>
+        <note>ID: AiImageEditor.Quality.Label</note>
+        <note>Name of the setting for how much care the model puts into the picture. The AI companies call this output quality.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Settings.Working">
+        <source xml:lang="en">Working...</source>
+        <target xml:lang="es" state="translated">Procesando...</target>
+        <note>ID: AiImageEditor.Settings.Working</note>
+        <note>Replaces a settings button's own text while that button is busy, so the user can see something is happening. It describes the software, not a person, so a verb meaning 'labouring' would be wrong; 'processing' or 'please wait' is the sense.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.ClearImage">
+        <source xml:lang="en">Clear Image</source>
+        <target xml:lang="es" state="translated">Borrar la imagen</target>
+        <note>ID: AiImageEditor.Slot.ClearImage</note>
+        <note>Tip on the button that takes the picture out of a slot and leaves the slot empty. Do not use a word meaning 'tidy up' or 'clean': this editor also has a tool for cleaning up an old drawing, and the two must not read alike. Distinct from 'Remove image', which takes away a picture the user added as a reference.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.DropImage">
+        <source xml:lang="en">Drop image</source>
+        <target xml:lang="es" state="translated">Suelte una imagen</target>
+        <note>ID: AiImageEditor.Slot.DropImage</note>
+        <note>Shown over an image space while the user is dragging a picture onto it, to say that letting go will put it there.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Status.NotConnected">
+        <source xml:lang="en">OpenRouter not connected</source>
+        <target xml:lang="es" state="translated">OpenRouter no está conectado</target>
+        <note>ID: AiImageEditor.Status.NotConnected</note>
+        <note>Part of the settings button's description: no key, so nothing can be made.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.Pin">
+        <source xml:lang="en">Pin strip</source>
+        <target xml:lang="es" state="translated">Anclar la tira</target>
+        <note>ID: AiImageEditor.Strip.Pin</note>
+        <note>Tip on the button that keeps one of the side strips of small pictures open, instead of letting it slide shut.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.ShowInGallery">
+        <source xml:lang="en">Show in full-screen gallery</source>
+        <target xml:lang="es" state="translated">Ver en la galería a pantalla completa</target>
+        <note>ID: AiImageEditor.Strip.ShowInGallery</note>
+        <note>Tip on the button that opens every picture of one side strip at full size, in a window of its own.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.Unpin">
+        <source xml:lang="en">Unpin strip</source>
+        <target xml:lang="es" state="translated">Desanclar la tira</target>
+        <note>ID: AiImageEditor.Strip.Unpin</note>
+        <note>Tip on the button that lets one of the side strips of small pictures slide shut again.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_style.Description">
+        <source xml:lang="en">Restyle the selected image.</source>
+        <target xml:lang="es" state="translated">Vuelve a dibujar la imagen seleccionada en otro estilo.</target>
+        <note>ID: AiImageEditor.Tool.change_style.Description</note>
+        <note>One-line explanation of the 'Change Style' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Description">
+        <source xml:lang="en">Replace specific text in the image. Use this to localize images that contain text.</source>
+        <target xml:lang="es" state="translated">Reemplaza un texto concreto dentro de la imagen. Úselo para adaptar imágenes que contienen texto.</target>
+        <note>ID: AiImageEditor.Tool.change_text.Description</note>
+        <note>One-line explanation of the 'Change Text' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Title">
+        <source xml:lang="en">Make GIF</source>
+        <target xml:lang="es" state="translated">Crear un GIF</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.ActionButton">
+        <source xml:lang="en">Choose PDF…</source>
+        <target xml:lang="es" state="translated">Elegir un PDF…</target>
+        <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
+        <note>The button that runs the 'PDF to Images' tool. A command: what will happen when it is pressed.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
+        <source xml:lang="en">PDF to Images</source>
+        <target xml:lang="es" state="translated">PDF a imágenes</target>
+        <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_background.Description">
+        <source xml:lang="en">Replace the background with transparency.</source>
+        <target xml:lang="es" state="translated">Deja el fondo transparente.</target>
+        <note>ID: AiImageEditor.Tool.remove_background.Description</note>
+        <note>One-line explanation of the 'Remove Background' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_background.Title">
+        <source xml:lang="en">Remove Background</source>
+        <target xml:lang="es" state="translated">Quitar el fondo</target>
+        <note>ID: AiImageEditor.Tool.remove_background.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
+        <source xml:lang="en">Object to Remove</source>
+        <target xml:lang="es" state="translated">Objeto a quitar</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
+        <note>Label on a setting of the 'Remove Object' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Title">
+        <source xml:lang="en">Remove Object</source>
+        <target xml:lang="es" state="translated">Quitar un objeto</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
