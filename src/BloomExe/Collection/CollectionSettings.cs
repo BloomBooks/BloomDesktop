@@ -1496,8 +1496,10 @@ namespace Bloom.Collection
                 // before matching while LibPalaso's Simplified/Traditional checks are case-sensitive:
                 // zh-CN fell through to the base name "Chinese", losing the only thing that said which
                 // Chinese it was, and zh-TW came out as "Chinese-TW (Chinese)".
-                var generalCode = IetfLanguageTag.GetGeneralCode(langTag);
-                if (generalCode == "zh-CN" || generalCode == "zh-TW" || generalCode == "prs")
+                // Exactly these tags, not anything built on them: a zh-CN-x-foo and a zh-CN-x-bar
+                // must stay distinguishable, and they only do that by going through
+                // GetLanguageNameWithScriptVariants below like any other variant.
+                if (langTag == "zh-CN" || langTag == "zh-TW" || langTag == "prs")
                     return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
                 if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
                 {

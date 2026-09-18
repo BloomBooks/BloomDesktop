@@ -2599,6 +2599,11 @@ namespace BloomTests.Book
         [TestCase("zh-CN", "Chinese (Simplified)")]
         [TestCase("zh-TW", "Chinese (Traditional)")]
         [TestCase("prs", "Dari")]
+        // Variants built on those three are NOT special-cased: they keep their own labels, so two
+        // different zh-CN-x-... languages can still be told apart.
+        [TestCase("zh-CN-x-foo", "Chinese-CN-x-foo (Chinese)")]
+        [TestCase("zh-CN-x-bar", "Chinese-CN-x-bar (Chinese)")]
+        [TestCase("prs-Arab", "Dari-Arab (Dari)")]
         // An unlisted language already carries its whole tag in the name the lookup
         // returns, so it must not also be wrapped in script variants.
         [TestCase("qaa-x-foo", "Language Not Listed (qaa-x-foo)")]
