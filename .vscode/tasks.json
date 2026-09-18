@@ -70,29 +70,6 @@
                 "${workspaceFolder}/.github/skills/rab-icon-grid-processing/cropAppBuilderIconSamples.ps1"
             ],
             "problemMatcher": []
-        },
-        {
-            "label": "pilot-extract-appbuilder-icons",
-            "type": "shell",
-            "command": "powershell.exe",
-            "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/extractAppBuilderIconGridSamples.ps1",
-                "-SourcePaths",
-                "${workspaceFolder}/DistFiles/appbuilder-icons-old/bloom-ai2-01-open-book-stars.png",
-                "${workspaceFolder}/DistFiles/appbuilder-icons-old/bloom-ai2-19-rocket-book.png",
-                "-OutputRoot",
-                "output\\copilot-verify\\appbuilder-icon-samples",
-                "-MaxIconsPerSource",
-                "2",
-                "-StartNumber",
-                "1"
-            ],
-            "isBackground": false,
-            "problemMatcher": []
         }
     ]
 }

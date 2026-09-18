@@ -12,16 +12,16 @@ When working in the front-end, cd to src/BloomBrowserUI
 - pnpm 11.5.2
 - Never use npm or yarn commands
 - Never use CDNs. This is an offline app.
-- WebView2 112
+- WebView2 (the Evergreen runtime; the SDK version is pinned in `src/BloomExe/BloomExe.csproj`)
 
 ## Code Style
 
-- Always use arrow functions and function components in React
+- React components are arrow function components (`export const Foo: React.FunctionComponent<{…}> = (props) => {…}`), as the root `AGENTS.md` says.
+- For other top-level functions (helpers, utilities), prefer a `function foo() {}` declaration over `const foo = () => {}`.
 
 - Avoid removing existing comments.
 - Avoid adding a comment like "// add this line".
 
-- For functions, prefer typescript "function" syntax over const foo = () ==> functions.
 - When writing less, use new css features supported by our current version of webview2. E.g. "is()".
 
 - Style elements using the css macro from @emotion/react directly on the element being styled, using the css prop. E.g. `<div css={css`color:red`}>`
@@ -46,7 +46,7 @@ When the effect should run only on mount (and optionally clean up on unmount), p
 
 We use Playwright.
 
-Tests for components under /react_components have a playwright test system based on "*.uitest.ts" files. See src/BloomBrowserUI/react_components/AGENTS.md for more info.
+Tests for components under /react_components have a playwright test system based on "*.uitest.ts" files. See src/BloomBrowserUI/react_components/component-tester/README.md and the `component-test` skill.
 
 
 Don't check for styles in tests as a way to know the status of something. That is fragile. If necessary have components add css classes or whatever that tests can check.
@@ -55,7 +55,7 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 
 ## Troubleshooting UI Problems
 
-Usually if you get stuck, the best thing to do is to get the component showing in a browser and use chrome-devtools-mcp to to check the DOM, the console, and if necessary a screenshot. You can add console messages that should show, then read the browser's console to test your assumptions. If you want access to chrome-devtools-mcp and don't have it, stop and ask me.
+Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `bloom-automation` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions.
 
 ## Localization
 
@@ -116,17 +116,17 @@ You have a complete set of faster, non-disruptive alternatives, so don't run the
 
 The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
 
-### If the front-end test suite seems to hang, re-run it with `--no-file-parallelism`
+### If the front-end test suite seems to hang
 
-On some machines `yarn test` (`vitest run`) gets through roughly fifteen test files and then
-stops dead — no error, no failing test, no summary — until something kills it. That is vitest's
-worker pool wedging, **not** a broken test and not the branch you are on: run the files one at a
-time and the whole suite completes green.
+On some machines `pnpm test` (`vitest run`) has stopped dead part way through the files — no
+error, no failing test, no summary. That is vitest's worker pool wedging, **not** a broken test
+and not the branch you are on. `vite.config.mts` now sets `pool: "threads"`, which is the
+configuration that has run the whole suite clean where the default forks pool wedged. If it still
+stalls, re-run with fewer workers rather than hunting for "the test that hangs" (it moves):
 
 ```bash
-cd src/BloomBrowserUI && yarn vitest run --no-file-parallelism
+# from src/BloomBrowserUI
+pnpm exec vitest run --no-file-parallelism
 ```
 
-So before reporting the suite as hanging or failing, re-run it that way and report *that* result.
-Do not go hunting for the "test that hangs" — it moves. Excluding whichever file it stopped after
-just relocates the stall to a different one.
+Report *that* result. Never use `yarn` here.

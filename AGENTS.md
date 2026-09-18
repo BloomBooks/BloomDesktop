@@ -12,7 +12,7 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
 # Code Style
 
-- Always use arrow functions and function components in React
+- React components are arrow function components (see the example below); `src/BloomBrowserUI/AGENTS.md` covers other functions
 - do not destructure props
 - do not define a props data type unless it is huge
 - example: export const SomeComponent: React.FunctionComponent<{initiallySelectedGroupIndex: number;}> = (props) => {...}
