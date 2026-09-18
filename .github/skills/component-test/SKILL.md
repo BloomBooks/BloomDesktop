@@ -16,8 +16,9 @@ If the component has no `component-tests/` directory, it is not set up yet. Use
 example. You will need to intercept some API calls with
 `src/BloomBrowserUI/react_components/component-tester/apiInterceptors.ts`.
 
-- In the component's own directory (not in `component-tests/`), create `test.sh` and `manual.sh`
-  scripts that run the tests and open the component in a browser for manual testing.
+- In the component's own directory (not in `component-tests/`), create `test.sh` and `show.sh`
+  scripts that run the tests and open the component in a browser for manual testing
+  (`registration/show.sh` is the model; the README documents `./show.sh`).
 - If there is no `<componentname>-ui-test-plan.md` yet, make one. Keep it small: during setup
   the goal is proving the component shows in a browser and does one minimal thing, not complete
   coverage. The developer will direct you to add more later.

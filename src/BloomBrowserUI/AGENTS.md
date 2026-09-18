@@ -125,7 +125,8 @@ configuration that has run the whole suite clean where the default forks pool we
 stalls, re-run with fewer workers rather than hunting for "the test that hangs" (it moves):
 
 ```bash
-pnpm -C src/BloomBrowserUI exec vitest run --no-file-parallelism
+# from src/BloomBrowserUI
+pnpm exec vitest run --no-file-parallelism
 ```
 
 Report *that* result. Never use `yarn` here.
