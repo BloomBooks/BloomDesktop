@@ -6,12 +6,13 @@ namespace Bloom.ToPalaso
 {
     /// <summary>
     /// An IProgress that passes everything through to another one except WriteStatus, which it
-    /// drops. Use it around a loop that reports a status line per item (one per image, one per
-    /// page...) while also driving the percent bar. Status was designed for a single overwriting
-    /// label, where one line per item is a useful "what am I doing now"; the React progress dialog
-    /// (WebProgressAdapter) has no such label and appends every status as a permanent log line, so
-    /// the same loop there produces dozens of near-identical lines that only duplicate the bar
-    /// (BL-16893). Messages, warnings and errors still get through, and so does the percent.
+    /// drops. Use it for work whose progress is shown by a determinate bar and that also reports
+    /// status lines as it goes: a stage ("Updating pages..."), or an item (one line per image, one
+    /// per page). Status was designed for a single overwriting label, where such a line is a useful
+    /// "what am I doing now"; the React progress dialog (WebProgressAdapter) has no such label and
+    /// appends every status as a permanent log line, so the same work there fills the dialog with
+    /// lines that only duplicate the bar (BL-16893). Messages, warnings and errors still get
+    /// through, and so does the percent.
     /// </summary>
     public class QuietStatusProgress : IProgress
     {

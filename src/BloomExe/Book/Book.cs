@@ -1106,7 +1106,11 @@ namespace Bloom.Book
         /// </summary>
         private static IProgress PerImageProgress(IProgress progress)
         {
-            if (progress == null || progress is NullProgress)
+            if (
+                progress == null
+                || progress is NullProgress
+                || progress is QuietStatusProgress // already quiet (e.g. from BookProcessor.ProcessBook)
+            )
                 return progress;
             return new QuietStatusProgress(progress);
         }
