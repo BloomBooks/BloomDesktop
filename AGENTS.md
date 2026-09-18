@@ -212,7 +212,22 @@ You have a complete set of faster, non-disruptive alternatives, so don't run the
 - **Confirm the real production bundle compiles** — `build/agent-vite.sh`, which builds into an isolated tree and leaves `output\browser` alone (see "Building / testing the front-end (web UI) while Bloom is running" above).
 - **See a change in the running Bloom** — just edit the source; the dev server pushes it in. No build.
 
-The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session. If you think you genuinely need it, ask the developer to run it (they can stop Bloom first) rather than running it yourself.
+The full `pnpm build` exists to (re)populate the shared `output\browser` — `clean.js` plus content assets plus the bundle. It's slow, and it wrecks any running Vite dev server / `--watch` and the Bloom loading from it, so it's a developer/CI job, not something to spring on a live session.
+
+**"Live" means live in *this* worktree.** Each worktree has its own `output\browser`, so a
+`Bloom.exe` or dev server belonging to another one is irrelevant — on a machine with many
+worktrees, a bare "is Bloom running?" is the wrong question. Check whether a process is using the
+tree you are about to rebuild:
+
+```powershell
+Get-CimInstance Win32_Process -Filter "Name='Bloom.exe' OR Name='node.exe'" |
+  Where-Object { $_.CommandLine -like "*$(Get-Location)*" } | Select-Object CommandLine
+```
+
+If something here is live, it is the developer's call — ask them; they can stop Bloom first. If
+nothing is, run it when you genuinely need it, and say that you did. (The usual trigger is the e2e
+suite refusing to run against a stale bundle. `BLOOM_E2E_VITE_PORT` with a dev server tests the
+working tree without a rebuild — see `src/BloomE2E/README.md`.)
 
 # Localization
 Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`. For how Crowdin works and why those rules exist — including why a no-longer-used string is marked obsolete rather than deleted — see `DistFiles/localization/README.md`.
