@@ -268,8 +268,13 @@ test("S1: Set Destination menu row shows subscription badge when canvas subscrip
         paletteItem: "navigation-image-button",
     });
 
+    // The Canvas tool's section header (a MUI AccordionSummary, identified by the canonical
+    // tool id on its icon) shows the subscription badge via
+    // SubscriptionBadgeWithTooltipAndDialog, which renders it as an <img>.
     const canvasToolBadgeCount = await canvasTestContext.toolboxFrame
-        .locator('h3[data-toolid="canvasTool"] .subscription-badge')
+        .locator(
+            '.MuiAccordionSummary-root:has([data-toolid="canvas"]) img[src*="bloom-enterprise-badge.svg"]',
+        )
         .count();
 
     if (canvasToolBadgeCount === 0) {

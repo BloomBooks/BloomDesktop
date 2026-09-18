@@ -4,14 +4,14 @@ block headContent
 	meta(charset='UTF-8')
 	title Content of the Toolbox view (far right pane in book edit)
 	//- Keep this list in sync with WorkspaceView.GetWorkspaceAdditionalHtml() and ViteDevBodyEndHtml imports.
-	link(rel='stylesheet', href='/bloom/themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css')
 	link(rel='stylesheet', href='/bloom/bookEdit/html/font-awesome/css/font-awesome.min.css')
 	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/toolbox.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/talkingBook/audioRecording.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/motion/motion.css')
-	link(rel='stylesheet', href='/bloom/bookEdit/toolbox/music/music.css')
+	//- The individual tools' stylesheets are not listed here: each tool imports its own
+	//- .less from its component, which the build turns into a <style> in this document.
 	link(rel='stylesheet', href='/bloom/bookEdit/css/rc-slider-bloom.css')
-	link(rel='stylesheet', href='/bloom/lib/jquery.qtip.css')
+	//- No qtip stylesheet: the reader tools' tooltips are created in the page frame
+	//- (readerToolsModel posts "Qtips" to it), which links jquery.qtip.css itself.
+	//- See the styleSheets list in editablePage.ts.
 	link(rel='stylesheet', href='/bloom/writingSystemDisplayForUI.css')
 
 	//reviewslog: since we only access the ckeditor on the page, we should be able to reference that one, not addd one to this iframe script(src='/bloom/lib/ckeditor/ckeditor.js')

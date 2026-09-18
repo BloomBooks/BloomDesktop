@@ -1,7 +1,6 @@
 import * as React from "react";
-import { renderForInstance } from "../../../utils/reactRender";
 import { Label } from "../../../react_components/l10nComponents";
-import { ToolBox } from "../toolbox";
+import { getPageIframeBody } from "../../../utils/shared";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
 import {
@@ -21,7 +20,6 @@ import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
 import { selectVideoContainer } from "../../js/videoUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
-import $ from "jquery";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 
@@ -855,13 +853,6 @@ export class SignLanguageToolControls extends React.Component<
         }
         return result;
     }
-
-    public static setup(root): SignLanguageToolControls {
-        return renderForInstance<SignLanguageToolControls>(
-            <SignLanguageToolControls />,
-            root,
-        );
-    }
 }
 
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
@@ -980,31 +971,27 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         ) as HTMLElement[];
     }
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        root.setAttribute("class", "signLanguageBody");
-        this.reactControls = SignLanguageToolControls.setup(root);
-        return root as HTMLDivElement;
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
-
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
+    public renderPanel(): JSX.Element {
+        return (
+            <div className="signLanguageBody">
+                <SignLanguageToolControls
+                    // React calls a changed callback ref with null before calling the new
+                    // one with the instance. We only record non-null values, so that our
+                    // (unchanged) call sites can go on assuming reactControls is set once
+                    // the panel has been rendered.
+                    ref={(renderedElement) => {
+                        if (renderedElement) {
+                            this.reactControls = renderedElement;
+                        }
+                    }}
+                />
+            </div>
+        );
     }
 
     // Specify 'true' to get only containers marked as selected
     public static getVideoContainers(selected?: boolean): HTMLElement[] {
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             return [];
         }
@@ -1061,6 +1048,11 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return "signLanguage";
     }
 
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/signLanguage/signLanguageTool.svg";
+    }
+
     // This function is saved in a variable so we can remove the same listener we added.
     private containerClickListener: EventListener = (event: MouseEvent) => {
         // The reason for the listener: to select the current element
@@ -1109,7 +1101,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     }
 
     private syncSelectionFromCurrentPage() {
-        const pageBody = ToolBox.getPage();
+        const pageBody = getPageIframeBody();
         if (!pageBody) {
             // Tool activation can race with page readiness.
             window.setTimeout(() => this.syncSelectionFromCurrentPage(), 100);
