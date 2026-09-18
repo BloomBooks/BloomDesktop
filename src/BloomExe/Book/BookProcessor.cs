@@ -108,11 +108,13 @@ namespace Bloom.Book
         {
             // Drop the status lines (see the summary); the percent, warnings and errors still get
             // through. A NullProgress is left as it is: wrapping it would make it look like
-            // somewhere to report to (MigrateToMediaLevel1ShrinkLargeImages checks for exactly that).
-            progress =
-                progress == null || progress is NullProgress
-                    ? new NullProgress()
-                    : new QuietStatusProgress(progress);
+            // somewhere to report to (MigrateToMediaLevel1ShrinkLargeImages checks for exactly that),
+            // and a caller's own instance may carry state we must not lose (e.g. CancelRequested on
+            // PdfMaker.CancellableNullProgress).
+            if (progress == null)
+                progress = new NullProgress();
+            else if (!(progress is NullProgress))
+                progress = new QuietStatusProgress(progress);
             // 1. Structural "make it right" pass. Besides migrations, this ensures stylesheet links
             //    (and, when we Save below, the actual CSS files) that BloomBridge's raw HTML may
             //    be missing. See BookStorage.EnsureHasLinksToStylesheets.
