@@ -2693,7 +2693,7 @@ namespace Bloom.Book
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
-                // spans are the only paragraph internal elements that should have any attributes.
+                // spans and hyperlinks are the only paragraph internal elements that should have any attributes.
                 RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
@@ -2766,11 +2766,17 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Strip attributes from character-style markup (b, i, strong, em, u, sup...) inside a paragraph.
+        /// Spans keep theirs (audio-sentence ids, bloom-linebreak, etc.), and so do hyperlinks: an
+        /// anchor without its href is no longer a link at all (BL-16892).
+        /// </summary>
         private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
         {
             foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (child.Name.ToLowerInvariant() != "span")
+                var name = child.Name.ToLowerInvariant();
+                if (name != "span" && name != "a")
                 {
                     foreach (var attrName in child.AttributeNames)
                         child.RemoveAttribute(attrName);
