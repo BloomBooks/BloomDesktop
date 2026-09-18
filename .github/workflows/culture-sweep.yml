@@ -1,0 +1,280 @@
+# Weekly run of the C# test suite under non-English cultures.
+#
+# This exists because culture bugs in Bloom have historically been found by accident, when a
+# developer's machine happened not to be set to English. BL-15064 is the case in point: Isaac's
+# machine was set to fr-FR, he saw 5 failures, and two of them turned out to be real bugs that had
+# already shipped — most seriously, PublishHelper.pxToNumber parsed CSS measurements (which always
+# use a period) with a culture-sensitive double.Parse, so publishing to BloomPUB in any
+# comma-decimal locale produced UNCROPPED IMAGES. That went out in 6.1 and 6.2 and had to be
+# cherry-picked back.
+#
+# The reason to automate rather than sweep by hand is that hand sweeps do not hold. BL-15064 opens
+# by noting that we had already "taken a stab at this previously with the Swedish culture" and had
+# either regressed since or never finished. It then fixed French — and eight months later a new test
+# (RabAppProjectTests.FormatRabInstallerDownloadProgressMessage, added 2026-04-12) hard-coded a
+# period decimal separator again, with nothing to catch it. See BL-16754.
+#
+# WHAT THIS IS NOT: it is not a set of extra tests, and there is deliberately no [Category] for it.
+# It re-runs the SAME suite in a different environment. That is the whole value — some 3200 existing
+# tests get re-executed under a hostile culture for free. A category would instead mean hand-writing
+# locale-specific tests, which would only ever cover the cases we already thought of.
+#
+# The culture is applied by src/BloomTests/TestCulture.cs, a [SetUpFixture] that reads
+# BLOOM_TEST_CULTURE. It is inert when that variable is unset, so this costs the PR build and
+# developers' local runs nothing. To reproduce a failure from this workflow locally:
+#
+#     BLOOM_TEST_CULTURE=tr-TR build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj
+#
+# Only the C# suite runs. The front-end suite is not worth a culture dimension — the TypeScript
+# passes explicit locales to Intl (e.g. `new Intl.NumberFormat(props.uiLanguage)`) rather than
+# relying on an ambient one — and the visual-regression suite is far too slow to multiply by
+# cultures. The front-end is still BUILT, because the C# build needs its output.
+#
+# Schedule: 06:00 UTC on Sundays, two hours after the nightly, so the two never contend for a
+# runner. Can also be run on demand, optionally against a culture that is not in the weekly set —
+# which is how to trial a candidate (see "Adding a culture" below) without committing to it.
+
+name: Culture Sweep
+
+on:
+    schedule:
+        - cron: "0 6 * * 0"
+    workflow_dispatch:
+        inputs:
+            cultures:
+                description: "Comma-separated cultures, e.g. fr-FR,tr-TR,th-TH"
+                type: string
+                default: "fr-FR,tr-TR"
+
+# One sweep at a time. Unlike a PR check there is nothing to be gained by racing a manual run
+# against the scheduled one, and they would fight over the same runners.
+concurrency:
+    group: culture-sweep
+    cancel-in-progress: false
+
+jobs:
+    # Turns the comma-separated input into the matrix the test job fans out over. Doing this in its
+    # own tiny job (rather than hard-coding the matrix) is what lets a manual run try a culture we
+    # have not adopted, without editing this file. The scheduled run has no inputs, so it falls back
+    # to the default.
+    #
+    # The two cultures are chosen to cover DIFFERENT failure modes, not just "somewhere that uses a
+    # comma". Both use a comma decimal separator, but they differ in what happens to a
+    # period-decimal string like "1.5" that came out of CSS or a tool's output:
+    #
+    #   fr-FR  Group separator is U+202F, a narrow no-break space. double.TryParse("1.5") FAILS
+    #          here, so the bug is loud — an exception, or a TryParse returning false and the value
+    #          silently defaulting (which is exactly how BL-15064's uncropped images happened).
+    #          The invisible U+202F is a hazard in its own right: format a number and it lands in
+    #          your output, filename, or comparison as whitespace you cannot see.
+    #          This is also the culture with a confirmed history of shipping a user-visible bug.
+    #
+    #   tr-TR  Group separator is ".", so double.TryParse("1.5") silently returns 15 — a tenfold
+    #          wrong value with no error at all, the most dangerous failure mode there is. PLUS the
+    #          casing axis: Turkish maps 'i' to a DOTTED 'İ' and 'I' to a DOTLESS 'ı', so
+    #          culture-sensitive ToUpper()/ToLower() against ASCII literals stops matching. That is
+    #          a real bug we found and fixed under BL-16754 (InternalSpreadsheet's label mapping).
+    #
+    # Deliberately NOT included:
+    #   sv-SE  the first culture we ever tried, but comma-decimal like French and otherwise
+    #          unremarkable; its only distinct property is collation order.
+    #   de-DE  tempting, and it does have the silent-misparse property French lacks — but it shares
+    #          that with tr-TR (same "." group separator), so on top of the pair above it adds
+    #          essentially nothing but runtime.
+    #
+    # Adding a culture: trial it with a manual run first, and only adopt it once it is green or its
+    # failures are fixed. A scheduled job that has been red since the day it was turned on teaches
+    # everybody to ignore it, which is worse than not having it. Candidates worth trialling, roughly
+    # best first:
+    #   th-TH  Buddhist calendar, so the year is 2569 rather than 2026 — the cheapest test of date
+    #          handling, and we do format dates in the current culture (BloomLibraryPublishModel).
+    #   ar-SA / fa-IR  non-Gregorian calendar AND non-ASCII digits, plus RTL. Most likely to find
+    #          real bugs, and most likely to produce noise on the first run.
+    #   hi-IN  Indian digit grouping (1,00,000 rather than 100,000) breaks assumptions that groups
+    #          are three digits — but we do not appear to format numbers big enough for it to show.
+    matrix-setup:
+        runs-on: ubuntu-latest
+        outputs:
+            cultures: ${{ steps.build.outputs.cultures }}
+        steps:
+            - name: Build the culture matrix
+              id: build
+              shell: bash
+              env:
+                  # Defaulted here as well as on the input, because a scheduled run supplies no
+                  # inputs at all and would otherwise produce an empty matrix and silently test
+                  # nothing.
+                  CULTURES: ${{ inputs.cultures || 'fr-FR,tr-TR' }}
+              run: |
+                  set -euo pipefail
+                  # Split on commas, trim surrounding whitespace, drop empties, and emit a JSON
+                  # array. Culture names are letters, digits (es-419) and hyphens, so there is nothing here needing
+                  # JSON escaping; anything else is rejected below rather than being quoted into the
+                  # matrix, where a stray quote would produce a confusing YAML-expression error.
+                  json=""
+                  IFS=','
+                  for raw in $CULTURES; do
+                      name=$(printf '%s' "$raw" | tr -d '[:space:]')
+                      [ -z "$name" ] && continue
+                      case "$name" in
+                          *[!A-Za-z0-9-]*)
+                              echo "Not a culture name: '$name'" >&2
+                              exit 1
+                              ;;
+                      esac
+                      json="$json${json:+,}\"$name\""
+                  done
+                  unset IFS
+                  if [ -z "$json" ]; then
+                      echo "No cultures given; nothing would be tested." >&2
+                      exit 1
+                  fi
+                  echo "cultures=[$json]" >> "$GITHUB_OUTPUT"
+                  echo "Sweeping: [$json]"
+
+    test:
+        needs: matrix-setup
+        runs-on: windows-latest
+        # Generous, because a culture bug does not always fail fast: PublishHelper gives the browser
+        # 10 seconds to load its visibility document and the epub tests then retry, so a culture that
+        # breaks that path makes the suite crawl rather than stop. Still well under the nightly's
+        # 120, so a wedged run is cut loose in reasonable time.
+        timeout-minutes: 90
+
+        strategy:
+            # One culture failing must not cancel the others — they are independent questions, and
+            # the whole point is to learn about all of them in one sweep.
+            fail-fast: false
+            matrix:
+                culture: ${{ fromJSON(needs.matrix-setup.outputs.cultures) }}
+
+        # checks: write lets the test-report step create its check run.
+        permissions:
+            contents: read
+            checks: write
+
+        env:
+            # VersionNumbers requires a 4-part BUILD_NUMBER; this workflow never publishes, so a
+            # throwaway value that just identifies the run is fine.
+            BUILD_NUMBER: 0.0.${{ github.run_number }}.0
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            # ----- Toolchains -----
+
+            - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              with:
+                  dotnet-version: 8.0.x
+
+            - uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
+            - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+              with:
+                  package_json_file: src/BloomBrowserUI/package.json
+
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  # Track the repo's canonical Node version rather than a hardcoded major, as the
+                  # nightly does.
+                  node-version-file: .node-version
+                  cache: pnpm
+                  cache-dependency-path: |
+                      src/BloomBrowserUI/pnpm-lock.yaml
+                      src/content/pnpm-lock.yaml
+
+            # ----- Dependencies (mirrors init.sh) -----
+
+            - name: Get binary dependencies (TeamCity artifacts, chm, ffmpeg, etc.)
+              shell: bash
+              run: ./build/getDependencies-windows.sh
+
+            - name: pnpm install
+              shell: bash
+              run: |
+                  # Wait on each PID individually: a bare `wait` always exits 0 and would mask a
+                  # failed install. See the same step in nightly.yml.
+                  (cd src/content && pnpm install --frozen-lockfile) &
+                  pid_content=$!
+                  (cd src/BloomBrowserUI && pnpm install --frozen-lockfile) &
+                  pid_ui=$!
+                  wait "$pid_content"
+                  wait "$pid_ui"
+
+            - name: Update floating front-end dependencies
+              working-directory: src/BloomBrowserUI
+              shell: bash
+              run: pnpm update bloom-player@alpha comicaljs@latest "@ethnolib/language-chooser-react-mui@latest" bloom-image-gallery
+
+            # ----- Builds -----
+            # The front-end is built but NOT tested here: the C# build needs its output, and the
+            # vitest suite has no culture dimension worth paying for.
+
+            - name: Build browser UI (production)
+              working-directory: src/BloomBrowserUI
+              run: pnpm run build-prod
+
+            # Restore SIL.BuildTasks separately: Bloom.proj's UsingTask declarations only load if
+            # those dlls already exist. RestartBuild=false stops RestoreBuildTasks from also running
+            # BuildInternal, which would compile the whole app twice. Same as the nightly.
+            - name: Restore MSBuild build tasks
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:RestoreBuildTasks /p:RestartBuild=false
+
+            - name: Build
+              id: build_csharp
+              working-directory: build
+              shell: pwsh
+              run: msbuild Bloom.proj /t:Build /m /p:BUILD_NUMBER=$env:BUILD_NUMBER
+
+            # ----- The actual point of this workflow -----
+            # BLOOM_TEST_CULTURE is what src/BloomTests/TestCulture.cs reads. Note it sets
+            # CurrentCulture only and leaves CurrentUICulture alone, so L10NSharp still serves
+            # English and the many tests asserting English text stay meaningful.
+            #
+            # Category exclusions match the nightly's (SkipOnTeamCity only), so this keeps the slow
+            # and network-touching tests. If a culture ever turns out to break only an excluded
+            # test, that is worth knowing too.
+            - name: Run C# tests under ${{ matrix.culture }}
+              id: csharp_tests
+              if: ${{ !cancelled() && steps.build_csharp.outcome == 'success' }}
+              working-directory: build
+              shell: pwsh
+              env:
+                  BLOOM_TEST_CULTURE: ${{ matrix.culture }}
+              run: |
+                  msbuild Bloom.proj /t:TestOnly `
+                    /p:BUILD_NUMBER=$env:BUILD_NUMBER `
+                    /p:excludedCategories=SkipOnTeamCity
+
+            # ----- Report -----
+            # check_name includes the culture because it must be unique per invocation, or the
+            # matrix legs' reports overwrite each other and only the last one survives.
+            #
+            # action_fail_on_inconclusive: a missing or empty results file otherwise passes green,
+            # which for a job whose entire purpose is noticing something would be perverse — a run
+            # that tested nothing must not look like a run that found nothing.
+            #
+            # comment_mode off: this is a health check, not a PR gate. The default tries to POST a PR
+            # comment and 403s, since this job grants checks: write and not pull-requests: write.
+            - name: Publish test results for ${{ matrix.culture }}
+              if: ${{ !cancelled() && steps.csharp_tests.outcome != 'skipped' }}
+              uses: EnricoMi/publish-unit-test-result-action/windows@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+              with:
+                  check_name: "Culture sweep: C# under ${{ matrix.culture }}"
+                  comment_mode: "off"
+                  action_fail_on_inconclusive: true
+                  files: output/Tests/Release/x64/TestResults.xml
+
+            - name: Upload test results for ${{ matrix.culture }}
+              if: ${{ always() }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  # Per-culture name, or the matrix legs collide on upload.
+                  name: culture-sweep-results-${{ matrix.culture }}
+                  # Forward slashes: upload-artifact treats the path as a glob, where a backslash is
+                  # an escape character even on Windows.
+                  path: output/Tests/Release/x64/TestResults.xml
+                  retention-days: 14
+                  if-no-files-found: ignore

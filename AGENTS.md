@@ -48,6 +48,28 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 
+## Don't assume the machine is running in English
+
+Bloom runs on our users' machines, not ours, and a great many of those are set to a culture where
+the decimal separator is a comma. **Parse and format machine data invariantly**: CSS measurements,
+version numbers, values from ffmpeg or Ghostscript, anything going into a file or a log. Use
+`CultureInfo.InvariantCulture` (or `FormattableString.Invariant($"...")`) — a bare `double.Parse`,
+`ToString("0.0")`, or interpolated number follows the user's culture. Use the current culture only
+for numbers and dates you are showing to the user.
+
+This is not hypothetical. BL-15064 found that `PublishHelper.pxToNumber` parsed CSS measurements
+with a culture-sensitive `double.Parse`, so **publishing to BloomPUB in a comma-decimal locale such
+as French produced uncropped images**. It shipped in 6.1 and 6.2 before anyone noticed, and only
+then because a developer's machine happened to be set to `fr-FR`. Note the shape of it: no
+exception, no error message — just quietly wrong output. And it does not even take an exception to
+go wrong: in German *and Turkish* the group separator is `.`, so `double.TryParse("1.5", …)`
+succeeds and hands you **15**. Casing has the same trap: in Turkish,
+`"IMG".ToLower()` is `"ımg"` with a dotless ı, so `ToLower() == "img"` stops matching. Prefer
+`StringComparison.OrdinalIgnoreCase` for comparisons against ASCII literals.
+
+**The tests must not assume English either**, and the suite can be run under another culture to
+check your work; both are covered in `src/BloomTests/AGENTS.md`.
+
 ## Building and testing while a Bloom is running
 
 - **C#:** build and test through `build/agent-dotnet.sh` (PowerShell: `.ps1`), never bare

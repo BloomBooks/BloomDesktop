@@ -94,3 +94,23 @@ real.
 BLOOM_RUN_RAB_MANUAL_TESTS=1 build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj \
   --filter "FullyQualifiedName~RabRealBuildTests"
 ```
+
+## Don't assume the tests are running in English
+
+**The tests must not assume English any more than the production code may** (see "Don't assume
+the machine is running in English" in the root `AGENTS.md`). A test asserting `"1.5 MB"` fails in French for a
+reason that has nothing to do with the code under test. Either assert culture-agnostically (see how
+`LicenseCheckerTests` uses `CurrentCulture.TextInfo.ListSeparator`), or — where the production
+string really should be invariant, as log lines should be — fix the production code and leave the
+test asserting the period.
+
+To check your work, run the suite under another culture; `src/BloomTests/TestCulture.cs` makes that
+one environment variable, and does nothing when it is unset:
+
+```bash
+BLOOM_TEST_CULTURE=fr-FR build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj
+```
+
+`.github/workflows/culture-sweep.yml` does this weekly for `fr-FR` and `tr-TR`, so drift gets
+caught; it is a CI matrix dimension, not an NUnit category, because it re-runs the *same* tests in a
+different environment rather than adding new ones.
