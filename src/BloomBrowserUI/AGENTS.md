@@ -59,45 +59,9 @@ Usually if you get stuck, the best thing to do is to get the component showing i
 
 ## Localization
 
-Localizable strings live in xlf files under `DistFiles/localization/`. We write the English in
-`en/Bloom*.xlf`; translators work in Crowdin, and their work lands in the other language
-subdirectories.
-
-**Two documents own this subject; read the relevant one rather than working from memory.**
-
-- **`.github/skills/xlf-strings/SKILL.md`** — how to add, change, review, or retire a string:
-  which priority file to use, the note conventions, and the checks each operation needs. Open it
-  whenever you touch an XLF entry.
-- **`DistFiles/localization/README.md`** — how Crowdin actually works, and *why* these rules
-  exist: what each kind of xliff edit does to existing translations, and (in "Why we can't just
-  delete a string") the route translations travel from Crowdin through master to a release
-  branch. Read it before concluding that any deletion or id change is harmless.
-
-The rules themselves, which apply whether or not you have opened those:
-
-- **Only ever edit `DistFiles/localization/en/`.** Never touch the other language subdirectories,
-  and never touch an existing translation.
-- **Never pick the priority file yourself.** Which of `Bloom.xlf` /
-  `BloomMediumPriority.xlf` / `BloomLowPriority.xlf` a new string belongs in is the
-  developer's call, not yours. Stop and ask, offering a recommendation and a reason; do not
-  infer it from where neighbouring ids happen to live. This applies however you arrived at
-  adding the string -- including when a task that started as something else turns into
-  adding one.
-- **Do not change the `@id` of a `<trans-unit>`** unless it is marked `@translate="no"`. Changing
-  an id loses its translations. If asked to do it anyway, refuse; if you notice it during a
-  review, point it out.
-- **Do not delete a `<trans-unit>` that is no longer used.** Mark it obsolete instead; the
-  skill has the exact note format and where to read the current version number.
-- **Only mark an entry obsolete once nothing references it.** Check first — code (`l10nKey` /
-  `l10nId` / `useL10n` / `GetString`), shipped content under `src/content` (sample shells are
-  `.htm`, and page label ids are composed at runtime as `"TemplateBooks.PageLabel." + label`),
-  and the rest of the XLF. A note claiming a live string is obsolete is worse than no note: it
-  invites the next person to delete a string we are still using.
-- **Never delete an entry on your own initiative**, even an obsolete one, and even when you are
-  confident it is safe. There is exactly one case where deletion loses nothing — a string that
-  was always `translate="no"` and so never reached Crowdin — and even then it is the developer's
-  decision, the evidence has to go in the commit message and the PR reply, and the skill has the
-  commands that establish it.
+Localizable strings live in `DistFiles/localization/en/Bloom*.xlf`. Whenever you add, change,
+review or retire one, follow `.github/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
+the two rules that hold even outside that skill (edit only `en/`; never delete a `<trans-unit>`).
 
 ## Other notes
 

@@ -62,6 +62,9 @@ user where it is if you find one), and otherwise add one as follows.
    how important the string is to the user is. This holds however you got here: a task that began
    as something else (a review, a bug fix) and turned into adding a string still owes the
    question.
+   Likewise **never change the `id` of an existing entry** that is not `translate="no"` (it loses
+   the translations; refuse if asked, and point it out in a review), and **only mark an entry
+   obsolete once nothing references it** (see "Marking an entry obsolete" below).
 2. Add the entry in the chosen file:
 
 ```xml
@@ -146,10 +149,10 @@ findings and let the developer decide.
 
 When a deletion does go ahead on that basis, **put the evidence where the reviewer will meet
 it** — the commit message and the reply on the review thread, in as many words: always
-`translate="no"`, absent from every translated file. Review bots take their rules from
-`src/BloomBrowserUI/AGENTS.md` (Devin cites it by name, with `based_on_repo_rules: true`) and
-read the rule rather than your reasoning, so the deletion *will* be flagged. With the evidence
-attached, the next person sees a rule correctly applied; without it, they see a rule broken.
+`translate="no"`, absent from every translated file. Review bots read the "never delete a
+trans-unit" rule in `AGENTS.md` rather than your reasoning, so the deletion *will* be flagged.
+With the evidence attached, the next person sees a rule correctly applied; without it, they see
+a rule broken.
 
 ## Reviewing XLF changes in a PR
 
