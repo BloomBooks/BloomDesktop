@@ -7,6 +7,8 @@ import {
     useApiString,
     useWatchString,
 } from "../utils/bloomApi";
+import { AxiosResponse } from "axios";
+import { goToEditTab } from "../utils/goToEditTab";
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
@@ -268,7 +270,17 @@ export const BookButton: React.FunctionComponent<{
             {
                 label: "Make a book using this source",
                 l10nId: "CollectionTab.MakeBookUsingThisTemplate",
-                command: "app/makeFromSelectedBook",
+                // Not the generic `command:` dispatch, which posts and ignores the reply. This
+                // endpoint makes and selects the book but no longer navigates -- going to the Edit
+                // tab is the front end's step now, through the one sequence every route uses
+                // (goToEditTab). Without this the new book would be made and left sitting on the
+                // Collections tab.
+                onClick: () => {
+                    handleClose();
+                    post("app/makeFromSelectedBook", (response) => {
+                        if (response?.data?.goToEditTab) goToEditTab();
+                    });
+                },
                 // Only show on template books that are in the editable collection (provided the book is checked out, if applicable)
                 hide: () =>
                     !props.collection.isEditableCollection ||
@@ -412,10 +424,14 @@ export const BookButton: React.FunctionComponent<{
     // that is not selected and we get another click that we think should be treated as a double.)
     const handleDoubleClick = () => {
         awaitingDoubleClick.current = false; // the next click is definitely a first-click
+        // This selects the book; going to the Edit tab is our step, through the one sequence
+        // every route into Edit uses (see goToEditTab).
         postString(
             `collections/selectAndEditBook?${collectionQuery}`,
             props.book.id,
-        );
+        ).then((response) => {
+            if ((response as AxiosResponse)?.data?.goToEditTab) goToEditTab();
+        });
     };
 
     const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {

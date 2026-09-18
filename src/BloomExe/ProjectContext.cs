@@ -178,7 +178,6 @@ namespace Bloom
                             new[]
                             {
                                 typeof(TemplateInsertionCommand),
-                                typeof(EditBookCommand),
                                 typeof(SelectedTabAboutToChangeEvent),
                                 typeof(SelectedTabChangedEvent),
                                 typeof(CollectionClosing),
@@ -305,7 +304,6 @@ namespace Bloom
                             c.Resolve<BookSelection>(),
                             c.Resolve<SourceCollectionsList>(),
                             c.Resolve<BookCollection.Factory>(),
-                            c.Resolve<EditBookCommand>(),
                             c.Resolve<CreateFromSourceBookCommand>(),
                             c.Resolve<BookServer>(),
                             c.Resolve<CurrentEditableCollectionSelection>(),

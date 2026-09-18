@@ -114,6 +114,15 @@ namespace Bloom.CLI
             book.LockDownTheFileAndFolderName = true;
 
             book.SetLayout(layout);
+            // Deliberately EnsureUpToDate rather than EnsureReadyForUserWork: this command does NOT
+            // do the per-page browser fix-up (BL-16877). That pass loads each page as a full editing
+            // page in an off-screen browser, which needs a listening BloomServer to serve the page,
+            // the editing bundle and the API calls the bundle makes as it loads. This command has no
+            // ProjectContext and so no server -- it builds a Book and BookStorage directly, and it is
+            // not even given a collection to build a context from. Giving it one is a much larger
+            // change than this command warrants; hydrated books are consumed by automated converters
+            // rather than published, and the harvester (CreateArtifactsCommand), which does publish,
+            // has a ProjectContext and does the fix-up.
             book.EnsureUpToDate();
             Console.WriteLine("Finished Hydrating.");
             Debug.WriteLine("Finished Hydrating.");
