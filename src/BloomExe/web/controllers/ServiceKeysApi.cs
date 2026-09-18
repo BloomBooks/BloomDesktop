@@ -1,8 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Bloom.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -65,8 +70,9 @@ namespace Bloom.web.controllers
             // take the body exactly as it was posted. The default unescape would turn a "+"
             // into a space and decode a percent escape, and Bloom would store a key the
             // service then rejects.
-            ServiceKeyStore.Set(name, request.RequiredPostString(unescape: false));
-            request.PostSucceeded();
+            var secret = request.RequiredPostString(unescape: false);
+            if (TrySave(request, () => ServiceKeyStore.Set(name, secret)))
+                request.PostSucceeded();
         }
 
         /// <summary>
@@ -97,12 +103,17 @@ namespace Bloom.web.controllers
 
             var posted = JObject.Parse(request.RequiredPostJson());
             var postedShortNames = new HashSet<string>();
+            // Gathered as one set and applied in a single write, so a failure part way cannot
+            // store some of the user's keys and drop the rest.
+            var changes = new List<KeyValuePair<string, string>>();
             foreach (var property in posted.Properties())
             {
                 if (property.Name == kVersionPropertyName)
                     continue;
                 postedShortNames.Add(property.Name);
-                ServiceKeyStore.Set(prefix + property.Name, (string)property.Value);
+                changes.Add(
+                    new KeyValuePair<string, string>(prefix + property.Name, (string)property.Value)
+                );
             }
 
             // The caller sends the whole namespace, so a name missing from the post is a key
@@ -115,9 +126,72 @@ namespace Bloom.web.controllers
                     continue;
                 if (!ServiceKeyStore.CanRead(name))
                     continue;
-                ServiceKeyStore.Set(name, null);
+                changes.Add(new KeyValuePair<string, string>(name, null));
             }
-            request.PostSucceeded();
+
+            if (TrySave(request, () => ServiceKeyStore.SetMany(changes)))
+                request.PostSucceeded();
+        }
+
+        /// <summary>
+        /// Makes a change to the store, and turns a failure to write the file into something
+        /// the user can act on. <see cref="ServiceKeyStore"/> deliberately throws rather than
+        /// pretend a key was saved, and without this the generic API error handler would say
+        /// only "Error in /bloom/api/serviceKeys/keys?prefix=...", which tells the user nothing
+        /// they can do anything about (BL-16820). The usual causes -- the file is read-only, or
+        /// some other program has it open -- are ones only the user can clear, and they cannot
+        /// clear them without being told which file it is, so the message names the path.
+        /// Returns false when the change did not happen, having already replied to the request.
+        /// Only failures to reach the file are caught: anything else -- a failure to encrypt,
+        /// say -- is unexpected, and belongs in the generic API handler, which reports it to us
+        /// rather than telling the user to go looking at file permissions.
+        /// </summary>
+        private static bool TrySave(ApiRequest request, Action change)
+        {
+            try
+            {
+                change();
+                return true;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // English on purpose, not localized. Getting here takes a file the user has
+                // made read-only or that another program is holding open -- rare enough, and
+                // far enough from anything Bloom does by itself, that it is not worth a string
+                // in every language, and the part that actually helps is the path.
+                var message = string.Format(
+                    "Bloom could not save the key you entered, because it could not update this file: {0}. The file may be read-only, or another program may have it open.",
+                    ServiceKeyStore.FilePath
+                );
+                // Not shown to the user: the permission and antivirus details that local tech
+                // support needs to work out what is holding the file.
+                Logger.WriteError(
+                    MiscUtils.GetExtendedFileCopyErrorInformation(
+                        ServiceKeyStore.FilePath,
+                        "Could not save a service key to " + ServiceKeyStore.FilePath
+                    ),
+                    error
+                );
+                // Fire-and-forget, so nothing about reporting can hold up the reply. The
+                // message box itself is NonFatalProblem's business: these endpoints are
+                // registered with handleOnUIThread false, so we are on a server worker, and
+                // it marshals the box to the UI thread rather than blocking us.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(
+                        ModalIf.All,
+                        PassiveIf.None,
+                        message,
+                        error.Message,
+                        error,
+                        showSendReport: false
+                    );
+                });
+                request.Failed(message);
+                return false;
+            }
         }
     }
 }

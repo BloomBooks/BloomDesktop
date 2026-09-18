@@ -56,9 +56,9 @@
         <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
-        <source xml:lang="en">No Indent</source>
+        <source xml:lang="en">Do Not Indent This Paragraph</source>
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
-        <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command that removes the first-line indent from just that one paragraph, overriding the indent that the paragraph's style gives it. Typically used on a paragraph continued from the previous page.</note>
+        <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
       </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">

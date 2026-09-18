@@ -85,8 +85,8 @@ importers:
                 specifier: 0.21.1
                 version: 0.21.1
             bloom-ai-image-tools:
-                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.4
-                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c
+                specifier: github:BloomBooks/bloom-ai-image-tools#dist-v0.2.5
+                version: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/2b561e36014d80c883d3f49e474b45f1edf947fe
             bloom-image-gallery:
                 specifier: github:BloomBooks/bloom-image-gallery#c5a539b9b77849d5f90de1bcb93c8ab522328870
                 version: https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0)
@@ -4049,14 +4049,14 @@ packages:
                 integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==,
             }
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/2b561e36014d80c883d3f49e474b45f1edf947fe:
         resolution:
             {
                 gitHosted: true,
-                integrity: sha512-nA5FPEVeVYbFNlyP2gf9Y2V7MYLmGwxWJxxrLCRG2dm9mINMl80zUXCOowfdY9dlu3J+fW70hpapDMt3iMaVKQ==,
-                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c,
+                integrity: sha512-82WTEAFsZa35IBY6zojCeDKSEruXZ/68lGdcA9qhlKpnmeRdE8WwPUkmkrCzqfav68gs5dnrPsY3zLFZ+SBT1Q==,
+                tarball: https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/2b561e36014d80c883d3f49e474b45f1edf947fe,
             }
-        version: 0.2.4
+        version: 0.2.5
 
     bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870:
         resolution:
@@ -6893,7 +6893,7 @@ packages:
             {
                 integrity: sha512-UEVp7PPK9xXYSk8xqXCJrkXnKZtlgWkd2GsAQbMRFK6S/ePU2JN5G2Zum8hIVjzR3CpdfSqdqAzId/xd4TJHeg==,
             }
-        deprecated: This version is deprecated. Please upgrade to the latest version or find support at https://www.herodevs.com/support/jquery-nes.
+        deprecated: This version is deprecated. Please upgrade to the latest version or find support at https://www.herodevs.com/support/jquery-nes or https://tuxcare.com/lp/click-jquery-support/.
 
     js-stringify@1.0.2:
         resolution:
@@ -13533,7 +13533,7 @@ snapshots:
             file-uri-to-path: 1.0.0
         optional: true
 
-    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/b67a0d90b0f83d1dfc275947530d705a9a8afc4c:
+    bloom-ai-image-tools@https://codeload.github.com/BloomBooks/bloom-ai-image-tools/tar.gz/2b561e36014d80c883d3f49e474b45f1edf947fe:
         {}
 
     bloom-image-gallery@https://codeload.github.com/BloomBooks/bloom-image-gallery/tar.gz/c5a539b9b77849d5f90de1bcb93c8ab522328870(@types/react@18.3.31)(supports-color@5.5.0):
