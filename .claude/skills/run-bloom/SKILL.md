@@ -72,10 +72,13 @@ node .github/skills/bloom-automation/launcherControl.mjs --shutdown     # everyt
 
 ## Behavior notes
 
-- **The human closing Bloom (window X) shuts the whole stack down** (by
-  design, to free memory). A launcher that was there and is gone now usually
-  means exactly that — `--ensure-running` again when needed. dotnet-watch
-  rebuilds after C# edits do NOT tear the stack down.
+- **Bloom exiting for any reason shuts the whole stack down** (by design, to
+  free memory): the human closing the window, but equally a crash. In a Debug
+  build a `Debug.Assert` on any thread becomes `Environment.FailFast`, with no
+  dialog. Both leave the same trace: no launcher, no discovery file. Before
+  `--ensure-running` again, rule out a crash (see "Bloom vanished with the
+  whole stack" under **Field-verified gotchas** in the bloom-automation
+  SKILL.md). dotnet-watch rebuilds after C# edits do NOT tear the stack down.
 - `/status`'s `sourceChangedSinceReady` says whether a restart would pick up
   .NET changes; it also drives the dev-only restart toast Bloom shows itself
   (bottom right, non-expiring, with a "Restart" action).

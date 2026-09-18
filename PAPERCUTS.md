@@ -158,6 +158,13 @@ House rules:
 - **Context:** BL-16719, trying to run a crash test unattended. A related false start: 
   `build/agent-dotnet.sh` builds into `output/agent/<key>/`, so `output/Debug/x64` was eleven commits
   stale and the first attempt silently exercised old code.
+- seen again 2026-09-18: from the other direction. A dev Bloom crashed (FailFast from a `Debug.Assert`
+  during BloomPUB publish) and the Doctor could not have caught it even without `--automation`:
+  `RunFreezeDoctor` is False in the dev user.config, and the Debug build puts only
+  `BloomFreezeDoctor.Protocol.dll` beside `Bloom.exe` (no `BloomFreezeDoctor.exe`), so
+  `DoctorLauncher.FindTheDoctor` finds nothing and `RequestDumpBeforeDying` returns before it logs.
+  Only the orphaned session json (no `Exit` block) recorded that the run ended badly. If the Doctor
+  is meant to be usable in dev, go.mjs/init.sh need to build and place it and the setting needs a dev default.
 
 ## 2026-07-30 — Visual regression suite reports only the first stale image per case
 - **Cut:** Each case in `src/BloomVisualRegressionTests/index.spec.ts` compares the book preview

@@ -507,6 +507,29 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
   `./init.sh` itself (discovery file shows `phase:"init"`, takes minutes).
   CS0246 (`PodcastUtilities` etc.) on other build paths still means init
   hasn't run.
+- **Bloom vanished with the whole stack? Rule out a crash before relaunching.** A
+  Debug-build `Debug.Assert` firing on any thread becomes `Environment.FailFast`:
+  no dialog, Bloom exits, and the launcher tears everything down exactly as if the
+  human had closed the window. When launched in an Orca terminal tab there is no
+  `output/bloom-launcher.log` either. Where the story is: (1) the Windows
+  Application event log — `Get-WinEvent -FilterHashtable @{LogName='Application';
+  StartTime=(Get-Date).AddMinutes(-30)}`, provider `.NET Runtime`, event 1025 has
+  the FailFast message and the full stack; (2) Bloom's own log at
+  `%LOCALAPPDATA%\Temp\SIL\Bloom\Log.txt` (NOT under `%LOCALAPPDATA%\SIL\Bloom`);
+  (3) the Freeze Doctor session file
+  `%LOCALAPPDATA%\SIL\BloomFreezeDoctor\sessions\bloom-<pid>.json` — one with no
+  `Exit` block is a run that ended badly. Do not expect a Doctor dump from a dev
+  Bloom: `RunFreezeDoctor` is off in the dev user.config and the Debug build puts
+  no `BloomFreezeDoctor.exe` beside `Bloom.exe`.
+- **Setting a text hyperlink over CDP.** The CKEditor link button is
+  `.cke_button__setuplink` in the `page` frame and exists only while text is
+  selected. In the Choose Link Target dialog (top-level document) the URL box's
+  `data-testid="url-input"` is on the MUI wrapper, so target
+  `[data-testid="url-input"] input`, and it is **pre-filled with `#cover`**:
+  select-all before typing or you get `#coverhttps://...`. Applying a link on top
+  of an existing link nests a second `<a>` rather than replacing it. Page-list
+  thumbnails are clickable by caption text (`.thumbnailCaption` in the `pageList`
+  frame); Collections → Edit is the `EDIT THIS BOOK` button.
 
 ## Completion Checks
 - Bloom's status is known: not running, running from current worktree, or running from different worktree.
