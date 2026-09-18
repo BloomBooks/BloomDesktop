@@ -239,6 +239,35 @@ namespace Bloom.Api
         // whether it's missing from the xliff, report if so, and use the default).
         // So, we loop over the interesting language IDs, and when we find one that has a result,
         // we have to try GetDynamicString on each of the appIds until we find it.
+        /// <summary>
+        /// The translations we already have for these ids, and nothing else: an id we have no
+        /// translation for is simply left out, and no missing-string machinery runs -- no
+        /// toast, and no "CopyToDistributionXlf_" entry written into a developer's local xlf.
+        ///
+        /// That silence is the point. It exists for a caller that hands us hundreds of ids at
+        /// once and carries its own English to fall back on: the AI image editor, which asks
+        /// for its whole string table on every launch (BL-16891). Through HandleI18nLoadStrings
+        /// the same request would report every not-yet-translated string, once per string, on
+        /// every launch.
+        /// </summary>
+        public static Dictionary<string, string> GetAvailableTranslations(IEnumerable<string> ids)
+        {
+            var found = new Dictionary<string, string>();
+            if (ids == null)
+                return found;
+            foreach (var id in ids)
+            {
+                if (string.IsNullOrEmpty(id) || found.ContainsKey(id))
+                    continue;
+                if (
+                    GetSomeTranslation(id, LocalizationManager.UILanguageId, out var translation)
+                    && !string.IsNullOrWhiteSpace(translation)
+                )
+                    found.Add(id, translation);
+            }
+            return found;
+        }
+
         static bool GetSomeTranslation(string id, string initialLangId, out string val)
         {
             var langsToTry = new List<string>();

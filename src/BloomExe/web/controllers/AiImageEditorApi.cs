@@ -192,6 +192,12 @@ namespace Bloom.web.controllers
                 requiresSync: false
             );
             apiHandler.RegisterEndpointHandler(
+                "aiImageEditor/localizations",
+                HandleLocalizations,
+                handleOnUiThread: false,
+                requiresSync: false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "aiImageEditor/commit",
                 HandleCommit,
                 handleOnUiThread: true,
@@ -523,6 +529,11 @@ namespace Bloom.web.controllers
                     editorUrl = GetAiImageEditorUrl(),
                     httpBase,
                     sessionToken = _sessionToken,
+                    // Which language Bloom's own UI is in. The editor needs it for text it
+                    // never translates (the art style descriptions), which it hides rather
+                    // than showing in English inside a translated Bloom. We tell it rather
+                    // than letting it ask, so the editor needs no knowledge of Bloom's API.
+                    uiLanguageId = LocalizationManager.UILanguageId,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
                     bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
                     // How big a screen a digital copy of this book is made for: the BloomPUB
@@ -654,6 +665,44 @@ namespace Bloom.web.controllers
         /// AllowedFileName allow-list, so the AI image editor can only ever touch its own
         /// state/history files.
         /// </summary>
+        /// <summary>
+        /// Translates the editor's whole string table in one round-trip. The editor POSTs every
+        /// localization id with its English default; we answer with the ids we have a
+        /// translation for, and the editor shows its own English for the rest.
+        ///
+        /// Deliberately NOT Bloom's own "i18n/loadStrings": that reports every string it cannot
+        /// find, which for several hundred ids that have not reached the xlf files yet would mean
+        /// several hundred reports on every launch. I18NApi.GetAvailableTranslations looks the
+        /// same ids up with none of that.
+        ///
+        /// No session token: there is no book data here, and the editor asks for its strings as
+        /// it starts up.
+        /// </summary>
+        private void HandleLocalizations(ApiRequest request)
+        {
+            // Answer the CORS preflight ourselves -- see the comment in HandleFile.
+            if (request.HttpMethod == HttpMethods.Options)
+            {
+                request.ReplyWithText("");
+                return;
+            }
+
+            Dictionary<string, string> englishByI10nId;
+            try
+            {
+                englishByI10nId = request.RequiredPostObject<Dictionary<string, string>>();
+            }
+            catch (Exception)
+            {
+                request.Failed(HttpStatusCode.BadRequest, "Invalid localization request");
+                return;
+            }
+
+            request.ReplyWithJson(
+                JsonConvert.SerializeObject(I18NApi.GetAvailableTranslations(englishByI10nId?.Keys))
+            );
+        }
+
         private void HandleFile(ApiRequest request)
         {
             // Answer the CORS preflight before the session gate: the browser sends OPTIONS
