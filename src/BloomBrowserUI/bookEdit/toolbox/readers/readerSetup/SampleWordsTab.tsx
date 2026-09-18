@@ -1,26 +1,15 @@
 import { css } from "@emotion/react";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
-import {
-    RadioGroup,
-} from "@mui/material";
+import { RadioGroup } from "@mui/material";
 import * as React from "react";
-import {
-    useState,
-} from "react";
+import { useState } from "react";
 import { getToolboxBundleExports } from "../../../js/workspaceFrames";
-import {
-    get,
-    post,
-} from "../../../../utils/bloomApi";
+import { get, post } from "../../../../utils/bloomApi";
 import { useMountEffect } from "../../../../utils/useMountEffect";
 import { useL10n } from "../../../../react_components/l10nHooks";
 import { Div, Span } from "../../../../react_components/l10nComponents";
-import {
-    ReaderSettings,
-} from "../ReaderSettings";
-import {
-    kBloomRed,
-} from "../../../../utils/colorUtils";
+import { ReaderSettings } from "../ReaderSettings";
+import { kBloomRed } from "../../../../utils/colorUtils";
 import { Link } from "../../../../react_components/link";
 import { MuiRadio } from "../../../../react_components/muiRadio";
 import { ReaderDialogTextarea } from "./ReaderDialogTextarea";
@@ -183,7 +172,7 @@ export const SampleWordsTab: React.FunctionComponent<{
                                 1) Type Words Here
                             </Div>
                             <ReaderDialogTextarea
-                                updateSettings={updateMoreWords}
+                                onValueChange={updateMoreWords}
                                 value={props.settings.moreWords}
                                 ariaLabel={moreWordsBoxLabel}
                                 extraStyles={css`

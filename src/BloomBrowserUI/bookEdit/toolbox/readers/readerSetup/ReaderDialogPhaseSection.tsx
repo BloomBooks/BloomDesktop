@@ -5,6 +5,7 @@ import { Button } from "@mui/material";
 import * as React from "react";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 import { ReaderSettings, ReaderStage } from "../ReaderSettings";
+import { updateSettings } from "./readerDialogShared";
 import { cleanSpaceDelimitedList } from "./decodableStagesUtils";
 import {
     closestCenter,
@@ -22,7 +23,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Span } from "../../../../react_components/l10nComponents";
-import { cloneReaderSettings } from "./decodableStagesUtils";
 import axios from "axios";
 import { getBloomApiPrefix } from "../../../../utils/bloomApi";
 
@@ -174,11 +174,11 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
     );
 
     const addNewStage = () => {
-        const updatedSettings = cloneReaderSettings(props.settings);
-        updatedSettings.stages.push(
-            new ReaderStage((updatedSettings.stages.length + 1).toString()),
-        );
-        props.setSettings(updatedSettings);
+        const updatedSettings = updateSettings(props, (settings) => {
+            settings.stages.push(
+                new ReaderStage((settings.stages.length + 1).toString()),
+            );
+        });
         props.setSelectedStageIndex(updatedSettings.stages.length - 1);
         setStageIds([...stageIds, `decodable-stage-${nextStageId.current++}`]);
     };
@@ -186,13 +186,13 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
     const removeSelectedStage = () => {
         const removedFile =
             props.settings.stages[props.selectedStageIndex]?.allowedWordsFile;
-        const updatedSettings = cloneReaderSettings(props.settings);
-        updatedSettings.stages.splice(props.selectedStageIndex, 1);
+        const updatedSettings = updateSettings(props, (settings) => {
+            settings.stages.splice(props.selectedStageIndex, 1);
+        });
         props.setSelectedStageIndex(Math.max(0, props.selectedStageIndex - 1));
         setStageIds(
             stageIds.filter((_, index) => index !== props.selectedStageIndex),
         );
-        props.setSettings(updatedSettings);
         // Delete the word-list file if no remaining stage references it. As with the trash
         // icon on the file itself, this happens immediately rather than on save, matching the
         // legacy dialog; see removeAllowedWordsFile in DecodableStagesSetup for what it would
@@ -223,16 +223,12 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
         }
 
         const selectedStageId = stageIds[props.selectedStageIndex]!;
-        const updatedSettings = cloneReaderSettings(props.settings);
-        updatedSettings.stages = arrayMove(
-            updatedSettings.stages,
-            oldIndex,
-            newIndex,
-        );
+        updateSettings(props, (settings) => {
+            settings.stages = arrayMove(settings.stages, oldIndex, newIndex);
+        });
         const reorderedStageIds = arrayMove(stageIds, oldIndex, newIndex);
         setStageIds(reorderedStageIds);
         props.setSelectedStageIndex(reorderedStageIds.indexOf(selectedStageId));
-        props.setSettings(updatedSettings);
     };
 
     return (

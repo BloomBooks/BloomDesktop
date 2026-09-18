@@ -6,7 +6,12 @@ import { css, SerializedStyles } from "@emotion/react";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 
 export const ReaderDialogTextarea: React.FunctionComponent<{
-    updateSettings: (value: string) => void;
+    /**
+     * Called with the box's new text. Named for what it does rather than what the callers do
+     * with it: they all happen to write settings, but this component knows nothing about
+     * settings, and the shared updateSettings helper is a different thing entirely.
+     */
+    onValueChange: (value: string) => void;
     value: string;
     extraStyles: SerializedStyles;
     /** Accessible name for the box; it is labelled only by a nearby heading, not a <label>. */
@@ -31,8 +36,8 @@ export const ReaderDialogTextarea: React.FunctionComponent<{
             aria-label={props.ariaLabel}
             data-testid={props.testId}
             value={props.value}
-            onChange={(event) => props.updateSettings(event.target.value)}
-            onBlur={(event) => props.updateSettings(event.currentTarget.value)}
+            onChange={(event) => props.onValueChange(event.target.value)}
+            onBlur={(event) => props.onValueChange(event.currentTarget.value)}
             css={css`
                 box-sizing: border-box;
                 resize: none;

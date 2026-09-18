@@ -20,15 +20,23 @@ export const commonHeaderStyles = css`
     text-transform: uppercase;
 `;
 
-/** Applies a tab change to a cloned settings object and publishes the updated draft. */
+/**
+ * Applies a change to a cloned settings object and publishes the updated draft, returning it.
+ *
+ * It returns the new settings because several callers need them for something else in the same
+ * breath -- which stage is now selected, what the reordered list looks like. Without that they
+ * would have to clone, mutate and publish by hand, and then there would be two ways to change
+ * the settings instead of one.
+ */
 export const updateSettings = (
     props: {
         settings: ReaderSettings;
         setSettings: (value: ReaderSettings) => void;
     },
     update: (settings: ReaderSettings) => void,
-) => {
+): ReaderSettings => {
     const updatedSettings = cloneReaderSettings(props.settings);
     update(updatedSettings);
     props.setSettings(updatedSettings);
+    return updatedSettings;
 };

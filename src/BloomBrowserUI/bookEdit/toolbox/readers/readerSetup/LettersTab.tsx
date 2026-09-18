@@ -2,9 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { useL10n } from "../../../../react_components/l10nHooks";
 import { Div, Span } from "../../../../react_components/l10nComponents";
-import {
-    ReaderSettings,
-} from "../ReaderSettings";
+import { ReaderSettings } from "../ReaderSettings";
 import { ReaderDialogTextarea } from "./ReaderDialogTextarea";
 import {
     commonHeaderStyles,
@@ -45,7 +43,7 @@ export const LettersTab: React.FunctionComponent<{
                 Letters and Letter Combinations
             </Div>
             <ReaderDialogTextarea
-                updateSettings={updateLetters}
+                onValueChange={updateLetters}
                 value={props.settings.letters}
                 ariaLabel={lettersBoxLabel}
                 testId="reader-setup-letters-box"
