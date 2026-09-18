@@ -548,6 +548,35 @@ Fix direction: a click-to-add route on the palette (click the item, then click t
 a test can drive with real presses, which would also help anyone who cannot drag. (Found
 2026-09-04.)
 
+## Saving the reader settings costs the next test in the file its shell document
+
+A spec file may contain at most **one** test that presses OK in the Decodable Reader setup
+dialog. With two, the test after the first save fails at its very first step with "There is no
+toolbox toggle in this document, so Bloom is not showing the Edit tab", and a
+`waitForEditablePage` added in front of it just times out instead.
+
+It is not a product bug, and it is not the save being slow. Measured in a running Bloom
+immediately after `acceptReaderSetup` and again 2, 5, 10 and 20 seconds later, the edit view is
+perfectly healthy every time: `frames=[(main),toolbox,pageList,page]`, one `.bloom-page`, and
+`e2e/isEditingPage` true. The same save-then-reopen sequence inside a *single* test passes. Only
+crossing a test boundary after a save breaks it, and the failing test's page snapshot shows the
+Edit tab selected with the book and the toolbox both present -- in the document the test cannot
+see.
+
+That is the entry above wearing different clothes: saving evidently leaves a second document
+carrying the workspace root's markup, and from the next test on, the worker's page handle is the
+wrong one. The entry above says nobody knows why a second workspace-root document exists at all;
+this is a reproducible way to make one.
+
+Worked around by splitting the reader-setup specs so that no file saves twice
+(`decodable-reader-saves-sample-words`, `decodable-reader-drops-empty-stage` and
+`decodable-reader-cancel` are one behaviour each for this reason, and say so at the top). The
+cost is one Bloom launch per behaviour.
+
+What would fix it: re-resolving the shell page after a save the way `bloomApp.restart` already
+re-resolves it, or finding the duplicate document the entry above is hunting.
+(Found 2026-09-17 while adding e2e tests for the converted Decodable Reader setup dialog.)
+
 ## A test can attach to a shell document Bloom does not drive
 
 More than one document in a run carries the workspace root's markup, and therefore the

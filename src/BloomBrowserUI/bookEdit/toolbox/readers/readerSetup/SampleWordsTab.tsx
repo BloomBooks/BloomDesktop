@@ -172,6 +172,7 @@ export const SampleWordsTab: React.FunctionComponent<{
                                 1) Type Words Here
                             </Div>
                             <ReaderDialogTextarea
+                                testId="reader-setup-sample-words-box"
                                 onValueChange={updateMoreWords}
                                 value={props.settings.moreWords}
                                 ariaLabel={moreWordsBoxLabel}
@@ -228,6 +229,7 @@ export const SampleWordsTab: React.FunctionComponent<{
                             >
                                 {sampleTextFiles.length === 0 && (
                                     <Div
+                                        id="readerSetupNoSampleTexts"
                                         l10nKey="ReaderSetup.NoSampleTextsYet"
                                         css={css`
                                             padding: 12px;
@@ -240,6 +242,8 @@ export const SampleWordsTab: React.FunctionComponent<{
                                 {sampleTextFiles.map((file) => (
                                     <div
                                         key={file.path}
+                                        data-testid="reader-setup-sample-text-file"
+                                        data-readable={file.readable}
                                         css={css`
                                             display: flex;
                                             align-items: center;
