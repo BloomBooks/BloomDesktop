@@ -26,6 +26,33 @@ There are three priority files. Choose based on what the string labels:
 
 Strings that are only meant to be seen by developers or if code bugs occur should not be localized. Add comments explaining why they are not.
 
+## Making a string in React code localizable
+
+The front end localizes strings in two ways:
+
+- an l10n-aware component, e.g. `<BloomButton l10nKey="myKey">My Text</BloomButton>` or
+  `<H1 l10nKey="myKey">My Text</H1>`;
+- the hook `useL10n("My Text", "myKey")` — the English text first, then the id. It lives in
+  `src/BloomBrowserUI/react_components/l10nHooks.ts`; import it by the correct relative path.
+
+```tsx
+import { useL10n } from "../../react_components/l10nHooks";
+// somewhere in the Foobar dialog
+<button>{useL10n("Brighten everything", "FoobarDialog.BrightenEverything")}</button>
+```
+
+Do not fill in the `l10nComment` parameter of `useL10n`; it clutters the code, and the
+translator's context goes in the XLF `<note>` instead (below).
+
+**Choosing the id.** Translators see the id and use it to understand context and to group
+related strings, so make it logical and hierarchical, `Namespace.EntryName` matching the feature
+area. If the string is a tooltip, make that the last part: `LinkTargetChooser.URL.Paste.Tooltip`,
+not `LinkTargetChooser.Tooltip.Paste`. Never use the word "Aria" in ids or notes; translators
+don't know what it means.
+
+Then check all three priority files for an existing entry with the same text or id (tell the
+user where it is if you find one), and otherwise add one as follows.
+
 ## Adding a new entry
 
 1. **Stop and ask the user which priority file to use, with your recommendation.** Explain why
