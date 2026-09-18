@@ -2,7 +2,6 @@
 name: bloom-automation
 description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, use dev-browser to inspect or run e2e tests against the actual exe instead of CURRENTPAGE.
 argument-hint: "repo root or worktree, task such as status, restart, attach, run exe-backed tests"
-user-invocable: true
 ---
 
 # Bloom Exe CDP Automation

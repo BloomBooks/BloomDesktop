@@ -2,7 +2,6 @@
 name: game-theme-preview
 description: 'Audit and fix WCAG color contrast in Bloom game themes. Generates a scrollable HTML preview showing every element of every theme in its real colors with low-contrast pairs flagged, then drives an AI-curated, human-approved fix loop. Use when adding or editing a game theme in gamesThemes.less, when a game element (dashed target, draggable, button, checkbox) is hard to see, or when a tester wants to eyeball all themes at once.'
 argument-hint: 'optional: a specific theme name or a color pair to check'
-user-invocable: true
 ---
 
 # Game Theme Preview & Contrast Fix

@@ -2,7 +2,6 @@
 name: bloom-branding
 description: Use when working on Bloom enterprise/subscription branding packs under src/content/branding (e.g. MXB-Book-Scripture, MXB-Book-Literacy, Default) — changing the back-cover "Made with Bloom" / QR badge, title/cover/credits branding logos, the xmatter pack a branding selects, copyright/license presets, or branding CSS. Covers how branding.json + branding.less work, how branding files get copied into a book, the build+reopen pipeline that makes changes take effect, and how to verify results.
 argument-hint: "branding name (e.g. MXB-Book-Scripture) and what to change (badge/QR, logo, xmatter, preset, css)"
-user-invocable: true
 ---
 
 # Bloom Branding Packs
