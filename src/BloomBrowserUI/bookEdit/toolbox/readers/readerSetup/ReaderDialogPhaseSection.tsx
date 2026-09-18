@@ -356,6 +356,7 @@ export const ReaderDialogPhaseSection: React.FunctionComponent<{
                 </Span>
                 <Button
                     onClick={removeSelectedStage}
+                    data-testid="reader-setup-remove-phase"
                     disabled={props.settings.stages.length === 1}
                     startIcon={<DeleteOutlineIcon />}
                     css={css`

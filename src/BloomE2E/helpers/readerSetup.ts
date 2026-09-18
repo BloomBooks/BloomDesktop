@@ -34,6 +34,19 @@ const DECODABLE_SWITCH = '[data-testid="decodable-reader-switch"] input';
 /** The setup dialog's root, which exists only while the dialog is showing. */
 const SETUP_DIALOG = '[data-testid="decodable-reader-setup-dialog"]';
 
+/**
+ * The Leveled Reader's setup dialog, which is still the legacy jQuery one: its content is an
+ * iframe of that id, wrapped by jQuery UI. Its presence is how a test tells the two dialogs
+ * apart.
+ */
+const LEGACY_SETUP_DIALOG = "#settings_frame";
+
+/** The "Set Up Levels" button in the Leveled Reader's panel. */
+const SET_UP_LEVELS_BUTTON = '[data-testid="set-up-levels-button"]';
+
+/** The Leveled Reader's "This book is leveled" switch. */
+const LEVELED_SWITCH = '[data-testid="leveled-reader-switch"] input';
+
 /** One row of the stage list down the left of the Decodable Stages tab. */
 const PHASE_ROW = '[data-testid="reader-setup-phase-row"]';
 
@@ -48,6 +61,8 @@ const TAB_TEST_ID: Record<ReaderSetupTab, string> = {
 
 /** One stage as the collection's reader settings file stores it. */
 export interface IReaderStage {
+    /** The stage's displayed number, as a string; the dialog renumbers these on save. */
+    name?: string;
     letters: string;
     sightWords: string;
     allowedWordsFile?: string;
@@ -77,6 +92,13 @@ export async function enableDecodableReaderTool(page: Page): Promise<void> {
         "active\tdecodableReaderCheck\t1",
         "text/plain",
     );
+    // Mark the book decodable here too, rather than by clicking the panel's switch later.
+    // The switch's position is React state seeded from the page's body classes, so setting
+    // the book BEFORE the reload below means the panel comes up with the switch already on,
+    // and nothing has to click it. Clicking was the unreliable step: a re-render arriving
+    // just after the click puts the switch back, and retrying in a loop only toggles it to
+    // and fro, posting to Bloom and re-running the page markup each time.
+    await apiPost(page, "toolbox/decodable", "true", "application/json");
     await switchTab(page, "collection");
     await switchTab(page, "edit");
     // Wait for Bloom's editing state machine, not just for the toolbox to exist. While the Edit
@@ -106,6 +128,12 @@ export async function enableDecodableReaderTool(page: Page): Promise<void> {
  * it is shut.
  */
 export async function openDecodableReaderTool(page: Page): Promise<void> {
+    // Saving the reader settings makes Bloom rebuild the edit view, so a caller that starts
+    // straight after a save -- the next test in a file, most often -- can arrive while the Edit
+    // tab is briefly not showing at all. Waiting for the editing state machine first turns that
+    // into a pause instead of "there is no toolbox toggle in this document". Cheap when the tab
+    // is already up.
+    await waitForEditablePage(page);
     // Wait on the switch, not on the Set Up button: the panel renders the button only once the
     // book is marked decodable, so waiting on the button here would hang on a book that is not.
     await openTool(page, "decodableReader", DECODABLE_SWITCH);
@@ -128,11 +156,15 @@ export async function setBookIsDecodable(
     const frame = toolboxFrame(page);
     const box = frame.locator(DECODABLE_SWITCH);
     if ((await box.isChecked()) !== isDecodable) {
+        // enableDecodableReaderTool normally leaves this already on, so this click is the
+        // exception rather than the rule. Click once and verify -- never retry in a loop,
+        // because clicking toggles, so a loop oscillates instead of converging (and each
+        // toggle posts to Bloom and re-runs the page markup).
         await box.click();
     }
     await expect(
         box,
-        `The Decodable Reader switch would not go ${isDecodable ? "on" : "off"}.`,
+        `The Decodable Reader switch is not ${isDecodable ? "on" : "off"}.`,
     ).toBeChecked({ checked: isDecodable, timeout: 30000 });
     // The Set Up Stages button appears and disappears with the switch, so its presence is how we
     // know the panel has re-rendered rather than just the switch having moved.
@@ -178,6 +210,182 @@ export async function openDecodableStagesSetup(page: Page): Promise<void> {
                 "one, materializing an empty Stage 1 when the collection has none.",
         })
         .toBeGreaterThan(0);
+}
+
+/** One file as the Sample Words tab lists it: its name, and whether its type is one Bloom reads. */
+export interface ISampleTextFile {
+    name: string;
+    validType: boolean;
+    /** The explanation shown beside a file of the wrong type, or "" otherwise. */
+    explanation: string;
+}
+
+/**
+ * The Sample Texts folder as the dialog is showing it. An unreadable file is expected to be
+ * listed with an explanation rather than left out; an empty list means the dialog is showing its
+ * "no sample texts yet" message instead. The caller must be on the Sample Words tab.
+ */
+export async function getSampleTextFiles(
+    page: Page,
+): Promise<ISampleTextFile[]> {
+    return page
+        .locator('[data-testid="reader-setup-sample-text-file"]')
+        .evaluateAll((rows) =>
+            rows.map((row) => {
+                const explanation = row.querySelector("span:last-of-type");
+                const validType =
+                    row.getAttribute("data-valid-type") === "true";
+                return {
+                    name: (row.textContent ?? "").trim(),
+                    validType,
+                    explanation: validType
+                        ? ""
+                        : (explanation?.textContent ?? "").trim(),
+                };
+            }),
+        );
+}
+
+/** True when the Sample Words tab is showing its "no sample texts yet" message. */
+export async function isShowingNoSampleTextsMessage(
+    page: Page,
+): Promise<boolean> {
+    return (await page.locator("#readerSetupNoSampleTexts").count()) > 0;
+}
+
+/**
+ * Type the words the collection supplies directly, rather than through files, into the Sample
+ * Words tab's own box. The caller must be on that tab.
+ */
+export async function setTypedSampleWords(
+    page: Page,
+    words: string,
+): Promise<void> {
+    await fillReaderSetupBox(page, "reader-setup-sample-words-box", words);
+}
+
+/** What the Sample Words tab's typed-words box is showing. */
+export async function getTypedSampleWords(page: Page): Promise<string> {
+    return page
+        .locator('[data-testid="reader-setup-sample-words-box"]')
+        .inputValue();
+}
+
+/**
+ * The words the Decodable Stages tab is previewing as decodable at the selected stage.
+ *
+ * This is the one panel fed from the toolbox frame rather than from the dialog's own copy of the
+ * settings, so it is how a test checks that the cross-frame lookups still work.
+ */
+export async function getMatchingWords(page: Page): Promise<string[]> {
+    return page
+        .locator('[data-testid="reader-setup-matching-word"]')
+        .evaluateAll((chips) =>
+            chips.map((chip) => (chip.textContent ?? "").trim()),
+        );
+}
+
+/** Remove the selected stage, and wait until the list is one shorter. */
+export async function removeSelectedStage(page: Page): Promise<number> {
+    const before = await getStageCount(page);
+    await page.locator('[data-testid="reader-setup-remove-phase"]').click();
+    await expect
+        .poll(async () => getStageCount(page), {
+            timeout: 30000,
+            message: `Removing the stage did not shorten the list; there are still ${before}.`,
+        })
+        .toBe(before - 1);
+    return before - 1;
+}
+
+/** Select a stage by its position in the list (0-based), and wait for it to be the shown one. */
+export async function selectStage(page: Page, index: number): Promise<void> {
+    await page.locator(PHASE_ROW).nth(index).click();
+    // The sight-words box belongs to the selected stage, so its presence is the settled signal.
+    await page
+        .locator('[data-testid="reader-setup-sight-words-box"]')
+        .waitFor({ state: "visible", timeout: 30000 });
+}
+
+/** True while the React Decodable Reader setup dialog is showing. */
+export async function isDecodableSetupDialogShowing(
+    page: Page,
+): Promise<boolean> {
+    return (await page.locator(SETUP_DIALOG).count()) > 0;
+}
+
+/** True while the legacy Leveled Reader setup dialog is showing. */
+export async function isLeveledSetupDialogShowing(
+    page: Page,
+): Promise<boolean> {
+    return (await page.locator(LEGACY_SETUP_DIALOG).count()) > 0;
+}
+
+/**
+ * Turn the Leveled Reader tool on for the book being edited, the counterpart of
+ * enableDecodableReaderTool, and wait until the toolbox offers it.
+ */
+export async function enableLeveledReaderTool(page: Page): Promise<void> {
+    await apiPost(
+        page,
+        "editView/saveToolboxSetting",
+        "active	leveledReaderCheck	1",
+        "text/plain",
+    );
+    // Marked leveled before the reload, for the reason given in enableDecodableReaderTool.
+    await apiPost(page, "toolbox/leveled", "true", "application/json");
+    await switchTab(page, "collection");
+    await switchTab(page, "edit");
+    await waitForEditablePage(page);
+    await expect
+        .poll(
+            async () =>
+                toolboxFrame(page)
+                    .locator('[data-toolid="leveledReader"]')
+                    .count(),
+            {
+                timeout: 30000,
+                message:
+                    "The toolbox never offered the Leveled Reader tool after it was enabled.",
+            },
+        )
+        .toBeGreaterThan(0);
+}
+
+/**
+ * Open the Leveled Reader's "Set Up Levels" dialog -- still the legacy jQuery one -- the way a
+ * person does, and wait until it is showing. Turns the tool's "This book is leveled" switch on
+ * first, because the panel shows the button only while it is.
+ */
+export async function openLeveledReaderSetup(page: Page): Promise<void> {
+    await waitForEditablePage(page); // see openDecodableReaderTool
+    await openTool(page, "leveledReader", LEVELED_SWITCH);
+    const frame = toolboxFrame(page);
+    const box = frame.locator(LEVELED_SWITCH);
+    if (!(await box.isChecked())) {
+        await box.click(); // once only; see setBookIsDecodable
+    }
+    await expect(box, "The Leveled Reader switch is not on.").toBeChecked({
+        timeout: 30000,
+    });
+    const button = frame.locator(SET_UP_LEVELS_BUTTON);
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await button.scrollIntoViewIfNeeded({ timeout: 30000 });
+    await button.click();
+    await page
+        .locator(LEGACY_SETUP_DIALOG)
+        .waitFor({ state: "visible", timeout: 30000 });
+}
+
+/**
+ * Shut the legacy Leveled Reader setup dialog with its title-bar close button, and wait until it
+ * is gone. The title bar is used rather than the Cancel button because the buttons are localized.
+ */
+export async function closeLeveledReaderSetup(page: Page): Promise<void> {
+    await page.locator(".ui-dialog-titlebar-close").first().click();
+    await page
+        .locator(LEGACY_SETUP_DIALOG)
+        .waitFor({ state: "detached", timeout: 30000 });
 }
 
 /** Show one of the setup dialog's three tabs, and wait until it is the selected one. */
