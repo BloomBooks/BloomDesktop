@@ -19,6 +19,16 @@ House rules:
 
 ---
 
+## 2026-09-17 — A running Bloom locks Bloom.xlf and fails the C# suite
+- **Cut:** `LocalizationManager.Create` writes `%LOCALAPPDATA%\SIL\Bloom\localizations\en\Bloom.xlf`,
+  a machine-global path outside the per-run temp isolation, so the developer's own running Bloom.exe
+  collides with a test run: `IOException ... being used by another process` out of `BookDataTests.Setup`
+  (also seen as an NRE in `XliffTransUnitUpdater..ctor` from the same path). It looks like a flaky test.
+- **Idea:** point the localization folder at the per-run temp dir the way `TestTempDirectory.cs` already
+  does for everything else, or at minimum say in AGENTS.md that this one path is still shared — it
+  currently reads as though `agent-dotnet.sh` plus temp isolation fully solve "build/test while Bloom runs".
+- **Context:** hit twice on BL-16806 (PR #8286); passed clean on re-run both times.
+
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
   {"message":"Unexpected promise failure ..."}` lines, all inside the React component-test step —
