@@ -480,6 +480,65 @@ export async function addStage(page: Page): Promise<number> {
     return before + 1;
 }
 
+/**
+ * What each row of the stage list says, in the order shown, with the stage NUMBER stripped off.
+ *
+ * A row runs its number, its letters and its sight words together. The number is dropped because
+ * it is the row's position rather than its identity: removing or reordering a stage renumbers
+ * every row after it, so leaving the numbers in would make every such change look like every row
+ * changed. What is left -- the letters and sight words -- is what tells the stages apart.
+ */
+export async function getStageRowTexts(page: Page): Promise<string[]> {
+    return page.locator(PHASE_ROW).evaluateAll((rows) =>
+        rows.map((row) =>
+            (row.textContent ?? "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .replace(/^\d+\s*/, ""),
+        ),
+    );
+}
+
+/**
+ * Drag the stage at `fromIndex` onto the row at `toIndex` and wait until the list order has
+ * actually changed.
+ *
+ * The list is a dnd-kit sortable whose only sensor is a PointerSensor with an 8px activation
+ * distance, so this has to be a real pointer gesture: press, move far enough to start the drag,
+ * move in steps so dnd-kit sees the movement, then release. A single jump to the target does not
+ * start a drag at all.
+ */
+export async function dragStage(
+    page: Page,
+    fromIndex: number,
+    toIndex: number,
+): Promise<void> {
+    const before = await getStageRowTexts(page);
+    const rows = page.locator(PHASE_ROW);
+    const from = await rows.nth(fromIndex).boundingBox();
+    const to = await rows.nth(toIndex).boundingBox();
+    if (!from || !to) {
+        throw new Error(
+            `Cannot drag stage ${fromIndex} to ${toIndex}: the list is showing ${before.length} rows.`,
+        );
+    }
+    const startX = from.x + from.width / 2;
+    const startY = from.y + from.height / 2;
+    const endY = to.y + to.height / 2;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    // Past the 8px activation distance first, then on to the target in steps.
+    await page.mouse.move(startX, startY + 12, { steps: 4 });
+    await page.mouse.move(startX, endY, { steps: 12 });
+    await page.mouse.up();
+    await expect
+        .poll(async () => (await getStageRowTexts(page)).join("|"), {
+            timeout: 30000,
+            message: `Dragging stage ${fromIndex} onto ${toIndex} did not change the order.`,
+        })
+        .not.toBe(before.join("|"));
+}
+
 /** How many stages the dialog's stage list is showing. */
 export async function getStageCount(page: Page): Promise<number> {
     return page.locator(PHASE_ROW).count();
