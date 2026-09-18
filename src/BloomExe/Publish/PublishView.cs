@@ -52,19 +52,20 @@ namespace Bloom.Publish
             //off the tab itself changing, either to us or away from us.
             selectedTabChangedEvent.Subscribe(_ =>
             {
-                if (_tabSelection.ActiveTab == WorkspaceTab.publish)
-                {
-                    if (!_isActive)
-                    {
-                        Activate();
-                        _isActive = true;
-                    }
-                }
-                else if (_isActive)
-                {
+                var shouldBeActive = _tabSelection.ActiveTab == WorkspaceTab.publish;
+                if (shouldBeActive == _isActive)
+                    return;
+                // Record where we are going before doing the work, not after. If some part of
+                // activating or deactivating throws, we must not be left believing we are still in
+                // the state we just left: that stale belief would silently skip the *next*
+                // Activate(), and with it the SetTabsEnabled(true) below that releases the Edit
+                // tab's save lock -- leaving the Collection and Edit tabs greyed out until the user
+                // restarts Bloom. That was half of BL-16174. The exception itself still propagates.
+                _isActive = shouldBeActive;
+                if (shouldBeActive)
+                    Activate();
+                else
                     Deactivate();
-                    _isActive = false;
-                }
             });
 
             //TODO: find a way to call this just once, at the right time:
@@ -80,7 +81,8 @@ namespace Bloom.Publish
             _publishToVideoApi.AbortMakingVideo();
             // TODO-WV2: Can we clear the cache for WV2? Do we need to?
             PublishHelper.Cancel();
-            PublishHelper.InPublishTab = false;
+            // Note: PublishHelper.InPublishTab is not ours to clear; WorkspaceTabSelection.ActiveTab
+            // has already done it. See the comment there (BL-16174).
             _webSocketServer.SendEvent("publish", "switchOutOfPublishTab");
         }
 
@@ -104,7 +106,9 @@ namespace Bloom.Publish
             // Safety net: any Edit-tab save lock must be complete before we reach Publish,
             // so ensure tab switching is enabled in case the re-enable callback was missed.
             WorkspaceView?.SetTabsEnabled(true);
-            PublishHelper.InPublishTab = true;
+            // Note: PublishHelper.InPublishTab is not ours to set; WorkspaceTabSelection.ActiveTab
+            // has already done it, before any of this event's subscribers ran. See the comment
+            // there (BL-16174).
             var hostForm = GetHostControlForInvoke() as Form;
             PublishEpubApi.ControlForInvoke = hostForm;
             LibraryPublishApi.Model = new BloomLibraryPublishModel(
