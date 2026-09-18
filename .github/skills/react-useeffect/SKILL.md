@@ -60,3 +60,19 @@ Need to respond to something?
 
 - [Anti-Patterns](./anti-patterns.md) - Common mistakes with fixes
 - [Better Alternatives](./alternatives.md) - useMemo, key prop, lifting state, useSyncExternalStore
+
+## When you do write an Effect
+
+- **Always clean up.** If the effect subscribes, fetches, or sets a timer, return a cleanup
+  function; that is what prevents leaks and the stale-response race.
+- **Expect it to run twice in development.** React 18+ Strict Mode mounts components twice to
+  expose missing cleanup. An effect that breaks under that needs cleanup, not a guard; app-level
+  initialization that must run once belongs in a module-level guard, not an effect.
+- **Do not chain effects.** Effects that set state to trigger other effects cause extra renders
+  and are hard to follow; compute the whole next state in one place, usually the event handler.
+- **Data fetching:** prefer a data library or a shared hook with cleanup over a hand-written
+  effect in each component.
+
+Based on the React docs: [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect),
+[Synchronizing with Effects](https://react.dev/learn/synchronizing-with-effects),
+[Lifecycle of Reactive Effects](https://react.dev/learn/lifecycle-of-reactive-effects).
