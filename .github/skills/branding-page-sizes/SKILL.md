@@ -2,7 +2,6 @@
 name: branding-page-sizes
 description: Use when adding or tuning page sizes/layouts for a Bloom enterprise/subscription branding pack (e.g. MXB-Book-Literacy, MXB-Book-Scripture, MXB-Book-Literacy-Prepub) so the dense front/back matter looks polished at every size — and when producing a real-Bloom screenshot PDF that proves it. Covers unlocking page sizes, the spacing-vs-font tuning rules, a live overflow-measuring iteration loop, the CDP capture pipeline, removing edit-view artifacts, and assembling the verification PDF.
 argument-hint: "branding pack + sample book folder, and which sizes/pages to polish"
-user-invocable: true
 ---
 
 # Branding page sizes: layouts, per-size polish, verification & PDF
@@ -84,7 +83,8 @@ non-prepub books the block is empty, so the same rules are harmless no-ops.
 Reopening a book per CSS tweak is slow, and **Bloom does not re-copy the xmatter CSS into a
 book on a mere tab switch** (it caches "up to date" for the session). So iterate live by
 injecting candidate CSS into the page over CDP, measuring real overflow, screenshotting — then
-bake into LESS once it's right. The reusable tool is `iterate.mjs` (see "Capture tooling").
+bake into LESS once it's right. Write a small driver script for this (the `bloom-automation`
+skill's drivers show how to attach); the durable knowledge is what it measures.
 
 For each candidate it: closes the Talking Book toolbox, strips edit artifacts, switches size
 via the API, jumps to the page, injects the candidate `<style>`, then reports overflow:
@@ -115,7 +115,7 @@ pages (runtime-only things — the real QR code, branding-file copy, autofit —
 real Bloom). First confirm you're driving **this worktree's** Bloom (`bloomProcessStatus.mjs
 --json` → `matchesExpectedRepoRoot: true`); other agents run Blooms from other worktrees.
 
-Per size × page (`capture.mjs`):
+Per size × page:
 - Switch size: in-page `fetch('/bloom/api/editView/topBar/layoutChoiceChange', {POST, json:{layoutChoiceId}})`.
 - Jump page: in-page `fetch('/bloom/api/editView/jumpToPage', {POST, body: pageId})` (page ids
   parsed from the book `.htm`: split on `<div class="bloom-page`, match `data-xmatter-page` +
@@ -146,7 +146,7 @@ Before each shot:
 ### Resilience
 A layout switch can occasionally drop the CDP socket or take Bloom down at the very last size,
 so a run may finish 31/32. Relaunch this worktree's Bloom (`./go.sh`), reopen the book, and
-re-capture just the missing pages (`capture_one.mjs` reconnects fresh each run). Sanity-check
+re-capture just the missing pages, reconnecting fresh for that run. Sanity-check
 the result: `md5sum` the PNGs — distinct count should equal shot count (identical hashes mean
 the layout/page change silently failed, usually the Host-header 400).
 
@@ -161,14 +161,6 @@ msedge --headless=new --disable-gpu --no-sandbox \
 Headless `--print-to-pdf` omits headers/footers by default. **Gotcha:** a *fresh*
 `--user-data-dir` often silently produces nothing (first-run setup); reuse a warmed profile
 dir. Then copy the PDF where the user can open it.
-
-## Capture tooling
-Working scripts for this task live under `C:\Users\hatto\AppData\Local\Temp\mxb_render\`
-(non-repo): `iterate.mjs` (inject candidate CSS + measure overflow + shoot one page),
-`capture.mjs` (all 8 sizes × 4 pages), `capture_one.mjs` (re-do one size's pages with a fresh
-reconnect), `measure_children.mjs` (marginBox child geometry), and `gallery_*.mjs` (build the
-PDF gallery HTML). They are throwaway harness code — re-create or adapt as needed; the durable
-knowledge is in this skill.
 
 ## Gotchas checklist
 - Screenshots all identical → the layout/page API silently 400'd (Host: 127.0.0.1). Drive the

@@ -26,6 +26,33 @@ There are three priority files. Choose based on what the string labels:
 
 Strings that are only meant to be seen by developers or if code bugs occur should not be localized. Add comments explaining why they are not.
 
+## Making a string in React code localizable
+
+The front end localizes strings in two ways:
+
+- an l10n-aware component, e.g. `<BloomButton l10nKey="myKey">My Text</BloomButton>` or
+  `<H1 l10nKey="myKey">My Text</H1>`;
+- the hook `useL10n("My Text", "myKey")` — the English text first, then the id. It lives in
+  `src/BloomBrowserUI/react_components/l10nHooks.ts`; import it by the correct relative path.
+
+```tsx
+import { useL10n } from "../../react_components/l10nHooks";
+// somewhere in the Foobar dialog
+<button>{useL10n("Brighten everything", "FoobarDialog.BrightenEverything")}</button>
+```
+
+Do not fill in the `l10nComment` parameter of `useL10n`; it clutters the code, and the
+translator's context goes in the XLF `<note>` instead (below).
+
+**Choosing the id.** Translators see the id and use it to understand context and to group
+related strings, so make it logical and hierarchical, `Namespace.EntryName` matching the feature
+area. If the string is a tooltip, make that the last part: `LinkTargetChooser.URL.Paste.Tooltip`,
+not `LinkTargetChooser.Tooltip.Paste`. Never use the word "Aria" in ids or notes; translators
+don't know what it means.
+
+Then check all three priority files for an existing entry with the same text or id (tell the
+user where it is if you find one), and otherwise add one as follows.
+
 ## Adding a new entry
 
 1. **Stop and ask the user which priority file to use, with your recommendation.** Explain why
@@ -35,6 +62,9 @@ Strings that are only meant to be seen by developers or if code bugs occur shoul
    how important the string is to the user is. This holds however you got here: a task that began
    as something else (a review, a bug fix) and turned into adding a string still owes the
    question.
+   Likewise **never change the `id` of an existing entry** that is not `translate="no"` (it loses
+   the translations; refuse if asked, and point it out in a review), and **only mark an entry
+   obsolete once nothing references it** (see "Marking an entry obsolete" below).
 2. Add the entry in the chosen file:
 
 ```xml
@@ -119,10 +149,10 @@ findings and let the developer decide.
 
 When a deletion does go ahead on that basis, **put the evidence where the reviewer will meet
 it** — the commit message and the reply on the review thread, in as many words: always
-`translate="no"`, absent from every translated file. Review bots take their rules from
-`src/BloomBrowserUI/AGENTS.md` (Devin cites it by name, with `based_on_repo_rules: true`) and
-read the rule rather than your reasoning, so the deletion *will* be flagged. With the evidence
-attached, the next person sees a rule correctly applied; without it, they see a rule broken.
+`translate="no"`, absent from every translated file. Review bots read the "never delete a
+trans-unit" rule in `AGENTS.md` rather than your reasoning, so the deletion *will* be flagged.
+With the evidence attached, the next person sees a rule correctly applied; without it, they see
+a rule broken.
 
 ## Reviewing XLF changes in a PR
 

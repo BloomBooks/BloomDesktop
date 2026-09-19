@@ -41,6 +41,41 @@ owns the port you are driving — launcher `--status` in the right worktree, or
 `bloomProcessStatus.mjs --running-bloom` — or you may be testing another
 worktree's build.
 
+## Frame model and selectors
+
+Bloom's Edit tab is several iframes. Resolve frames by **name**, never by position:
+
+- Toolbox frame: name `toolbox` (URL usually contains `toolboxContent`).
+- Editable page frame: name `page` (URL usually contains `page-memsim-...htm`).
+- The top `CURRENTPAGE` document is the shell, not the editable page.
+
+Selectors the helpers rely on (keep them centralized in `helpers/`):
+
+- Canvas tool tab header: `h3[data-toolid="canvasTool"]`. Check whether `#canvasToolControls`
+  is already visible first; if it is, do not click the tab again.
+- Canvas surface: `.bloom-canvas`. Created elements: `.bloom-canvas-element`.
+- Speech/comic palette item: `img[src*="comic-icon.svg"]`.
+
+A minimal non-trivial proof test opens `CURRENTPAGE`, resolves the two frames, ensures the Canvas
+tool is active, drags a palette item onto `.bloom-canvas` with real mouse gestures
+(`page.mouse.down/move/up`), and asserts the `.bloom-canvas-element` count increased.
+
+Troubleshooting: "No tests found" means the path filter is not relative to the config
+`testDir`; `playwright: not found` means `pnpm install` in `src/BloomBrowserUI`; a canvas wait
+that times out usually means you selected the top frame instead of `page`.
+
+## Native dialogs (safety rule)
+
+Do **not** let a native OS dialog open unprepared: Playwright cannot see or dismiss it and the
+run hangs. `Change image` and `Choose image from your computer...` are safe (they open the web
+image gallery); the gallery's `Open File...` under `This Computer`, and either command on a GIF,
+reach the native file picker. This suite attaches to an ordinary running Bloom, not one started
+with `--e2e`, so the `e2e/nextFileToChoose` hook is **not** registered (posting to it raises
+Bloom's missing-endpoint problem dialog). To get past a picker here use `winformsUia.ps1` in the
+`bloom-automation` skill, which fills the picker over UI Automation with no pointer input. Do not
+invoke `Choose Video from your Computer...` or `Record yourself...`; if coverage needs them,
+verify presence/enabled state only.
+
 ## Stability notes for future agents
 
 - Shared mode teardown is implemented in fixtures using `CanvasElementManager` APIs (not click-based selection), because overlay canvases can intercept pointer events.

@@ -2,7 +2,6 @@
 name: bloom-automation
 description: Use when an agent needs to determine if Bloom is already running, detect whether the running Bloom came from a different worktree, kill Bloom or dotnet-watch parents, start Bloom from the current worktree, attach to the embedded WebView2 over CDP, inspect DOM/console/network, use dev-browser to inspect or run e2e tests against the actual exe instead of CURRENTPAGE.
 argument-hint: "repo root or worktree, task such as status, restart, attach, run exe-backed tests"
-user-invocable: true
 ---
 
 # Bloom Exe CDP Automation
@@ -211,7 +210,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File $P setvalue -ProcessId <bloo
 powershell -NoProfile -ExecutionPolicy Bypass -File $P invoke   -ProcessId <bloomPid> -Window Open -Control Open
 ```
 
-Proven 2026-09-16, each against a real `./go.sh` Bloom:
+Each of these works against a real `./go.sh` Bloom:
 
 - **A WinForms dialog.** Settings opened from the top bar (a CDP click on the web "Settings"
   button); `select` switched to the Book Making tab; `invoke` on `_cancelButton` closed it.
@@ -262,7 +261,7 @@ What to know:
   X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
 - **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
   WebView2 environment and browser process, and each is given the same
-  `--remote-debugging-port`. Seen once on 2026-09-16: while the Book Making tab was showing,
+  `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
   the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
   closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
   dialog opens or closes rather than holding on to a page handle.
@@ -460,6 +459,10 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
   `range.getClientRects().length` for "actually painted". And no highlights
   is not proof markup is broken: the Leveled Reader panel's switch gates
   painting entirely — flip it on first.
+- **Coordinates differ between frames.** The Edit tab is several iframes with their own
+  screen/client/page coordinate systems, and page scaling (`transform: scale(...)`) changes
+  what `getBoundingClientRect()` returns. When measuring a drop point against a created
+  element, compare in one consistent coordinate space and test at more than one zoom level.
 - **Ad-hoc driver scripts cannot `import "playwright"` from a scratch
   directory** — Node resolves from the script's own path. Do what the shipped
   drivers do: `createRequire("<repo>/src/BloomBrowserUI/react_components/component-tester/package.json")`

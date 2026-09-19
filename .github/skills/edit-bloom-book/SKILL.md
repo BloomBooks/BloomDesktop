@@ -1,17 +1,16 @@
 ---
 name: edit-bloom-book
-description: Use when an agent needs to edit or repair a Bloom book HTML file while preserving the strict Bloom.html schema used by Bloom Desktop.
-argument-hint: "Bloom.html path and requested change or repair"
-user-invocable: true
+description: Edit or repair a Bloom book's .htm file by hand while preserving the DOM schema Bloom Desktop depends on (pages, translation groups, editables, canvas elements, split panes, data-div). Use when asked to change or fix a book's HTML directly, or when a hand-edited book will not open.
+argument-hint: "path to the book's .htm and the requested change or repair"
 ---
 
 # Edit Bloom book
 
 ## Outcome
-Edit a `Bloom.html` book without breaking Bloom's structural expectations. Preserve the DOM schema Bloom relies on for page identity, multilingual text, images, canvas elements, xMatter regeneration, and split-pane layouts.
+Edit a book's `.htm` file without breaking Bloom's structural expectations. Preserve the DOM schema Bloom relies on for page identity, multilingual text, images, canvas elements, xMatter regeneration, and split-pane layouts.
 
 ## When To Use
-- The user wants to edit a book's `Bloom.html` directly.
+- The user wants to edit a book's `.htm` directly.
 - The user needs help repairing a damaged or hand-edited Bloom book.
 - The task involves changing text, image containers, layout wrappers, or metadata while keeping the book valid.
 - The task requires adding or repairing Bloom-specific elements such as `.bloom-page`, `.bloom-translationGroup`, `.bloom-editable`, `.bloom-canvas`, or split-pane containers.
@@ -220,7 +219,7 @@ Canonical canvas background-image pattern:
 ### Image Copyright / License Metadata
 - Image attribution lives on the `img` as `data-copyright`, `data-creator` (the photographer/artist), and `data-license` (a license token such as `cc-by`, `cc-by-sa`, or `cc0`; the license *version* is not encoded here).
 - IMPORTANT: the image **file's** embedded metadata (XMP/EXIF) is the source of truth, not the HTML. On load and on save Bloom runs `ImageUpdater.UpdateImgMetadataAttributesToMatchImage()`, which reads metadata from the file and **rewrites** (or, when the file has none, **removes**) these `data-*` attributes. So setting only the HTML attributes does NOT stick: a photo with no embedded metadata shows the red "?©" badge and its `data-*` get blanked on the next save.
-- To make attribution persist, write it into the image file with Bloom's own libpalaso API: `SIL.Windows.Forms.ClearShare.Metadata` → set `CopyrightNotice` / `Creator` / `License` (e.g. `CreativeCommonsLicense.FromLicenseUrl(...)`) → `WriteIntellectualPropertyOnly(path)`. Bloom reads it back via `RobustFileIO.MetadataFromFile` (TagLib#). After that, the HTML `data-*` are derived/repopulated automatically. See the `bird-book` skill for a working batch tool (`embed-metadata/`).
+- To make attribution persist, write it into the image file with Bloom's own libpalaso API: `SIL.Windows.Forms.ClearShare.Metadata` → set `CopyrightNotice` / `Creator` / `License` (e.g. `CreativeCommonsLicense.FromLicenseUrl(...)`) → `WriteIntellectualPropertyOnly(path)`. Bloom reads it back via `RobustFileIO.MetadataFromFile` (TagLib#). After that, the HTML `data-*` are derived/repopulated automatically.
 - CAUTION: Bloom owns the currently-open book file and re-saves it from its in-memory copy, silently clobbering external edits and re-stripping image attributes. **Close Bloom before hand-editing the book HTML or its image files**, then reopen.
 
 ### xMatter And Regenerated Pages
@@ -321,7 +320,7 @@ Canvas page content:
 - `src/BloomTests/Book/BookStorageTests.cs`: concrete examples of valid and repaired page structures, including nested `.marginBox` and canvas cases.
 
 ## Workflow
-1. Read the target `Bloom.html` and identify the specific page or field to change.
+1. Read the target book `.htm` and identify the specific page or field to change.
 2. Find the nearest matching pattern in the same book.
 3. If the local book does not provide one, use the canonical repo patterns listed above.
 4. Make the smallest structural edit that satisfies the request.
