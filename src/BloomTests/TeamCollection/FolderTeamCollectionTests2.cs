@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,8 +8,10 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web;
 using BloomTemp;
+using BloomTests.DataBuilders;
 using Moq;
 using NUnit.Framework;
 using SIL.IO;
@@ -1772,5 +1775,1255 @@ namespace BloomTests.TeamCollection
                 }
             );
         }
+
+        #region BL-16729: noticing that we can no longer watch the repo
+
+        /// <summary>
+        /// Callers reach MakeDisconnected both directly (a synchronous CheckConnection from an
+        /// API handler that is not on the UI thread) and indirectly (a watcher or heartbeat
+        /// failure marshalled onto the UI thread), so two can arrive at once. Exactly one must
+        /// do the work.
+        /// </summary>
+        [Test]
+        public void MakeDisconnected_ManyThreadsAtOnce_DisconnectsExactlyOnce()
+        {
+            using (var collectionFolder = new TemporaryFolder("DisconnectRace_Collection"))
+            using (var repoFolder = new TemporaryFolder("DisconnectRace_Repo"))
+            {
+                Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                using (
+                    var tcManager = new TeamCollectionManager(
+                        settingsPath,
+                        null,
+                        new BookStatusChangeEvent(),
+                        null,
+                        null,
+                        null
+                    )
+                )
+                {
+                    Assert.That(
+                        tcManager.CurrentCollection,
+                        Is.Not.Null,
+                        "setup problem: should have connected to the repo"
+                    );
+
+                    var wonCount = 0;
+                    System.Threading.Tasks.Parallel.For(
+                        0,
+                        16,
+                        i =>
+                        {
+                            var won = tcManager.MakeDisconnected(
+                                new TeamCollectionMessage(
+                                    MessageAndMilestoneType.Error,
+                                    "TeamCollection.LostContactWithRepo",
+                                    "we lost it"
+                                ),
+                                repoFolder.FolderPath
+                            );
+                            if (won)
+                                System.Threading.Interlocked.Increment(ref wonCount);
+                        }
+                    );
+
+                    Assert.That(
+                        wonCount,
+                        Is.EqualTo(1),
+                        "exactly one caller should be told it did the disconnecting"
+                    );
+                    // Counting messages alone would not catch a double disconnect, because the
+                    // message log de-duplicates Errors -- so assert on the object identity too.
+                    Assert.That(
+                        tcManager.CurrentCollectionEvenIfDisconnected,
+                        Is.InstanceOf<DisconnectedTeamCollection>()
+                    );
+                    Assert.That(
+                        tcManager.MessageLog.Messages.Count(m =>
+                            m.L10NId == "TeamCollection.OperatingDisconnected"
+                        ),
+                        Is.EqualTo(1),
+                        "the disconnect messages should have been written exactly once"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Makes a TeamCollection over throwaway folders, with a mocked manager, and runs the
+        /// given check against it. Used by the watcher-failure tests below, which do not need
+        /// any book content.
+        /// </summary>
+        private void WithMockManagedCollection(
+            string testName,
+            Action<TestFolderTeamCollection, Mock<ITeamCollectionManager>> check
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    check(tc, mockTcManager);
+                }
+            }
+        }
+
+        [Test]
+        public void HandleRepoWatcherError_WatchIsDead_NoticesConnectionProblem()
+        {
+            WithMockManagedCollection(
+                "WatcherErrorDisconnects",
+                (tc, mockTcManager) =>
+                {
+                    // sut: the sort of exception the OS raises when the share goes away.
+                    tc.HandleRepoWatcherError(
+                        Path.Combine(tc.RepoDescription, "Books"),
+                        new IOException("The specified network name is no longer available")
+                    );
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.Is<TeamCollectionMessage>(msg =>
+                                    msg.L10NId == "TeamCollection.LostContactWithRepo"
+                                ),
+                                It.IsAny<string>()
+                            ),
+                        Times.Once,
+                        "a dead watch means we can no longer see our teammates' work, so we should disconnect"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A buffer overflow means we lost some notifications, but the folder is perfectly
+        /// reachable. Disconnecting would be a self-inflicted outage at the busiest moment.
+        /// </summary>
+        [Test]
+        public void HandleRepoWatcherError_BufferOverflow_WarnsButDoesNotDisconnect()
+        {
+            WithMockManagedCollection(
+                "WatcherOverflowWarns",
+                (tc, mockTcManager) =>
+                {
+                    tc.PretendIsLiveCollection = true;
+                    Assert.That(
+                        tc.MessageLog.CurrentErrors,
+                        Is.Empty,
+                        "setup problem: should start with no errors in the log"
+                    );
+
+                    // sut
+                    tc.HandleRepoWatcherError(
+                        Path.Combine(tc.RepoDescription, "Books"),
+                        new InternalBufferOverflowException()
+                    );
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "the connection is fine; we only lost some notifications"
+                    );
+                    var errors = tc.MessageLog.CurrentErrors;
+                    Assert.That(errors.Count, Is.EqualTo(1));
+                    Assert.That(
+                        errors[0].L10NId,
+                        Is.EqualTo("TeamCollection.MayHaveMissedChanges")
+                    );
+                    Assert.That(
+                        tc.MessageLog.ShouldShowReloadButton,
+                        Is.True,
+                        "the user needs the Reload Collection button to catch up on what we missed"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HandleRepoWatcherError_RepeatedOverflow_AddsOnlyOneMessage()
+        {
+            WithMockManagedCollection(
+                "WatcherOverflowDedupes",
+                (tc, mockTcManager) =>
+                {
+                    tc.PretendIsLiveCollection = true;
+                    var booksPath = Path.Combine(tc.RepoDescription, "Books");
+
+                    tc.HandleRepoWatcherError(booksPath, new InternalBufferOverflowException());
+                    Assert.That(
+                        tc.MessageLog.CurrentErrors.Count,
+                        Is.EqualTo(1),
+                        "setup problem: the first overflow should have logged one error"
+                    );
+
+                    // sut
+                    tc.HandleRepoWatcherError(booksPath, new InternalBufferOverflowException());
+
+                    Assert.That(
+                        tc.MessageLog.CurrentErrors.Count,
+                        Is.EqualTo(1),
+                        "a storm of overflows should not fill the log with identical messages"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A joiner's Dropbox may not have delivered the repo's Books folder by the time Bloom
+        /// starts watching. That used to mean no book watcher for the rest of the session --
+        /// and, because of an early return, no Other watcher either. See BL-16729.
+        /// </summary>
+        [Test]
+        public void StartMonitoring_NoBooksFolderYet_StillWatchesTheOtherFolder()
+        {
+            using (var collectionFolder = new TemporaryFolder("NoBooksYet_Collection"))
+            using (var repoFolder = new TemporaryFolder("NoBooksYet_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                        collectionFolder.FolderPath
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(settingsPath));
+                    File.WriteAllText(settingsPath, "This is the initial value");
+                    // Creates the repo's Other folder, but deliberately NOT Books.
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath);
+                    Assert.That(
+                        Directory.Exists(Path.Combine(repoFolder.FolderPath, "Books")),
+                        Is.False,
+                        "setup problem: this test is about the Books folder being absent"
+                    );
+
+                    tc.SetupMonitoringBehavior();
+                    var collectionChangedRaised = new ManualResetEvent(false);
+                    EventHandler<EventArgs> monitorFunction = (sender, args) =>
+                        collectionChangedRaised.Set();
+                    tc.RepoCollectionFilesChanged += monitorFunction;
+
+                    // sut: change a collection file, which only the Other watcher can see
+                    Thread.Sleep(10);
+                    RobustFile.WriteAllText(
+                        FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath),
+                        @"This is changed"
+                    );
+                    var raised = collectionChangedRaised.WaitOne(1000);
+
+                    tc.RepoCollectionFilesChanged -= monitorFunction;
+                    tc.StopMonitoring();
+
+                    Assert.That(
+                        raised,
+                        Is.True,
+                        "a missing Books folder should not stop us watching collection files"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Once Dropbox delivers the Books folder, the periodic check should start watching it
+        /// and announce whatever is already sitting there -- from the watcher's point of view
+        /// those books are all new since Bloom started. See BL-16729.
+        /// </summary>
+        [Test]
+        public void RetryDeferredWatching_BooksFolderHasArrived_AnnouncesTheBooksAlreadyInIt()
+        {
+            using (var collectionFolder = new TemporaryFolder("BooksArrive_Collection"))
+            using (var repoFolder = new TemporaryFolder("BooksArrive_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder yet, so watching is deferred
+
+                    var newBooks = new List<string>();
+                    EventHandler<NewBookEventArgs> handler = (sender, args) =>
+                        newBooks.Add(args.BookFileName);
+                    tc.NewBook += handler;
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
+                    try
+                    {
+                        // Nothing to find while the folder is still absent.
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "setup problem: there is no Books folder yet, so nothing to announce"
+                        );
+
+                        // Dropbox delivers the folder, with a book already in it.
+                        var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                        Directory.CreateDirectory(booksPath);
+                        RobustFile.WriteAllText(
+                            Path.Combine(booksPath, "Arrived book.bloom"),
+                            "not really a zip"
+                        );
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(newBooks, Is.EqualTo(new[] { "Arrived book.bloom" }));
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "there are no local books, so nothing can have been deleted"
+                        );
+
+                        // And it is idempotent: a second tick must not announce it again.
+                        newBooks.Clear();
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "having started watching, later ticks should do nothing"
+                        );
+                    }
+                    finally
+                    {
+                        tc.NewBook -= handler;
+                        tc.DeleteRepoBookFile -= deleteHandler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// A book deleted from the repo while we had no watcher raised no Deleted event either,
+        /// so nothing has told us our local copy is obsolete. Once the Books folder arrives we
+        /// must raise that event ourselves -- and, exactly as for an event from the watcher, the
+        /// local book must only really go away if the repo has a tombstone showing that someone
+        /// deliberately deleted it. See BL-16729.
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void RetryDeferredWatching_BookDeletedWhileNotWatching_AnnouncedAndRemovedOnlyIfTombstoned(
+            bool makeTombstone
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder("BookDeletedWhileNotWatching_Coll"))
+            using (var repoFolder = new TemporaryFolder("BookDeletedWhileNotWatching_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    // Two books that really are in the collection, both checked in, so each has
+                    // a genuine local status file and a genuine .bloom in the repo.
+                    var keptPath = MakeLocalBook(collectionFolder.FolderPath, "Kept book");
+                    var doomedPath = MakeLocalBook(collectionFolder.FolderPath, "Doomed book");
+                    tc.PutBook(keptPath);
+                    tc.PutBook(doomedPath);
+
+                    // A teammate deletes one of them. It is the notification of this, not the
+                    // deletion itself, that never reaches us.
+                    tc.DeleteBookFromRepo(doomedPath, makeTombstone);
+
+                    // Dropbox has not delivered the Books folder to this machine yet. (The
+                    // tombstone lives at the repo root, so it is not stashed with it.)
+                    var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                    var stashPath = Path.Combine(repoFolder.FolderPath, "StashedBooks");
+                    Directory.Move(booksPath, stashPath);
+
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder, so watching is deferred
+
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
+                    try
+                    {
+                        tc.RetryDeferredWatching();
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "setup problem: there is no Books folder yet, so nothing to announce"
+                        );
+
+                        // Dropbox delivers the folder, now without the deleted book.
+                        Directory.Move(stashPath, booksPath);
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            deletedBooks,
+                            Is.EqualTo(new[] { "Doomed book.bloom" }),
+                            "the book missing from the repo should be announced as deleted, and "
+                                + "the one still there should not be"
+                        );
+
+                        // Follow the announcement through to what it actually does. (Only the
+                        // five-second pause before this is untestable, which is why the logic
+                        // lives in HandleDeletedRepoFile.)
+                        tc.HandleDeletedRepoFile("Doomed book.bloom");
+                        Assert.That(
+                            Directory.Exists(doomedPath),
+                            Is.EqualTo(!makeTombstone),
+                            makeTombstone
+                                ? "a tombstoned deletion should remove the local book"
+                                : "without a tombstone we have no evidence of a deliberate "
+                                    + "deletion, so the local book must survive"
+                        );
+                        Assert.That(
+                            Directory.Exists(keptPath),
+                            Is.True,
+                            "the book still in the repo must not be touched"
+                        );
+                    }
+                    finally
+                    {
+                        tc.DeleteRepoBookFile -= deleteHandler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// A local book that has no counterpart in the repo is not necessarily a deleted one:
+        /// it may never have been checked in, or it may be checked out and renamed here, in
+        /// which case the repo still has it under its old name. Neither should be announced as
+        /// deleted when the Books folder finally arrives. See BL-16729.
+        /// </summary>
+        [Test]
+        public void RetryDeferredWatching_BooksWithNoRepoCounterpart_NotAnnouncedAsDeleted()
+        {
+            using (var collectionFolder = new TemporaryFolder("NoRepoCounterpart_Coll"))
+            using (var repoFolder = new TemporaryFolder("NoRepoCounterpart_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    // A book created here and never checked in. Deliberately it has no local
+                    // status file; that is how we tell it from one deleted remotely.
+                    var localOnlyPath = MakeLocalBook(
+                        collectionFolder.FolderPath,
+                        "Local only book"
+                    );
+
+                    // A book checked out here and renamed, but not yet checked in, so the repo
+                    // still holds it under its old name.
+                    var originalPath = MakeLocalBook(collectionFolder.FolderPath, "My book");
+                    tc.PutBook(originalPath);
+                    tc.AttemptLock("My book", "fred@nowhere.org");
+                    var renamedPath = Path.Combine(collectionFolder.FolderPath, "Renamed book");
+                    Directory.Move(originalPath, renamedPath);
+                    tc.HandleBookRename("My book", "Renamed book");
+                    Assert.That(
+                        tc.GetLocalStatus("Renamed book").oldName,
+                        Is.EqualTo("My book"),
+                        "setup problem: the local rename should have recorded the repo's name"
+                    );
+
+                    // Dropbox has not delivered the Books folder to this machine yet.
+                    var booksPath = Path.Combine(repoFolder.FolderPath, "Books");
+                    var stashPath = Path.Combine(repoFolder.FolderPath, "StashedBooks");
+                    Directory.Move(booksPath, stashPath);
+
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // no Books folder, so watching is deferred
+
+                    var deletedBooks = new List<string>();
+                    EventHandler<DeleteRepoBookFileEventArgs> deleteHandler = (sender, args) =>
+                        deletedBooks.Add(args.BookFileName);
+                    tc.DeleteRepoBookFile += deleteHandler;
+                    try
+                    {
+                        // Dropbox delivers the folder, holding only "My book.bloom".
+                        Directory.Move(stashPath, booksPath);
+
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            deletedBooks,
+                            Is.Empty,
+                            "neither a never-checked-in book nor one renamed here has lost a "
+                                + "repo counterpart"
+                        );
+                        Assert.That(
+                            Directory.Exists(localOnlyPath) && Directory.Exists(renamedPath),
+                            Is.True,
+                            "sanity check: neither local book should have been touched"
+                        );
+                    }
+                    finally
+                    {
+                        tc.DeleteRepoBookFile -= deleteHandler;
+                        tc.StopMonitoring();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes a minimal but real book folder (an htm, so it counts as a Bloom book, and a
+        /// meta.json, so it has an ID that tombstones can be keyed on) into the collection.
+        /// </summary>
+        /// <returns>The path to the book folder.</returns>
+        private static string MakeLocalBook(string collectionFolderPath, string title)
+        {
+            return new BookFolderBuilder()
+                .WithRootFolder(collectionFolderPath)
+                .WithTitle(title)
+                .WithHtm("<html></html>")
+                .Build()
+                .BuiltBookFolderPath;
+        }
+
+        [Test]
+        public void RetryDeferredWatching_BooksFolderWasThereAllAlong_DoesNothing()
+        {
+            WithMockManagedCollection(
+                "BooksWereThere",
+                (tc, mockTcManager) =>
+                {
+                    var booksPath = Path.Combine(tc.RepoDescription, "Books");
+                    Directory.CreateDirectory(booksPath);
+                    RobustFile.WriteAllText(
+                        Path.Combine(booksPath, "Existing book.bloom"),
+                        "not really a zip"
+                    );
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // watcher starts normally; nothing is deferred
+
+                    var newBooks = new List<string>();
+                    EventHandler<NewBookEventArgs> handler = (sender, args) =>
+                        newBooks.Add(args.BookFileName);
+                    tc.NewBook += handler;
+                    try
+                    {
+                        // sut
+                        tc.RetryDeferredWatching();
+
+                        Assert.That(
+                            newBooks,
+                            Is.Empty,
+                            "a collection that was watched from the start must not have its "
+                                + "existing books re-announced every minute"
+                        );
+                    }
+                    finally
+                    {
+                        tc.NewBook -= handler;
+                        tc.StopMonitoring();
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// A sync that throws must not leave the collection looking permanently busy: the
+        /// periodic connection check skips its tick while a write is in progress, so a stuck
+        /// flag would silently disable it for the rest of the session.
+        /// </summary>
+        [Test]
+        public void SyncAtStartup_Throws_StillClearsTheBusyFlag()
+        {
+            WithMockManagedCollection(
+                "SyncThrowsClearsBusy",
+                (tc, mockTcManager) =>
+                {
+                    Assert.That(
+                        tc.IsWritingToRepo,
+                        Is.False,
+                        "setup problem: should not start out busy"
+                    );
+
+                    // The repo has no Books folder and no collection files, so the sync throws
+                    // somewhere inside rather than returning normally.
+                    Assert.Catch(
+                        () => tc.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false),
+                        "setup problem: this sync was supposed to fail"
+                    );
+
+                    Assert.That(
+                        tc.IsWritingToRepo,
+                        Is.False,
+                        "a failed sync must not leave the collection looking busy forever"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// If a racing watcher failure disconnected us while the overflow warning was queued for
+        /// the UI thread, the manager has swapped in a different collection with a different
+        /// message log -- so writing ours would put the warning where nothing reads it.
+        /// </summary>
+        [Test]
+        public void HandleRepoWatcherError_OverflowAfterDisconnect_WritesNothing()
+        {
+            WithMockManagedCollection(
+                "WatcherOverflowAfterDisconnect",
+                (tc, mockTcManager) =>
+                {
+                    tc.PretendIsLiveCollection = false; // we have already been disconnected
+
+                    tc.HandleRepoWatcherError(
+                        Path.Combine(tc.RepoDescription, "Books"),
+                        new InternalBufferOverflowException()
+                    );
+
+                    Assert.That(
+                        tc.MessageLog.CurrentErrors,
+                        Is.Empty,
+                        "nothing should go into the log of a collection we have given up on"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// BL-16679 was a crash from EnableRaisingEvents throwing. Now we report instead.
+        /// A watcher with no Path set is the deterministic way to make it throw.
+        /// </summary>
+        [Test]
+        public void TryStartWatching_WatcherCannotStart_ReportsRatherThanThrowing()
+        {
+            WithMockManagedCollection(
+                "TryStartWatchingFails",
+                (tc, mockTcManager) =>
+                {
+                    using (var watcher = new FileSystemWatcherWrapper()) // no Path: cannot start
+                    {
+                        // Sanity check that this really is a watcher that cannot be started.
+                        // (Currently a FileNotFoundException, but the point of TryStartWatching
+                        // is that we don't care which exception it is.)
+                        Assert.Catch(
+                            () => watcher.EnableRaisingEvents = true,
+                            "setup problem: a path-less watcher was supposed to refuse to start"
+                        );
+
+                        // sut
+                        bool started = true;
+                        Assert.DoesNotThrow(() =>
+                            started = tc.TryStartWatching(watcher, "some path")
+                        );
+
+                        Assert.That(started, Is.False);
+                        mockTcManager.Verify(
+                            m =>
+                                m.NoticeConnectionProblem(
+                                    It.IsAny<TeamCollectionMessage>(),
+                                    It.IsAny<string>()
+                                ),
+                            Times.Once,
+                            "failing to start watching the repo means we cannot see our teammates' work"
+                        );
+                    }
+                }
+            );
+        }
+
+        /// <summary>
+        /// The whole StartMonitoring path over a repo that isn't there. Note this currently
+        /// stops at the "no Books folder" early return, so it is a smoke test rather than a
+        /// test of the EnableRaisingEvents guard (see TryStartWatching_... above for that).
+        /// </summary>
+        [Test]
+        public void StartMonitoring_RepoFolderDoesNotExist_DoesNotThrow()
+        {
+            using (var collectionFolder = new TemporaryFolder("StartMonitoringNoRepo_Collection"))
+            {
+                var missingRepoPath = Path.Combine(
+                    collectionFolder.FolderPath,
+                    "no such repo folder"
+                );
+                Assert.That(
+                    Directory.Exists(missingRepoPath),
+                    Is.False,
+                    "setup problem: the repo folder was supposed to be missing"
+                );
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        missingRepoPath
+                    )
+                )
+                {
+                    // sut
+                    Assert.DoesNotThrow(() => tc.StartMonitoring());
+                    Assert.DoesNotThrow(() => tc.StopMonitoring());
+                }
+            }
+        }
+
+        [Test]
+        public void StartAndStopMonitoring_TracksIsMonitoring()
+        {
+            WithMockManagedCollection(
+                "IsMonitoringTracks",
+                (tc, mockTcManager) =>
+                {
+                    Directory.CreateDirectory(Path.Combine(tc.RepoDescription, "Books"));
+                    Assert.That(tc.IsMonitoring, Is.False, "setup problem: not started yet");
+
+                    tc.StartMonitoring();
+                    Assert.That(tc.IsMonitoring, Is.True);
+
+                    tc.StopMonitoring();
+                    Assert.That(tc.IsMonitoring, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// The periodic check calls CheckConnection many times over a session. History messages
+        /// are not de-duplicated, so a probe that wrote them would fill up log.txt and raise a
+        /// status-changed event on every tick of a perfectly healthy session.
+        ///
+        /// Note the limits of this test: the two History writes it guards live behind
+        /// "the repo is inside a Dropbox folder AND Dropbox is unreachable AND the folder is
+        /// also shared on the LAN", which a temp folder cannot reproduce. So this catches a
+        /// probe that writes unconditionally, but not a regression confined to that branch --
+        /// for which the `if (writeHistoryMessages)` guards themselves are the evidence.
+        /// </summary>
+        [Test]
+        public void CheckConnection_QuietProbe_WritesNoMessages()
+        {
+            using (var collectionFolder = new TemporaryFolder("QuietProbe_Collection"))
+            using (var repoFolder = new TemporaryFolder("QuietProbe_Repo"))
+            {
+                var log = new TeamCollectionMessageLog(
+                    TeamCollectionManager.GetTcLogPathFromLcPath(collectionFolder.FolderPath)
+                );
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                mockTcManager.Setup(m => m.MessageLog).Returns(log);
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath,
+                        log
+                    )
+                )
+                {
+                    Assert.That(
+                        log.Messages,
+                        Is.Empty,
+                        "setup problem: should start with an empty log"
+                    );
+
+                    // sut
+                    for (var i = 0; i < 5; i++)
+                        tc.CheckConnection(writeHistoryMessages: false);
+
+                    Assert.That(
+                        log.Messages,
+                        Is.Empty,
+                        "a quiet probe must not write to the message log, however often it runs"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Once we give up on a collection, its watchers must stop; otherwise a dead one goes on
+        /// raising Error and a live one goes on queueing changes into an object nobody uses.
+        /// Dispose must still be able to reach it. See BL-16729.
+        /// </summary>
+        [Test]
+        public void MakeDisconnected_StopsOldCollectionAndSwitchesState()
+        {
+            using (var collectionFolder = new TemporaryFolder("MakeDisconnected_Collection"))
+            using (var repoFolder = new TemporaryFolder("MakeDisconnected_Repo"))
+            {
+                Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                using (
+                    var tcManager = new TeamCollectionManager(
+                        settingsPath,
+                        null,
+                        new BookStatusChangeEvent(),
+                        null,
+                        null,
+                        null
+                    )
+                )
+                {
+                    var originalCollection = tcManager.CurrentCollection;
+                    Assert.That(
+                        originalCollection,
+                        Is.Not.Null,
+                        "setup problem: should have connected to the repo"
+                    );
+                    originalCollection.StartMonitoring();
+                    Assert.That(
+                        originalCollection.IsMonitoring,
+                        Is.True,
+                        "setup problem: should be monitoring before we disconnect"
+                    );
+
+                    // sut
+                    tcManager.MakeDisconnected(
+                        new TeamCollectionMessage(
+                            MessageAndMilestoneType.Error,
+                            "TeamCollection.LostContactWithRepo",
+                            "we lost it"
+                        ),
+                        repoFolder.FolderPath
+                    );
+
+                    Assert.That(tcManager.CurrentCollection, Is.Null);
+                    Assert.That(
+                        tcManager.CurrentCollectionEvenIfDisconnected,
+                        Is.InstanceOf<DisconnectedTeamCollection>()
+                    );
+                    Assert.That(
+                        originalCollection.IsMonitoring,
+                        Is.False,
+                        "the collection we gave up on should have stopped watching"
+                    );
+                    Assert.That(tcManager.MessageLog.ShouldShowReloadButton, Is.True);
+                }
+            }
+        }
+
+        [Test]
+        public void MakeDisconnected_CalledTwice_DoesNotWriteMessagesTwice()
+        {
+            using (var collectionFolder = new TemporaryFolder("DisconnectTwice_Collection"))
+            using (var repoFolder = new TemporaryFolder("DisconnectTwice_Repo"))
+            {
+                Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
+                    collectionFolder.FolderPath
+                );
+                RobustFile.WriteAllText(settingsPath, "This is a fake settings file");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                using (
+                    var tcManager = new TeamCollectionManager(
+                        settingsPath,
+                        null,
+                        new BookStatusChangeEvent(),
+                        null,
+                        null,
+                        null
+                    )
+                )
+                {
+                    Assert.That(
+                        tcManager.CurrentCollection,
+                        Is.Not.Null,
+                        "setup problem: should have connected to the repo"
+                    );
+                    var message = new TeamCollectionMessage(
+                        MessageAndMilestoneType.Error,
+                        "TeamCollection.LostContactWithRepo",
+                        "we lost it"
+                    );
+                    Assert.That(
+                        tcManager.MakeDisconnected(message, repoFolder.FolderPath),
+                        Is.True,
+                        "setup problem: the first call should have done the disconnecting"
+                    );
+                    var disconnectedCollection = tcManager.CurrentCollectionEvenIfDisconnected;
+                    var messageCountAfterFirst = tcManager.MessageLog.Messages.Count;
+
+                    // sut: a second watcher failing, or the heartbeat, arriving right behind the first.
+                    Assert.That(
+                        tcManager.MakeDisconnected(message, repoFolder.FolderPath),
+                        Is.False,
+                        "the second caller must be told it did nothing, so it does not also toast"
+                    );
+
+                    Assert.That(
+                        tcManager.CurrentCollectionEvenIfDisconnected,
+                        Is.SameAs(disconnectedCollection),
+                        "should not have built a second DisconnectedTeamCollection"
+                    );
+                    Assert.That(
+                        tcManager.MessageLog.Messages.Count,
+                        Is.EqualTo(messageCountAfterFirst),
+                        "should not have written another copy of the disconnect messages"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Drives ConnectionHeartbeat.UpdateTcConnectionStatus directly -- no timer, no network, no real repo -- so
+        /// the confirm-then-act policy, the guards, and disposal are all covered. Devin flagged
+        /// this integration as unverified on PR #8338.
+        /// </summary>
+        private void WithHeartbeat(
+            string testName,
+            Action<
+                ConnectionHeartbeat,
+                TestFolderTeamCollection,
+                Mock<ITeamCollectionManager>
+            > check
+        )
+        {
+            WithMockManagedCollection(
+                testName,
+                (tc, mockTcManager) =>
+                {
+                    Directory.CreateDirectory(Path.Combine(tc.RepoDescription, "Books"));
+                    tc.InterceptCheckConnection = true;
+                    tc.PretendIsLiveCollection = true;
+                    tc.StartMonitoring(); // so IsMonitoring is true
+                    try
+                    {
+                        Assert.That(
+                            tc.IsMonitoring,
+                            Is.True,
+                            "setup problem: the heartbeat's guard needs monitoring to be on"
+                        );
+                        check(new ConnectionHeartbeat(tc), tc, mockTcManager);
+                    }
+                    finally
+                    {
+                        tc.StopMonitoring();
+                    }
+                }
+            );
+        }
+
+        private static TeamCollectionMessage AProblem(string l10nId = "TeamCollection.NoNetwork")
+        {
+            return new TeamCollectionMessage(
+                MessageAndMilestoneType.Error,
+                l10nId,
+                "something is wrong"
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_ConnectionFine_ChecksAndDoesNothing()
+        {
+            WithHeartbeat(
+                "HeartbeatOk",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = null;
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    Assert.That(
+                        tc.CheckConnectionCallCount,
+                        Is.EqualTo(1),
+                        "it should actually have looked"
+                    );
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_OneFailure_WaitsForConfirmationBeforeDisconnecting()
+        {
+            WithHeartbeat(
+                "HeartbeatOneFailure",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "one failed check is very often a transient blip; we must confirm first"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_TwoFailuresInARow_Disconnects()
+        {
+            WithHeartbeat(
+                "HeartbeatTwoFailures",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.Is<TeamCollectionMessage>(msg =>
+                                    msg.L10NId == "TeamCollection.NoNetwork"
+                                ),
+                                It.IsAny<string>()
+                            ),
+                        Times.Once
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_RecoveryBetweenFailures_DoesNotDisconnect()
+        {
+            WithHeartbeat(
+                "HeartbeatRecovers",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    tc.PretendConnectionProblem = null;
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "the good check in between means those two failures were not consecutive"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_WritingToRepo_SkipsTheCheckAndForgetsEarlierFailures()
+        {
+            WithHeartbeat(
+                "HeartbeatBusy",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.UpdateTcConnectionStatus(null); // one failure on the record
+                    var callsBefore = tc.CheckConnectionCallCount;
+
+                    tc.PretendIsWritingToRepo = true;
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    Assert.That(
+                        tc.CheckConnectionCallCount,
+                        Is.EqualTo(callsBefore),
+                        "should not even look while a check-in or sync is writing to the repo"
+                    );
+
+                    // The skipped tick breaks the run, so the next failure starts over.
+                    tc.PretendIsWritingToRepo = false;
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "a failure either side of a skipped tick is not a consecutive run"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// A probe that throws tells us nothing either way, so it must break the run rather than
+        /// silently preserving the earlier strike. Otherwise a failure, a throwing probe, and
+        /// another failure would disconnect a collection that was never shown to be unreachable
+        /// twice in a row.
+        /// </summary>
+        [Test]
+        public void HeartbeatTick_ProbeThrowsBetweenFailures_DoesNotDisconnect()
+        {
+            WithHeartbeat(
+                "HeartbeatProbeThrows",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.UpdateTcConnectionStatus(null); // strike one
+
+                    tc.PretendCheckConnectionThrows = true;
+                    Assert.DoesNotThrow(
+                        () => heartbeat.UpdateTcConnectionStatus(null),
+                        "a throwing probe must not escape the tick"
+                    );
+                    tc.PretendCheckConnectionThrows = false;
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never,
+                        "the failures either side of the throwing probe were not consecutive"
+                    );
+
+                    // Sanity check that the tracker is merely reset, not broken: two clean
+                    // failures in a row after this should still disconnect.
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Once
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_NotTheLiveCollection_SkipsTheCheck()
+        {
+            WithHeartbeat(
+                "HeartbeatNotLive",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    tc.PretendIsLiveCollection = false; // e.g. we already disconnected from it
+
+                    heartbeat.UpdateTcConnectionStatus(null);
+                    heartbeat.UpdateTcConnectionStatus(null);
+
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatTick_AfterDispose_DoesNothing()
+        {
+            WithHeartbeat(
+                "HeartbeatDisposed",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    tc.PretendConnectionProblem = AProblem();
+                    heartbeat.Dispose();
+
+                    // Timer.Dispose does not wait for a callback already under way, so a UpdateTcConnectionStatus
+                    // can still arrive after this point. It must be inert.
+                    Assert.DoesNotThrow(() => heartbeat.UpdateTcConnectionStatus(null));
+                    Assert.DoesNotThrow(() => heartbeat.UpdateTcConnectionStatus(null));
+
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    mockTcManager.Verify(
+                        m =>
+                            m.NoticeConnectionProblem(
+                                It.IsAny<TeamCollectionMessage>(),
+                                It.IsAny<string>()
+                            ),
+                        Times.Never
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void HeartbeatStart_UnderUnitTests_DoesNotStartATimer()
+        {
+            WithHeartbeat(
+                "HeartbeatNoTimerInTests",
+                (heartbeat, tc, mockTcManager) =>
+                {
+                    Assert.That(
+                        Program.RunningUnitTests,
+                        Is.True,
+                        "setup problem: this test is about the RunningUnitTests guard"
+                    );
+                    tc.PretendConnectionProblem = AProblem();
+
+                    heartbeat.Start();
+
+                    // No timer means no ticks, so nothing ever checks. (If this regressed, unit
+                    // test runs would leave thread-pool timers probing the real network.)
+                    Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
+                    heartbeat.Dispose();
+                }
+            );
+        }
+
+        #endregion
     }
 }
