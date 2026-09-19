@@ -9,8 +9,8 @@ description: How to add a new edge-to-edge (e2e) test that drives the real Bloom
 
 An e2e test launches its own `Bloom.exe` on a known collection, drives the real UI in
 the embedded WebView2, asserts, and tears the instance down. You can run a single test
-locally; wiring the suite into the nightly workflow (`.github/workflows/nightly.yml`)
-is planned but not done yet — the Running section below tells the current truth.
+locally; the nightly workflow (`.github/workflows/nightly.yml`) runs the whole suite every night
+and on demand (its `run_e2e_tests` input).
 
 Test code lives in BloomDesktop (`src/BloomE2E/`), versioned with the product code.
 Test input collections live in https://github.com/BloomBooks/bloom-testing-inputs,
@@ -402,9 +402,9 @@ server": a dev build of Bloom probes 5173 by itself, so an unset variable and a 
 means the run quietly tests the built bundle, however old it is. Stop a Bloom that already holds
 5173 rather than moving the dev server. See AUTOMATION-DEBT.md.
 
-`.github/workflows/nightly.yml` does not run this suite yet. The step it will need is the
-same `pnpm test` in that folder, after the Release build and the testing-inputs fetch that
-the visual-regression job already does.
+`.github/workflows/nightly.yml` runs this suite (the "BloomE2E tests" step, about nine minutes)
+after the Release build and the testing-inputs fetch; a failing nightly attaches the Playwright
+report as an artifact.
 
 ## Ship: a PR that is ready to merge
 

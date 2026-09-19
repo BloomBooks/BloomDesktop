@@ -2,7 +2,6 @@
 name: improve-test-automation-coverage
 description: '"improve-test-automation-coverage N" — take N test cases whose Notion Automation property is Planned, claim each one (set it to Building at once), and automate each in its own Orca worktree with a supervised Claude Fable 5.1 worker that follows add-e2e-test. The controller reviews every worker''s test, sends fixes, then lets the worker run preflight and open a draft PR that links the Notion card; the card ends as "PR Pending". Use when the developer says "improve test automation coverage", "burn tokens on test automation", or "automate N planned tests".'
 argument-hint: "N — how many Planned test cases to automate in parallel (default 3); or 'case 349,350' to name the cards"
-user-invocable: true
 ---
 
 # Improve test automation coverage
@@ -132,9 +131,8 @@ For each claimed card:
    the worker's terminal, and a 140-line paste has arrived truncated and unsubmitted. The spec is
    two sentences:
    `Read the file <absolute brief path> and follow it exactly; it is your whole task. Report with worker_done as it says.`
-2. Find the Orca repo that owns this checkout: `orca repo list --json`. For BloomDesktop on this
-   machine that is `path:D:/bloom`. A worktree path such as `D:/automate-notion-test` is not a
-   repo and `worker-start` answers `repo_not_found`.
+2. Find the Orca repo that owns this checkout: `orca repo list --json`, and use its `path:` value.
+   A worktree path is not a repo, and `worker-start` answers `repo_not_found` if you pass one.
 3. Create the task and start the worker in a fresh top-level worktree off master:
    ```powershell
    orca orchestration task-create --spec "Read the file <absolute brief path> and follow it exactly; it is your whole task. Report with worker_done as it says." --json
