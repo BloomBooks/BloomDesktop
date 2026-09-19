@@ -1609,6 +1609,781 @@
         <note>ID: BookProcessor.AutoUpdateExplanation</note>
         <note>Shown at the top of a progress dialog that appears automatically when Bloom must bring a book's pages up to date: when the AI image editor is launched on a book that has not been through that process, or after the page size has been changed. "Bloom" is the product name and must not be translated.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.AppTitle">
+        <source xml:lang="en">Bloom AI Image Tools</source>
+        <note>ID: AiImageEditor.AppTitle</note>
+        <note>Name of this tool, in its own title bar. 'Bloom' is the product name and stays as it is.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle">
+        <source xml:lang="en">Choose an Art Style</source>
+        <note>ID: AiImageEditor.ArtStyle.ChooseTitle</note>
+        <note>Heading of the window for picking an art style, and the button that opens it when no style is picked.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.StyleLabel">
+        <source xml:lang="en">Style:</source>
+        <note>ID: AiImageEditor.ArtStyle.StyleLabel</note>
+        <note>Small heading over the art style the user has picked. Ends with a colon.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name">
+        <source xml:lang="en">Abstract Illustration Style</source>
+        <note>ID: AiImageEditor.ArtStyle.abstract-illustration.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name">
+        <source xml:lang="en">Cartoon Style Illustrations</source>
+        <note>ID: AiImageEditor.ArtStyle.cartoon-style.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.chalkboard-sketch.Name">
+        <source xml:lang="en">Chalkboard Sketch</source>
+        <note>ID: AiImageEditor.ArtStyle.chalkboard-sketch.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.classic-ink-wash.Name">
+        <source xml:lang="en">Classic Ink &amp; Watercolor</source>
+        <note>ID: AiImageEditor.ArtStyle.classic-ink-wash.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.clay-stopmotion.Name">
+        <source xml:lang="en">Clay Stop-Motion</source>
+        <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
+        <note>Name of an art style: figures modelled in clay and photographed frame by frame. 'Stop-motion' is used untranslated by film and animation people in many languages; prefer the loanword over a literal rendering if that is what your language's practitioners say.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.cleanup-line-art.Name">
+        <source xml:lang="en">Cleanup Old Line Art</source>
+        <note>ID: AiImageEditor.ArtStyle.cleanup-line-art.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
+        <source xml:lang="en">Clear Line &amp; Flat Color</source>
+        <note>ID: AiImageEditor.ArtStyle.clear-line-flat-color.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name">
+        <source xml:lang="en">Coloring Book Outline</source>
+        <note>ID: AiImageEditor.ArtStyle.coloring-book-page.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.comic-halftone.Name">
+        <source xml:lang="en">Comic Halftone</source>
+        <note>ID: AiImageEditor.ArtStyle.comic-halftone.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.crayon-scribble.Name">
+        <source xml:lang="en">Crayon &amp; Childlike Scribble</source>
+        <note>ID: AiImageEditor.ArtStyle.crayon-scribble.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.flat-instructional.Name">
+        <source xml:lang="en">Flat Instructional</source>
+        <note>ID: AiImageEditor.ArtStyle.flat-instructional.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name">
+        <source xml:lang="en">High-Contrast Block/Woodcut</source>
+        <note>ID: AiImageEditor.ArtStyle.high-contrast-block.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.kawaii-doodle.Name">
+        <source xml:lang="en">Kawaii Doodle</source>
+        <note>ID: AiImageEditor.ArtStyle.kawaii-doodle.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name">
+        <source xml:lang="en">Colored Pencil Detail</source>
+        <note>ID: AiImageEditor.ArtStyle.line-art-colored-pencil.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-crayon.Name">
+        <source xml:lang="en">Crayon Line Overlay</source>
+        <note>ID: AiImageEditor.ArtStyle.line-art-crayon.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name">
+        <source xml:lang="en">Watercolor Line Wash</source>
+        <note>ID: AiImageEditor.ArtStyle.line-art-watercolor.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.line-drawing-sketch.Name">
+        <source xml:lang="en">Line Drawing and Sketch Style</source>
+        <note>ID: AiImageEditor.ArtStyle.line-drawing-sketch.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.manga-style.Name">
+        <source xml:lang="en">Manga Style Illustrations</source>
+        <note>ID: AiImageEditor.ArtStyle.manga-style.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.moody-illustrations.Name">
+        <source xml:lang="en">Moody Illustrations</source>
+        <note>ID: AiImageEditor.ArtStyle.moody-illustrations.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.paper-cutout-collage.Name">
+        <source xml:lang="en">Paper Cutout &amp; Collage</source>
+        <note>ID: AiImageEditor.ArtStyle.paper-cutout-collage.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.pixel-toy.Name">
+        <source xml:lang="en">Pixel Toy</source>
+        <note>ID: AiImageEditor.ArtStyle.pixel-toy.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.realistic-illustration.Name">
+        <source xml:lang="en">Realistic Illustration Style</source>
+        <note>ID: AiImageEditor.ArtStyle.realistic-illustration.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.retro-futurism.Name">
+        <source xml:lang="en">Retro Futurism</source>
+        <note>ID: AiImageEditor.ArtStyle.retro-futurism.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name">
+        <source xml:lang="en">Vintage Engraving &amp; Etching</source>
+        <note>ID: AiImageEditor.ArtStyle.vintage-engraving.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name">
+        <source xml:lang="en">Vintage Style Illustrations</source>
+        <note>ID: AiImageEditor.ArtStyle.vintage-illustrations.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name">
+        <source xml:lang="en">Watercolor Dream</source>
+        <note>ID: AiImageEditor.ArtStyle.watercolor-dream.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.whimsical-illustrations.Name">
+        <source xml:lang="en">Whimsical Illustrations Style</source>
+        <note>ID: AiImageEditor.ArtStyle.whimsical-illustrations.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name">
+        <source xml:lang="en">Wimmelbuch Style</source>
+        <note>ID: AiImageEditor.ArtStyle.wimmelbuch.Name</note>
+        <note>Name of an art style the user can pick for the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Batch.AddToBatch">
+        <source xml:lang="en">Add to batch</source>
+        <note>ID: AiImageEditor.Batch.AddToBatch</note>
+        <note>Tip on the tick that includes one picture in a run over several pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Batch.SelectAllPages">
+        <source xml:lang="en">Select all pages for batch processing</source>
+        <note>ID: AiImageEditor.Batch.SelectAllPages</note>
+        <note>Tip on the tick that includes every page at once.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Batch.WillEditSelected">
+        <source xml:lang="en">Will edit the {0} selected images</source>
+        <note>ID: AiImageEditor.Batch.WillEditSelected</note>
+        <note>Shown in place of the picture being changed, when several are ticked instead. {0} is how many.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.BookImages.Current">
+        <source xml:lang="en">Current</source>
+        <note>ID: AiImageEditor.BookImages.Current</note>
+        <note>Row label in the book-pictures strip: the picture the book has now.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.BookImages.ReplaceTip">
+        <source xml:lang="en">Replace images in your book with these images</source>
+        <note>ID: AiImageEditor.BookImages.ReplaceTip</note>
+        <note>Tip on the Replace button, saying that it will put the new picture into the book in place of the one the book has now.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.BookImages.Replacement">
+        <source xml:lang="en">Replacement</source>
+        <note>ID: AiImageEditor.BookImages.Replacement</note>
+        <note>Row label in the book-pictures strip: the picture that will replace it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Characters.NamePlaceholder">
+        <source xml:lang="en">Name</source>
+        <note>ID: AiImageEditor.Characters.NamePlaceholder</note>
+        <note>Grey hint in the empty box under a character's picture, where the user types that person's name.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Characters.PasteToAdd">
+        <source xml:lang="en">Paste an image to add a character</source>
+        <note>ID: AiImageEditor.Characters.PasteToAdd</note>
+        <note>Tip on the empty square that adds a character from whatever picture is on the clipboard.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.AddReferenceImage">
+        <source xml:lang="en">Please add a reference image for this tool (drag from history or upload).</source>
+        <note>ID: AiImageEditor.Error.AddReferenceImage</note>
+        <note>Message when the user starts a tool that needs an example picture, without giving one.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.CouldNotStartAuthentication">
+        <source xml:lang="en">Could not start OpenRouter authentication. Please try again.</source>
+        <note>ID: AiImageEditor.Error.CouldNotStartAuthentication</note>
+        <note>Message when the connection to the picture service could not be started.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.NeedsMoreCredits">
+        <source xml:lang="en">This request requires more credits.</source>
+        <note>ID: AiImageEditor.Error.NeedsMoreCredits</note>
+        <note>Stands in for the picture service's own words when it refuses for lack of money.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.OpenRouterSaid">
+        <source xml:lang="en">OpenRouter said "{0}"</source>
+        <note>ID: AiImageEditor.Error.OpenRouterSaid</note>
+        <note>Frames an error message that came back from OpenRouter, the company that runs the picture-making service. {0} is that message, which arrives in English; the quotation marks around it are ours.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.SelectImageFirst">
+        <source xml:lang="en">Select an image to edit before applying this tool.</source>
+        <note>ID: AiImageEditor.Error.SelectImageFirst</note>
+        <note>Message when the user starts a tool that changes a picture, without choosing one.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.LookAroundMode.Message">
+        <source xml:lang="en">This tool is in "look-around" mode. To actually edit or create images, you will need a subscription and a book that is not based on the "Playground" template.</source>
+        <note>ID: AiImageEditor.LookAroundMode.Message</note>
+        <note>Whole-screen notice on opening, when the user may look at the editor but cannot make pictures with it. 'Playground' is the name of a Bloom book template and matches its name elsewhere in Bloom.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.AboutPerImage">
+        <source xml:lang="en">About {0} per image</source>
+        <note>ID: AiImageEditor.Model.AboutPerImage</note>
+        <note>Shown in the AI image editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.Badge.Great">
+        <source xml:lang="en">Great</source>
+        <note>ID: AiImageEditor.Model.Badge.Great</note>
+        <note>Shown in the AI image editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.Badge.GreatButExpensive">
+        <source xml:lang="en">Great but Expensive</source>
+        <note>ID: AiImageEditor.Model.Badge.GreatButExpensive</note>
+        <note>Shown in the AI image editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.AccountLink">
+        <source xml:lang="en">OpenRouter account</source>
+        <note>ID: AiImageEditor.OpenRouter.AccountLink</note>
+        <note>Text of a link inside the warning that the user's OpenRouter key has no spending limit. It opens the user's account page on the OpenRouter website. 'OpenRouter' is a company name and stays in English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectWithKey">
+        <source xml:lang="en">Connect with OpenRouter API key</source>
+        <note>ID: AiImageEditor.OpenRouter.ConnectWithKey</note>
+        <note>Label of the connection setting before the user has connected, inviting them to paste a key from OpenRouter. 'OpenRouter' is a company name and 'API key' is the password-like text the user copies from its website.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.ConnectedWithKey">
+        <source xml:lang="en">Connected with OpenRouter API key</source>
+        <note>ID: AiImageEditor.OpenRouter.ConnectedWithKey</note>
+        <note>Label of the connection setting once the user has pasted a working key from OpenRouter. 'OpenRouter' is a company name and 'API key' is the password-like text copied from its website.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.CreditsExplanation">
+        <source xml:lang="en">OpenRouter credits are how you pre-pay for use of the AI Image Tools from Google and others. Once you have an OpenRouter account, paste in an API key below.</source>
+        <note>ID: AiImageEditor.OpenRouter.CreditsExplanation</note>
+        <note>Explanation at the top of the connection settings. 'OpenRouter' is a company name and stays in English; 'credits' is money paid in advance; an 'API key' is the password-like text the user copies from that company's website.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.NoSpendingLimit">
+        <source xml:lang="en">This key has no spending limit. Make sure that {0} does not have 'Auto Top-Up' on</source>
+        <note>ID: AiImageEditor.OpenRouter.NoSpendingLimit</note>
+        <note>Warning that the user's key has no spending limit, so a mistake could spend a lot. {0} is a link reading 'OpenRouter account'. 'Auto Top-Up' is the exact name of a setting on the OpenRouter website: leave it in English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.PasteKeyPlaceholder">
+        <source xml:lang="en">Paste OpenRouter key</source>
+        <note>ID: AiImageEditor.OpenRouter.PasteKeyPlaceholder</note>
+        <note>Grey hint inside the empty box where the user pastes the password-like key from OpenRouter.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.TestKey">
+        <source xml:lang="en">Test Key</source>
+        <note>ID: AiImageEditor.OpenRouter.TestKey</note>
+        <note>Button that checks whether the key the user pasted works.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.CharacterGridOrScene">
+        <source xml:lang="en">Character grid or scene to change</source>
+        <note>ID: AiImageEditor.Panel.CharacterGridOrScene</note>
+        <note>Heading over the picture being changed, when the tool changes the people in it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.ImageToEdit">
+        <source xml:lang="en">Image to Edit</source>
+        <note>ID: AiImageEditor.Panel.ImageToEdit</note>
+        <note>Heading over the picture the user is changing.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.ImagesShowingCharacters">
+        <source xml:lang="en">Images from the book that show all the characters</source>
+        <note>ID: AiImageEditor.Panel.ImagesShowingCharacters</note>
+        <note>Heading over the extra pictures, for the tool that collects every character in the book.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.Pieces">
+        <source xml:lang="en">Pieces</source>
+        <note>ID: AiImageEditor.Panel.Pieces</note>
+        <note>Heading over the several pictures produced by a tool that cuts one picture up.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.ReferenceImages">
+        <source xml:lang="en">Characters and other Reference Images</source>
+        <note>ID: AiImageEditor.Panel.ReferenceImages</note>
+        <note>Heading over extra pictures the user supplies to show the AI what people or things should look like.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.Result">
+        <source xml:lang="en">Result</source>
+        <note>ID: AiImageEditor.Panel.Result</note>
+        <note>Heading over the new picture the AI made.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.AddExtraInstructions">
+        <source xml:lang="en">Add any extra instructions...</source>
+        <note>ID: AiImageEditor.Param.AddExtraInstructions</note>
+        <note>Grey hint inside the empty 'Further Instructions' box, telling the user the box is optional. Not a label; it disappears as soon as they type.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.FurtherInstructions">
+        <source xml:lang="en">Further Instructions</source>
+        <note>ID: AiImageEditor.Param.FurtherInstructions</note>
+        <note>Label on an optional box where the user can add wishes on top of what the tool already does, such as 'keep the hat'. Used by six tools.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.Instructions">
+        <source xml:lang="en">Instructions</source>
+        <note>ID: AiImageEditor.Param.Instructions</note>
+        <note>Label on the box in the Custom Edit tool, where the whole instruction to the AI comes from the user rather than from the tool. Not the same as 'Further Instructions', which adds to a tool's own built-in instruction.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.Shape">
+        <source xml:lang="en">Shape</source>
+        <note>ID: AiImageEditor.Param.Shape</note>
+        <note>Label on the setting for the new picture's aspect ratio, which is the technical term for this: tall, wide or square. We chose the plainer word 'Shape' over 'Aspect Ratio'; use whichever your language would put in front of someone who is not technical. Used by several tools.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.Size">
+        <source xml:lang="en">Size</source>
+        <note>ID: AiImageEditor.Param.Size</note>
+        <note>Label on the setting for the new picture's resolution, which is the technical term for this: how many pixels across and down it will be, offered as 1k, 2k and 4k. We chose the plainer word 'Size' over 'Resolution'; use whichever your language would put in front of someone who is not technical. Do not use a word that means file size in bytes, or one that means how big the picture looks on the page. Used by several tools.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Param.Style">
+        <source xml:lang="en">Style</source>
+        <note>ID: AiImageEditor.Param.Style</note>
+        <note>Label on the setting for the art style. Used by several tools.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.Gallery">
+        <source xml:lang="en">Gallery</source>
+        <note>ID: AiImageEditor.Preview.Gallery</note>
+        <note>Heading of the window showing every picture in a strip at full size.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.Loading">
+        <source xml:lang="en">Loading…</source>
+        <note>ID: AiImageEditor.Preview.Loading</note>
+        <note>Shown in a picture's place in the gallery while the picture's file is being read.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Result.UseThis">
+        <source xml:lang="en">Use this</source>
+        <note>ID: AiImageEditor.Result.UseThis</note>
+        <note>Button that puts the new picture into the book, replacing what was there.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Result.UseThisImage">
+        <source xml:lang="en">Use this Image</source>
+        <note>ID: AiImageEditor.Result.UseThisImage</note>
+        <note>Button that puts the new picture into the book, replacing what was there. Longer wording, used inside Bloom.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.AddAnImageToEdit">
+        <source xml:lang="en">Add an image to edit</source>
+        <note>ID: AiImageEditor.Run.AddAnImageToEdit</note>
+        <note>Says why the start button cannot be used yet: this tool changes a picture, and no picture has been chosen.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.AddDescriptionOrReference">
+        <source xml:lang="en">Add a description or reference image</source>
+        <note>ID: AiImageEditor.Run.AddDescriptionOrReference</note>
+        <note>Says why the start button cannot be used yet: the user must either describe what they want or supply an example picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.AddReferenceImage">
+        <source xml:lang="en">Add reference image</source>
+        <note>ID: AiImageEditor.Run.AddReferenceImage</note>
+        <note>Says why the start button cannot be used yet: this tool needs an extra picture to work from.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.ApplyChanges">
+        <source xml:lang="en">Apply Changes</source>
+        <note>ID: AiImageEditor.Run.ApplyChanges</note>
+        <note>Button that starts the chosen tool on the picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.BatchApplyChanges">
+        <source xml:lang="en">Apply Changes to {0} Images</source>
+        <note>ID: AiImageEditor.Run.BatchApplyChanges</note>
+        <note>Button that starts the tool on several pictures at once, which this interface calls a batch. {0} is how many, always 2 or more.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.BatchProgress">
+        <source xml:lang="en">Processed {0} of {1}</source>
+        <note>ID: AiImageEditor.Run.BatchProgress</note>
+        <note>Progress line while several pictures are being made. {0} is how many are finished, {1} how many there are.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.BatchToolButton">
+        <source xml:lang="en">{0} for {1} Images</source>
+        <note>ID: AiImageEditor.Run.BatchToolButton</note>
+        <note>Button that starts a named tool on several pictures at once. {0} is the tool's own button text, {1} is how many pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.ClickToCancel">
+        <source xml:lang="en">Click to Cancel</source>
+        <note>ID: AiImageEditor.Run.ClickToCancel</note>
+        <note>Replaces the start button while the AI is working; clicking it stops the work.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.Estimate">
+        <source xml:lang="en">Estimate {0}</source>
+        <note>ID: AiImageEditor.Run.Estimate</note>
+        <note>What this one picture is expected to cost. {0} is an amount like '$0.04'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.EstimatedCost">
+        <source xml:lang="en">Estimated cost: {0}</source>
+        <note>ID: AiImageEditor.Run.EstimatedCost</note>
+        <note>What the whole batch is expected to cost. {0} is an amount like '$0.40'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.FillInRequiredFields">
+        <source xml:lang="en">Fill in required fields</source>
+        <note>ID: AiImageEditor.Run.FillInRequiredFields</note>
+        <note>Says why the start button cannot be used yet: a required box is still empty.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.GenerateImage">
+        <source xml:lang="en">Generate Image</source>
+        <note>ID: AiImageEditor.Run.GenerateImage</note>
+        <note>Button that starts making a brand new picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
+        <source xml:lang="en">Not available in look-around mode</source>
+        <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
+        <note>Says why the start button cannot be used: this session may only look at the editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Section.Enhance">
+        <source xml:lang="en">Enhance</source>
+        <note>ID: AiImageEditor.Section.Enhance</note>
+        <note>Small heading over the group of tools that improve a picture. Shown in capitals.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Section.Games">
+        <source xml:lang="en">Games</source>
+        <note>ID: AiImageEditor.Section.Games</note>
+        <note>Small heading over the group of tools for making pictures for games. Shown in capitals.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Section.Localize">
+        <source xml:lang="en">Localize</source>
+        <note>ID: AiImageEditor.Section.Localize</note>
+        <note>Small heading over the group of tools that adapt pictures to the local culture. Shown in capitals.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Section.More">
+        <source xml:lang="en">More</source>
+        <note>ID: AiImageEditor.Section.More</note>
+        <note>Small heading over the remaining tools. Shown in capitals.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Section.Text">
+        <source xml:lang="en">Text</source>
+        <note>ID: AiImageEditor.Section.Text</note>
+        <note>Small heading over the group of tools that work with words inside a picture. Shown in capitals.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Settings.ChooseFolder">
+        <source xml:lang="en">Choose folder</source>
+        <note>ID: AiImageEditor.Settings.ChooseFolder</note>
+        <note>Button that opens the computer's folder chooser.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Settings.ConnectionSection">
+        <source xml:lang="en">Connection to AI Image Generators</source>
+        <note>ID: AiImageEditor.Settings.ConnectionSection</note>
+        <note>Heading of the settings section about connecting to the picture-making services.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Settings.Title">
+        <source xml:lang="en">AI Image Tools settings</source>
+        <note>ID: AiImageEditor.Settings.Title</note>
+        <note>Heading of the settings dialog.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Shape.MatchContainer">
+        <source xml:lang="en">Match Container</source>
+        <note>ID: AiImageEditor.Shape.MatchContainer</note>
+        <note>Choice in the Shape or Size menu: give the new picture the aspect ratio of the space it will occupy on the book page.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Shape.MatchContainerTooltip">
+        <source xml:lang="en">Image container on the page is {0} x {1}</source>
+        <note>ID: AiImageEditor.Shape.MatchContainerTooltip</note>
+        <note>Tip on the 'Match Container' choice in the Shape menu, giving the size of the space the picture will fill on the book page. {0} and {1} are that space's width and height in pixels.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Shape.MatchImage">
+        <source xml:lang="en">Match Image</source>
+        <note>ID: AiImageEditor.Shape.MatchImage</note>
+        <note>Choice in the Shape menu: give the new picture the same aspect ratio as the picture being changed.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Shape.MatchImageTooltip">
+        <source xml:lang="en">This image is {0} x {1}</source>
+        <note>ID: AiImageEditor.Shape.MatchImageTooltip</note>
+        <note>Tip on the 'Match Image' choice in the Shape menu, giving the size of the picture being changed. {0} and {1} are its width and height in pixels.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.DropOrPasteToEdit">
+        <source xml:lang="en">Drop or paste an image to edit</source>
+        <note>ID: AiImageEditor.Slot.DropOrPasteToEdit</note>
+        <note>Shown in the empty picture space, telling the user how to put a picture there.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.Empty">
+        <source xml:lang="en">Empty</source>
+        <note>ID: AiImageEditor.Slot.Empty</note>
+        <note>Shown in a picture space that holds nothing.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotAction.Download">
+        <source xml:lang="en">Download</source>
+        <note>ID: AiImageEditor.SlotAction.Download</note>
+        <note>Tip on the button that saves this picture to the user's files.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotAction.MoreActions">
+        <source xml:lang="en">More actions</source>
+        <note>ID: AiImageEditor.SlotAction.MoreActions</note>
+        <note>Tip on the button that shows the rest of the buttons, when there is no room for them.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotAction.PasteFromClipboard">
+        <source xml:lang="en">Paste from Clipboard</source>
+        <note>ID: AiImageEditor.SlotAction.PasteFromClipboard</note>
+        <note>Tip on the button that puts in whatever picture is on the clipboard.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.SlotAction.RemoveImage">
+        <source xml:lang="en">Remove image</source>
+        <note>ID: AiImageEditor.SlotAction.RemoveImage</note>
+        <note>Tip on the button that takes this picture away entirely. Distinct from 'Clear Image', which empties the main slot; these two can appear on one screen, so they need different wording.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.bookImages.Label">
+        <source xml:lang="en">Book Images</source>
+        <note>ID: AiImageEditor.Strip.bookImages.Label</note>
+        <note>Name of the side strip holding the pictures already in the book being edited.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.bookImages.Tip">
+        <source xml:lang="en">Book images supplied by the current book.</source>
+        <note>ID: AiImageEditor.Strip.bookImages.Tip</note>
+        <note>Tip in the corner of the book-pictures strip, saying where those pictures come from.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.characters.Label">
+        <source xml:lang="en">Characters</source>
+        <note>ID: AiImageEditor.Strip.characters.Label</note>
+        <note>Name of the side strip holding the people who appear through the book.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.characters.Tip">
+        <source xml:lang="en">Use this area to keep your cast of characters.</source>
+        <note>ID: AiImageEditor.Strip.characters.Tip</note>
+        <note>Tip in the corner of the characters strip, saying what the strip is for.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.history.Label">
+        <source xml:lang="en">History</source>
+        <note>ID: AiImageEditor.Strip.history.Label</note>
+        <note>Name of the side strip holding every picture made in this session.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.reference.Label">
+        <source xml:lang="en">Reference Images</source>
+        <note>ID: AiImageEditor.Strip.reference.Label</note>
+        <note>Name of the side strip holding pictures kept as examples across books.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.reference.Tip">
+        <source xml:lang="en">Use this area to keep reference images that you use in more than one book. E.g. how people dress, what trees look like.</source>
+        <note>ID: AiImageEditor.Strip.reference.Tip</note>
+        <note>Tip in the corner of the reference strip, saying what the strip is for.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.starred.Label">
+        <source xml:lang="en">Starred</source>
+        <note>ID: AiImageEditor.Strip.starred.Label</note>
+        <note>Name of the side strip holding pictures the user marked with a star to keep handy.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.starred.Tip">
+        <source xml:lang="en">Star images to keep them handy.</source>
+        <note>ID: AiImageEditor.Strip.starred.Tip</note>
+        <note>Tip in the corner of the starred strip, saying what the strip is for.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder">
+        <source xml:lang="en">Optional: explain which references map to which characters, or note any details to preserve.</source>
+        <note>ID: AiImageEditor.Tool.apply_localized_characters.Param.furtherInstructions.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'Further Instructions' box of the 'Apply Localized Characters' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.apply_localized_characters.Title">
+        <source xml:lang="en">Apply Localized Characters</source>
+        <note>ID: AiImageEditor.Tool.apply_localized_characters.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_style.Title">
+        <source xml:lang="en">Change Style</source>
+        <note>ID: AiImageEditor.Tool.change_style.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.match">
+        <source xml:lang="en">Text to Match</source>
+        <note>ID: AiImageEditor.Tool.change_text.Param.match</note>
+        <note>Label on a setting of the 'Change Text' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.match.Placeholder">
+        <source xml:lang="en">e.g. "Once upon a time"</source>
+        <note>ID: AiImageEditor.Tool.change_text.Param.match.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'Text to Match' box of the 'Change Text' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace">
+        <source xml:lang="en">New Text</source>
+        <note>ID: AiImageEditor.Tool.change_text.Param.replace</note>
+        <note>Label on a setting of the 'Change Text' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Param.replace.Placeholder">
+        <source xml:lang="en">e.g. "In a galaxy far away"</source>
+        <note>ID: AiImageEditor.Tool.change_text.Param.replace.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'New Text' box of the 'Change Text' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Title">
+        <source xml:lang="en">Change Text</source>
+        <note>ID: AiImageEditor.Tool.change_text.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.ActionButton">
+        <source xml:lang="en">Make Coloring Page</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.ActionButton</note>
+        <note>The button that runs the 'Coloring Book' tool. A command: what will happen when it is pressed.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty">
+        <source xml:lang="en">Difficulty</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty</note>
+        <note>Label on a setting of the 'Coloring Book' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Complex">
+        <source xml:lang="en">Complex</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Complex</note>
+        <note>One choice in the 'Difficulty' menu of the 'Coloring Book' tool.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Moderate">
+        <source xml:lang="en">Moderate</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Moderate</note>
+        <note>One choice in the 'Difficulty' menu of the 'Coloring Book' tool.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple">
+        <source xml:lang="en">Simple</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.Param.difficulty.Option.Simple</note>
+        <note>One choice in the 'Difficulty' menu of the 'Coloring Book' tool.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.coloring_book.Title">
+        <source xml:lang="en">Coloring Book</source>
+        <note>ID: AiImageEditor.Tool.coloring_book.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.custom.Description">
+        <source xml:lang="en">Edit the image, optionally with additional reference images.</source>
+        <note>ID: AiImageEditor.Tool.custom.Description</note>
+        <note>One-line explanation of the 'Custom Edit' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.custom.Param.prompt.Placeholder">
+        <source xml:lang="en">Describe how to change the image...</source>
+        <note>ID: AiImageEditor.Tool.custom.Param.prompt.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'Instructions' box of the 'Custom Edit' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.custom.Title">
+        <source xml:lang="en">Custom Edit</source>
+        <note>ID: AiImageEditor.Tool.custom.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Param.extraInstructions">
+        <source xml:lang="en">Extra Instructions</source>
+        <note>ID: AiImageEditor.Tool.enhance_drawing.Param.extraInstructions</note>
+        <note>Label on a setting of the 'Enhance Line Drawing' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Title">
+        <source xml:lang="en">Enhance Line Drawing</source>
+        <note>ID: AiImageEditor.Tool.enhance_drawing.Title</note>
+        <note>Name of the tool that re-renders a line drawing in a chosen line-art style, anything from tidying up an old scan to adding colour. 'Enhance' here does NOT mean adding to the picture: the tool's default is to clean up what is already there, so avoid a word that promises embellishment.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
+        <source xml:lang="en">Target Character (optional; leave blank for all)</source>
+        <note>ID: AiImageEditor.Tool.ethnicity.Param.character</note>
+        <note>Label on a setting of the 'Change Ethnicity' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Param.ethnicity">
+        <source xml:lang="en">Ethnicity</source>
+        <note>ID: AiImageEditor.Tool.ethnicity.Param.ethnicity</note>
+        <note>Label on a setting of the 'Change Ethnicity' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.ethnicity.Title">
+        <source xml:lang="en">Change Ethnicity</source>
+        <note>ID: AiImageEditor.Tool.ethnicity.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.ActionButton">
+        <source xml:lang="en">Extract Characters</source>
+        <note>ID: AiImageEditor.Tool.extract_cast_of_characters.ActionButton</note>
+        <note>The button that runs the 'Extract Cast of Characters' tool. A command: what will happen when it is pressed.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles">
+        <source xml:lang="en">Split into separate files</source>
+        <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles</note>
+        <note>Label on a setting of the 'Extract Cast of Characters' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Title">
+        <source xml:lang="en">Extract Cast of Characters</source>
+        <note>ID: AiImageEditor.Tool.extract_cast_of_characters.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt">
+        <source xml:lang="en">Image Description</source>
+        <note>ID: AiImageEditor.Tool.generate_image.Param.prompt</note>
+        <note>Label on a setting of the 'Create an Image' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.generate_image.Param.prompt.Placeholder">
+        <source xml:lang="en">A cute robot playing chess in a park, children's book style</source>
+        <note>ID: AiImageEditor.Tool.generate_image.Param.prompt.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'Image Description' box of the 'Create an Image' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.generate_image.Title">
+        <source xml:lang="en">Create an Image</source>
+        <note>ID: AiImageEditor.Tool.generate_image.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.generate_pallet.Param.numberOfColors">
+        <source xml:lang="en">Number of Colors</source>
+        <note>ID: AiImageEditor.Tool.generate_pallet.Param.numberOfColors</note>
+        <note>Label on a setting of the 'Generate Pallet' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.generate_pallet.Title">
+        <source xml:lang="en">Generate Pallet</source>
+        <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_drawing.Description">
+        <source xml:lang="en">Correct anatomy and perspective while keeping everything else identical.</source>
+        <note>ID: AiImageEditor.Tool.improve_drawing.Description</note>
+        <note>One-line explanation of the 'Improve Drawing' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder">
+        <source xml:lang="en">Optional: anything specific to fix or preserve.</source>
+        <note>ID: AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder</note>
+        <note>Placeholder: the grey text inside the 'Further Instructions' box of the 'Improve Drawing' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_drawing.Title">
+        <source xml:lang="en">Improve Drawing</source>
+        <note>ID: AiImageEditor.Tool.improve_drawing.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription">
+        <source xml:lang="en">Describe the Animation</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription</note>
+        <note>Label on a setting of the 'Make GIF' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Title">
+        <source xml:lang="en">Add Stylized Title</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.upscale.Description">
+        <source xml:lang="en">Create a higher-resolution version of this image.</source>
+        <note>ID: AiImageEditor.Tool.upscale.Description</note>
+        <note>One-line explanation of the 'Upscale' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.upscale.Param.removeFuzziness">
+        <source xml:lang="en">Remove fuzziness</source>
+        <note>ID: AiImageEditor.Tool.upscale.Param.removeFuzziness</note>
+        <note>Label on a setting of the 'Upscale' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.upscale.Param.targetResolution">
+        <source xml:lang="en">Target Resolution</source>
+        <note>ID: AiImageEditor.Tool.upscale.Param.targetResolution</note>
+        <note>Label on a setting of the 'Upscale' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.upscale.Title">
+        <source xml:lang="en">Upscale</source>
+        <note>ID: AiImageEditor.Tool.upscale.Title</note>
+        <note>Name of the tool that redraws this picture with more pixels in it. It does not change how big the picture looks on the page, so avoid a word that means 'enlarge' or 'zoom'; the sense is a higher resolution.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Welcome.Connect">
+        <source xml:lang="en">Connect to AI Image Generators</source>
+        <note>ID: AiImageEditor.Welcome.Connect</note>
+        <note>Button that starts connecting to the picture-making service. 'AI Image Generators' means the services that make the pictures.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Welcome.CreditsNote">
+        <source xml:lang="en">Your credits are purchased directly from OpenRouter. Bloom doesn't receive any part of what you spend.</source>
+        <note>ID: AiImageEditor.Welcome.CreditsNote</note>
+        <note>Second paragraph of the dialog shown the first time the user opens the editor, making clear that the money goes to OpenRouter, the company running the picture-making service, and not to Bloom. Both are names and stay in English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Welcome.Explanation">
+        <source xml:lang="en">Bloom AI Image Tools creates images using AI models from Google and other providers. These models charge per image — you pay for them through {0}, a service that lets you pre-load credits and use them across providers. Credits start at $5 — enough for roughly 25–50 images — and are only spent when you generate images. There's no subscription.</source>
+        <note>ID: AiImageEditor.Welcome.Explanation</note>
+        <note>First paragraph of the welcome dialog, explaining that making pictures costs money and is paid through a separate company. {0} is the word 'OpenRouter' in bold; it is a company name and stays in English. The prices are in US dollars.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Welcome.JustLookAround">
+        <source xml:lang="en">I just want to look around</source>
+        <note>ID: AiImageEditor.Welcome.JustLookAround</note>
+        <note>Button for someone who wants to see the editor without connecting or paying.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Welcome.Title">
+        <source xml:lang="en">Connect to generate images</source>
+        <note>ID: AiImageEditor.Welcome.Title</note>
+        <note>Heading of the dialog shown the first time the user opens the editor.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
