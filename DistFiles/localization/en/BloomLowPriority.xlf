@@ -461,7 +461,7 @@
       <trans-unit id="AiImageEditor.Credits.Label">
         <source xml:lang="en">AI image generator credits</source>
         <note>ID: AiImageEditor.Credits.Label</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Small heading over the meter showing how much money is left for making pictures.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.CouldNotLoadImage">
@@ -515,13 +515,13 @@
       <trans-unit id="AiImageEditor.Level.None">
         <source xml:lang="en">None</source>
         <note>ID: AiImageEditor.Level.None</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
-        <note>Choice in the reasoning-effort menu, and the name of the 'no art style' choice: nothing, or none.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One string used in two menus: it is the lowest choice in the reasoning-effort menu, and it is also the choice meaning no art style at all. In both it means 'none of them', so it needs a word that works for both.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.Estimate">
         <source xml:lang="en">Estimate {0}{1}</source>
         <note>ID: AiImageEditor.Model.Estimate</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>What this model is expected to cost for this run. {0} is an amount like '$0.04', {1} is empty or ', ~12s'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.LastMeasured">
@@ -533,13 +533,13 @@
       <trans-unit id="AiImageEditor.Model.PickerTooltip">
         <source xml:lang="en">Choose which AI image engine to use</source>
         <note>ID: AiImageEditor.Model.PickerTooltip</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Tip on the button that opens the list of AI models, the engines that make the pictures.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.RecommendedChip">
         <source xml:lang="en">recommended for this tool</source>
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Small tag on the models we suggest for this particular tool. Shown in lower case.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.AvailableBalance">
@@ -581,13 +581,13 @@
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
         <source xml:lang="en">Ctrl + mouse wheel to resize the images</source>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Tip in the gallery window, which shows every picture of one strip at full size, saying how to make the pictures bigger or smaller. 'Ctrl' is the name of a key on the keyboard and stays as it is.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Quality.Label">
         <source xml:lang="en">Quality</source>
         <note>ID: AiImageEditor.Quality.Label</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of the setting for how much care the model puts into the picture. The AI companies call this output quality.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.Working">
@@ -617,73 +617,73 @@
       <trans-unit id="AiImageEditor.Strip.Pin">
         <source xml:lang="en">Pin strip</source>
         <note>ID: AiImageEditor.Strip.Pin</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
-        <note>Tip on the button that keeps one of the side strips of small pictures open, instead of letting it slide shut.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Tip on the button that keeps one of the side strips of small pictures open, instead of letting it slide shut. 'Pin' is a verb here, the action of fastening the strip open; it is not the name of the fastener.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.ShowInGallery">
         <source xml:lang="en">Show in full-screen gallery</source>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Tip on the button that opens every picture of one side strip at full size, in a window of its own.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin">
         <source xml:lang="en">Unpin strip</source>
         <note>ID: AiImageEditor.Strip.Unpin</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Tip on the button that lets one of the side strips of small pictures slide shut again.</note>
+        <note>Tip on the button that lets one of the side strips of small pictures slide shut again. 'Unpin' is a verb here, the action that undoes 'Pin strip'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Description">
         <source xml:lang="en">Restyle the selected image.</source>
         <note>ID: AiImageEditor.Tool.change_style.Description</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>One-line explanation of the 'Change Style' tool, shown under its name once the user picks it.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_text.Description">
         <source xml:lang="en">Replace specific text in the image. Use this to localize images that contain text.</source>
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>One-line explanation of the 'Change Text' tool, shown under its name once the user picks it.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Title">
         <source xml:lang="en">Make GIF</source>
         <note>ID: AiImageEditor.Tool.make_gif.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.pdf_to_images.ActionButton">
         <source xml:lang="en">Choose PDF…</source>
         <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>The button that runs the 'PDF to Images' tool. A command: what will happen when it is pressed.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
         <source xml:lang="en">PDF to Images</source>
         <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Description">
         <source xml:lang="en">Replace the background with transparency.</source>
         <note>ID: AiImageEditor.Tool.remove_background.Description</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>One-line explanation of the 'Remove Background' tool, shown under its name once the user picks it.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Title">
         <source xml:lang="en">Remove Background</source>
         <note>ID: AiImageEditor.Tool.remove_background.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
         <source xml:lang="en">Object to Remove</source>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Label above a typing box in the 'Remove Object' tool, where the user names the thing to take out of the picture, such as 'the car'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title">
         <source xml:lang="en">Remove Object</source>
         <note>ID: AiImageEditor.Tool.remove_object.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor. Look for a link to a screenshot.</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
     </body>
