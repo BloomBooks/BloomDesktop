@@ -117,11 +117,7 @@ namespace Bloom.Utils
             Measurement.PerfPoint.CleanupSubprocessList();
         }
 
-        readonly string[] _majorActions = new string[]
-        {
-            "EditBookCommand",
-            "SelectedTabChangedEvent",
-        };
+        readonly string[] _majorActions = new string[] { "SelectedTabChangedEvent" };
 
         /// <summary>
         /// This is the main public method, called anywhere in the c# code that we want to measure something.

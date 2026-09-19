@@ -5,6 +5,7 @@ import { EditTabIcon } from "./EditTabIcon";
 import { PublishTabIcon } from "./PublishTabIcon";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { postJson, useWatchApiObject } from "../../utils/bloomApi";
+import { goToEditTab } from "../../utils/goToEditTab";
 import { TopBarControls } from "./TopBarControls";
 import { Span } from "../l10nComponents";
 import {
@@ -105,6 +106,12 @@ export const TopBar: React.FunctionComponent = () => {
                 tabState === "hidden" ||
                 tabState === "disabled"
             ) {
+                return;
+            }
+            // Edit goes through the shared sequence, which makes the book ready before the tab
+            // appears; every other route into Edit uses the same one (see goToEditTab).
+            if (tab === "edit") {
+                goToEditTab();
                 return;
             }
             postJson("workspace/selectTab", { tab });

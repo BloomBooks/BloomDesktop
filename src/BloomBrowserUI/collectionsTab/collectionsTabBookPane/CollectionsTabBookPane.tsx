@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { useRef, useState } from "react";
 import { get, getBoolean, postThatMightNavigate } from "../../utils/bloomApi";
+import { goToEditTab } from "../../utils/goToEditTab";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
     IBookTeamCollectionStatus,
@@ -152,10 +153,18 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     setProgressOpen(true);
                 }, 5000); // Wait 5 seconds before showing this.
 
-                await postThatMightNavigate("app/makeOrEditBook");
+                // This makes the book (when the button means "make a book from this source")
+                // and selects it, but no longer takes us to the Edit tab: that is our step now,
+                // so that it goes through the one sequence every route into Edit uses. It has to
+                // be this way round for the make case, where the book to prepare does not exist
+                // until this call has run.
+                const response =
+                    await postThatMightNavigate("app/makeOrEditBook");
 
                 clearTimeout(timeoutId); // If the async op completes quickly, make sure not to show the progress dialog after we "close" it
                 setProgressOpen(false);
+
+                if (response?.data?.goToEditTab) goToEditTab();
             }}
             enabledImageFile={
                 canMakeBook

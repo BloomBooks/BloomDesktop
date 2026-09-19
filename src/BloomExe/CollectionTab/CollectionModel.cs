@@ -39,7 +39,6 @@ namespace Bloom.CollectionTab
         private readonly CollectionSettings _collectionSettings;
         private readonly SourceCollectionsList _sourceCollectionsList;
         private readonly BookCollection.Factory _bookCollectionFactory;
-        private readonly EditBookCommand _editBookCommand;
         private readonly BookServer _bookServer;
         private readonly CurrentEditableCollectionSelection _currentEditableCollectionSelection;
         private List<BookCollection> _bookCollections;
@@ -55,7 +54,6 @@ namespace Bloom.CollectionTab
             BookSelection bookSelection,
             SourceCollectionsList sourceCollectionsList,
             BookCollection.Factory bookCollectionFactory,
-            EditBookCommand editBookCommand,
             CreateFromSourceBookCommand createFromSourceBookCommand,
             BookServer bookServer,
             CurrentEditableCollectionSelection currentEditableCollectionSelection,
@@ -71,7 +69,6 @@ namespace Bloom.CollectionTab
             _collectionSettings = collectionSettings;
             _sourceCollectionsList = sourceCollectionsList;
             _bookCollectionFactory = bookCollectionFactory;
-            _editBookCommand = editBookCommand;
             _bookServer = bookServer;
             _currentEditableCollectionSelection = currentEditableCollectionSelection;
             _thumbNailer = thumbNailer;
@@ -684,16 +681,6 @@ namespace Bloom.CollectionTab
             return (currentFolder == _collectionSettings.FolderPath);
         }
 
-        public void DoubleClickedBook()
-        {
-            // If we need the book to be checked out for editing, make sure it is. Do not allow double click
-            // to check it out.
-            if (_bookSelection.CurrentSelection?.IsSaveable ?? false)
-            {
-                _editBookCommand.Raise(_bookSelection.CurrentSelection);
-            }
-        }
-
         public void OpenFolderOnDisk()
         {
             try
@@ -1277,7 +1264,10 @@ namespace Bloom.CollectionTab
                         }
                     );
                 }
-                _editBookCommand.Raise(newBook);
+                // Deliberately NOT raising _editBookCommand here. Going to the Edit tab is now the
+                // front end's step, taken only after it has asked for the new book to be made ready
+                // (app/ensureBookReady) -- see AppApi.HandleMakeOrEditBook. The book has been
+                // selected above, so that request will find it.
             }
             catch (Exception e)
             {
