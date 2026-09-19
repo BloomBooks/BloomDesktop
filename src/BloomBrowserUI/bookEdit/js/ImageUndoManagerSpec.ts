@@ -142,4 +142,44 @@ describe("ImageUndoManager crop preservation", () => {
         expect(imgElement.style.width).toBe("");
         expect(imgElement.style.left).toBe("");
     });
+
+    it("captures the canvas element's box as well as the image's", () => {
+        // A cropped picture is two boxes, not one: the canvas element is the shape of the
+        // part that shows, and the img inside it is larger and pushed up and left. Replacing
+        // the picture reshapes both, so undo has to be able to put both back (BL-16868).
+        const canvasElement = document.createElement("div");
+        canvasElement.className = "bloom-canvas-element";
+        canvasElement.style.width = "100px";
+        canvasElement.style.height = "80px";
+        canvasElement.style.left = "10px";
+        canvasElement.style.top = "20px";
+        containerDiv.replaceWith(canvasElement);
+        canvasElement.appendChild(containerDiv);
+
+        manager.prepareUndoForImageOperation(imgElement);
+        manager.commitPendingImageOperationUndo(imgElement);
+
+        // The replacement reshapes both boxes to suit the new picture.
+        canvasElement.style.width = "200px";
+        canvasElement.style.height = "50px";
+        canvasElement.style.left = "0px";
+        canvasElement.style.top = "35px";
+        imgElement.src = "new-image.png";
+
+        expect(manager.undoImageOperation()).toBe(true);
+
+        const cropInfo = (
+            hostMock.updateCanvasElementForChangedImage as ReturnType<
+                typeof vi.fn
+            >
+        ).mock.calls[0][1];
+        expect(cropInfo.width).toBe("150px");
+        expect(cropInfo.left).toBe("-25px");
+        expect(cropInfo.canvasElement).toEqual({
+            width: "100px",
+            height: "80px",
+            left: "10px",
+            top: "20px",
+        });
+    });
 });

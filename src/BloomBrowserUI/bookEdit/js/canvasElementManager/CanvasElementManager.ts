@@ -104,10 +104,21 @@ import {
 import {
     clearImageOperationUndoState,
     commitPendingImageOperationUndo,
+    IElementBox,
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
 } from "../ImageUndoManager";
+
+// Give an element back the size and position it had. Every value is written, including an
+// empty one, so that a box captured before anything was set puts the element back to having
+// nothing set rather than leaving whatever is there now.
+function setElementBox(element: HTMLElement, box: IElementBox): void {
+    element.style.width = box.width;
+    element.style.height = box.height;
+    element.style.left = box.left;
+    element.style.top = box.top;
+}
 
 const kComicalGeneratedClass: string = "comical-generated";
 const kAdjustContainerAspectRatioDelayId =
@@ -1715,6 +1726,15 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
+    //
+    // cropInfo means this is an Undo: we are putting back a picture that was on this page a
+    // moment ago, cropping and all. So instead of dropping the cropping we restore both of
+    // the boxes it is made of, the img's and the canvas element's, and tell the sizing code
+    // this is NOT a new image, so that it keeps that cropping rather than fitting the canvas
+    // element to the whole picture. Restoring only the img, which is all we used to do and
+    // only for a background image, left it sized for a canvas element that had meanwhile
+    // been reshaped to fit the picture we are undoing, so the picture came back the wrong
+    // shape (BL-16868).
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
@@ -1733,17 +1753,30 @@ export class CanvasElementManager {
         img.style.height = "";
         img.style.left = "";
         img.style.top = "";
+        if (cropInfo) {
+            setElementBox(img, cropInfo);
+            if (cropInfo.canvasElement) {
+                setElementBox(canvasElement, cropInfo.canvasElement);
+            }
+        }
+        // Only a picture that HAD cropping needs us to keep any, and saying "not a new image"
+        // costs something: it also switches off the wait for the restored src to load. The img
+        // goes on reporting the OUTGOING picture's naturalWidth/naturalHeight until the
+        // restored one decodes, and the sizing code reads those whenever there is no crop to
+        // work from. So an undo back to an uncropped picture is handled exactly as a new image
+        // is, which is what it did before this fix and is right: there is no crop to lose, and
+        // it gets the real dimensions. (BL-16868)
+        const isNewImage = !cropInfo?.width;
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
                 canvasElement.closest(kBloomCanvasSelector)!,
                 canvasElement,
-                true,
-                cropInfo,
+                isNewImage,
             );
             SetupMetadataButton(canvasElement);
         } else {
-            this.adjustContainerAspectRatio(canvasElement, true);
+            this.adjustContainerAspectRatio(canvasElement, isNewImage);
         }
     }
 
@@ -3119,7 +3152,6 @@ export class CanvasElementManager {
         bloomCanvas: HTMLElement,
         bgCanvasElement: HTMLElement,
         useSizeOfNewImage: boolean,
-        cropInfo?: IImageCropInfo,
     ) {
         return adjustCanvasBackgroundImageSize(
             this.backgroundImageManagerState,
@@ -3128,7 +3160,6 @@ export class CanvasElementManager {
             useSizeOfNewImage,
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
-            cropInfo,
         );
     }
 

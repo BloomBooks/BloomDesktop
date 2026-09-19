@@ -4,12 +4,24 @@ import {
     notifyToolOfChangedImage,
 } from "./bloomEditing";
 import { normalizeCoverImageDesignation } from "./bloomImages";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
-export interface IImageCropInfo {
+// The four style values that give an element its size and position within its parent.
+export interface IElementBox {
     width: string;
     height: string;
     left: string;
     top: string;
+}
+
+// What it takes to put a cropped image back the way it was. Cropping a picture moves and
+// resizes two elements, not one: the img grows beyond its canvas element and slides under
+// it (a width wider than the canvas element plus a negative left/top is what hides the
+// parts we don't want), and the canvas element itself takes the shape of the part that
+// shows. So the img's own box is not enough to restore a crop; the canvas element's box
+// has to come back too, or the two disagree about what shape the picture is (BL-16868).
+export interface IImageCropInfo extends IElementBox {
+    canvasElement?: IElementBox;
 }
 
 type ImageOperationUndoItem = {
@@ -177,11 +189,22 @@ export class ImageUndoManager {
         imageOrContainer: HTMLElement,
     ): IImageCropInfo {
         const image = this.getImageElement(imageOrContainer);
+        const canvasElement = imageOrContainer.closest(
+            kCanvasElementSelector,
+        ) as HTMLElement | null;
         return {
             width: imageOrContainer.style.width || image?.style.width || "",
             height: imageOrContainer.style.height || image?.style.height || "",
             left: imageOrContainer.style.left || image?.style.left || "",
             top: imageOrContainer.style.top || image?.style.top || "",
+            canvasElement: canvasElement
+                ? {
+                      width: canvasElement.style.width,
+                      height: canvasElement.style.height,
+                      left: canvasElement.style.left,
+                      top: canvasElement.style.top,
+                  }
+                : undefined,
         };
     }
 

@@ -10,7 +10,6 @@ import {
 } from "../bloomImages";
 import { wrapWithRequestPageContentDelay } from "../bloomEditing";
 import { getExactClientSize } from "../../../utils/elementUtils";
-import type { IImageCropInfo } from "../ImageUndoManager";
 import {
     kBackgroundConversionDelayId,
     kBackgroundImageClass,
@@ -339,18 +338,12 @@ export function adjustBackgroundImageSize(
     useSizeOfNewImage: boolean,
     getActiveElement: () => HTMLElement | undefined,
     alignControlFrameWithActiveElement: () => void,
-    cropInfo?: IImageCropInfo,
 ): Promise<void> {
     // adjustBackgroundImageSizeToFit may wait for the image to load and make modifications after,
     // and we want to make sure those modifications are included in any save that occurs in the meantime.
     // wrapWithRequestPageContentDelay will add the delay before calling the function and remove it
     // when the promise settles.
     return wrapWithRequestPageContentDelay(() => {
-        if (cropInfo) {
-            // For undo/restore, put cropping back first so size adjustment uses
-            // the restored image state rather than the image being replaced.
-            restoreImageCropInfo(bgCanvasElement, cropInfo);
-        }
         return adjustBackgroundImageSizeToFit(
             state,
             bloomCanvas,
@@ -360,29 +353,6 @@ export function adjustBackgroundImageSize(
             alignControlFrameWithActiveElement,
         );
     }, pageContentDelayRequestId);
-}
-
-function restoreImageCropInfo(
-    imageOrContainer: HTMLElement,
-    cropInfo: IImageCropInfo,
-): void {
-    const image = getImageElement(imageOrContainer);
-    if (!image) {
-        return;
-    }
-
-    image.style.width = cropInfo.width;
-    image.style.height = cropInfo.height;
-    image.style.left = cropInfo.left;
-    image.style.top = cropInfo.top;
-}
-
-function getImageElement(
-    imageOrContainer: HTMLElement,
-): HTMLImageElement | undefined {
-    return imageOrContainer.tagName.toLowerCase() === "img"
-        ? (imageOrContainer as HTMLImageElement)
-        : (imageOrContainer.getElementsByTagName("img")[0] ?? undefined);
 }
 
 // Given a bg canvas element, which is a canvas element having the bloom-backgroundImage
