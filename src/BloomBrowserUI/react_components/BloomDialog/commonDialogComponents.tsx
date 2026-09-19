@@ -140,6 +140,9 @@ export const DialogOkButton: React.FunctionComponent<{
     <BloomButton
         l10nKey="Common.OK"
         hasText={true}
+        // A stable hook for the e2e suite: every dialog's OK button, whatever language
+        // it is showing.
+        data-testid="dialog-ok"
         enabled={props.enabled === undefined ? true : props.enabled}
         variant={props.default === true ? "contained" : "outlined"}
         onClick={props.onClick}
@@ -161,6 +164,9 @@ export const DialogCancelButton: React.FunctionComponent<{
         <BloomButton
             l10nKey="Common.Cancel"
             hasText={true}
+            // A stable hook for the e2e suite: every dialog's Cancel button, whatever
+            // language it is showing.
+            data-testid="dialog-cancel"
             enabled={true}
             // by default, Cancel is NOT the default button
             variant={props.default === true ? "contained" : "outlined"}
