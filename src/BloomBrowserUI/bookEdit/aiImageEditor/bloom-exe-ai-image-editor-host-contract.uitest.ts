@@ -22,6 +22,7 @@ import { connectToBloomExe } from "../../react_components/component-tester/bloom
 
 const kFileEndpoint = "/bloom/api/aiImageEditor/file";
 const kLaunchEndpoint = "/bloom/api/aiImageEditor/launch";
+const kLocalizationsEndpoint = "/bloom/api/aiImageEditor/localizations";
 
 // A 1x1 transparent PNG, base64. Small but a genuine image, so the GET path (ReplyWithImage)
 // has real bytes to serve.
@@ -46,9 +47,11 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                             detail: await launch.text(),
                         } as const;
                     }
-                    const session = (
-                        (await launch.json()) as { sessionToken: string }
-                    ).sessionToken;
+                    const launchData = (await launch.json()) as {
+                        sessionToken: string;
+                        uiLanguageId?: string;
+                    };
+                    const session = launchData.sessionToken;
 
                     const name = "history/e2e-host-contract-roundtrip.json";
                     const url = `${args.fileEndpoint}?session=${encodeURIComponent(
@@ -71,6 +74,7 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                     return {
                         launched: true,
                         sessionPresent: !!session,
+                        uiLanguageId: launchData.uiLanguageId,
                         postOk: post.ok,
                         getStatus: get1.status,
                         got,
@@ -98,6 +102,13 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                 result.sessionPresent,
                 "launch returned no sessionToken",
             ).toBe(true);
+            // The editor hides text it never translates when Bloom is not in English, and it
+            // learns which language Bloom is in from this reply alone -- it asks Bloom nothing.
+            expect(
+                result.uiLanguageId,
+                "launch should say which language Bloom's UI is in",
+            ).toBeTruthy();
+
             expect(
                 result.postOk,
                 "POST of a history sidecar should succeed",
@@ -294,6 +305,63 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                     `'${name}' should be rejected as a bad file name`,
                 ).toBe(400);
             }
+        } finally {
+            await connection.browser.close();
+        }
+    });
+    test("the string table comes back translated where Bloom has a translation", async () => {
+        const connection = await connectToBloomExe();
+        try {
+            const result = await connection.page.evaluate(
+                async (args: { localizationsEndpoint: string }) => {
+                    // "Common.Cancel" is a string Bloom has shipped for years, so a reply
+                    // that leaves it out means the lookup never reached the xlf files.
+                    // The made-up id stands for every editor string that has not been added
+                    // to an xlf yet: those must be left out, not echoed back, so the editor
+                    // falls back to its own English.
+                    const table = {
+                        "Common.Cancel": "Cancel",
+                        "AiImageEditor.NoSuchStringExists": "No such string",
+                    };
+                    const response = await fetch(args.localizationsEndpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(table),
+                    });
+                    if (!response.ok) {
+                        return { ok: false, status: response.status } as const;
+                    }
+                    const translations = (await response.json()) as Record<
+                        string,
+                        string
+                    >;
+                    return {
+                        ok: true,
+                        status: response.status,
+                        cancel: translations["Common.Cancel"],
+                        hasUnknown: Object.prototype.hasOwnProperty.call(
+                            translations,
+                            "AiImageEditor.NoSuchStringExists",
+                        ),
+                    } as const;
+                },
+                { localizationsEndpoint: kLocalizationsEndpoint },
+            );
+
+            expect(
+                result.ok,
+                `localizations endpoint answered ${result.status}`,
+            ).toBe(true);
+            if (!result.ok) return;
+
+            expect(
+                typeof result.cancel === "string" && result.cancel.length > 0,
+                "a string Bloom ships should come back with a value",
+            ).toBe(true);
+            expect(
+                result.hasUnknown,
+                "an id Bloom has no translation for should be left out",
+            ).toBe(false);
         } finally {
             await connection.browser.close();
         }

@@ -153,6 +153,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             editorUrl: string;
             httpBase: string;
             sessionToken: string;
+            // Which language Bloom's UI is in ("en", "fr", "es-419"). Rides through the
+            // `...launchData` spread below into the editor's init payload, so the name must
+            // match what the editor reads.
+            uiLanguageId: string;
             book: { id: string; title: string };
             bookImages?: Array<{
                 id: string;
