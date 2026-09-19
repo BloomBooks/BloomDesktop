@@ -148,6 +148,46 @@
         <target xml:lang="tr" state="needs-translation">Currently, Bloom does not support including audio from embedded videos in video output.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.Title">
+        <source xml:lang="en">How to set up your Android phone to receive apps via USB</source>
+        <target xml:lang="tr" state="needs-translation">How to set up your Android phone to receive apps via USB</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.Title</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenSettings">
+        <source xml:lang="en">Open the Settings on your phone.</source>
+        <target xml:lang="tr" state="needs-translation">Open the Settings on your phone.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenSettings</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone">
+        <source xml:lang="en">Open &apos;About phone&apos;. On some phones, you may need to then open &apos;Software information&apos; to find the &apos;Build number&apos;.</source>
+        <target xml:lang="tr" state="needs-translation">Open 'About phone'. On some phones, you may need to then open 'Software information' to find the 'Build number'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber">
+        <source xml:lang="en">Find &apos;Build number&apos; and tap it 7 times until Developer options are enabled.</source>
+        <target xml:lang="tr" state="needs-translation">Find 'Build number' and tap it 7 times until Developer options are enabled.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+        <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
+        <target xml:lang="tr" state="needs-translation">Go back to Settings and open 'Developer options'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging">
+        <source xml:lang="en">Turn on &apos;USB debugging&apos;.</source>
+        <target xml:lang="tr" state="needs-translation">Turn on 'USB debugging'.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable">
+        <source xml:lang="en">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</source>
+        <target xml:lang="tr" state="needs-translation">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.ConnectCable</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
+        <source xml:lang="en">How to video</source>
+        <target xml:lang="tr" state="needs-translation">How to video</target>
+        <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <target xml:lang="tr" state="needs-translation">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</target>
@@ -209,8 +249,8 @@
         <note>ID: Settings.Subscription.NotValid</note>
       </trans-unit>
       <trans-unit id="Settings.Subscription.UnknownCode">
-        <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-        <target xml:lang="tr" state="needs-translation">This version of Bloom does not have the artwork that goes with that subscription.</target>
+        <source xml:lang="en">This version of Bloom does not contain any special branding artwork for this subscription.</source>
+        <target xml:lang="tr" state="needs-translation">This version of Bloom does not contain any special branding artwork for this subscription.</target>
         <note>ID: Settings.Subscription.UnknownCode</note>
       </trans-unit>
       <!-- Tiers. These don't occur in code in their entirety, but are assembled by appending a particular
@@ -383,22 +423,22 @@
         <target xml:lang="tr" state="needs-translation">Move into {0}</target>
         <note>ID: CollectionTab.BookMenu.MoveToCurrentCollection</note>
       </trans-unit>
-      <trans-unit id="EditTab.CopyTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.CopyTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to copy that.</source>
         <target xml:lang="tr" state="needs-translation">Bloom was not able to copy that.</target>
         <note>ID: EditTab.CopyTextFailed</note>
       </trans-unit>
-      <trans-unit id="EditTab.PasteTextFailed" translate="no" sil:dynamic="true">
+      <trans-unit id="EditTab.PasteTextFailed" sil:dynamic="true">
         <source xml:lang="en">Bloom was not able to paste.</source>
         <target xml:lang="tr" state="needs-translation">Bloom was not able to paste.</target>
         <note>ID: EditTab.PasteTextFailed</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewTooLarge" translate="no">
+      <trans-unit id="ImageLibrary.PreviewTooLarge">
         <source xml:lang="en">This image is too large to preview here, but you can still use it.</source>
         <target xml:lang="tr" state="needs-translation">This image is too large to preview here, but you can still use it.</target>
         <note>ID: ImageLibrary.PreviewTooLarge</note>
       </trans-unit>
-      <trans-unit id="ImageLibrary.PreviewUnavailable" translate="no">
+      <trans-unit id="ImageLibrary.PreviewUnavailable">
         <source xml:lang="en">This image could not be previewed.</source>
         <target xml:lang="tr" state="needs-translation">This image could not be previewed.</target>
         <note>ID: ImageLibrary.PreviewUnavailable</note>
@@ -413,10 +453,225 @@
         <target xml:lang="tr" state="needs-translation">Cover Credits</target>
         <note>ID: EditTab.CustomCover.FieldType.CoverCredits</note>
       </trans-unit>
-      <trans-unit id="ImageUtils.ShrinkingImagesFailed" translate="no">
+      <trans-unit id="ImageUtils.ShrinkingImagesFailed">
         <source xml:lang="en">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</source>
         <target xml:lang="tr" state="needs-translation">Bloom could not make this book's pictures smaller. It will try again the next time the book is updated.</target>
         <note>ID: ImageUtils.ShrinkingImagesFailed</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AccountCreditsUsed">
+        <source xml:lang="en">{0} used of {1} account credits</source>
+        <target xml:lang="tr" state="needs-translation">{0} used of {1} account credits</target>
+        <note>ID: AiImageEditor.Credits.AccountCreditsUsed</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountLeft">
+        <source xml:lang="en">{0} left</source>
+        <target xml:lang="tr" state="needs-translation">{0} left</target>
+        <note>ID: AiImageEditor.Credits.AmountLeft</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountOfAmount">
+        <source xml:lang="en">{0} of {1}</source>
+        <target xml:lang="tr" state="needs-translation">{0} of {1}</target>
+        <note>ID: AiImageEditor.Credits.AmountOfAmount</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountTotal">
+        <source xml:lang="en">{0} total</source>
+        <target xml:lang="tr" state="needs-translation">{0} total</target>
+        <note>ID: AiImageEditor.Credits.AmountTotal</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.AmountUsed">
+        <source xml:lang="en">{0} used</source>
+        <target xml:lang="tr" state="needs-translation">{0} used</target>
+        <note>ID: AiImageEditor.Credits.AmountUsed</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Credits.Label">
+        <source xml:lang="en">AI image generator credits</source>
+        <target xml:lang="tr" state="needs-translation">AI image generator credits</target>
+        <note>ID: AiImageEditor.Credits.Label</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.CouldNotLoadImage">
+        <source xml:lang="en">Could not load image. Please try again.</source>
+        <target xml:lang="tr" state="needs-translation">Could not load image. Please try again.</target>
+        <note>ID: AiImageEditor.Error.CouldNotLoadImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Error.FailedToProcess">
+        <source xml:lang="en">Failed to process image.</source>
+        <target xml:lang="tr" state="needs-translation">Failed to process image.</target>
+        <note>ID: AiImageEditor.Error.FailedToProcess</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.History.DeleteFromHistory">
+        <source xml:lang="en">Delete from history</source>
+        <target xml:lang="tr" state="needs-translation">Delete from history</target>
+        <note>ID: AiImageEditor.History.DeleteFromHistory</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.ExtraHigh">
+        <source xml:lang="en">Extra high</source>
+        <target xml:lang="tr" state="needs-translation">Extra high</target>
+        <note>ID: AiImageEditor.Level.ExtraHigh</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.High">
+        <source xml:lang="en">High</source>
+        <target xml:lang="tr" state="needs-translation">High</target>
+        <note>ID: AiImageEditor.Level.High</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Low">
+        <source xml:lang="en">Low</source>
+        <target xml:lang="tr" state="needs-translation">Low</target>
+        <note>ID: AiImageEditor.Level.Low</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Max">
+        <source xml:lang="en">Max</source>
+        <target xml:lang="tr" state="needs-translation">Max</target>
+        <note>ID: AiImageEditor.Level.Max</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.Medium">
+        <source xml:lang="en">Medium</source>
+        <target xml:lang="tr" state="needs-translation">Medium</target>
+        <note>ID: AiImageEditor.Level.Medium</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Level.None">
+        <source xml:lang="en">None</source>
+        <target xml:lang="tr" state="needs-translation">None</target>
+        <note>ID: AiImageEditor.Level.None</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.Estimate">
+        <source xml:lang="en">Estimate {0}{1}</source>
+        <target xml:lang="tr" state="needs-translation">Estimate {0}{1}</target>
+        <note>ID: AiImageEditor.Model.Estimate</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.LastMeasured">
+        <source xml:lang="en">Last measured: {0}</source>
+        <target xml:lang="tr" state="needs-translation">Last measured: {0}</target>
+        <note>ID: AiImageEditor.Model.LastMeasured</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.PickerTooltip">
+        <source xml:lang="en">Choose which AI image engine to use</source>
+        <target xml:lang="tr" state="needs-translation">Choose which AI image engine to use</target>
+        <note>ID: AiImageEditor.Model.PickerTooltip</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.RecommendedChip">
+        <source xml:lang="en">recommended for this tool</source>
+        <target xml:lang="tr" state="needs-translation">recommended for this tool</target>
+        <note>ID: AiImageEditor.Model.RecommendedChip</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.AvailableBalance">
+        <source xml:lang="en">, {0} available</source>
+        <target xml:lang="tr" state="needs-translation">, {0} available</target>
+        <note>ID: AiImageEditor.OpenRouter.AvailableBalance</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
+        <source xml:lang="en">Forget Key</source>
+        <target xml:lang="tr" state="needs-translation">Forget Key</target>
+        <note>ID: AiImageEditor.OpenRouter.ForgetKey</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed">
+        <source xml:lang="en">Key verification failed</source>
+        <target xml:lang="tr" state="needs-translation">Key verification failed</target>
+        <note>ID: AiImageEditor.OpenRouter.KeyVerificationFailed</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.KeyVerified">
+        <source xml:lang="en">Key verified{0}</source>
+        <target xml:lang="tr" state="needs-translation">Key verified{0}</target>
+        <note>ID: AiImageEditor.OpenRouter.KeyVerified</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.OpenRouter.Testing">
+        <source xml:lang="en">Testing…</source>
+        <target xml:lang="tr" state="needs-translation">Testing…</target>
+        <note>ID: AiImageEditor.OpenRouter.Testing</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Panel.OriginalComic">
+        <source xml:lang="en">Original Comic</source>
+        <target xml:lang="tr" state="needs-translation">Original Comic</target>
+        <note>ID: AiImageEditor.Panel.OriginalComic</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.ZoomHint">
+        <source xml:lang="en">Ctrl + mouse wheel to resize the images</source>
+        <target xml:lang="tr" state="needs-translation">Ctrl + mouse wheel to resize the images</target>
+        <note>ID: AiImageEditor.Preview.ZoomHint</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Quality.Label">
+        <source xml:lang="en">Quality</source>
+        <target xml:lang="tr" state="needs-translation">Quality</target>
+        <note>ID: AiImageEditor.Quality.Label</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Settings.Working">
+        <source xml:lang="en">Working...</source>
+        <target xml:lang="tr" state="needs-translation">Working...</target>
+        <note>ID: AiImageEditor.Settings.Working</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.ClearImage">
+        <source xml:lang="en">Clear Image</source>
+        <target xml:lang="tr" state="needs-translation">Clear Image</target>
+        <note>ID: AiImageEditor.Slot.ClearImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Slot.DropImage">
+        <source xml:lang="en">Drop image</source>
+        <target xml:lang="tr" state="needs-translation">Drop image</target>
+        <note>ID: AiImageEditor.Slot.DropImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Status.NotConnected">
+        <source xml:lang="en">OpenRouter not connected</source>
+        <target xml:lang="tr" state="needs-translation">OpenRouter not connected</target>
+        <note>ID: AiImageEditor.Status.NotConnected</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.Pin">
+        <source xml:lang="en">Pin strip</source>
+        <target xml:lang="tr" state="needs-translation">Pin strip</target>
+        <note>ID: AiImageEditor.Strip.Pin</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.ShowInGallery">
+        <source xml:lang="en">Show in full-screen gallery</source>
+        <target xml:lang="tr" state="needs-translation">Show in full-screen gallery</target>
+        <note>ID: AiImageEditor.Strip.ShowInGallery</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Strip.Unpin">
+        <source xml:lang="en">Unpin strip</source>
+        <target xml:lang="tr" state="needs-translation">Unpin strip</target>
+        <note>ID: AiImageEditor.Strip.Unpin</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_style.Description">
+        <source xml:lang="en">Restyle the selected image.</source>
+        <target xml:lang="tr" state="needs-translation">Restyle the selected image.</target>
+        <note>ID: AiImageEditor.Tool.change_style.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_text.Description">
+        <source xml:lang="en">Replace specific text in the image. Use this to localize images that contain text.</source>
+        <target xml:lang="tr" state="needs-translation">Replace specific text in the image. Use this to localize images that contain text.</target>
+        <note>ID: AiImageEditor.Tool.change_text.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Title">
+        <source xml:lang="en">Make GIF</source>
+        <target xml:lang="tr" state="needs-translation">Make GIF</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Title</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.ActionButton">
+        <source xml:lang="en">Choose PDF…</source>
+        <target xml:lang="tr" state="needs-translation">Choose PDF…</target>
+        <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
+        <source xml:lang="en">PDF to Images</source>
+        <target xml:lang="tr" state="needs-translation">PDF to Images</target>
+        <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_background.Description">
+        <source xml:lang="en">Replace the background with transparency.</source>
+        <target xml:lang="tr" state="needs-translation">Replace the background with transparency.</target>
+        <note>ID: AiImageEditor.Tool.remove_background.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_background.Title">
+        <source xml:lang="en">Remove Background</source>
+        <target xml:lang="tr" state="needs-translation">Remove Background</target>
+        <note>ID: AiImageEditor.Tool.remove_background.Title</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
+        <source xml:lang="en">Object to Remove</source>
+        <target xml:lang="tr" state="needs-translation">Object to Remove</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Title">
+        <source xml:lang="en">Remove Object</source>
+        <target xml:lang="tr" state="needs-translation">Remove Object</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Title</note>
       </trans-unit>
     </body>
   </file>
