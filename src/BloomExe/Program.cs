@@ -136,6 +136,7 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            BloomAssertListener.Install();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
@@ -3014,29 +3015,13 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
 
-        private static bool _runningE2eTests;
-
         // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
         // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
         // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
         // surfaces as a failed API call / logged error and fails the test, instead of popping a
-        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
-        // FatalExceptionHandler.
-        public static bool RunningE2eTests
-        {
-            get => _runningE2eTests;
-            set
-            {
-                _runningE2eTests = value;
-                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
-                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
-                // the request/UI thread and every test times out, while hiding the real error behind
-                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
-                // normal behavior when the suite turns the mode back off.
-                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
-                    listener.AssertUiEnabled = !value;
-            }
-        }
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report,
+        // FatalExceptionHandler, and BloomAssertListener (which does the same for Debug.Assert).
+        public static bool RunningE2eTests { get; set; }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.
