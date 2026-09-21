@@ -1605,7 +1605,7 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
-      <trans-unit id="BookProcessor.AutoUpdateExplanation">
+      <trans-unit id="BookProcessor.AutoUpdateExplanation" translate="no">
         <source xml:lang="en">Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size.</source>
         <note>ID: BookProcessor.AutoUpdateExplanation</note>
         <note>Shown at the top of a progress dialog that appears automatically when Bloom must bring a book's pages up to date: when the AI image editor is launched on a book that has not been through that process, or after the page size has been changed. "Bloom" is the product name and must not be translated.</note>
@@ -1657,12 +1657,6 @@
         <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of an art style: figures modelled in clay and photographed frame by frame. 'Stop-motion' is used untranslated by film and animation people in many languages; prefer the loanword over a literal rendering if that is what your language's practitioners say.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.cleanup-line-art.Name">
-        <source xml:lang="en">Cleanup Old Line Art</source>
-        <note>ID: AiImageEditor.ArtStyle.cleanup-line-art.Name</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Name of an art style, listed in the 'Choose an Art Style' window. It names a way of drawing or painting, not something the user does, so render it as a noun phrase naming a look.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
         <source xml:lang="en">Clear Line &amp; Flat Color</source>
@@ -1898,6 +1892,24 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Small badge beside a model's name in the menu for choosing which AI model makes the picture. It is our own rating: the model makes good pictures but costs more than the others.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
+        <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</source>
+        <note>ID: AiImageEditor.Model.google-gemini-3-1-flash-image.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from. 'Gemini 3 Pro' is the name of another model and stays as it is.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description">
+        <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</source>
+        <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description">
+        <source xml:lang="en">Good with small details. Slower than the Gemini models.</source>
+        <note>ID: AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from. 'Gemini' is the name of a family of models and stays as it is.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.AccountLink">
         <source xml:lang="en">OpenRouter account</source>
         <note>ID: AiImageEditor.OpenRouter.AccountLink</note>
@@ -2018,6 +2030,12 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Heading of the window showing every picture in a strip at full size.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.InTheBookNow">
+        <source xml:lang="en">In the book now</source>
+        <note>ID: AiImageEditor.Preview.InTheBookNow</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Label above the picture the book holds today, in the gallery's column for one page. The new picture chosen for that page is shown under it.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Preview.Loading">
         <source xml:lang="en">Loading…</source>
         <note>ID: AiImageEditor.Preview.Loading</note>
@@ -2054,17 +2072,17 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says why the start button cannot be used yet: this tool needs an extra picture to work from.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.ApplyChanges">
-        <source xml:lang="en">Apply Changes</source>
-        <note>ID: AiImageEditor.Run.ApplyChanges</note>
+      <trans-unit id="AiImageEditor.Run.BatchGo">
+        <source xml:lang="en">Go ({0} Images)</source>
+        <note>ID: AiImageEditor.Run.BatchGo</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Button that starts the chosen tool on the picture.</note>
+        <note>The button that runs the chosen AI tool on several book images at once. {0} is how many images are ticked. Use the same verb you chose for 'Go', with the count after it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchApplyChanges">
-        <source xml:lang="en">Apply Changes to {0} Images</source>
-        <note>ID: AiImageEditor.Run.BatchApplyChanges</note>
+      <trans-unit id="AiImageEditor.Run.BatchGoOne">
+        <source xml:lang="en">Go (1 Image)</source>
+        <note>ID: AiImageEditor.Run.BatchGoOne</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Button that starts the tool on several pictures at once, which this interface calls a batch. {0} is how many, always 2 or more.</note>
+        <note>The same button as 'Go ({0} Images)' when exactly one book image is ticked. Use the same verb you chose for 'Go'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchProgress">
         <source xml:lang="en">Processed {0} of {1}</source>
@@ -2072,29 +2090,11 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Progress line while several pictures are being made. {0} is how many are finished, {1} how many there are.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchToolButton">
-        <source xml:lang="en">{0} for {1} Images</source>
-        <note>ID: AiImageEditor.Run.BatchToolButton</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Button that starts a named tool on several pictures at once. {0} is the tool's own button text, {1} is how many pictures.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.Run.ClickToCancel">
         <source xml:lang="en">Click to Cancel</source>
         <note>ID: AiImageEditor.Run.ClickToCancel</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Replaces the start button while the AI is working; clicking it stops the work.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Run.Estimate">
-        <source xml:lang="en">Estimate {0}</source>
-        <note>ID: AiImageEditor.Run.Estimate</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>What this one picture is expected to cost. {0} is an amount like '$0.04'.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Run.EstimatedCost">
-        <source xml:lang="en">Estimated cost: {0}</source>
-        <note>ID: AiImageEditor.Run.EstimatedCost</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>What the whole batch is expected to cost. {0} is an amount like '$0.40'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.FillInRequiredFields">
         <source xml:lang="en">Fill in required fields</source>
@@ -2102,17 +2102,23 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says why the start button cannot be used yet: a required box is still empty.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.GenerateImage">
-        <source xml:lang="en">Generate Image</source>
-        <note>ID: AiImageEditor.Run.GenerateImage</note>
+      <trans-unit id="AiImageEditor.Run.Go">
+        <source xml:lang="en">Go</source>
+        <note>ID: AiImageEditor.Run.Go</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Button that starts making a brand new picture.</note>
+        <note>The button that runs the chosen AI tool, on every tool: editing an image or creating one. Use whatever short verb sounds right in your language; there is no need to translate 'Go' itself. In English we also considered 'Run' and 'Do it'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
         <source xml:lang="en">Not available in look-around mode</source>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says why the start button cannot be used: this session may only look at the editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
+        <source xml:lang="en">Scale up as far as this model can, about {0}% of the size this page needs.</source>
+        <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Shown on the 'Improve Quality' tool instead of its size menu when the AI model cannot make a picture as large as the space on the book page needs. {0} is a whole number such as 80; 'size' is the picture's size in pixels, not how big it looks on the page.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Enhance">
         <source xml:lang="en">Enhance</source>
@@ -2288,6 +2294,12 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions">
+        <source xml:lang="en">Extra Instructions</source>
+        <note>ID: AiImageEditor.Tool.change_style.Param.extraInstructions</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Label on a setting of the 'Change Style' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Title">
         <source xml:lang="en">Change Style</source>
         <note>ID: AiImageEditor.Tool.change_style.Title</note>
@@ -2323,12 +2335,6 @@
         <note>ID: AiImageEditor.Tool.change_text.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.ActionButton">
-        <source xml:lang="en">Make Coloring Page</source>
-        <note>ID: AiImageEditor.Tool.coloring_book.ActionButton</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>The button that runs the 'Coloring Book' tool. A command: what will happen when it is pressed.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty">
         <source xml:lang="en">Difficulty</source>
@@ -2378,18 +2384,6 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Param.extraInstructions">
-        <source xml:lang="en">Extra Instructions</source>
-        <note>ID: AiImageEditor.Tool.enhance_drawing.Param.extraInstructions</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Label above a multi-line typing box in the 'Enhance Line Drawing' tool, where the user can add wishes of their own on top of what the tool already does.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Title">
-        <source xml:lang="en">Enhance Line Drawing</source>
-        <note>ID: AiImageEditor.Tool.enhance_drawing.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Name of the tool that re-renders a line drawing in a chosen line-art style, anything from tidying up an old scan to adding colour. 'Enhance' here does NOT mean adding to the picture: the tool's default is to clean up what is already there, so avoid a word that promises embellishment.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
         <source xml:lang="en">Target Character (optional; leave blank for all)</source>
         <note>ID: AiImageEditor.Tool.ethnicity.Param.character</note>
@@ -2407,12 +2401,6 @@
         <note>ID: AiImageEditor.Tool.ethnicity.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.ActionButton">
-        <source xml:lang="en">Extract Characters</source>
-        <note>ID: AiImageEditor.Tool.extract_cast_of_characters.ActionButton</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>The button that runs the 'Extract Cast of Characters' tool. A command: what will happen when it is pressed.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles">
         <source xml:lang="en">Split into separate files</source>
@@ -2456,23 +2444,41 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Description">
-        <source xml:lang="en">Correct anatomy and perspective while keeping everything else identical.</source>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Description</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Description">
+        <source xml:lang="en">Make the image sharp, clean, and large enough for this page.</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Description</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>One-line explanation of the 'Improve Drawing' tool, shown under its name once the user picks it.</note>
+        <note>One-line explanation of the 'Improve Quality' tool, shown under its name once the user picks it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder">
-        <source xml:lang="en">Optional: anything specific to fix or preserve.</source>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind">
+        <source xml:lang="en">Image Kind</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Placeholder: the grey text inside the 'Further Instructions' box of the 'Improve Drawing' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+        <note>Label on a setting of the 'Improve Quality' tool, above the menu the user picks from. It asks what sort of picture this is, so that the tool knows how to treat it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Title">
-        <source xml:lang="en">Improve Drawing</source>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Title</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration">
+        <source xml:lang="en">Illustration</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a drawn or painted picture. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing">
+        <source xml:lang="en">Line Drawing</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a picture made of lines, with no shading. Only this menu text is translated; the words the tool sends to the AI stay English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo">
+        <source xml:lang="en">Photo</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a photograph. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Title">
+        <source xml:lang="en">Improve Quality</source>
+        <note>ID: AiImageEditor.Tool.improve_quality.Title</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Name of one of the AI tools, in the list the user picks from. It redraws the picture sharper and with more pixels in it, so avoid a word that means 'enlarge' or 'zoom'. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription">
         <source xml:lang="en">Describe the Animation</source>
@@ -2485,30 +2491,6 @@
         <note>ID: AiImageEditor.Tool.stylized_title.Title</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Description">
-        <source xml:lang="en">Create a higher-resolution version of this image.</source>
-        <note>ID: AiImageEditor.Tool.upscale.Description</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>One-line explanation of the 'Upscale' tool, shown under its name once the user picks it.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Param.removeFuzziness">
-        <source xml:lang="en">Remove fuzziness</source>
-        <note>ID: AiImageEditor.Tool.upscale.Param.removeFuzziness</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Label beside a tickbox in the 'Upscale' tool. When it is ticked, the AI is also asked to clear up blur and soft edges, rather than only adding pixels.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Param.targetResolution">
-        <source xml:lang="en">Target Resolution</source>
-        <note>ID: AiImageEditor.Tool.upscale.Param.targetResolution</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Label above a menu in the 'Upscale' tool, setting how many pixels the new picture should have. 'Resolution' is the technical term for that count.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Title">
-        <source xml:lang="en">Upscale</source>
-        <note>ID: AiImageEditor.Tool.upscale.Title</note>
-        <note>This is part of the interface for the Bloom AI Image Editor.</note>
-        <note>Name of the tool that redraws this picture with more pixels in it. It does not change how big the picture looks on the page, so avoid a word that means 'enlarge' or 'zoom'; the sense is a higher resolution.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.Connect">
         <source xml:lang="en">Connect to AI Image Generators</source>
