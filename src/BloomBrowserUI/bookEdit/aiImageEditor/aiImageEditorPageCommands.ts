@@ -48,14 +48,14 @@ export function launchAiImageEditor(
     });
 }
 
-// Numbers this page's image slots the way C# does (SelectImageSlotsOnPage in
-// AiImageEditorApi.cs): its image containers, in document order. An image container is
-// exactly what a user may replace, so the branding, license and QR-code images, which live
-// outside any container, are not slots at all.
+// Which of this page's image slots the user clicked, as its index in the list imageSlotsOnPage
+// builds. An image container is exactly what a user may replace, so the branding, license and
+// QR-code images, which live outside any container, are not slots at all.
 //
-// The index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so the
-// two lists have to hold the same containers. imageSlotsOnPage below is the single place that
-// decides which those are, and its comment says what it leaves out and why.
+// That index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so this
+// side and C# have to count the same containers. Each applies the rule for itself, against a
+// different DOM: imageSlotsOnPage below, and SelectImageSlotsOnPage in AiImageEditorApi.cs.
+// Neither can change what it counts without the other.
 function slotIndexOnPage(clicked: HTMLElement | undefined): number {
     if (!clicked) return 0;
     const pageRoot = clicked.closest(".bloom-page") ?? document;
