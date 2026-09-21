@@ -712,6 +712,19 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     trackEvent(ourNameForIt, data.payload?.properties);
                     break;
                 }
+                case "modal-open":
+                    // Our close button is drawn over the iframe, so the editor cannot
+                    // cover it with a dialog of its own; two close buttons a few pixels
+                    // apart invite shutting the whole editor when the user meant to
+                    // shut the dialog. Hidden rather than dimmed, and pointer events go
+                    // with it so it cannot be clicked while it is invisible.
+                    closeBtn.style.visibility = data.payload?.open
+                        ? "hidden"
+                        : "visible";
+                    closeBtn.style.pointerEvents = data.payload?.open
+                        ? "none"
+                        : "auto";
+                    break;
                 case "log":
                     console.log(
                         "[AI Image Editor:" +

@@ -532,12 +532,6 @@
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
         <note>Small tag on the models we suggest for this particular tool. Shown in lower case.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.AvailableBalance">
-        <source xml:lang="en">, {0} available</source>
-        <target xml:lang="es" state="translated">, {0} disponibles</target>
-        <note>ID: AiImageEditor.OpenRouter.AvailableBalance</note>
-        <note>Tail of the message after a key is checked, saying how much money is left. {0} is an amount of money like '$4.20'. Keep the comma and space at the start.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
         <source xml:lang="en">Forget Key</source>
         <target xml:lang="es" state="translated">Olvidar la clave</target>
@@ -568,9 +562,15 @@
         <note>ID: AiImageEditor.Panel.OriginalComic</note>
         <note>Heading over the picture being changed, when the tool cuts a comic strip into separate pictures.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.ResetZoom">
+        <source xml:lang="en">Reset zoom</source>
+        <target xml:lang="es" state="needs-translation">Reset zoom</target>
+        <note>ID: AiImageEditor.Preview.ResetZoom</note>
+        <note>Button in the gallery window, which shows every picture of one strip at full size. It puts the pictures back to the size they started at.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
-        <source xml:lang="en">Ctrl + mouse wheel to resize the images</source>
-        <target xml:lang="es" state="translated">Ctrl + rueda del ratón para cambiar el tamaño de las imágenes</target>
+        <source xml:lang="en">Ctrl + mouse wheel to zoom</source>
+        <target xml:lang="es" state="needs-translation">Ctrl + rueda del ratón para cambiar el tamaño de las imágenes</target>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
         <note>Tip in the gallery window, which shows every picture of one strip at full size, saying how to make the pictures bigger or smaller. 'Ctrl' is the name of a key on the keyboard and stays as it is.</note>
       </trans-unit>
@@ -597,6 +597,48 @@
         <target xml:lang="es" state="translated">Suelte una imagen</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
         <note>Shown over an image space while the user is dragging a picture onto it, to say that letting go will put it there.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.BookImage">
+        <source xml:lang="en">A picture from this book</source>
+        <target xml:lang="es" state="needs-translation">A picture from this book</target>
+        <note>ID: AiImageEditor.Source.BookImage</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in the tip that appears when the mouse rests on a thumbnail.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.ImagesToEdit">
+        <source xml:lang="en">Images to edit: {0}</source>
+        <target xml:lang="es" state="needs-translation">Images to edit: {0}</target>
+        <note>ID: AiImageEditor.Source.ImagesToEdit</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is replaced with a list of picture descriptions separated by commas.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.OriginalBookImage">
+        <source xml:lang="en">The picture this book slot started with</source>
+        <target xml:lang="es" state="needs-translation">The picture this book slot started with</target>
+        <note>ID: AiImageEditor.Source.OriginalBookImage</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. A slot is one place on a book page that holds a picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.PdfFile">
+        <source xml:lang="en">From {0}</source>
+        <target xml:lang="es" state="needs-translation">From {0}</target>
+        <note>ID: AiImageEditor.Source.PdfFile</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is replaced with the name of a PDF file.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.PdfPage">
+        <source xml:lang="en">Page {0} of {1}</source>
+        <target xml:lang="es" state="needs-translation">Page {0} of {1}</target>
+        <note>ID: AiImageEditor.Source.PdfPage</note>
+        <note>Says which page of a PDF file a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is the page number, {1} how many pages the file has.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.RecoveredFromFolder">
+        <source xml:lang="en">Found in the history folder</source>
+        <target xml:lang="es" state="needs-translation">Found in the history folder</target>
+        <note>ID: AiImageEditor.Source.RecoveredFromFolder</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. The history folder is where the editor keeps the pictures it has made before.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.ReferenceImages">
+        <source xml:lang="en">Reference images: {0}</source>
+        <target xml:lang="es" state="needs-translation">Reference images: {0}</target>
+        <note>ID: AiImageEditor.Source.ReferenceImages</note>
+        <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. A reference image is one the AI was told to look at. {0} is replaced with a list of picture descriptions separated by commas.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Status.NotConnected">
         <source xml:lang="en">OpenRouter not connected</source>

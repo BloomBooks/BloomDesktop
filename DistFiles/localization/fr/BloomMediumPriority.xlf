@@ -50,6 +50,12 @@
         <target xml:lang="fr" state="final">Modifier avec l'IA...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground">
+        <source xml:lang="en">Canvas Background</source>
+        <target xml:lang="fr" state="needs-translation">Canvas Background</target>
+        <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
+        <note>Names one picture of a page that has several, shown over the picture in the AI image editor's strip of the book's images. This is the picture behind the page, which other pictures sit on top of. The code puts the page name in front of it, giving e.g. "Page 3 - Canvas Background".</note>
+      </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent" approved="yes">
         <source xml:lang="en">No Indent</source>
         <target xml:lang="fr" state="final">Aucun Retrait</target>
@@ -1751,12 +1757,6 @@
         <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
         <note>Name of an art style: figures modelled in clay and photographed frame by frame. 'Stop-motion' is used untranslated by film and animation people in many languages; prefer the loanword over a literal rendering if that is what your language's practitioners say.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.cleanup-line-art.Name">
-        <source xml:lang="en">Cleanup Old Line Art</source>
-        <target xml:lang="fr" state="translated">Nettoyer un vieux dessin au trait</target>
-        <note>ID: AiImageEditor.ArtStyle.cleanup-line-art.Name</note>
-        <note>Name of an art style the user can pick for the pictures.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
         <source xml:lang="en">Clear Line &amp; Flat Color</source>
         <target xml:lang="fr" state="translated">Ligne claire et aplats de couleur</target>
@@ -1991,6 +1991,24 @@
         <note>ID: AiImageEditor.Model.Badge.GreatButExpensive</note>
         <note>Shown in the AI image editor.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
+        <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</source>
+        <target xml:lang="fr" state="needs-translation">Good for changing an image. It leaves alone the parts you did not ask it to change. It does not follow your instructions quite as well as Gemini 3 Pro.</target>
+        <note>ID: AiImageEditor.Model.google-gemini-3-1-flash-image.Description</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from. 'Gemini 3 Pro' is the name of another model and stays as it is.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.google-gemini-3-pro-image.Description">
+        <source xml:lang="en">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</source>
+        <target xml:lang="fr" state="needs-translation">Good for changing an image. It leaves alone the parts you did not ask it to change. It follows your instructions better than the others here, but it costs more.</target>
+        <note>ID: AiImageEditor.Model.google-gemini-3-pro-image.Description</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description">
+        <source xml:lang="en">Good with small details. Slower than the Gemini models.</source>
+        <target xml:lang="fr" state="needs-translation">Good with small details. Slower than the Gemini models.</target>
+        <note>ID: AiImageEditor.Model.openai-gpt-image-2-5-sunburst.Description</note>
+        <note>Tooltip on one row of the list of AI models the user chooses from. 'Gemini' is the name of a family of models and stays as it is.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.AccountLink">
         <source xml:lang="en">OpenRouter account</source>
         <target xml:lang="fr" state="translated">le compte OpenRouter</target>
@@ -2111,6 +2129,12 @@
         <note>ID: AiImageEditor.Preview.Gallery</note>
         <note>Heading of the window showing every picture in a strip at full size.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.InTheBookNow">
+        <source xml:lang="en">In the book now</source>
+        <target xml:lang="fr" state="needs-translation">In the book now</target>
+        <note>ID: AiImageEditor.Preview.InTheBookNow</note>
+        <note>Label above the picture the book holds today, in the gallery's column for one page. The new picture chosen for that page is shown under it.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Preview.Loading">
         <source xml:lang="en">Loading…</source>
         <target xml:lang="fr" state="translated">Chargement…</target>
@@ -2147,17 +2171,17 @@
         <note>ID: AiImageEditor.Run.AddReferenceImage</note>
         <note>Says why the start button cannot be used yet: this tool needs an extra picture to work from.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.ApplyChanges">
-        <source xml:lang="en">Apply Changes</source>
-        <target xml:lang="fr" state="translated">Appliquer les modifications</target>
-        <note>ID: AiImageEditor.Run.ApplyChanges</note>
-        <note>Button that starts the chosen tool on the picture.</note>
+      <trans-unit id="AiImageEditor.Run.BatchGo">
+        <source xml:lang="en">Go ({0} Images)</source>
+        <target xml:lang="fr" state="needs-translation">Go ({0} Images)</target>
+        <note>ID: AiImageEditor.Run.BatchGo</note>
+        <note>The button that runs the chosen AI tool on several book images at once. {0} is how many images are ticked. Use the same verb you chose for 'Go', with the count after it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchApplyChanges">
-        <source xml:lang="en">Apply Changes to {0} Images</source>
-        <target xml:lang="fr" state="translated">Appliquer les modifications à {0} images</target>
-        <note>ID: AiImageEditor.Run.BatchApplyChanges</note>
-        <note>Button that starts the tool on several pictures at once, which this interface calls a batch. {0} is how many, always 2 or more.</note>
+      <trans-unit id="AiImageEditor.Run.BatchGoOne">
+        <source xml:lang="en">Go (1 Image)</source>
+        <target xml:lang="fr" state="needs-translation">Go (1 Image)</target>
+        <note>ID: AiImageEditor.Run.BatchGoOne</note>
+        <note>The same button as 'Go ({0} Images)' when exactly one book image is ticked. Use the same verb you chose for 'Go'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.BatchProgress">
         <source xml:lang="en">Processed {0} of {1}</source>
@@ -2165,29 +2189,11 @@
         <note>ID: AiImageEditor.Run.BatchProgress</note>
         <note>Progress line while several pictures are being made. {0} is how many are finished, {1} how many there are.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.BatchToolButton">
-        <source xml:lang="en">{0} for {1} Images</source>
-        <target xml:lang="fr" state="translated">{0} pour {1} images</target>
-        <note>ID: AiImageEditor.Run.BatchToolButton</note>
-        <note>Button that starts a named tool on several pictures at once. {0} is the tool's own button text, {1} is how many pictures.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.Run.ClickToCancel">
         <source xml:lang="en">Click to Cancel</source>
         <target xml:lang="fr" state="translated">Cliquez pour annuler</target>
         <note>ID: AiImageEditor.Run.ClickToCancel</note>
         <note>Replaces the start button while the AI is working; clicking it stops the work.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Run.Estimate">
-        <source xml:lang="en">Estimate {0}</source>
-        <target xml:lang="fr" state="translated">Estimation {0}</target>
-        <note>ID: AiImageEditor.Run.Estimate</note>
-        <note>What this one picture is expected to cost. {0} is an amount like '$0.04'.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Run.EstimatedCost">
-        <source xml:lang="en">Estimated cost: {0}</source>
-        <target xml:lang="fr" state="translated">Coût estimé : {0}</target>
-        <note>ID: AiImageEditor.Run.EstimatedCost</note>
-        <note>What the whole batch is expected to cost. {0} is an amount like '$0.40'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.FillInRequiredFields">
         <source xml:lang="en">Fill in required fields</source>
@@ -2195,17 +2201,23 @@
         <note>ID: AiImageEditor.Run.FillInRequiredFields</note>
         <note>Says why the start button cannot be used yet: a required box is still empty.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Run.GenerateImage">
-        <source xml:lang="en">Generate Image</source>
-        <target xml:lang="fr" state="translated">Générer l'image</target>
-        <note>ID: AiImageEditor.Run.GenerateImage</note>
-        <note>Button that starts making a brand new picture.</note>
+      <trans-unit id="AiImageEditor.Run.Go">
+        <source xml:lang="en">Go</source>
+        <target xml:lang="fr" state="needs-translation">Go</target>
+        <note>ID: AiImageEditor.Run.Go</note>
+        <note>The button that runs the chosen AI tool, on every tool: editing an image or creating one. Use whatever short verb sounds right in your language; there is no need to translate 'Go' itself. In English we also considered 'Run' and 'Do it'.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Run.NotAvailableInLookAround">
         <source xml:lang="en">Not available in look-around mode</source>
         <target xml:lang="fr" state="translated">Indisponible en mode découverte</target>
         <note>ID: AiImageEditor.Run.NotAvailableInLookAround</note>
         <note>Says why the start button cannot be used: this session may only look at the editor.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.ScaleUp.ModelLimit">
+        <source xml:lang="en">Scale up as far as this model can, about {0}% of the size this page needs.</source>
+        <target xml:lang="fr" state="needs-translation">Scale up as far as this model can, about {0}% of the size this page needs.</target>
+        <note>ID: AiImageEditor.ScaleUp.ModelLimit</note>
+        <note>Shown on the 'Improve Quality' tool instead of its size menu when the AI model cannot make a picture as large as the space on the book page needs. {0} is a whole number such as 80; 'size' is the picture's size in pixels, not how big it looks on the page.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Section.Enhance">
         <source xml:lang="en">Enhance</source>
@@ -2381,6 +2393,12 @@
         <note>ID: AiImageEditor.Tool.apply_localized_characters.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.change_style.Param.extraInstructions">
+        <source xml:lang="en">Extra Instructions</source>
+        <target xml:lang="fr" state="translated">Consignes supplémentaires</target>
+        <note>ID: AiImageEditor.Tool.change_style.Param.extraInstructions</note>
+        <note>Label on a setting of the 'Change Style' tool, above the box or menu the user fills in.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Title">
         <source xml:lang="en">Change Style</source>
         <target xml:lang="fr" state="translated">Changer le style</target>
@@ -2416,12 +2434,6 @@
         <target xml:lang="fr" state="translated">Modifier le texte</target>
         <note>ID: AiImageEditor.Tool.change_text.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.coloring_book.ActionButton">
-        <source xml:lang="en">Make Coloring Page</source>
-        <target xml:lang="fr" state="translated">Créer une page à colorier</target>
-        <note>ID: AiImageEditor.Tool.coloring_book.ActionButton</note>
-        <note>The button that runs the 'Coloring Book' tool. A command: what will happen when it is pressed.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.coloring_book.Param.difficulty">
         <source xml:lang="en">Difficulty</source>
@@ -2471,18 +2483,6 @@
         <note>ID: AiImageEditor.Tool.custom.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Param.extraInstructions">
-        <source xml:lang="en">Extra Instructions</source>
-        <target xml:lang="fr" state="translated">Consignes supplémentaires</target>
-        <note>ID: AiImageEditor.Tool.enhance_drawing.Param.extraInstructions</note>
-        <note>Label on a setting of the 'Enhance Line Drawing' tool, above the box or menu the user fills in.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.enhance_drawing.Title">
-        <source xml:lang="en">Enhance Line Drawing</source>
-        <target xml:lang="fr" state="translated">Retravailler le dessin au trait</target>
-        <note>ID: AiImageEditor.Tool.enhance_drawing.Title</note>
-        <note>Name of the tool that re-renders a line drawing in a chosen line-art style, anything from tidying up an old scan to adding colour. 'Enhance' here does NOT mean adding to the picture: the tool's default is to clean up what is already there, so avoid a word that promises embellishment.</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.ethnicity.Param.character">
         <source xml:lang="en">Target Character (optional; leave blank for all)</source>
         <target xml:lang="fr" state="translated">Personnage visé (facultatif ; laissez vide pour tous)</target>
@@ -2500,12 +2500,6 @@
         <target xml:lang="fr" state="translated">Changer l'origine ethnique</target>
         <note>ID: AiImageEditor.Tool.ethnicity.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.ActionButton">
-        <source xml:lang="en">Extract Characters</source>
-        <target xml:lang="fr" state="translated">Extraire les personnages</target>
-        <note>ID: AiImageEditor.Tool.extract_cast_of_characters.ActionButton</note>
-        <note>The button that runs the 'Extract Cast of Characters' tool. A command: what will happen when it is pressed.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.extract_cast_of_characters.Param.splitIntoSeparateFiles">
         <source xml:lang="en">Split into separate files</source>
@@ -2549,23 +2543,41 @@
         <note>ID: AiImageEditor.Tool.generate_pallet.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Description">
-        <source xml:lang="en">Correct anatomy and perspective while keeping everything else identical.</source>
-        <target xml:lang="fr" state="translated">Corriger l'anatomie et la perspective en gardant tout le reste identique.</target>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Description</note>
-        <note>One-line explanation of the 'Improve Drawing' tool, shown under its name once the user picks it.</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Description">
+        <source xml:lang="en">Make the image sharp, clean, and large enough for this page.</source>
+        <target xml:lang="fr" state="needs-translation">Make the image sharp, clean, and large enough for this page.</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Description</note>
+        <note>One-line explanation of the 'Improve Quality' tool, shown under its name once the user picks it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder">
-        <source xml:lang="en">Optional: anything specific to fix or preserve.</source>
-        <target xml:lang="fr" state="translated">Facultatif : ce qu'il faut corriger ou conserver en particulier.</target>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Param.furtherInstructions.Placeholder</note>
-        <note>Placeholder: the grey text inside the 'Further Instructions' box of the 'Improve Drawing' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind">
+        <source xml:lang="en">Image Kind</source>
+        <target xml:lang="fr" state="needs-translation">Image Kind</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind</note>
+        <note>Label on a setting of the 'Improve Quality' tool, above the menu the user picks from. It asks what sort of picture this is, so that the tool knows how to treat it.</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.improve_drawing.Title">
-        <source xml:lang="en">Improve Drawing</source>
-        <target xml:lang="fr" state="translated">Améliorer le dessin</target>
-        <note>ID: AiImageEditor.Tool.improve_drawing.Title</note>
-        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration">
+        <source xml:lang="en">Illustration</source>
+        <target xml:lang="fr" state="needs-translation">Illustration</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Illustration</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a drawn or painted picture. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing">
+        <source xml:lang="en">Line Drawing</source>
+        <target xml:lang="fr" state="needs-translation">Line Drawing</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Line Drawing</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a picture made of lines, with no shading. Only this menu text is translated; the words the tool sends to the AI stay English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo">
+        <source xml:lang="en">Photo</source>
+        <target xml:lang="fr" state="needs-translation">Photo</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Param.imageKind.Option.Photo</note>
+        <note>One choice in the 'Image Kind' menu of the 'Improve Quality' tool: a photograph. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.improve_quality.Title">
+        <source xml:lang="en">Improve Quality</source>
+        <target xml:lang="fr" state="needs-translation">Improve Quality</target>
+        <note>ID: AiImageEditor.Tool.improve_quality.Title</note>
+        <note>Name of one of the AI tools, in the list the user picks from. It redraws the picture sharper and with more pixels in it, so avoid a word that means 'enlarge' or 'zoom'. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription">
         <source xml:lang="en">Describe the Animation</source>
@@ -2578,30 +2590,6 @@
         <target xml:lang="fr" state="translated">Ajouter un titre stylisé</target>
         <note>ID: AiImageEditor.Tool.stylized_title.Title</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Description">
-        <source xml:lang="en">Create a higher-resolution version of this image.</source>
-        <target xml:lang="fr" state="translated">Créer une version de cette image en plus haute résolution.</target>
-        <note>ID: AiImageEditor.Tool.upscale.Description</note>
-        <note>One-line explanation of the 'Upscale' tool, shown under its name once the user picks it.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Param.removeFuzziness">
-        <source xml:lang="en">Remove fuzziness</source>
-        <target xml:lang="fr" state="translated">Supprimer le flou</target>
-        <note>ID: AiImageEditor.Tool.upscale.Param.removeFuzziness</note>
-        <note>Label on a setting of the 'Upscale' tool, above the box or menu the user fills in.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Param.targetResolution">
-        <source xml:lang="en">Target Resolution</source>
-        <target xml:lang="fr" state="translated">Résolution visée</target>
-        <note>ID: AiImageEditor.Tool.upscale.Param.targetResolution</note>
-        <note>Label on a setting of the 'Upscale' tool, above the box or menu the user fills in.</note>
-      </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.upscale.Title">
-        <source xml:lang="en">Upscale</source>
-        <target xml:lang="fr" state="translated">Augmenter la résolution</target>
-        <note>ID: AiImageEditor.Tool.upscale.Title</note>
-        <note>Name of the tool that redraws this picture with more pixels in it. It does not change how big the picture looks on the page, so avoid a word that means 'enlarge' or 'zoom'; the sense is a higher resolution.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Welcome.Connect">
         <source xml:lang="en">Connect to AI Image Generators</source>
