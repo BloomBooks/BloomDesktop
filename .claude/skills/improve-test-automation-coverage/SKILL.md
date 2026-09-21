@@ -18,7 +18,7 @@ Files beside this skill:
   use it too if you ever run a test yourself.
 - `worker-brief.md` — the task brief template for a worker.
 
-Related skills: `.github/skills/add-e2e-test/SKILL.md` (what a worker follows), `orchestration`
+Related skills: `.claude/skills/add-e2e-test/SKILL.md` (what a worker follows), `orchestration`
 and `orca-cli` (Orca mechanics; run `orca skills get orchestration` first, the guide is
 version-matched), `preflight` (the worker runs it to open the PR), `personal-board`.
 

@@ -72,7 +72,7 @@ image gallery); the gallery's `Open File...` under `This Computer`, and either c
 reach the native file picker. This suite attaches to an ordinary running Bloom, not one started
 with `--e2e`, so the `e2e/nextFileToChoose` hook is **not** registered (posting to it raises
 Bloom's missing-endpoint problem dialog). To get past a picker here use `winformsUia.ps1` in the
-`bloom-automation` skill, which fills the picker over UI Automation with no pointer input. Do not
+`run-bloom` skill, which fills the picker over UI Automation with no pointer input. Do not
 invoke `Choose Video from your Computer...` or `Record yourself...`; if coverage needs them,
 verify presence/enabled state only.
 

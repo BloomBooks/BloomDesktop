@@ -18,7 +18,7 @@ again.
 
 ## Ground rules
 
-- **Follow `.github/skills/add-e2e-test/SKILL.md` in this worktree** as the authoritative
+- **Follow `.claude/skills/add-e2e-test/SKILL.md` in this worktree** as the authoritative
   procedure. Read `src/BloomE2E/README.md`, `src/BloomE2E/AUTOMATION-DEBT.md`, and the existing
   tests in `src/BloomE2E/tests/` before you write anything.
 {{QUESTIONS_RULE}}

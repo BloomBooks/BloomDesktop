@@ -8,7 +8,7 @@ here reuses the Bloom you happen to have open.
 
 This is a product, not a pile of scripts. When Bloom is hard to drive, the fix is to make Bloom
 easier to automate; see [AUTOMATION-DEBT.md](AUTOMATION-DEBT.md), which is the visible backlog of
-that work. The procedure for adding a test lives in `.github/skills/add-e2e-test/SKILL.md`.
+that work. The procedure for adding a test lives in `.claude/skills/add-e2e-test/SKILL.md`.
 
 ## Writing a test
 
@@ -179,7 +179,7 @@ Then set the card's `Automation` property to `Automated`. If the test covers onl
 steps, split the card first into an `[Automated portion]` that keeps the id and a `[Manual portion]`
 with a new id, so no human-run step hides behind an automated card. A new test with no manual card
 gets a new inventory row, so the inventory stays the inventory of all tests rather than only the
-human-run ones. `.github/skills/add-e2e-test/SKILL.md` has the details.
+human-run ones. `.claude/skills/add-e2e-test/SKILL.md` has the details.
 
 ## Running
 

@@ -79,7 +79,7 @@ investigated 2026-09-16, which splits this entry in two:
 
 - **The WinForms half is drivable now.** Windows UI Automation reaches every WinForms control
   by its designer name with no pointer, keystroke or focus change:
-  `.github/skills/bloom-automation/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
+  `.claude/skills/run-bloom/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
   that skill's SKILL.md). Verified on the Settings dialog: `select` on the "Book Making" tab item
   and `invoke` on `_cancelButton` both worked, headless. The `WireUpForWinforms` dialogs'
   OK/Cancel buttons and the Settings tab strip are therefore no longer a reason a step stays
@@ -115,7 +115,7 @@ File pickers and video capture open native windows that Playwright cannot see or
 test that triggers one unprepared hangs the run. (The WinForms Image Toolbox this entry used
 to name is gone: choosing an image is a web dialog now, and only its "Open File..." button
 under "This Computer", and changing a GIF, reach a native file picker.) Since 2026-09-16 the
-picker itself is no longer undrivable: `.github/skills/bloom-automation/winformsUia.ps1`
+picker itself is no longer undrivable: `.claude/skills/run-bloom/winformsUia.ps1`
 fills its "File name:" box and presses Open over UI Automation, proven against Bloom's own
 image picker. A test should still prefer `e2e/nextFileToChoose` (below), which never shows
 the dialog; UIA is the fallback for whatever that hook does not cover, and for reading a
