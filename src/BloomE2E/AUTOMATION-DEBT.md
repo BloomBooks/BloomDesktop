@@ -816,3 +816,31 @@ the renderer — background CPU load while the test runs at normal speed, plus a
 stays drivable while the app's own async work gets pushed around. Worth pairing with a way to
 run one spec N times under that load, since these failures are all intermittent.
 (Found 2026-09-15.)
+
+## A component test lost its connection to the dev server, and we cannot say why
+
+On 2026-09-21 the nightly failed on one component test — `registration-validation.uitest.ts:279`
+("Handles mixed tabs and spaces in multiline field") — with
+`page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`, raised from
+`setTestComponent.ts:56` on the very first navigation of the test.
+
+**The dev server did not go down.** Five more tests navigated to the same URL in the twenty
+seconds after the failure and all passed, and Vite logged no restart, reload or dependency
+re-optimisation anywhere in the run. A single TCP connect to localhost failed and nothing else
+did. 144 of 145 tests passed. It is the first occurrence in ten nightlies.
+
+The cost is a whole red nightly for one test, and — until now — nothing to look at afterwards.
+The config asked for `trace: "on-first-retry"` while setting no `retries`, so Playwright's
+default of 0 applied and no trace was ever written; the nightly also uploaded only that suite's
+JUnit XML. PR #8383 changed the trace to `retain-on-failure` and added an "Upload
+component-tester traces" step, so the next occurrence leaves a trace to download.
+
+Fix direction: unknown, and deliberately not "add a retry" — `playwright.config.ts` in
+`src/BloomE2E` keeps `retries: 0` on purpose, because a retry hides exactly the flakiness worth
+seeing. Start from the trace the next occurrence leaves. Worth checking there whether the
+failure is a refused connect or a reset, and what else the runner was doing at that instant.
+
+How to react meanwhile: **do not re-run and move on without first looking for the trace
+artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
+collected is a wasted one.
+(Found 2026-09-21.)
