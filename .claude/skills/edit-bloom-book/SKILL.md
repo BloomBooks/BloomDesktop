@@ -20,13 +20,13 @@ Edit a book's `.htm` file without breaking Bloom's structural expectations. Pres
 - Command:
 
 ```bash
-node .github/skills/edit-bloom-book/validateBloomBook.mjs path/to/Book.htm
+node .claude/skills/edit-bloom-book/validateBloomBook.mjs path/to/Book.htm
 ```
 
 - It accepts multiple books:
 
 ```bash
-node .github/skills/edit-bloom-book/validateBloomBook.mjs book1.htm book2.htm
+node .claude/skills/edit-bloom-book/validateBloomBook.mjs book1.htm book2.htm
 ```
 
 - Current validator scope checks Bloom's core book schema and the common strict layout subtrees:

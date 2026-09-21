@@ -73,7 +73,7 @@ The vscode terminal often loses the first character sent from copilot agents. So
 If you create new files for temporary purposes (e.g. output or artifact or log files), be sure to clean them up when you're done and be careful not to accidentally commit them.
 
 # Localization
-Whenever you add, modify, or review localizable strings (XLF entries), follow `.github/skills/xlf-strings/SKILL.md`. For how Crowdin works and why those rules exist — including why a no-longer-used string is marked obsolete rather than deleted — see `DistFiles/localization/README.md`.
+Whenever you add, modify, or review localizable strings (XLF entries), follow `.claude/skills/xlf-strings/SKILL.md`. For how Crowdin works and why those rules exist — including why a no-longer-used string is marked obsolete rather than deleted — see `DistFiles/localization/README.md`.
 
 Two rules apply at all times, even outside that skill:
 - **Only ever edit files under `DistFiles/localization/en/`** — never touch the other language subdirectories.
@@ -114,10 +114,10 @@ beside it whose whole content is `@AGENTS.md`. The pre-commit hook
 (`build/check-agents-md-siblings.sh`) refuses a commit that adds one without the other.
 
 # Skills
-Reusable, task-specific procedures for this repo live in `.github/skills/<name>/SKILL.md`.
-When a request matches one of these, READ the matching `SKILL.md` and follow it as the
-authoritative procedure (it may have more files alongside it). These may not be auto-loaded
-for non-copilot agents, so you may have to open the file yourself.
+Reusable, task-specific procedures for this repo live in `.claude/skills/<name>/SKILL.md`, a
+folder both Claude Code and GitHub Copilot discover on their own. When a request matches one,
+follow its `SKILL.md` as the authoritative procedure (it may have more files alongside it); an
+agent that does not discover skills automatically should open the file itself.
 
 Team-wide workflow skills that are not specific to this repo (the preflight → self-review →
 peer-review pipeline, Devin and Reviewable review handling, YouTrack operations) live in

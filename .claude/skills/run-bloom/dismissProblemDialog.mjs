@@ -15,7 +15,7 @@
 // never closed out from under the user.
 //
 // Usage:
-//   node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]
+//   node .claude/skills/run-bloom/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]
 //
 // Exit code is 0 whether or not a dialog was present (absence is not an error);
 // the JSON/text output reports what happened. Use --wait to poll until a dialog
@@ -34,7 +34,7 @@ import {
 } from "./bloomProcessCommon.mjs";
 
 const usage =
-    "Usage: node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]";
+    "Usage: node .claude/skills/run-bloom/dismissProblemDialog.mjs --http-port <port> [--wait] [--timeout-ms <ms>] [--json]";
 
 const parseArgs = () => {
     const args = process.argv.slice(2);

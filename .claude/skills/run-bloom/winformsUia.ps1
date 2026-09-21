@@ -5,7 +5,7 @@
 # See "Driving WinForms and OS dialogs" in SKILL.md for what has been proven and the gotchas.
 #
 # Usage:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File .github/skills/bloom-automation/winformsUia.ps1 `
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .github/skills/run-bloom/winformsUia.ps1 `
 #       <command> -ProcessId <bloomPid> [-Window <autoId|name>] [-Control <autoId|name>] [-Value <text>] [-Depth n] [-TimeoutMs n]
 #
 # Commands:

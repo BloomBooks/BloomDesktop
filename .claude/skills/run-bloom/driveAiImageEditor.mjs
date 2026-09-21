@@ -24,7 +24,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-// repo root is four levels up from .github/skills/bloom-automation/
+// repo root is four levels up from .claude/skills/run-bloom/
 const repoRoot = path.resolve(here, "..", "..", "..");
 const componentTester = path.join(
     repoRoot,

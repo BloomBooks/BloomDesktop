@@ -4,7 +4,7 @@
 // rebuild+relaunch, or tear the whole dev stack down — without a human
 // pressing Enter in the launcher terminal.
 //
-//   node .github/skills/bloom-automation/launcherControl.mjs --status [--json]
+//   node .claude/skills/run-bloom/launcherControl.mjs --status [--json]
 //   node ... --restart [--wait-ready] [--json]      # rebuild + relaunch (any state)
 //   node ... --start [--wait-ready] [--json]        # relaunch, only when awaiting-restart
 //   node ... --quit-bloom [--json]                  # durably stop Bloom, launcher stays

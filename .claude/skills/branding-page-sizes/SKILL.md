@@ -27,7 +27,7 @@ in print), so it must be **fixed**, not hidden. Two distinct failures to hunt fo
 This skill is the page-size/verification companion to two others — read them too:
 - `bloom-branding` — what branding.json/branding.less do, the badge/QR mechanism, how files
   reach a book (build + reopen), and the `STARTLAYOUTS` page-size source.
-- `bloom-automation` — launching this worktree's Bloom, finding the CDP target, the
+- `run-bloom` — launching this worktree's Bloom, finding the CDP target, the
   127.0.0.1-vs-localhost / Host-header gotcha, and driving the UI over CDP.
 
 ## 1. Unlock the page sizes
@@ -83,7 +83,7 @@ non-prepub books the block is empty, so the same rules are harmless no-ops.
 Reopening a book per CSS tweak is slow, and **Bloom does not re-copy the xmatter CSS into a
 book on a mere tab switch** (it caches "up to date" for the session). So iterate live by
 injecting candidate CSS into the page over CDP, measuring real overflow, screenshotting — then
-bake into LESS once it's right. Write a small driver script for this (the `bloom-automation`
+bake into LESS once it's right. Write a small driver script for this (the `run-bloom`
 skill's drivers show how to attach); the durable knowledge is what it measures.
 
 For each candidate it: closes the Talking Book toolbox, strips edit artifacts, switches size
@@ -123,7 +123,7 @@ Per size × page:
 - Issue these **from inside the page** via CDP `Runtime.evaluate` (the page origin is
   `localhost`, so the Host header is accepted; a Node `fetch` to `127.0.0.1` gets 400). Use
   `127.0.0.1` for the CDP `/json` + websocket though (localhost → ::1 returns the wrong/empty
-  target). This is the #1 footgun — see `bloom-automation`.
+  target). This is the #1 footgun — see `run-bloom`.
 - Poll the `#page` iframe's `.bloom-page` className for the size class and the right page id
   before screenshotting.
 - `Page.captureScreenshot` with a `clip` computed from the `.bloom-page` bounding rect (+a few

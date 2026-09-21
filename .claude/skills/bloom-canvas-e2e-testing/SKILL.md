@@ -17,7 +17,7 @@ gestures. **Not for** component-harness tests under `react_components/*/*.uitest
 
 **Before you start:** Bloom is running and serving the Edit tab, the current page has a
 `.bloom-canvas`, and the Canvas tool is in the toolbox. Take the port from
-`launcherControl.mjs --status` (see `bloom-automation`); 8089 is first-come across worktrees.
+`launcherControl.mjs --status` (see `run-bloom`); 8089 is first-come across worktrees.
 
 **Never let a native OS dialog open unprepared** (file picker, video capture, "Record
 yourself..."): Playwright cannot see it and the run hangs. The AGENTS.md above lists which
