@@ -64,7 +64,7 @@ Both share `capture-core.mjs` (one warm headless Chrome + the selected book, res
 ### Interactive
 
 ```bash
-cd .github/skills/branding-report
+cd .claude/skills/branding-report
 node control.mjs --out branding-report-out      # -> http://localhost:8798/
 # open the printed URL; check brandings, pick layouts/pages. Ctrl-C restores the book.
 ```
@@ -72,7 +72,7 @@ node control.mjs --out branding-report-out      # -> http://localhost:8798/
 ### Batch
 
 ```bash
-cd .github/skills/branding-report
+cd .claude/skills/branding-report
 
 # 1) Capture (0 tokens). Examples:
 node survey.mjs --brandings all --pages back

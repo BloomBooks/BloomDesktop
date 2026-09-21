@@ -36,7 +36,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 
 Terminal:
 - In this VS Code workspace, the shared bash terminal keeps whatever cwd the previous command left behind.
-- Prefer running the helper through `$repo_root/.github/skills/...` or `$repo_root/scripts/...` so the command does not depend on the current working directory.
+- Prefer running the helper through `$repo_root/.claude/skills/...` or `$repo_root/scripts/...` so the command does not depend on the current working directory.
 
 Important:
 - Agents using this skill MUST use the checked-in helper scripts below, not package.json aliases and not ad hoc `wmic` commands.
@@ -49,10 +49,10 @@ Important:
 ### Status
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs"
-node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --json
-node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --running-bloom --json
-node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --http-port <httpPort> --json
+node "$repo_root/.claude/skills/bloom-automation/bloomProcessStatus.mjs"
+node "$repo_root/.claude/skills/bloom-automation/bloomProcessStatus.mjs" --json
+node "$repo_root/.claude/skills/bloom-automation/bloomProcessStatus.mjs" --running-bloom --json
+node "$repo_root/.claude/skills/bloom-automation/bloomProcessStatus.mjs" --http-port <httpPort> --json
 ```
 
 Reports Bloom.exe processes, detected repo roots, attributable `dotnet watch` parents, ambiguous watchers, and whether the workspace API and CDP endpoint are reachable.
@@ -65,12 +65,12 @@ plus a `BLOOM_LAUNCHER_READY {...}` stdout line. `launcherControl.mjs` wraps
 it; use it INSTEAD of kill-and-relaunch or asking the human to press Enter:
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --status --json
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --restart --wait-ready --json   # rebuild + relaunch, any state
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --start --wait-ready --json     # relaunch only when parked (awaiting-restart)
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --quit-bloom --json             # graceful WM_CLOSE quit; also stops the watch child, so C# edits do NOT respawn Bloom
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --shutdown --json               # whole stack: Bloom + dotnet watch + launcher + Vite
-node "$repo_root/.github/skills/bloom-automation/launcherControl.mjs" --ensure-running --wait-ready --json  # start the stack if nobody's home
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --status --json
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --restart --wait-ready --json   # rebuild + relaunch, any state
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --start --wait-ready --json     # relaunch only when parked (awaiting-restart)
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --quit-bloom --json             # graceful WM_CLOSE quit; also stops the watch child, so C# edits do NOT respawn Bloom
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --shutdown --json               # whole stack: Bloom + dotnet watch + launcher + Vite
+node "$repo_root/.claude/skills/bloom-automation/launcherControl.mjs" --ensure-running --wait-ready --json  # start the stack if nobody's home
 ```
 
 Semantics agents rely on:
@@ -127,10 +127,10 @@ Use `--http-port <port>` when you launched Bloom through `./go.sh` or another re
 ### Kill Bloom
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/killBloomProcess.mjs"
-node "$repo_root/.github/skills/bloom-automation/killBloomProcess.mjs" --only-mismatched
-node "$repo_root/.github/skills/bloom-automation/killBloomProcess.mjs" --http-port <httpPort>
-node "$repo_root/.github/skills/bloom-automation/killBloomProcess.mjs" --pid 12345 --watch-pid 12340
+node "$repo_root/.claude/skills/bloom-automation/killBloomProcess.mjs"
+node "$repo_root/.claude/skills/bloom-automation/killBloomProcess.mjs" --only-mismatched
+node "$repo_root/.claude/skills/bloom-automation/killBloomProcess.mjs" --http-port <httpPort>
+node "$repo_root/.claude/skills/bloom-automation/killBloomProcess.mjs" --pid 12345 --watch-pid 12340
 ```
 
 Use the plain form to stop all detected Bloom-related processes. Use `--only-mismatched` to stop only the Bloom instance that does not belong to the current worktree.
@@ -164,10 +164,10 @@ Agent workflow for `go.sh`:
 ### Discover the CDP target
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/webview2Targets.mjs"
-node "$repo_root/.github/skills/bloom-automation/webview2Targets.mjs" --json --wait
-node "$repo_root/.github/skills/bloom-automation/webview2Targets.mjs" --running-bloom --json --wait
-node "$repo_root/.github/skills/bloom-automation/webview2Targets.mjs" --http-port <httpPort> --json --wait
+node "$repo_root/.claude/skills/bloom-automation/webview2Targets.mjs"
+node "$repo_root/.claude/skills/bloom-automation/webview2Targets.mjs" --json --wait
+node "$repo_root/.claude/skills/bloom-automation/webview2Targets.mjs" --running-bloom --json --wait
+node "$repo_root/.claude/skills/bloom-automation/webview2Targets.mjs" --http-port <httpPort> --json --wait
 ```
 
 Use `--wait` after startup so the command blocks until the embedded browser target is available.
@@ -175,8 +175,8 @@ Use `--wait` after startup so the command blocks until the embedded browser targ
 ### Switch a workspace tab
 
 ```bash
-node "$repo_root/.github/skills/bloom-automation/switchWorkspaceTab.mjs" --running-bloom --tab edit --json
-node "$repo_root/.github/skills/bloom-automation/switchWorkspaceTab.mjs" --http-port <httpPort> --tab publish --json
+node "$repo_root/.claude/skills/bloom-automation/switchWorkspaceTab.mjs" --running-bloom --tab edit --json
+node "$repo_root/.claude/skills/bloom-automation/switchWorkspaceTab.mjs" --http-port <httpPort> --tab publish --json
 ```
 
 This helper attaches to the reported WebView2 target over CDP, clicks the real top bar tab, waits for `workspace/tabs` to report it active, and prints the resulting state.
@@ -224,19 +224,19 @@ Use this exact path when the user says to reuse the already-running Bloom and yo
 1. Report the running instance:
 
 ```bash
-repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.github/skills/bloom-automation/bloomProcessStatus.mjs" --running-bloom --json
+repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.claude/skills/bloom-automation/bloomProcessStatus.mjs" --running-bloom --json
 ```
 
 2. Switch the real running Bloom through the skill-local helper:
 
 ```bash
-repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.github/skills/bloom-automation/switchWorkspaceTab.mjs" --running-bloom --tab edit --json
+repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.claude/skills/bloom-automation/switchWorkspaceTab.mjs" --running-bloom --tab edit --json
 ```
 
 3. Only if you need low-level debugging evidence, inspect the exact CDP target:
 
 ```bash
-repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.github/skills/bloom-automation/webview2Targets.mjs" --running-bloom --json --wait
+repo_root="$(git rev-parse --show-toplevel)" && node "$repo_root/.claude/skills/bloom-automation/webview2Targets.mjs" --running-bloom --json --wait
 ```
 
 Notes:
@@ -245,12 +245,12 @@ Notes:
 - Run step 3 only when you need raw CDP target details for debugging.
 
 ## Core Workflow
-1. Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json` if you need to know whether an ordinary current-worktree instance is already running.
-2. If a current-worktree instance is already running and the user did not explicitly ask for a second instance, reuse it. If you need a fresh automation-owned instance instead, first kill the existing exact target with `node .github/skills/bloom-automation/killBloomProcess.mjs` or `node .github/skills/bloom-automation/killBloomProcess.mjs --http-port <httpPort>`, then start the replacement with the current repo-supported source-aware launcher, which is `./go.sh` unless the repo documents something better.
-3. Copy the printed HTTP and CDP ports. If you need the exact PID later, run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --http-port <httpPort> --json`.
+1. Run `node .claude/skills/bloom-automation/bloomProcessStatus.mjs --json` if you need to know whether an ordinary current-worktree instance is already running.
+2. If a current-worktree instance is already running and the user did not explicitly ask for a second instance, reuse it. If you need a fresh automation-owned instance instead, first kill the existing exact target with `node .claude/skills/bloom-automation/killBloomProcess.mjs` or `node .claude/skills/bloom-automation/killBloomProcess.mjs --http-port <httpPort>`, then start the replacement with the current repo-supported source-aware launcher, which is `./go.sh` unless the repo documents something better.
+3. Copy the printed HTTP and CDP ports. If you need the exact PID later, run `node .claude/skills/bloom-automation/bloomProcessStatus.mjs --http-port <httpPort> --json`.
 4. If you instead want to reuse a current-worktree instance that Bloom found by itself, only then use repo-root matching and `--only-mismatched` cleanup.
-5. Run `node .github/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` to discover the live WebView2 target for that exact instance when you need debugging detail.
-6. Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab <collection|edit|publish>` for top bar interactions, or attach another confirmed client to `http://localhost:<cdpPort>` if you need lower-level inspection.
+5. Run `node .claude/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` to discover the live WebView2 target for that exact instance when you need debugging detail.
+6. Use `node .claude/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab <collection|edit|publish>` for top bar interactions, or attach another confirmed client to `http://localhost:<cdpPort>` if you need lower-level inspection.
 7. Manipulate the UI by clicking or typing in the attached browser context. Do not use Bloom API endpoints to simulate the user action itself.
 8. Use browser-native inspection for DOM, console, and network.
 9. If the task is test-related, run the exe-backed Playwright suite with `BLOOM_HTTP_PORT=<httpPort> pnpm exec playwright test --config playwright.bloom-exe.config.ts`.
@@ -258,10 +258,10 @@ Notes:
 ## Running Bloom Workflow
 Use this when the user says to reuse the already-running Bloom.
 
-1. Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json`.
+1. Run `node .claude/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json`.
 2. If no running Bloom instance is reported, tell the user there is no running Bloom to reuse.
 3. If one is reported, do not kill or restart it because of worktree mismatch.
-4. Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab <collection|edit|publish>` for top bar actions, or `node .github/skills/bloom-automation/webview2Targets.mjs --running-bloom --json --wait` when you need CDP target detail.
+4. Use `node .claude/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab <collection|edit|publish>` for top bar actions, or `node .claude/skills/bloom-automation/webview2Targets.mjs --running-bloom --json --wait` when you need CDP target detail.
 5. Attach to the reported instance and work only against the `httpPort` and `cdpPort` it reported about itself.
 
 ## Rules
@@ -280,8 +280,8 @@ Use this when the user says to reuse the already-running Bloom.
 
 ### Treat wrong-worktree Bloom as a blocker
 - Treat that as a blocker because it produces extremely confusing results.
-- Report the detected repo root from `node .github/skills/bloom-automation/bloomProcessStatus.mjs`.
-- Kill the mismatched process with `node .github/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`.
+- Report the detected repo root from `node .claude/skills/bloom-automation/bloomProcessStatus.mjs`.
+- Kill the mismatched process with `node .claude/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`.
 - Then start the current worktree.
 
 ### Start with `go.sh`, not raw watch commands
@@ -293,13 +293,13 @@ Use this when the user says to reuse the already-running Bloom.
 - Never wait for `go.sh` to exit as a readiness signal. It is a long-lived launcher. Wait for the latest `Bloom ready.` line in the background terminal output instead, and treat a later `Bloom PID ... exited shortly after reporting ready` message as a failed launch.
 
 ### Reuse the running Bloom when the user asks for it
-- Run `node .github/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json`.
+- Run `node .claude/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json`.
 - Reuse the returned running Bloom instance even if it does not match the current worktree.
-- Use `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab <collection|edit|publish>` for direct top bar interaction, or discover its CDP target with `node .github/skills/bloom-automation/webview2Targets.mjs --running-bloom --json --wait` when you need the raw target details.
+- Use `node .claude/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab <collection|edit|publish>` for direct top bar interaction, or discover its CDP target with `node .claude/skills/bloom-automation/webview2Targets.mjs --running-bloom --json --wait` when you need the raw target details.
 - Do not kill or restart it unless the user explicitly asks for that.
 
 ### Prove browser-native access when needed
-- Show the CDP target from `node .github/skills/bloom-automation/webview2Targets.mjs --json --wait`.
+- Show the CDP target from `node .claude/skills/bloom-automation/webview2Targets.mjs --json --wait`.
 - Attach with Playwright.
 - Demonstrate reading `body.className`, the top-bar iframe, console messages, and the `workspace/selectTab` request.
 - For multi-instance work, prefer `webview2Targets.mjs --http-port <port> --json --wait` and the matching `cdpPort` it reports.
@@ -331,7 +331,7 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 
 ## Notes
 - Prefer the Node helpers over PowerShell. The Node scripts use `wmic`, `taskkill`, and `dotnet` directly because the PowerShell path proved too brittle.
-- Prefer the checked-in repo entrypoints and helper commands over raw Windows shell commands. Subagents should normally run `./go.sh`, `node .github/skills/bloom-automation/bloomProcessStatus.mjs --json`, `node .github/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`, `node .github/skills/bloom-automation/webview2Targets.mjs --json --wait`, and `node .github/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab edit`, not ad hoc `wmic` commands. If the repo later documents a better source-aware launcher than `./go.sh`, prefer that documented launcher instead.
+- Prefer the checked-in repo entrypoints and helper commands over raw Windows shell commands. Subagents should normally run `./go.sh`, `node .claude/skills/bloom-automation/bloomProcessStatus.mjs --json`, `node .claude/skills/bloom-automation/killBloomProcess.mjs --only-mismatched`, `node .claude/skills/bloom-automation/webview2Targets.mjs --json --wait`, and `node .claude/skills/bloom-automation/switchWorkspaceTab.mjs --running-bloom --tab edit`, not ad hoc `wmic` commands. If the repo later documents a better source-aware launcher than `./go.sh`, prefer that documented launcher instead.
 - For agent-driven launches, the background terminal is part of the control plane. Leave it running and poll its output for the latest `Bloom ready.` line instead of waiting for command completion.
 - Exact-target cleanup is intentionally strict: `killBloomProcess.mjs --http-port <port>` should only kill the instance that actually reports that HTTP port, and should fail without killing anything if that target cannot be resolved.
 - When reporting work, include the helper commands you used so reviewers can confirm the workflow stayed on the supported path.
@@ -341,7 +341,7 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 - After attaching to Bloom's WebView2 target, if Bloom is on the Edit tab, the editable page content lives inside the iframe named `page`; the top-level document mostly hosts shell UI plus the root dialog container.
 - **Driving the "Edit with AI…" image editor** (which spans a third frame — the editor overlay iframe — and needs the free "Local Dummy" model so tests cost nothing): see `ai-image-editor-driving.md` in this folder and the `driveAiImageEditor.mjs` helper.
 - **"Bloom had a problem" report dialogs.** Bloom surfaces errors (including non-fatal ones, especially in Debug builds) as a modal "Bloom had a problem" dialog. It is hosted in its OWN WinForms window with its own WebView2, so it appears as a SEPARATE CDP page target — not inside the shell document or the `page` iframe — and in dev it is even served from the Vite port rather than the Bloom http port. Detect it by the `.problem-dialog` root (from `problemDialog/*.tsx`) present in ANY page target. Never just leave one sitting on screen, and never move past it silently.
-  - Use `node .github/skills/bloom-automation/dismissProblemDialog.mjs --http-port <httpPort> [--wait] [--json]`. It (1) finds the dialog by DOM (so it never closes a legitimate modal), (2) GATHERS the underlying problem — it clicks the dialog's own "Learn More" to reveal the exception + missing-file/stack that Bloom would send, and prints it, and (3) closes the dialog with the SAME action as its Close button, `POST /bloom/api/common/closeReactDialog`, which does NOT submit. It drains a backlog (Bloom queues reports and shows them one at a time), gathering each, up to a cap.
+  - Use `node .claude/skills/bloom-automation/dismissProblemDialog.mjs --http-port <httpPort> [--wait] [--json]`. It (1) finds the dialog by DOM (so it never closes a legitimate modal), (2) GATHERS the underlying problem — it clicks the dialog's own "Learn More" to reveal the exception + missing-file/stack that Bloom would send, and prints it, and (3) closes the dialog with the SAME action as its Close button, `POST /bloom/api/common/closeReactDialog`, which does NOT submit. It drains a backlog (Bloom queues reports and shows them one at a time), gathering each, up to a cap.
   - NEVER click Submit / POST `problemReport/submit` in automation: that sends a report (with a screenshot and the book) to Bloom's servers.
   - If the SAME problem keeps reappearing after being closed, it is a real recurring error in the code under test (e.g. a resource that 404s on every render) — read the gathered detail, fix the root cause, and re-test; do not just loop-dismiss. The Bloom log at `%TEMP%\SIL\Bloom\Log-*.txt` has the same detail if you need it out-of-band, but note its writes can lag, so the dialog's own "Learn More" (what the helper scrapes) is the authoritative live source.
 
@@ -399,7 +399,7 @@ These tests attach to the real Bloom.exe target over CDP and verify tab switchin
 - Any mismatched Bloom instance has been stopped before running the current worktree, unless you intentionally started a separate explicit-port instance.
 - The chosen HTTP port returns `common/instanceInfo`, including the exact Bloom PID and CDP port.
 - The reported CDP endpoint responds at `http://localhost:<cdpPort>/json/version`.
-- `node .github/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` returns a real Bloom target.
+- `node .claude/skills/bloom-automation/webview2Targets.mjs --http-port <httpPort> --json --wait` returns a real Bloom target.
 - The automation client can read DOM state and interact with the embedded top bar.
 - If tests were requested, the exe-backed Playwright suite passes.
 

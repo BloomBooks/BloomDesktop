@@ -6,7 +6,7 @@ import {
     findRunningStandardBloomInstances,
     requireOptionValue,
     requireTcpPortOption,
-} from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+} from "../.claude/skills/bloom-automation/bloomProcessCommon.mjs";
 import {
     discoveryFileSchemaVersion,
     getDiscoveryFilePath,

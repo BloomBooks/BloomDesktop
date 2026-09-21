@@ -36,7 +36,7 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 ## About React useEffect
 
-See {repository root}/.github/skills/react-useeffect
+See {repository root}/.claude/skills/react-useeffect
 
 If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
@@ -60,7 +60,7 @@ Usually if you get stuck, the best thing to do is to look at the real thing: att
 ## Localization
 
 Localizable strings live in `DistFiles/localization/en/Bloom*.xlf`. Whenever you add, change,
-review or retire one, follow `.github/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
+review or retire one, follow `.claude/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
 the two rules that hold even outside that skill (edit only `en/`; never delete a `<trans-unit>`).
 
 ## Other notes

@@ -27,7 +27,7 @@ each change; the agent applies and re-verifies.
 
 1. **Measure.** Generate the preview from the *source* LESS and publish it:
    ```
-   py ".github/skills/game-theme-preview/generate_preview.py" <out.html>
+   py ".claude/skills/game-theme-preview/generate_preview.py" <out.html>
    ```
    (`<out.html>` in the session scratchpad). Publish with the **Artifact** tool; the nav
    chips show each theme's issue count.

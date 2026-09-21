@@ -34,7 +34,7 @@ const JSDOM = loadJSDOM();
 
 const usage = () => {
     console.log(
-        "Usage: node .github/skills/edit-bloom-book/validateBloomBook.mjs <Bloom.html-or-.htm> [more files]",
+        "Usage: node .claude/skills/edit-bloom-book/validateBloomBook.mjs <Bloom.html-or-.htm> [more files]",
     );
 };
 

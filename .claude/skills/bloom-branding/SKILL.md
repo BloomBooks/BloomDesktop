@@ -54,8 +54,8 @@ So the reliable loop for branding work: **edit source → content build → reop
 
 ### In real Bloom (authoritative) — target THIS worktree's instance
 Other agents run Blooms from other worktrees on other ports. **Never trust a bare CDP/HTTP port.** Use the `bloom-automation` skill:
-- `node .github/skills/bloom-automation/launcherControl.mjs --ensure-running --wait-ready --json` — starts or reuses this worktree's Bloom and prints its `httpPort`/`cdpPort`; `--status --json` reads them later. Never assume 8089.
-- `node .github/skills/bloom-automation/webview2Targets.mjs --http-port <port> --json --wait` — get the correct CDP target for *that* instance.
+- `node .claude/skills/bloom-automation/launcherControl.mjs --ensure-running --wait-ready --json` — starts or reuses this worktree's Bloom and prints its `httpPort`/`cdpPort`; `--status --json` reads them later. Never assume 8089.
+- `node .claude/skills/bloom-automation/webview2Targets.mjs --http-port <port> --json --wait` — get the correct CDP target for *that* instance.
 - On the Edit tab, the book page is in the iframe named `page`; the page list is `pageList`. Switch size via the `editView/topBar/layoutChoiceChange` API (`{layoutChoiceId}`) and select a page via `editView/jumpToPage` (POST body = pageId).
 
 The runtime-only things (branding file copy into the book, real QR generation, autofit) **only** exist in real Bloom — so badge/QR work must ultimately be verified there, not in a static preview.
