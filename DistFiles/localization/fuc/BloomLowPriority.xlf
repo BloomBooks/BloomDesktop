@@ -553,11 +553,6 @@
         <target xml:lang="fuc" state="needs-translation">recommended for this tool</target>
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.AvailableBalance">
-        <source xml:lang="en">, {0} available</source>
-        <target xml:lang="fuc" state="needs-translation">, {0} available</target>
-        <note>ID: AiImageEditor.OpenRouter.AvailableBalance</note>
-      </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
         <source xml:lang="en">Forget Key</source>
         <target xml:lang="fuc" state="needs-translation">Forget Key</target>
@@ -583,9 +578,14 @@
         <target xml:lang="fuc" state="needs-translation">Original Comic</target>
         <note>ID: AiImageEditor.Panel.OriginalComic</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Preview.ResetZoom">
+        <source xml:lang="en">Reset zoom</source>
+        <target xml:lang="fuc" state="needs-translation">Reset zoom</target>
+        <note>ID: AiImageEditor.Preview.ResetZoom</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
-        <source xml:lang="en">Ctrl + mouse wheel to resize the images</source>
-        <target xml:lang="fuc" state="needs-translation">Ctrl + mouse wheel to resize the images</target>
+        <source xml:lang="en">Ctrl + mouse wheel to zoom</source>
+        <target xml:lang="fuc" state="needs-translation">Ctrl + mouse wheel to zoom</target>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Quality.Label">
@@ -607,6 +607,41 @@
         <source xml:lang="en">Drop image</source>
         <target xml:lang="fuc" state="needs-translation">Drop image</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.BookImage">
+        <source xml:lang="en">A picture from this book</source>
+        <target xml:lang="fuc" state="needs-translation">A picture from this book</target>
+        <note>ID: AiImageEditor.Source.BookImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.ImagesToEdit">
+        <source xml:lang="en">Images to edit: {0}</source>
+        <target xml:lang="fuc" state="needs-translation">Images to edit: {0}</target>
+        <note>ID: AiImageEditor.Source.ImagesToEdit</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.OriginalBookImage">
+        <source xml:lang="en">The picture this book slot started with</source>
+        <target xml:lang="fuc" state="needs-translation">The picture this book slot started with</target>
+        <note>ID: AiImageEditor.Source.OriginalBookImage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.PdfFile">
+        <source xml:lang="en">From {0}</source>
+        <target xml:lang="fuc" state="needs-translation">From {0}</target>
+        <note>ID: AiImageEditor.Source.PdfFile</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.PdfPage">
+        <source xml:lang="en">Page {0} of {1}</source>
+        <target xml:lang="fuc" state="needs-translation">Page {0} of {1}</target>
+        <note>ID: AiImageEditor.Source.PdfPage</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.RecoveredFromFolder">
+        <source xml:lang="en">Found in the history folder</source>
+        <target xml:lang="fuc" state="needs-translation">Found in the history folder</target>
+        <note>ID: AiImageEditor.Source.RecoveredFromFolder</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Source.ReferenceImages">
+        <source xml:lang="en">Reference images: {0}</source>
+        <target xml:lang="fuc" state="needs-translation">Reference images: {0}</target>
+        <note>ID: AiImageEditor.Source.ReferenceImages</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Status.NotConnected">
         <source xml:lang="en">OpenRouter not connected</source>
