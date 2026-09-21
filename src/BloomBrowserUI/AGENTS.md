@@ -36,7 +36,7 @@ When working in the front-end, cd to src/BloomBrowserUI
 
 ## About React useEffect
 
-See {repository root}/.github/skills/react-useeffect
+See {repository root}/.claude/skills/react-useeffect
 
 If you read that and decide that a useEffect is warranted, you must add a comment justifying why it is necessary.
 
@@ -55,12 +55,12 @@ Don't use timeouts in tests, that slows things down and is fragile. If a timeout
 
 ## Troubleshooting UI Problems
 
-Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `bloom-automation` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions.
+Usually if you get stuck, the best thing to do is to look at the real thing: attach to the running Bloom's WebView2 over CDP with the `run-bloom` skill (DOM, console, network, screenshots), or get the component showing in the component-tester harness (`component-test` skill). Add console messages that should show, then read the browser's console to test your assumptions.
 
 ## Localization
 
 Localizable strings live in `DistFiles/localization/en/Bloom*.xlf`. Whenever you add, change,
-review or retire one, follow `.github/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
+review or retire one, follow `.claude/skills/xlf-strings/SKILL.md`; the root `AGENTS.md` states
 the two rules that hold even outside that skill (edit only `en/`; never delete a `<trans-unit>`).
 
 ## Other notes
@@ -73,7 +73,7 @@ The developer usually launches Bloom with `./go.sh`, which starts a **Vite dev s
 has Bloom's WebView2 load the UI from it (not from a `vite build --watch`). Two consequences:
 
 - **Editing `.ts`/`.tsx`/`.less` needs no build at all.** The dev server pushes your change
-  into the running Bloom; to see it, attach and observe via the `bloom-automation` skill — do
+  into the running Bloom; to see it, attach and observe via the `run-bloom` skill — do
   **not** build. How the change lands varies: a `.less`/CSS edit hot-swaps in place (no
   reload); a `.tsx` edit often triggers a Vite full page reload (React Fast Refresh falls back
   to it), and for app-shell / entry components that reload briefly blanks the view until Bloom

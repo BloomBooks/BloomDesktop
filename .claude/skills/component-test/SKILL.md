@@ -28,7 +28,7 @@ example. You will need to intercept some API calls with
 ## Implementation stage
 
 **Troubleshooting.** To see what the browser sees (console, DOM, screenshots), use a CDP client;
-the `bloom-automation` skill describes attaching Playwright over CDP. If you have no browser
+the `run-bloom` skill describes attaching Playwright over CDP. If you have no browser
 tooling available, stop and ask the developer to enable some.
 
 **Refactoring to make testing easier.** Sometimes the top-level component is not readily

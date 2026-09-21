@@ -105,7 +105,7 @@ and it negates most of the value of using Crowdin to begin with.
 
 This is the reasoning behind the "mark it obsolete, don't delete it" convention. It is written
 down **here and nowhere else**; `src/BloomBrowserUI/AGENTS.md` and
-`.github/skills/xlf-strings/SKILL.md` state the resulting rules and point back at this section.
+`.claude/skills/xlf-strings/SKILL.md` state the resulting rules and point back at this section.
 If you are about to argue that some particular deletion is safe, read this first — the wrong
 argument for it is an easy one to reach.
 
@@ -138,7 +138,7 @@ note on it protects nothing.
 
 Establishing that is mechanical — print the entry's line as it stood in every commit that ever
 touched it, on master and on the current release branch, and confirm `translate="no"` on all of
-them; then confirm the id appears only under `en/`. `.github/skills/xlf-strings/SKILL.md` has
+them; then confirm the id appears only under `en/`. `.claude/skills/xlf-strings/SKILL.md` has
 the exact commands. Deciding to act on it is still the developer's call, and the evidence
 belongs in the commit message and in the PR-review reply, because a reviewer — human or bot —
 reading only the rule will otherwise flag the deletion, quite correctly.
@@ -149,7 +149,7 @@ reading only the rule will otherwise flag the deletion, quite correctly.
 
 - **Do not delete a *trans-unit* from a source xliff file.**  Mark it obsolete instead.  See
   "Why we can't just delete a string" above for the reasoning and for the one exception, and
-  `.github/skills/xlf-strings/SKILL.md` for the note format itself.
+  `.claude/skills/xlf-strings/SKILL.md` for the note format itself.
 
 - Change the *product-version* attribute of the *file* element in a source xliff file only when
   you think it is really needed.

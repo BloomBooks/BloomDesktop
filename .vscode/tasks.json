@@ -42,7 +42,7 @@
             "type": "process",
             "command": "node",
             "args": [
-                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/flattenAppBuilderIcons.mjs"
+                "${workspaceFolder}/.claude/skills/rab-icon-grid-processing/flattenAppBuilderIcons.mjs"
             ],
             "problemMatcher": []
         },
@@ -67,7 +67,7 @@
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                "${workspaceFolder}/.github/skills/rab-icon-grid-processing/cropAppBuilderIconSamples.ps1"
+                "${workspaceFolder}/.claude/skills/rab-icon-grid-processing/cropAppBuilderIconSamples.ps1"
             ],
             "problemMatcher": []
         }
