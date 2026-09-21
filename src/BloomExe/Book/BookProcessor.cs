@@ -368,7 +368,10 @@ namespace Bloom.Book
                         },
                         title
                     );
-                    dlg.SetScaledSize(560, 400);
+                    // ProgressBox asks for 540px, and BloomDialog adds 24px of padding on
+                    // each side plus its border, so anything narrower than about 590 clips
+                    // the right-hand end of every line of the explanation.
+                    dlg.SetScaledSize(620, 400);
                     return dlg;
                 },
                 (progress, worker) =>
