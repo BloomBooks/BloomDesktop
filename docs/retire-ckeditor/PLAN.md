@@ -115,13 +115,34 @@ asynchronously after `CKEDITOR.inline()` returns:
 
 | Mechanism | What it really is | Notes |
 | --- | --- | --- |
-| `origamiCanUndo`/`origamiUndo` (`origami.ts:262-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:139-146`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
+| `origamiCanUndo`/`origamiUndo` (`origami.ts:277-294`) | A stack of **jQuery `clone(true)` copies of `.marginBox`** — DOM plus attached handlers and data — restored with `replaceWith` | Only while Change Layout mode is active. Has its **own** `keydown.origami` Ctrl+Z/Ctrl+Y handler on `html` (`origami.ts:137`), and its own Redo. Safe today partly *because* layout mode strips `contentEditable` (`origami.ts:132`), so there are no live CKEditor instances to orphan. |
 | `toolboxWindow.canUndo/undo` → `readerToolsModel` | A per-editable **text-typing** undo: `{html, text, caretOffset}` snapshots, seeded on focus (`noteFocus`, :557-568, from `decodableReaderTool.tsx:155`) and pushed on every markup-changing keystroke inside `doMarkup` (:753-764) | Gated on `shouldHandleUndo()` — `currentMarkupType !== None` (:570). It is consulted *before* CKEditor **deliberately**: when a reader tool is active it must shadow CKEditor's undo, which would restore stale decodable/leveled markup. Not "reader-setup changes". |
 | `imageOperationCanUndo`/`imageOperationUndo` (`ImageUndoManager.ts`) | Restores an image's `src` / copyright / crop | Clean two-phase prepare/commit; already page-id-scoped; gated on the active element being an image container. |
 | `ckeditorCanUndo`/`ckeditorUndo` | `CKEDITOR.currentInstance.undoManager`, **per editable div** | An "implementation secret". Ordering across boxes is already wrong. |
 | Browser-native undo | Invisible | Called directly in `BloomField.PreventRemovalOfSomeElements` (`BloomField.ts:810-825`); also fed implicitly by every `document.execCommand("insertHTML"/"formatBlock"/"justify*"/"insertText")` in `bloomEditing.ts` and `GamePromptDialog.tsx`, and by plain typing in any contenteditable. |
 
-Two corrections to the folklore:
+**Correction, verified 2026-08-06 — the table above is the *button* path, not the keyboard path.**
+`handleUndo()` has exactly one caller: `topBarButtonClick` (`bloomEditing.ts:1633-1648`), reached
+when the user clicks the toolbar Undo button. There is **no Ctrl+Z handler anywhere in the workspace
+frame**, and C#'s `UndoCommand.Implementer` is an empty lambda (`WebView2Browser.cs:890`) that exists
+only so the button's `Enabled` can be set. So Ctrl+Z is handled entirely in the **page** frame, by
+whichever of these claims it first:
+
+| Ctrl+Z handler | Where | When it wins |
+| --- | --- | --- |
+| `keydown.origami` on `html` | page frame (`origami.ts:137`) | Change Layout mode only |
+| per-editable `keydown` in the reader tools | page frame (`decodableReaderTool.tsx:158-178`) | any editable, whenever `currentMarkupType !== None`; `preventDefault`s and returns false |
+| CKEditor's own keystroke handling | inside each editable | otherwise |
+| browser-native contenteditable undo | — | when nothing above claims it |
+
+Two consequences the plan depended on and got half right. First, the deliberate
+reader-tools-before-CKEditor precedence is enforced for the keyboard by that `preventDefault`, not by
+`handleUndo`'s ordering — so with a reader tool active, Ctrl+Z in a text box never reaches the shared
+stack at all. Second, that is *why* Stage 1 is behaviour-neutral: it changes only the button path.
+The keyboard path is not unified until those page-frame handlers are converted (Stages 3–4), and
+until then a single consistent Undo exists for the button but not for the keystroke.
+
+Two further corrections to the folklore:
 - `workspaceRoot.ts:125`'s "*See also Browser.Undo; if all else fails we ask the C# browser
   object to Undo*" is **stale** — no such fallback exists in the WebView2 code. The Undo
   button's enabled state comes purely from `workspaceBundle.canUndo()` returning `"yes"`
@@ -142,10 +163,16 @@ nobody enumerated). **Use snapshots as the default entry type, with inverse-op e
 snapshot is too blunt.**
 
 The critical constraint, which shapes the contract: the page iframe's JS context dies not only
-on page *change* but on same-page **reloads** — ctrl+wheel zoom regenerates the page
-(`bloomEditing.ts:1268`), origami exit posts `saveChangesAndRethinkPageEvent`
-(`origami.ts:193`), and several tools navigate. An entry that closes over page-frame DOM or
-functions therefore becomes a live grenade: `undo()` would mutate a detached document or throw.
+on page *change* but on same-page **reloads** — origami exit posts `saveChangesAndRethinkPageEvent`
+(`origami.ts:193`), importing a video and changing the topic rebuild the page under its own id, and
+several tools navigate. (An earlier draft also cited ctrl+wheel zoom; **that is stale** — zoom is a
+CSS transform now, `EditingView.SetZoom` → `workspaceBundle.setZoom`, and reloads nothing. Corrected
+2026-09-07.) An entry that closes over page-frame DOM or functions therefore becomes a live grenade:
+`undo()` would mutate a detached document or throw.
+
+**Every one of those reloads goes through `workspaceRoot.switchContentPage`** — it is the only route
+C# uses to navigate the page frame (`EditingView.cs`, three call sites). So one hook there covers
+same-page reloads and page changes alike; see `bookEdit/undo/pageFrameUndoHooks.ts`.
 
 So **snapshot entries must be pure data**, interpreted at undo time by a restore function that
 re-acquires the current page frame via `getEditablePageBundleExports()`:
@@ -700,13 +727,101 @@ half-undoes. Nested wrapping will keep happening as call sites accrete, so speci
 semantics in `undoTypes.ts` up front: a depth counter, outermost entry wins, inner pushes are
 no-ops.
 
-## 5. Rebase strategy
+## 5. Keeping up with master
+
+The project runs for months against a fast-moving `master`, and its files are among the most
+frequently edited in the front end (§5.1). The defence is to land small PRs promptly and never keep a
+long-lived branch (§5.2); §5.7 is about keeping each PR's conflicts small in the first place.
+
+### 5.1 How much drift there actually is
+
+Guessing at this would give either paranoid over-syncing or a nasty surprise, so it was measured
+(30 days to 2026-08-06):
+
+| | Commits |
+| --- | --- |
+| All of `master` | **522** (~17/day) |
+| Touching any file this project touches | **50** (~1.7/day) |
+
+And the risk is concentrated — four paths are 74% of it:
+
+| Commits (30d) | File |
+| --- | --- |
+| 19 | `bookEdit/js/bloomEditing.ts` |
+| 9 | `bookEdit/toolbox/toolbox.ts` |
+| 5 | `bookEdit/bloomField/BloomField.ts` |
+| 4 | `lib/ckeditor/` |
+| 3 | `bookEdit/StyleEditor/StyleEditor.ts` |
+| 2 | `bookEdit/toolbox/readers/readerToolsModel.ts` |
+| 1 each | `editableDivUtils.ts`, `canvasElementManager/CanvasElementManager.ts` |
+| **0** | `workspaceRoot.ts`, `origami.ts`, `ImageUndoManager.ts`, `editablePage.ts` |
+
+> **Correction (2026-09-07):** the zero row was measured with the wrong path for `workspaceRoot.ts`
+> (it is `bookEdit/workspaceRoot.ts`, not `bookEdit/js/`). Re-measured over the following month
+> (2026-08-06 → 09-07): `workspaceRoot.ts` **5** commits — BL-16558 changed `handleUndo` itself —
+> `editablePage.ts` **3**, `origami.ts` and `ImageUndoManager.ts` genuinely 0. So Stage 1's
+> integration risk was low, not zero, and the BL-16558 change had to be folded into the legacy
+> providers. **When measuring drift, get the paths from `git ls-tree`, not from memory.**
+
+Three things follow directly:
+
+- **1.7 commits a day is a weekly sync, not a daily one.** A month between syncs would mean ~50
+  commits to reconcile at once, which is what made the one Stage 0 rebase painful.
+- **Stage 1's integration risk is low** (not zero — see the correction above). Stages 3 and 6 are
+  where the cost lands, because that is where `bloomEditing.ts` and `toolbox.ts` are.
+- **`lib/ckeditor/` is still being actively patched** — 4 commits in 30 days, to the library we are
+  deleting. Each is a behaviour somebody needed. Stage 5 must diff that directory against the
+  project's start point and account for every change, rather than deleting a directory assumed
+  frozen.
+
+### 5.2 Topology: short stage branches straight off `master`
+
+Each stage is a **short-lived branch off `master`**, PR'd into `master`, squashed to one commit when
+it goes to human review, and merged. The next stage branches from `master` after that merge. This is
+the plan's original defence against drift — land small PRs promptly, never keep a long-lived
+branch — and it is back in force: the `Version6.5` branch was cut on 2026-09-04, John decided on
+2026-09-16 that this project targets `master` (6.6), Stage 0 merged to `master` on 2026-09-21 as
+one squashed commit, and the integration branch `BL-6681-ckeditor` that the 2026-08-06 constraint
+had required is retired (left in place for its history; nothing branches from it).
+
+Each stage PR gets its own YouTrack card, a subtask of BL-6681 (Stage 0: BL-16878; Stage 1:
+BL-16900), and its branch name starts with that card's id. Preflight reads the card id off the
+branch name, so the card-side steps land on the right card without hand-work.
+
+### 5.3 Sync procedure — merge, never rebase
+
+A stage branch that lives longer than a few days merges `origin/master` in (`git merge`, never
+rebase, never `--force` over a branch a reviewer has looked at). Keep `git config rerere.enabled
+true` so a conflict resolved once is replayed. The squash at review time is the only history
+rewrite, and `pr-ready-for-human` does it.
+
+### 5.4 Keep every stage boundary shippable
+
+Every stage PR must be a state that could ship as-is: green, flag-inert, no half-finished dispatch.
+That is what preserves the "if the project stalls, Bloom is still better off" property.
+
+### 5.5 Coverage a stage branch does not get on its own
+
+The nightly workflow runs against `master` only, and it is the only thing that runs the full C#
+suite and the visual-regression suite. A stage branch gets those the day it merges. For a stage that
+changes editing UI and lives more than a week, run the nightly on the branch by hand:
+`gh workflow run nightly.yml --ref <branch>`.
+
+### 5.6 Stage 0 and the retired integration branch
+
+Stage 0's PR (#8153, card BL-16878) merged to `master` on 2026-09-21. The Stage 1 work was carried
+from the integration-branch topology onto a fresh branch off `master` (`BL-16900-undo-stack`) as one
+squashed commit; the old `BL-6681-stage1-undostack` branch and its PR #8317 are superseded.
+
+### 5.7 Keeping the conflicts small in the first place
+
+These rules predate the no-merging constraint and all survive it — several matter considerably more
+now than they did when stages were landing weekly.
 
 1. **Almost all new code in new directories** — `src/BloomBrowserUI/bookEdit/undo/` and
-   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict.
-2. **Don't keep a long-lived branch.** The real defence against repeated rebasing is not to
-   rebase: land a dozen small PRs on `master`, each green, each inert behind a flag.
-3. **Integration points into existing files are one-line dispatches** wherever possible:
+   `src/BloomBrowserUI/bookEdit/textEditor/`. New files never conflict, which is the single biggest
+   reason a months-long branch is survivable at all.
+2. **Integration points into existing files are one-line dispatches** wherever possible:
 
    ```ts
    export function attachToCkEditor(element) {
@@ -716,7 +831,7 @@ no-ops.
    ```
    Note the dispatch goes *inside* `attachToCkEditor`, so its two call sites (`bloomEditing.ts:1226`,
    `CanvasElementManager.ts:951`) need no edit at all.
-4. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
+3. **One exception, and it needs a prep commit.** The toolbox keystroke pipeline
    (`toolbox.ts:1509-1607`) interleaves `createBookmarks`, `removeCommentsFromEditableHtml`, the
    async-updateMarkup double-bookmark dance (BL-10133), `cleanUpNbsps`, and `selectBookmarks`.
    Swapping bookmarks for anchors there rewrites ~100 lines of the most delicate keystroke code
@@ -724,21 +839,32 @@ no-ops.
    early** (Stage 0): extract the save-selection / restore-selection bracket into two small
    functions with a clean seam. Then the eventual change swaps one function body instead of
    performing open-heart surgery mid-project.
-5. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
+4. **The flag is read in exactly one function**, `useNewTextEditor()`, in one new file — a
    synchronous body-class check, set by C# at page-generation time from an
    `ExperimentalFeatures` token (with an env-var override). See **§4.12** for why, and for what
    falls out of it.
-6. **All deletion is last** (Stage 5), in a few mechanical commits. Never rebase those —
-   regenerate them.
-7. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
+5. **All deletion is last** (Stage 5), in a few mechanical commits. **Regenerate them, never
+   reconcile them** — if a deletion commit conflicts with an incoming master change, throw it away
+   and redo it mechanically against the new state. §5.1's finding that `lib/ckeditor/` is still
+   being patched makes this concrete rather than theoretical.
+6. **Avoid the churn-prone files** until late: `bloomEditing.ts` (2092 lines),
    `CanvasElementManager.ts` (3224), `toolbox.ts`, `audioRecording.ts` (5121),
-   `StyleEditor.ts` (2627).
-8. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly.
+   `StyleEditor.ts` (2627). §5.1's measurements confirm the guess: `bloomEditing.ts` and
+   `toolbox.ts` alone are 56% of all watchlist churn.
+7. Keep [PROGRESS.md](PROGRESS.md) current so an interrupted session resumes cleanly — and record
+   each master-sync SHA there (§5.3).
 
 ## 6. Stages
 
 Stages 1–2 deliver the Undo improvements **without touching CKEditor at all**, and are ordered
-by user value per unit of risk. If the project stalls, Bloom is still better off.
+by user value per unit of risk.
+
+The original reason for that ordering was "if the project stalls, Bloom is still better off",
+which assumed each stage landed as it finished. Under the no-merging constraint (§5) nothing lands
+until the end, so the property has to be maintained deliberately instead: **every stage boundary is
+a green, flag-inert state the integration branch could merge as-is** (§5.4). The ordering then still
+earns its keep — it means that whenever the merge window opens, whatever is finished is the most
+valuable subset, not an arbitrary one.
 
 ### Stage 0 — Inventory, safety net, and the one prep commit
 
@@ -759,7 +885,7 @@ by user value per unit of risk. If the project stalls, Bloom is still better off
   **pasted and dropped**. Capture today's actual behaviour for each before changing anything, so
   the new sanitizer is measured against reality rather than against the config string.
 - Characterization tests pinning the pure-ish functions before they move.
-- **The toolbox prep commit** from §5.4.
+- **The toolbox prep commit** from §5.7.3.
 - **Attempt to reproduce the handler-accumulation bug** described in §4.10 (repeated
   `refreshCanvasElementEditing` → duplicate `document` keydown handlers and duplicate
   per-editable jQuery handlers; F6 is the likeliest visible symptom). If it reproduces, file it
@@ -780,13 +906,21 @@ Exit criteria: inventory reviewed; `pnpm test` green; prep commit demonstrably b
   clearForPage / clearOnPageFrameReload. Index-based with truncate-on-push (§4.1), count-bounded,
   `canUndo` and `canRedo` both O(1).
 - `workspaceRoot.canUndo`/`handleUndo` become thin delegations (two small edits, one file). Redo
-  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS.
+  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS. **But
+  it cannot be a workspace-frame keydown handler:** keyboard events inside the page iframe never
+  reach the parent document, and typing is exactly when the user wants Redo. It has to be registered
+  in the page frame (as both existing Ctrl+Y handlers are) and call across. See DEFERRED-EDITS.md 1e.
 - **Wrap all four existing mechanisms as legacy providers in their current priority order.**
-  No conversions, no behaviour change. This preserves the deliberate reader-tools-before-CKEditor
-  precedence (§3) for free. Redo has no legacy providers to wrap — origami's is the only Redo that
-  exists, and it keeps working via its own handler until Stage 4 converts it. (Note
-  `readerToolsModel.redo()` at `:609` appears to be **unreachable** — nothing exports or calls it;
-  worth a moment's check, but it is deleted in Stage 5 regardless.)
+  No conversions, no behaviour change. **Note precisely what that order governs**, which §3's
+  correction spells out: `handleUndo` is reached only from the top-bar Undo button, so wrapping it
+  reproduces the *button* path exactly and leaves the keyboard path — which is handled per-context in
+  the page frame and never enters `handleUndo` — untouched. Behaviour-neutrality holds, but not
+  because the ordering is preserved; because the keyboard path was never in scope.
+- Redo has no legacy providers to wrap, and there are **two** existing Redos, not one: origami's and
+  the reader tools'. Both keep working via their own page-frame handlers until converted.
+  (**Correction, verified 2026-08-06:** the earlier claim that `readerToolsModel.redo()` is
+  unreachable was wrong — `decodableReaderTool.tsx:170` calls it. Stage 5 must **not** delete it
+  blind; doing so would silently remove a working Ctrl+Y/Ctrl+Shift+Z for reader-tool typing.)
 - `runUndoable(label, fn)` with the nesting semantics of §4.13.
 
 Rationale for doing *no* conversions here: the four existing mechanisms are contextually
@@ -1126,6 +1260,7 @@ changing course.
   save (Risk 7); the cross-frame export is `getWorkspaceBundleExports` (§4.2).
 
 ### Still genuinely open
+
 - **Legacy cleanup lifetime** — leave the C# CKEditor-artifact scrubbers
   (`LegacyCkEditorCleanup`) in place indefinitely, or schedule a one-time book migration? Not
   urgent: nothing in Stages 0–5 depends on the answer, and keeping them is safe. Decide when Stage 5
