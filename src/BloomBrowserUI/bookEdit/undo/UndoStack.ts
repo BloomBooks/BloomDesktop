@@ -46,6 +46,18 @@ export class UndoStack {
     private applying = false;
 
     /**
+     * Counts the times the page frame has been replaced (a navigation to another page, or a reload
+     * of the same one) and the times the stack has been cleared. A `runUndoable` scope remembers
+     * the generation it opened in; if that has moved on by the time it closes, its held pushes
+     * describe elements that no longer exist and are dropped. This catches what the page-id check
+     * in {@link record} cannot: a reload that keeps the same page id, and a `clear` mid-gesture.
+     */
+    private pageGeneration = 0;
+
+    /** The value of {@link pageGeneration} when the outermost open scope began. */
+    private scopeGeneration = 0;
+
+    /**
      * Add an adapter for one of the pre-existing undo mechanisms.
      *
      * Order matters and is the caller's responsibility: providers are consulted in the order
@@ -83,6 +95,11 @@ export class UndoStack {
      * line of defence for a push that arrives *after* a page change — an asynchronous gesture on
      * the old page finishing late — which `keepOnly` (run at navigation time) could not have seen.
      * Undoing such an entry would apply the old page's data to whatever page is showing now.
+     *
+     * It cannot tell a reload of the *same* page from no reload at all, so a late push from an
+     * asynchronous gesture must come through a `runUndoable` scope, whose generation check
+     * ({@link endUndoableScope}) does catch that case. Every asynchronous gesture is expected to be
+     * wrapped that way; a bare push is for synchronous work that cannot straddle a navigation.
      */
     private record(entry: IUndoEntry): void {
         if (
@@ -217,6 +234,7 @@ export class UndoStack {
             return;
         }
         this.currentPageId = pageId;
+        this.pageGeneration++;
         this.keepOnly((e) => e.pageId === undefined || e.pageId === pageId);
     }
 
@@ -234,13 +252,22 @@ export class UndoStack {
      * just as stale: the elements it describes have been rebuilt.
      */
     public clearPageScopedEntries(): void {
+        this.pageGeneration++;
         this.keepOnly((e) => e.pageId === undefined);
     }
 
-    /** Discard everything. Used when leaving the edit tab, and by tests. */
+    /**
+     * Discard everything. Used when leaving the edit tab, and by tests.
+     *
+     * Including pushes held by a scope that is still open across an `await`: when that scope
+     * closes it must not resurrect an entry this call discarded, so the generation moves on here
+     * too and {@link endUndoableScope} drops what it was holding.
+     */
     public clear(): void {
         this.entries = [];
         this.currentIndex = -1;
+        this.heldPushes = [];
+        this.pageGeneration++;
     }
 
     /** How many entries are held. Tests and diagnostics only — not part of the undo contract. */
@@ -266,6 +293,7 @@ export class UndoStack {
     public beginUndoableScope(label: string): void {
         if (this.openScopeLabels.length === 0) {
             this.heldPushes = [];
+            this.scopeGeneration = this.pageGeneration;
         }
         this.openScopeLabels.push(label);
     }
@@ -285,12 +313,27 @@ export class UndoStack {
      * canvas element coming back). The corollary is a discipline for inner layers: an operation
      * that records its own undo does so inside its own `runUndoable`, so that its push sits at
      * depth 2 or more when it happens inside a larger gesture. See PLAN.md 4.13.
+     *
+     * If the page frame was replaced, or the stack cleared, while the scope was open, the
+     * page-scoped pushes it holds are dropped first: an asynchronous gesture that straddled a
+     * reload of the same page (which the page-id check cannot detect) or a `clear` would otherwise
+     * record state describing elements that no longer exist. Pushes with no page id survive, as
+     * they do in `keepOnly` — deleting a page is itself what navigates the frame, and its entry
+     * arrives inside exactly such a scope.
      */
     public endUndoableScope(): void {
         const label = this.openScopeLabels[0];
         this.openScopeLabels.pop();
         if (this.openScopeLabels.length > 0 || this.heldPushes.length === 0) {
             return;
+        }
+        if (this.scopeGeneration !== this.pageGeneration) {
+            this.heldPushes = this.heldPushes.filter(
+                (held) => held.entry.pageId === undefined,
+            );
+            if (this.heldPushes.length === 0) {
+                return;
+            }
         }
         const chosen =
             this.heldPushes.find((held) => held.depth === 1) ??

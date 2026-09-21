@@ -539,6 +539,33 @@ describe("UndoStack", () => {
             stack.undo();
             expect(log).toEqual(["undo delete page"]);
         });
+
+        it("drops a page-scoped push that arrives after a same-page reload, inside a scope opened before it", () => {
+            // A reload that keeps the page id (leaving Change Layout mode, say) rebuilds every
+            // element, so a push describing the old elements is stale even though its page id
+            // still matches — which is why record()'s page-id check alone cannot catch this.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.clearPageScopedEntries(); // the reload, while the gesture is still awaiting
+            stack.setCurrentPageId("page1"); // ...and it comes back with the same id
+            stack.push(makeEntry("stale page work", log, { pageId: "page1" }));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.endUndoableScope();
+
+            // Only the entry that survives page changes was recorded.
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("async gesture");
+
+            // Control: the same gesture with no reload in the middle records its page work.
+            stack.beginUndoableScope("quiet gesture");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(2);
+
+            stack.undo();
+            stack.undo();
+            expect(log).toEqual(["undo page work", "undo delete page"]);
+        });
     });
 
     describe("asynchronous entries", () => {
@@ -612,6 +639,22 @@ describe("UndoStack", () => {
             expect(stack.getEntryCount()).toBe(0);
             expect(stack.canUndo()).toBe(false);
             expect(stack.canRedo()).toBe(false);
+        });
+
+        it("also discards what a scope still open across the clear was holding, and what it pushes afterwards", () => {
+            // Leaving the edit tab mid-gesture: the scope's finally runs later and must not
+            // resurrect an entry the clear discarded.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.push(makeEntry("held before clear", log));
+            expect(stack.isInUndoableScope()).toBe(true); // sanity
+
+            stack.clear();
+            stack.push(makeEntry("pushed after clear", log));
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
         });
     });
 });
