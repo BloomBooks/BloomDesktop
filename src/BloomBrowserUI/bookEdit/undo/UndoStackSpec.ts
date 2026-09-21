@@ -679,6 +679,12 @@ describe("UndoStack", () => {
 
             stack.clear();
             stack.push(makeEntry("pushed after clear", log));
+            // Unlike a page change, a clear discards even the entries that survive page changes.
+            stack.push(
+                makeEntry("delete page after clear", log, {
+                    pageId: undefined,
+                }),
+            );
             stack.endUndoableScope();
 
             expect(stack.getEntryCount()).toBe(0);
