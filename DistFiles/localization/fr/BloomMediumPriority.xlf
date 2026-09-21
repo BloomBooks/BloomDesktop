@@ -52,7 +52,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground">
         <source xml:lang="en">Canvas Background</source>
-        <target xml:lang="fr" state="needs-translation">Canvas Background</target>
+        <target xml:lang="fr" state="translated">Arrière-plan de la toile</target>
         <note>ID: AiImageEditor.SlotLabel.CanvasBackground</note>
       </trans-unit>
       <trans-unit id="EditTab.TextContextMenu.NoIndent">
