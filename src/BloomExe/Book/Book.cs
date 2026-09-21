@@ -20,6 +20,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -1094,6 +1095,29 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// The caller's progress with its status lines suppressed (warnings, errors and the percent
+        /// still get through). Used for the passes that work through the book's images one by one
+        /// (mirroring their metadata into the HTML, shrinking oversized files), which report a
+        /// status line per image as well as the percent done. Here, bringing a book up to date, the
+        /// dialog is determinate, so the percent bar already shows how far along we are, and a line
+        /// per image only fills the log with dozens of near-identical entries (BL-16893). The stage
+        /// statuses this class writes itself ("Updating pages...") are not suppressed: callers with
+        /// an overwriting status label (Update All Books, importing a .bloomSource) still want
+        /// them. The one place the per-image lines are wanted, the Copyright and License dialog's
+        /// "add this to all images", does not come through here.
+        /// </summary>
+        private static IProgress NoStatusProgress(IProgress progress)
+        {
+            if (
+                progress == null
+                || progress is NullProgress
+                || progress is QuietStatusProgress // already quiet (e.g. from BookProcessor.ProcessBook)
+            )
+                return progress;
+            return new QuietStatusProgress(progress);
+        }
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
@@ -1142,7 +1166,7 @@ namespace Bloom.Book
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
@@ -1917,7 +1941,7 @@ namespace Bloom.Book
                 ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
                     FolderPath,
                     OurHtmlDom,
-                    progress
+                    NoStatusProgress(progress)
                 );
             }
             catch (UnauthorizedAccessException e)
@@ -1933,7 +1957,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
