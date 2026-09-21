@@ -183,6 +183,9 @@ importers:
             react-movable:
                 specifier: 3.3.1
                 version: 3.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+            react-rnd:
+                specifier: 10.4.13
+                version: 10.4.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
             react-select:
                 specifier: 5.7.0
                 version: 5.7.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -255,7 +258,7 @@ importers:
                 version: 7.18.5(supports-color@5.5.0)
             "@babel/preset-env":
                 specifier: 7.18.2
-                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))
+                version: 7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             "@babel/preset-react":
                 specifier: 7.17.12
                 version: 7.17.12(@babel/core@7.18.5(supports-color@5.5.0))
@@ -8841,6 +8844,15 @@ packages:
             react: ">=16.9.0"
             react-dom: ">=16.9.0"
 
+    re-resizable@6.10.0:
+        resolution:
+            {
+                integrity: sha512-hysSK0xmA5nz24HBVztlk4yCqCLCvS32E6ZpWxVKop9x3tqCa4yAj1++facrmkOf62JsJHjmjABdKxXofYioCw==,
+            }
+        peerDependencies:
+            react: ^16.13.1 || ^17.0.0 || ^18.0.0
+            react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
+
     react-avatar@3.10.0:
         resolution:
             {
@@ -8912,6 +8924,15 @@ packages:
         resolution:
             {
                 integrity: sha512-6e0WdcNLwpBx/YIDpoyd2Xb04PB0elrDrulKUgdrIlwuYvxh5Ok9M+F8cljm8kPXXs43PmMzek9RrB1b7mLMqA==,
+            }
+        peerDependencies:
+            react: ">= 16.3.0"
+            react-dom: ">= 16.3.0"
+
+    react-draggable@4.4.6:
+        resolution:
+            {
+                integrity: sha512-LtY5Xw1zTPqHkVmtM3X8MUOxNDOUhv/khTgBgrUvwaS064bwVvxT+q5El0uUFNx5IEPKXuRejr7UqLwBIg5pdw==,
             }
         peerDependencies:
             react: ">= 16.3.0"
@@ -9021,6 +9042,15 @@ packages:
         peerDependencies:
             react: 0.14.x || 15.x || 16.x || 17.x
             react-dom: 0.14.x || 15.x || 16.x || 17.x
+
+    react-rnd@10.4.13:
+        resolution:
+            {
+                integrity: sha512-Vgbf0iihspcQ6nkaFhpOGWfmnuVbhkhoB0hBbYl8aRDA4horsQHESc4E1z7O/P27kFFjK2aqM0u5CGzfr9gEZA==,
+            }
+        peerDependencies:
+            react: ">=16.3.0"
+            react-dom: ">=16.3.0"
 
     react-select@5.7.0:
         resolution:
@@ -10335,6 +10365,12 @@ packages:
                 integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==,
             }
 
+    tslib@2.6.2:
+        resolution:
+            {
+                integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==,
+            }
+
     tslib@2.8.1:
         resolution:
             {
@@ -11151,7 +11187,7 @@ snapshots:
             regexpu-core: 6.4.0
             semver: 6.3.1
 
-    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))":
+    "@babel/helper-define-polyfill-provider@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
             "@babel/helper-compilation-targets": 7.29.7
@@ -11712,7 +11748,7 @@ snapshots:
             "@babel/helper-create-regexp-features-plugin": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/helper-plugin-utils": 7.29.7
 
-    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))":
+    "@babel/preset-env@7.18.2(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)":
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
@@ -11785,7 +11821,7 @@ snapshots:
             "@babel/plugin-transform-unicode-regex": 7.29.7(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/preset-modules": 0.1.6(@babel/core@7.18.5(supports-color@5.5.0))
             "@babel/types": 7.29.7
-            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            babel-plugin-polyfill-corejs2: 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             babel-plugin-polyfill-corejs3: 0.5.3(@babel/core@7.18.5(supports-color@5.5.0))
             babel-plugin-polyfill-regenerator: 0.3.1(@babel/core@7.18.5(supports-color@5.5.0))
             core-js-compat: 3.49.0
@@ -13489,11 +13525,11 @@ snapshots:
             cosmiconfig: 7.1.0
             resolve: 1.22.12
 
-    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0)):
+    babel-plugin-polyfill-corejs2@0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0):
         dependencies:
             "@babel/compat-data": 7.29.7
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             semver: 6.3.1
         transitivePeerDependencies:
             - supports-color
@@ -13501,7 +13537,7 @@ snapshots:
     babel-plugin-polyfill-corejs3@0.5.3(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
             core-js-compat: 3.49.0
         transitivePeerDependencies:
             - supports-color
@@ -13509,7 +13545,7 @@ snapshots:
     babel-plugin-polyfill-regenerator@0.3.1(@babel/core@7.18.5(supports-color@5.5.0)):
         dependencies:
             "@babel/core": 7.18.5(supports-color@5.5.0)
-            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))
+            "@babel/helper-define-polyfill-provider": 0.3.3(@babel/core@7.18.5(supports-color@5.5.0))(supports-color@5.5.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -16618,6 +16654,11 @@ snapshots:
             react-dom: 18.3.1(react@18.3.1)
             react-is: 18.3.1
 
+    re-resizable@6.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+        dependencies:
+            react: 18.3.1
+            react-dom: 18.3.1(react@18.3.1)
+
     react-avatar@3.10.0(prop-types@15.7.2)(react@18.3.1):
         dependencies:
             core-js: 3.49.0
@@ -16683,6 +16724,13 @@ snapshots:
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
 
+    react-draggable@4.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+        dependencies:
+            clsx: 1.2.1
+            prop-types: 15.8.1
+            react: 18.3.1
+            react-dom: 18.3.1(react@18.3.1)
+
     react-dropdown-tree-select@2.8.0(prop-types@15.7.2)(react@18.3.1):
         dependencies:
             array.partial: 1.0.5
@@ -16742,6 +16790,14 @@ snapshots:
             react: 18.3.1
             react-dom: 18.3.1(react@18.3.1)
             react-draggable: 4.4.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+
+    react-rnd@10.4.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+        dependencies:
+            re-resizable: 6.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+            react: 18.3.1
+            react-dom: 18.3.1(react@18.3.1)
+            react-draggable: 4.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+            tslib: 2.6.2
 
     react-select@5.7.0(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
         dependencies:
@@ -17642,6 +17698,8 @@ snapshots:
             strip-bom: 3.0.0
 
     tslib@1.14.1: {}
+
+    tslib@2.6.2: {}
 
     tslib@2.8.1: {}
 
