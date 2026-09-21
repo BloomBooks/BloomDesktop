@@ -39,6 +39,25 @@ is *not* enough on its own: a save can also reload the whole workspace root, so 
 page to come back before opening the overlay. `AiImageEditorApi.HandleSaveThenLaunch` explains
 that in full.
 
+## Localization
+
+The editor's own strings are translated by Bloom, not by the editor. On startup the iframe POSTs
+its whole string table (every id with its English) to **`aiImageEditor/localizations`** and shows
+what comes back, falling back to its own English for every id we leave out. An editor build newer
+than Bloom's XLF files therefore runs in English for the new strings and nothing else changes.
+
+That endpoint exists rather than Bloom's general-purpose `i18n/loadStrings` (which is what the
+image gallery uses) for one reason: `loadStrings` *reports* every id it cannot find, and on a
+Developer channel build that means a toast plus a `CopyToDistributionXlf_` entry in the local xlf
+— per string, on every launch. With several hundred editor ids waiting to reach the xlf files that
+is unusable, so `HandleLocalizations` looks the same ids up through
+`I18NApi.GetAvailableTranslations`, which reports nothing. An editor build older than this
+endpoint falls back to `loadStrings` on its own.
+
+The ids are `AiImageEditor.*`, except where the editor reuses a string Bloom already has
+(`Common.Close`, `EditTab.PasteButton`, and so on). Nothing here decides them: they live in the
+editor repo, which exports the whole table as `ALL_IMAGE_EDITOR_STRINGS`.
+
 ## Tests
 
 - `*.test.ts` are Vitest and run in the normal suite. `aiImageEditorOverlay.test.ts` needs no page DOM
