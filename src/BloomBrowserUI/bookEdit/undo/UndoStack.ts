@@ -47,15 +47,23 @@ export class UndoStack {
 
     /**
      * Counts the times the page frame has been replaced (a navigation to another page, or a reload
-     * of the same one) and the times the stack has been cleared. A `runUndoable` scope remembers
-     * the generation it opened in; if that has moved on by the time it closes, its held pushes
-     * describe elements that no longer exist and are dropped. This catches what the page-id check
-     * in {@link record} cannot: a reload that keeps the same page id, and a `clear` mid-gesture.
+     * of the same one). A `runUndoable` scope remembers the generation it opened in; if that has
+     * moved on by the time it closes, its page-scoped pushes describe elements that no longer exist
+     * and are dropped. This catches what the page-id check in {@link record} cannot: a reload that
+     * keeps the same page id.
      */
     private pageGeneration = 0;
 
-    /** The value of {@link pageGeneration} when the outermost open scope began. */
+    /**
+     * Counts the times the stack has been cleared. Kept apart from {@link pageGeneration} because
+     * the two mean different things to a scope that straddled them: a page change invalidates only
+     * page-scoped pushes, a clear invalidates everything.
+     */
+    private resetGeneration = 0;
+
+    /** The values of the two generations when the outermost open scope began. */
     private scopeGeneration = 0;
+    private scopeResetGeneration = 0;
 
     /**
      * Add an adapter for one of the pre-existing undo mechanisms.
@@ -260,14 +268,15 @@ export class UndoStack {
      * Discard everything. Used when leaving the edit tab, and by tests.
      *
      * Including pushes held by a scope that is still open across an `await`: when that scope
-     * closes it must not resurrect an entry this call discarded, so the generation moves on here
-     * too and {@link endUndoableScope} drops what it was holding.
+     * closes it must not resurrect an entry this call discarded — whether it pushed before the
+     * clear or after — so the reset generation moves on here and {@link endUndoableScope} drops
+     * everything the scope holds.
      */
     public clear(): void {
         this.entries = [];
         this.currentIndex = -1;
         this.heldPushes = [];
-        this.pageGeneration++;
+        this.resetGeneration++;
     }
 
     /** How many entries are held. Tests and diagnostics only — not part of the undo contract. */
@@ -294,6 +303,7 @@ export class UndoStack {
         if (this.openScopeLabels.length === 0) {
             this.heldPushes = [];
             this.scopeGeneration = this.pageGeneration;
+            this.scopeResetGeneration = this.resetGeneration;
         }
         this.openScopeLabels.push(label);
     }
@@ -314,17 +324,22 @@ export class UndoStack {
      * that records its own undo does so inside its own `runUndoable`, so that its push sits at
      * depth 2 or more when it happens inside a larger gesture. See PLAN.md 4.13.
      *
-     * If the page frame was replaced, or the stack cleared, while the scope was open, the
-     * page-scoped pushes it holds are dropped first: an asynchronous gesture that straddled a
-     * reload of the same page (which the page-id check cannot detect) or a `clear` would otherwise
-     * record state describing elements that no longer exist. Pushes with no page id survive, as
-     * they do in `keepOnly` — deleting a page is itself what navigates the frame, and its entry
-     * arrives inside exactly such a scope.
+     * If the stack was cleared while the scope was open, nothing it holds is recorded: the clear
+     * meant "forget everything", and a gesture that settles afterwards must not repopulate the
+     * stack. If instead the page frame was replaced while the scope was open, only its page-scoped
+     * pushes are dropped: an asynchronous gesture that straddled a reload of the same page (which
+     * the page-id check cannot detect) would otherwise record state describing elements that no
+     * longer exist, while pushes with no page id survive, as they do in `keepOnly` — deleting a
+     * page is itself what navigates the frame, and its entry arrives inside exactly such a scope.
      */
     public endUndoableScope(): void {
         const label = this.openScopeLabels[0];
         this.openScopeLabels.pop();
         if (this.openScopeLabels.length > 0 || this.heldPushes.length === 0) {
+            return;
+        }
+        if (this.scopeResetGeneration !== this.resetGeneration) {
+            this.heldPushes = [];
             return;
         }
         if (this.scopeGeneration !== this.pageGeneration) {
