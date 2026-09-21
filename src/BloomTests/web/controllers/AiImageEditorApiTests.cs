@@ -1338,10 +1338,12 @@ namespace BloomTests.web.controllers
 
         // ------------------------------------------------------------------
         // Bloom Games targets. A target holds a COPY of its draggable's content, image
-        // container and all, so the copy looks just like a slot of its own. It stays IN the
-        // slot list — the page frame counts it too, and the two numberings have to agree —
-        // but it is not offered to the AI image editor, and an off-page commit repoints it so
-        // it goes on showing its draggable's picture (BL-16793).
+        // container and all, so the copy looks just like a slot of its own. It is kept OUT of
+        // the slot list — the browser generates it, so counting it would make a page's
+        // numbering depend on whether the targets had been filled in yet, and the page frame
+        // leaves it out for the same reason. It is therefore never offered to the AI image
+        // editor, and an off-page commit repoints it so it goes on showing its draggable's
+        // picture (BL-16793).
         // ------------------------------------------------------------------
 
         // A draggable holding one picture, plus the target that copies it. Mirrors what

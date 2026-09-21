@@ -54,9 +54,8 @@ export function launchAiImageEditor(
 // outside any container, are not slots at all.
 //
 // The index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so the
-// two lists have to hold the same containers. Bloom injects controls into the live page that
-// no saved book has, and the save strips them (Cleanup in bloomEditing.ts), so those are the
-// one thing to leave out here.
+// two lists have to hold the same containers. imageSlotsOnPage below is the single place that
+// decides which those are, and its comment says what it leaves out and why.
 function slotIndexOnPage(clicked: HTMLElement | undefined): number {
     if (!clicked) return 0;
     const pageRoot = clicked.closest(".bloom-page") ?? document;
