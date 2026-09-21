@@ -36,7 +36,6 @@ namespace Bloom.web.controllers
         private readonly BookSelection _bookSelection;
         private BookThumbNailer _thumbNailer;
         private BloomWebSocketServer _webSocketServer;
-        private readonly EditBookCommand _editBookCommand;
         private readonly CollectionTabView _collectionTabView;
         private Timer _clickTimer = new Timer();
 
@@ -48,7 +47,6 @@ namespace Bloom.web.controllers
             CollectionSettings settings,
             CollectionModel collectionModel,
             BookSelection bookSelection,
-            EditBookCommand editBookCommand,
             BookThumbNailer thumbNailer,
             BloomWebSocketServer webSocketServer,
             CollectionTabView collectionTabView
@@ -57,7 +55,6 @@ namespace Bloom.web.controllers
             _settings = settings;
             _collectionModel = collectionModel;
             _bookSelection = bookSelection;
-            _editBookCommand = editBookCommand;
             _thumbNailer = thumbNailer;
             _webSocketServer = webSocketServer;
             _collectionTabView = collectionTabView;
@@ -248,16 +245,19 @@ namespace Bloom.web.controllers
                     {
                         _collectionModel.SelectBook(book);
                     }
-                    if (
-                        book.IsSaveable
-                        && GetCollectionOfRequest(request).Type
-                            == BookCollection.CollectionType.TheOneEditableCollection
-                    )
-                    {
-                        _editBookCommand.Raise(_bookSelection.CurrentSelection);
-                    }
-
-                    request.PostSucceeded();
+                    // Selecting is all we do here; going to the Edit tab is the front end's step,
+                    // taken only after it has asked for the book to be made ready
+                    // (app/ensureBookReady). That keeps every route into the Edit tab on one
+                    // sequence, and keeps the fix-up's progress dialog off the activation path
+                    // (BL-16877).
+                    request.ReplyWithJson(
+                        new
+                        {
+                            goToEditTab = book.IsSaveable
+                                && GetCollectionOfRequest(request).Type
+                                    == BookCollection.CollectionType.TheOneEditableCollection,
+                        }
+                    );
                 },
                 true
             );

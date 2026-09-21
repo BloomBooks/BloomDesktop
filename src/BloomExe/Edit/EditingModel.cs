@@ -1067,6 +1067,13 @@ namespace Bloom.Edit
                     _currentlyDisplayedBook.UserPrefs.MostRecentPage
                 ) ?? _currentlyDisplayedBook.FirstPage;
 
+            // Note: the per-page browser fix-up (BL-16852) is deliberately NOT run here. Everything
+            // that brings the user to this tab asks for it first, while the Edit tab is not yet
+            // showing -- see app/ensureBookReady and its callers. Doing it here instead would put a
+            // modal progress dialog on the activation path, with no page yet selected, which is how
+            // BL-16877 first hung Bloom: the front end asked for editView/frameSources, that threw
+            // for want of a current page, and the resulting problem dialog opened inside the
+            // progress dialog's message pump, where neither could be dismissed.
             if (page != null)
                 _view.GoToPage(page);
             if (_view != null)

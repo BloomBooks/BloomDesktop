@@ -81,7 +81,6 @@ namespace Bloom.Workspace
             EditingView.Factory editingViewFactory,
             PublishView.Factory publishViewFactory,
             CollectionSettingsDialog.Factory settingsDialogFactory,
-            EditBookCommand editBookCommand,
             SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
             SelectedTabChangedEvent selectedTabChangedEvent,
             LocalizationChangedEvent localizationChangedEvent,
@@ -148,8 +147,6 @@ namespace Bloom.Workspace
             // from being too small.  (BL-15518)
             float scaleFactor = 1.1f; // determined experimentally
             this.Scale(new SizeF(scaleFactor, scaleFactor));
-
-            editBookCommand.Subscribe(HandleEditBookCommand);
 
             Application.Idle += new EventHandler(Application_Idle);
             Text = _model.ProjectName;
@@ -1345,11 +1342,6 @@ window.showWorkspaceInitializationFailure = function(message) {
                     return itemText;
                 }
             }
-        }
-
-        private void HandleEditBookCommand(Book.Book book)
-        {
-            ChangeTab(WorkspaceTab.edit);
         }
 
         public bool InEditMode => _tabSelection.ActiveTab == WorkspaceTab.edit;

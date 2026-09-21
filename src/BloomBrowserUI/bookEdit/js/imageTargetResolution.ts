@@ -301,7 +301,7 @@ export function getElementThatDeterminesImageSlotSize(
 // worked out later for a page nobody has open. Called as a page is saved (see
 // extractAndStripPageContentForSave in bloomEditing.ts): the ordinary Edit-tab save, and the
 // off-screen pass over every page that "Update Book" runs on demand and that Bloom runs by itself
-// when the AI image editor is launched on a book that has not had it (BL-16852).
+// before a book can be edited or published, and whenever its page size changes (BL-16852).
 //
 // A slot whose size cannot be measured keeps whatever value it already had: a stale fraction
 // from the last save is better evidence than none, and guessing would have the AI image editor
