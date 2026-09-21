@@ -102,6 +102,10 @@ starting, check the branch you are about to branch from and the PR base you plan
 they don't match the prefix, stop and confirm the target with the user rather than guessing.
 A card with no prefix has no branch requirement from this rule.
 
+# Plans for multi-step or future work
+In-progress plans, refactoring proposals, and other short-lived repo-level guidance live under
+`docs/<slug>/`, one folder per effort.
+
 # Nested AGENTS.md files
 Guidance that only matters in one part of the tree lives in an `AGENTS.md` in that folder
 (`src/BloomBrowserUI`, `src/BloomTests`, `src/content/branding`, …). Claude Code auto-loads a
