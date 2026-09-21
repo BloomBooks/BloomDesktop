@@ -575,6 +575,7 @@
       <trans-unit id="AiImageEditor.Preview.ResetZoom">
         <source xml:lang="en">Reset zoom</source>
         <note>ID: AiImageEditor.Preview.ResetZoom</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Button in the gallery window, which shows every picture of one strip at full size. It puts the pictures back to the size they started at.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ZoomHint">
@@ -610,36 +611,43 @@
       <trans-unit id="AiImageEditor.Source.BookImage">
         <source xml:lang="en">A picture from this book</source>
         <note>ID: AiImageEditor.Source.BookImage</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in the tip that appears when the mouse rests on a thumbnail.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.ImagesToEdit">
         <source xml:lang="en">Images to edit: {0}</source>
         <note>ID: AiImageEditor.Source.ImagesToEdit</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is replaced with a list of picture descriptions separated by commas.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.OriginalBookImage">
         <source xml:lang="en">The picture this book slot started with</source>
         <note>ID: AiImageEditor.Source.OriginalBookImage</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. A slot is one place on a book page that holds a picture.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.PdfFile">
         <source xml:lang="en">From {0}</source>
         <note>ID: AiImageEditor.Source.PdfFile</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is replaced with the name of a PDF file.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.PdfPage">
         <source xml:lang="en">Page {0} of {1}</source>
         <note>ID: AiImageEditor.Source.PdfPage</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says which page of a PDF file a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. {0} is the page number, {1} how many pages the file has.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.RecoveredFromFolder">
         <source xml:lang="en">Found in the history folder</source>
         <note>ID: AiImageEditor.Source.RecoveredFromFolder</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. The history folder is where the editor keeps the pictures it has made before.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.ReferenceImages">
         <source xml:lang="en">Reference images: {0}</source>
         <note>ID: AiImageEditor.Source.ReferenceImages</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Says where a picture came from, on the 'Sources' line of a picture's details and in thumbnail tips. A reference image is one the AI was told to look at. {0} is replaced with a list of picture descriptions separated by commas.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Status.NotConnected">

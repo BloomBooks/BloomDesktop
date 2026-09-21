@@ -449,6 +449,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                               string,
                               string | number | boolean
                           >;
+                          // For the "modal-open" message: whether the AI Image Editor
+                          // now has a dialog of its own open.
+                          open?: boolean;
                       };
                   }
                 | undefined;
