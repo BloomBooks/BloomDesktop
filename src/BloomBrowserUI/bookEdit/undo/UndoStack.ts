@@ -388,6 +388,12 @@ export class UndoStack {
      * Pushes held by an open `runUndoable` scope are filtered too: an asynchronous gesture can be
      * awaiting while the page changes, and without this its held entry, scoped to the page just
      * left, would be recorded when the scope closes and later undone against the new page.
+     *
+     * The redo branch (everything above `currentIndex`) is a sequence that must be replayed in
+     * order, so dropping one entry from it invalidates everything after the hole: those entries
+     * were undone *before* the dropped one and must be redone *after* it. The branch is therefore
+     * truncated at the first entry it loses, rather than left with a gap that one Ctrl+Y would
+     * step over.
      */
     private keepOnly(predicate: (entry: IUndoEntry) => boolean): void {
         this.heldPushes = this.heldPushes.filter((held) =>
@@ -395,14 +401,22 @@ export class UndoStack {
         );
         const kept: IUndoEntry[] = [];
         let newIndex = -1;
+        // kept.length at the first entry dropped from the redo branch; -1 if none was.
+        let truncateRedoAt = -1;
         for (let i = 0; i < this.entries.length; i++) {
             if (!predicate(this.entries[i])) {
+                if (i > this.currentIndex && truncateRedoAt < 0) {
+                    truncateRedoAt = kept.length;
+                }
                 continue;
             }
             kept.push(this.entries[i]);
             if (i <= this.currentIndex) {
                 newIndex = kept.length - 1;
             }
+        }
+        if (truncateRedoAt >= 0) {
+            kept.length = truncateRedoAt;
         }
         this.entries = kept;
         this.currentIndex = newIndex;
