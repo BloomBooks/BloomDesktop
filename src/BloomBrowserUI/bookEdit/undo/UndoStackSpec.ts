@@ -206,6 +206,34 @@ describe("UndoStack", () => {
             expect(stack.peekUndoLabel()).toBe("deletePage");
         });
 
+        it("truncates the redo branch at the first entry a page change removes from it", () => {
+            // A page-scoped entry undone AFTER a page-independent one sits below it in the redo
+            // branch and must be redone before it. Once the page change drops it, redoing the
+            // survivor would replay the sequence with a hole in it.
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.undo();
+            stack.undo();
+            expect(stack.canRedo()).toBe(true); // sanity: both are on the redo branch
+
+            stack.clearPageScopedEntries();
+
+            expect(stack.canRedo()).toBe(false);
+            expect(stack.getEntryCount()).toBe(0);
+
+            // Control, the other way round: the survivor sits BELOW the hole, so it is still the
+            // next thing to redo and stays.
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.undo();
+            stack.undo();
+            stack.clearPageScopedEntries();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekRedoLabel()).toBe("delete page");
+        });
+
         it("does not discard anything when told the page id it already has", () => {
             stack.setCurrentPageId("page1");
             stack.push(makeEntry("onPage1", log));
