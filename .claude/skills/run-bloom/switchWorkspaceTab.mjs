@@ -79,7 +79,7 @@ const parseArgs = () => {
 
 const printHelp = () => {
     console.log(
-        "Usage: node .claude/skills/bloom-automation/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--json] [--timeout-ms <ms>]",
+        "Usage: node .claude/skills/run-bloom/switchWorkspaceTab.mjs (--running-bloom | --http-port <port>) --tab <collection|edit|publish> [--json] [--timeout-ms <ms>]",
     );
 };
 

@@ -116,7 +116,7 @@ gain a `?pageSrc=…` as the page rethinks).
 ## 5. Verify a commit actually persisted (all three "lost my edit/credits" bugs)
 
 ```bash
-node .claude/skills/bloom-automation/driveAiImageEditor.mjs --http-port 8092 dummy-edit
+node .claude/skills/run-bloom/driveAiImageEditor.mjs --http-port 8092 dummy-edit
 ```
 
 Then confirm three independent surfaces agree:
@@ -136,8 +136,8 @@ Then confirm three independent surfaces agree:
    test that credits survived — not just the DOM attributes.
 
 ```bash
-node .claude/skills/bloom-automation/driveAiImageEditor.mjs --http-port 8092 credits
-node .claude/skills/bloom-automation/driveAiImageEditor.mjs --http-port 8092 images
+node .claude/skills/run-bloom/driveAiImageEditor.mjs --http-port 8092 credits
+node .claude/skills/run-bloom/driveAiImageEditor.mjs --http-port 8092 images
 ```
 
 ## Gotchas

@@ -27,7 +27,7 @@ The heavy loop is pure Node driving Bloom's HTTP API + headless-Chrome CDP — *
    cover/title/credits/back-cover pages).
 3. Google Chrome installed (path in `survey.mjs` `CHROME`).
 
-Confirm Bloom is up and get its port from `launcherControl.mjs --status --json` (`bloom-automation`
+Confirm Bloom is up and get its port from `launcherControl.mjs --status --json` (`run-bloom`
 skill); 8089 is first-come across worktrees, so pass the reported port via `--base`.
 
 ## Axes / parameters (`survey.mjs`)
