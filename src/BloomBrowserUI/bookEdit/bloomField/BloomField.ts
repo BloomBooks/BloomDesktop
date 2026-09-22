@@ -35,7 +35,9 @@ import { kNoIndentClass } from "../textContextMenu/noIndent";
 // one must not have an empty paragraph pushed in above it. Several places below ask "which
 // block am I in?" or "does this box have any blocks yet?"; they all consult this rather than
 // looking for a <p> specifically, so a heading counts as a block everywhere or nowhere.
-const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
+// Exported because inlineImages.ts asks the same "does this box have any blocks yet?" question
+// when it inserts an image, and the answer has to be the same one BloomField would give.
+export const kBlockElementSelector = "p,h1,h2,h3,h4,h5,h6";
 
 export default class BloomField {
     public static ManageField(bloomEditableDiv: HTMLElement) {
