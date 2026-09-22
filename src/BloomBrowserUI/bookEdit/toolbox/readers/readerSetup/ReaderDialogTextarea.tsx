@@ -6,24 +6,33 @@ import { css, SerializedStyles } from "@emotion/react";
 import { kBloomBlue } from "../../../../utils/colorUtils";
 
 export const ReaderDialogTextarea: React.FunctionComponent<{
-    updateSettings: (value: string) => void;
+    onValueChange: (value: string) => void;
     value: string;
     extraStyles: SerializedStyles;
+    /** Accessible name for the box; it is labelled only by a nearby heading, not a <label>. */
+    ariaLabel: string;
+    /**
+     * A stable hook for the e2e suite. The aria-label above is localized, so it cannot serve
+     * as one.
+     */
+    testId?: string;
 }> = (props) => {
-    const activateLongPressForSightWords = useCallback(
+    const activateLongPress = useCallback(
         (textarea: HTMLTextAreaElement | null) => {
             if (textarea) {
-                getToolboxBundleExports()?.activateLongPressFor($(textarea));
+                getToolboxBundleExports()!.activateLongPressFor($(textarea));
             }
         },
         [],
     );
     return (
         <textarea
-            ref={activateLongPressForSightWords}
+            ref={activateLongPress}
+            aria-label={props.ariaLabel}
+            data-testid={props.testId}
             value={props.value}
-            onChange={(event) => props.updateSettings(event.target.value)}
-            onBlur={(event) => props.updateSettings(event.currentTarget.value)}
+            onChange={(event) => props.onValueChange(event.target.value)}
+            onBlur={(event) => props.onValueChange(event.currentTarget.value)}
             css={css`
                 box-sizing: border-box;
                 resize: none;
