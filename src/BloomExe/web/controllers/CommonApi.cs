@@ -295,7 +295,7 @@ namespace Bloom.web.controllers
                     vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
                     // Control port of the dev launcher that started us (null when not
-                    // launched via go.sh); see .github/skills/bloom-automation.
+                    // launched via go.sh); see .claude/skills/run-bloom.
                     launcherControlPort = Program.StartupLauncherPort,
                     // Where this instance keeps its user settings (user.config): the folder
                     // --user-settings-folder named, or the usual per-version one. The e2e launch

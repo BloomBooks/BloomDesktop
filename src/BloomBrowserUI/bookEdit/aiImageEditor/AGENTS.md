@@ -46,4 +46,4 @@ opens as soon as the save returns, and does not open at all if the save did not 
 - `bloom-exe-*.uitest.ts` are Playwright against a **running** `Bloom.exe`, excluded from Vitest
   and matched by glob (`**/bloom-exe*.uitest.ts`), so they are fine anywhere in the tree. They
   exercise the HTTP endpoints rather than this front-end code. To drive the real UI end to end,
-  see `.github/skills/bloom-automation/ai-image-editor-driving.md`.
+  see `.claude/skills/run-bloom/ai-image-editor-driving.md`.

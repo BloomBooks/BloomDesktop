@@ -4180,12 +4180,13 @@ namespace Bloom.Book
                 // Note the invariant this puts on such a caller: taking the caller's progress also
                 // means doing the shrinking synchronously on the caller's thread, so a caller that
                 // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
-                // for the whole (potentially minutes-long) shrink. Today the only UI-thread caller
-                // with a real progress is CollectionModel.BringBookUpToDate ("Update Book"), which
-                // is safe on both counts: ProgressDialogForeground runs all of BringBookUpToDate on
-                // the UI thread anyway, and its MultiProgress includes an ApplicationDoEventsProgress
-                // that pumps on every message. A future UI-thread caller passing a progress that does
-                // not pump would need the dialog branch below instead.
+                // for the whole (potentially minutes-long) shrink. Today no UI-thread caller passes
+                // a real progress: "Update Book" (CollectionModel.BringBookUpToDateAsync) and the
+                // automatic per-page fix-up both run BookProcessor.ProcessBook on a worker thread
+                // behind the React progress dialog, and DoUpdatesOfAllBooks runs on
+                // ProgressDialogBackground's worker, so all of them arrive here with InvokeRequired
+                // true and simply use the progress they were given. A future UI-thread caller
+                // passing a progress that does not pump would need the dialog branch below instead.
                 var haveSomewhereToReport = progress != null && !(progress is NullProgress);
                 var shell = Shell.GetShellOrOtherOpenForm();
                 // shell is null when no window is open at all -- the bulk-upload and hydrate CLI

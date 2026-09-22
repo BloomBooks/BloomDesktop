@@ -200,6 +200,25 @@ namespace Bloom.Api
                 (request, value) => GetShell()?.SetUseDevBloomLibrary(value),
                 true
             );
+            // True only when the dev launcher (go.sh) started this Bloom, so the developer
+            // context menu can offer to restart it. Always false in an end-user build.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "canRestartViaDevLauncher",
+                request => request.ReplyWithBoolean(DevLauncher.IsAvailable),
+                false
+            );
+            // Ask the dev launcher to quit this Bloom, rebuild it, and start it again. The
+            // launcher takes this process down as part of that, so all we can report is that
+            // the request went out.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "restartViaDevLauncher",
+                request =>
+                {
+                    DevLauncher.RequestRestart();
+                    request.PostSucceeded();
+                },
+                true
+            );
             apiHandler.RegisterEndpointHandler(
                 kAppUrlPrefix + "resizeWindow",
                 request =>

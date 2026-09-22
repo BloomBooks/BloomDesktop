@@ -76,6 +76,14 @@ export function parseBloomPubImageLimit(
     return { longEdgePx, shortEdgePx };
 }
 
+// A Bloom Games target: the place a draggable is meant to be dragged to. Its content is a COPY
+// of the draggable's, image container and all, written in by the browser (copyContentToTarget in
+// bloom-player) rather than authored, so an image container inside one is not a slot of its own.
+// Matched on the attribute's presence, not its value: the Games templates ship
+// data-target-of="" and the id is filled in at runtime. Mirrors kGameTargetOfAttribute in
+// AiImageEditorApi.cs.
+export const kGameTargetSelector = "[data-target-of]";
+
 // How much of its page an image slot takes up, as two numbers between 0 and 1 separated by a
 // comma, e.g. "0.4177,0.3125". Bloom writes this onto every image container when a page is saved,
 // which is the only way the size a slot wants can be known for a page that is not open in the
@@ -347,9 +355,10 @@ export function recordFractionOfPageOnImageSlots(
         // them anyway.
         if (slot.closest(".bloom-ui")) return;
         // A Bloom Games target holds a copy of its draggable's content, so its picture is
-        // not separately editable and the AI image editor is never offered it (C#'s
-        // IsSlotInsideGameTarget, which looks for the same ancestor attribute).
-        if (slot.parentElement?.closest("[data-target-of]")) return;
+        // not separately editable and the AI image editor is never offered it, nor even
+        // counted when the page's slots are numbered (C#'s IsSlotInsideGameTarget and
+        // imageSlotsOnPage, which look for the same ancestor attribute).
+        if (slot.parentElement?.closest(kGameTargetSelector)) return;
         const container = slot as HTMLElement;
         // The value always goes ON the container, because that is what C# enumerates
         // (EnumerateBookImages), but for a canvas background it is the canvas that gets
