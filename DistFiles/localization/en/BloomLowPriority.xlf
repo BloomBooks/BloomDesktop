@@ -674,6 +674,24 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Tip on the button that lets one of the side strips of small pictures slide shut again. 'Unpin' is a verb here, the action that undoes 'Pin strip'.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
+        <source xml:lang="en">Extract images that you can use in a game.</source>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One-line explanation of the 'Break into Pieces' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
+        <source xml:lang="en">Optional: mention what to include, what to skip, or how toy-like the pieces should feel.</source>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Placeholder: the grey text inside the 'Further Instructions' box of the 'Break into Pieces' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Title">
+        <source xml:lang="en">Break into Pieces</source>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Title</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card. The tool cuts a picture up into separate small pictures, such as characters and objects, to use as pieces in a game.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Description">
         <source xml:lang="en">Restyle the selected image.</source>
         <note>ID: AiImageEditor.Tool.change_style.Description</note>
@@ -685,6 +703,36 @@
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>One-line explanation of the 'Change Text' tool, shown under its name once the user picks it.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Description">
+        <source xml:lang="en">Turn one reference image into a short looping animation sheet and encode it as a GIF.</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One-line explanation of the 'Make GIF' tool, shown under its name once the user picks it. The 'animation sheet' is one picture holding every frame of the animation side by side; the tool then turns it into a GIF, a small image file that plays as a moving picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending">
+        <source xml:lang="en">Ending</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Label above a dropdown menu in the 'Make GIF' tool, choosing whether the animation returns to where it started or stops at the end of the movement.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start">
+        <source xml:lang="en">Loops back to the start</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Ending' menu of the 'Make GIF' tool: the movement finishes where it began, so the GIF repeats smoothly. Only this menu text is translated; the words the tool sends to the AI stay English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)">
+        <source xml:lang="en">Plays once (ends on the final state)</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Ending' menu of the 'Make GIF' tool: the movement goes one way, and the GIF holds its last frame before starting over. Only this menu text is translated; the words the tool sends to the AI stay English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.frameCount">
+        <source xml:lang="en">Frames</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.frameCount</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Label above a dropdown menu in the 'Make GIF' tool, offering 8, 12 or 16. It sets how many separate pictures make up the animation.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Title">
         <source xml:lang="en">Make GIF</source>
@@ -716,11 +764,23 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Description">
+        <source xml:lang="en">Remove unwanted objects or artifacts.</source>
+        <note>ID: AiImageEditor.Tool.remove_object.Description</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One-line explanation of the 'Remove Object' tool, shown under its name once the user picks it. 'Artifacts' are unwanted marks or flaws in the picture, such as smudges or glitches.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
         <source xml:lang="en">Object to Remove</source>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Label above a typing box in the 'Remove Object' tool, where the user names the thing to take out of the picture, such as 'the car'.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder">
+        <source xml:lang="en">e.g. the red ball, background clutter</source>
+        <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Placeholder: the grey text inside the 'Object to Remove' box of the 'Remove Object' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title">
         <source xml:lang="en">Remove Object</source>
