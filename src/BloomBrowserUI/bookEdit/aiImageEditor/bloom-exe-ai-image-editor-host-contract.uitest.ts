@@ -22,7 +22,7 @@ import { connectToBloomExe } from "../../react_components/component-tester/bloom
 
 const kFileEndpoint = "/bloom/api/aiImageEditor/file";
 const kLaunchEndpoint = "/bloom/api/aiImageEditor/launch";
-const kLocalizationsEndpoint = "/bloom/api/aiImageEditor/localizations";
+const kLoadStringsEndpoint = "/bloom/api/i18n/loadStrings";
 
 // A 1x1 transparent PNG, base64. Small but a genuine image, so the GET path (ReplyWithImage)
 // has real bytes to serve.
@@ -309,24 +309,31 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
             await connection.browser.close();
         }
     });
-    test("the string table comes back translated where Bloom has a translation", async () => {
+    test("the editor's string table comes back from i18n/loadStrings", async () => {
         const connection = await connectToBloomExe();
         try {
             const result = await connection.page.evaluate(
-                async (args: { localizationsEndpoint: string }) => {
-                    // "Common.Cancel" is a string Bloom has shipped for years, so a reply
-                    // that leaves it out means the lookup never reached the xlf files.
-                    // The made-up id stands for every editor string that has not been added
-                    // to an xlf yet: those must be left out, not echoed back, so the editor
-                    // falls back to its own English.
+                async (args: { loadStringsEndpoint: string }) => {
+                    // Form-encoded, the way the editor sends it: loadStrings reads its post
+                    // data with GetPostDataWhenFormEncoded, and that content type needs no
+                    // CORS preflight, which matters because the editor is another origin.
+                    // "Common.Cancel" is a string Bloom has shipped for years and
+                    // "AiImageEditor.ArtStyle.ChooseTitle" is one of the editor's own, so a
+                    // reply missing either means the lookup never reached the xlf files.
+                    // Both are ids Bloom has, deliberately: an id it does not have sets off
+                    // the missing-string toast on a Developer build.
                     const table = {
                         "Common.Cancel": "Cancel",
-                        "AiImageEditor.NoSuchStringExists": "No such string",
+                        "AiImageEditor.ArtStyle.ChooseTitle":
+                            "Choose an Art Style",
                     };
-                    const response = await fetch(args.localizationsEndpoint, {
+                    const body = new URLSearchParams();
+                    for (const [id, english] of Object.entries(table)) {
+                        body.append(id, english);
+                    }
+                    const response = await fetch(args.loadStringsEndpoint, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(table),
+                        body,
                     });
                     if (!response.ok) {
                         return { ok: false, status: response.status } as const;
@@ -339,19 +346,16 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                         ok: true,
                         status: response.status,
                         cancel: translations["Common.Cancel"],
-                        hasUnknown: Object.prototype.hasOwnProperty.call(
-                            translations,
-                            "AiImageEditor.NoSuchStringExists",
-                        ),
+                        artStyleTitle:
+                            translations["AiImageEditor.ArtStyle.ChooseTitle"],
                     } as const;
                 },
-                { localizationsEndpoint: kLocalizationsEndpoint },
+                { loadStringsEndpoint: kLoadStringsEndpoint },
             );
 
-            expect(
-                result.ok,
-                `localizations endpoint answered ${result.status}`,
-            ).toBe(true);
+            expect(result.ok, `loadStrings answered ${result.status}`).toBe(
+                true,
+            );
             if (!result.ok) return;
 
             expect(
@@ -359,9 +363,10 @@ test.describe("Bloom exe CDP: AI Image Editor host contract", () => {
                 "a string Bloom ships should come back with a value",
             ).toBe(true);
             expect(
-                result.hasUnknown,
-                "an id Bloom has no translation for should be left out",
-            ).toBe(false);
+                typeof result.artStyleTitle === "string" &&
+                    result.artStyleTitle.length > 0,
+                "an editor string that is in the xlf should come back with a value",
+            ).toBe(true);
         } finally {
             await connection.browser.close();
         }
