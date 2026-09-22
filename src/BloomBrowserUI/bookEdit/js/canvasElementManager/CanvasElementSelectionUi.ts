@@ -172,6 +172,11 @@ export function setupControlFrame(
         },
         { className: "has-svg", enabled: hasSvg },
         { className: "has-text", enabled: hasText },
+        // Every cell of a table holds a text box, so a table counts as has-text and gets the side
+        // handles. It needs the corner handles as well, because its rows share out the height the
+        // way its columns share out the width, and only a corner changes both at once. This class
+        // is what keeps editMode.less from hiding them (see the has-text block there).
+        { className: "holds-table", enabled: holdsATable(eltToPutControlsOn) },
     ];
     controlFrameClassStates.forEach((state) => {
         controlFrame.classList.toggle(state.className, !!state.enabled);
@@ -354,6 +359,29 @@ export function adjustMoveCropHandleVisibility(
     CanvasElementHandleDragInteractions.updateCurrentlyCropped(activeElement);
 }
 
+/** Whether this canvas element's content is a table. */
+function holdsATable(element: HTMLElement): boolean {
+    return element.getElementsByClassName("bloom-table").length > 0;
+}
+
+// How far below its own bottom edge a table reaches with the controls bloom-table draws there:
+// the table pill and the "Add row at the bottom edge" button sit in a band 8px below the cells,
+// and both are 20px tall. The canvas element's toolbar goes below the whole band, or it lands on
+// top of those two and a press meant for either of them hits Duplicate or Delete instead.
+const kTableChromeBandHeight = 28;
+
+/**
+ * How much room the active canvas element's own contents claim below it, which the canvas
+ * element's toolbar has to clear. Only a table claims any.
+ */
+function getTableChromeBandHeight(
+    activeElement: HTMLElement | undefined,
+): number {
+    return activeElement && holdsATable(activeElement)
+        ? kTableChromeBandHeight
+        : 0;
+}
+
 export function adjustContextControlPosition(
     controlFrame: HTMLElement | null,
     controlsAbove: boolean,
@@ -421,6 +449,8 @@ export function adjustContextControlPosition(
         ) {
             top = bloomCanvasRect.bottom + 11;
         }
+        // A table puts its own controls in the same band, so the toolbar has to start below them.
+        top += getTableChromeBandHeight(activeElement);
     }
     if (
         controlFrameRect.top === 0 &&

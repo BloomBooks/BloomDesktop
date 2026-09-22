@@ -17,6 +17,9 @@ export const canvasSelectors = {
             // Row 2: text block, caption (Span l10n component renders as <span>)
             text: 'span[draggable="true"]:has-text("Text Block")',
             caption: 'span[draggable="true"]:has-text("Caption")',
+            // Row 3: table. Only present when the "Tables" experiment is on,
+            // so no canvasMatrix row drives it yet.
+            table: '[draggable="true"] img[src*="tablePaletteItem.svg"]',
             // Navigation section (inside TriangleCollapse, initially collapsed)
             "navigation-image-with-label-button":
                 '[draggable="true"] img[src*="imageWithLabelButtonPaletteItem.svg"]',
