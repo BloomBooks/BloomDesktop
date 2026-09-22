@@ -2474,6 +2474,46 @@
         <target xml:lang="az" state="needs-translation">Describe the Animation</target>
         <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder">
+        <source xml:lang="en">Optional: describe the motion, such as blinking, waving, hopping, or turning around.</source>
+        <target xml:lang="az" state="needs-translation">Optional: describe the motion, such as blinking, waving, hopping, or turning around.</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic">
+        <source xml:lang="en">Gothic</source>
+        <target xml:lang="az" state="needs-translation">Gothic</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten">
+        <source xml:lang="en">Handwritten</source>
+        <target xml:lang="az" state="needs-translation">Handwritten</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Neon">
+        <source xml:lang="en">Neon</source>
+        <target xml:lang="az" state="needs-translation">Neon</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Neon</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Playful">
+        <source xml:lang="en">Playful</source>
+        <target xml:lang="az" state="needs-translation">Playful</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Playful</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook">
+        <source xml:lang="en">Storybook</source>
+        <target xml:lang="az" state="needs-translation">Storybook</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title">
+        <source xml:lang="en">Title Text</source>
+        <target xml:lang="az" state="needs-translation">Title Text</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.title</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title.Placeholder">
+        <source xml:lang="en">The Big Adventure</source>
+        <target xml:lang="az" state="needs-translation">The Big Adventure</target>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.title.Placeholder</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.stylized_title.Title">
         <source xml:lang="en">Add Stylized Title</source>
         <target xml:lang="az" state="needs-translation">Add Stylized Title</target>
