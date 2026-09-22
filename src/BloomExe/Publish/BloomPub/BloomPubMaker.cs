@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -128,6 +129,10 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
+            // Marked at the innermost worker rather than at the publish screens, because every route to a
+            // BloomPUB comes through here - including the bulk publisher and app building, which run longest.
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+
             // PrepareBookForBloomReader is about to modify sTheMostRecentBloomFileLocator.
             // Record the previous value so we can restore it later.
             var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;

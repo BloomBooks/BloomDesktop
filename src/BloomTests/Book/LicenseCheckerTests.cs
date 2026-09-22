@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,17 +27,37 @@ namespace BloomTests.Book
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null);
             LicenseChecker.SetHttpClientForTests(new HttpClient());
+            LicenseChecker.RetryDelayMs = LicenseChecker.kDefaultRetryDelayMs;
         }
 
-        // An HttpClient handler that always fails, to simulate the license server being unreachable.
-        private sealed class FailingHttpMessageHandler : HttpMessageHandler
+        // An HttpClient handler that fails the first N requests and then succeeds with the default
+        // offline license JSON. Counts the attempts made, so tests can check the retry in LicenseChecker.
+        private sealed class FailThenSucceedHttpMessageHandler : HttpMessageHandler
         {
+            private readonly int _failuresBeforeSuccess;
+            public int Attempts { get; private set; }
+
+            public FailThenSucceedHttpMessageHandler(int failuresBeforeSuccess)
+            {
+                _failuresBeforeSuccess = failuresBeforeSuccess;
+            }
+
             protected override Task<HttpResponseMessage> SendAsync(
                 HttpRequestMessage request,
                 CancellationToken cancellationToken
             )
             {
-                throw new HttpRequestException("simulated network failure");
+                Attempts++;
+                if (Attempts <= _failuresBeforeSuccess)
+                    throw new HttpRequestException(
+                        $"simulated transient failure on attempt {Attempts}"
+                    );
+                return Task.FromResult(
+                    new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(kDefaultLicenseJson),
+                    }
+                );
             }
         }
 
@@ -68,7 +89,11 @@ namespace BloomTests.Book
             var key = "kingstone.superbible.ruth";
             bool didCheck;
             IEnumerable<string> result = checker.GetProblemLanguages(inputLangs, key, out didCheck);
-            Assert.That(didCheck, Is.EqualTo(expectCheck));
+            Assert.That(
+                didCheck,
+                Is.EqualTo(expectCheck),
+                "last fetch exception: " + LicenseChecker.LastFetchExceptionForTests
+            );
             if (didCheck)
             {
                 Assert.That(result, Does.Contain("en"));
@@ -87,7 +112,11 @@ namespace BloomTests.Book
             var key = "kingstone.superbible.ruth";
             bool didCheck;
             IEnumerable<string> result = checker.GetProblemLanguages(inputLangs, key, out didCheck);
-            Assert.That(didCheck, Is.True);
+            Assert.That(
+                didCheck,
+                Is.True,
+                "last fetch exception: " + LicenseChecker.LastFetchExceptionForTests
+            );
             Assert.That(result, Does.Contain("en"));
             Assert.That(result, Does.Contain("fr"));
             Assert.That(result, Does.Not.Contain("ru"));
@@ -99,7 +128,9 @@ namespace BloomTests.Book
         {
             LicenseChecker.SetAllowInternetAccess(true);
             LicenseChecker.SetOfflineFolder(null); // no offline cache available
-            LicenseChecker.SetHttpClientForTests(new HttpClient(new FailingHttpMessageHandler()));
+            LicenseChecker.RetryDelayMs = 0;
+            var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3);
+            LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
             var checker = new LicenseChecker();
             var inputLangs = new[] { "en", "bjn" };
 
@@ -109,10 +140,16 @@ namespace BloomTests.Book
                 out bool didCheck
             );
 
+            Assert.That(handler.Attempts, Is.EqualTo(3), "we try three times, then give up");
             Assert.That(
                 didCheck,
                 Is.False,
                 "a network failure with no cache means we could not check the license"
+            );
+            Assert.That(
+                LicenseChecker.LastFetchExceptionForTests,
+                Is.InstanceOf<HttpRequestException>(),
+                "the failure that made us give up is recorded"
             );
             Assert.That(
                 result,
@@ -129,8 +166,9 @@ namespace BloomTests.Book
                 // SetupDefaultOfflineLicenseInfo disables internet access; re-enable it so we take the
                 // online path, hit the failing client, and fall back to the cache it wrote.
                 LicenseChecker.SetAllowInternetAccess(true);
+                LicenseChecker.RetryDelayMs = 0;
                 LicenseChecker.SetHttpClientForTests(
-                    new HttpClient(new FailingHttpMessageHandler())
+                    new HttpClient(new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 3))
                 );
                 var checker = new LicenseChecker();
                 var inputLangs = new[] { "en", "bjn" };
@@ -159,14 +197,29 @@ namespace BloomTests.Book
             }
         }
 
-        private TemporaryFolder SetupDefaultOfflineLicenseInfo()
+        /// <summary>
+        /// Points LicenseChecker at an offline cache (no internet) in which the kingstone.superbible.* books
+        /// are licensed for a handful of languages, notably NOT English or French. Callers must dispose the
+        /// folder and reset LicenseChecker (SetOfflineFolder(null), SetAllowInternetAccess(true)) afterwards.
+        /// </summary>
+        internal static TemporaryFolder SetupDefaultOfflineLicenseInfo(
+            string folderName = "DefaultOfflineLicenseTest"
+        )
         {
-            var folder = new TemporaryFolder("DefaultOfflineLicenseTest");
+            var folder = new TemporaryFolder(folderName);
             LicenseChecker.SetOfflineFolder(folder.FolderPath);
             LicenseChecker.SetAllowInternetAccess(false);
             LicenseChecker.WriteObfuscatedFile(
                 folder.FolderPath + "/license.cache",
-                @"{
+                kDefaultLicenseJson
+            );
+            return folder;
+        }
+
+        // License data in the shape the server returns: kingstone.superbible.* books are licensed for a
+        // handful of languages, notably NOT English or French, and ruth additionally for bjn.
+        private const string kDefaultLicenseJson =
+            @"{
   ""range"": ""Sheet1!A1:B1001"",
   ""majorDimension"": ""ROWS"",
   ""values"": [
@@ -215,9 +268,38 @@ namespace BloomTests.Book
       ""bjn""
     ]
   ]
-}"
+}";
+
+        [Test]
+        public void GetProblemLanguages_TwoTransientFailuresThenSuccess_RetriesAndChecks()
+        {
+            LicenseChecker.SetAllowInternetAccess(true);
+            LicenseChecker.SetOfflineFolder(null); // no cache, so only a successful fetch can give didCheck
+            LicenseChecker.RetryDelayMs = 0;
+            var handler = new FailThenSucceedHttpMessageHandler(failuresBeforeSuccess: 2);
+            LicenseChecker.SetHttpClientForTests(new HttpClient(handler));
+            var checker = new LicenseChecker();
+            Assert.That(handler.Attempts, Is.EqualTo(0), "sanity check: no requests made yet");
+
+            var result = checker.GetProblemLanguages(
+                new[] { "en", "bjn" },
+                "kingstone.superbible.ruth",
+                out bool didCheck
             );
-            return folder;
+
+            Assert.That(
+                handler.Attempts,
+                Is.EqualTo(3),
+                "two failed attempts plus the successful third one"
+            );
+            Assert.That(didCheck, Is.True, "the third attempt succeeded, so the check was done");
+            Assert.That(
+                LicenseChecker.LastFetchExceptionForTests,
+                Is.Null,
+                "a successful fetch clears the recorded failure"
+            );
+            Assert.That(result, Does.Contain("en"), "en is not licensed per the fetched data");
+            Assert.That(result, Does.Not.Contain("bjn"), "bjn is licensed per the fetched data");
         }
 
         [Test]

@@ -59,7 +59,12 @@ const config: PlaywrightTestConfig = {
     },
     use: {
         baseURL: "http://127.0.0.1:5183",
-        trace: "on-first-retry",
+        // This config sets no `retries`, so Playwright's default of 0 applies and a
+        // first-retry trace would never be written. Keep the trace on any failure
+        // instead: these tests run unattended overnight, where a failure nobody can
+        // reproduce by hand is all we get, and the trace is the only record of what
+        // the browser and the dev server were doing at the time.
+        trace: "retain-on-failure",
     },
     // Spin up the Vite dev server so the harness is available during tests.
     webServer: {
