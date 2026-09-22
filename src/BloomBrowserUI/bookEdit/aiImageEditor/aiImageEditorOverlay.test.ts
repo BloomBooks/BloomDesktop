@@ -405,9 +405,9 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
 
 describe("aiImageEditorOverlay: analytics", () => {
     // One "AI Image Editor Closed" event per session, sent when the session settles. An
-    // appliedCount of zero is what makes it the abandoned case: it says how much AI work was
-    // thrown away, so it must be zero when a session ends without committing, and must NOT be
-    // zero when the session ended because the work was accepted.
+    // appliedCount of zero is what makes it the abandoned case: nothing reached the book. It must
+    // be zero when a session ends without committing, and must NOT be zero when the session ended
+    // because the work was accepted.
     const closedEvents = () =>
         trackEvent.mock.calls.filter(
             (call) => call[0] === "AI Image Editor Closed",
@@ -417,7 +417,7 @@ describe("aiImageEditorOverlay: analytics", () => {
             (call) => (call[1] as { appliedCount: number }).appliedCount === 0,
         );
 
-    test("closing without committing reports a cancel, with what was generated", () => {
+    test("closing without committing reports a cancel", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
         postFromEditor({
             channel: "bloom-ai-image-tools",
@@ -432,40 +432,184 @@ describe("aiImageEditorOverlay: analytics", () => {
         expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Generate", {
             model: "some-model",
             result: "success",
+            aiEditorSessionId: expect.any(String),
         });
         expect(abandonedEvents()).toHaveLength(0);
 
         closeButton.click();
 
         expect(abandonedEvents()).toHaveLength(1);
-        expect(abandonedEvents()[0][1]).toMatchObject({
-            generatedThisSession: 1,
-        });
+        // Bloom doesn't count generations: that would mean knowing the AI Image Editor's event
+        // names. The session id is what links them to this row instead.
+        expect(abandonedEvents()[0][1]).not.toHaveProperty(
+            "generatedThisSession",
+        );
     });
 
-    test("an event name we do not know is ignored, and does not break the session", () => {
+    test("an event name Bloom has never heard of is forwarded, not dropped", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
-        // "toString" is the interesting case rather than a random word: with an object literal
-        // instead of a Map, `"toString" in list` answers true, so the name would be treated as one
-        // we know and would go on to create a junk event type in our data.
+        // "toString" because it's the name most likely to trip up a lookup; with no lookup, it
+        // should come through like any other.
         postFromEditor({
             channel: "bloom-ai-image-tools",
             type: "analytics",
             payload: {
                 event: "toString",
-                properties: { prompt: "leaked book text" },
+                properties: { somethingNew: 1 },
             },
         });
 
-        expect(trackEvent).not.toHaveBeenCalled();
+        // No "AI Editor " prefix to rewrite, so it is recorded under the name it arrived with.
+        expect(trackEvent).toHaveBeenCalledWith("toString", {
+            somethingNew: 1,
+            aiEditorSessionId: expect.any(String),
+        });
 
         // The session must still be alive: closing still reports the cancel.
         closeButton.click();
         expect(abandonedEvents()).toHaveLength(1);
     });
 
-    test("the properties of a known event are passed on as the AI Image Editor sent them", () => {
+    test("a newer event from the AI Image Editor is forwarded", () => {
+        // "AI Editor Accept" is one of the events the old allow-list dropped.
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: {
+                event: "AI Editor Accept",
+                properties: { tool: "change-style", isFinalTool: true },
+            },
+        });
+
+        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Accept", {
+            tool: "change-style",
+            isFinalTool: true,
+            aiEditorSessionId: expect.any(String),
+        });
+    });
+
+    test("only the AI Editor prefix is rewritten, and only at the start", () => {
+        // The rewrite only touches a leading "AI Editor ", not the phrase elsewhere in a name.
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: { event: "Something AI Editor Related", properties: {} },
+        });
+
+        expect(trackEvent).toHaveBeenCalledWith("Something AI Editor Related", {
+            aiEditorSessionId: expect.any(String),
+        });
+    });
+
+    test("forwarded events and Bloom's closing event share one session id", () => {
+        // The same id on both is what lets a session's generations be matched to its outcome.
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: { event: "AI Editor Generate", properties: {} },
+        });
+
+        const forwarded = trackEvent.mock.calls.find(
+            (call) => call[0] === "AI Image Editor Generate",
+        );
+        if (!forwarded)
+            throw new Error(
+                "setup: the generate event was not forwarded, so there is nothing to join",
+            );
+        const sessionId = (forwarded[1] as { aiEditorSessionId: string })
+            .aiEditorSessionId;
+        // Sanity: a real id. An empty string would "match" below and prove nothing.
+        expect(sessionId).toBeTruthy();
+
+        closeButton.click();
+
+        expect(abandonedEvents()).toHaveLength(1);
+        expect(abandonedEvents()[0][1]).toMatchObject({
+            aiEditorSessionId: sessionId,
+        });
+    });
+
+    test("the closing summary says how long the session lasted", () => {
+        // Stub performance.now rather than using fake timers, which would also replace setTimeout.
+        const nowSpy = vi.spyOn(performance, "now").mockReturnValue(1_000_000);
+        try {
+            const { closeButton } = openAgainstABookWithOneImage();
+            // Sanity: nothing has been reported yet, so the value below comes from the close.
+            expect(closedEvents()).toHaveLength(0);
+
+            nowSpy.mockReturnValue(1_090_000);
+            closeButton.click();
+
+            expect(closedEvents()).toHaveLength(1);
+            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 90 });
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    test("a commit settling after the close does not stretch the duration", () => {
+        // The event waits for an in-flight commit, but the duration should stop at the close.
+        const nowSpy = vi.spyOn(performance, "now").mockReturnValue(1_000_000);
+        try {
+            const { closeButton, postFromEditor } =
+                openAgainstABookWithOneImage();
+
+            postFromEditor({
+                channel: "bloom-ai-image-tools",
+                type: "commit",
+                requestId: "req1",
+                payload: {
+                    replacements: [
+                        { incomingId: `${kPageId}:0`, resultId: "result1" },
+                    ],
+                },
+            });
+
+            // 30 seconds in, the user closes; the commit is still outstanding.
+            nowSpy.mockReturnValue(1_030_000);
+            closeButton.click();
+            // Sanity: nothing reported yet, so the value below is not from the click.
+            expect(closedEvents()).toHaveLength(0);
+
+            // C# answers 20 seconds after the overlay was already gone.
+            nowSpy.mockReturnValue(1_050_000);
+            const onSuccess = postJson.mock.calls[0][2] as (r: {
+                data: unknown;
+            }) => void;
+            onSuccess({ data: { ok: true, appliedCount: 0, results: [] } });
+
+            expect(closedEvents()).toHaveLength(1);
+            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 30 });
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
+    test("a second trip through the AI Image Editor is a separate session", () => {
+        const first = openAgainstABookWithOneImage();
+        first.closeButton.click();
+        expect(abandonedEvents()).toHaveLength(1);
+
+        // The helper insists the launch is the only post it has seen.
+        post.mockClear();
+        const second = openAgainstABookWithOneImage();
+        second.closeButton.click();
+
+        expect(abandonedEvents()).toHaveLength(2);
+        const idOf = (index: number) =>
+            (abandonedEvents()[index][1] as { aiEditorSessionId: string })
+                .aiEditorSessionId;
+        expect(idOf(1)).not.toBe(idOf(0));
+    });
+
+    test("the properties of an event are passed on as the AI Image Editor sent them", () => {
         // Deliberately not filtered: we control both ends of this channel. If a property ever must
         // not be forwarded, it is stopped in the AI Image Editor or removed by name here -- not
         // by an allow-list that only guards us against ourselves.
@@ -488,6 +632,7 @@ describe("aiImageEditorOverlay: analytics", () => {
             model: "some-model",
             costUSD: 0.0733,
             spentCredits: true,
+            aiEditorSessionId: expect.any(String),
         });
     });
 
