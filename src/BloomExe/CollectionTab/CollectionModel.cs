@@ -712,8 +712,9 @@ namespace Bloom.CollectionTab
         /// <summary>
         /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
         /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind the collection
-        /// tab's embedded React progress dialog, and reselects the book once the dialog closes so
-        /// the collection shows the result.
+        /// tab's embedded compact progress dialog -- the bar and the one housekeeping sentence, the
+        /// same as the automatic update shows (BookProcessor.EnsurePerPageFixupIfNeeded) -- and
+        /// reselects the book once the dialog closes so the collection shows the result.
         /// </summary>
         /// <remarks>
         /// The per-page part used to be done by driving the live Edit tab through the pages
@@ -737,8 +738,26 @@ namespace Bloom.CollectionTab
             // Deselect while we rewrite the book, so nothing (e.g. the preview) holds its files.
             SelectBookOnUiThread(null);
 
+            // The props EmbeddedSimpleProgressDialog is expecting; see SimpleProgressDialog.tsx.
+            // (We build them ourselves rather than going through the overload that builds them,
+            // which only knows how to open the full, log-showing ProgressDialog.)
+            var props = new DynamicJson();
+            dynamic props1 = props;
+            // Names the instance of EmbeddedSimpleProgressDialog to open: the one in
+            // CollectionsTabPane.
+            props1.which = "collectionTabUpdateBook";
+            // Same string (and id) as the menu command that got us here.
+            props1.title = LocalizationManager.GetString(
+                "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                "Update Book"
+            );
+            props1.titleColor = "white";
+            props1.titleBackgroundColor = Palette.kBloomBlueHex;
+            props1.message = BookProcessor.HousekeepingMessage;
+
             await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
                 _webSocketServer,
+                props,
                 (progress, worker) =>
                 {
                     try
@@ -756,15 +775,7 @@ namespace Bloom.CollectionTab
                     }
                     return Task.FromResult(false); // false => close the dialog when we finish
                 },
-                "collectionTab",
-                // Same string (and id) as the menu command that got us here.
-                LocalizationManager.GetString(
-                    "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-                    "Update Book"
-                ),
-                showCancelButton: false,
-                doWhenDialogCloses: () => SelectBookOnUiThread(b),
-                determinate: true
+                doWhenDialogCloses: () => SelectBookOnUiThread(b)
             );
         }
 

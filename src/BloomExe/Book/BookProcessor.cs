@@ -323,6 +323,45 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// The one sentence the progress dialog shows while a book is being brought up to date,
+        /// whether the user asked for it ("Update Book") or Bloom decided it was due. It is all the
+        /// user needs: the bar above it says how far along we are, and what the individual passes
+        /// are called is of no interest to anyone but us (BL-16893).
+        /// </summary>
+        public static string HousekeepingMessage =>
+            LocalizationManager.GetString(
+                "BookProcessor.HousekeepingMessage",
+                "Please wait while Bloom does some housekeeping on your book..."
+            );
+
+        // The size of the automatic update's dialog in the ordinary case: the bar, and the one
+        // sentence under it. And the height it grows to if something goes wrong, which has to fit
+        // an error message and the buttons that come with it as well.
+        private const int kNormalDialogWidth = 620;
+        private const int kNormalDialogHeight = 180;
+        private const int kErrorDialogHeight = 300;
+
+        /// <summary>
+        /// Make a dialog created at the normal size tall enough for an error message and the Close
+        /// and Report buttons that come with it. Needed because the automatic update's dialog is a
+        /// WinForms form, which is sized in C# and cannot grow to fit its HTML content, and we would
+        /// rather not leave that room standing empty for the whole of a run that goes well.
+        /// </summary>
+        private static void GrowDialogForError(ReactDialog dialog)
+        {
+            if (dialog == null || dialog.IsDisposed)
+                return;
+            // We are on the dialog's background worker, so the resize has to go to the UI thread.
+            dialog.Invoke(
+                (Action)(
+                    () =>
+                        dialog.Height = (int)
+                            Math.Round(kErrorDialogHeight * dialog.DeviceDpi / 96.0)
+                )
+            );
+        }
+
+        /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
         /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
         /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
@@ -351,39 +390,34 @@ namespace Bloom.Book
                 "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
                 "Update Book"
             );
+            // The dialog needs to grow if something goes wrong: the error message and the Close and
+            // Report buttons need somewhere to go, and a WinForms form cannot size itself to its
+            // HTML content. Held here so the catch below can reach it.
+            ReactDialog dialog = null;
             BrowserProgressDialog.DoWorkWithProgressDialog(
                 webSocketServer,
                 () =>
                 {
-                    var dlg = new ReactDialog(
-                        "progressDialogBundle",
+                    dialog = new ReactDialog(
+                        "simpleProgressDialogBundle",
                         new
                         {
                             title,
                             titleColor = "white",
                             titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "if-error",
-                            determinate = true,
-                            linearProgress = true,
+                            message = HousekeepingMessage,
                         },
                         title
                     );
-                    // ProgressBox asks for 540px, and BloomDialog adds 24px of padding on
-                    // each side plus its border, so anything narrower than about 590 clips
-                    // the right-hand end of every line of the explanation.
-                    dlg.SetScaledSize(620, 210);
-                    return dlg;
+                    // Just big enough for the bar and the sentence under it: wide enough that a
+                    // translation of the sentence gets two lines before it needs a third, and no
+                    // taller than those two lines, since empty space below them is all the user
+                    // would see for as long as the dialog is up.
+                    dialog.SetScaledSize(kNormalDialogWidth, kNormalDialogHeight);
+                    return dialog;
                 },
                 (progress, worker) =>
                 {
-                    // Tell the user why Bloom paused to do this; they did not ask for it.
-                    progress.MessageWithoutLocalizing(
-                        LocalizationManager.GetString(
-                            "BookProcessor.AutoUpdateExplanation",
-                            "Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size."
-                        ),
-                        ProgressKind.Instruction
-                    );
                     try
                     {
                         ProcessBook(book, progress: new WebProgressAdapter(progress));
@@ -408,6 +442,9 @@ namespace Bloom.Book
                             "Automatic page update failed for " + book.NameBestForUserDisplay,
                             e
                         );
+                        // Make room for the error message and the buttons that are about to appear.
+                        // BrowserProgressDialog turns this exception into both of them.
+                        GrowDialogForError(dialog);
                         throw;
                     }
                     return false; // no error: close the dialog automatically
