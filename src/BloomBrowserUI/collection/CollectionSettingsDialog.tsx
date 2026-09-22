@@ -62,6 +62,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const [currentValues, setCurrentValues] =
         React.useState<ICollectionSettingsValues>();
     const [saveErrorMessage, setSaveErrorMessage] = React.useState<string>();
+    const [saving, setSaving] = React.useState(false);
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -70,6 +71,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // The GET also opens the editing session on the C# side, so it must run on every open.
     React.useEffect(() => {
         if (!propsForBloomDialog.open) {
+            // Forget the closing session's values. Config-r captures initialValues when the pane
+            // mounts, so if we left them here the next open would mount the pane on the previous
+            // session's data and go on editing (and saving) that until the new GET arrived.
+            latestValuesRef.current = undefined;
+            setLoadedSettings(undefined);
+            setCurrentValues(undefined);
+            setSaveErrorMessage(undefined);
+            setSaving(false);
             return;
         }
         get("collection/settings", (result) => {
@@ -136,6 +145,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         ).length > 0;
 
     function saveAndCloseDialog() {
+        // The first POST ends the editing session, so a second one would arrive with nothing
+        // pending; block the button for the moment the save is in flight.
+        setSaving(true);
         // Always post, even if these values are unchanged: reused components (subscription, team
         // collection, bookshelf) send their edits through their own endpoints, and this POST
         // applies everything pending.
@@ -143,6 +155,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             const saveResult = result.data as ICollectionSettingsSaveResult;
             if (saveResult.errorMessage) {
                 setSaveErrorMessage(saveResult.errorMessage);
+                setSaving(false);
                 return;
             }
             // C# performs the restart itself if one is needed.
@@ -259,7 +272,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 )}
                 <DialogOkButton
                     default={true}
-                    enabled={currentValues !== undefined}
+                    enabled={currentValues !== undefined && !saving}
                     l10nKey={
                         needsRestart
                             ? "CollectionSettingsDialog.Restart"

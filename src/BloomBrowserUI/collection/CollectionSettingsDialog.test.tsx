@@ -59,12 +59,15 @@ const settingsResponse: ICollectionSettingsResponse = {
     restartPaths: ["frontBackMatter.xmatter"],
 };
 
-const { mockGet, mockPost, mockPostJson, mockCloseDialog } = vi.hoisted(() => ({
-    mockGet: vi.fn(),
-    mockPost: vi.fn(),
-    mockPostJson: vi.fn(),
-    mockCloseDialog: vi.fn(),
-}));
+const { mockGet, mockPost, mockPostJson, mockCloseDialog, dialogState } =
+    vi.hoisted(() => ({
+        mockGet: vi.fn(),
+        mockPost: vi.fn(),
+        mockPostJson: vi.fn(),
+        mockCloseDialog: vi.fn(),
+        // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
+        dialogState: { open: true },
+    }));
 
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
@@ -80,7 +83,7 @@ vi.mock("../react_components/BloomDialog/BloomDialogPlumbing", () => ({
     useEventLaunchedBloomDialog: () => ({
         openingEvent: { initialPageKey: "subscription" },
         closeDialog: mockCloseDialog,
-        propsForBloomDialog: { open: true },
+        propsForBloomDialog: { open: dialogState.open },
     }),
 }));
 
@@ -138,6 +141,10 @@ vi.mock("@sillsdev/config-r", () => ({
         <div>
             <div data-testid="initial-page-key">
                 {props.initiallySelectedTopLevelPageKey}
+            </div>
+            {/* Config-r captures initialValues at mount, so tests check what it was given. */}
+            <div data-testid="initial-collection-name">
+                {props.initialValues.advanced.collectionName}
             </div>
             <button
                 data-testid="change-restart-value"
@@ -220,6 +227,7 @@ describe("CollectionSettingsDialog", () => {
     beforeEach(() => {
         container = document.createElement("div");
         document.body.appendChild(container);
+        dialogState.open = true;
         mockGet.mockReset();
         mockGet.mockImplementation(
             (_url: string, successCallback: (r: unknown) => void) => {
@@ -344,6 +352,79 @@ describe("CollectionSettingsDialog", () => {
             container.querySelector('[data-testid="save-error"]')?.textContent,
         ).toBe("That is not a valid email address.");
         expect(mockCloseDialog).not.toHaveBeenCalled();
+    });
+
+    it("does not post again if OK is clicked a second time while the save is in flight", async () => {
+        // The save is only reported back when we say so, so the dialog is still mid-save
+        // for the second click. The first POST ends the editing session on the C# side, so a
+        // second one would arrive with nothing pending.
+        let reportSaved: (() => void) | undefined;
+        mockPostJson.mockImplementation(
+            (
+                _url: string,
+                _data: unknown,
+                successCallback?: (r: unknown) => void,
+            ) => {
+                reportSaved = () =>
+                    successCallback?.({
+                        data: { restartRequired: false, errorMessage: null },
+                    });
+            },
+        );
+        await renderDialog();
+
+        click("dialog-ok");
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+        if (!reportSaved) {
+            throw new Error(
+                "The dialog did not post at all; the rest of this test proves nothing.",
+            );
+        }
+
+        click("dialog-ok");
+
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+    });
+
+    it("starts a later open from freshly fetched values, not the previous session's", async () => {
+        await renderDialog();
+        expect(
+            container.querySelector('[data-testid="initial-collection-name"]')
+                ?.textContent,
+        ).toBe("Test Collection");
+
+        // Close it. Config-r captures initialValues when its pane mounts, so the pane has to go
+        // away with the session rather than linger holding the old values.
+        dialogState.open = false;
+        await renderDialog();
+        expect(
+            container.querySelector('[data-testid="initial-collection-name"]'),
+        ).toBeNull();
+
+        // Re-open against a collection whose name has since changed.
+        mockGet.mockImplementation(
+            (_url: string, successCallback: (r: unknown) => void) => {
+                successCallback({
+                    data: {
+                        ...settingsResponse,
+                        values: {
+                            ...initialValues,
+                            advanced: {
+                                ...initialValues.advanced,
+                                collectionName: "Renamed Collection",
+                            },
+                        },
+                    },
+                });
+            },
+        );
+        dialogState.open = true;
+        await renderDialog();
+
+        expect(
+            container.querySelector('[data-testid="initial-collection-name"]')
+                ?.textContent,
+        ).toBe("Renamed Collection");
     });
 
     it("relabels OK as Restart only when a restart-path value changes", async () => {
