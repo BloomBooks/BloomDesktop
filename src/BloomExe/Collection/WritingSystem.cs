@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
+using SIL.Reporting;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
@@ -354,11 +356,7 @@ namespace Bloom.Collection
             if (!LookupModel.AreLanguagesLoaded)
             {
                 EnsureSldrInitialized(true); // needed for tests
-                LookupModel.IncludeScriptMarkers = false;
-                // The previous line should have loaded the LanguageLookup object: if something changes so that
-                // it doesn't, ensure that happens anyway.
-                if (!LookupModel.AreLanguagesLoaded)
-                    LookupModel.LoadLanguages();
+                LoadLookupModelLanguages();
             }
             if (string.IsNullOrWhiteSpace(Tag))
                 return false; // undefined (probably language3 or sign language)
@@ -366,6 +364,66 @@ namespace Bloom.Collection
             var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
             // (If the lookup didn't find a language, treat the name as custom.)
             return Name != language?.Names?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Load the language list into LookupModel. Loading it makes Sldr compare its langtags.json
+        /// cache with the server, inside a machine-wide mutex named "SldrCache". If a process is
+        /// killed while it holds that mutex (for example, a Bloom the e2e harness kills during that
+        /// web request), the next process to wait on it gets AbandonedMutexException. That process
+        /// then owns the mutex, but the library lets the exception out without releasing it, so the
+        /// mutex is abandoned again when the process exits, and every Bloom on the machine fails to
+        /// load a collection until something releases it. So release it here and try once more.
+        /// (BL-16802)
+        /// </summary>
+        private static void LoadLookupModelLanguages()
+        {
+            try
+            {
+                LoadLookupModelLanguagesOnce();
+            }
+            catch (AbandonedMutexException)
+            {
+                ReleaseSldrCacheMutexHeldByThisThread();
+                LoadLookupModelLanguagesOnce();
+            }
+        }
+
+        private static void LoadLookupModelLanguagesOnce()
+        {
+            LookupModel.IncludeScriptMarkers = false;
+            // The previous line should have loaded the LanguageLookup object: if something changes so that
+            // it doesn't, ensure that happens anyway.
+            if (!LookupModel.AreLanguagesLoaded)
+                LookupModel.LoadLanguages();
+        }
+
+        /// <summary>
+        /// A mutex belongs to a thread, not to a handle, so a second handle to the same named mutex
+        /// on this thread can release what the library's handle acquired when it got
+        /// AbandonedMutexException. Sldr names the mutex "SldrCache"; the library's Windows adapter
+        /// uses that name as it is, and another adapter puts it in the Global namespace.
+        /// </summary>
+        private static void ReleaseSldrCacheMutexHeldByThisThread()
+        {
+            foreach (var name in new[] { "SldrCache", @"Global\SldrCache" })
+            {
+                try
+                {
+                    using (var mutex = Mutex.OpenExisting(name))
+                    {
+                        mutex.ReleaseMutex();
+                        Logger.WriteEvent("Released the abandoned SldrCache mutex ({0})", name);
+                        return;
+                    }
+                }
+                catch (Exception e)
+                    when (e is WaitHandleCannotBeOpenedException || e is ApplicationException)
+                {
+                    // No mutex of this name exists, or this thread does not own it. Try the next name.
+                }
+            }
+            Logger.WriteEvent("Could not find the abandoned SldrCache mutex to release it");
         }
 
         private bool ReadBoolean(XElement xml, string id, bool defaultValue)

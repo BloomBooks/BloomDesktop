@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -293,6 +293,19 @@ namespace Bloom.Collection
 
         private object _bookInfoLock = new object();
 
+        /// <summary>
+        /// True if this folder is one named xMatter, such as templates/xMatter, which holds
+        /// front/back matter packs rather than books.
+        /// </summary>
+        private static bool IsXMatterFolder(string folderPath)
+        {
+            return string.Equals(
+                Path.GetFileName(folderPath.TrimEnd('\\', '/')),
+                "xMatter",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
         // Needs to be thread-safe
         public virtual IEnumerable<Book.BookInfo> GetBookInfos()
         {
@@ -304,10 +317,14 @@ namespace Bloom.Collection
                     try
                     {
                         _bookInfos = new List<Book.BookInfo>();
-                        var bookFolders = ProjectContext
-                            .SafeGetDirectories(_path)
-                            .Select(dir => new DirectoryInfo(dir))
-                            .ToArray();
+                        // templates/xMatter is scanned like any other source collection, but what
+                        // it holds are front/back matter packs, not books, so it contributes none.
+                        var bookFolders = IsXMatterFolder(_path)
+                            ? new DirectoryInfo[0]
+                            : ProjectContext
+                                .SafeGetDirectories(_path)
+                                .Select(dir => new DirectoryInfo(dir))
+                                .ToArray();
 
                         //var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
                         var orderedBookFolders = bookFolders.OrderBy(
@@ -318,10 +335,12 @@ namespace Bloom.Collection
                         {
                             if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
                                 continue;
-                            // Don't want things in the templates/xmatter folder
-                            // (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
-                            // so filter on the whole path.
-                            if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
+                            // Don't want a child folder named xMatter either (even
+                            // SIL-Cameroon-Mothballed, which no longer has xmatter in its filename).
+                            // Compare whole folder names, not substrings of the whole path: a
+                            // checkout, a user folder, a collection, or a book with "xmatter"
+                            // somewhere in its name must not lose its books.
+                            if (IsXMatterFolder(folder.FullName))
                                 continue;
                             // Note: this used to be .bloom-ignore. We believe that is no longer used.
                             // It was changed because files starting with dot are normally invisible,
