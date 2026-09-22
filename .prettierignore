@@ -3,9 +3,9 @@ ThemaData.json
 *.xlf
 csharpier.json
 
-# The files under the visual-regression test collections are Bloom-generated fixtures
+# The files under the fetched test-input collections are Bloom-generated fixtures
 # (book HTML, meta.json, appearance.json, origami.css, etc.). Bloom writes them in its own
 # format (e.g. meta.json is minified), so prettifying them here would make every test run
 # leave a dirty working tree, and prettier outright fails on the book .htm files. Leave the
-# whole collection alone so the committed fixtures match what Bloom writes.
-src/BloomVisualRegressionTests/collections/
+# whole tree alone so the fetched fixtures match what Bloom writes.
+output/testing-inputs/

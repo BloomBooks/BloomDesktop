@@ -478,6 +478,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                 <MissingInfo
                     text="Missing Title"
                     l10nKey={"PublishTab.Upload.Missing.Title"}
+                    testId="missing-title"
                     onClick={() => post("libraryPublish/goToEditBookTitle")}
                 />
             );
@@ -495,7 +496,12 @@ export const LibraryPublishSteps: React.FunctionComponent<{
 
     return (
         <React.Fragment>
-            <BloomStepper orientation="vertical">
+            {/* The test id tells the e2e tests that the upload steps have arrived; the screen
+                has nothing else that is always there and never on another publish screen. */}
+            <BloomStepper
+                data-testid="publish-to-web-steps"
+                orientation="vertical"
+            >
                 <Step
                     active={true}
                     completed={isReadyForAgreements()}
@@ -524,6 +530,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                                             l10nKey={
                                                 "PublishTab.Upload.Missing.Copyright"
                                             }
+                                            testId="missing-copyright"
                                             onClick={
                                                 showCopyrightAndLicenseInfoOrDialog
                                             }
@@ -609,6 +616,7 @@ export const LibraryPublishSteps: React.FunctionComponent<{
                         {serverErrorBox}
                         {bookshelfErrorBox}
                         <div
+                            data-testid="upload-buttons"
                             css={css`
                                 display: flex;
                                 justify-content: space-between;
@@ -852,7 +860,8 @@ const AgreementCheckbox: React.FunctionComponent<{
         props.onChange(isChecked);
     }
     return (
-        <div>
+        // The test id marks one agreement for the e2e tests; the Agreements step shows three.
+        <div data-testid="upload-agreement">
             <BloomCheckbox
                 label={props.label}
                 checked={isChecked}
@@ -884,6 +893,9 @@ const WarningMessage: React.FunctionComponent<{
 const MissingInfo: React.FunctionComponent<{
     text: string;
     l10nKey: string;
+    // Marks this warning for the e2e tests, which have to tell the two apart and click the
+    // right "Click to fix". See src/BloomE2E/helpers/libraryPublish.ts.
+    testId: string;
     onClick: () => void;
 }> = (props) => {
     const selectedBookContext = React.useContext(SelectedBookContext);
@@ -893,7 +905,7 @@ const MissingInfo: React.FunctionComponent<{
                 max-width: 550px;
             `}
         >
-            <div>
+            <div data-testid={props.testId}>
                 <Div
                     css={css`
                         font-style: italic;

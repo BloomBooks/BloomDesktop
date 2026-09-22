@@ -496,7 +496,9 @@ export function setupPageLayoutMenu(): void {
     if (usingLegacyTheme && page.classList.contains("bloom-customLayout")) {
         // A legacy theme can't show a custom layout, so force this page back to standard,
         // keeping the custom layout data in case the user switches to a newer theme.
-        setCustomPageLayout(page.getAttribute("id")!, "standard", true);
+        // userInitiated false: this is Bloom forcing the page back as it opens, not a choice
+        // anyone made.
+        setCustomPageLayout(page.getAttribute("id")!, "standard", true, false);
         return;
     }
 
@@ -510,16 +512,23 @@ export function setupPageLayoutMenu(): void {
 
 // Ask the server to put this page into the given layout. This says what it means: asking for the
 // layout the page is already in is a no-op on the server, rather than flipping to the other one.
+//
+// userInitiated distinguishes a choice the user made from the revert Bloom performs for itself
+// when a legacy theme cannot support a custom layout. Only the former is a decision, and only
+// the former is reported to analytics -- otherwise the figures count switches nobody made, and
+// over-count "standard" precisely on the books where custom was wanted.
 function setCustomPageLayout(
     pageId: string,
     layout: "standard" | "custom",
     keepCustomLayoutDataWhenSwitchingToStandard: boolean,
+    userInitiated: boolean,
 ) {
     return postData("editView/setCustomPageLayout", {
         pageId,
         layout,
         keepCustomLayoutDataWhenSwitchingToStandard:
             keepCustomLayoutDataWhenSwitchingToStandard ? "true" : "false",
+        userInitiated: userInitiated ? "true" : "false",
     });
 }
 
@@ -541,6 +550,7 @@ function renderPageLayoutMenu(page: HTMLElement): void {
                 page.getAttribute("id")!,
                 selection,
                 keepCustomLayoutDataWhenSwitchingToStandard,
+                true,
             );
             if (
                 selection === "custom" &&

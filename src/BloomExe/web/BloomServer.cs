@@ -29,7 +29,6 @@ using Bloom.SafeXml;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Code;
@@ -1706,7 +1705,7 @@ namespace Bloom.Api
             {
                 ErrorReport.NotifyUserOfProblem(GetServerStartFailureMessage());
                 Logger.WriteEvent("Error: Could not start up internal HTTP Server");
-                Analytics.ReportException(new ApplicationException("Could not start server."));
+                BloomAnalytics.ReportException(new ApplicationException("Could not start server."));
                 ProgramExit.Exit();
             }
 
@@ -2665,9 +2664,26 @@ namespace Bloom.Api
 
         /// <summary>
         /// How many workers currently report themselves blocked. For tests, which need to prove that a
-        /// reported block is undone even when the scope is disposed on a different thread than reported it.
+        /// reported block is undone even when the scope is disposed on a different thread than reported it —
+        /// and for the Freeze Doctor, to which "every worker is blocked" says a great deal about a frozen
+        /// publish.
         /// </summary>
         internal int BlockedWorkerCount => _countBlockedThreads;
+
+        /// <summary>
+        /// How many workers are currently handling a request. Read without the lock deliberately: this is
+        /// only ever used for diagnostics, where a value that is one out of date is worth far more than a
+        /// diagnostic that can block on the very lock a frozen server is fighting over.
+        /// </summary>
+        internal int BusyWorkerCount => _busyThreads;
+
+        /// <summary>
+        /// How many requests are waiting for a worker. Read without the lock for the same reason as
+        /// <see cref="BusyWorkerCount"/>, and it is the reading that tells a shortage of workers from work
+        /// actually being held up: every worker blocked matters much more when requests are queued behind
+        /// them.
+        /// </summary>
+        internal int QueuedRequestCount => _queue.Count;
 
         // Ordinal deliberately: the default overloads of both StartsWith and IndexOf(string) are
         // culture-sensitive, which is the wrong kind of comparison for a thread name we generated
@@ -2900,7 +2916,7 @@ namespace Bloom.Api
                     throw;
 #else
                     //just quietly report this
-                    DesktopAnalytics.Analytics.ReportException(e);
+                    BloomAnalytics.ReportException(e);
 #endif
                 }
             }

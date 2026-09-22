@@ -6,9 +6,12 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bloom;
 using Bloom.Book;
 using Bloom.ImageProcessing;
+using Bloom.SafeXml;
 using Bloom.web.controllers;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using SIL.Code;
 using SIL.Core.ClearShare;
@@ -173,7 +176,7 @@ namespace BloomTests.web.controllers
         // ------------------------------------------------------------------
 
         // Writes a PNG of the given size into a "source" folder OUTSIDE the book folder,
-        // standing in for the AI editor's history folder, and returns its full path.
+        // standing in for the AI image editor's history folder, and returns its full path.
         private string MakeSourcePng(string name, int width, int height)
         {
             var sourceFolder = Path.Combine(_bookFolder.Path, "source");
@@ -659,7 +662,7 @@ namespace BloomTests.web.controllers
             // GraphicsMagick does not preserve credits when it rewrites a PNG as a JPEG, and an
             // uploaded result can arrive with the user's own credits embedded in it. Nothing
             // downstream would put them back — EmbedCreditsInNewImageFile writes only the credits
-            // the AI editor explicitly sent — so losing them here would quietly strip a
+            // the AI image editor explicitly sent — so losing them here would quietly strip a
             // photographer's copyright.
             var oldSrc = CopyTestImageIntoBookFolder("man.jpg", "old-photo.jpg");
             var newName = CopyTestImageIntoBookFolder("man.png", "ai-image1.png");
@@ -1230,53 +1233,354 @@ namespace BloomTests.web.controllers
         }
 
         // ------------------------------------------------------------------
-        // IsUserChangeableImageElement: branding/license/QR images are off-limits.
+        // SelectImageSlotsOnPage: a page's slots are its image containers, in document
+        // order. The index of a slot in that list is its whole identity, and the page frame
+        // works out the same index for itself (slotIndexOnPage in aiImageEditorPageCommands.ts),
+        // so these two numberings have to agree.
         // ------------------------------------------------------------------
 
-        private static Bloom.SafeXml.SafeXmlElement MakeImgWithClass(string className)
+        private static SafeXmlElement MakePageWithBody(string bodyOfPage)
         {
-            var classAttr = className == null ? "" : $" class='{className}'";
             var dom = new HtmlDom(
                 $@"<html><head></head><body>
                     <div class='bloom-page' id='page1'><div class='marginBox'>
-                        <img src='pic.png'{classAttr}/>
+                        {bodyOfPage}
                     </div></div>
                   </body></html>"
             );
-            return (Bloom.SafeXml.SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//div[@id='page1']");
         }
 
         [Test]
-        public void IsUserChangeableImageElement_PlainImage_IsChangeable()
+        public void SelectImageSlotsOnPage_ReturnsContainersInDocumentOrder()
         {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-imageContainer'><img src='second.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(2));
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(null)),
-                Is.True
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("first.png")
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("second.png")
             );
         }
 
         [TestCase("branding")]
         [TestCase("licenseImage")]
         [TestCase("bloom-qrcode")]
-        public void IsUserChangeableImageElement_ProtectedImage_IsNotChangeable(string className)
+        public void SelectImageSlotsOnPage_ImageOutsideAContainer_IsNotASlot(string className)
         {
+            // Branding, license and QR-code images are never in an image container, which is
+            // why neither side of the bridge needs a list of them: they are not slots, so
+            // they cannot be offered to the AI image editor or overwritten by a commit.
+            var page = MakePageWithBody(
+                $@"<img class='{className}' src='protected.png'/>
+                   <div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), $"'{className}' must not be a slot");
             Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(MakeImgWithClass(className)),
-                Is.False,
-                $"an image with class '{className}' must not be user-changeable"
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
             );
         }
 
         [Test]
-        public void IsUserChangeableImageElement_ProtectedClassAmongOthers_IsNotChangeable()
+        public void SelectImageSlotsOnPage_ClassAmongOthers_IsStillASlot()
         {
-            // The class check must find the protected class even when combined with others.
-            Assert.That(
-                AiImageEditorApi.IsUserChangeableImageElement(
-                    MakeImgWithClass("bloom-imageContainer branding")
-                ),
-                Is.False
+            // The class test must find bloom-imageContainer among other classes, and must
+            // not match a class that merely contains those characters.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer bloom-backgroundImage'><img src='real.png'/></div>
+                  <div class='bloom-imageContainerish'><img src='notASlot.png'/></div>"
             );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1));
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[0]).GetAttribute("src"),
+                Is.EqualTo("real.png")
+            );
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_BackgroundImageSlot_ReturnsTheContainer()
+        {
+            // A slot can wear its picture as a background image instead of holding an img.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.SameAs(slot));
+        }
+
+        [Test]
+        public void GetImageElementOfSlot_SlotWithNoPicture_ReturnsNull()
+        {
+            var page = MakePageWithBody(@"<div class='bloom-imageContainer'></div>");
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.GetImageElementOfSlot(slot), Is.Null);
+        }
+
+        // ------------------------------------------------------------------
+        // Bloom Games targets. A target holds a COPY of its draggable's content, image
+        // container and all, so the copy looks just like a slot of its own. It is kept OUT of
+        // the slot list — the browser generates it, so counting it would make a page's
+        // numbering depend on whether the targets had been filled in yet, and the page frame
+        // leaves it out for the same reason. It is therefore never offered to the AI image
+        // editor, and an off-page commit repoints it so it goes on showing its draggable's
+        // picture (BL-16793).
+        // ------------------------------------------------------------------
+
+        // A draggable holding one picture, plus the target that copies it. Mirrors what
+        // copyContentToTarget builds: the copy is an image container inside a
+        // bloom-targetWrapper. targetOf defaults to the draggable's id, as it is once a game
+        // has been set up; pass "" for a target straight out of a template, which has not been
+        // paired with a draggable yet.
+        private static string GameDraggableAndTargetHtml(
+            string draggableId,
+            string pictureFileName,
+            string targetOf = null
+        ) =>
+            $@"<div class='bloom-canvas-element' data-draggable-id='{draggableId}'>
+                   <div class='bloom-imageContainer'><img src='{pictureFileName}'/></div>
+               </div>
+               <div data-target-of='{targetOf ?? draggableId}'>
+                   <div class='bloom-targetWrapper'>
+                       <div class='bloom-imageContainer'><img src='{pictureFileName}'/></div>
+                   </div>
+               </div>";
+
+        [Test]
+        public void SelectImageSlotsOnPage_DoesNotCountAGameTargetsCopy()
+        {
+            // The copy is generated, not authored: the browser writes it into the target when the
+            // draggable is selected or its picture changes, and an untouched target sits empty. So
+            // counting it would make the ordinal mean one slot in the live page and another in the
+            // saved HTML, which is how a replacement landed in a target (BL-16793). The raw
+            // selector still sees it; the page's numbering does not.
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png"));
+            Assert.That(
+                AiImageEditorApi.SelectImageContainersWithin(page).Length,
+                Is.EqualTo(2),
+                "sanity check: the page really does hold two image containers"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), "only the draggable's own slot is numbered");
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slots[0]), Is.False);
+        }
+
+        [Test]
+        public void SelectImageSlotsOnPage_EmptyTargetAndFilledTarget_NumberTheSame()
+        {
+            // The point of leaving the copies out: the same page numbers its slots identically
+            // whether or not the browser has filled the targets in (BL-16793).
+            var filled = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>"
+                    + GameDraggableAndTargetHtml("d1", "dog.png")
+            );
+            var empty = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='first.png'/></div>
+                  <div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                  </div>
+                  <div data-target-of='d1'></div>"
+            );
+
+            var slotsWhenFilled = AiImageEditorApi.SelectImageSlotsOnPage(filled);
+            var slotsWhenEmpty = AiImageEditorApi.SelectImageSlotsOnPage(empty);
+
+            Assert.That(slotsWhenFilled.Length, Is.EqualTo(2));
+            Assert.That(slotsWhenEmpty.Length, Is.EqualTo(2));
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slotsWhenFilled[1]).GetAttribute("src"),
+                Is.EqualTo("dog.png"),
+                "the draggable's picture is slot 1 whether or not its target has a copy"
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slotsWhenEmpty[1]).GetAttribute("src"),
+                Is.EqualTo("dog.png")
+            );
+        }
+
+        [Test]
+        public void IsSlotInsideGameTarget_TargetNotYetPairedWithADraggable_IsStillATarget()
+        {
+            // The Games templates ship data-target-of="", so presence of the attribute is what
+            // marks a target, not its value.
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png", targetOf: ""));
+
+            var containers = AiImageEditorApi.SelectImageContainersWithin(page);
+
+            Assert.That(containers.Length, Is.EqualTo(2));
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(containers[1]), Is.True);
+        }
+
+        [Test]
+        public void IsSlotInsideGameTarget_OrdinarySlot_IsFalse()
+        {
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer'><img src='real.png'/></div>"
+            );
+
+            var slot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+
+            Assert.That(AiImageEditorApi.IsSlotInsideGameTarget(slot), Is.False);
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWithATarget_ReturnsTheCopy()
+        {
+            var page = MakePageWithBody(GameDraggableAndTargetHtml("d1", "dog.png"));
+            var draggablesSlot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+            Assert.That(
+                AiImageEditorApi.IsSlotInsideGameTarget(draggablesSlot),
+                Is.False,
+                "sanity check: slot 0 should be the draggable's own, not the copy"
+            );
+
+            var copies = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, draggablesSlot);
+
+            Assert.That(copies.Length, Is.EqualTo(1));
+            Assert.That(copies[0].GetAttribute("src"), Is.EqualTo("dog.png"));
+            Assert.That(
+                copies[0].ParentWithAttribute(AiImageEditorApi.kGameTargetOfAttribute),
+                Is.Not.Null,
+                "what came back must be the copy inside the target, not the draggable's own img"
+            );
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWithTwoPictures_ReturnsOnlyTheMatchingCopy()
+        {
+            // A target copies its draggable's whole content, so a draggable holding two pictures
+            // gives the target two copies. Each of the draggable's slots must map to the copy in
+            // the SAME position; returning both would let one AI edit overwrite the other
+            // picture's copy as well. Nothing Bloom ships builds a draggable like this, but
+            // copyContentToTarget copies a whole bloom-canvas when it finds one, which is this
+            // shape, so the pairing is pinned rather than left to luck.
+            var page = MakePageWithBody(
+                @"<div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-canvas'>
+                          <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                          <div class='bloom-imageContainer'><img src='cat.png'/></div>
+                      </div>
+                  </div>
+                  <div data-target-of='d1'>
+                      <div class='bloom-targetWrapper'>
+                          <div class='bloom-canvas'>
+                              <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                              <div class='bloom-imageContainer'><img src='cat.png'/></div>
+                          </div>
+                      </div>
+                  </div>"
+            );
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+            Assert.That(
+                slots.Length,
+                Is.EqualTo(2),
+                "the draggable's two pictures; copies are not slots"
+            );
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(slots[1]).GetAttribute("src"),
+                Is.EqualTo("cat.png"),
+                "sanity check: slot 1 should be the draggable's second picture"
+            );
+
+            var copiesOfFirst = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[0]);
+            var copiesOfSecond = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[1]);
+
+            Assert.That(copiesOfFirst.Length, Is.EqualTo(1), "one copy, not both");
+            Assert.That(copiesOfFirst[0].GetAttribute("src"), Is.EqualTo("dog.png"));
+            Assert.That(copiesOfSecond.Length, Is.EqualTo(1), "one copy, not both");
+            Assert.That(copiesOfSecond[0].GetAttribute("src"), Is.EqualTo("cat.png"));
+            // And they are different elements, so replacing one picture cannot touch the other.
+            Assert.That(
+                copiesOfFirst[0] == copiesOfSecond[0],
+                Is.False,
+                "each of the draggable's pictures must map to its own copy"
+            );
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_AnotherDraggablesTarget_IsNotReturned()
+        {
+            var page = MakePageWithBody(
+                GameDraggableAndTargetHtml("d1", "dog.png")
+                    + GameDraggableAndTargetHtml("d2", "cat.png")
+            );
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+            Assert.That(slots.Length, Is.EqualTo(2), "two draggables; their copies are not slots");
+            var secondDraggablesSlot = slots[1];
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(secondDraggablesSlot).GetAttribute("src"),
+                Is.EqualTo("cat.png"),
+                "sanity check: slot 1 should be the second draggable's own"
+            );
+
+            var copies = AiImageEditorApi.GetGameTargetImageCopiesOfSlot(
+                page,
+                secondDraggablesSlot
+            );
+
+            Assert.That(copies.Length, Is.EqualTo(1));
+            Assert.That(copies[0].GetAttribute("src"), Is.EqualTo("cat.png"));
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_SlotOutsideAnyDraggable_ReturnsNone()
+        {
+            // A canvas background is not a draggable, so it has no target and nothing to keep
+            // in step — even on a page that does have a game on it.
+            var page = MakePageWithBody(
+                @"<div class='bloom-imageContainer' style=""background-image:url('bg.png')""></div>"
+                    + GameDraggableAndTargetHtml("d1", "dog.png")
+            );
+            var backgroundSlot = AiImageEditorApi.SelectImageSlotsOnPage(page)[0];
+            Assert.That(
+                AiImageEditorApi.GetImageElementOfSlot(backgroundSlot),
+                Is.SameAs(backgroundSlot),
+                "sanity check: slot 0 should be the background"
+            );
+
+            Assert.That(
+                AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, backgroundSlot),
+                Is.Empty
+            );
+        }
+
+        [Test]
+        public void GetGameTargetImageCopiesOfSlot_DraggableWhoseTargetIsEmpty_ReturnsNone()
+        {
+            // A target's content is cleared in some game modes, and a target of a text or video
+            // draggable never holds a picture at all.
+            var page = MakePageWithBody(
+                @"<div class='bloom-canvas-element' data-draggable-id='d1'>
+                      <div class='bloom-imageContainer'><img src='dog.png'/></div>
+                  </div>
+                  <div data-target-of='d1'></div>"
+            );
+
+            var slots = AiImageEditorApi.SelectImageSlotsOnPage(page);
+
+            Assert.That(slots.Length, Is.EqualTo(1), "the draggable's own slot, and no other");
+            Assert.That(AiImageEditorApi.GetGameTargetImageCopiesOfSlot(page, slots[0]), Is.Empty);
         }
 
         // ------------------------------------------------------------------
@@ -1670,7 +1974,7 @@ namespace BloomTests.web.controllers
             // (updated by ImageUpdater) and as the next book-up-to-date pass. Pin that
             // agreement down rather than trusting the two to stay in step by inspection.
             var name = MakePngWithCredits("pic.png", "Ada Lovelace", "Copyright 1843 Ada");
-            var img = MakeImgWithClass(null); // its src is "pic.png", the file we just made
+            var img = MakePlainImg(); // its src is "pic.png", the file we just made
 
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
                 _bookFolder.Path,
@@ -1686,6 +1990,873 @@ namespace BloomTests.web.controllers
             Assert.That(attributes.copyright, Is.EqualTo(img.GetAttribute("data-copyright")));
             Assert.That(attributes.creator, Is.EqualTo(img.GetAttribute("data-creator")));
             Assert.That(attributes.license, Is.EqualTo(img.GetAttribute("data-license")));
+        }
+
+        // A plain image element, for a test that needs one and nothing around it.
+        private static SafeXmlElement MakePlainImg()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <img src='pic.png'/>
+                    </div></div>
+                  </body></html>"
+            );
+            return (SafeXmlElement)dom.RawDom.SelectSingleNode("//img");
+        }
+
+        // The single page of a one-page DOM, as the label helpers take it.
+        private static SafeXmlElement FirstPageOf(string pageMarkup)
+        {
+            var dom = new HtmlDom("<html><head></head><body>" + pageMarkup + "</body></html>");
+            var page = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+                .OfType<SafeXmlElement>()
+                .FirstOrDefault();
+            if (page == null)
+                Assert.Fail("the test markup has no bloom-page, so there is nothing to name");
+            return page;
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NumberedPage_SaysPageAndTheNumber()
+        {
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='3'>"
+                    + "<div class='pageLabel'>Basic Text &amp; Picture</div></div>"
+            );
+
+            // The user thinks in page numbers, not template names, so the number wins over the
+            // page's own label when the page has one.
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.EqualTo("Page 3"));
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_FrontMatter_UsesThePageName()
+        {
+            var page = FirstPageOf(
+                // Bloom writes data-page-number='' on an unnumbered page (BL-7303).
+                "<div class='bloom-page bloom-frontMatter' id='cover' data-page-number=''>"
+                    + "<div class='pageLabel'>Front Cover</div></div>"
+            );
+
+            // Front matter has no page number, so the page's own name is all we can say. It is
+            // the English name: the AI image editor's user interface is English only.
+            Assert.That(
+                AiImageEditorApi.GetPageNameForImageSlotLabel(page),
+                Is.EqualTo("Front Cover")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_OnePictureOnThePage_JustNamesThePage()
+        {
+            // Nothing to tell it apart from, so the page name is enough. This is the common
+            // case: a full-page picture is one canvas background image and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", true, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 1),
+                Is.EqualTo("Page 3")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_BackgroundAndAPictureOnIt_NamesTheBackgroundAndNumbersTheRest()
+        {
+            // Two empty slots on one page show the same graphic in the AI image editor, so
+            // without these names the user cannot tell which slot is which (BL-16744).
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", true, 0, 2),
+                Is.EqualTo("Page 1 - Canvas Background")
+            );
+            // The pictures on top of the background start at 1, not at 2.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 1", false, 1, 2),
+                Is.EqualTo("Page 1 - Image 1")
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_TwoPicturesAndNoBackground_NumbersThem()
+        {
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 1, 2),
+                Is.EqualTo("Page 3 - Image 1")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel("Page 3", false, 2, 2),
+                Is.EqualTo("Page 3 - Image 2")
+            );
+        }
+
+        [Test]
+        public void GetPageNameForImageSlotLabel_NoNumberAndNoLabel_SaysNothing()
+        {
+            // HtmlDom can leave a page with no data-page-number attribute at all (BL-12903).
+            // No label is better than a made-up one such as "unknown".
+            var page = FirstPageOf("<div class='bloom-page' id='p1'></div>");
+
+            Assert.That(AiImageEditorApi.GetPageNameForImageSlotLabel(page), Is.Null);
+        }
+
+        [Test]
+        public void BuildImageSlotLabel_NoPageName_NamesTheSlotOnly()
+        {
+            // Nothing to say about the page, but two slots still have to be told apart.
+            Assert.That(AiImageEditorApi.BuildImageSlotLabel(null, false, 1, 1), Is.Null);
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, false, 2, 2),
+                Is.EqualTo("Image 2")
+            );
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabel(null, true, 0, 2),
+                Is.EqualTo("Canvas Background")
+            );
+        }
+
+        [Test]
+        public void IsBackgroundImage_TellsTheCanvasBackgroundFromAPictureOnTopOfIt()
+        {
+            // EnumerateBookImages asks HtmlDom which slot is the canvas background, and labels
+            // that one "Canvas Background" rather than "Image 1". This test pins the markup
+            // that question is asked about, so a change to the canvas DOM breaks here.
+            var page = FirstPageOf(
+                "<div class='bloom-page numberedPage' id='p1' data-page-number='1'>"
+                    + "<div class='bloom-canvas'>"
+                    + "<div class='bloom-canvas-element bloom-backgroundImage'>"
+                    + "<div class='bloom-imageContainer'><img src='back.png'/></div></div>"
+                    + "<div class='bloom-canvas-element'>"
+                    + "<div class='bloom-imageContainer'><img src='front.png'/></div></div>"
+                    + "</div></div>"
+            );
+            var images = HtmlDom
+                .SelectChildImgAndBackgroundImageElements(page)
+                .OfType<SafeXmlElement>()
+                .ToList();
+
+            // Sanity: both pictures are there, in the order the labels will number them.
+            Assert.That(images.Count, Is.EqualTo(2), "setup");
+            Assert.That(images[0].GetAttribute("src"), Is.EqualTo("back.png"), "setup");
+
+            Assert.That(HtmlDom.IsBackgroundImage(images[0]), Is.True);
+            Assert.That(HtmlDom.IsBackgroundImage(images[1]), Is.False);
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_BackgroundAndTwoPicturesOnIt_NamesThenNumbers()
+        {
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, false, false }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(
+                    new[] { "Page 4 - Canvas Background", "Page 4 - Image 1", "Page 4 - Image 2" }
+                )
+            );
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_SeveralCanvasesOnThePage_NumbersThemAll()
+        {
+            // A Picture Dictionary page has six canvases, so six background images. Naming
+            // them all "Canvas Background" would give six identical labels, which is the
+            // confusion these labels exist to remove (BL-16744).
+            var labels = AiImageEditorApi.BuildImageSlotLabelsForPage(
+                "Page 4",
+                new[] { true, true, true }
+            );
+
+            Assert.That(
+                labels,
+                Is.EqualTo(new[] { "Page 4 - Image 1", "Page 4 - Image 2", "Page 4 - Image 3" }),
+                "identical labels would tell the user nothing"
+            );
+            Assert.That(labels.Distinct().Count(), Is.EqualTo(3), "every label must be distinct");
+        }
+
+        [Test]
+        public void BuildImageSlotLabelsForPage_OneCanvasOnly_JustNamesThePage()
+        {
+            // The common case: a full-page picture is one canvas background and nothing else.
+            Assert.That(
+                AiImageEditorApi.BuildImageSlotLabelsForPage("Page 4", new[] { true }),
+                Is.EqualTo(new[] { "Page 4" })
+            );
+        }
+
+        // A one-page book DOM whose single image slot carries the given
+        // data-fraction-of-page attribute markup (pass "" for no attribute at all).
+        private static HtmlDom MakeDomWithFractionOfPage(string fractionAttributeMarkup)
+        {
+            return new HtmlDom(
+                @"<html><head></head><body>
+                    <div id='bloomDataDiv'></div>
+                    <div class='bloom-page' id='page1'><div class='marginBox'>
+                        <div class='bloom-imageContainer' "
+                    + fractionAttributeMarkup
+                    + @"><img src='pic.png'/></div>
+                    </div></div>
+                  </body></html>"
+            );
+        }
+
+        // The fractionOfPage that EnumerateBookImages hands the AI image editor for the first
+        // (only) slot of the given DOM, as JSON. Null when it sent none.
+        private JToken FirstImagesFractionOfPage(HtmlDom dom)
+        {
+            MakePlainPng("pic.png");
+            var images = AiImageEditorApi.EnumerateBookImages(dom, _bookFolder.Path);
+            Assert.That(images, Is.Not.Empty, "setup: the slot should have been offered at all");
+            var first = JObject.FromObject(images[0]);
+            return first["fractionOfPage"];
+        }
+
+        [Test]
+        public void EnumerateBookImages_SlotRecordsItsShareOfThePage_PassesItOn()
+        {
+            // The front end wrote this when the page was last saved; C# only carries it, because
+            // turning it into a number of dots needs the page size, which only a laid-out
+            // browser page knows.
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,0.31'")
+            );
+
+            Assert.That(fraction, Is.Not.Null, "the slot's share of its page should travel");
+            Assert.That(fraction["width"].Value<double>(), Is.EqualTo(0.42).Within(0.0001));
+            Assert.That(fraction["height"].Value<double>(), Is.EqualTo(0.31).Within(0.0001));
+        }
+
+        [Test]
+        public void EnumerateBookImages_NoShareRecorded_SendsNull()
+        {
+            // A page with no share recorded. Not the normal state (the whole-book update
+            // re-saves every page before editing, BL-16852); this is the hardening for when
+            // that update did not run or failed. The AI image editor then offers that slot no
+            // automatic size, which is better than a guessed one.
+            var fraction = FirstImagesFractionOfPage(MakeDomWithFractionOfPage(""));
+
+            Assert.That(
+                fraction.Type,
+                Is.EqualTo(JTokenType.Null),
+                "a slot with no recorded share should be sent as null, not omitted"
+            );
+        }
+
+        [Test]
+        public void EnumerateBookImages_MalformedShare_SendsNull()
+        {
+            var fraction = FirstImagesFractionOfPage(
+                MakeDomWithFractionOfPage("data-fraction-of-page='0.42,banana'")
+            );
+
+            Assert.That(fraction.Type, Is.EqualTo(JTokenType.Null));
+        }
+
+        [TestCase("0.42,0.31", 0.42, 0.31)]
+        [TestCase(" 0.42 , 0.31 ", 0.42, 0.31)]
+        [TestCase("1,1", 1.0, 1.0)]
+        public void TryParseFractionOfPage_ReadsTwoNumbers(
+            string value,
+            double expectedWidth,
+            double expectedHeight
+        )
+        {
+            var fraction = AiImageEditorApi.TryParseFractionOfPage(value);
+
+            Assert.That(fraction, Is.Not.Null, "'{0}' should parse", value);
+            Assert.That(fraction.Value.width, Is.EqualTo(expectedWidth).Within(0.0001));
+            Assert.That(fraction.Value.height, Is.EqualTo(expectedHeight).Within(0.0001));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("abc")]
+        [TestCase("1")]
+        [TestCase("0.4,x")]
+        [TestCase("0.4,0.3,0.2")]
+        [TestCase("0,0.5")]
+        [TestCase("-0.4,0.5")]
+        public void TryParseFractionOfPage_RefusesAnythingElse(string value)
+        {
+            Assert.That(
+                AiImageEditorApi.TryParseFractionOfPage(value),
+                Is.Null,
+                "'{0}' is not a share of a page",
+                value ?? "(null)"
+            );
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.GetLinkedEditorUrlOverride"/>, which honors the
+    /// obsolete BLOOM_AI_EDITOR_URL name so a developer who still has it set keeps getting
+    /// their linked dev server instead of silently falling back to the staged build.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorLinkedUrlOverrideTests
+    {
+        private string _originalCurrent;
+        private string _originalObsolete;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalCurrent = Get(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable);
+            _originalObsolete = Get(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable);
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, null);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, null);
+            // Sanity: with neither name set we must start from "no override", or a test below
+            // could pass on a value left over from the developer's own environment.
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.Null,
+                "setup: neither variable should be in play at the start of a test"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, _originalCurrent);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, _originalObsolete);
+        }
+
+        private static string Get(string name) => Environment.GetEnvironmentVariable(name);
+
+        private static void Set(string name, string value) =>
+            Environment.SetEnvironmentVariable(name, value);
+
+        [Test]
+        public void CurrentNameSet_IsUsed()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://localhost:3000/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:3000/")
+            );
+        }
+
+        [Test]
+        public void OnlyObsoleteNameSet_IsStillHonored()
+        {
+            Set(
+                AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable,
+                "http://localhost:4000/"
+            );
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://localhost:4000/"),
+                "the obsolete name must keep working during the transition"
+            );
+        }
+
+        [Test]
+        public void BothNamesSet_CurrentWins()
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, "http://current/");
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://current/")
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void CurrentNameBlank_FallsBackToObsolete(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, "http://obsolete/");
+            Assert.That(
+                AiImageEditorApi.GetLinkedEditorUrlOverride(),
+                Is.EqualTo("http://obsolete/"),
+                "a blank current name should not mask a usable obsolete one"
+            );
+        }
+
+        [TestCase("")]
+        [TestCase("   ")]
+        public void BothBlankOrUnset_ReturnsNull(string blank)
+        {
+            Set(AiImageEditorApi.kLinkedEditorUrlEnvironmentVariable, blank);
+            Set(AiImageEditorApi.kLinkedEditorUrlObsoleteEnvironmentVariable, blank);
+            Assert.That(AiImageEditorApi.GetLinkedEditorUrlOverride(), Is.Null);
+        }
+    }
+
+    /// <summary>
+    /// Tests for <see cref="AiImageEditorApi.ShouldShowDeveloperTools"/>, the opt-in that
+    /// lets a tester on a channel like beta see the AI image editor's tester tools
+    /// (currently the "Local Dummy (No AI)" model). See BL-16770.
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorDeveloperToolsOptInTests
+    {
+        private string _originalValue;
+
+        [SetUp]
+        public void Setup()
+        {
+            _originalValue = Environment.GetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable
+            );
+            // Sanity: unit tests run on a channel that is neither developer nor alpha, so
+            // every "on" result below really comes from the environment variable and not
+            // from the channel check short-circuiting the method.
+            Assert.That(
+                ApplicationUpdateSupport.IsDevOrAlpha,
+                Is.False,
+                "setup: unit tests should not look like a dev/alpha channel"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            SetVariable(_originalValue);
+        }
+
+        private static void SetVariable(string value)
+        {
+            Environment.SetEnvironmentVariable(
+                AiImageEditorApi.kShowTesterToolsEnvironmentVariable,
+                value
+            );
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("0")]
+        [TestCase("f")]
+        [TestCase("n")]
+        [TestCase("no")]
+        [TestCase("false")]
+        [TestCase("please")]
+        [TestCase("truely")]
+        public void ShouldShowDeveloperTools_NotOptedIn_False(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.False);
+        }
+
+        [TestCase("true")]
+        [TestCase("t")]
+        [TestCase("y")]
+        [TestCase("yes")]
+        [TestCase("1")]
+        // The same values as above, spelled the way a tester might actually type them.
+        [TestCase("TRUE")]
+        [TestCase("True")]
+        [TestCase("T")]
+        [TestCase("Y")]
+        [TestCase("Yes")]
+        [TestCase("YES")]
+        [TestCase(" 1 ")]
+        public void ShouldShowDeveloperTools_OptedIn_True(string value)
+        {
+            SetVariable(value);
+            Assert.That(AiImageEditorApi.ShouldShowDeveloperTools(), Is.True);
+        }
+
+        /// <summary>
+        /// Guards the list itself: every documented "on" value must actually turn the tools
+        /// on, so adding a spelling to kTesterToolsOnValues without a matching TestCase above
+        /// still can't ship broken.
+        /// </summary>
+        [Test]
+        public void ShouldShowDeveloperTools_EveryDocumentedOnValue_True()
+        {
+            Assert.That(
+                AiImageEditorApi.kTesterToolsOnValues,
+                Is.Not.Empty,
+                "setup: there should be some accepted values"
+            );
+            foreach (var value in AiImageEditorApi.kTesterToolsOnValues)
+            {
+                SetVariable(value);
+                Assert.That(
+                    AiImageEditorApi.ShouldShowDeveloperTools(),
+                    Is.True,
+                    $"'{value}' is documented as an accepted value"
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// The cropped view Bloom hands the AI image editor in place of a cropped image's file,
+    /// and the matching removal of the crop when a replacement lands on a slot the user does
+    /// not have open (BL-16868).
+    /// </summary>
+    [TestFixture]
+    public class AiImageEditorCroppingTests
+    {
+        private const string kTestImagesFolder = "src/BloomTests/ImageProcessing/images";
+
+        private TemporaryFolder _bookFolder;
+        private Size _uncroppedSize;
+
+        [SetUp]
+        public void Setup()
+        {
+            _bookFolder = new TemporaryFolder("AiImageEditorCroppingTests");
+            var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                kTestImagesFolder,
+                "man.png"
+            );
+            RobustFile.Copy(source, Path.Combine(_bookFolder.Path, "man.png"));
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out _uncroppedSize
+                ),
+                Is.True,
+                "setup: should be able to read the test image's size"
+            );
+            // The crops below take a 50x40 rectangle at (10,20), so the test image has to be
+            // bigger than that for "smaller than the original" to mean anything.
+            Assert.That(
+                _uncroppedSize.Width,
+                Is.GreaterThan(60),
+                "setup: test image is wide enough to crop"
+            );
+            Assert.That(
+                _uncroppedSize.Height,
+                Is.GreaterThan(60),
+                "setup: test image is tall enough to crop"
+            );
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _bookFolder.Dispose();
+        }
+
+        /// <summary>
+        /// The markup a cropped image actually has: an img carrying width/left/top, inside an
+        /// image container, inside a canvas element whose width/height fix the visible box.
+        /// Passing no imgStyle gives an ordinary, uncropped image.
+        /// </summary>
+        private static SafeXmlElement MakeSlotImage(string imgStyle, string canvasElementStyle)
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'><div class='bloom-canvas'>
+                      <div class='bloom-canvas-element' style='"
+                    + canvasElementStyle
+                    + @"'>
+                        <div class='bloom-imageContainer'><img src='man.png' style='"
+                    + imgStyle
+                    + @"'/></div>
+                      </div>
+                    </div></div>
+                  </body></html>"
+            );
+            return dom.RawDom.SelectSingleNode("//img") as SafeXmlElement;
+        }
+
+        // An img cropped to a 50x40 rectangle at (10,20) of the full image: with the img's
+        // width left at the image's natural width the scale is 1, so the canvas element's
+        // width/height are the crop size and the img's negative left/top are its origin.
+        private SafeXmlElement MakeCroppedSlotImage()
+        {
+            return MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageIsNotCropped_ReturnsNull()
+        {
+            var element = MakeSlotImage("", "width: 50px; height: 40px;");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an uncropped image should be offered as its own file"
+            );
+        }
+
+        /// <summary>
+        /// Bloom writes width/left/top when it merely fits a background image to its canvas,
+        /// so those styles alone must not send us off re-encoding an image to produce a copy
+        /// of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_ImageOnlyFittedToItsCanvas_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: 0px; top: 0px;",
+                $"width: {_uncroppedSize.Width}px; height: {_uncroppedSize.Height}px;"
+            );
+            // Sanity: this is the markup that would otherwise look cropped.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("width"),
+                "setup: the image carries the styles cropping uses"
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "nothing is hidden, so there is nothing to render"
+            );
+        }
+
+        /// <summary>
+        /// The rounding that makes a fitted image's rectangle miss the file's bounds happens in
+        /// CSS pixels, and the rectangle is in image pixels, so the tolerance has to grow with
+        /// the ratio between them. A big photo shown small would otherwise report itself cropped
+        /// and be re-encoded at every launch, a few rows short of itself.
+        /// </summary>
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_LargeImageShownSmallWithRounding_ReturnsNull()
+        {
+            var displayedWidth = _uncroppedSize.Width / 10.0;
+            // Four tenths of a CSS pixel short in height — four image pixels at this scale.
+            var displayedHeight = _uncroppedSize.Height / 10.0 - 0.4;
+            var element = MakeSlotImage(
+                Px("width", displayedWidth) + " left: 0px; top: 0px;",
+                Px("width", displayedWidth) + " " + Px("height", displayedHeight)
+            );
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "sub-pixel rounding in the layout is not a crop"
+            );
+        }
+
+        private static string Px(string name, double value)
+        {
+            return name
+                + ": "
+                + value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)
+                + "px;";
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_Placeholder_ReturnsNull()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 50px; height: 40px;"
+            );
+            element.SetAttribute("src", "placeHolder.png");
+
+            Assert.That(
+                AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                    _bookFolder.Path,
+                    element,
+                    "page1",
+                    0
+                ),
+                Is.Null,
+                "an empty slot's placeholder is hidden, not cropped (BL-15201)"
+            );
+        }
+
+        [Test]
+        public void TryMakeCroppedViewOfSlotImage_CroppedImage_RendersTheVisibleRectangle()
+        {
+            var element = MakeCroppedSlotImage();
+
+            var relativePath = AiImageEditorApi.TryMakeCroppedViewOfSlotImage(
+                _bookFolder.Path,
+                element,
+                "page1",
+                2
+            );
+
+            Assert.That(relativePath, Is.Not.Null, "a cropped image should get a cropped view");
+            Assert.That(
+                relativePath,
+                Is.EqualTo(
+                    AiImageEditorApi.kWorkingFolderName
+                        + "/"
+                        + AiImageEditorApi.kCroppedViewFolderName
+                        + "/page1-2.png"
+                ),
+                "the rendering is named for the slot it came from, inside the working folder"
+            );
+
+            var renderedPath = Path.Combine(
+                _bookFolder.Path,
+                relativePath.Replace('/', Path.DirectorySeparatorChar)
+            );
+            Assert.That(
+                RobustFile.Exists(renderedPath),
+                Is.True,
+                "the rendering should be on disk"
+            );
+            Assert.That(
+                ImageUtils.TryGetImageSize(renderedPath, out var croppedSize),
+                Is.True,
+                "the rendering should be a readable image"
+            );
+            Assert.That(croppedSize.Width, Is.EqualTo(50), "the visible width");
+            Assert.That(croppedSize.Height, Is.EqualTo(40), "the visible height");
+
+            // The book's own image must come through untouched: the crop is presentational,
+            // and losing the rest of the frame would be destructive.
+            Assert.That(
+                ImageUtils.TryGetImageSize(
+                    Path.Combine(_bookFolder.Path, "man.png"),
+                    out var afterSize
+                ),
+                Is.True
+            );
+            Assert.That(
+                afterSize,
+                Is.EqualTo(_uncroppedSize),
+                "the original image file must not be altered"
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_RemovesOnlyTheCropProperties()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "style",
+                element.GetAttribute("style") + " transform: rotate(3deg);"
+            );
+            // Sanity check, so the assertion below can't pass on markup that never had a crop.
+            Assert.That(
+                element.GetAttribute("style"),
+                Does.Contain("left"),
+                "setup: the image starts out cropped"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Not.Contain("width"), "crop width should be gone");
+            Assert.That(style, Does.Not.Contain("left"), "crop left should be gone");
+            Assert.That(style, Does.Not.Contain("top"), "crop top should be gone");
+            Assert.That(
+                style,
+                Does.Contain("rotate(3deg)"),
+                "styling that has nothing to do with cropping should survive"
+            );
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_NothingElseInTheStyle_RemovesTheAttribute()
+        {
+            var element = MakeCroppedSlotImage();
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 100));
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "an empty style attribute is worth removing rather than leaving behind"
+            );
+        }
+
+        /// <summary>
+        /// GetImageElementOfSlot hands back the CONTAINER when it wears the picture as a
+        /// background image. Its width/height/left/top are the container's own geometry, and a
+        /// background-image slot has no crop to drop in the first place.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_ElementIsAContainer_LeavesItAlone()
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                    <div class='bloom-page' id='page1'>
+                      <div class='bloom-imageContainer' style=""width: 200px; height: 100px; background-image:url('man.png')""></div>
+                    </div>
+                  </body></html>"
+            );
+            var container =
+                dom.RawDom.SelectSingleNode("//div[contains(@class,'bloom-imageContainer')]")
+                as SafeXmlElement;
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(container, () => new Size(100, 100));
+
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("width: 200px"),
+                "the container's own geometry must survive"
+            );
+            Assert.That(
+                container.GetAttribute("style"),
+                Does.Contain("height: 100px"),
+                "the container's own geometry must survive"
+            );
+        }
+
+        /// <summary>
+        /// A background image marked to cover its canvas is made to cover BY the crop styles,
+        /// so clearing them and stopping there would letterbox a full-bleed picture. The
+        /// replacement has to be re-centered to fill the canvas element, which the cover branch
+        /// has already sized to the whole page canvas.
+        /// </summary>
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackground_FillsTheCanvasElement()
+        {
+            var element = MakeSlotImage(
+                $"width: {_uncroppedSize.Width}px; left: -10px; top: -20px;",
+                "width: 200px; height: 100px;"
+            );
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            // A 100x200 replacement in a 200x100 box: covering needs scale 2 on the width,
+            // giving a 200x400 image centered vertically at top -150.
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => new Size(100, 200));
+
+            var style = element.GetAttribute("style");
+            Assert.That(style, Does.Contain("width: 200px"), "wide enough to fill the box");
+            Assert.That(style, Does.Contain("left: 0px"), "no overflow to share horizontally");
+            Assert.That(style, Does.Contain("top: -150px"), "the overflow is hidden evenly");
+        }
+
+        [Test]
+        public void RefitSlotImageForNewPicture_CoverBackgroundButSizeUnreadable_JustClearsTheCrop()
+        {
+            var element = MakeCroppedSlotImage();
+            element.SetAttribute(
+                "class",
+                element.GetAttribute("class") + " bloom-imageObjectFit-cover"
+            );
+
+            AiImageEditorApi.RefitSlotImageForNewPicture(element, () => Size.Empty);
+
+            Assert.That(
+                element.HasAttribute("style"),
+                Is.False,
+                "without the new image's size there is nothing to compute a fill from"
+            );
         }
     }
 }

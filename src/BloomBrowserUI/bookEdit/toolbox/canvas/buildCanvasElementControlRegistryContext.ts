@@ -19,7 +19,7 @@ import { inferCanvasElementType } from "./canvasElementTypeInference";
 import { canvasElementControlRegistry } from "./canvasElementControlRegistry";
 import { CanvasElementType } from "./canvasElementTypes";
 import { IControlContext } from "./canvasControlTypes";
-import { isAiEditableImageSrc } from "../../aiImageEditor/aiEditorImageFormats";
+import { isAiEditableImageSrc } from "../../aiImageEditor/aiImageEditorImageFormats";
 import { imageContentIsTransformed } from "../../js/imageContentTransform";
 
 const hasRealImage = (img: HTMLImageElement | undefined): boolean => {
@@ -175,6 +175,8 @@ export const buildCanvasElementControlRegistryContext = (
         elementType,
         hasImage,
         hasRealImage: hasRealImage(img ?? undefined),
+        isPlaceholderImage:
+            hasImage && isPlaceHolderImage(img?.getAttribute("src")),
         hasVideo,
         hasPreviousVideoContainer: videoContainer
             ? !!findPreviousVideoContainer(videoContainer)

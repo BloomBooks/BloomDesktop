@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Properties;
 using Bloom.web;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;

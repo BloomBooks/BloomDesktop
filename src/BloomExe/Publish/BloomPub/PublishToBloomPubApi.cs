@@ -13,7 +13,6 @@ using Bloom.Publish.BloomPub.wifi;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
@@ -308,7 +307,7 @@ namespace Bloom.Publish.BloomPub
 
         public static void ReportAnalytics(string mode, Book.Book book)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 "Publish Android",
                 new Dictionary<string, string>()
                 {

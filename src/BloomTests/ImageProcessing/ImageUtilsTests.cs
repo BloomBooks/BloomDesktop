@@ -439,7 +439,7 @@ namespace BloomTests.ImageProcessing
                 Assert.That(
                     ImageUtils.HasTransparency(bitmap),
                     Is.True,
-                    "an interior-only cutout must be found, or the AI editor would flatten it"
+                    "an interior-only cutout must be found, or the AI image editor would flatten it"
                 );
             }
         }
@@ -1082,6 +1082,73 @@ namespace BloomTests.ImageProcessing
                 Math.Abs(expected - ImageUtils.GetNumberFromPx(label, input)),
                 Is.LessThan(0.001)
             );
+        }
+
+        /// <summary>
+        /// Build a DOM holding one canvas element with the given canvas-element and img styles,
+        /// and return its img.
+        /// </summary>
+        private static SafeXmlElement MakeImgWithCropStyles(
+            string canvasElementStyle,
+            string imgStyle
+        )
+        {
+            var dom = new HtmlDom(
+                @"<html><head></head><body><div class=""bloom-page""><div class=""marginBox"">"
+                    + ReallyCropImagesTests.MakeImageCanvasElement(
+                        "theImg",
+                        "man.png",
+                        canvasElementStyle,
+                        imgStyle
+                    )
+                    + "</div></div></body></html>"
+            );
+            return dom.SelectSingleNode("//img[@id='theImg']");
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageIsCropped_True()
+        {
+            // The file is 1000x500; the canvas element shows a 500x250 window onto it,
+            // offset 250 from the left and 125 from the top.
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 400px; left: -100px; top: -50px;"
+            );
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.True);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageMerelyFittedToCanvas_False()
+        {
+            // The whole file is visible; the styles only size it to its canvas element.
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 200px; left: 0px; top: 0px;"
+            );
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.False);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_CanvasElementHasNoHeight_False()
+        {
+            // Without a height the crop rectangle has no area, so it shows nothing at all
+            // rather than part of the image, and must not be offered to the renderer.
+            var img = MakeImgWithCropStyles("width: 200px;", "width: 200px; left: 0px; top: 0px;");
+            Assert.That(ImageUtils.HasCropStyles(img), Is.True, "sanity check: styles are there");
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, new Size(1000, 500)), Is.False);
+        }
+
+        [Test]
+        public void CropHidesPartOfImage_ImageSizeUnknown_False()
+        {
+            var img = MakeImgWithCropStyles(
+                "width: 200px; height: 100px;",
+                "width: 400px; left: -100px; top: -50px;"
+            );
+            Assert.That(ImageUtils.CropHidesPartOfImage(img, Size.Empty), Is.False);
         }
     }
 

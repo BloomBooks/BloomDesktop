@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using Sentry;
 using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
@@ -109,7 +108,7 @@ namespace Bloom
                 //thousands of exceptions we were getting as with BL-3280
                 if (modalThreshold != ModalIf.None)
                 {
-                    Analytics.ReportException(exception);
+                    BloomAnalytics.ReportException(exception);
                 }
 
                 Logger.WriteError("NonFatalProblem: " + fullDetailedMessage, exception);

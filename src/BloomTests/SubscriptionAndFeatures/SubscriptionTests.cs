@@ -24,7 +24,7 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "การทดสอบ-LC")]
-        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
+        [TestCase("Fake[Western]-009926-6402", "Fake[Western]")]
         public void Descriptor_ReturnsCorrectValue(string code, string expectedDescriptor)
         {
             var subscription = new Subscription(code);
@@ -35,11 +35,11 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase("", "Default")]
         [TestCase("Test-727011-1339", "Test")]
         [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
-        [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
+        [TestCase("Fake-LC-009926-1483", "Local-Community")] // this code will eventually expire, after which it should be replaced
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
         [TestCase("Test-Invalid-111-1111", "Default")] //  invalid, thus "Default"
         [TestCase("Foobar-***-***", "Default")] //  invalid, thus "Default". To use a redacted code, you have to use a factory method
-        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
+        [TestCase("Fake[Western]-009926-6402", "Fake[Western]")]
         public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
@@ -85,12 +85,71 @@ namespace BloomTests.SubscriptionAndFeatures
             Assert.AreEqual(expectedResult, subscription.IsExpired());
         }
 
+        // BL-16786: the expiration date is the last day the subscription works, so it does not
+        // become expired until the following day. This has to agree with the Subscription tab of
+        // the Collection Settings dialog, which compares whole dates; otherwise, on the expiration
+        // day itself, the dialog says the subscription is fine while the tools say it is not.
+        [TestCase(1, false)]
+        [TestCase(0, false)]
+        [TestCase(-1, true)]
+        public void IsExpired_AtDayBoundary_TreatsExpirationDayAsStillValid(
+            int daysFromToday,
+            bool expectedExpired
+        )
+        {
+            var dayTestStarted = DateTime.Now.Date;
+            var expiration = dayTestStarted.AddDays(daysFromToday);
+            var code = MakeCodeExpiringOn(expiration);
+            var subscription = new Subscription(code);
+            var isExpired = subscription.IsExpired();
+            var tier = subscription.Tier;
+
+            // We built the code relative to today, but Subscription reads the clock again for
+            // itself, so if midnight happened in between, the answers we just captured are about
+            // the wrong day. That is a property of the test, not a bug in Subscription.
+            if (DateTime.Now.Date != dayTestStarted)
+                Assert.Ignore("The date changed while this test was running; rerun it.");
+
+            // sanity checks: if we didn't build a well-formed code for the intended date,
+            // the assertions below would pass or fail for the wrong reason.
+            Assert.AreEqual(
+                "ok",
+                subscription.GetIntegrityLabel(),
+                $"the generated test code {code} is not well formed"
+            );
+            Assert.AreEqual(expiration, subscription.ExpirationDate);
+
+            Assert.AreEqual(expectedExpired, isExpired);
+            // The tier is what actually disables the subscription-only tools.
+            Assert.AreEqual(
+                expectedExpired ? SubscriptionTier.Basic : SubscriptionTier.Enterprise,
+                tier
+            );
+        }
+
+        /// <summary>
+        /// Build a valid subscription code that expires on the given date, using the same
+        /// arithmetic as the private code-generating spreadsheet (and, on the reading end,
+        /// Subscription.CalculateExpirationDate).
+        /// </summary>
+        private static string MakeCodeExpiringOn(DateTime expiration)
+        {
+            const string descriptor = "UnitTest-E";
+            var datePart = (int)(expiration - new DateTime(1899, 12, 30)).TotalDays - 40000;
+            var upperDescriptor = descriptor.ToUpperInvariant();
+            var descriptorSum = 0;
+            for (var i = 0; i < upperDescriptor.Length; i++)
+                descriptorSum += upperDescriptor[i] * i;
+            var checksum = ((int)Math.Floor(Math.Sqrt(datePart)) + descriptorSum) % 10000;
+            return $"{descriptor}-{datePart:D6}-{checksum:D4}";
+        }
+
         [TestCase(null, SubscriptionTier.Basic)]
         [TestCase("", SubscriptionTier.Basic)]
         [TestCase("Legacy-LC-005839-2533", SubscriptionTier.Basic)] // expired, so basic
-        [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
-        [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
-        [TestCase("Fake-Pro-006273-2126", SubscriptionTier.Pro)]
+        [TestCase("Fake-009926-0521", SubscriptionTier.Enterprise)]
+        [TestCase("Fake-LC-009926-1483", SubscriptionTier.LocalCommunity)]
+        [TestCase("Fake-Pro-009926-2146", SubscriptionTier.Pro)]
         [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's basic
         public void Tier_ReturnsCorrectEnum(string code, SubscriptionTier expectedTier)
         {
@@ -173,8 +232,8 @@ namespace BloomTests.SubscriptionAndFeatures
 
         [TestCase(null, "")]
         [TestCase("", "")]
-        [TestCase("Fake-Thing-LC-006273-5397", "Fake Thing")] // dashes are replaced by spaces
-        [TestCase("Fake-006273-0501", "")] // this is a full-on enterprise subscription, so no personalization
+        [TestCase("Fake-Thing-LC-009926-5417", "Fake Thing")] // dashes are replaced by spaces
+        [TestCase("Fake-009926-0521", "")] // this is a full-on enterprise subscription, so no personalization
         public void Personalization_ReturnsCorrectValue(string code, string personalization)
         {
             var subscription = new Subscription(code);
