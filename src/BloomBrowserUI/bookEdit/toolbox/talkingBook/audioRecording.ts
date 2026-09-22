@@ -59,6 +59,7 @@ import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import { createValidXhtmlUniqueId } from "../../js/xhtmlIdUtils";
 import { doesNarrationExist, kAnyRecordingApiUrl } from "./audioUtils";
+import { wrapWithRequestPageContentDelay } from "../../js/bloomEditing";
 import {
     hideImageDescriptions,
     showImageDescriptions,
@@ -111,6 +112,9 @@ const kBloomEditableTextBoxClass = "bloom-editable";
 const kBloomEditableTextBoxSelector = "div.bloom-editable";
 const kBloomTranslationGroupClass = "bloom-translationGroup";
 const kBloomVisibleClass = "bloom-visibility-code-on";
+
+// Identifies the page-save delay this tool registers while an import is writing to the page.
+const kImportRecordingDelayId = "importRecording";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 const kPlaybackOrderContainerClass: string =
@@ -1323,6 +1327,21 @@ export default class AudioRecording implements IAudioRecorder {
         // and suppress the yellow current highlight we want to show as Speak starts.
         this.clearAudioSplit();
 
+        // This recording is about to be named after the current selection, so make sure that
+        // selection is on the page being shown before the normalising step below uses it. That
+        // step walks UP from whatever is highlighted, and walking up from a node that is no
+        // longer in the page reaches nothing -- so it would hand back that same off-page node and
+        // then install it as the selection, and the recording would be filed under an id nothing
+        // on the page owns (BL-16873).
+        //
+        // Behind the synchronous check so the ordinary case adds no await here. Everything below is
+        // timing-sensitive: delaying `recording = true` by even one microtask lets a fast mouseup
+        // arrive before this method has armed anything for it to cancel, which leaves the record
+        // button looking active after the user has let go.
+        if (this.isHighlightStale()) {
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
+        }
+
         // If we were paused highlighting one sentence but are recording in text box mode,
         // things could get confusing. At least make sure the selection reflects what we
         // actually want to record.
@@ -1369,9 +1388,84 @@ export default class AudioRecording implements IAudioRecorder {
             });
     }
 
+    // Whether there IS a selection and it points somewhere other than the page being shown.
+    // Having no selection at all is not this: that is the ordinary "nothing chosen yet" case,
+    // which the usual default-selection code handles.
+    //
+    // Synchronous on purpose, so that a caller on a timing-sensitive path can check cheaply and
+    // pay for the async repair only when there is something to repair. See its use in
+    // startRecordCurrentAsync, where an extra await would be enough to matter.
+    private isHighlightStale(): boolean {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return false;
+        const current = this.highlightedElement;
+        return !!current && !pageBody.contains(current);
+    }
+
+    // Make sure the selection points at something that is actually on the page being shown, so
+    // that whatever names an audio file after it names one the page can find again.
+    //
+    // highlightedElement can be left pointing at a node that is no longer in the page: CKEditor's
+    // initialization replaces the paragraph it lived in, and a page change leaves it in the
+    // previous, detached document. (reestablishCurrentHighlightIfNeeded repairs the same staleness
+    // for the *visible* highlight; this is the equivalent for the selection we file audio under.)
+    //
+    // Walking up from a detached node reaches null rather than the enclosing text box, so asking
+    // getCurrentAudioSentence() is not enough on its own -- the selection has to be back on the
+    // live page before that walk can mean anything.
+    private async ensureHighlightIsOnTheCurrentPageAsync(): Promise<void> {
+        const pageBody = this.getPageDocBody();
+        if (!pageBody) return;
+        const current = this.highlightedElement;
+        if (current && pageBody.contains(current)) return;
+
+        const liveEquivalent = current?.id
+            ? pageBody.ownerDocument.getElementById(current.id)
+            : null;
+        if (liveEquivalent) {
+            this.highlightedElement = liveEquivalent as HTMLElement;
+            return;
+        }
+        await this.setCurrentAudioElementToDefaultAsync();
+
+        // That gives up without choosing anything in several cases (most notably when the talking
+        // book tool is not the active one), so we may still be pointing off-page. Take one last
+        // step, but ONLY when the page leaves nothing to guess between: a single recordable box is
+        // unambiguously the one the user meant.
+        //
+        // Deliberately NOT "the first of several". The caller is about to name an audio file after
+        // whatever this leaves selected, and on a page with more than one text box (origami
+        // splits, a bilingual page) the first in document order is only a guess -- one that can put
+        // the narration on a box the user was not working in and replace what was already there.
+        // Silently destroying a recording is worse than failing to attach one, so when the page is
+        // ambiguous this leaves the selection alone and lets the caller come up empty.
+        //
+        // getRecordableDivs() rather than a DOM query, so we apply the same exclusions as every
+        // other selection path (hidden language blocks, image descriptions when that tool is off,
+        // boxes with no recordable text).
+        const afterDefault = this.highlightedElement;
+        if (afterDefault && pageBody.contains(afterDefault)) return;
+        const recordable = this.getRecordableDivs();
+        if (recordable.length === 1) this.highlightedElement = recordable[0];
+    }
+
+    // The id under which the current selection's audio file is stored, minting one if the element
+    // has not got an id yet.
+    //
+    // Callers must have made sure the highlight is on the current page first (see
+    // ensureHighlightIsOnTheCurrentPageAsync); a detached node has no ancestors to walk up to.
+    //
+    // Asks getCurrentAudioSentence() rather than reading highlightedElement, because the highlight
+    // is not always on the element that OWNS the audio: in soft-split mode it sits on the
+    // highlighted sub-element, and after switching back from By Sentence to By Whole Text Box it
+    // can still be on a paragraph inside the box. The audio belongs to the enclosing
+    // audio-sentence, and that is the only name the tool ever looks under. Name a file after a
+    // sub-element instead and the mp3 belongs to nothing the page can find, with a stray id left
+    // on the sub-element into the bargain -- the recording is simply gone as far as the user is
+    // concerned (BL-16873).
     private getCurrentAudioId(): string | undefined {
         let id: string | undefined = undefined;
-        const currentElement = this.highlightedElement;
+        const currentElement = this.getCurrentAudioSentence();
         if (currentElement) {
             if (currentElement.hasAttribute("id")) {
                 id = currentElement.getAttribute("id")!;
@@ -4022,15 +4116,7 @@ export default class AudioRecording implements IAudioRecorder {
         const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
         if (!ckeditorOfThisBox) return;
 
-        // Strip stray ckeditor filling chars before comparing: an orphaned one that
-        // getData() didn't remove would otherwise make both sides equal, skip the
-        // cleanup below, and leave the zero-width space in the copy we analyze. See BL-16490.
-        if (
-            editableDiv.innerHTML !==
-            EditableDivUtils.removeCkEditorFillingChars(
-                ckeditorOfThisBox.getData(),
-            )
-        ) {
+        if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
             // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
             element.setAttribute("data-element-we-are-processing", "this-one");
 
@@ -4901,6 +4987,15 @@ export default class AudioRecording implements IAudioRecorder {
         },
     };
 
+    // KNOWN LIMITATION: doesRecordingExistForCurrentSelection() reads the CACHED Play-button
+    // status, not whether the element the import is about to write to actually has a recording. So
+    // when that status is out of date with respect to the current selection, the "replace this
+    // recording?" warning is skipped and an existing recording is replaced without the user being
+    // asked.
+    //
+    // Settling the selection before this point does not help: the cached value is stale whenever
+    // it is read, whatever the selection is. Fixing it properly means asking the server about the
+    // element being written to.
     public handleImportRecordingClick(): void {
         if (this.doesRecordingExistForCurrentSelection()) {
             getWorkspaceBundleExports().showConfirmDialog(
@@ -4923,27 +5018,46 @@ export default class AudioRecording implements IAudioRecorder {
         const importPath: string = result.data;
         if (!importPath) return;
 
-        const resultAudioDir = await postJson(
-            "fileIO/getSpecialLocation",
-            "CurrentBookAudioDirectory",
-        );
+        // Everything from here changes the page across several server round trips: the owning
+        // element gets its id, and finishNewRecordingOrImportAsync rewrites the markup once the
+        // copy lands. Hold page saving off until that is finished, or a save can serialize the
+        // page before the id is written, and the mp3 then lives under an id the saved book does
+        // not contain. The wait starts only here, after the chooser has returned, so browsing for
+        // a file does not hold up a save.
+        //
+        // This narrows the window rather than closing it: requestPageContent abandons any delay
+        // after kMaxWaitTimeMs (4s) and captures the page anyway, so an import slower than that --
+        // a large mp3 on a slow disk -- can still be caught half-done. That cap belongs to the
+        // delay mechanism and is shared by everything that uses it, so it cannot be raised for
+        // this path alone.
+        await wrapWithRequestPageContentDelay(async () => {
+            // The file we are about to write is named after the current selection, so make sure
+            // that selection is really on the page being shown before we use it. The recording
+            // path does the equivalent in startRecordCurrentAsync.
+            await this.ensureHighlightIsOnTheCurrentPageAsync();
 
-        if (!resultAudioDir) {
-            return;
-        }
+            const resultAudioDir = await postJson(
+                "fileIO/getSpecialLocation",
+                "CurrentBookAudioDirectory",
+            );
 
-        // If we ever import audio file types other than .mp3, we will need to update
-        // BookCompressor.AudioFileExtensions.
-        const targetPath =
-            resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
-        await postData(
-            "fileIO/copyFile",
-            {
-                from: encodeURIComponent(importPath),
-                to: encodeURIComponent(targetPath),
-            },
-            this.finishNewRecordingOrImportAsync.bind(this),
-        );
+            if (!resultAudioDir) {
+                return;
+            }
+
+            // If we ever import audio file types other than .mp3, we will need to update
+            // BookCompressor.AudioFileExtensions.
+            const targetPath =
+                resultAudioDir.data + "/" + this.getCurrentAudioId() + ".mp3";
+            await postData(
+                "fileIO/copyFile",
+                {
+                    from: encodeURIComponent(importPath),
+                    to: encodeURIComponent(targetPath),
+                },
+                this.finishNewRecordingOrImportAsync.bind(this),
+            );
+        }, kImportRecordingDelayId);
     }
 
     // Returns all elements that match CSS selector {expr} as an array.

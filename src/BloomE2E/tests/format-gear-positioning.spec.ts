@@ -48,8 +48,14 @@ const LANGUAGE = "en";
  */
 const NEAR_PX = 50;
 
-/** How far the drag test moves the dialog, and how far off that the dialog may land. */
-const DRAG = { dx: -120, dy: -80 };
+/**
+ * How far the drag test moves the dialog along each axis, and how far off that the dialog may
+ * land. The direction is chosen when the test runs: toward the middle of the screen. Bloom keeps
+ * the dialog wholly on the screen while it is dragged (the draggable's containment), so a drag
+ * toward an edge that is nearer than this stops at the edge, and on the CI runner's 748px-wide
+ * frame the dialog sat 103px from the left edge when this test dragged it 120px to the left.
+ */
+const DRAG_DISTANCE = { x: 120, y: 80 };
 const DRAG_TOLERANCE_PX = 15;
 
 /** The zoom Bloom started with, put back at the end so the setting does not leak out of the run. */
@@ -158,13 +164,37 @@ test.describe("Format gear positioning", () => {
     test("the Format dialog can be dragged [Test Case ID 356]", async ({
         page,
     }) => {
-        const before = (await getFormatDialogPlacement(page)).dialog!;
-        await dragFormatDialog(page, DRAG.dx, DRAG.dy);
-        const after = (await getFormatDialogPlacement(page)).dialog!;
+        const placement = await getFormatDialogPlacement(page);
+        const before = placement.dialog!;
+        const { viewport } = placement;
+        // Toward the middle of the screen, where the dialog has room to go the whole way.
+        const dx =
+            before.left + before.width / 2 < viewport.width / 2
+                ? DRAG_DISTANCE.x
+                : -DRAG_DISTANCE.x;
+        const dy =
+            before.top + before.height / 2 < viewport.height / 2
+                ? DRAG_DISTANCE.y
+                : -DRAG_DISTANCE.y;
+        // Sanity check: the dialog can move that far before it meets the edge of the screen, so
+        // a shortfall below is the drag's doing, not the containment's.
+        const roomX = dx > 0 ? viewport.width - before.right : before.left;
+        const roomY = dy > 0 ? viewport.height - before.bottom : before.top;
         expect(
-            Math.abs(after.left - before.left - DRAG.dx),
-        ).toBeLessThanOrEqual(DRAG_TOLERANCE_PX);
-        expect(Math.abs(after.top - before.top - DRAG.dy)).toBeLessThanOrEqual(
+            roomX,
+            `Only ${Math.round(roomX)}px of room to drag the dialog sideways.`,
+        ).toBeGreaterThan(DRAG_DISTANCE.x);
+        expect(
+            roomY,
+            `Only ${Math.round(roomY)}px of room to drag the dialog up or down.`,
+        ).toBeGreaterThan(DRAG_DISTANCE.y);
+
+        await dragFormatDialog(page, dx, dy);
+        const after = (await getFormatDialogPlacement(page)).dialog!;
+        expect(Math.abs(after.left - before.left - dx)).toBeLessThanOrEqual(
+            DRAG_TOLERANCE_PX,
+        );
+        expect(Math.abs(after.top - before.top - dy)).toBeLessThanOrEqual(
             DRAG_TOLERANCE_PX,
         );
     });
