@@ -418,6 +418,11 @@
       <!-- <source xml:lang="en">Bloom Library Bookshelf</source> -->
       <!-- <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note> -->
       <!-- </trans-unit> -->
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage" translate="no">
+        <source xml:lang="en">Bloom Library</source>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage</note>
+        <note>Name of one of the pages (tabs) of the Settings dialog, the one with settings about the BloomLibrary.org website. "Bloom Library" is a product name and should not be translated.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
@@ -621,6 +626,16 @@
         <source xml:lang="en">Collection Settings</source>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ExperimentalPage" translate="no">
+        <source xml:lang="en">Experimental</source>
+        <note>ID: CollectionSettingsDialog.ExperimentalPage</note>
+        <note>Name of one of the pages (tabs) of the Settings dialog, the one where the user can turn on features that are not finished yet.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage" translate="no">
+        <source xml:lang="en">Front &amp; Back Matter</source>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage</note>
+        <note>Name of one of the pages (tabs) of the Settings dialog, the one about the pages Bloom adds at the front and back of every book. "&amp;" is an abbreviation symbol for "and".</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <note>ID: CollectionSettingsDialog.LanguageTab.ChangeLanguageLink</note>
@@ -687,6 +702,11 @@
       <trans-unit id="CollectionSettingsDialog.RestartMessage">
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.SubscriptionPage" translate="no">
+        <source xml:lang="en">Subscription</source>
+        <note>ID: CollectionSettingsDialog.SubscriptionPage</note>
+        <note>Name of one of the pages (tabs) of the Settings dialog, the one where the user enters the code for their paid Bloom Subscription.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>

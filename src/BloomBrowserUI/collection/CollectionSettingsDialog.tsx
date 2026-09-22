@@ -10,6 +10,7 @@ import {
 import {
     BloomDialog,
     DialogBottomButtons,
+    DialogBottomLeftButtons,
     DialogMiddle,
     DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
@@ -18,135 +19,254 @@ import {
     DialogCancelButton,
     DialogOkButton,
 } from "../react_components/BloomDialog/commonDialogComponents";
+import { WarningBox } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
-import { get, postJson } from "../utils/bloomApi";
+import { get, post, postJson } from "../utils/bloomApi";
 import { kBloomBlue } from "../bloomMaterialUITheme";
+import { changedRestartPaths } from "./collectionSettingsRestart";
+import {
+    ICollectionSettingsResponse,
+    ICollectionSettingsSaveResult,
+    ICollectionSettingsValues,
+} from "./collectionSettingsTypes";
+
+// Same fixed size as the Book Settings dialog (kBookSettingsDialogWidthPx/HeightPx there),
+// so the two settings dialogs feel like one family.
+const kCollectionSettingsDialogWidthPx = 900;
+const kCollectionSettingsDialogHeightPx = 720;
+const kConfigrPaneClassName = "collection-settings-configr-pane";
+
+// Temporary content for every page. Each of the seven tab cards replaces its page's group with
+// real controls, so this text is deliberately plain English and is never localized.
+const PagePlaceholder: React.FunctionComponent = () => (
+    <div
+        css={css`
+            font-size: 0.9em;
+            color: #555;
+        `}
+    >
+        Settings for this section are not available yet.
+    </div>
+);
 
 export const CollectionSettingsDialog: React.FunctionComponent = () => {
-    const {
-        //openingEvent,
-        closeDialog,
-        propsForBloomDialog,
-    } = useEventLaunchedBloomDialog("CollectionSettingsDialog");
+    const { openingEvent, closeDialog, propsForBloomDialog } =
+        useEventLaunchedBloomDialog("CollectionSettingsDialog");
 
-    const [settingsString, setSettingsString] = React.useState<string>("{}");
-    // Fetch collection settings when the dialog opens so we sync with host state.
+    // C# names the page to open on in the LaunchDialog message; it sends "" for a plain open.
+    const initialPageKey =
+        (openingEvent?.initialPageKey as string | undefined) || undefined;
+
+    const [loadedSettings, setLoadedSettings] =
+        React.useState<ICollectionSettingsResponse>();
+    const [currentValues, setCurrentValues] =
+        React.useState<ICollectionSettingsValues>();
+    const [saveErrorMessage, setSaveErrorMessage] = React.useState<string>();
+
+    // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
+    // handler reads this ref to be sure it has the newest values.
+    const latestValuesRef = React.useRef<ICollectionSettingsValues>();
+
+    // The GET also opens the editing session on the C# side, so it must run on every open.
     React.useEffect(() => {
-        if (propsForBloomDialog.open)
-            get("collection/settings", (result) => {
-                setSettingsString(result.data);
-            });
+        if (!propsForBloomDialog.open) {
+            return;
+        }
+        get("collection/settings", (result) => {
+            const response = result.data as ICollectionSettingsResponse;
+            latestValuesRef.current = response.values;
+            setLoadedSettings(response);
+            setCurrentValues(response.values);
+            setSaveErrorMessage(undefined);
+        });
     }, [propsForBloomDialog.open]);
 
-    const settings = React.useMemo((): ConfigrValues | undefined => {
-        if (settingsString === "{}") {
-            return undefined;
-        }
-        if (typeof settingsString === "string") {
-            return JSON.parse(settingsString) as ConfigrValues;
-        }
-        return settingsString as unknown as ConfigrValues;
-    }, [settingsString]);
-
-    const [settingsToReturnLater, setSettingsToReturnLater] = React.useState<
-        ConfigrValues | undefined
-    >(undefined);
     const dialogTitle = useL10n(
         "Collection Settings",
         "CollectionSettingsDialog.Title",
     );
+    const languagesLabel = useL10n(
+        "Languages",
+        "CollectionSettingsDialog.LanguageTab.LanguageTabLabel",
+    );
+    const frontBackMatterLabel = useL10n(
+        "Front & Back Matter",
+        "CollectionSettingsDialog.FrontBackMatterPage",
+    );
+    const subscriptionLabel = useL10n(
+        "Subscription",
+        "CollectionSettingsDialog.SubscriptionPage",
+    );
+    const teamCollectionLabel = useL10n(
+        "Team Collection",
+        "TeamCollection.TeamCollection",
+    );
+    const bloomLibraryLabel = useL10n(
+        "Bloom Library",
+        "CollectionSettingsDialog.BloomLibraryPage",
+    );
+    const advancedLabel = useL10n("Advanced", "Common.Advanced");
+    const experimentalLabel = useL10n(
+        "Experimental",
+        "CollectionSettingsDialog.ExperimentalPage",
+    );
+    const restartMessage = useL10n(
+        "Bloom will close and re-open this project with the new settings.",
+        "CollectionSettingsDialog.RestartMessage",
+    );
+
+    // C# names these pageKeys when it asks us to open on a particular page.
+    const pages = [
+        { pageKey: "languages", label: languagesLabel },
+        { pageKey: "frontBackMatter", label: frontBackMatterLabel },
+        { pageKey: "subscription", label: subscriptionLabel },
+        { pageKey: "teamCollection", label: teamCollectionLabel },
+        { pageKey: "bloomLibrary", label: bloomLibraryLabel },
+        { pageKey: "advanced", label: advancedLabel },
+        { pageKey: "experimental", label: experimentalLabel },
+    ];
+
+    const needsRestart =
+        loadedSettings !== undefined &&
+        currentValues !== undefined &&
+        changedRestartPaths(
+            loadedSettings.values,
+            currentValues,
+            loadedSettings.restartPaths,
+        ).length > 0;
+
+    function saveAndCloseDialog() {
+        // Always post, even if these values are unchanged: reused components (subscription, team
+        // collection, bookshelf) send their edits through their own endpoints, and this POST
+        // applies everything pending.
+        postJson("collection/settings", latestValuesRef.current, (result) => {
+            const saveResult = result.data as ICollectionSettingsSaveResult;
+            if (saveResult.errorMessage) {
+                setSaveErrorMessage(saveResult.errorMessage);
+                return;
+            }
+            // C# performs the restart itself if one is needed.
+            closeDialog();
+        });
+    }
+
+    function cancelAndCloseDialog() {
+        post("collection/settings/cancel");
+        closeDialog();
+    }
 
     return (
         <BloomDialog
+            css={css`
+                height: 100%;
+                box-sizing: border-box;
+
+                .MuiDialog-paper {
+                    width: ${kCollectionSettingsDialogWidthPx}px;
+                    height: ${kCollectionSettingsDialogHeightPx}px;
+                }
+            `}
             {...propsForBloomDialog}
-            onClose={closeDialog}
-            onCancel={() => {
-                closeDialog();
-            }}
+            onClose={cancelAndCloseDialog}
+            onCancel={cancelAndCloseDialog}
             draggable={false}
             maxWidth={false}
         >
             <DialogTitle title={dialogTitle}></DialogTitle>
-            <DialogMiddle>
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
+            <DialogMiddle
+                css={css`
+                    overflow-y: hidden;
+                    min-height: 0;
+
+                    .${kConfigrPaneClassName} {
                         height: 100%;
-                    `}
-                >
-                    {settings && (
-                        <ConfigrPane
-                            label={dialogTitle}
-                            showAppBar={false}
-                            showSearch={true}
-                            // showJson={true} // useful for debugging
-                            initialValues={settings}
-                            //themeOverrides={lightTheme}
-                            themeOverrides={{
-                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                                palette: {
-                                    primary: { main: kBloomBlue },
-                                },
-                            }}
-                            onChange={(s) => {
-                                setSettingsToReturnLater(s);
-                            }}
-                        >
+                        min-height: 0;
+                    }
+
+                    // Let config-r consume the available dialog height so the button row stays
+                    // pinned to the bottom and only the page contents scroll.
+                    form {
+                        overflow-y: auto;
+                        height: 100%;
+                        min-height: 0;
+                        width: 100%;
+                        box-sizing: border-box;
+                        #groups {
+                            margin-right: 10px; // make room for the scrollbar
+                        }
+                    }
+
+                    a {
+                        color: ${kBloomBlue};
+                    }
+                `}
+            >
+                {loadedSettings && (
+                    <ConfigrPane
+                        className={kConfigrPaneClassName}
+                        label={dialogTitle}
+                        showAppBar={false}
+                        showSearch={false}
+                        initialValues={
+                            loadedSettings.values as unknown as ConfigrValues
+                        }
+                        themeOverrides={{
+                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                            palette: {
+                                primary: { main: kBloomBlue },
+                            },
+                        }}
+                        initiallySelectedTopLevelPageKey={initialPageKey}
+                        onChange={(newValues) => {
+                            const values =
+                                newValues as unknown as ICollectionSettingsValues;
+                            latestValuesRef.current = values;
+                            // Config-r may call onChange while rendering, so defer the state update.
+                            window.setTimeout(() => {
+                                setCurrentValues(values);
+                            }, 0);
+                        }}
+                    >
+                        {pages.map((page) => (
                             <ConfigrPage
-                                label={"Languages"}
-                                pageKey="languages"
+                                key={page.pageKey}
+                                label={page.label}
+                                pageKey={page.pageKey}
                                 topLevel={true}
                             >
-                                <ConfigrGroup label={"Languages"}>
+                                <ConfigrGroup label={page.label}>
                                     <ConfigrStatic>
-                                        <div
-                                            css={css`
-                                                font-size: 0.9em;
-                                                color: #555;
-                                            `}
-                                        >
-                                            Settings for this section are not
-                                            available yet.
-                                        </div>
+                                        <PagePlaceholder />
                                     </ConfigrStatic>
                                 </ConfigrGroup>
                             </ConfigrPage>
-                            <ConfigrPage
-                                label={"Appearance"}
-                                pageKey="appearance"
-                                topLevel={true}
-                            >
-                                <ConfigrGroup label={"Appearance"}>
-                                    <ConfigrStatic>
-                                        <div
-                                            css={css`
-                                                font-size: 0.9em;
-                                                color: #555;
-                                            `}
-                                        >
-                                            Settings for this section are not
-                                            available yet.
-                                        </div>
-                                    </ConfigrStatic>
-                                </ConfigrGroup>
-                            </ConfigrPage>
-                        </ConfigrPane>
-                    )}
-                </div>
+                        ))}
+                    </ConfigrPane>
+                )}
             </DialogMiddle>
+            {saveErrorMessage && <WarningBox>{saveErrorMessage}</WarningBox>}
             <DialogBottomButtons>
+                {needsRestart && (
+                    <DialogBottomLeftButtons>
+                        <div
+                            css={css`
+                                align-self: center;
+                            `}
+                        >
+                            {restartMessage}
+                        </div>
+                    </DialogBottomLeftButtons>
+                )}
                 <DialogOkButton
                     default={true}
-                    onClick={() => {
-                        if (settingsToReturnLater) {
-                            postJson(
-                                "collection/settings",
-                                settingsToReturnLater,
-                            );
-                        }
-                        closeDialog();
-                    }}
+                    enabled={currentValues !== undefined}
+                    l10nKey={
+                        needsRestart
+                            ? "CollectionSettingsDialog.Restart"
+                            : undefined
+                    }
+                    englishText={needsRestart ? "Restart" : undefined}
+                    onClick={saveAndCloseDialog}
                 />
                 <DialogCancelButton />
             </DialogBottomButtons>

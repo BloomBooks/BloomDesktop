@@ -7,10 +7,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -25,27 +28,96 @@ namespace Bloom.web.controllers
     {
         public const string kApiUrlPart = "settings/";
 
-        // While displaying the CollectionSettingsDialog, which is what this API mainly exists to serve
-        // we keep a reference to it here so pending settings can be updated there.
-        public static CollectionSettingsDialog DialogBeingEdited;
+        /// <summary>
+        /// The edits being made in whichever Collection Settings dialog is open, or null when
+        /// none is. Every endpoint that records a pending setting writes here.
+        /// </summary>
+        public static PendingCollectionSettings PendingSettings { get; private set; }
+
+        /// <summary>
+        /// Raised when an editing session ends without its edits being applied, so that anything
+        /// holding a pending value of its own can go back to the saved one.
+        /// </summary>
+        public static event EventHandler EditingCancelled;
+
+        /// <summary>
+        /// Set by the WinForms Collection Settings dialog while it is open, so that its Book Making
+        /// tab can still open the WinForms ScriptSettingsDialog for a (zero-based) language number.
+        /// The React dialog never opens that dialog.
+        /// </summary>
+        public static Action<int> ShowScriptSettingsDialog;
+
+        /// <summary>
+        /// The TypeScript side expects the names in the collection/settings contract in camelCase,
+        /// while the C# classes spell them the way C# does.
+        /// </summary>
+        internal static readonly JsonSerializerSettings kCamelCaseSettings =
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+            };
 
         private readonly CollectionSettings _collectionSettings;
-        private readonly List<object> _numberingStyles = new List<object>();
+        private readonly List<NumberingStyleOffering> _numberingStyles =
+            new List<NumberingStyleOffering>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+        private readonly TeamCollectionManager _tcManager;
+        private readonly QueueRenameOfCollection _queueRenameOfCollection;
 
         public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
             XMatterPackFinder xmatterPackFinder,
-            BookSelection bookSelection
+            BookSelection bookSelection,
+            TeamCollectionManager tcManager,
+            QueueRenameOfCollection queueRenameOfCollection
         )
         {
             _collectionSettings = collectionSettings;
             _xmatterPackFinder = xmatterPackFinder;
             this._bookSelection = bookSelection;
+            _tcManager = tcManager;
+            _queueRenameOfCollection = queueRenameOfCollection;
         }
+
+        /// <summary>
+        /// Starts a session in which a dialog gathers edits to the collection settings, starting
+        /// from the values the collection has now.
+        /// </summary>
+        public static PendingCollectionSettings BeginEditing(CollectionSettings settings)
+        {
+            PendingSettings = new PendingCollectionSettings(settings);
+            return PendingSettings;
+        }
+
+        /// <summary>
+        /// Ends the session started by BeginEditing, whether or not its edits were applied.
+        /// </summary>
+        public static void EndEditing()
+        {
+            PendingSettings = null;
+        }
+
+        /// <summary>
+        /// Ends the session and tells subscribers that its edits were thrown away.
+        /// </summary>
+        public static void CancelEditing()
+        {
+            EndEditing();
+            EditingCancelled?.Invoke(null, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Whether the collection we have open is a Team Collection, even if we cannot reach the
+        /// repository just now.
+        /// </summary>
+        private bool CurrentCollectionIsTeamCollection =>
+            _tcManager.CurrentCollectionEvenIfDisconnected != null;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -54,14 +126,18 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        // Just a placeholder for the skeleton dialog for now.
-                        request.ReplyWithJson("{}");
-                    }
-                    else if (request.HttpMethod == HttpMethods.Post)
-                    {
-                        request.PostSucceeded();
-                    }
+                        HandleGetCollectionSettings(request);
+                    else
+                        HandleSaveCollectionSettings(request);
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "collection/settings/cancel",
+                request =>
+                {
+                    CancelEditing();
+                    request.PostSucceeded();
                 },
                 true
             );
@@ -77,11 +153,7 @@ namespace Bloom.web.controllers
                     }
                     else
                     {
-                        var dialog = DialogBeingEdited;
-                        if (dialog != null)
-                        {
-                            StoreAdvancedSettingsData(request, dialog);
-                        }
+                        StoreAdvancedSettingsData(request, PendingSettings);
                         request.PostSucceeded();
                     }
                 },
@@ -114,8 +186,7 @@ namespace Bloom.web.controllers
                         var newShelf = request.RequiredPostString();
                         if (newShelf == "none")
                             newShelf = ""; // RequiredPostString won't allow us to just pass this
-                        if (DialogBeingEdited != null)
-                            DialogBeingEdited.PendingDefaultBookshelf = newShelf;
+                        UpdatePendingDefaultBookshelf(newShelf);
                         request.PostSucceeded();
                     }
                 },
@@ -198,7 +269,9 @@ namespace Bloom.web.controllers
                     if (request.HttpMethod == HttpMethods.Get)
                     {
                         // Should return all available numbering styles and the current style
-                        request.ReplyWithJson(GetNumberingStyleData());
+                        request.ReplyWithJson(
+                            JsonConvert.SerializeObject(GetNumberingStyleData(), kCamelCaseSettings)
+                        );
                     }
                     else
                     {
@@ -311,7 +384,9 @@ namespace Bloom.web.controllers
                     if (request.HttpMethod == HttpMethods.Get)
                     {
                         // Should return all available xMatters and the current selected xMatter
-                        request.ReplyWithJson(SetupXMatterList());
+                        request.ReplyWithJson(
+                            JsonConvert.SerializeObject(SetupXMatterList(), kCamelCaseSettings)
+                        );
                     }
                     else
                     {
@@ -376,87 +451,318 @@ namespace Bloom.web.controllers
 
         private object GetAdvancedSettingsData()
         {
-            var dialog = DialogBeingEdited;
-            var isAutoUpdateSupported =
-                dialog?.ShowAutomaticallyUpdateOption
-                ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            var pending = PendingSettings;
+            var isAutoUpdateSupported = CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
             return new
             {
                 values = new
                 {
-                    autoUpdate = dialog?.PendingAutomaticallyUpdate
+                    autoUpdate = pending?.AutomaticallyUpdate
                         ?? (isAutoUpdateSupported && Settings.Default.AutoUpdate),
-                    showExperimentalBookSources = dialog?.PendingShowExperimentalBookSources
+                    showExperimentalBookSources = pending?.ShowExperimentalBookSources
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kExperimentalSourceBooks
                         ),
-                    allowTeamCollection = dialog?.PendingAllowTeamCollection
+                    allowTeamCollection = pending?.AllowTeamCollection
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
-                    showQrCode = dialog?.PendingShowQrCode
-                        ?? _collectionSettings.ShowBlorgLanguageQrCode,
-                    qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
+                    showQrCode = pending?.ShowQrCode ?? _collectionSettings.ShowBlorgLanguageQrCode,
+                    qrcodeCaption = pending?.BadgeQrCodeCaption
                         ?? _collectionSettings.BadgeQrCodeLabelLocalized,
                 },
                 showAutoUpdate = isAutoUpdateSupported,
-                showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
-                    ?? false,
-                allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+                // The Experimental Book Sources toggle is not offered to anyone at the moment.
+                showExperimentalBookSourcesOption = false,
+                // Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
+                allowTeamCollectionEnabled = !(
+                    (pending?.AllowTeamCollection ?? false) && CurrentCollectionIsTeamCollection
+                ),
             };
         }
 
-        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        private void StoreAdvancedSettingsData(
+            ApiRequest request,
+            PendingCollectionSettings pending
+        )
         {
             var data = JObject.Parse(request.RequiredPostJson());
 
             var autoUpdateToken = data["autoUpdate"];
             if (autoUpdateToken != null)
-                dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
+                pending.AutomaticallyUpdate = autoUpdateToken.Value<bool>();
 
             var showExperimentalBookSourcesToken = data["showExperimentalBookSources"];
             if (showExperimentalBookSourcesToken != null)
-                dialog.PendingShowExperimentalBookSources =
+                pending.ShowExperimentalBookSources =
                     showExperimentalBookSourcesToken.Value<bool>();
 
             var allowTeamCollectionToken = data["allowTeamCollection"];
             if (allowTeamCollectionToken != null)
             {
                 var allowTeamCollection = allowTeamCollectionToken.Value<bool>();
-                var previousValue = dialog.PendingAllowTeamCollection;
-                dialog.PendingAllowTeamCollection = allowTeamCollection;
+                var previousValue = pending.AllowTeamCollection;
+                pending.AllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
-                    dialog.ChangeThatRequiresRestart();
+                    pending.ChangeThatRequiresRestart();
             }
 
             var showQrCodeToken = data["showQrCode"];
             if (showQrCodeToken != null)
             {
                 var showQrCode = showQrCodeToken.Value<bool>();
-                var previousValue = dialog.PendingShowQrCode;
-                dialog.PendingShowQrCode = showQrCode;
+                var previousValue = pending.ShowQrCode;
+                pending.ShowQrCode = showQrCode;
                 // We don't really need a change as drastic as a restart, but I don't expect
                 // this to change often and somehow the badge needs to get updated.
                 if (showQrCode != previousValue)
-                    dialog.ChangeThatRequiresRestart();
+                    pending.ChangeThatRequiresRestart();
             }
             var qrcodeCaptionToken = data["qrcodeCaption"];
             if (qrcodeCaptionToken != null)
             {
                 var qrcodeCaption = qrcodeCaptionToken.Value<string>();
-                var previousValue = dialog.PendingBadgeQrCodeCaption;
-                dialog.PendingBadgeQrCodeCaption = qrcodeCaption;
+                var previousValue = pending.BadgeQrCodeCaption;
+                pending.BadgeQrCodeCaption = qrcodeCaption;
                 // We don't really need a change as drastic as a restart, but I don't expect
                 // this to change often and somehow the badge needs to get updated.
                 if (qrcodeCaption != previousValue)
-                    dialog.ChangeThatRequiresRestart();
+                    pending.ChangeThatRequiresRestart();
             }
         }
 
-        private void ResetBookshelf()
+        /// <summary>
+        /// Replies to GET collection/settings, starting a fresh editing session so the values the
+        /// dialog shows are the ones the collection has now.
+        /// </summary>
+        private void HandleGetCollectionSettings(ApiRequest request)
         {
-            if (DialogBeingEdited != null)
-                DialogBeingEdited.PendingDefaultBookshelf = "";
+            BeginEditing(_collectionSettings);
+            var response = new CollectionSettingsResponse
+            {
+                Values = GetCurrentValues(),
+                Context = GetContext(),
+                RestartPaths = CollectionSettingsValues.GetRestartPaths(),
+            };
+            request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// Handles POST collection/settings, whose body is the "values" object of the GET reply.
+        /// On a validation failure nothing is saved and the session stays open so the user can
+        /// fix what is wrong.
+        /// </summary>
+        private void HandleSaveCollectionSettings(ApiRequest request)
+        {
+            var pending = PendingSettings;
+            var postedValues = JsonConvert.DeserializeObject<CollectionSettingsValues>(
+                request.RequiredPostJson()
+            );
+            MergeIntoPendingSettings(postedValues, pending);
+            if (CollectionSettingsValues.AnyRestartPathChanged(GetCurrentValues(), postedValues))
+                pending.ChangeThatRequiresRestart();
+
+            var errorMessage = CollectionSettingsUpdater.Validate(
+                pending,
+                CurrentCollectionIsTeamCollection
+            );
+            if (errorMessage != null)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsSaveResult
+                        {
+                            RestartRequired = false,
+                            ErrorMessage = errorMessage,
+                        },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+
+            var restartRequired = CollectionSettingsUpdater.Apply(
+                pending,
+                _collectionSettings,
+                CurrentCollectionIsTeamCollection,
+                _xmatterPackFinder,
+                newName => _queueRenameOfCollection.Raise(newName)
+            );
+            EndEditing();
+            request.ReplyWithJson(
+                JsonConvert.SerializeObject(
+                    new CollectionSettingsSaveResult
+                    {
+                        RestartRequired = restartRequired,
+                        ErrorMessage = null,
+                    },
+                    kCamelCaseSettings
+                )
+            );
+            if (restartRequired)
+                WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
+        /// <summary>
+        /// The editable settings as the collection has them now.
+        /// </summary>
+        private CollectionSettingsValues GetCurrentValues()
+        {
+            var thirdLanguage = _collectionSettings.AllLanguages[2];
+            return new CollectionSettingsValues
+            {
+                Languages = new LanguagesValues
+                {
+                    Language1 = MakeLanguageValues(_collectionSettings.AllLanguages[0]),
+                    Language2 = MakeLanguageValues(_collectionSettings.AllLanguages[1]),
+                    Language3 = string.IsNullOrEmpty(thirdLanguage?.Tag)
+                        ? null
+                        : MakeLanguageValues(thirdLanguage),
+                    SignLanguage = new SignLanguageValues
+                    {
+                        Tag = _collectionSettings.SignLanguage.Tag,
+                        Name = _collectionSettings.SignLanguage.Name,
+                        IsCustomName = _collectionSettings.SignLanguage.IsCustomName,
+                    },
+                },
+                FrontBackMatter = new FrontBackMatterValues
+                {
+                    Xmatter = _collectionSettings.XMatterPackName,
+                    PageNumberStyle = _collectionSettings.PageNumberStyle,
+                    ShowQrCode = _collectionSettings.ShowBlorgLanguageQrCode,
+                    QrcodeCaption = _collectionSettings.BadgeQrCodeLabelLocalized,
+                    // A collection whose settings file never carried these leaves them null.
+                    Country = _collectionSettings.Country ?? "",
+                    Province = _collectionSettings.Province ?? "",
+                    District = _collectionSettings.District ?? "",
+                },
+                Advanced = new AdvancedValues
+                {
+                    AutoUpdate =
+                        CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform
+                        && Settings.Default.AutoUpdate,
+                    CollectionName = _collectionSettings.CollectionName,
+                },
+                Experimental = new Dictionary<string, bool>
+                {
+                    {
+                        ExperimentalFeatures.kTeamCollections,
+                        ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+                    },
+                },
+            };
+        }
+
+        private static LanguageValues MakeLanguageValues(WritingSystem language)
+        {
+            return new LanguageValues
+            {
+                Tag = language.Tag,
+                Name = language.Name,
+                IsCustomName = language.IsCustomName,
+                FontName = language.FontName,
+                IsRightToLeft = language.IsRightToLeft,
+                LineHeight = language.LineHeight,
+                BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces,
+                BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints,
+            };
+        }
+
+        /// <summary>
+        /// What the dialog needs to render but cannot change.
+        /// </summary>
+        private CollectionSettingsContext GetContext()
+        {
+            var brandingForcedXmatter =
+                _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+            return new CollectionSettingsContext
+            {
+                IsTeamCollection = CurrentCollectionIsTeamCollection,
+                EditingBlorgBook = _collectionSettings.EditingABlorgBook,
+                ShowAutoUpdate = CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform,
+                TeamCollectionsAllowed = FeatureStatus
+                    .GetFeatureStatus(_collectionSettings.Subscription, FeatureName.TeamCollection)
+                    .Enabled,
+                XmatterOfferings = GetXmatterOfferings(brandingForcedXmatter),
+                BrandingForcedXmatter = brandingForcedXmatter,
+                NumberingStyles = GetNumberingStyleOfferings(),
+            };
+        }
+
+        /// <summary>
+        /// Copies the values the React dialog sends into the editing session. The subscription,
+        /// the administrators and the bookshelf arrive through endpoints of their own, so they
+        /// are not here; neither is anything the caller left out.
+        /// </summary>
+        private static void MergeIntoPendingSettings(
+            CollectionSettingsValues values,
+            PendingCollectionSettings pending
+        )
+        {
+            if (values.Languages != null)
+            {
+                MergeLanguage(values.Languages.Language1, pending, 0);
+                MergeLanguage(values.Languages.Language2, pending, 1);
+                MergeLanguage(values.Languages.Language3, pending, 2);
+                var signLanguage = values.Languages.SignLanguage;
+                if (signLanguage != null)
+                {
+                    pending.SignLanguage.ChangeTag(signLanguage.Tag);
+                    pending.SignLanguage.SetName(signLanguage.Name, signLanguage.IsCustomName);
+                }
+            }
+            if (values.FrontBackMatter != null)
+            {
+                pending.Xmatter = values.FrontBackMatter.Xmatter;
+                pending.NumberingStyle = values.FrontBackMatter.PageNumberStyle;
+                pending.ShowQrCode = values.FrontBackMatter.ShowQrCode;
+                pending.BadgeQrCodeCaption = values.FrontBackMatter.QrcodeCaption;
+                pending.Country = values.FrontBackMatter.Country;
+                pending.Province = values.FrontBackMatter.Province;
+                pending.District = values.FrontBackMatter.District;
+            }
+            if (values.Advanced != null)
+            {
+                pending.AutomaticallyUpdate = values.Advanced.AutoUpdate;
+                pending.CollectionName = values.Advanced.CollectionName;
+            }
+            if (values.Experimental == null)
+                return;
+            foreach (var feature in values.Experimental)
+            {
+                switch (feature.Key)
+                {
+                    case ExperimentalFeatures.kTeamCollections:
+                        pending.AllowTeamCollection = feature.Value;
+                        break;
+                    case ExperimentalFeatures.kExperimentalSourceBooks:
+                        pending.ShowExperimentalBookSources = feature.Value;
+                        break;
+                    default:
+                        throw new ArgumentException(
+                            $"Unknown experimental feature '{feature.Key}'"
+                        );
+                }
+            }
+        }
+
+        private static void MergeLanguage(
+            LanguageValues language,
+            PendingCollectionSettings pending,
+            int zeroBasedLanguageNumber
+        )
+        {
+            if (language == null)
+                return;
+            var pendingLanguage = pending.Languages[zeroBasedLanguageNumber];
+            // Setting the tag also sets a default name, so set the name we were given afterwards.
+            pendingLanguage.ChangeTag(language.Tag);
+            pendingLanguage.SetName(language.Name, language.IsCustomName);
+            pendingLanguage.IsRightToLeft = language.IsRightToLeft;
+            pendingLanguage.LineHeight = language.LineHeight;
+            pendingLanguage.BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces;
+            pendingLanguage.BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints;
+            pending.FontSelections[zeroBasedLanguageNumber] = language.FontName;
         }
 
         // Used by BooksOnBlorgProgressBar.
@@ -556,11 +862,28 @@ namespace Bloom.web.controllers
 
         private object SetupXMatterList()
         {
-            var xmatterOfferings = new List<object>();
-
             string xmatterKeyForcedByBranding =
                 _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
 
+            // This will switch to the default factory xmatter if the current one is not valid.
+            var currentXmatter = _xmatterPackFinder.GetValidXmatter(
+                xmatterKeyForcedByBranding,
+                _collectionSettings.XMatterPackName
+            );
+
+            return new
+            {
+                currentXmatter,
+                xmatterOfferings = GetXmatterOfferings(xmatterKeyForcedByBranding),
+            };
+        }
+
+        /// <summary>
+        /// The front/back matter packs the user may choose from, with their localized labels.
+        /// </summary>
+        private XmatterOffering[] GetXmatterOfferings(string xmatterKeyForcedByBranding)
+        {
+            var xmatterOfferings = new List<XmatterOffering>();
             var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(
                 xmatterKeyForcedByBranding
             );
@@ -574,26 +897,31 @@ namespace Bloom.web.controllers
                     pack.EnglishLabel,
                     "Name of a Front/Back Matter Pack"
                 );
-                var description = pack.GetDescription(); // already localized, if available
-                var item = new
-                {
-                    displayName = labelToShow,
-                    internalName = pack.Key,
-                    description,
-                };
-                xmatterOfferings.Add(item);
+                xmatterOfferings.Add(
+                    new XmatterOffering
+                    {
+                        DisplayName = labelToShow,
+                        InternalName = pack.Key,
+                        Description = pack.GetDescription(), // already localized, if available
+                    }
+                );
             }
-
-            // This will switch to the default factory xmatter if the current one is not valid.
-            var currentXmatter = _xmatterPackFinder.GetValidXmatter(
-                xmatterKeyForcedByBranding,
-                _collectionSettings.XMatterPackName
-            );
-
-            return new { currentXmatter, xmatterOfferings = xmatterOfferings.ToArray() };
+            return xmatterOfferings.ToArray();
         }
 
         private object GetNumberingStyleData()
+        {
+            return new
+            {
+                currentPageNumberStyle = _collectionSettings.PageNumberStyle,
+                numberingStyleData = GetNumberingStyleOfferings(),
+            };
+        }
+
+        /// <summary>
+        /// The page numbering styles the user may choose from, with their localized labels.
+        /// </summary>
+        private NumberingStyleOffering[] GetNumberingStyleOfferings()
         {
             if (_numberingStyles.Count == 0)
             {
@@ -603,14 +931,16 @@ namespace Bloom.web.controllers
                         "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey,
                         styleKey
                     );
-                    _numberingStyles.Add(new { localizedStyle, styleKey });
+                    _numberingStyles.Add(
+                        new NumberingStyleOffering
+                        {
+                            LocalizedStyle = localizedStyle,
+                            StyleKey = styleKey,
+                        }
+                    );
                 }
             }
-            return new
-            {
-                currentPageNumberStyle = _collectionSettings.PageNumberStyle,
-                numberingStyleData = _numberingStyles.ToArray(),
-            };
+            return _numberingStyles.ToArray();
         }
 
         private object GetLanguageData()
@@ -643,14 +973,7 @@ namespace Bloom.web.controllers
                 && _collectionSettings.AllLanguages[zeroBasedLanguageNumber] == null
             )
                 return;
-            if (DialogBeingEdited != null)
-            {
-                var needRestart = DialogBeingEdited.FontSettingsLinkClicked(
-                    zeroBasedLanguageNumber
-                );
-                if (needRestart)
-                    DialogBeingEdited.ChangeThatRequiresRestart();
-            }
+            ShowScriptSettingsDialog(zeroBasedLanguageNumber);
         }
 
         // languageNumber is 1-based
@@ -667,40 +990,37 @@ namespace Bloom.web.controllers
                 && _collectionSettings.AllLanguages[zeroBasedLanguageNumber] == null
             )
                 return;
-            if (DialogBeingEdited != null)
-                DialogBeingEdited.PendingFontSelections[zeroBasedLanguageNumber] = fontName;
+            PendingSettings.FontSelections[zeroBasedLanguageNumber] = fontName;
             if (fontName != _collectionSettings.AllLanguages[zeroBasedLanguageNumber].FontName)
-                DialogBeingEdited.ChangeThatRequiresRestart();
+                PendingSettings.ChangeThatRequiresRestart();
         }
 
         private void UpdatePendingNumberingStyle(string numberingStyle)
         {
-            if (DialogBeingEdited != null)
-            {
-                DialogBeingEdited.PendingNumberingStyle = numberingStyle;
-                if (numberingStyle != _collectionSettings.PageNumberStyle)
-                    DialogBeingEdited.ChangeThatRequiresRestart();
-            }
+            PendingSettings.NumberingStyle = numberingStyle;
+            if (numberingStyle != _collectionSettings.PageNumberStyle)
+                PendingSettings.ChangeThatRequiresRestart();
         }
 
         private void UpdatePendingXmatter(string xMatterChoice)
         {
-            if (DialogBeingEdited != null)
-            {
-                DialogBeingEdited.PendingXmatter = xMatterChoice;
-                if (xMatterChoice != _collectionSettings.XMatterPackName)
-                    DialogBeingEdited.ChangeThatRequiresRestart();
-            }
+            PendingSettings.Xmatter = xMatterChoice;
+            if (xMatterChoice != _collectionSettings.XMatterPackName)
+                PendingSettings.ChangeThatRequiresRestart();
+        }
+
+        private void UpdatePendingDefaultBookshelf(string bookshelf)
+        {
+            PendingSettings.DefaultBookshelf = bookshelf;
+            if (bookshelf != _collectionSettings.DefaultBookshelf)
+                PendingSettings.ChangeThatRequiresRestart();
         }
 
         private void UpdatePendingAdministratorEmails(string emails)
         {
-            if (DialogBeingEdited != null)
-            {
-                DialogBeingEdited.PendingAdministrators = emails;
-                if (emails != _collectionSettings.AdministratorsDisplayString)
-                    DialogBeingEdited.ChangeThatRequiresRestart();
-            }
+            PendingSettings.Administrators = emails;
+            if (emails != _collectionSettings.AdministratorsDisplayString)
+                PendingSettings.ChangeThatRequiresRestart();
         }
 
         public void PrepareToShowDialog() { }

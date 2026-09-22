@@ -25,7 +25,7 @@ namespace Bloom.web.controllers
             _collectionSettings = collectionSettings;
             _subscription = collectionSettings.Subscription;
 
-            CollectionSettingsDialog.DialogCancelled += (sender, e) =>
+            CollectionSettingsApi.EditingCancelled += (sender, e) =>
             {
                 _subscription = collectionSettings.Subscription;
             };
@@ -90,14 +90,22 @@ namespace Bloom.web.controllers
                     {
                         var codeString = request.RequiredPostString();
                         _subscription = new Subscription(codeString);
-                        NotifyPendingSubscriptionChange?.Invoke(codeString);
+                        // Only a code that differs from the collection's own counts as a pending
+                        // change; see the Subscription field of PendingCollectionSettings.
+                        var pending = CollectionSettingsApi.PendingSettings;
+                        if (
+                            pending != null
+                            && _collectionSettings.Subscription.IsDifferent(codeString)
+                        )
+                        {
+                            pending.Subscription = _subscription;
+                            pending.ChangeThatRequiresRestart();
+                        }
                         request.PostSucceeded();
                     }
                 },
                 false
             );
         }
-
-        public static Action<string> NotifyPendingSubscriptionChange;
     }
 }

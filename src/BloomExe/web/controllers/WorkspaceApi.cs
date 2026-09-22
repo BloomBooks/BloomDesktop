@@ -17,11 +17,31 @@ namespace Bloom.web.controllers
         // argument, and set this in that constructor.
         public WorkspaceView WorkspaceView;
 
+        /// <summary>
+        /// Closes and reopens the collection once the UI thread is idle. The React Collection
+        /// Settings dialog uses this after saving a change that needs a restart, so that its reply
+        /// reaches the dialog before the collection goes away.
+        /// </summary>
+        public static Action ReopenCollectionWhenIdle;
+
+        /// <summary>
+        /// The Config-R page the React settings dialog should open on, from the tab parameter of
+        /// the request that is waiting for idle.
+        /// </summary>
+        private string _settingsDialogPageKey;
+
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
+            ReopenCollectionWhenIdle = () => Application.Idle += ReopenCollection;
+
             apiHandler.RegisterEndpointHandler(
                 "workspace/showLegacySettingsDialog",
                 HandleShowLegacySettingsDialog,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "workspace/showSettingsDialog",
+                HandleShowSettingsDialog,
                 true
             );
 
@@ -57,8 +77,6 @@ namespace Bloom.web.controllers
             // that thread lock the API processing.  (BL-15858)
             Application.Idle += ShowLegacySettingsDialog;
 
-            // When the fully react dialog is ready, we'll do this instead:
-            // _webSocketServer.LaunchDialog("CollectionSettingsDialog");
             request.PostSucceeded();
         }
 
@@ -66,6 +84,30 @@ namespace Bloom.web.controllers
         {
             Application.Idle -= ShowLegacySettingsDialog;
             WorkspaceView.OpenLegacySettingsDialog();
+        }
+
+        /// <summary>
+        /// Opens the React Collection Settings dialog, on the Config-R page named by the optional
+        /// tab parameter. Like the legacy dialog, it is launched when the application is idle so
+        /// that this request does not wait on it (BL-15858).
+        /// </summary>
+        private void HandleShowSettingsDialog(ApiRequest request)
+        {
+            _settingsDialogPageKey = request.Parameters["tab"];
+            Application.Idle += ShowSettingsDialog;
+            request.PostSucceeded();
+        }
+
+        private void ShowSettingsDialog(object sender, EventArgs e)
+        {
+            Application.Idle -= ShowSettingsDialog;
+            WorkspaceView.OpenSettingsDialog(_settingsDialogPageKey);
+        }
+
+        private void ReopenCollection(object sender, EventArgs e)
+        {
+            Application.Idle -= ReopenCollection;
+            WorkspaceView.ReopenCollection();
         }
 
         private void HandleHelpAction(ApiRequest request)

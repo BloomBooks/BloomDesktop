@@ -1486,6 +1486,31 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
+        /// <summary>
+        /// Asks the React Collection Settings dialog to open, on the Config-R page named by
+        /// pageKey if there is one.
+        /// </summary>
+        public void OpenSettingsDialog(string pageKey)
+        {
+            if (!_tcManager.OkToEditCollectionSettings)
+            {
+                BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
+                return;
+            }
+            dynamic dialogParameters = new DynamicJson();
+            dialogParameters.initialPageKey = pageKey ?? "";
+            _webSocketServer.LaunchDialog("CollectionSettingsDialog", dialogParameters);
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
+        }
+
         public void CheckForInvalidBranding()
         {
             if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)

@@ -20,6 +20,18 @@ const mainButtonBackground = kBloomBlue;
 // (language menu, help, zoom) so the whole TopBar reads as one group.
 const mainButtonTextColor = "rgba(0, 0, 0, 0.8)";
 
+// Let a long (or translated) settings label wrap and stay centered instead of stretching the bar.
+const settingsButtonCss = css`
+    white-space: normal;
+    line-height: 1.15;
+    max-width: 110px;
+
+    span {
+        display: inline-block;
+        text-align: center;
+    }
+`;
+
 export const CollectionTopBarControls: React.FunctionComponent = () => {
     const teamCollectionStatus = useWatchApiData<TeamCollectionStatus>(
         "teamCollection/tcStatus",
@@ -28,10 +40,14 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
         "tcStatus",
     );
 
-    // "legacy" means the winforms one.
-    // We have a new CollectionSettingsDialog react component which exists but isn't finished.
+    // "legacy" means the winforms one. This button, its handler, and its plain-English label
+    // all go away when the React CollectionSettingsDialog replaces the WinForms one.
     const handleLegacySettingsClick = React.useCallback(() => {
         post("workspace/showLegacySettingsDialog");
+    }, []);
+
+    const handleSettingsClick = React.useCallback(() => {
+        post("workspace/showSettingsDialog");
     }, []);
 
     const [collectionChooserOpen, setCollectionChooserOpen] =
@@ -75,18 +91,22 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                         iconPath={kSettingsIcon}
                         labelL10nKey="CollectionTab.SettingsButton"
                         labelEnglish="Settings"
+                        onClick={handleSettingsClick}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                        cssOverrides={settingsButtonCss}
+                    />
+                    <TopBarButton
+                        iconPath={kSettingsIcon}
+                        // An empty key keeps this out of the localization files; the button is
+                        // temporary and only developers and testers need to read it.
+                        labelL10nKey=""
+                        labelEnglish="Old Settings"
+                        temporarilyDisableI18nWarning={true}
                         onClick={handleLegacySettingsClick}
                         backgroundColor={mainButtonBackground}
                         textColor={mainButtonTextColor}
-                        cssOverrides={css`
-                            white-space: normal;
-                            line-height: 1.15;
-
-                            span {
-                                display: inline-block;
-                                text-align: center;
-                            }
-                        `}
+                        cssOverrides={settingsButtonCss}
                     />
                     <TopBarButton
                         iconPath={kOpenCreateCollectionIcon}

@@ -56,9 +56,9 @@ the right shape and worth keeping: `BloomDialog` shell, `useEventLaunchedBloomDi
 `LaunchDialog("CollectionSettingsDialog")` that C# never sends (`WorkspaceApi.cs:60-61` is commented
 out). The C# endpoint is a placeholder (`CollectionSettingsApi.cs:52-67`: GET returns `{}`).
 
-The stub becomes a usable base when these are done. This is a real unit of work with no card;
-recommend a new card **"Settings: dialog shell and save pipeline"** as the first sub-card of
-BL-16271 (the Aug comment on the card assumed the stub already did this; it does not).
+The stub becomes a usable base when these are done. This is a real unit of work, tracked as
+**BL-16902 "Settings: dialog shell and save pipeline"**, the first sub-card of BL-16271 (the Aug
+comment on the card assumed the stub already did this; it does not).
 
 ### 3.1 Front end
 
@@ -90,8 +90,7 @@ BL-16271 (the Aug comment on the card assumed the stub already did this; it does
    `CollectionSettingsApi.cs:634-704`.
 6. **Launch button.** In `react_components/TopBar/CollectionTopBarControls/CollectionTopBarControls.tsx`, add the second Settings button the card
    asks for, posting a new `workspace/showSettingsDialog`, and keep the legacy button until the
-   cutover step. Gate the new button so testers see it but users do not until cutover; a
-   `--e2e`/experimental flag, or the existing experimental-features token mechanism, both work.
+   cutover step. No gating (Q4): both buttons are visible to everyone on master.
 7. **Tests.** A vitest file modelled on `BookAndPageSettingsDialog.saving.test.tsx` covering:
    loads on open, OK posts once with changed values, Cancel posts nothing, OK label flips to
    Restart when a restart key changes.
@@ -151,9 +150,13 @@ This is the piece that unblocks every tab card, and the biggest design decision 
 Format follows a preflight report: what is asked, what blocks on it, recommendation, alternatives.
 "Blocks" names the step in §5 that cannot be finished, not started, without the answer.
 
-### Must answer before the shell card is finished
+### Decided 2026-09-22 (John Thomson)
+
+Q1 to Q4 were answered before the shell card started; the recommendations below are kept for
+the record and the decision is stated first in each.
 
 **Q1. Save model: everything on OK (current behaviour), or live per-control saving?**
+Decision: everything on OK, like the current dialog.
 Blocks: §3.2 design; every tab card inherits the answer.
 Recommendation: keep pending-until-OK with a single POST, because the restart semantics, Cancel,
 and the atomic OK-time validations (administrators, Pro-in-TC, xmatter validity) all assume it,
@@ -165,6 +168,7 @@ and an undo story for Cancel; not recommended.
 **Q2. Is the collection-level Appearance tab (defaults for Book Settings, inherit/override
 groups, BL-12521) out of this project?** The May 2026 Notion design had it; the Aug 2026 cards do
 not; the stub still has an `appearance` page.
+Decision: out of scope for now.
 Blocks: whether the shell keeps the page; whether BL-12521 and the config-r inheritance work are
 on the 6.6 board at all. Nothing else blocks.
 Recommendation: out of scope for BL-16271. Delete the stub page and leave BL-12521 where it is
@@ -176,6 +180,7 @@ commitment we have not made.
 **Q3. How does the Languages "More" sub-page get built?** Config-R alpha.27 has no sub-pages
 (`ConfigrPage` children may only be groups); BL-13273 "Config-r Subpages" is open on 6.7.
 Blocks: BL-16739 only.
+Decision: implement sub-pages in Config-R.
 Recommendation: implement sub-pages in config-r (BL-13273) if Hatton wants to own that; it is
 the design the mockup draws ("← More" inside the pane) and Bloom will want it again for Book
 Settings. If not, the fallback that needs no library change is a nested `BloomDialog` per
@@ -191,6 +196,8 @@ a second toolbar button. Who sees the second button (all users in alpha, or a fl
 `common/showSettingsDialog?tab=subscription` (all subscription badges) and
 `CheckForInvalidBranding` switch to the new dialog at the same moment?
 Blocks: step 0 (button gating) partly; step 8 fully.
+Decision: no flag. Everyone building from master sees the new button next to the old one; the
+whole task is finished and the old button removed before this work reaches beta.
 Recommendation: gate the new button behind the experimental-features mechanism
 (`ExperimentalFeatures`, token e.g. `react-settings`) so QA can turn it on per machine; route the
 badge and invalid-branding entry points to whichever dialog the flag selects, so QA tests those
@@ -275,7 +282,7 @@ element. Q6's new fields would change that.
 Each step is one PR unless noted; the card in bold is the tracker item. Steps 1 to 6 are
 independent of each other once step 0 lands, so they can be parallelized across people.
 
-**Step 0. Shell and save pipeline** (new card, see §3). Everything else depends on it.
+**Step 0. BL-16902 Shell and save pipeline** (see §3). Everything else depends on it.
 Deliverable: seven empty localized pages, launch button behind a flag, real GET/POST, extracted
 `CollectionSettingsUpdater` with tests, restart plumbing, deep link to a page. Needs Q1, Q2, Q4.
 
