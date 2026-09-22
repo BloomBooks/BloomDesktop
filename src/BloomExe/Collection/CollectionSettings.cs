@@ -1395,9 +1395,9 @@ namespace Bloom.Collection
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this will find a fairly readable name
-        /// for the languages Palaso knows about (probably the autonym) and fall back to the tag itself
-        /// if it can't find a name.
+        /// If the user hasn't set a name for the given language, this returns the language's
+        /// standard name from the subtag registry Palaso ships ("Spanish"), and falls
+        /// back to the tag itself if it can't find a name.
         /// BL-8174 But in case the tag includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         // TODO (default name BL-13703) make this consistent with the new Language Chooser default display name instead of using LibPalasso?
@@ -1434,7 +1434,69 @@ namespace Bloom.Collection
                     this.SignLanguage.IsCustomName,
                     metadataLanguageTag
                 );
-            return this.GetLanguageName(langTag, metadataLanguageTag);
+            // The four checks above cover Language1/2/3 and the sign language, but AllLanguages can
+            // hold more than those -- callers add to it (see
+            // RuntimeInformationInjectorTests.AddLanguagesUsedInPage_AddsOnlyAppropriateNames) --
+            // and a name the user gave any of them still wins over anything we look up.
+            var namedByTheCollection = AllLanguages.Find(x => x.Tag == langTag);
+            if (
+                namedByTheCollection != null
+                && !string.IsNullOrWhiteSpace(namedByTheCollection.Name)
+            )
+                return namedByTheCollection.Name;
+
+            // Not a language the collection names, so look one up. GetBestLanguageName reads the
+            // subtag registry LibPalaso ships, which is the same on every machine. Do NOT use
+            // GetLocalizedLanguageName here: which of its two paths runs depends on whether a native
+            // ICU library happens to be installed, so it named the same language differently on
+            // different machines (BL-16806).
+            //
+            // A collection language's name comes from somewhere else again -- WritingSystem derives
+            // those, and judges "custom" against LibPalaso's SLDR-backed LanguageLookup -- so the two
+            // can disagree. Accepted: this path runs only when the collection has no name to give.
+            //
+            // Route the result through GetLanguageNameWithScriptVariants, as the branches above do, to
+            // keep BL-8174's script/region distinctions: the lookup answers with the base language's
+            // name, so on its own an nsk-Latn row would read just "Naskapi". nameIsCustom is false
+            // because nobody chose this name, which also keeps us out of that method's one branch that
+            // calls GetLanguageName.
+            try
+            {
+                // LibPalaso special-cases these three ahead of its ICU branch, so asking it is safe
+                // here and is the only way to get "Chinese (Simplified)" rather than a bare "Chinese".
+                // Exactly these tags: variants like zh-CN-x-foo must stay distinguishable from each
+                // other, so they go through GetLanguageNameWithScriptVariants below instead.
+                if (langTag == "zh-CN" || langTag == "zh-TW" || langTag == "prs")
+                    return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
+                if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
+                {
+                    // For an unlisted language the lookup has already built the whole label, tag
+                    // included ("Language Not Listed (qaa-x-foo)"); wrapping it in script variants
+                    // would nest it inside itself.
+                    if (
+                        IetfLanguageTag.GetGeneralCode(langTag.ToLowerInvariant())
+                        == WellKnownSubtags.UnlistedLanguage
+                    )
+                        return bestName;
+                    return GetLanguageNameWithScriptVariants(
+                        langTag,
+                        bestName,
+                        false,
+                        metadataLanguageTag
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                // Never let looking up a name throw: we do this while building the page DOM, and
+                // an exception here made the Edit tab unusable once already (BL-15159). Falling
+                // back to the tag is a fine label, but log it rather than swallowing it silently,
+                // so a language that starts displaying as a bare tag is diagnosable.
+                Logger.WriteEvent(
+                    $"Could not find a display name for language \"{langTag}\", so showing the tag itself: {e.Message}"
+                );
+            }
+            return langTag;
         }
 
         // We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').

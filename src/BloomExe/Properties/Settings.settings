@@ -26,9 +26,6 @@
     <Setting Name="ImageHandler" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)">http</Value>
     </Setting>
-    <Setting Name="ImageGalleryProviderKeys" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="ShowSendReceive" Provider="Bloom.BloomSettingsProvider" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -123,9 +120,6 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ExportImportFileFolder" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="OpenRouterApiKey" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="CollectionTabSplitterSizes" Provider="Bloom.BloomSettingsProvider" Type="System.String" Scope="User">

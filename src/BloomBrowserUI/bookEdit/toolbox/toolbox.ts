@@ -14,6 +14,12 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import {
+    boxParticipatesInMarkup,
+    restoreAndResaveSelectionForMarkup,
+    restoreSelectionAfterMarkup,
+    saveSelectionForMarkup,
+} from "./markupSelectionPreservation";
 import { isLongPressEvaluating } from "../longPressShared";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
@@ -1631,18 +1637,10 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
             return;
         }
 
-        // the hard thing about all this is preserving the user's insertion point while we change the actual
-        // html out from under them to add/remove markup.
-        // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
-        // This "bookmark" approach makes that easy:
-        // We insert a dummy element where the insert point is. Later when we do the markup,
-        // we'll find the bookmark again, put the selection there, and remove this element.
-        // The problem with this approach is that when the user is fixing an existing word, the markup
-        // will see our bookmark as a word-breaking element. For example, if I type "houze" and go
-        // to fix that z, the markup routine is going to see "hous"-bookmark-"e". When the user
-        // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
-        // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
-        // markup.
+        // The hard thing about all this is preserving the user's insertion point while we change the
+        // actual html out from under them to add/remove markup. That job — and the known tradeoff
+        // in how it is currently done — now lives in markupSelectionPreservation.ts, so that it can
+        // be reimplemented without touching this pipeline. See BL-6681.
         const selNode = selection ? selection.anchorNode : null;
         const editableDiv = selNode
             ? $(selNode).parents(".bloom-editable")[0]
@@ -1650,18 +1648,35 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
-            const ckeditorOfThisBox = (
-                editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor }
-            ).bloomCkEditor;
-            // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
-            // intended to contain numbers not needing translation and don't get one...because the logic
-            // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
-            // it's not true vernacular text and doesn't need markup. So all the code below is skipped
-            // if we don't have one.
-            if (ckeditorOfThisBox) {
-                let ckeditorSelection = ckeditorOfThisBox.getSelection();
-                if (!ckeditorSelection) {
+            // Normally every editable box has a rich-text editor attached, and so participates in
+            // markup. If a block didn't get one, we presume it isn't true vernacular text and
+            // doesn't need markup, so all the code below is skipped.
+            if (boxParticipatesInMarkup(editableDiv)) {
+                // If there's no tool active, we don't need to update the markup.
+                const activeTool =
+                    currentTool && toolbox.toolboxIsShowing()
+                        ? currentTool
+                        : undefined;
+
+                // Recording the caret with a CKEditor bookmark inserts a hidden span at the
+                // insertion point, which SPLITS the text node the user is typing in. That is
+                // destructive enough to be worth avoiding: even though removing the bookmark and
+                // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
+                // the paragraph's old glyphs where a ligature straddled the split, so letters the
+                // user typed stop being drawn until something else forces a repaint (BL-16717).
+                // Nothing below rewrites this box unless a tool is active, or there is actually
+                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
+                // selection to preserve. So only record the caret when one of those is true,
+                // which for ordinary typing is never. (Decided BEFORE the record is made: a
+                // bookmark span itself contains an nbsp, so the test would answer yes after it.)
+                const boxMightBeRewritten =
+                    !!activeTool || editableMightBeRewritten(editableDiv);
+
+                let savedSelection = saveSelectionForMarkup(
+                    editableDiv,
+                    boxMightBeRewritten,
+                );
+                if (!savedSelection) {
                     return; // may be changing pages?
                 }
                 // We are now certainly going to do the markup, which is the work the next
@@ -1673,37 +1688,6 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                 if (isUndoOrRedo) {
                     lastUndoRedoMarkupStartTime = Date.now();
                 }
-
-                // If there's no tool active, we don't need to update the markup.
-                const activeTool =
-                    currentTool && toolbox.toolboxIsShowing()
-                        ? currentTool
-                        : undefined;
-
-                // Creating a bookmark inserts a hidden span at the insertion point, which SPLITS
-                // the text node the user is typing in. That is destructive enough to be worth
-                // avoiding: even though removing the bookmark and rejoining the text leaves the
-                // DOM exactly as it was, Chromium goes on painting the paragraph's old glyphs
-                // where a ligature straddled the split, so letters the user typed stop being
-                // drawn until something else forces a repaint (BL-16717). Restoring the bookmark
-                // is also a ckeditor re-select, which in the Chromium-based WebView2 plants a
-                // zero-width "filling char" (U+200B) whenever the caret sits next to an inline
-                // element such as the bloom-linebreak span; a later rewrite of the box orphans
-                // it and it gets saved (BL-16808).
-                // Nothing below rewrites this box unless a tool is active, or there is actually
-                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
-                // selection to preserve. So only pay for a bookmark when one of those is true,
-                // which for ordinary typing is never.
-                const needsBookmarks =
-                    !!activeTool || editableMightBeRewritten(editableDiv);
-
-                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-                // advantage that changing a character in the middle of a word will allow the entire word to
-                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-                // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = needsBookmarks
-                    ? ckeditorSelection.createBookmarks(true)
-                    : undefined;
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
@@ -1722,13 +1706,26 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        if (bookmarks) {
-                            ckeditorOfThisBox
-                                .getSelection()
-                                .selectBookmarks(bookmarks);
+                        const resaved = restoreAndResaveSelectionForMarkup(
+                            editableDiv,
+                            savedSelection,
+                        );
+                        // One of two deliberate differences from the pre-extraction code (the other
+                        // is noted on restoreSelectionAfterMarkup), and it is a narrow one. That
+                        // code did restore-then-re-save here, both steps
+                        // dereferencing getSelection() unguarded. The restore is still unguarded
+                        // (see restoreSelectionAfterMarkup), so a null selection there still throws
+                        // exactly where it used to. What this guard covers is only the case where
+                        // the restore's getSelection() succeeds and the immediately following
+                        // re-save's returns null: previously that threw inside an async function
+                        // nobody awaits, so the pass died half-done -- comments already stripped,
+                        // marker spans possibly left in the DOM -- via an unhandled rejection.
+                        // Abandoning the pass cleanly is the same outcome without the wreckage, and
+                        // is how the first save above has always behaved.
+                        if (!resaved) {
+                            return;
                         }
-                        ckeditorSelection = ckeditorOfThisBox.getSelection();
-                        bookmarks = ckeditorSelection.createBookmarks(true);
+                        savedSelection = resaved;
 
                         const actualUpdateFunc =
                             await activeTool.updateMarkupAsync();
@@ -1775,25 +1772,23 @@ function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
                     activeTool.updateMarkup();
                 }
 
-                //set the selection to wherever our bookmark node ended up
+                //put the caret back where it was before all of the above
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
-                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                if (bookmarks) {
-                    ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
-                }
+                restoreSelectionAfterMarkup(editableDiv, savedSelection);
 
-                // Removing a bookmark leaves the text that was on either side of it as two
-                // adjacent text nodes, which makes Chromium drop glyphs from ligatures near the
-                // join (BL-16717). But bookmarks are only one of the things that split a
-                // paragraph's text - Chromium's own backspace and long-press's inserted
-                // character do it too - so this is not conditional on our having made one. It
-                // is the box-is-quiet sweep that catches whatever the per-keystroke repair in
-                // ToolBox's keydown handler could not (a paste from the menu, an IME, an undo).
-                // It costs a walk of the box's text nodes and does nothing at all unless it
-                // finds a split. See mergeAdjacentTextNodes().
+                // Restoring the caret from a bookmark leaves the text that was on either side of
+                // it as two adjacent text nodes, which makes Chromium drop glyphs from ligatures
+                // near the join (BL-16717). But bookmarks are only one of the things that split a
+                // paragraph's text - Chromium's own backspace and long-press's inserted character
+                // do it too - so this is not conditional on our having recorded one, and it must
+                // stay even once the caret is recorded some other way. It is the box-is-quiet
+                // sweep that catches whatever the per-keystroke repair in ToolBox's keydown
+                // handler could not (a paste from the menu, an IME, an undo). It costs a walk of
+                // the box's text nodes and does nothing at all unless it finds a split. See
+                // mergeAdjacentTextNodes().
                 EditableDivUtils.mergeAdjacentTextNodes(editableDiv);
             }
         }
@@ -1856,6 +1851,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // Remove the &nbsp; from the bookmarks so they don't interfere with the algorithm below.
     // We'll put them back in at the end.
     const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
+
+    // If we end up rewriting the box (below), the html we write back must not carry ckeditor's
+    // zero-width "filling char" as ordinary text, or it is orphaned and saved into the book
+    // (BL-16490; and see removeTrackedCkEditorFillingChar). So take it out of the DOM first,
+    // before we read the html. We don't yet know whether we will convert anything, so this
+    // over-estimates the same way editableMightBeRewritten does: any nbsp at all. The only cost
+    // of a false yes is removing a character ckeditor was about to remove itself.
+    if (editableDiv.innerHTML.includes("&nbsp;")) {
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editableDiv);
+    }
 
     let editableDivHtml = editableDiv.innerHTML;
     // innerText does not include hidden text; innerHTML does.
@@ -1972,11 +1977,16 @@ export function editableMightBeRewritten(editable: HTMLElement): boolean {
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     // [\s\S] is a hack representing every character (including newline)
-    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    const commentRegex = /<!--[\s\S]*?-->/g;
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (fixedHtml !== editable.innerHTML) {
-        editable.innerHTML = fixedHtml;
+    if (editable.innerHTML.replace(commentRegex, "") !== editable.innerHTML) {
+        // Don't bake ckeditor's zero-width filling char into the html we write back, where it
+        // would be orphaned and saved into the book (BL-16490). See
+        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
+        // changes the html, so read it again afterwards.
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
+        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
     }
 }
 

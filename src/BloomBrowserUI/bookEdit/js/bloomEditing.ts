@@ -69,6 +69,10 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import {
+    externalCaptureErrorForPendingWork,
+    kExternalCaptureMaxWaitMs,
+} from "./pageContentCapturePolicy";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -79,6 +83,7 @@ import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1233,6 +1238,17 @@ export function bootstrap() {
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
+    //
+    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
+    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
+    // ready it writes the snapshot it took here over whatever the element holds by then. So
+    // anything a person types in that window is silently destroyed. Measured on a developer
+    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
+    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
+    // after making a book and you lose it; a loaded machine widens the window. Written up in
+    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
+    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
+    // staying, that entry is the place to start.
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
@@ -1440,6 +1456,17 @@ export function requestPageContent() {
 // uses a fresh disposable browser per page. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
+    // Record how much of the page each image slot covers, while the page is still laid out.
+    // That is the only record of it: the saved HTML otherwise says nothing about how big
+    // anything ends up on screen, so without this the AI image editor could not tell what size
+    // an image on any page but the open one ought to be. Never throws out: a missing size hint
+    // must not cost the user their page.
+    try {
+        recordFractionOfPageOnImageSlots(document.body);
+    } catch (e) {
+        console.error("recordFractionOfPageOnImageSlots failed: ", e);
+    }
+
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
     getToolboxBundleExports()?.removeToolboxMarkup();
@@ -1574,9 +1601,14 @@ function resizeCanvasElementsToFitContent(): void {
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
 // API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
-// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
-// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page. It also resizes text canvas elements to fit their content (see
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, so
+// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we capture
+// the page. Unlike the live save, it is a background job with nobody waiting at the keyboard, so it
+// waits longer (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR instead
+// of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
+// elements to fit their content (see
 // resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
 // timer the wait loop does not track.
 export function captureContentForExternalProcessing(
@@ -1622,11 +1654,25 @@ export function captureContentForExternalProcessing(
         }
     };
     const waitForDelaysThenFinish = () => {
-        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
+        if (activeDelays.length === 0) {
             finish();
-        } else {
-            setTimeout(waitForDelaysThenFinish, 50);
+            return;
         }
+        if (Date.now() - start > kExternalCaptureMaxWaitMs) {
+            const error = externalCaptureErrorForPendingWork(activeDelays);
+            if (error) {
+                window.__bloomExternalPageContent = error;
+                return;
+            }
+            console.warn(
+                `captureContentForExternalProcessing: Maximum wait time (${kExternalCaptureMaxWaitMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
+            );
+            finish();
+            return;
+        }
+        setTimeout(waitForDelaysThenFinish, 50);
     };
     waitForDelaysThenFinish();
 }
@@ -1966,6 +2012,22 @@ export function attachToCkEditor(element) {
         return;
     }
 
+    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): an editor wipes the box when it
+    // becomes ready, so a title typed before that is lost. Waiting for the first editor did not
+    // stop the nightly losing titles, and the open question is whether a SECOND attach is landing
+    // on a box somebody has already typed in. These two lines answer that: every attach on a title
+    // box is announced, with what the box holds going in and what it holds once the editor is
+    // ready. Playwright keeps the page's console in its trace, so a failed run carries the answer.
+    // Remove with the rest of this investigation.
+    const isBookTitleBox =
+        !!element.getAttribute &&
+        element.getAttribute("data-book") === "bookTitle";
+    const titleBoxText = () => (element.innerText || "").trim();
+    if (isBookTitleBox)
+        console.warn(
+            `[cover-title] attaching an editor; box holds "${titleBoxText()}"`,
+        );
+
     // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
     // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
     const alwaysHideToolbar =
@@ -2061,6 +2123,12 @@ export function attachToCkEditor(element) {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Cover-title investigation: see the note at the top of this function.
+        if (isBookTitleBox)
+            console.warn(
+                `[cover-title] editor ready; box now holds "${titleBoxText()}"`,
+            );
 
         // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
         // The only spans the format toolbar itself produces are bare <span style="color:..."> (and

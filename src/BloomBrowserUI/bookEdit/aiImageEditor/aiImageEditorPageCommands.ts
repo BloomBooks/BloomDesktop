@@ -6,6 +6,8 @@
 //   launchAiImageEditor            the "Edit with AI…" menu command: report the clicked
 //                                  image to C# and ask it to save the page.
 //   applyAiImageEditorReplacements the commit's current-page swaps, applied to the live DOM.
+//   getAiImageEditorPageMetrics    how big the open page is and whether it is meant for a
+//                                  screen, which only a laid-out browser page can say.
 //
 // Both are reached from elsewhere: the first from canvasControlRegistry (this frame), the
 // second from the overlay in the top window, via
@@ -13,6 +15,11 @@
 
 import { postJson } from "../../utils/bloomApi";
 import { kImageContainerClass } from "../js/bloomImages";
+import {
+    getOpenPageMetrics,
+    IPageMetrics,
+    kGameTargetSelector,
+} from "../js/imageTargetResolution";
 import { changeImageByElement } from "../js/bloomEditing";
 import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import {
@@ -41,25 +48,62 @@ export function launchAiImageEditor(
     });
 }
 
-// Numbers this page's image slots the way C# does (SelectImageSlotsOnPage in
-// AiImageEditorApi.cs): its image containers, in document order. An image container is
-// exactly what a user may replace, so the branding, license and QR-code images, which live
-// outside any container, are not slots at all.
+// Which of this page's image slots the user clicked, as its index in the list imageSlotsOnPage
+// builds. An image container is exactly what a user may replace, so the branding, license and
+// QR-code images, which live outside any container, are not slots at all.
 //
-// The index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so the
-// two lists have to hold the same containers. Bloom injects controls into the live page that
-// no saved book has, and the save strips them (Cleanup in bloomEditing.ts), so those are the
-// one thing to leave out here.
+// That index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so this
+// side and C# have to count the same containers. Each applies the rule for itself, against a
+// different DOM: imageSlotsOnPage below, and SelectImageSlotsOnPage in AiImageEditorApi.cs.
+// Neither can change what it counts without the other.
 function slotIndexOnPage(clicked: HTMLElement | undefined): number {
     if (!clicked) return 0;
     const pageRoot = clicked.closest(".bloom-page") ?? document;
-    const slots = Array.from(
-        pageRoot.querySelectorAll("." + kImageContainerClass),
-    ).filter((el) => !el.closest(".bloom-ui"));
+    const slots = imageSlotsOnPage(pageRoot);
     const index = slots.findIndex(
         (el) => el === clicked || el.contains(clicked) || clicked.contains(el),
     );
     return index < 0 ? 0 : index;
+}
+
+// This page's image slots, in the order that gives each one its ordinal. The single place
+// that builds the list, so every caller agrees with C# (SelectImageSlotsOnPage in
+// AiImageEditorApi.cs) about which container is slot 3.
+//
+// Two kinds of image container are left out, and BOTH sides leave out the same ones, because
+// the ordinal in "{pageId}:{ordinal}" is an index into this list and C# indexes its own copy
+// of it:
+//
+//  - A Bloom Games target's copy of a draggable's picture. The browser writes that copy in
+//    when the draggable is selected or its picture changes (copyContentToTarget), and a target
+//    that has not had that done sits empty — so the live page and the saved HTML can honestly
+//    disagree about how many image containers a game page has. Counting the copies made the
+//    ordinal mean one slot in the browser and a different one in C#, which is how a
+//    replacement ended up in a target, to be thrown away at the next rebuild (BL-16793).
+//  - The controls Bloom injects into the live page, which no saved book has and which the save
+//    strips (Cleanup in bloomEditing.ts). C# never sees these, so it needs no rule for them.
+//
+// Which of the remaining slots the editor is OFFERED is still C#'s business alone: where it
+// declines one (a file format the editor cannot open, say) it skips that ordinal rather than
+// renumbering, so filtering any further here would shift every later slot's identity.
+function imageSlotsOnPage(pageRoot: ParentNode): HTMLElement[] {
+    return Array.from(
+        pageRoot.querySelectorAll("." + kImageContainerClass),
+    ).filter(
+        (el) =>
+            !el.closest(".bloom-ui") &&
+            !el.parentElement?.closest(kGameTargetSelector),
+    ) as HTMLElement[];
+}
+
+// How big the page the user is editing is, and whether it is one of the screen-sized layouts.
+// The AI image editor works out the size each slot wants from this plus the slot's share of
+// its page, which Bloom records in the HTML on every save; see imageTargetResolution.ts.
+//
+// Null when there is no laid-out page, which callers treat as "we don't know" rather than as
+// an error.
+export function getAiImageEditorPageMetrics(): IPageMetrics | null {
+    return getOpenPageMetrics(document.querySelector(".bloom-page"));
 }
 
 // The element of a slot that carries the picture: the container's own img, or the container
@@ -104,9 +148,7 @@ export function applyAiImageEditorReplacements(
     // this list, and that index is the whole of a slot's identity — nothing here compares
     // file names, because two slots can honestly show the same file (every empty slot shows
     // placeHolder.png) and a slot we already swapped no longer shows what C# read.
-    const slots = Array.from(
-        pageRoot.querySelectorAll("." + kImageContainerClass),
-    ).filter((el) => !el.closest(".bloom-ui")) as HTMLElement[];
+    const slots = imageSlotsOnPage(pageRoot);
     // Count as we go rather than at the end: if a swap throws, the ones already made are in
     // the live DOM and the caller still has to know to save them. A replacement whose slot
     // this page does not have is left out, which the caller sees as applied < expected.

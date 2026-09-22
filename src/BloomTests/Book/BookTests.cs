@@ -2155,13 +2155,6 @@ namespace BloomTests.Book
             Assert.IsTrue(book.CanDelete);
         }
 
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
-        }
-
         [Test]
         public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
         {
@@ -3218,6 +3211,29 @@ namespace BloomTests.Book
             Assert.That(innerXml, Does.Not.Contain("style=\"color:red\""));
             Assert.That(innerXml, Does.Not.Contain("lang=\"en\""));
             Assert.That(innerXml, Does.Contain("<strong><em>text</em></strong>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_PreservesHyperlinkHref()
+        {
+            // A hyperlink is an <a> inside the paragraph; stripping its href would silently destroy the link (BL-16892).
+            // The character-style markup nested inside it should still be cleaned up.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>See <a href='https://bloomlibrary.org/page#frag'><b style='color:red'>this book</b></a> now.</p></div></body></html>"
+            );
+            var para = GetFirstEditableParagraph(dom);
+            Assert.That(
+                para.InnerXml,
+                Does.Contain("href=\"https://bloomlibrary.org/page#frag\""),
+                "sanity check: test data has the link"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                para.InnerXml,
+                Is.EqualTo(
+                    "See <a href=\"https://bloomlibrary.org/page#frag\"><strong>this book</strong></a> now."
+                )
+            );
         }
 
         [Test]

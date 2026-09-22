@@ -295,7 +295,7 @@ namespace Bloom.web.controllers
                     vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
                     // Control port of the dev launcher that started us (null when not
-                    // launched via go.sh); see .github/skills/bloom-automation.
+                    // launched via go.sh); see .claude/skills/run-bloom.
                     launcherControlPort = Program.StartupLauncherPort,
                     // Where this instance keeps its user settings (user.config): the folder
                     // --user-settings-folder named, or the usual per-version one. The e2e launch
@@ -629,6 +629,11 @@ namespace Bloom.web.controllers
                 var langs = new List<object>();
                 foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    // The hints the user writes in this dialog are stored in the book, so the
+                    // pseudo-locale (a UI-testing device, not a language anyone writes in) has
+                    // no business being offered here. See BL-16748.
+                    if (code == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue;
                     var langItem = WorkspaceView.CreateLanguageItem(code);
                     langs.Add(new { label = langItem.MenuText, tag = code });
                 }

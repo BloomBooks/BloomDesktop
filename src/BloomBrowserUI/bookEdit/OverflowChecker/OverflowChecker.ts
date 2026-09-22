@@ -417,6 +417,36 @@ export default class OverflowChecker {
         OverflowChecker.CheckPageAncestorOverflow(editable);
     } // end AdjustSizeOrMarkOverflow
 
+    // Whether a bloom-padForOverflow box should measure its descenders and store the resulting
+    // padding-bottom in its style attribute.
+    // The book title is one data-book field shown on several xmatter pages (the front cover, the
+    // title page, sometimes more), and Bloom keeps the style attribute of all its copies in sync.
+    // In particular, the style attribute is used to store the padding-bottom that we compute here
+    // to prevent descenders from extending outside their box. So each time we save a page with
+    // a book-title, the padding-bottom on that page gets copied to all the other places that
+    // use the same combination of data-book and lang attributes, just like the title text.
+    // For example, if we edited the title page last, and had updated the padding to be ideal for
+    // the title there, the front cover would get the title page's padding. It would get corrected
+    // the next time we edit the front cover, but a publication made in the meantime would have
+    // things subtly the wrong size and position. (Claude thought there might even be a situation
+    // where the front cover descenders could be cut off, but I haven't been able to reproduce that.)
+    // We could not find any acceptably simple way to prevent padding migrating like this,
+    // given that content in xmatter pages is only preserved through the data-div,
+    // so we decided to kluge it by only allowing the padding to be adjusted by this code on the
+    // front cover. The other copies of the book title will inherit the front cover's padding.
+    // We may come up with a better approach in a later version.
+    // Other padded fields are measured wherever they are. None of them are currently likely to
+    // be in more than one place with a different style in each.
+    public static shouldMeasurePaddingForOverflow(
+        editable: HTMLElement,
+    ): boolean {
+        if (editable.getAttribute("data-book") !== "bookTitle") {
+            return true;
+        }
+        const page = editable.closest(".bloom-page");
+        return !!page && page.classList.contains("outsideFrontCover");
+    }
+
     // Type 1 overflow handling: checks/resizes the element's containing canvas element and
     // marks whether the element overflows its own box. This is the per-element part of
     // overflow handling and can be called in a loop over multiple elements before calling
@@ -449,7 +479,10 @@ export default class OverflowChecker {
             "bloom-padForOverflow",
         );
 
-        if (preventOverflowY) {
+        if (
+            preventOverflowY &&
+            OverflowChecker.shouldMeasurePaddingForOverflow(editable)
+        ) {
             editable.style.paddingBottom = "0";
             const measurements =
                 MeasureText.getDescentMeasurementsOfBox(editable);

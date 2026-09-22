@@ -149,6 +149,7 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            BloomAssertListener.Install();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
@@ -2449,6 +2450,14 @@ namespace Bloom
 
         public static void SetUpLocalization()
         {
+            // Offer the pseudo-locale ("Pseudo-English") in the UI language menu on developer, alpha
+            // and internal channels only. It is an internationalization-testing tool, not a translation:
+            // see BL-16748 and OfferPseudoLocalizationForI18nTesting below. Note that this gates
+            // only whether the locale is *offered*; L10NSharp will pseudolocalize lookups for
+            // qps-ploc whenever that is the current UI language, which is why GetDesiredUiLanguage
+            // also refuses a stored qps-ploc on channels where we don't offer it.
+            LocalizationManager.OfferPseudoLocalization = OfferPseudoLocalizationForI18nTesting;
+
             ILocalizationManager lm;
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
@@ -2604,6 +2613,31 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Whether we offer the "Pseudo-English" pseudo-locale (qps-ploc) as a UI language.
+        /// It exists so that we (and testers) can spot internationalization problems: every
+        /// string that goes through localization comes back visibly transformed, so anything
+        /// still showing as plain English is hard-coded. That is a developer/tester tool, so we
+        /// offer it only where developers and testers are: see OffersPseudoLocalizationOnChannel.
+        /// See BL-16748.
+        /// </summary>
+        public static bool OfferPseudoLocalizationForI18nTesting =>
+            OffersPseudoLocalizationOnChannel(ApplicationUpdateSupport.ChannelName);
+
+        /// <summary>
+        /// Whether a build on the named channel offers the pseudo-locale: the developer and alpha
+        /// channels, plus the staff-only internal ones (BetaInternal and ReleaseInternal), since
+        /// most of our systematic testing happens on those. Never the public Beta or Release.
+        /// </summary>
+        internal static bool OffersPseudoLocalizationOnChannel(string channelName)
+        {
+            var channel = channelName.ToLowerInvariant();
+            return channel.Contains("developer")
+                || channel.Contains("alpha")
+                || channel.Contains("unstable")
+                || channel.Contains("internal");
+        }
+
+        /// <summary>
         /// Derive the desired UI language from the stored value, or from matching the OS value against
         /// the available localizations if nothing has been explicitly stored yet.
         /// </summary>
@@ -2613,6 +2647,20 @@ namespace Bloom
         private static string GetDesiredUiLanguage(string installedStringFileFolder)
         {
             var desiredLanguage = Settings.Default.UserInterfaceLanguage;
+            // A build that does not offer the pseudo-locale can still find qps-ploc stored: a
+            // developer build shares a settings folder with the Release channel, as neither is
+            // stamped with a channel name (installed Alpha and Beta each get their own). Lookups
+            // for qps-ploc would still work, so fall back to English rather than leave anyone with
+            // a mangled UI and no menu entry to escape it. Only a developer's machine can reach
+            // that state, so it is not worth chasing further than this. See BL-16748.
+            if (
+                desiredLanguage == LocalizationManager.PseudoLocalizationLanguageId
+                && !OfferPseudoLocalizationForI18nTesting
+            )
+            {
+                // SetUpLocalization stores whatever we return back into the setting.
+                return "en";
+            }
             if (
                 String.IsNullOrEmpty(desiredLanguage)
                 || !Settings.Default.UserInterfaceLanguageSetExplicitly
@@ -3146,29 +3194,32 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
 
-        private static bool _runningE2eTests;
+        /// <summary>
+        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb,
+        /// including the child Bloom that `upload` starts for a bulk upload. Code that would
+        /// otherwise show modal UI must report the problem some other way (typically stderr) and
+        /// return, because a modal here blocks the process forever -- no failure, no exit code,
+        /// just a hang (BL-16869).
+        /// </summary>
+        /// <remarks>
+        /// Deliberately NOT including RunningE2eTests, even though NonFatalProblem.Report treats
+        /// the two alike. The e2e suite's problemDialogWatcher fixture
+        /// (src/BloomE2E/fixtures/problemDialogWatcher.ts) finds the problem dialog among the CDP
+        /// page targets, scrapes the exception from behind its "Learn More" link, and fails the
+        /// test with it. Suppressing the dialog under --e2e would take that away and let tests go
+        /// green through exceptions they currently catch. Nothing is lost by excluding it: the
+        /// bulk-upload child that BL-16869 is about runs the `upload` verb, so it is in console
+        /// mode regardless.
+        /// </remarks>
+        public static bool RunningNonInteractive => RunningInConsoleMode;
 
         // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
         // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
         // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
         // surfaces as a failed API call / logged error and fails the test, instead of popping a
-        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
-        // FatalExceptionHandler.
-        public static bool RunningE2eTests
-        {
-            get => _runningE2eTests;
-            set
-            {
-                _runningE2eTests = value;
-                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
-                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
-                // the request/UI thread and every test times out, while hiding the real error behind
-                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
-                // normal behavior when the suite turns the mode back off.
-                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
-                    listener.AssertUiEnabled = !value;
-            }
-        }
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report,
+        // FatalExceptionHandler, and BloomAssertListener (which does the same for Debug.Assert).
+        public static bool RunningE2eTests { get; set; }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.
