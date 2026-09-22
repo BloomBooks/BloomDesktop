@@ -12,6 +12,12 @@
 //  3. Discovery matches on the OPEN COLLECTION FOLDER, not on a port. Bloom takes the next free
 //     port block, and a developer's own Bloom may already hold 8089, so the folder is the only
 //     reliable way to tell our instance from theirs.
+//  4. Every Bloom we launch keeps its user settings (user.config: UI language, page zoom, the Bloom
+//     Library login, and the rest of Settings.Default) in a folder of its own inside the temp
+//     folder, passed as --user-settings-folder. Every Bloom of one build otherwise shares one
+//     user.config, so a run would start from whatever the developer's Bloom, or the previous run,
+//     saved last, and leave its own changes behind for them. This way it starts from defaults, or
+//     from whatever a test puts in the folder first, and its settings die with the temp folder.
 //
 // Nothing here knows about Playwright; fixtures/bloomTest.ts adds the CDP attachment on top.
 
@@ -31,6 +37,12 @@ export interface ILaunchedBloom {
     bloomPid: number;
     /** The temp copy of the collection folder that this Bloom has open. */
     collectionDir: string;
+    /**
+     * The folder this Bloom keeps its user settings in (its user.config), a sibling of the
+     * collection in the temp folder. It starts empty, so Bloom starts from default settings; a
+     * restart keeps it, so what one launch saved the next one reads, as on a real machine.
+     */
+    userSettingsDir: string;
     /** Kill the process tree, confirm the HTTP port went dark, and delete the temp copy. */
     stop: () => Promise<void>;
     /**
@@ -59,6 +71,19 @@ export interface ICollectionSpec {
      * three; two entries mean the collection has no Language3.
      */
     languages: string[];
+    /**
+     * A subscription code to open the collection with, which is what decides the collection's
+     * subscription tier. Left out, the collection has no code and so is Basic. Use
+     * kEnterpriseSubscriptionCode (helpers/collectionSettings.ts) for a test of a tier-gated
+     * feature.
+     */
+    subscriptionCode?: string;
+    /**
+     * The Bloom Library bookshelf every book of the collection is uploaded to, by its url key, e.g.
+     * "test-bookshelf-1" (see kTestBookshelves). Bloom honours it only under an enterprise
+     * subscription whose bookshelves include it, which is what the Settings dialog offers a person.
+     */
+    bookshelf?: string;
 }
 
 /** Options for launchBloom. Give exactly one of collectionName and collectionSpec. */
@@ -72,6 +97,15 @@ export interface ILaunchBloomOptions {
     collectionName?: string;
     /** Create a collection for this test alone. The default choice. */
     collectionSpec?: ICollectionSpec;
+    /**
+     * Experimental features this Bloom should have on, by the tokens ExperimentalFeatures.cs uses:
+     * "team-collections", "experimental-source-books". A person turns these on in the Advanced tab
+     * of the collection Settings dialog, which is WinForms and so unreachable, and the saved
+     * setting is shared with the developer's own Bloom, so the launch hands them to this instance
+     * on its command line instead (--experimental-features, which Bloom accepts only beside
+     * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
+     */
+    experimentalFeatures?: string[];
     /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
     readyTimeoutMs?: number;
 }
@@ -116,8 +150,15 @@ export function getSourceCollectionsRoot(): string {
 
 /**
  * Find the built Bloom.exe. The exe lands in a config/platform-specific folder depending on the
- * build, so try the known locations. Debug comes first for the common local case; CI builds and
- * runs Release. Throws naming every folder it looked in.
+ * build, so several of the known locations can hold one at once, and the MOST RECENTLY BUILT wins.
+ *
+ * Newest rather than a fixed order, because the order is not a preference anybody holds: a
+ * worktree that once built x64 and now builds AnyCPU keeps the old exe forever (output/ is
+ * gitignored and nothing cleans it), and a fixed order silently runs the whole suite against a
+ * months-old Bloom. That failure is not diagnosable from a test: the old exe lacks whatever the
+ * test is about, so the test fails exactly as if Bloom were broken. Seen 2026-09-04, where a June
+ * x64 build beat the AnyCPU one built minutes before and opened the developer's own collection
+ * instead of the one it was given. Throws naming every folder it looked in.
  */
 export function findBloomExe(): string {
     const candidates = [
@@ -128,14 +169,196 @@ export function findBloomExe(): string {
         "Release/AnyCPU",
         "Release",
     ].map((sub) => Path.join(repoRoot, "output", sub, "Bloom.exe"));
-    const exe = candidates.find((c) => fs.existsSync(c));
-    if (!exe) {
+    const built = candidates
+        .filter((c) => fs.existsSync(c))
+        .map((path) => ({ path, builtAt: fs.statSync(path).mtimeMs }))
+        .sort((a, b) => b.builtAt - a.builtAt);
+    if (built.length === 0) {
         throw new Error(
             `Could not find a built Bloom.exe (looked in: ${candidates.join(", ")}). ` +
                 `Build Bloom, then re-run.`,
         );
     }
-    return exe;
+    return built[0].path;
+}
+
+/**
+ * The newest file under `root`, by modification time, with the folders in `skip` left out and,
+ * when `counts` is given, only files it accepts counted; it is handed the file's path relative
+ * to `root`, with forward slashes. Returns undefined for a folder that does not exist or holds no
+ * such file.
+ */
+function newestFileUnder(
+    root: string,
+    skip: Set<string>,
+    counts?: (relativePath: string) => boolean,
+): { path: string; mtimeMs: number } | undefined {
+    let newest: { path: string; mtimeMs: number } | undefined;
+    const visit = (dir: string) => {
+        let entries: fs.Dirent[];
+        try {
+            entries = fs.readdirSync(dir, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const entry of entries) {
+            if (skip.has(entry.name)) continue;
+            const path = Path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                visit(path);
+            } else if (entry.isFile()) {
+                if (
+                    counts &&
+                    !counts(Path.relative(root, path).replace(/\\/g, "/"))
+                )
+                    continue;
+                const mtimeMs = fs.statSync(path).mtimeMs;
+                if (!newest || mtimeMs > newest.mtimeMs)
+                    newest = { path, mtimeMs };
+            }
+        }
+    };
+    visit(root);
+    return newest;
+}
+
+/**
+ * The folders under a source tree whose contents never call for a rebuild: dependencies, build
+ * products, editor and tool settings, and the folders that hold only tests and their fixtures.
+ */
+const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
+    "node_modules",
+    "obj",
+    "bin",
+    ".vite-hooks",
+    ".vscode",
+    ".storybook",
+    "__tests__",
+    "component-tests",
+    "canvas-e2e-tests",
+    "test",
+]);
+
+/**
+ * Whether a change to this source file (path relative to the source tree, forward slashes) calls
+ * for a rebuild. Tests and stories are not part of what the build produces, so editing one must
+ * not stop the suite. Nor is most Markdown, but the build compiles the help and info pages from
+ * it (compileMarkdownPlugin in vite.config.mts), so Markdown in those two folders counts.
+ */
+function isBuiltSource(relativePath: string): boolean {
+    const lower = relativePath.toLowerCase();
+    if (lower.endsWith(".md"))
+        return lower.startsWith("help/") || lower.startsWith("infopages/");
+    return !/\.(spec|test|uitest|stories)\.[jt]sx?$/.test(lower);
+}
+
+/** Whether the build wrote this file into output/browser (as opposed to a running Bloom). */
+function isBuildOutput(fileName: string): boolean {
+    return [".js", ".css", ".html", ".htm"].includes(
+        Path.extname(fileName).toLowerCase(),
+    );
+}
+
+/** The newest of several newestFileUnder results, or undefined when none found a file. */
+function newestOf(
+    ...found: ({ path: string; mtimeMs: number } | undefined)[]
+): { path: string; mtimeMs: number } | undefined {
+    return found.reduce(
+        (best, f) => (f && (!best || f.mtimeMs > best.mtimeMs) ? f : best),
+        undefined,
+    );
+}
+
+let freshnessChecked = false;
+
+/**
+ * Refuse to launch a Bloom whose front-end bundle or whose Bloom.dll is older than its source.
+ *
+ * The launched Bloom serves its React UI from output/browser, and nothing rebuilds that bundle when
+ * a .tsx file changes or a merge brings in someone else's; the same goes for Bloom.dll and the C#
+ * under src/BloomExe. A run against a stale build fails in the way a real regression does, in a
+ * test whose feature is simply not in the build yet, and nothing in the output says so. On
+ * 2026-09-05 a whole-suite run failed one of master's own tests that way, against a bundle a day
+ * older than the commit the test needed. So this compares the newest file on each side and stops
+ * the run, naming the newer source file, before a single test can misreport.
+ *
+ * The bundle check is skipped when BLOOM_E2E_VITE_PORT is set, because then the dev server serves
+ * the working tree and the bundle is not what the run tests. Checked once per worker process.
+ */
+function assertBuildIsNotStale(exe: string): void {
+    if (freshnessChecked) return;
+    freshnessChecked = true;
+    const complaints: string[] = [];
+
+    if (!getViteDevPort()) {
+        const bundleDir = Path.join(repoRoot, "output", "browser");
+        // Only what the build writes. A running Bloom writes into this folder too (a template
+        // book's history.db, for one), and such a file would make a stale bundle look fresh.
+        const bundle = newestFileUnder(bundleDir, new Set(), isBuildOutput);
+        // The build reads three trees (compileMarkdownPlugin in vite.config.mts): the front end,
+        // the templates' ReadMe files, and the Markdown at the top of DistFiles.
+        const source = newestOf(
+            newestFileUnder(
+                Path.join(repoRoot, "src", "BloomBrowserUI"),
+                FOLDERS_THAT_ARE_NOT_SOURCE,
+                isBuiltSource,
+            ),
+            newestFileUnder(
+                Path.join(repoRoot, "src", "content", "templates"),
+                new Set(),
+                (relativePath) => /(^|\/)readme[^/]*\.md$/i.test(relativePath),
+            ),
+            newestFileUnder(
+                Path.join(repoRoot, "DistFiles"),
+                new Set(),
+                (relativePath) =>
+                    !relativePath.includes("/") &&
+                    relativePath.toLowerCase().endsWith(".md"),
+            ),
+        );
+        if (!bundle) {
+            complaints.push(
+                `There is no front-end bundle in ${bundleDir}; the launched Bloom would show an empty UI.`,
+            );
+        } else if (source && source.mtimeMs > bundle.mtimeMs) {
+            complaints.push(
+                `The front-end bundle in ${bundleDir} is older than the source: ` +
+                    `${source.path} was modified ${new Date(source.mtimeMs).toISOString()}, ` +
+                    `the bundle ${new Date(bundle.mtimeMs).toISOString()}.`,
+            );
+        }
+        if (complaints.length) {
+            complaints.push(
+                "Either start a Vite dev server and set BLOOM_E2E_VITE_PORT to its port, so the " +
+                    'suite tests the working tree (see README.md, "Testing a front-end change"), ' +
+                    "or have the developer rebuild the bundle: pnpm build in src/BloomBrowserUI " +
+                    "empties output/browser, so it is their call and no Bloom may be running from " +
+                    'this tree (AGENTS.md, "Don\'t run the full pnpm build yourself").',
+            );
+        }
+    }
+
+    const dll = Path.join(Path.dirname(exe), "Bloom.dll");
+    const dllBuilt = fs.existsSync(dll) ? fs.statSync(dll).mtimeMs : undefined;
+    const csSource = newestFileUnder(
+        Path.join(repoRoot, "src", "BloomExe"),
+        FOLDERS_THAT_ARE_NOT_SOURCE,
+        isBuiltSource,
+    );
+    if (dllBuilt !== undefined && csSource && csSource.mtimeMs > dllBuilt) {
+        complaints.push(
+            `${dll} is older than the C# source: ${csSource.path} was modified ` +
+                `${new Date(csSource.mtimeMs).toISOString()}, Bloom.dll was built ` +
+                `${new Date(dllBuilt).toISOString()}. Rebuild Bloom, then re-run.`,
+        );
+    }
+
+    if (complaints.length) {
+        throw new Error(
+            "BloomE2E refuses to test a stale build.\n  " +
+                complaints.join("\n  "),
+        );
+    }
 }
 
 /**
@@ -171,11 +394,16 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * window IS visible.
  */
 function environmentForBloom(): NodeJS.ProcessEnv {
+    // Every Bloom a test launches talks to the sandbox, dev.bloomlibrary.org, never to
+    // bloomlibrary.org: a test signs in there with a test account and uploads for real. A Debug
+    // Bloom uses the sandbox anyway; a Release Bloom, which is what CI builds, uses bloomlibrary.org
+    // unless this variable says otherwise (see BookUpload.UseSandboxWithoutUserChoice).
+    const env: NodeJS.ProcessEnv = { ...process.env, BloomSandbox: "true" };
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
     if (process.env.PWDEBUG && (asked === "headless" || asked === "0")) {
-        return { ...process.env, BLOOM_AUTOMATION_MONITOR: "" };
+        env.BLOOM_AUTOMATION_MONITOR = "";
     }
-    return process.env;
+    return env;
 }
 
 /**
@@ -187,10 +415,10 @@ function environmentForBloom(): NodeJS.ProcessEnv {
  * which AGENTS.md reserves for a developer or CI. Set BLOOM_E2E_VITE_PORT=<n> and Bloom loads the
  * front end from that dev server instead, so the suite tests the working tree.
  *
- * Leaving the variable unset is NOT the same as "no dev server". A dev build of Bloom probes port
- * 5173 by itself (ReactControl.TryGetActiveViteDevPort), so a developer's own dev server silently
- * changes what the suite tests, and Bloom has no option that means "ignore any dev server"
- * (--vite-port rejects 0). See AUTOMATION-DEBT.md.
+ * Leaving the variable unset means the built bundle, every time. A dev build of Bloom normally
+ * probes port 5173 by itself (ReactControl.TryGetActiveViteDevPort), but under --e2e it skips that
+ * probe, so a developer's own dev server cannot silently change what the suite tests. See
+ * AUTOMATION-DEBT.md, "Which front end the e2e suite tests depends on what else is running".
  */
 function getViteDevPort(): string | undefined {
     const value = process.env.BLOOM_E2E_VITE_PORT;
@@ -211,6 +439,8 @@ interface IInstanceInfo {
     editableCollectionFolder?: string;
     processId?: number;
     cdpPort?: number;
+    /** Where this Bloom keeps its user settings; absent from a Bloom built before it reported this. */
+    userSettingsFolder?: string;
 }
 
 /**
@@ -278,10 +508,18 @@ export function writeNewCollection(
     fs.mkdirSync(collectionDir, { recursive: true });
     fs.writeFileSync(
         Path.join(collectionDir, `${spec.name}.bloomCollection`),
-        makeCollectionXml(spec.languages),
+        makeCollectionXml(spec.languages, "Factory", spec),
         "utf8",
     );
     return collectionDir;
+}
+
+/** The settings makeCollectionXml writes beyond the languages and the front/back matter pack. */
+export interface ICollectionXmlExtras {
+    /** See ICollectionSpec.subscriptionCode. */
+    subscriptionCode?: string;
+    /** See ICollectionSpec.bookshelf. */
+    bookshelf?: string;
 }
 
 /**
@@ -292,10 +530,17 @@ export function writeNewCollection(
  * `xmatterPack` is the pack's key, the part of its folder name before "-XMatter": "Factory" (the
  * pack the Settings dialog calls Paper Saver), "Traditional", "SuperPaperSaver", "Device",
  * "SIL-PNG". The default is Factory, which is what the collections here have always had.
+ *
+ * `extras.subscriptionCode` is written only when given. It is the collection's subscription, and
+ * so its tier: Bloom parses the tier out of the code as it opens the collection (since Bloom 6.1
+ * from SubscriptionCode alone; BrandingProjectName is written for older Blooms). See
+ * kEnterpriseSubscriptionCode in helpers/collectionSettings.ts. `extras.bookshelf`, also written
+ * only when given, becomes a "bookshelf:" tag in DefaultBookTags, which is how Bloom keeps it.
  */
 export function makeCollectionXml(
     languages: string[],
     xmatterPack = "Factory",
+    extras: ICollectionXmlExtras = {},
 ): string {
     // Bloom treats Language2 as "same as Language1" when a collection names only one language,
     // which is what its own new-collection code writes.
@@ -316,6 +561,12 @@ export function makeCollectionXml(
         languageElements +
         `\n  <XMatterPack>${xmatterPack}</XMatterPack>\n` +
         `  <BrandingProjectName>Default</BrandingProjectName>\n` +
+        (extras.subscriptionCode
+            ? `  <SubscriptionCode>${extras.subscriptionCode}</SubscriptionCode>\n`
+            : "") +
+        (extras.bookshelf
+            ? `  <DefaultBookTags>bookshelf:${extras.bookshelf}</DefaultBookTags>\n`
+            : "") +
         `  <AllowNewBooks>True</AllowNewBooks>\n` +
         `  <PageNumberStyle>Decimal</PageNumberStyle>\n` +
         `</Collection>\n`
@@ -393,9 +644,17 @@ function isPid(pid: number | undefined): pid is number {
  */
 async function startBloomOn(
     collectionDir: string,
+    userSettingsDir: string,
     readyTimeoutMs: number,
+    experimentalFeatures?: string[],
 ): Promise<IRunningBloom> {
     const exe = findBloomExe();
+    // findBloomExe takes the newest build in any configuration, so say which one this run uses:
+    // a stray Release or x64 build silently becoming the Bloom under test is otherwise invisible.
+    console.log(
+        `BloomE2E: launching ${exe} (built ${fs.statSync(exe).mtime.toISOString()})`,
+    );
+    assertBuildIsNotStale(exe);
 
     // Everything Bloom says, kept so a failed launch can report the reason.
     let bloomOutput = "";
@@ -417,6 +676,12 @@ async function startBloomOn(
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();
     if (vitePort) args.push("--vite-port", vitePort);
+    // --user-settings-folder: keep this Bloom's user settings to itself (point 4 at the top).
+    args.push("--user-settings-folder", userSettingsDir);
+    // --experimental-features: turn these on for this Bloom alone, without touching the saved
+    // setting the developer's own Bloom shares (see ILaunchBloomOptions.experimentalFeatures).
+    if (experimentalFeatures?.length)
+        args.push("--experimental-features", experimentalFeatures.join(","));
     const bloomProcess: ChildProcess = execFile(exe, args, {
         env: environmentForBloom(),
     });
@@ -482,6 +747,21 @@ async function startBloomOn(
         );
     }
 
+    // A Bloom that is not keeping its settings where we said would share them with the developer's
+    // own Bloom, which is the very thing the folder prevents; a Bloom.exe built before the argument
+    // existed reports no folder at all. Either way, no test can be trusted, so stop here.
+    if (
+        !found.info.userSettingsFolder ||
+        !samePath(found.info.userSettingsFolder, userSettingsDir)
+    ) {
+        killProcessTree([bloomProcess.pid, found.info.processId].filter(isPid));
+        throw new Error(
+            `Bloom was asked to keep its user settings in ${userSettingsDir} but reports ` +
+                `${found.info.userSettingsFolder ?? "no user settings folder"}. ` +
+                `Is ${exe} built from current sources?`,
+        );
+    }
+
     return {
         httpPort: found.httpPort,
         cdpPort: found.info.cdpPort,
@@ -532,10 +812,13 @@ export async function launchBloom(
     );
 
     let collectionDir: string;
+    // Empty, so this Bloom starts from default settings (point 4 at the top). Deleted with tempRoot.
+    const userSettingsDir = Path.join(tempRoot, "user-settings");
     try {
         collectionDir = options.collectionSpec
             ? writeNewCollection(tempRoot, options.collectionSpec)
             : copyPreparedCollection(tempRoot, options.collectionName!);
+        fs.mkdirSync(userSettingsDir);
     } catch (error) {
         fs.rmSync(tempRoot, { recursive: true, force: true });
         throw error;
@@ -556,7 +839,12 @@ export async function launchBloom(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(collectionDir, readyTimeoutMs);
+        running = await startBloomOn(
+            collectionDir,
+            userSettingsDir,
+            readyTimeoutMs,
+            options.experimentalFeatures,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -568,6 +856,7 @@ export async function launchBloom(
         cdpPort: running.cdpPort,
         bloomPid: running.servingPid,
         collectionDir,
+        userSettingsDir,
 
         restart: async (betweenStopAndStart) => {
             await killAndWaitForPortToGoDark(running!);
@@ -575,7 +864,12 @@ export async function launchBloom(
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
-            running = await startBloomOn(collectionDir, readyTimeoutMs);
+            running = await startBloomOn(
+                collectionDir,
+                userSettingsDir,
+                readyTimeoutMs,
+                options.experimentalFeatures,
+            );
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
             launched.bloomPid = running.servingPid;
