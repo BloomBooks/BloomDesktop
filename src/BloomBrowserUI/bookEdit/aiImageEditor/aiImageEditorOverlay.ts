@@ -32,13 +32,16 @@
 import {
     post,
     postJson,
-    postThatMightNavigate,
+    postString,
     trackChangePicture,
     trackEvent,
 } from "../../utils/bloomApi";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
 import {
-    fileNameOf,
+    getSuggestedImageTargetForFraction,
+    IDigitalScreen,
+} from "../js/imageTargetResolution";
+import {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
     IAiImageEditorTarget,
@@ -87,6 +90,60 @@ function applyOnThePageBeingEdited(
     return pageFrame.applyAiImageEditorReplacements(results);
 }
 
+// Tells the AI Image Editor how big each slot in the book wants its image to be. The editor
+// offers that as the Upscale tool's "Auto" size, and shows the memo under the selector; a slot
+// with no suggestedTarget simply gets no "Auto" option.
+//
+// It can answer for EVERY page, not just the open one, because Bloom records each slot's share
+// of its page in the HTML whenever the page is saved (recordFractionOfPageOnImageSlots), and
+// C# hands that back with each book image. By the time this editor opens, every page carries the
+// value: launching it on a book that has not been through the off-screen per-page pass runs that
+// pass first, re-saving every page, and only then opens the editor (HandleSaveThenLaunch, via
+// EditingModel.BringBookToCurrentBrowserLevelThen; BL-16852). A slot with no value is therefore
+// not the ordinary state of an unvisited page but a sign that the pass did not run or failed; the
+// editor then offers that slot no "Auto" option rather than a guess. Every editor launch also
+// saves the page being edited first, so that page at least always has it.
+//
+// The one thing only the live page can say is how big the page is, which is the same for every
+// page in the book, so we ask the page frame once. Nothing here may stop the editor opening:
+// the page frame is a separate bundle that may not be attached yet, so a miss is reported to
+// the console and otherwise ignored.
+//
+// `digitalScreen` is the book's BloomPUB image limit, which C# sends with the launch reply and
+// which decides how many pixels a slot on a screen-sized page is worth.
+function addSuggestedTargets(
+    bookImages: Array<{
+        fractionOfPage?: { width: number; height: number } | null;
+        suggestedTarget?: { width: number; height: number; memo: string };
+    }>,
+    digitalScreen: IDigitalScreen,
+): void {
+    try {
+        const page =
+            getEditablePageBundleExports()?.getAiImageEditorPageMetrics();
+        if (!page) return;
+        bookImages.forEach((bookImage) => {
+            if (!bookImage.fractionOfPage) return;
+            const suggestion = getSuggestedImageTargetForFraction(
+                bookImage.fractionOfPage,
+                page,
+                digitalScreen,
+            );
+            if (!suggestion) return;
+            bookImage.suggestedTarget = {
+                width: suggestion.width,
+                height: suggestion.height,
+                memo: suggestion.memo,
+            };
+        });
+    } catch (e) {
+        console.warn(
+            "AI Image Editor: could not work out what size the images should be, so it will offer no automatic size: " +
+                (e instanceof Error ? e.message : String(e)),
+        );
+    }
+}
+
 // Opens the AI Image Editor overlay, with the image named by `target` (the one the user
 // right-clicked, before the save reloaded the page frame) in its "Image to Edit" slot.
 // Called from C# — via workspaceBundle.openAiImageEditor — once the page has been saved.
@@ -104,7 +161,27 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 width?: number;
                 height?: number;
                 isPlaceholder?: boolean;
+                // How much of its page this slot covers, as C# read it out of the book's
+                // HTML. Normally always present, because launching this editor first puts the
+                // book through the per-page pass when it needs it (BL-16852); null only if that
+                // pass did not run or failed, and the slot then gets no "Auto" size.
+                fractionOfPage?: { width: number; height: number } | null;
+                // What size this slot would like its image to be, worked out below from
+                // fractionOfPage, how big the pages of this book are, and the book's
+                // digitalScreen limit. C# does no arithmetic here, because only a laid-out
+                // browser page knows the page size. (fractionOfPage itself, like
+                // digitalScreen, rides along to the editor in the ...launchData spread below;
+                // the editor ignores fields it does not know.)
+                suggestedTarget?: {
+                    width: number;
+                    height: number;
+                    memo: string;
+                };
             }>;
+            // The screen a digital copy of this book is made for: the BloomPUB image limit
+            // from Book Settings, which is what the publish step shrinks images to. Used for
+            // the suggested targets above.
+            digitalScreen: IDigitalScreen;
             references?: Array<{
                 id: string;
                 src: string;
@@ -118,10 +195,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 metadata?: Record<string, unknown> | null;
             }>;
             apiKey?: string | null;
-            // Playground/demo context: the AI Image Editor must disable its
-            // "set OpenRouter API key" UI. Rides through the `...launchData`
-            // spread below into the AI Image Editor's init payload.
-            demoOnly?: boolean;
+            // Set for a Playground book: the AI Image Editor goes into "look-around"
+            // mode -- every tool that would call OpenRouter is disabled, as is the
+            // "set OpenRouter API key" UI. Rides through the `...launchData` spread
+            // below into the AI Image Editor's init payload, so the name must match
+            // what the editor reads.
+            playgroundMode?: boolean;
         };
         const hostWindow = window as Window & {
             __bloomAiImageEditorCleanup?: () => void;
@@ -139,22 +218,30 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // id wrangling here anymore.
 
         // Identify the image the user right-clicked so the AI Image Editor can open with it
-        // already in the "Image to Edit" slot. We match by page + filename rather than DOM
-        // ordinal, because the live page has extra injected UI images that would throw
-        // positional indices off.
-        const clickedMatch =
-            target.pageId && target.imageFileName
-                ? (launchData.bookImages ?? []).find(
-                      (bi) =>
-                          bi.id.startsWith(target.pageId + ":") &&
-                          fileNameOf(bi.src) === target.imageFileName,
-                  )
-                : undefined;
-        // Don't preload an empty placeholder slot into the edit target — there's
-        // nothing to edit, and its placeholder graphic isn't a real raster image.
-        const selectedBookImageId = clickedMatch?.isPlaceholder
-            ? undefined
-            : clickedMatch?.id;
+        // already in the "Image to Edit" slot. The page frame numbered the slot it was
+        // clicked on, and C# builds each book image's id from the same numbering, so naming
+        // the clicked one is just building that id.
+        //
+        // An empty placeholder slot is named like any other (BL-16744). It used to be
+        // withheld, on the grounds that an empty slot has nothing to edit — but the AI
+        // image editor answers a missing selectedBookImageId by targeting the FIRST image
+        // of the book, which is normally the front cover. So withholding it aimed the user
+        // at the cover when they had asked for an empty slot on some other page. The editor
+        // reads isPlaceholder on the named slot and, for an empty one, puts nothing in its
+        // "Image to Edit" panel and opens its "Create an Image" tool instead; it keeps the
+        // slot so the created image can be committed straight into it. That behavior
+        // arrived in bloom-ai-image-tools 0.1.6.
+        const clickedId = target.pageId + ":" + target.slotIndex;
+        const selectedBookImageId = (launchData.bookImages ?? []).some(
+            (bi) => bi.id === clickedId,
+        )
+            ? clickedId
+            : undefined;
+
+        addSuggestedTargets(
+            launchData.bookImages ?? [],
+            launchData.digitalScreen,
+        );
 
         const initPayload = {
             ...launchData,
@@ -501,6 +588,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             // apply fails) so its overlay can't hang.
                             let finalOk = false;
                             let message: string | undefined;
+                            // Outside the try because the finally block reports it.
                             let currentPageApplied = 0;
                             try {
                                 // Only involve the page frame when this commit actually has a
@@ -541,26 +629,19 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                         : String(e));
                             } finally {
                                 ackEditor(finalOk, message);
-                                // changeImageByElement only mutated the LIVE page DOM;
-                                // unlike the off-page slots (which C# saved), a
-                                // current-page swap is not otherwise persisted. Save +
-                                // rethink the page so the saved DOM matches the live one:
-                                // otherwise a second commit in this same session would
-                                // read its oldSrc from a saved page still showing the
-                                // pre-edit image and match nothing ("0 of N could be
-                                // updated"). Mirrors doVideoCommand's save after
-                                // updateVideoInContainer.
-                                //
-                                // We can save right now, even with the overlay still up,
-                                // precisely because this overlay lives in the top window:
-                                // the page reload underneath it leaves its controls alone.
-                                // (currentPageApplied is what the page frame says landed,
-                                // so a failure part way through still saves the rest.)
-                                if (currentPageApplied > 0) {
-                                    postThatMightNavigate(
-                                        "common/saveChangesAndRethinkPageEvent",
-                                    );
-                                }
+                                // Deliberately NO save here. A current-page swap lives in
+                                // the live page DOM only, like an image pasted or chosen
+                                // from the gallery, and is saved the same way: by the
+                                // normal page save when the user moves on. Saving now
+                                // would reload the page frame, and the reload would
+                                // discard the image undo the swap just registered — the
+                                // whole reason ordinary image changes don't save either
+                                // (BL-16330). Later sessions still read a fresh book DOM,
+                                // because every launch saves first (HandleSaveThenLaunch);
+                                // a retry from THIS still-open overlay reads stale oldSrc
+                                // for the slots that landed, which the page frame handles
+                                // by remembering the elements it already swapped (see
+                                // applyAiImageEditorReplacements).
                                 noteCommitSettled();
                                 // Now, and only now, is the applied count a fact. Counted from
                                 // C#'s own results for the other pages, plus what the page frame
@@ -639,12 +720,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // Bloom owns the OpenRouter API key. A key the user pastes into the
                     // AI Image Editor is handed up here so Bloom persists it per-user (and
                     // supplies it on the next launch). A null apiKey clears the stored key.
-                    postJson(
-                        "aiImageEditor/saveCredentials?session=" +
-                            encodeURIComponent(launchData.sessionToken),
-                        {
-                            apiKey: data.payload?.apiKey ?? null,
-                        },
+                    // The name must match ServiceKeyStore.kOpenRouterName.
+                    postString(
+                        "serviceKeys/key?name=OR",
+                        data.payload?.apiKey ?? "",
                     );
                     break;
             }

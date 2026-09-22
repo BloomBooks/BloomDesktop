@@ -497,8 +497,8 @@ namespace Bloom.web.controllers
         /// user text: it can perfectly well contain a double quote or a backslash (BL-16209), so
         /// it has to be serialized rather than pasted into a hand-built JSON string. Getting that
         /// wrong produced invalid JSON, which made the whole collection tab fail to render.
-        /// The callers of this endpoint treat languageName as a string (one of them asks it for
-        /// its .length), so keep coercing a null name to empty the way the old hand-built string
+        /// The callers of this endpoint treat languageName as a string (the books-on-Blorg
+        /// progress bar compares it with ""), so keep coercing a null name to empty the way the old hand-built string
         /// did rather than sending a JSON null.
         /// </summary>
         internal static string MakeLanguageDataJson(string languageName, string languageTag)

@@ -19,7 +19,7 @@ stops the wrong half ending up in the wrong bundle:
 | `aiImageEditorOverlay.ts` | **top window** (workspace root) | `workspaceBundle.openAiImageEditor` |
 | `aiImageEditorPageCommands.ts` | **page iframe** | `editablePageBundle` (`launchAiImageEditor`, `applyAiImageEditorReplacements`) |
 | `aiImageEditorShared.ts` | either — pure, no DOM, no api calls | — |
-| `aiImageEditorSlotMatching.ts`, `aiImageEditorImageFormats.ts` | either — pure | — |
+| `aiImageEditorImageFormats.ts` | either — pure | — |
 
 So:
 
@@ -46,4 +46,4 @@ that in full.
 - `bloom-exe-*.uitest.ts` are Playwright against a **running** `Bloom.exe`, excluded from Vitest
   and matched by glob (`**/bloom-exe*.uitest.ts`), so they are fine anywhere in the tree. They
   exercise the HTTP endpoints rather than this front-end code. To drive the real UI end to end,
-  see `.github/skills/bloom-automation/ai-image-editor-driving.md`.
+  see `.claude/skills/run-bloom/ai-image-editor-driving.md`.
