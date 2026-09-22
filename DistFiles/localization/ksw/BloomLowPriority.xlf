@@ -663,6 +663,21 @@
         <target xml:lang="ksw" state="needs-translation">Unpin strip</target>
         <note>ID: AiImageEditor.Strip.Unpin</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
+        <source xml:lang="en">Extract images that you can use in a game.</source>
+        <target xml:lang="ksw" state="needs-translation">Extract images that you can use in a game.</target>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
+        <source xml:lang="en">Optional: mention what to include, what to skip, or how toy-like the pieces should feel.</source>
+        <target xml:lang="ksw" state="needs-translation">Optional: mention what to include, what to skip, or how toy-like the pieces should feel.</target>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.break_into_pieces.Title">
+        <source xml:lang="en">Break into Pieces</source>
+        <target xml:lang="ksw" state="needs-translation">Break into Pieces</target>
+        <note>ID: AiImageEditor.Tool.break_into_pieces.Title</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.change_style.Description">
         <source xml:lang="en">Restyle the selected image.</source>
         <target xml:lang="ksw" state="needs-translation">Restyle the selected image.</target>
@@ -672,6 +687,31 @@
         <source xml:lang="en">Replace specific text in the image. Use this to localize images that contain text.</source>
         <target xml:lang="ksw" state="needs-translation">Replace specific text in the image. Use this to localize images that contain text.</target>
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Description">
+        <source xml:lang="en">Turn one reference image into a short looping animation sheet and encode it as a GIF.</source>
+        <target xml:lang="ksw" state="needs-translation">Turn one reference image into a short looping animation sheet and encode it as a GIF.</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Description</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending">
+        <source xml:lang="en">Ending</source>
+        <target xml:lang="ksw" state="needs-translation">Ending</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start">
+        <source xml:lang="en">Loops back to the start</source>
+        <target xml:lang="ksw" state="needs-translation">Loops back to the start</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Loops back to the start</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)">
+        <source xml:lang="en">Plays once (ends on the final state)</source>
+        <target xml:lang="ksw" state="needs-translation">Plays once (ends on the final state)</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.ending.Option.Plays once (ends on the final state)</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.frameCount">
+        <source xml:lang="en">Frames</source>
+        <target xml:lang="ksw" state="needs-translation">Frames</target>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.frameCount</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Title">
         <source xml:lang="en">Make GIF</source>
@@ -698,10 +738,20 @@
         <target xml:lang="ksw" state="needs-translation">Remove Background</target>
         <note>ID: AiImageEditor.Tool.remove_background.Title</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Description">
+        <source xml:lang="en">Remove unwanted objects or artifacts.</source>
+        <target xml:lang="ksw" state="needs-translation">Remove unwanted objects or artifacts.</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Description</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Param.target">
         <source xml:lang="en">Object to Remove</source>
         <target xml:lang="ksw" state="needs-translation">Object to Remove</target>
         <note>ID: AiImageEditor.Tool.remove_object.Param.target</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.remove_object.Param.target.Placeholder">
+        <source xml:lang="en">e.g. the red ball, background clutter</source>
+        <target xml:lang="ksw" state="needs-translation">e.g. the red ball, background clutter</target>
+        <note>ID: AiImageEditor.Tool.remove_object.Param.target.Placeholder</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_object.Title">
         <source xml:lang="en">Remove Object</source>
