@@ -51,6 +51,11 @@ const openAgainstABookWithOneImage = (
             src: `http://localhost:8089/bloom/book/${kImageFile}`,
         },
     ],
+    // The book's BloomPUB image limit, which C# always sends with the launch reply.
+    digitalScreen: { longEdgePx: number; shortEdgePx: number } = {
+        longEdgePx: 1280,
+        shortEdgePx: 720,
+    },
 ) => {
     openAiImageEditor(target);
 
@@ -65,6 +70,7 @@ const openAgainstABookWithOneImage = (
             sessionToken: "token123",
             book: { id: "book1", title: "Test Book" },
             bookImages,
+            digitalScreen,
             history: [],
         },
     });
@@ -158,6 +164,8 @@ beforeEach(() => {
     });
     getEditablePageBundleExports.mockReturnValue({
         applyAiImageEditorReplacements,
+        // The real page frame always has this; a test that cares what it answers overrides it.
+        getAiImageEditorPageMetrics: () => null,
     });
     delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
         .__bloomAiImageEditorCleanup;
@@ -280,7 +288,9 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
         commitAndReplyFromHost(postFromEditor, false);
 
         // The overlay stays up so the user can read the error about the slot that failed.
-        expect(document.getElementById("ai-image-editor-overlay")).not.toBeNull();
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
 
         closeButton.click();
@@ -1004,5 +1014,143 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
             failedCount: 1,
         });
         expect(trackChangePicture).not.toHaveBeenCalled();
+    });
+});
+
+describe("aiImageEditorOverlay: the size each slot wants", () => {
+    // Every page's slots can be answered for, because C# hands over the share of its page each
+    // slot covers (recorded in the HTML when the page was saved). All this half supplies is how
+    // big a page of this book is, which it gets from the one page that is laid out.
+    const kOtherPageId = "page2";
+    const kPaperPage = { widthPx: 559, heightPx: 794, isDigital: false };
+
+    const bookImagesAcrossTwoPages = () => [
+        {
+            id: `${kPageId}:0`,
+            src: `http://localhost:8089/bloom/book/${kImageFile}`,
+            fractionOfPage: { width: 0.84, height: 0.69 },
+        },
+        {
+            id: `${kPageId}:1`,
+            src: "http://localhost:8089/bloom/book/second.png",
+            // No share recorded. Not the normal state (the whole-book update re-saves every
+            // page before editing, BL-16852); this exercises the hardening for when that
+            // update did not run or failed, so nothing is known.
+            fractionOfPage: null,
+        },
+        {
+            id: `${kOtherPageId}:0`,
+            src: "http://localhost:8089/bloom/book/elsewhere.png",
+            fractionOfPage: { width: 0.5, height: 0.25 },
+        },
+    ];
+
+    const getBookImagesSentToEditor = (digitalScreen?: {
+        longEdgePx: number;
+        shortEdgePx: number;
+    }) => {
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            { pageId: kPageId, slotIndex: 0 },
+            bookImagesAcrossTwoPages(),
+            digitalScreen,
+        );
+        const payload = getInitPayloadSentToEditor(
+            iframe,
+            postFromEditor,
+        ) as unknown as {
+            bookImages: Array<{
+                id: string;
+                suggestedTarget?: {
+                    width: number;
+                    height: number;
+                    memo: string;
+                };
+            }>;
+        };
+        return payload.bookImages;
+    };
+
+    test("a slot on any page gets a suggested target, including one on a page nobody has open", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => kPaperPage,
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        // Sanity check: all three slots still reach the editor.
+        expect(bookImages.length).toBe(3);
+        // 0.84 of 559 px and 0.69 of 794 px, at 300 dots to 96 px.
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: Math.ceil((300 * 0.84 * 559) / 96),
+            height: Math.ceil((300 * 0.69 * 794) / 96),
+            memo: expect.stringContaining("300 DPI"),
+        });
+        // The point of the whole mechanism: a slot on a page that is not open is answered too.
+        expect(bookImages[2].suggestedTarget).toEqual({
+            width: Math.ceil((300 * 0.5 * 559) / 96),
+            height: Math.ceil((300 * 0.25 * 794) / 96),
+            memo: expect.stringContaining("300 DPI"),
+        });
+    });
+
+    test("a slot on a screen-sized page is sized for this book's BloomPUB resolution setting", () => {
+        // 378 x 672 is a 16x9 device page, and this book's Resolution slider has been moved
+        // up from the 1280 x 720 default to 1920 x 1080.
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => ({
+                widthPx: 378,
+                heightPx: 672,
+                isDigital: true,
+            }),
+        });
+
+        const bookImages = getBookImagesSentToEditor({
+            longEdgePx: 1920,
+            shortEdgePx: 1080,
+        });
+
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: 908,
+            height: 1325,
+            memo: expect.stringContaining("1920 x 1080 screen"),
+        });
+    });
+
+    test("a slot whose share of its page was never recorded gets no target", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => kPaperPage,
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages[1].suggestedTarget).toBeUndefined();
+    });
+
+    test("the editor still opens when the page frame cannot say how big a page is", () => {
+        // The page bundle may not be attached yet. The editor matters more than the size
+        // hint.
+        getEditablePageBundleExports.mockReturnValue(null);
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages.length).toBe(3);
+        expect(bookImages[0].suggestedTarget).toBeUndefined();
+    });
+
+    test("the editor still opens when measuring throws", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => {
+                throw new Error("kaboom");
+            },
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages.length).toBe(3);
+        expect(bookImages[0].suggestedTarget).toBeUndefined();
     });
 });
