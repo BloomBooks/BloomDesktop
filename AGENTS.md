@@ -108,10 +108,7 @@ In-progress plans, refactoring proposals, and other short-lived repo-level guida
 
 # Nested AGENTS.md files
 Guidance that only matters in one part of the tree lives in an `AGENTS.md` in that folder
-(`src/BloomBrowserUI`, `src/BloomTests`, `src/content/branding`, …). Claude Code auto-loads a
-nested `CLAUDE.md` but never a nested `AGENTS.md`, so every nested `AGENTS.md` has a `CLAUDE.md`
-beside it whose whole content is `@AGENTS.md`. The pre-commit hook
-(`build/check-agents-md-siblings.sh`) refuses a commit that adds one without the other.
+(`src/BloomBrowserUI`, `src/BloomTests`, `src/content/branding`, …).
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.claude/skills/<name>/SKILL.md`, a
