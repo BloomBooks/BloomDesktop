@@ -2492,6 +2492,54 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Label above a multi-line typing box in the 'Make GIF' tool, where the user describes the movement they want. It is worded as an instruction to the user.</note>
       </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder">
+        <source xml:lang="en">Optional: describe the motion, such as blinking, waving, hopping, or turning around.</source>
+        <note>ID: AiImageEditor.Tool.make_gif.Param.animationDescription.Placeholder</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Placeholder: the grey text inside the 'Describe the Animation' box of the 'Make GIF' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic">
+        <source xml:lang="en">Gothic</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Gothic</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Style' menu of the 'Add Stylized Title' tool: heavy, old-fashioned blackletter lettering, as in old European manuscripts. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten">
+        <source xml:lang="en">Handwritten</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Handwritten</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Style' menu of the 'Add Stylized Title' tool: lettering that looks written by hand. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Neon">
+        <source xml:lang="en">Neon</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Neon</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Style' menu of the 'Add Stylized Title' tool: glowing lettering like a neon-tube sign. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Playful">
+        <source xml:lang="en">Playful</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Playful</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Style' menu of the 'Add Stylized Title' tool: lettering that looks fun and lively. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook">
+        <source xml:lang="en">Storybook</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.style.Option.Storybook</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>One choice in the 'Style' menu of the 'Add Stylized Title' tool: lettering like the title on the cover of a classic children's storybook. Only this menu text is translated; the word the tool sends to the AI stays English.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title">
+        <source xml:lang="en">Title Text</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.title</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Label on a typing box in the 'Add Stylized Title' tool, where the user types the words of the title to draw onto the picture.</note>
+      </trans-unit>
+      <trans-unit id="AiImageEditor.Tool.stylized_title.Param.title.Placeholder">
+        <source xml:lang="en">The Big Adventure</source>
+        <note>ID: AiImageEditor.Tool.stylized_title.Param.title.Placeholder</note>
+        <note>This is part of the interface for the Bloom AI Image Editor.</note>
+        <note>Placeholder: the grey text inside the 'Title Text' box of the 'Add Stylized Title' tool while the box is empty. It suggests the kind of thing to write, and it disappears the moment the user types. It is never sent to the AI. It is an example of a book title.</note>
+      </trans-unit>
       <trans-unit id="AiImageEditor.Tool.stylized_title.Title">
         <source xml:lang="en">Add Stylized Title</source>
         <note>ID: AiImageEditor.Tool.stylized_title.Title</note>
