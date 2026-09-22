@@ -46,6 +46,174 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Windows drops trailing periods and spaces when it creates a folder, so we must not put them
+        /// in the path we hand out: the folder that got created would not match it, and the settings
+        /// file name would no longer match its folder name. See BL-16679.
+        /// </summary>
+        [TestCase("Foo.", "Foo")]
+        [TestCase("Foo...", "Foo")]
+        [TestCase("Foo. ", "Foo")]
+        [TestCase("Foo .", "Foo")]
+        [TestCase("Foo . . ", "Foo")]
+        [TestCase("Foo . . .", "Foo")]
+        [TestCase("Foo. Bar.", "Foo. Bar")]
+        public void GetPathForNewSettings_NameEndsWithPeriodOrSpace_TrimmedFromFolderAndFileName(
+            string collectionName,
+            string expectedFolderName
+        )
+        {
+            var path = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
+
+            Assert.That(
+                Path.GetFileName(Path.GetDirectoryName(path)),
+                Is.EqualTo(expectedFolderName),
+                "the folder name should be what Windows will really create"
+            );
+            Assert.That(
+                Path.GetFileName(path),
+                Is.EqualTo(expectedFolderName + ".bloomCollection"),
+                "the settings file name should still match its folder name"
+            );
+            // The dropped characters are exactly what Windows itself would drop, so the path we
+            // hand out is now one that a folder can actually have.
+            Assert.That(
+                Path.GetFullPath(path),
+                Is.EqualTo(path),
+                "the path should already be in its normalized (on-disk) form"
+            );
+        }
+
+        [TestCase("Foo")]
+        [TestCase("Foo.Bar")]
+        [TestCase("هذا قدرٌ كبيرٌ من النص")]
+        public void GetPathForNewSettings_OrdinaryName_Unchanged(string collectionName)
+        {
+            var path = CollectionSettings.GetPathForNewSettings(_folder.Path, collectionName);
+
+            Assert.That(Path.GetFileName(Path.GetDirectoryName(path)), Is.EqualTo(collectionName));
+            Assert.That(Path.GetFileName(path), Is.EqualTo(collectionName + ".bloomCollection"));
+        }
+
+        /// <summary>
+        /// Renaming is the other way into the trailing-period mess: Windows would drop the period from
+        /// the folder it created while we named the settings file after the period-ful name we asked
+        /// for, leaving the two disagreeing again. See BL-16679.
+        /// </summary>
+        [Test]
+        public void RenameCollection_NewNameEndsWithPeriod_FolderAndFileNamesAgree()
+        {
+            var fromDirectory = Path.Combine(_folder.Path, "Before Rename");
+            Directory.CreateDirectory(fromDirectory);
+            RobustFile.WriteAllText(
+                Path.Combine(fromDirectory, "Before Rename.bloomCollection"),
+                "<Collection version=\"0.2\"/>"
+            );
+            var toDirectory = Path.Combine(_folder.Path, "After Rename.");
+            try
+            {
+                var settingsPath = CollectionSettings.RenameCollection(fromDirectory, toDirectory);
+
+                Assert.That(
+                    Path.GetFileName(Path.GetDirectoryName(settingsPath)),
+                    Is.EqualTo("After Rename"),
+                    "the folder name should be the one Windows really creates"
+                );
+                Assert.That(
+                    Path.GetFileName(settingsPath),
+                    Is.EqualTo("After Rename.bloomCollection"),
+                    "the settings file name should match its folder name"
+                );
+                Assert.That(RobustFile.Exists(settingsPath), Is.True);
+            }
+            finally
+            {
+                foreach (
+                    var d in new[] { fromDirectory, Path.Combine(_folder.Path, "After Rename") }
+                )
+                    if (Directory.Exists(d))
+                        SIL.IO.RobustIO.DeleteDirectoryAndContents(d);
+            }
+        }
+
+        /// <summary>
+        /// Renaming a collection by only adding a trailing period asks for the folder we already have.
+        /// There is nothing to do on disk, and saying "there is already a directory with the new name"
+        /// would stop Bloom reopening. See BL-16679.
+        /// </summary>
+        [Test]
+        public void RenameCollection_NewNameOnlyAddsAPeriod_IsANoOpAndReturnsTheExistingSettings()
+        {
+            var fromDirectory = Path.Combine(_folder.Path, "Same Name");
+            Directory.CreateDirectory(fromDirectory);
+            var settingsPath = Path.Combine(fromDirectory, "Same Name.bloomCollection");
+            RobustFile.WriteAllText(settingsPath, "<Collection version=\"0.2\"/>");
+            try
+            {
+                var result = CollectionSettings.RenameCollection(
+                    fromDirectory,
+                    fromDirectory + "."
+                );
+
+                Assert.That(result, Is.EqualTo(settingsPath));
+                Assert.That(
+                    Directory.Exists(fromDirectory),
+                    Is.True,
+                    "the folder should still be there, untouched"
+                );
+            }
+            finally
+            {
+                if (Directory.Exists(fromDirectory))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(fromDirectory);
+            }
+        }
+
+        /// <summary>
+        /// The settings file is not always named after the folder that holds it: renaming a collection
+        /// folder leaves the old file name behind, and a collection whose name ends with a period gets
+        /// a folder without it (BL-16679). Such collections are perfectly usable, so anything looking
+        /// for a collection in a folder (the collection chooser, for one) has to find them.
+        /// </summary>
+        [TestCase("Canonical Name.bloomCollection")]
+        [TestCase("Some Older Name.bloomCollection")]
+        [TestCase("Canonical Name..bloomCollection")]
+        public void TryGetSettingsFilePath_FindsSettingsFileWhateverItIsNamed(string fileName)
+        {
+            var collectionFolder = Path.Combine(_folder.Path, "Canonical Name");
+            Directory.CreateDirectory(collectionFolder);
+            var settingsFilePath = Path.Combine(collectionFolder, fileName);
+            RobustFile.WriteAllText(settingsFilePath, "<Collection version=\"0.2\"/>");
+            try
+            {
+                Assert.That(
+                    CollectionSettings.TryGetSettingsFilePath(collectionFolder, out var foundPath),
+                    Is.True
+                );
+                Assert.That(foundPath, Is.EqualTo(settingsFilePath));
+            }
+            finally
+            {
+                // The cases share a folder, so don't leave a stray settings file for the next one.
+                SIL.IO.RobustIO.DeleteDirectoryAndContents(collectionFolder);
+            }
+        }
+
+        [Test]
+        public void TryGetSettingsFilePath_NoSettingsFileInFolder_ReturnsFalse()
+        {
+            var collectionFolder = Path.Combine(_folder.Path, "Not A Collection");
+            Directory.CreateDirectory(collectionFolder);
+            // Sanity check: a file that is not a .bloomCollection must not be mistaken for one.
+            RobustFile.WriteAllText(Path.Combine(collectionFolder, "notes.txt"), "hello");
+
+            Assert.That(
+                CollectionSettings.TryGetSettingsFilePath(collectionFolder, out var foundPath),
+                Is.False
+            );
+            Assert.That(foundPath, Is.Null);
+        }
+
+        /// <summary>
         /// This is a regression test related to https://jira.sil.org/browse/BL-685.
         /// Apparently calculating the name is expensive, so it is cached. This
         /// test ensures that the cache doesn't keep the name from tracking the language tag.
@@ -261,6 +429,125 @@ namespace BloomTests.Collection
             Assert.That(settings.DefaultBookshelf, Is.EqualTo(""));
             Assert.That(settings.Subscription.Descriptor, Is.EqualTo("Foobar"));
             Assert.That(settings.Subscription.Code, Is.EqualTo("Foobar-123456-1234"));
+        }
+
+        /// <summary>
+        /// AllowCheckouts (BL-16691) has no UI; an administrator hand-edits it into the file.
+        /// Collections that predate it, and the overwhelming majority that will never have it,
+        /// must keep allowing checkouts.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_ElementMissing_DefaultsToTrue()
+        {
+            var settings = CreateSettingsFromFileContents(
+                "allowCheckoutsMissing",
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowNewBooks>True</AllowNewBooks>
+</Collection>"
+            );
+            Assert.That(settings.AllowCheckouts, Is.True);
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void AllowCheckouts_ElementPresent_IsRead(string valueInFile, bool expected)
+        {
+            var settings = CreateSettingsFromFileContents(
+                "allowCheckoutsRead" + valueInFile,
+                $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>{valueInFile}</AllowCheckouts>
+</Collection>"
+            );
+            Assert.That(settings.AllowCheckouts, Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Save() rebuilds the whole settings file from scratch, so a setting we don't write out
+        /// would be silently erased the next time anything saves collection settings. That would
+        /// quietly un-pause checkouts for the whole team, so guard against it.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_False_SurvivesSaveAndReload()
+        {
+            const string collectionName = "allowCheckoutsRoundTrip";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>False</AllowCheckouts>
+</Collection>"
+            );
+            // Sanity check: we only learn anything from the round trip if it started out false.
+            Assert.That(
+                settings.AllowCheckouts,
+                Is.False,
+                "setup failed: AllowCheckouts should have been read as false"
+            );
+
+            settings.Save();
+
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowCheckouts, Is.False);
+        }
+
+        /// <summary>
+        /// The setting is written only when checkouts are paused, so that the overwhelming
+        /// majority of collections -- which will never use it -- don't all gain a line the first
+        /// time their settings are saved. See BL-16691.
+        /// </summary>
+        [Test]
+        public void AllowCheckouts_True_IsNotWrittenToTheFile()
+        {
+            const string collectionName = "allowCheckoutsNotWritten";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowCheckouts>False</AllowCheckouts>
+</Collection>"
+            );
+            // Sanity check: start from the value that IS written, so we can watch it disappear.
+            Assert.That(
+                settings.AllowCheckouts,
+                Is.False,
+                "setup failed: AllowCheckouts should have been read as false"
+            );
+            settings.Save();
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Contain("AllowCheckouts"),
+                "setup failed: a paused collection should write the element"
+            );
+
+            settings.AllowCheckouts = true;
+            settings.Save();
+
+            Assert.That(
+                RobustFile.ReadAllText(settings.SettingsFilePath),
+                Does.Not.Contain("AllowCheckouts")
+            );
+            // ...and the collection still reads back as allowing checkouts.
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowCheckouts, Is.True);
+        }
+
+        /// <summary>
+        /// Writes the given .bloomCollection contents into a fresh collection folder and loads it.
+        /// </summary>
+        private CollectionSettings CreateSettingsFromFileContents(
+            string collectionName,
+            string fileContents
+        )
+        {
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, fileContents);
+            return CreateCollectionSettings(_folder.Path, collectionName);
         }
 
         // I'm not clear why this needs a test, but I split it off from another test to clarify the intent.

@@ -1,5 +1,8 @@
 import { css } from "@emotion/react";
-import FileFindIcon from "@mui/icons-material/FindInPage";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import { IconButton } from "@mui/material";
 import BloomButton from "../react_components/bloomButton";
 import {
     BloomDialog,
@@ -27,6 +30,46 @@ interface IProps {
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
+// A light footer band that spans the full width of the dialog. The negative
+// margins bleed out over the dialog's side (24px) and bottom (10px) padding so
+// the band reaches the edges; the padding then re-insets the buttons. We zero
+// the inner DialogBottomButtons top padding so our own 14px sets the spacing.
+const footerBandStyle = css`
+    margin-top: auto;
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-bottom: -10px;
+    padding: 14px 24px;
+    background-color: #f0f0f0;
+    border-top: 1px solid #e0e0e0;
+    & > div {
+        padding-top: 0;
+    }
+`;
+
+// The language menu and close button form one right-aligned group in the title
+// bar, matching the design (rather than the language menu drifting toward the
+// middle). We render our own close button and suppress DialogTitle's built-in
+// one via preventCloseButton so the two controls sit together.
+const titleRightGroupStyle = css`
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    & button {
+        font-size: 14px;
+    }
+    // DialogTitle forces font-weight:bold on all its descendants; the design
+    // shows the language label at a normal weight, so override it here.
+    & * {
+        font-weight: 400 !important;
+    }
+`;
+
+const closeButtonStyle = css`
+    color: #8a8a8a;
+`;
+
 export const CollectionChooserDialog: React.FunctionComponent<IProps> = (
     props,
 ) => {
@@ -34,9 +77,11 @@ export const CollectionChooserDialog: React.FunctionComponent<IProps> = (
         props.dialogEnvironment,
     );
     const dialogTitle = useL10n(
-        "Open/Create Collections",
+        "Open / Create Collections",
         "OpenCreateNewCollectionsDialog.OpenAndCreateWindowTitle",
     );
+    const closeText = useL10n("Close", "Common.Close");
+    const handleClose = props.onClose ?? propsForBloomDialog.onClose;
     return (
         <BloomDialog
             {...propsForBloomDialog}
@@ -54,6 +99,7 @@ export const CollectionChooserDialog: React.FunctionComponent<IProps> = (
             >
                 <DialogTitle
                     title={dialogTitle}
+                    preventCloseButton={true}
                     icon={
                         <img
                             css={css`
@@ -67,53 +113,59 @@ export const CollectionChooserDialog: React.FunctionComponent<IProps> = (
                         />
                     }
                 >
-                    <div
-                        css={css`
-                            margin-left: auto;
-                            margin-right: 8px;
-                            display: flex;
-                            align-items: center;
-                        `}
-                    >
+                    <div css={titleRightGroupStyle}>
                         <UiLanguageMenu />
+                        <IconButton
+                            aria-label={closeText}
+                            title={closeText}
+                            css={closeButtonStyle}
+                            onClick={() => handleClose?.()}
+                        >
+                            <CloseIcon />
+                        </IconButton>
                     </div>
                 </DialogTitle>
                 <DialogMiddle
                     css={css`
-                        height: 340px;
+                        height: 420px;
                     `}
                 >
                     <CollectionChooser collections={props.collections} />
                 </DialogMiddle>
-                <DialogBottomButtons>
-                    <DialogBottomLeftButtons>
+                <div css={footerBandStyle}>
+                    <DialogBottomButtons>
+                        <DialogBottomLeftButtons>
+                            <BloomButton
+                                variant="text"
+                                color="primary"
+                                enabled={true}
+                                l10nKey={
+                                    "OpenCreateNewCollectionsDialog.BrowseOnThisComputer"
+                                }
+                                startIcon={<SearchIcon />}
+                                onClick={() =>
+                                    post("workspace/browseForCollection")
+                                }
+                            >
+                                Browse on this computer
+                            </BloomButton>
+                        </DialogBottomLeftButtons>
                         <BloomButton
-                            variant="text"
+                            variant="contained"
                             color="primary"
                             enabled={true}
                             l10nKey={
-                                "OpenCreateNewCollectionsDialog.BrowseForOtherCollections"
+                                "OpenCreateNewCollectionsDialog.CreateNewCollection"
                             }
-                            startIcon={<FileFindIcon />}
+                            startIcon={<AddIcon />}
                             onClick={() =>
-                                post("workspace/browseForCollection")
+                                post("workspace/createNewCollection")
                             }
                         >
-                            Browse for another collection on this computer
+                            Create New Collection
                         </BloomButton>
-                    </DialogBottomLeftButtons>
-                    <BloomButton
-                        variant="contained"
-                        color="primary"
-                        enabled={true}
-                        l10nKey={
-                            "OpenCreateNewCollectionsDialog.CreateNewCollection"
-                        }
-                        onClick={() => post("workspace/createNewCollection")}
-                    >
-                        Create New Collection
-                    </BloomButton>
-                </DialogBottomButtons>
+                    </DialogBottomButtons>
+                </div>
             </BloomDialogContext.Provider>
         </BloomDialog>
     );

@@ -9,7 +9,6 @@ using Bloom.Collection;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using SIL.Reporting;
 
 namespace Bloom.Publish.Epub
@@ -306,7 +305,7 @@ namespace Bloom.Publish.Epub
 
         public void ReportAnalytics(string eventName)
         {
-            Analytics.Track(
+            BloomAnalytics.Track(
                 eventName,
                 new Dictionary<string, string>()
                 {
@@ -395,7 +394,12 @@ namespace Bloom.Publish.Epub
             var iframeSource =
                 targetFile.ToLocalhost()
                 + "?url="
-                + UrlPathString.CreateFromUnencodedString(manifestPath.ToLocalhost()).UrlEncoded;
+                // PossiblyEncoded because ToLocalhost() has already escaped the path components,
+                // and we want the whole thing re-encoded as one query-parameter value; see the
+                // note on CreateFromPossiblyEncodedString.
+                + UrlPathString
+                    .CreateFromPossiblyEncodedString(manifestPath.ToLocalhost())
+                    .UrlEncoded;
             return iframeSource;
         }
 

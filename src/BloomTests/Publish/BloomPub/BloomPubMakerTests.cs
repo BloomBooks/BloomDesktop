@@ -34,6 +34,14 @@ namespace BloomTests.Publish.BloomPub
         private BookServer _bookServer;
         protected BloomServer s_bloomServer;
 
+        // One off-screen page-checks browser shared by every bloompub creation in the fixture (via
+        // PublishHelper.ExternalPageChecksBrowserForTests). BloomPubMaker.PrepareBookForBloomReader
+        // creates a PublishHelper per call, and starting a WebView2 environment (browser process +
+        // dedicated thread) per bloompub dominates the time of these tests; sharing one keeps each
+        // test running the real browser-based visibility checks while paying the startup cost only
+        // once per fixture.
+        private static OffScreenBrowser s_pageChecksBrowser;
+
         [OneTimeSetUp]
         public virtual void OneTimeSetup()
         {
@@ -51,12 +59,17 @@ namespace BloomTests.Publish.BloomPub
                 locator
             );
             s_bloomServer.EnsureListening();
+            s_pageChecksBrowser = new OffScreenBrowser();
+            PublishHelper.ExternalPageChecksBrowserForTests = s_pageChecksBrowser;
         }
 
         [OneTimeTearDown]
         public virtual void OneTimeTearDown()
         {
-            s_bloomServer.Dispose();
+            PublishHelper.ExternalPageChecksBrowserForTests = null;
+            s_pageChecksBrowser.Dispose();
+            s_pageChecksBrowser = null;
+            RetiredTestServers.Retire(s_bloomServer);
         }
 
         [SetUp]
@@ -1353,6 +1366,163 @@ namespace BloomTests.Publish.BloomPub
             }
         }
 
+        /// <summary>
+        /// BL-16669: the bloomDataDiv image entries hold a plain file name, not a URL-encoded one.
+        /// This used to be read with CreateFromUrlEncodedString, so a cover image genuinely called
+        /// "photo%41.png" was read as "photoA.png" -- a file that does not exist, so the reference
+        /// was silently skipped and the duplicate never collapsed.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_CoverImageNameLooksUrlEncoded_StillDeDuplicates()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"
+<html>
+    <body>
+        <div id='bloomDataDiv'>
+            <div data-book='coverImage' lang='*' src='photo%41.png'>photo%41.png</div>
+        </div>
+        <div class='bloom-page A5Portrait' data-page='required singleton' id='image-dedupe'>
+            <div class='marginBox'>
+                <img src='duplicate-a.png' alt='first'/>
+            </div>
+        </div>
+    </body>
+</html>"
+            );
+
+            using (var folder = new TemporaryFolder("DeDuplicateMediaFiles_PercentCoverImage"))
+            {
+                var source = FileLocationUtilities.GetFileDistributedWithApplication(
+                    _pathToTestImages,
+                    "shirt.png"
+                );
+                File.Copy(source, Path.Combine(folder.Path, "duplicate-a.png"));
+                File.Copy(source, Path.Combine(folder.Path, "photo%41.png"));
+                // Sanity check: the wrongly-decoded name is not present, so a pass below can only
+                // mean the real file was found.
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "photoA.png")),
+                    Is.False,
+                    "test setup: the wrongly-decoded name must not exist"
+                );
+
+                PublishHelper.DeDuplicateMediaFiles(dom, folder.Path);
+
+                AssertThatXmlIn
+                    .Dom(dom)
+                    .HasSpecifiedNumberOfMatchesForXpath(
+                        "//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @src='duplicate-a.png' and text()='duplicate-a.png']",
+                        1
+                    );
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(folder.Path, "photo%41.png")),
+                    Is.False,
+                    "the duplicate should have been collapsed and removed"
+                );
+            }
+        }
+
+        /// <summary>
+        /// BL-16669: data-backgroundaudio is the odd one out among the sound attributes -- it
+        /// really is URL-encoded (the music tool writes it with encodeURIComponent). So a music
+        /// file whose name contains a space is stored as "Fur%20Elise.mp3", and reading it as a
+        /// plain name would look for a file that isn't there: the reference would be skipped, and
+        /// the file could then be deleted as a duplicate of one named by some other attribute
+        /// while this page still pointed at it.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_BackgroundAudioIsUrlEncoded_StillDeDuplicates()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='music-page-1' data-backgroundaudio='Fur%20Elise.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>one</div></div>
+						</div>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='music-page-2' data-backgroundaudio='duplicate-b.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>two</div></div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            testBook.CollectionSettings.Subscription = Subscription.CreateTempSubscriptionForTier(
+                SubscriptionTier.Pro
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "Fur Elise", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-b", ".mp3");
+            // Sanity check: the file really is on disk under its decoded name, so a pass below
+            // means we decoded the attribute rather than that we got lucky.
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "Fur Elise.mp3")),
+                Is.True,
+                "test setup: the music file should be there under its real, spaced name"
+            );
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            // The first one encountered wins, and it must be written back still encoded.
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@data-backgroundaudio='Fur%20Elise.mp3']",
+                    2
+                );
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasNoMatchForXpath("//div[@data-backgroundaudio='duplicate-b.mp3']");
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "Fur Elise.mp3")),
+                Is.True,
+                "the surviving music file must not have been deleted"
+            );
+        }
+
+        /// <summary>
+        /// BL-16669: the same for the sound attributes, which likewise hold a plain file name.
+        /// </summary>
+        [Test]
+        public void DeDuplicateMediaFiles_SoundNameLooksUrlEncoded_StillDeDuplicates()
+        {
+            const string bodyContent =
+                @"
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='sound-page-1' data-correct-sound='beep%41.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>one</div></div>
+						</div>
+						<div class='bloom-page A5Portrait' data-page='required singleton' id='sound-page-2' data-correct-sound='duplicate-b.mp3'>
+							<div class='marginBox'><div class='bloom-editable bloom-content1' lang='en'>two</div></div>
+						</div>
+";
+
+            var testBook = CreateBookWithPhysicalFile(
+                bodyContent,
+                kMinimumValidBookHeadContent,
+                bringBookUpToDate: true
+            );
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "beep%41", ".mp3");
+            BookStorageTests.MakeSampleAudioFiles(testBook.FolderPath, "duplicate-b", ".mp3");
+            // Sanity check: the wrongly-decoded name is not present.
+            Assert.That(
+                RobustFile.Exists(Path.Combine(testBook.FolderPath, "audio", "beepA.mp3")),
+                Is.False,
+                "test setup: the wrongly-decoded name must not exist"
+            );
+
+            PublishHelper.DeDuplicateMediaFiles(testBook.RawDom, testBook.FolderPath);
+
+            // The first one encountered wins, so both pages should now name the '%' file.
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@data-correct-sound='beep%41.mp3']", 2);
+            AssertThatXmlIn
+                .Dom(testBook.RawDom)
+                .HasNoMatchForXpath("//div[@data-correct-sound='duplicate-b.mp3']");
+        }
+
         [Test]
         public void CompressBookForDevice_DeduplicatesDuplicateVideos()
         {
@@ -2144,6 +2314,100 @@ namespace BloomTests.Publish.BloomPub
             }
         }
 
+        [Test]
+        public void EmbedFonts_GenericCssFontFamily_LeftAloneAndNotReported()
+        {
+            // A book that asks for the CSS generic keyword "serif" (as some brandings do, e.g.
+            // BL-16370). "serif" is not a real font on disk; the reader's browser resolves it.
+            // Bloom should not warn about it, embed it, or rewrite it to the default font.
+            var bookHeadContent =
+                @"
+						<style type='text/css' title='userModifiedStyles'>
+							/*<![CDATA[*/
+							.Generic-style[lang='en'] { font-family: serif ! important; font-size: 12pt  }
+							/*]]>*/
+						</style>";
+            var bookBodyContent =
+                @"
+					<div class='bloom-page' id='guid1'></div>";
+            var testBook = CreateBookWithPhysicalFile(
+                bookBodyContent,
+                bookHeadContent,
+                bringBookUpToDate: false
+            );
+            var fontFileFinder = new StubFontFinder();
+            FontsApi.AvailableFontMetadataDictionary.Clear();
+            fontFileFinder.NoteFontsWeCantInstall = true;
+            PublishHelper.ClearFontMetadataMapForTests();
+
+            var customStylesPath = Path.Combine(testBook.FolderPath, "customCollectionStyles.css");
+            File.WriteAllText(customStylesPath, ".someStyle {font-family: serif;}");
+
+            var stubProgress = new StubProgress();
+
+            // Include a bold variant too, mirroring the real scenario where a bold caption
+            // produced a second "serif Bold" warning.
+            var fontsWanted = new HashSet<PublishHelper.FontInfo>
+            {
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = "serif",
+                    fontStyle = "normal",
+                    fontWeight = "400",
+                },
+                new PublishHelper.FontInfo
+                {
+                    fontFamily = "serif",
+                    fontStyle = "normal",
+                    fontWeight = "700",
+                },
+            };
+
+            // Sanity check: the styles reference "serif" before we run.
+            Assert.That(
+                File.ReadAllText(customStylesPath).Contains("serif"),
+                Is.True,
+                "test setup: customCollectionStyles.css should reference serif"
+            );
+
+            BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
+
+            // No warning or substitution message should mention the generic family.
+            Assert.That(
+                stubProgress.MessagesNotLocalized.Any(m => m.Contains("serif")),
+                Is.False,
+                "Bloom should not report anything about the generic 'serif' family"
+            );
+            Assert.That(
+                stubProgress.MessagesNotLocalized.Any(m => m.Contains("could not find that font")),
+                Is.False
+            );
+
+            // The generic keyword must be left alone in the book's CSS, NOT rewritten to Andika,
+            // so the reader's browser can resolve it.
+            var customCss = File.ReadAllText(customStylesPath);
+            Assert.That(
+                customCss.Contains(".someStyle {font-family: serif;}"),
+                Is.True,
+                "generic 'serif' reference should be left unchanged"
+            );
+
+            var styleNode = testBook.OurHtmlDom.SelectSingleNode(
+                "//head/style[@type='text/css' and @title='userModifiedStyles']"
+            );
+            Assert.That(styleNode, Is.Not.Null);
+            Assert.That(
+                styleNode.InnerXml.Contains("font-family: serif"),
+                Is.True,
+                "generic 'serif' reference in userModifiedStyles should be left unchanged"
+            );
+
+            // And no fonts.css @font-face rule should have been created for it.
+            var fontsCssPath = Path.Combine(testBook.FolderPath, "fonts.css");
+            if (File.Exists(fontsCssPath))
+                Assert.That(RobustFile.ReadAllText(fontsCssPath).Contains("serif"), Is.False);
+        }
+
         private static SafeXmlDocument MakeDom(string bodyInnerXml)
         {
             var doc = SafeXmlDocument.Create();
@@ -2290,11 +2554,16 @@ namespace BloomTests.Publish.BloomPub
                     isTemplateBook: false,
                     creator: creator
                 );
-                var zip = new ZipFile(bloompubTempFile.Path);
-                var newHtml = GetEntryContents(zip, "index.htm");
-                var paramObj = new ZipHtmlObj(zip, newHtml);
-                assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
-                assertionsOnResultingHtmlString?.Invoke(newHtml);
+                // The ZipFiles must be disposed before the enclosing TempFiles are: an open
+                // ZipFile locks the .bloompub, and the TempFile's Dispose then spends seconds
+                // in robust-delete retry loops trying to remove its temp folder.
+                using (var zip = new ZipFile(bloompubTempFile.Path))
+                {
+                    var newHtml = GetEntryContents(zip, "index.htm");
+                    var paramObj = new ZipHtmlObj(zip, newHtml);
+                    assertionsOnZipArchive?.Invoke(paramObj); // send in html in case we need to compare it with the zip contents
+                    assertionsOnResultingHtmlString?.Invoke(newHtml);
+                }
                 if (assertionsOnRepeat != null)
                 {
                     // compress it again! Used for checking important repeatable results
@@ -2311,8 +2580,10 @@ namespace BloomTests.Publish.BloomPub
                             _bookServer,
                             new NullWebSocketProgress()
                         );
-                        zip = new ZipFile(extraTempFile.Path);
-                        assertionsOnRepeat(zip);
+                        using (var zipOfRepeat = new ZipFile(extraTempFile.Path))
+                        {
+                            assertionsOnRepeat(zipOfRepeat);
+                        }
                     }
                 }
             }

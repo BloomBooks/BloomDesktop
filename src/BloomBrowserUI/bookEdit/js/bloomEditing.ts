@@ -59,12 +59,7 @@ import { showInvisibles, hideInvisibles } from "./showInvisibles";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import {
-    postBoolean,
-    postJson,
-    postString,
-    postThatMightNavigate,
-} from "../../utils/bloomApi";
+import { post, postBoolean, postJson, postString } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 import { hookupLinkHandler } from "../../utils/linkHandler";
@@ -74,6 +69,10 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import {
+    externalCaptureErrorForPendingWork,
+    kExternalCaptureMaxWaitMs,
+} from "./pageContentCapturePolicy";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
@@ -82,7 +81,9 @@ import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
 import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
+import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -671,6 +672,7 @@ export function SetupElements(
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable",
             );
+            const originalOrder = contentElements.toArray();
             contentElements.sort((a, b) => {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
@@ -690,8 +692,17 @@ export function SetupElements(
                 }
                 return 0;
             });
-            //do the actual rearrangement
-            $(this).append(contentElements);
+            //do the actual rearrangement -- but only if something actually needs to move.
+            // append() detaches and re-inserts every element even when the order is already
+            // correct (the normal case for a saved book), and that churn can cost a visible
+            // frame of blank text after a page loads (BL-15300), besides killing the audio
+            // highlight's Ranges and forcing a repair.
+            const orderChanged = contentElements
+                .toArray()
+                .some((el, index) => originalOrder[index] !== el);
+            if (orderChanged) {
+                $(this).append(contentElements);
+            }
         });
 
     //Convert Standard Format Markers in the pasted text to html spans
@@ -1137,6 +1148,7 @@ function OneTimeSetup() {
     hookupLinkHandler();
     setupDragActivityTabControl();
     setupPageLayoutMenu();
+    setupTextContextMenu();
 }
 
 function isTextSelected(): boolean {
@@ -1213,6 +1225,17 @@ export function bootstrap() {
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
+    //
+    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
+    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
+    // ready it writes the snapshot it took here over whatever the element holds by then. So
+    // anything a person types in that window is silently destroyed. Measured on a developer
+    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
+    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
+    // after making a book and you lose it; a loaded machine widens the window. Written up in
+    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
+    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
+    // staying, that entry is the place to start.
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
@@ -1226,37 +1249,50 @@ export function bootstrap() {
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
-    // We want to do this as late in the page setup process as possible because a
-    // mouse zoom event will regenerate the page, and various things we do in the process
-    // of starting up a page don't like it if the page we are loading is already unloading.
-    // We currently suppress errors for pages which are in the process of going away, but better
-    // not to generate them than suppress them if we can help it.
     setupWheelZooming();
 }
+// The minimum time between two zoom requests to the server, in milliseconds.
+// One request per wheel notch could freeze Bloom for minutes (BL-16762): each request
+// runs on the UI thread and calls into the WebView2, while the browser process sends
+// each Ctrl key event to the host synchronously and waits for an answer.
+const kZoomRequestIntervalMs = 150;
+// The wheel notches that we have not sent yet. A positive number zooms in.
+let pendingZoomNotches = 0;
+// Set while we wait out kZoomRequestIntervalMs after a zoom request.
+let zoomRequestTimer: number | undefined;
+
+// Send the notches that came in since the last request, then wait
+// kZoomRequestIntervalMs before we send another. If no notch came in, stop the timer,
+// so that the next notch goes out at once.
+function sendPendingZoom() {
+    const notches = pendingZoomNotches;
+    pendingZoomNotches = 0;
+    if (notches === 0) {
+        zoomRequestTimer = undefined;
+        return;
+    }
+    post("edit/pageControls/zoomBy?notches=" + notches);
+    zoomRequestTimer = window.setTimeout(
+        sendPendingZoom,
+        kZoomRequestIntervalMs,
+    );
+}
+
 // Attach a function to implement zooming on mouse wheel with ctrl.
-// Setting this up should be one of the last things we do when loading the page...
-// see the comment above where it is called.
-// (Unfortunately, this tends to make zooming feel rather sluggish...we could
-// try to optimize that, possibly by trying to keep track of how many wheel events
-// we got and using bigger increments...it should be safe to set up a handler
-// that just counts them, as long as we don't initiate a new page load until we
-// get done loading this one. Or maybe there are some events in page load that
-// we could abort if we already got another zoom event. For now, just trying
-// to stop it crashing.)
 function setupWheelZooming() {
     $("body").on("wheel", (e) => {
         const theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        let command: string = "";
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
-            command = "edit/pageControls/zoomPlus";
+            pendingZoomNotches++;
         } else if (theEvent.deltaY > 0) {
-            command = "edit/pageControls/zoomMinus";
+            pendingZoomNotches--;
         }
-        if (command !== "") {
-            // Zooming re-loads the page (because of a text-over-picture issue)
-            postThatMightNavigate(command);
+        // Nothing is in flight, so send this notch now. Only a fast spin accumulates
+        // notches, and then the server gets one big increment instead of many small ones.
+        if (zoomRequestTimer === undefined) {
+            sendPendingZoom();
         }
         // Setting the zoom is all we want to do in this context.
         e.preventDefault();
@@ -1407,6 +1443,17 @@ export function requestPageContent() {
 // uses a fresh disposable browser per page. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
+    // Record how much of the page each image slot covers, while the page is still laid out.
+    // That is the only record of it: the saved HTML otherwise says nothing about how big
+    // anything ends up on screen, so without this the AI image editor could not tell what size
+    // an image on any page but the open one ought to be. Never throws out: a missing size hint
+    // must not cost the user their page.
+    try {
+        recordFractionOfPageOnImageSlots(document.body);
+    } catch (e) {
+        console.error("recordFractionOfPageOnImageSlots failed: ", e);
+    }
+
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
     getToolboxBundleExports()?.removeToolboxMarkup();
@@ -1541,9 +1588,14 @@ function resizeCanvasElementsToFitContent(): void {
 // (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
 // API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
 // combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
-// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, up to
-// kMaxWaitTimeMs, so browser-based measurements (image sizing, canvas-element layout, etc.) are complete
-// before we capture the page. It also resizes text canvas elements to fit their content (see
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, so
+// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we capture
+// the page. Unlike the live save, it is a background job with nobody waiting at the keyboard, so it
+// waits longer (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR instead
+// of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
+// elements to fit their content (see
 // resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
 // timer the wait loop does not track.
 export function captureContentForExternalProcessing(
@@ -1551,16 +1603,18 @@ export function captureContentForExternalProcessing(
 ): void {
     window.__bloomExternalPageContent = undefined;
 
-    // Optionally auto-fit simple single-image/single-text origami pages so the grown split persists
-    // into the saved HTML. This currently handles both image-above-text and image-left-of-text when
-    // the image is in the first pane. We do this UP FRONT, before the delay-wait below, for two reasons:
+    // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
+    // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus
+    // top-to-bottom STACKS of three or more panes holding one illustration and text in the rest —
+    // text above / picture / text below and the like.
+    // We do this UP FRONT, before the delay-wait below, for two reasons:
     //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
     //    load-time fix-ups have run before C# calls us).
-    //  - Growing the image pane means the background image must be re-fit to the new pane size. That
+    //  - Resizing the image pane means the background image must be re-fit to the new pane size. That
     //    re-fit (adjustBackgroundImageSize) is async and registers a requestPageContent delay, so we
     //    kick it off here and let the waitForDelaysThenFinish loop below wait for it to settle before
-    //    we capture. Otherwise we'd save the new split with the OLD (too-small) image, and the image
-    //    would only get corrected later when a user opened the page in the Edit tab.
+    //    we capture. Otherwise we'd save the new split with the OLD (wrongly-sized) image, and the
+    //    image would only get corrected later when a user opened the page in the Edit tab.
     // Never throws out: a failure to fit must not block capturing/saving the page.
     if (fitImageTextSplits) {
         try {
@@ -1587,11 +1641,25 @@ export function captureContentForExternalProcessing(
         }
     };
     const waitForDelaysThenFinish = () => {
-        if (activeDelays.length === 0 || Date.now() - start > kMaxWaitTimeMs) {
+        if (activeDelays.length === 0) {
             finish();
-        } else {
-            setTimeout(waitForDelaysThenFinish, 50);
+            return;
         }
+        if (Date.now() - start > kExternalCaptureMaxWaitMs) {
+            const error = externalCaptureErrorForPendingWork(activeDelays);
+            if (error) {
+                window.__bloomExternalPageContent = error;
+                return;
+            }
+            console.warn(
+                `captureContentForExternalProcessing: Maximum wait time (${kExternalCaptureMaxWaitMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
+            );
+            finish();
+            return;
+        }
+        setTimeout(waitForDelaysThenFinish, 50);
     };
     waitForDelaysThenFinish();
 }
@@ -1931,6 +1999,22 @@ export function attachToCkEditor(element) {
         return;
     }
 
+    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): an editor wipes the box when it
+    // becomes ready, so a title typed before that is lost. Waiting for the first editor did not
+    // stop the nightly losing titles, and the open question is whether a SECOND attach is landing
+    // on a box somebody has already typed in. These two lines answer that: every attach on a title
+    // box is announced, with what the box holds going in and what it holds once the editor is
+    // ready. Playwright keeps the page's console in its trace, so a failed run carries the answer.
+    // Remove with the rest of this investigation.
+    const isBookTitleBox =
+        !!element.getAttribute &&
+        element.getAttribute("data-book") === "bookTitle";
+    const titleBoxText = () => (element.innerText || "").trim();
+    if (isBookTitleBox)
+        console.warn(
+            `[cover-title] attaching an editor; box holds "${titleBoxText()}"`,
+        );
+
     // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
     // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
     const alwaysHideToolbar =
@@ -2009,11 +2093,29 @@ export function attachToCkEditor(element) {
         updateCkEditorButtonStatus(editor);
     });
 
+    // Ctrl+Z and Ctrl+Y (and Ctrl+Shift+Z) are handled by ckeditor's own undo plugin, which
+    // runs them as the "undo" and "redo" commands. Undo writes a whole saved snapshot over the
+    // editable, so the active tool's markup no longer matches the text and, worse, the tools'
+    // ::highlight() Ranges are left pointing at text nodes that no longer exist. Tell the
+    // toolbox, which knows how to put both right. See updateMarkupAfterUndoOrRedo().
+    ckedit.on("afterCommandExec", (evt) => {
+        const commandName = evt.data.name;
+        if (commandName === "undo" || commandName === "redo") {
+            getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        }
+    });
+
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Cover-title investigation: see the note at the top of this function.
+        if (isBookTitleBox)
+            console.warn(
+                `[cover-title] editor ready; box now holds "${titleBoxText()}"`,
+            );
 
         // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
         // The only spans the format toolbar itself produces are bare <span style="color:..."> (and

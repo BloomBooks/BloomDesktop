@@ -14,6 +14,12 @@ declare module "*.html?raw" {
     export default content;
 }
 
+// Allow importing CSS files as raw strings (e.g. bloomUIFontFaces.css for runtime injection)
+declare module "*.css?raw" {
+    const content: string;
+    export default content;
+}
+
 // Allow side-effect imports of stylesheets, e.g. import "./App.less".
 // TypeScript 6.0 began requiring a module declaration for side-effect imports
 // (TS2882); Vite handles the actual loading, so an ambient declaration is enough.

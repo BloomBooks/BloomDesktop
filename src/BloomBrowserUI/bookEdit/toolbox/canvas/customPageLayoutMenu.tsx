@@ -9,6 +9,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { LocalizableSelectableMenuItem } from "../../../react_components/localizableMenuItem";
 import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 import { getWorkspaceBundleExports } from "../../js/workspaceFrames";
+import { splitAtLinkText } from "../../../utils/textUtils";
 
 export const CustomPageLayoutMenu: React.FunctionComponent<{
     isCustom: boolean;
@@ -49,6 +50,14 @@ export const CustomPageLayoutMenu: React.FunctionComponent<{
         selection: "standard" | "custom",
         event: React.MouseEvent<Element>,
     ) => {
+        // These items are a radio-style selection, not toggles: clicking the one that
+        // already has the tick beside it must do nothing (BL-16725). Without this, such
+        // a click switched to the other layout, and clicking "Custom" while already on
+        // Custom therefore discarded the user's custom layout.
+        if (selection === (props.isCustom ? "custom" : "standard")) {
+            handleCloseMenu();
+            return;
+        }
         const keepCustomLayoutDataWhenSwitchingToStandard =
             selection === "standard" && event.shiftKey && event.ctrlKey;
         handleCloseMenu();
@@ -160,22 +169,7 @@ const LegacyThemeCustomLayoutTooltip: React.FunctionComponent<{
         "EditTab.CustomCover.Custom.DisabledForLegacyTheme.Message",
     );
 
-    const linkStart = tooltipMessage.indexOf("[");
-    const linkEnd = tooltipMessage.indexOf(
-        "]",
-        linkStart >= 0 ? linkStart + 1 : 0,
-    );
-
-    const beforeLink =
-        linkStart >= 0 ? tooltipMessage.substring(0, linkStart) : "";
-    const linkText =
-        linkStart >= 0 && linkEnd > linkStart
-            ? tooltipMessage.substring(linkStart + 1, linkEnd)
-            : tooltipMessage;
-    const afterLink =
-        linkStart >= 0 && linkEnd > linkStart
-            ? tooltipMessage.substring(linkEnd + 1)
-            : "";
+    const { beforeLink, linkText, afterLink } = splitAtLinkText(tooltipMessage);
 
     return (
         <div

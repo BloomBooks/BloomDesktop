@@ -15,6 +15,7 @@ import {
     kBloomUnselectedTabBackground,
 } from "../../utils/colorUtils";
 import { getMasterToolList } from "./toolbox";
+import { kToolboxHeaderZIndex } from "./toolboxZIndexes";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../react_components/requiresSubscription";
 
 // React host for the toolbox sidebar.
@@ -67,10 +68,6 @@ const toolIconPathByToolId: Record<string, string> = {
         "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg",
     impairmentVisualizer:
         "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg",
-};
-
-const legacyToolSubPathByToolId: Record<string, string> = {
-    talkingBook: "talkingBook/talkingBookToolboxTool.html",
 };
 
 const toolboxHeaderIconStyles = css`
@@ -154,7 +151,6 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
         id: toolId,
         englishLabel: labelInfo.englishLabel,
         l10nKey: labelInfo.l10nKey,
-        legacyToolHtmlSubPath: legacyToolSubPathByToolId[toolId],
     };
 };
 
@@ -261,12 +257,7 @@ const ensureReactToolBodyElement = (
     }
 
     const normalizedToolId = normalizeToolId(toolId);
-    // Do not create elements for legacy tools; they load their content from
-    // legacyToolHtmlSubPath and their makeRootElement() implementations throw
-    // "Method not implemented." if called directly.
-    if (legacyToolSubPathByToolId[normalizedToolId]) {
-        return undefined;
-    }
+
     const tool = getMasterToolList().find((candidate) => {
         return candidate.id() === normalizedToolId;
     });
@@ -413,6 +404,29 @@ export const ToolboxRoot: React.FunctionComponent = () => {
     >([]);
     const hydratedToolIds = React.useRef<Set<string>>(new Set());
 
+    // Expand the given section and tell the legacy toolbox code about it.
+    // The legacy code keeps its own idea of which tool is current and drives each tool's
+    // showTool()/hideTool() lifecycle from it, so every path that changes which section is
+    // expanded has to go through here. A path that quietly changed only the React state left
+    // the two out of sync, so the tool the user could see was never activated: that is how
+    // visiting a game page killed Talking Book highlighting (BL-16602).
+    // Passing undefined means "nothing is expanded"; we deliberately don't notify legacy in
+    // that case, since it has no representation for "no current tool" and re-expanding the
+    // same section will notify with the same tool anyway.
+    const setActiveSection = React.useCallback(
+        (sectionId: string | undefined) => {
+            setExpandedSectionId(sectionId);
+            if (!sectionId) {
+                return;
+            }
+            const toolId = toToolboxToolId(sectionId);
+            activeToolChangedCallbacks.current.forEach((callback) => {
+                callback(toolId);
+            });
+        },
+        [],
+    );
+
     // Resolve body content for a section.
     // Prefer a live legacy element to avoid duplicate tool roots; otherwise
     // load static legacy HTML as a temporary fallback.
@@ -454,36 +468,6 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                     };
                 }),
             );
-            return;
-        }
-
-        const legacyToolHtmlSubPath = legacyToolSubPathByToolId[toolId];
-        if (legacyToolHtmlSubPath) {
-            try {
-                const legacyToolBodyHtml = await loadLegacyToolBodyHtml({
-                    id: toolId,
-                    englishLabel: "",
-                    l10nKey: "",
-                    legacyToolHtmlSubPath,
-                });
-                setSections((previousSections) =>
-                    previousSections.map((section) => {
-                        if (section.id !== toolId) {
-                            return section;
-                        }
-                        return {
-                            ...section,
-                            legacyToolBodyHtml,
-                        };
-                    }),
-                );
-            } catch (error) {
-                hydratedToolIds.current.delete(toolId);
-                console.error(
-                    `Failed to load legacy toolbox HTML for ${toolId}.`,
-                    error,
-                );
-            }
             return;
         }
 
@@ -720,24 +704,26 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             const removedToolId = normalizeToolId(customEvent.detail.toolId);
             hydratedToolIds.current.delete(removedToolId);
 
-            setSections((previousSections) => {
-                const nextSections = previousSections.filter(
+            setSections((previousSections) =>
+                previousSections.filter(
                     (section) => section.id !== removedToolId,
-                );
+                ),
+            );
 
-                const firstSection = nextSections[0];
-                // actually changes the expanded section only if the removed tool was the expanded one.
-                // The awkward way of doing this is to guard against a stale value of expandedSectionId.
-                setExpandedSectionId((previousExpandedSectionId) =>
-                    previousExpandedSectionId === removedToolId
-                        ? firstSection
-                            ? firstSection.id
-                            : undefined
-                        : previousExpandedSectionId,
-                );
+            if (expandedSectionId !== removedToolId) {
+                // The tool that went away wasn't the active one, so the active tool is unaffected.
+                return;
+            }
 
-                return nextSections;
-            });
+            // The active tool has just been taken away from us (e.g. leaving a game page removes
+            // the Game tool, which that page required). Something else has to become active, and
+            // it must go through setActiveSection so that the legacy code actually activates it.
+            // (Before the React toolbox, the jQuery accordion's refresh did the equivalent, firing
+            // its activate event when the active panel disappeared.)
+            const replacementSection = sections.find(
+                (section) => section.id !== removedToolId,
+            );
+            setActiveSection(replacementSection?.id);
         };
 
         // These events get dispatched by legacy toolbox code when tools are added or removed
@@ -749,7 +735,11 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             window.removeEventListener("toolbox-tool-added", onToolAdded);
             window.removeEventListener("toolbox-tool-removed", onToolRemoved);
         };
-    }, [hydrateToolBody]);
+        // sections and expandedSectionId are dependencies because onToolRemoved has to know
+        // what is currently active and what is left to activate in its place. Re-subscribing
+        // when they change can't lose an event: the removal and re-adding of the listener
+        // happen together, synchronously, when React commits.
+    }, [hydrateToolBody, sections, expandedSectionId, setActiveSection]);
 
     // Expose activation adapter so legacy toolbox code can drive and observe React accordion state.
     React.useEffect(() => {
@@ -769,12 +759,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
         window.toolboxReactAdapter = {
             isEnabled: () => true,
             setActiveToolByToolId: (toolId: string) => {
-                const normalizedToolId = normalizeToolId(toolId);
-                setExpandedSectionId(normalizedToolId);
-                const callbackToolId = toToolboxToolId(normalizedToolId);
-                activeToolChangedCallbacks.current.forEach((callback) => {
-                    callback(callbackToolId);
-                });
+                setActiveSection(normalizeToolId(toolId));
             },
             getActiveToolId: () => {
                 if (!expandedSectionId) {
@@ -786,7 +771,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 activeToolChangedCallbacks.current.push(callback);
             },
         };
-    }, [expandedSectionId, sections]);
+    }, [expandedSectionId, sections, setActiveSection]);
 
     // The old jQuery toolbox logic still runs for now, and it calls .show() on #toolbox.
     // Keep that legacy root hidden so only the React root is visible.
@@ -841,6 +826,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         background-color: ${kBloomPanelBackground};
                         display: flex;
                         flex-direction: column;
+                        // Lets the darker panel background show through between the
+                        // collapsed section headers, as it did in 6.3 and earlier (BL-16532).
+                        gap: 1px;
                         height: 100%;
                         min-height: 0;
 
@@ -903,20 +891,23 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             `}
                             disableGutters
                             expanded={expandedSectionId === section.id}
-                            onChange={(_event, expanded) => {
-                                const nextSectionId = expanded
-                                    ? section.id
-                                    : undefined;
-                                setExpandedSectionId(nextSectionId);
-                                if (nextSectionId) {
-                                    const toolId =
-                                        toToolboxToolId(nextSectionId);
-                                    activeToolChangedCallbacks.current.forEach(
-                                        (callback) => {
-                                            callback(toolId);
-                                        },
-                                    );
+                            // MUI reports the state the accordion is heading TO, not the state
+                            // it is in: it calls onChange(event, !expanded). So clicking a
+                            // closed tool's header arrives here as true, and clicking the open
+                            // one's arrives as false. (MUI's own name for the parameter is just
+                            // "expanded", which reads like "this one is the active tool" and is
+                            // the opposite of what it means -- hence the name used here.)
+                            onChange={(_event, willBeExpanded) => {
+                                if (!willBeExpanded) {
+                                    // Clicking the open tool's header can't close it: the
+                                    // toolbox always has an active tool, and the effect that
+                                    // syncs us with the legacy toolbox re-expands whatever
+                                    // legacy still thinks is current. Honoring the collapse
+                                    // therefore only produced a flash, in which the tools
+                                    // below jumped up and back down. (BL-16533)
+                                    return;
                                 }
+                                setActiveSection(section.id);
                             }}
                         >
                             <AccordionSummary
@@ -924,6 +915,22 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     min-height: 32px;
                                     padding-left: 5px;
                                     padding-right: 12px;
+                                    // Keep the headers above the Talking Book tool's disabling
+                                    // overlay, so they neither look grayed out nor stop
+                                    // responding in Show Playback Order mode (BL-16630); see
+                                    // toolboxZIndexes.ts for where the number comes from.
+                                    // Only works while no ancestor creates a stacking context
+                                    // -- a transform, filter, opacity or z-index on the
+                                    // Accordion, the Collapse or the tool-body host would
+                                    // trap it.
+                                    position: relative;
+                                    z-index: ${kToolboxHeaderZIndex};
+                                    // The header has to paint its own background for that to
+                                    // help. A collapsed header would otherwise be transparent
+                                    // and show the Accordion root's background, which stays
+                                    // under the overlay and so keeps being dimmed. Same colour
+                                    // the root uses, so nothing changes visually.
+                                    background-color: ${kBloomUnselectedTabBackground};
 
                                     & .MuiAccordionSummary-content {
                                         margin: 8px 0;
@@ -951,6 +958,12 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                             : toolboxHeaderIconStyles
                                     }
                                     data-toolid={section.id}
+                                    data-testid="toolbox-header-icon"
+                                    // The icon path is also exposed as data so tests can
+                                    // check which icon a header shows without reading styles.
+                                    data-icon-src={
+                                        toolIconPathByToolId[section.id]
+                                    }
                                     style={{
                                         backgroundImage: `url(${toolIconPathByToolId[section.id] || ""})`,
                                     }}
@@ -1021,6 +1034,20 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                                 border: none !important;
                                                 font-weight: normal;
                                             }
+                                        }
+
+                                        // Those same adopted bodies also keep the
+                                        // header icon jQuery-UI's _createIcons()
+                                        // prepends to every header: a
+                                        // ui-icon-triangle-1-e sprite. As a body
+                                        // (not a header) it renders as a stray
+                                        // right-pointing arrowhead in the top-left
+                                        // corner. The rule above only neutralized the
+                                        // header background/border, not this child
+                                        // icon, so hide it too. (BL-16538)
+                                        div[data-toolid]
+                                            span.ui-accordion-header-icon {
+                                            display: none !important;
                                         }
                                     `}
                                 >

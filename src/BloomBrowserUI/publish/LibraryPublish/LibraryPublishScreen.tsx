@@ -1,4 +1,5 @@
 import { css } from "@emotion/react";
+import * as React from "react";
 import { Typography } from "@mui/material";
 import { Link } from "../../react_components/link";
 import {
@@ -18,10 +19,13 @@ import { PublishTopic } from "../commonPublish/PublishTopic";
 
 export const kWebSocketContext = "libraryPublish";
 
-export const LibraryPublishScreen = () => {
+export const LibraryPublishScreen: React.FunctionComponent<{
+    // Passed straight through to LibraryPublishSteps, which owns the upload state.
+    onUploadingChange?: (uploading: boolean) => void;
+}> = (props) => {
     const mainPanel = (
         <PublishPanel>
-            <LibraryPublishSteps />
+            <LibraryPublishSteps onUploadingChange={props.onUploadingChange} />
         </PublishPanel>
     );
 

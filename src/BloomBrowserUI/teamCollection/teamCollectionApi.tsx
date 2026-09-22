@@ -25,6 +25,7 @@ export interface IBookTeamCollectionStatus {
     error: string; // This one is not current sent from the C# side.
     checkInMessage: string;
     isUserAdmin: boolean;
+    checkoutsArePaused: boolean; // an administrator has turned off checkouts for the whole collection
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {
@@ -45,6 +46,7 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     error: "",
     checkInMessage: "",
     isUserAdmin: false,
+    checkoutsArePaused: false,
 };
 
 export function useTColBookStatus(

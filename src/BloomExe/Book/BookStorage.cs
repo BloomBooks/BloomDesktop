@@ -107,7 +107,7 @@ namespace Bloom.Book
         void CaptureInitialStateForMigration();
         void RestoreStuffBeforeMigration();
         void MigrateMaintenanceLevels();
-        void MigrateToMediaLevel1ShrinkLargeImages();
+        void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null);
         void MigrateToLevel2RemoveTransparentComicalSvgs();
         void MigrateToLevel3PutImgFirst();
 
@@ -195,9 +195,25 @@ namespace Bloom.Book
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
+        /// History of kBrowserMaintenanceLevel (introduced in 6.5)
+        ///   The migrations above are all done by C# on the DOM. This one tracks the quite
+        ///   different set of fix-ups that only the editing JavaScript can do, because they need a
+        ///   real browser that has laid the page out: converting an old-style image to the
+        ///   background canvas element, recording each image slot's share of its page, canvas
+        ///   element geometry, and so on. They used to happen only when the user opened a page in
+        ///   the Edit tab, so a book carried them on the pages someone had visited and nowhere
+        ///   else. BookProcessor now applies them to every page off-screen when this level says
+        ///   the book is behind. See NeedsPerPageFixup.
+        ///              0 = missing: no page has reliably been through the editing JavaScript
+        ///   Bloom 6.5: 1 = every page has been through it (BL-16852)
+        ///   BUMP THIS whenever a change to the editing JavaScript means existing books need to be
+        ///   put through it again. Deliberately NOT tied to the Bloom version: version numbers are
+        ///   not comparable across channels (release 6.5.1, alpha and BetaInternal all use
+        ///   different sequences), and we do not want to reprocess every book for every build.
         /// </summary>
         public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
+        public const int kBrowserMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
         private IChangeableFileLocator _fileLocator;
@@ -644,6 +660,18 @@ namespace Bloom.Book
                 "Generator",
                 "Bloom " + ErrorReport.GetVersionForErrorReporting()
             );
+            // We are about to write this book with our editing code, so it cannot honestly claim a
+            // browser maintenance level beyond what we know how to produce. See the method.
+            // Remember what it said: the clamp has to happen before we serialize Dom, but if the
+            // write never reaches disk we have to put it back, because the in-memory value is what
+            // Book.SavePageToDisk consults to decide this book still needs the full save. Left
+            // lowered after a failed write, it would let later single-page saves go out over a file
+            // whose head still records the higher level, and that level would then stand for good.
+            var levelBeforeClamp = Dom.GetMetaValue(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                null
+            );
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
             var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
             if (!Program.RunningUnitTests)
             {
@@ -662,8 +690,21 @@ namespace Bloom.Book
                 Dom.RemoveMetaElement("FeatureRequirement");
             }
 
-            string tempPath = SaveHtml(Dom);
-            ValidateSave(tempPath);
+            try
+            {
+                string tempPath = SaveHtml(Dom);
+                ValidateSave(tempPath);
+            }
+            catch
+            {
+                // The book on disk still says whatever it said; make the DOM agree again.
+                if (levelBeforeClamp != null)
+                    Dom.UpdateMetaElement(
+                        BookProcessor.kBrowserMaintenanceLevelMeta,
+                        levelBeforeClamp
+                    );
+                throw;
+            }
 
             BookInfo.Save();
         }
@@ -1287,14 +1328,26 @@ namespace Bloom.Book
                 //also, remove from the doomed list anything referenced in the datadiv that looks like an image
                 //This saves us from deleting, for example, cover page images if this is called before the front-matter
                 //has been applied to the document.
-                pathsToNotDelete.AddRange(
-                    from SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
+                // A bloomDataDiv image entry holds a plain file name, NOT a URL-encoded one --
+                // see the encoding conventions note on UrlPathString. We protect the decoded form
+                // as well, because a few old books really do have an encoded value here (BL-3901).
+                // Protecting both is safe precisely because this is a list of files NOT to delete:
+                // a surplus entry at worst leaves an unused file in the folder, whereas a missing
+                // one deletes a file the book is using.
+                foreach (
+                    SafeXmlElement dataDivImage in Dom.RawDom.SafeSelectNodes(
                         "//div[@id='bloomDataDiv']//div[contains(text(),'.png') or contains(text(),'.jpg') or contains(text(),'.svg')]"
                     )
-                    select UrlPathString
-                        .CreateFromUrlEncodedString(dataDivImage.InnerText.Trim())
-                        .PathOnly.NotEncoded
-                );
+                )
+                {
+                    var plainName = dataDivImage.InnerText.Trim().Split('?')[0];
+                    pathsToNotDelete.Add(plainName);
+                    var decodedName = UrlPathString
+                        .CreateFromUrlEncodedString(plainName)
+                        .PathOnly.NotEncoded;
+                    if (decodedName != plainName)
+                        pathsToNotDelete.Add(decodedName);
+                }
                 pathsToNotDelete.AddRange(_brandingImageNames);
             }
 
@@ -1395,6 +1448,10 @@ namespace Bloom.Book
             var activityPages = Dom.SafeSelectNodes("//div[@data-activity]");
             foreach (SafeXmlElement dap in activityPages)
             {
+                // Used verbatim as a file name: these attributes hold a plain, NOT URL-encoded,
+                // name -- see the encoding conventions note on UrlPathString. Decoding here would
+                // mean a sound whose name contains a space no longer matched the file on disk,
+                // and this set is what stops the file below from being deleted.
                 var correctSound = dap.GetAttribute("data-correct-sound");
                 var wrongSound = dap.GetAttribute("data-wrong-sound");
                 if (correctSound != null)
@@ -1406,6 +1463,7 @@ namespace Bloom.Book
             var dataSoundElts = Dom.SafeSelectNodes(".//div[@data-sound]");
             foreach (var ds in dataSoundElts)
             {
+                // Plain file name, not URL-encoded; see the note above.
                 usedAudioFileNames.Add(ds.GetAttribute("data-sound"));
             }
 
@@ -1771,8 +1829,22 @@ namespace Bloom.Book
             // we can't use that as a file name because the first book exists, but it will pass this check,
             // so "A nice story about Bob" will be kept when we might prefer "A nice story 2". But this
             // won't cause dreadful problems and is pretty unlikely.
+            //
+            // We also keep the current name when it is exactly the "<base> - <hash>" work-around that
+            // GetUniqueBookFolderName produced for this same title. For a long title the folder base is
+            // truncated shorter than idealFolderName, so the plain StartsWith check below is false; without
+            // the IsUniqueVariantOfIdealFolderName check such a book would be given a brand new unique
+            // folder on every save. Because that new name normally collides with the book's own current
+            // folder, GetUniqueBookFolderName falls back to a fresh random GUID, so the folder churned to a
+            // different name each save. That orphaned folders and, worse, invalidated the page-iframe URLs
+            // the editor was using, producing spurious "Page expired" errors when changing page
+            // size/orientation (which saves the book). See BL-16596. (The check demands the exact canonical
+            // base for the current title, so a genuine title change still renames the folder.)
             if (
-                currentFolderName.StartsWith(idealFolderName)
+                (
+                    currentFolderName.StartsWith(idealFolderName)
+                    || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
+                )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
             )
                 return Path.Combine(Path.GetDirectoryName(idealFolderPath), currentFolderName);
@@ -1780,6 +1852,64 @@ namespace Bloom.Book
             // so find a new variant that is not in use. Override the default separator since
             // this not typically a copy.
             return GetAvailableDirectoryPath(idealFolderPath, instanceId, " - ");
+        }
+
+        /// <summary>
+        /// True if <paramref name="currentFolderName"/> is exactly the unique folder name that
+        /// GetUniqueBookFolderName (or Duplicate) would produce for a book whose ideal (sanitized)
+        /// title is <paramref name="idealFolderName"/>: the ideal name — truncated (with trailing
+        /// whitespace/periods trimmed) only if it is too long to fit alongside the suffix — followed
+        /// by a " - ", " - Copy-", or "-" separator and up to 8 hex digits of an id (e.g.
+        /// "My Long Title - a1b2c3d4"). We keep such a folder as-is on save rather than generating yet
+        /// another unique name each time (which orphaned folders and broke the editor's page URLs; see
+        /// the caller and BL-16596). We require the *exact* canonical base for the current title, not
+        /// merely a shared prefix, so that a routine same-title save keeps the folder (no churn) while
+        /// a real title change still renames the folder to match the new title.
+        /// </summary>
+        internal static bool IsUniqueVariantOfIdealFolderName(
+            string currentFolderName,
+            string idealFolderName
+        )
+        {
+            // Longest separator first so " - Copy-" wins over " - " and "-".
+            var match = Regex.Match(
+                currentFolderName,
+                @"^(?<base>.+?)(?<sep> - Copy-| - |-)[0-9a-f]{1,8}$",
+                RegexOptions.Compiled
+            );
+            if (!match.Success)
+                return false;
+            // Exactly the base that GetUniqueBookFolderName would use for this ideal title and
+            // this separator, since both use GetBaseForUniqueFolderName.
+            var expectedBase = GetBaseForUniqueFolderName(
+                idealFolderName,
+                match.Groups["sep"].Value
+            );
+            return string.Equals(
+                match.Groups["base"].Value,
+                expectedBase,
+                StringComparison.Ordinal
+            );
+        }
+
+        /// <summary>
+        /// The base-name part of a unique folder name "&lt;base&gt;&lt;separator&gt;&lt;8 hex id digits&gt;":
+        /// the given name, truncated (with trailing whitespace/periods trimmed) only when it is too
+        /// long to fit alongside the suffix within kMaxFilenameLength. Shared by
+        /// GetUniqueBookFolderName (generating such a name) and IsUniqueVariantOfIdealFolderName
+        /// (recognizing one) so the two can never drift apart.
+        /// </summary>
+        internal static string GetBaseForUniqueFolderName(string baseName, string separator)
+        {
+            // We need room for: separator (variable length) + 8 characters from instanceId
+            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
+            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
+            if (baseName.Length > maxBaseNameLength)
+            {
+                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
+                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
+            }
+            return baseName;
         }
 
         public void SetBookName(string name)
@@ -2024,8 +2154,18 @@ namespace Bloom.Book
                 if (startOfDontCacheHack > -1)
                     imageFileName = imageFileName.Substring(0, startOfDontCacheHack);
 
-                while (Uri.UnescapeDataString(imageFileName) != imageFileName)
-                    imageFileName = Uri.UnescapeDataString(imageFileName);
+                // Some old books have srcs that were encoded more than once, so the name may still
+                // hold escapes even after GetImageElementUrl decoded it. Keep undoing them, but
+                // only for as long as that is actually helping us find the file: a real file name
+                // may legitimately contain a '%' ("photo%41.jpg"), and decoding that would turn a
+                // file that is present into one we falsely report as missing. (BL-16669)
+                while (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
+                {
+                    var moreDecoded = Uri.UnescapeDataString(imageFileName);
+                    if (moreDecoded == imageFileName)
+                        break;
+                    imageFileName = moreDecoded;
+                }
 
                 if (!RobustFile.Exists(Path.Combine(FolderPath, imageFileName)))
                 {
@@ -2800,11 +2940,43 @@ namespace Bloom.Book
             );
         }
 
+        // The markup for the default "Made with Bloom" QR badge. Branding.json files reference
+        // this via the {bloom-badge-default} token (expanded in BookData.MergeBrandingSettings)
+        // instead of repeating this verbose HTML in every branding. It is kept here, next to
+        // UpdateQrCode, because that method rewrites this exact structure at runtime: it replaces
+        // the placeholder href below with the language-specific BloomLibrary URL (or removes it
+        // when the QR code is turned off), swaps in the QR image, and builds the caption.
+        private const string kBloomBadgeDefaultHtml =
+            "<div class='bloom-branding-wrapper'>"
+            + "<a href='https://bloomlibrary.org/'>"
+            + "<img class='branding' src='made-with-bloom-badge-text.svg'/>"
+            + "</a></div>";
+
+        /// <summary>
+        /// Named family of branding badge markups, keyed by the token used in branding.json
+        /// (e.g. "bloom-badge-default" is written as "{bloom-badge-default}"). Adding a future
+        /// badge variant is just a new entry here plus its own token name; branding.json structure
+        /// does not have to change.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> BrandingBadgeHtmlByToken =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["bloom-badge-default"] = kBloomBadgeDefaultHtml,
+            };
+
+        /// <summary>
+        /// The class on the QR code image of the "Made with Bloom" badge (see UpdateQrCode).
+        /// Like the badge's "branding" image, it is not part of the book's content, so code that
+        /// asks "does this book have images?" or manipulates content images must skip it.
+        /// </summary>
+        public const string kQrCodeClass = "bloom-qrcode";
+
         public static void UpdateQrCode(
             HtmlDom dom,
             bool shouldHaveQrCode,
             string langCode,
-            string badgeQrCodeLabelLocalizedWithLang,
+            string badgeCaptionPattern,
+            string languageName,
             string bookFolderPath,
             bool updateQrCodeFileEvenIfItExists = true
         )
@@ -2814,6 +2986,10 @@ namespace Bloom.Book
                 )
                 .Cast<SafeXmlElement>();
             var url = "https://bloomlibrary.org/language:" + langCode;
+            // The address we actually show to the reader on the badge. We deliberately drop the
+            // "https://" and use the friendlier capitalization, but keep the same path as the real
+            // link and QR code target above.
+            var displayUrl = "BloomLibrary.org/language:" + langCode;
 
             string qrFileName = null;
             const string kQrFileName = "lang-qr-code.png";
@@ -2829,7 +3005,7 @@ namespace Bloom.Book
                     continue; // html structure is corrupt/empty: nothing we can do
 
                 var imgBranding = FindChildElement(anchor, "img", "branding");
-                var imgQr = FindChildElement(anchor, "img", "bloom-qrcode");
+                var imgQr = FindChildElement(anchor, "img", kQrCodeClass);
                 var label = FindChildElement(anchor, "div", "bloom-lang-on-blorg");
 
                 if (!shouldHaveQrCode)
@@ -2855,7 +3031,9 @@ namespace Bloom.Book
                     imgQr,
                     label,
                     qrFileName,
-                    badgeQrCodeLabelLocalizedWithLang
+                    badgeCaptionPattern,
+                    languageName,
+                    displayUrl
                 );
             }
         }
@@ -2907,7 +3085,9 @@ namespace Bloom.Book
             SafeXmlNode imgQr,
             SafeXmlNode label,
             string qrFileName,
-            string badgeLabel
+            string badgeCaptionPattern,
+            string languageName,
+            string displayUrl
         )
         {
             if (imgBranding != null)
@@ -2925,7 +3105,7 @@ namespace Bloom.Book
             if (imgQr == null)
             {
                 imgQr = anchor.OwnerDocument.CreateElement("img");
-                imgQr.SetAttribute("class", "bloom-qrcode");
+                imgQr.SetAttribute("class", kQrCodeClass);
                 anchor.AppendChild(imgQr);
             }
             imgQr.SetAttribute("src", qrFileName);
@@ -2934,11 +3114,56 @@ namespace Bloom.Book
             if (label == null)
             {
                 label = anchor.OwnerDocument.CreateElement("div");
-                label.SetAttribute("class", "bloom-lang-on-blorg");
+                ((SafeXmlElement)label).SetAttribute("class", "bloom-lang-on-blorg");
                 anchor.AppendChild(label);
             }
 
-            label.InnerText = badgeLabel;
+            // The caption block has two lines: the caption text (with the language name in bold)
+            // on the first line, and the BloomLibrary.org address on its own line below it. We
+            // clear any previous content so re-running (e.g. after the language or caption changes)
+            // rebuilds it cleanly.
+            label.InnerXml = "";
+            var doc = anchor.OwnerDocument;
+
+            var captionDiv = doc.CreateElement("div");
+            captionDiv.SetAttribute("class", "bloom-blorg-caption");
+            AppendCaptionWithBoldLanguage(captionDiv, badgeCaptionPattern, languageName);
+            label.AppendChild(captionDiv);
+
+            var urlDiv = doc.CreateElement("div");
+            urlDiv.SetAttribute("class", "bloom-blorg-url");
+            urlDiv.AppendChild(doc.CreateTextNode(displayUrl));
+            label.AppendChild(urlDiv);
+        }
+
+        /// <summary>
+        /// Fills the caption element with the caption text, wrapping the language name (the "{0}"
+        /// placeholder in the pattern) in a bold element. If the pattern has no "{0}" placeholder
+        /// (e.g. a user cleared it out of their custom caption), the pattern is used verbatim.
+        /// </summary>
+        internal static void AppendCaptionWithBoldLanguage(
+            SafeXmlElement captionDiv,
+            string captionPattern,
+            string languageName
+        )
+        {
+            var doc = captionDiv.OwnerDocument;
+            const string placeholder = "{0}";
+            var idx = captionPattern.IndexOf(placeholder, StringComparison.Ordinal);
+            if (idx < 0)
+            {
+                captionDiv.AppendChild(doc.CreateTextNode(captionPattern));
+                return;
+            }
+            var before = captionPattern.Substring(0, idx);
+            var after = captionPattern.Substring(idx + placeholder.Length);
+            if (before.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(before));
+            var bold = doc.CreateElement("b");
+            bold.AppendChild(doc.CreateTextNode(languageName));
+            captionDiv.AppendChild(bold);
+            if (after.Length > 0)
+                captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
@@ -3794,17 +4019,9 @@ namespace Bloom.Book
                 instanceId = Guid.NewGuid().ToString();
             }
 
-            // Calculate the maximum length for the base name
-            // We need room for: separator (variable length) + 8 characters from instanceId
-            var suffixLength = separator.Length + 8; // 8 hex chars from GUID
-            var maxBaseNameLength = kMaxFilenameLength - suffixLength;
-
-            // Truncate and clean the base name if necessary
-            if (baseName.Length > maxBaseNameLength)
-            {
-                baseName = MiscUtils.TruncateSafely(baseName, maxBaseNameLength);
-                baseName = Regex.Replace(baseName, "[\\s.]+$", "", RegexOptions.Compiled);
-            }
+            // Truncate and clean the base name if necessary (shared with
+            // IsUniqueVariantOfIdealFolderName, which must recognize exactly what we produce here)
+            baseName = GetBaseForUniqueFolderName(baseName, separator);
 
             string proposedName;
             do
@@ -3892,27 +4109,53 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// Set when an attempt to shrink this book's images failed, so that we do not repeat the whole
+        /// slow attempt a moment later in the same pass: Book.EnsureUpToDate calls the migration twice,
+        /// once by way of EnsureUpToDateMemory and once directly afterwards, and the second call used to
+        /// be a no-op only because the first had already bumped mediaMaintenanceLevel. The level itself
+        /// deliberately stays at 0, so the shrink is still retried the next time this book is loaded and
+        /// brought up to date -- we just do not do it twice over, and fail twice, in one pass.
+        /// </summary>
+        private bool _mediaLevel1ShrinkFailed;
+
+        /// <summary>
         /// In very old books (before 4.9) we did not shrink even very large images before adding them to
         /// books. When we encounter such a book, we go ahead and shrink them. This is probably less
         /// necessary than in Gecko days, when super-large images were prone to make Bloom run out of
         /// memory. However, it is still helpful for performance and reducing published file sizes.
         /// Does nothing if mediaMaintenanceLevel indicates it has already been done.
         /// </summary>
-        public void MigrateToMediaLevel1ShrinkLargeImages()
+        /// <param name="progress">Where to report the (potentially very slow) shrinking, so the user
+        /// can see why we are busy. It is used whenever it is somewhere real to report, and also
+        /// whenever we could not put up a dialog even if we wanted to: off the UI thread, headless,
+        /// or under test. Only when we are on the UI thread AND all the caller gave us is a
+        /// NullProgress (or nothing) do we put up our own dialog instead and leave this unused --
+        /// see the branch below. Passing nothing is equivalent to passing a NullProgress; in
+        /// practice only tests do, since Book.EnsureUpToDate substitutes one for a null.</param>
+        public void MigrateToMediaLevel1ShrinkLargeImages(IProgress progress = null)
         {
             var levelString = Dom.GetMetaValue("mediaMaintenanceLevel", "0");
             if (!int.TryParse(levelString, out int level))
                 level = 0;
-            if (level >= 1)
+            if (level >= 1 || _mediaLevel1ShrinkFailed)
                 return;
+            var success = true;
             if (ImageUtils.NeedToShrinkImages(FolderPath))
             {
                 // If the book contains overlarge images, we want to fix those before editing because this can lead
                 // to thumbnails not being created properly and other bad behavior.  This is a one-time fix that can
-                // permanently change the images in the original book folder.  If any images must be shrunk, then a
-                // progress dialog pops up because that can be a very slow process.  If nothing needs to be done,
-                // nothing will appear on the screen, and it usually takes a small fraction of a second to determine
-                // this.
+                // permanently change the images in the original book folder.  Shrinking can be very slow, so we
+                // always report it somewhere -- but which way round depends on the thread we are on, because
+                // WinForms only allows a Form to be created on the UI thread.  Creating it anywhere else was the
+                // bug behind BL-16646.
+                //   - Already off the UI thread: the caller got here from something that is itself reporting
+                //     progress (a progress dialog's background worker, or a websocket progress), so we hand our
+                //     messages to the progress it passed us and add no window of our own.
+                //   - On the UI thread: there is no such progress to borrow, and doing the work inline would
+                //     freeze Bloom for the duration, so we put up our own dialog, which runs the work on a
+                //     background worker and keeps the UI alive.
+                // If nothing needs shrinking, nothing is reported at all, and it usually takes a small fraction
+                // of a second to determine that.
 
                 // Bloom 4.9 and later limit images used by Bloom books to be no larger than 3500x2550 in
                 // order to avoid out of memory errors that can happen with really large images.
@@ -3924,33 +4167,137 @@ namespace Bloom.Book
                 // This update can be very slow, so encourage the user that something is happening.
                 // NO images should have transparency removed.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8846.
 
-                if (Program.RunningUnitTests)
+                // A NullProgress reports nowhere, so having one is the same as having none: it is
+                // what a caller passes when it has no way to show the user anything. Anything else
+                // is somewhere real to report, and we should use it rather than opening a window
+                // over the top of whatever the caller is already showing.
+                //
+                // Note the invariant this puts on such a caller: taking the caller's progress also
+                // means doing the shrinking synchronously on the caller's thread, so a caller that
+                // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
+                // for the whole (potentially minutes-long) shrink. Today no UI-thread caller passes
+                // a real progress: "Update Book" (CollectionModel.BringBookUpToDateAsync) and the
+                // automatic per-page fix-up both run BookProcessor.ProcessBook on a worker thread
+                // behind the React progress dialog, and DoUpdatesOfAllBooks runs on
+                // ProgressDialogBackground's worker, so all of them arrive here with InvokeRequired
+                // true and simply use the progress they were given. A future UI-thread caller
+                // passing a progress that does not pump would need the dialog branch below instead.
+                var haveSomewhereToReport = progress != null && !(progress is NullProgress);
+                var shell = Shell.GetShellOrOtherOpenForm();
+                // shell is null when no window is open at all -- the bulk-upload and hydrate CLI
+                // commands. There is nothing to show a dialog on and no thread affinity to respect,
+                // so use the caller's progress like any other off-the-UI-thread case.  NullProgress
+                // is used if the caller did not pass one.
+                if (
+                    Program.RunningUnitTests
+                    || haveSomewhereToReport
+                    || shell == null
+                    || shell.InvokeRequired
+                )
                 {
-                    // TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-                    ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                        FolderPath,
-                        new List<string>(),
-                        new NullProgress()
-                    );
+                    if (progress == null)
+                        progress = new NullProgress();
+                    try
+                    {
+                        ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                            FolderPath,
+                            new List<string>(),
+                            progress
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        ReportShrinkFailure(e, progress);
+                        success = false;
+                    }
                 }
                 else
                 {
-                    using (var dlg = new ProgressDialogBackground())
-                    {
-                        dlg.Text = "Updating Image Files";
-                        dlg.ShowAndDoWork(
-                            (progress, args) =>
-                                ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
-                                    FolderPath,
-                                    new List<string>(),
-                                    progress
-                                )
-                        );
-                    }
+                    // InvokeRequired was false, so we are on the shell's own thread and may create
+                    // the dialog right here; no marshalling needed.
+                    success = ShrinkImagesBehindProgressDialog();
                 }
             }
+            if (success)
+                Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+            else
+                _mediaLevel1ShrinkFailed = true;
+        }
 
-            Dom.UpdateMetaElement("mediaMaintenanceLevel", "1");
+        /// <summary>
+        /// Shrink this book's overlarge images behind our own "Updating Image Files" dialog, which runs
+        /// the work on a background worker so Bloom stays responsive while it happens. Must be called
+        /// on the UI thread: WinForms does not allow creating a Form anywhere else.
+        /// </summary>
+        /// <remarks>
+        /// ProgressDialogBackground never reads RunWorkerCompletedEventArgs.Error, so an exception
+        /// thrown by the work would otherwise disappear and we would carry on and record the book as
+        /// migrated when its images were not in fact shrunk -- permanently, since the level is never
+        /// revisited. So capture it, log it, and return false here, which both records the failure in
+        /// the log and leaves mediaMaintenanceLevel alone, so the shrink is attempted again next time.
+        /// </remarks>
+        /// <returns>True if the images were successfully shrunk; otherwise, false.</returns>
+        private bool ShrinkImagesBehindProgressDialog()
+        {
+            Exception errorInWorker = null;
+            using (var dlg = new ProgressDialogBackground())
+            {
+                dlg.Text = "Updating Image Files";
+                dlg.ShowAndDoWork(
+                    (dialogProgress, args) =>
+                    {
+                        try
+                        {
+                            ImageUtils.FixSizeAndTransparencyOfImagesInFolder(
+                                FolderPath,
+                                new List<string>(),
+                                dialogProgress
+                            );
+                        }
+                        catch (Exception e)
+                        {
+                            errorInWorker = e;
+                        }
+                    }
+                );
+            }
+            if (errorInWorker != null)
+            {
+                // No progress to report to: we only take this branch when the caller had none.
+                ReportShrinkFailure(errorInWorker);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Report a failed image shrink, in every place that has somewhere to report it.
+        /// </summary>
+        /// <remarks>
+        /// The toast is passive on purpose: the book still works, its pictures are merely left large,
+        /// and we will try again next time, so this is not worth interrupting the user for. Note that
+        /// writing to the caller's progress must not use WriteError: ProgressDialogForeground shows a
+        /// modal "There was a problem performing that operation" when its progress records an error,
+        /// which would defeat the point of reporting this passively.
+        /// </remarks>
+        /// <param name="error">The failure to report. Logged whole, so the stack trace and any inner
+        /// exception survive; the message alone often does not even name the offending file.</param>
+        /// <param name="progress">The caller's progress, if it had one. Without this, an operation
+        /// that is already showing the user a progress box would appear to have finished cleanly.</param>
+        private void ReportShrinkFailure(Exception error, IProgress progress = null)
+        {
+            var message = LocalizationManager.GetString(
+                "ImageUtils.ShrinkingImagesFailed",
+                "Bloom could not make this book's pictures smaller. It will try again the next time the book is updated."
+            );
+            progress?.WriteWarning(message);
+            NonFatalProblem.Report(
+                ModalIf.None,
+                PassiveIf.All,
+                message,
+                "Shrinking images failed in " + FolderPath,
+                exception: error
+            );
         }
 
         private int GetMaintenanceLevel()
