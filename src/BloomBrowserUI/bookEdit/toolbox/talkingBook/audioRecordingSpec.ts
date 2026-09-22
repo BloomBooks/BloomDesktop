@@ -2240,7 +2240,12 @@ describe("audio recording tests", () => {
             });
 
             vi.spyOn(axios, "post").mockImplementation((url: string) => {
-                if (url.endsWith("fileIO/getSpecialLocation")) {
+                if (url.endsWith("fileIO/chooseFile")) {
+                    // importRecordingAsync asks for the file with postJson, i.e. a POST, so the
+                    // GET mock above never answers it. Without this the import stops at its first
+                    // step and none of the path under test runs.
+                    return Promise.resolve({ data: audioToCopyFilePath });
+                } else if (url.endsWith("fileIO/getSpecialLocation")) {
                     return Promise.resolve({ data: `${bookPath}/audio` });
                 } else if (url.endsWith("fileIO/copyFile")) {
                     return Promise.resolve({});
@@ -2294,15 +2299,190 @@ describe("audio recording tests", () => {
             // const encodedDestPath =
             encodeFilenameForHttpRequest(destPath, baseName, encodedBaseName);
 
-            // this got more complicated... doesn't seem worth having a test track
-            // the exact details of the request
-            // expect(axios.post).toHaveBeenCalledWith(
-            //     "/bloom/api/fileIO/copyFile",
-            //     {
-            //         from: encodedAudioToCopyFilePath,
-            //         to: encodedDestPath
-            //     }
-            // );
+            // Assert the two things this test is named for: that the special characters survive
+            // the round trip into the request, in both the source path and the destination. The
+            // exact shape of the request is not worth pinning down, but a test that checks nothing
+            // at all is only a way of running code.
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { from: string; to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(decodeURIComponent(copyCall![1].from)).toBe(
+                audioToCopyFilePath,
+            );
+            expect(decodeURIComponent(copyCall![1].to)).toBe(destPath);
+        });
+
+        // The highlight does not always sit on the text box itself: it can be on a sub-element (a
+        // sentence span in soft-split mode, or a paragraph still highlighted after switching back
+        // from By Sentence to By Whole Text Box). Bloom's narration file has to be named after the
+        // element that OWNS the audio -- the one carrying audio-sentence -- because that is the
+        // only name the tool ever looks under. Naming it after the highlighted sub-element instead
+        // writes an mp3 that belongs to nothing, and mints a stray id onto that sub-element on the
+        // way.
+        //
+        // So this checks that the import names the file after the text box even when the
+        // highlight is on something inside it.
+        it("importRecording() names the file after the text box, not a highlighted sub-element", async () => {
+            const div1 =
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            // The <p> is what is highlighted, and it has no id of its own.
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.TextBox;
+
+            const bookPath = "C:/Collection/Book";
+            // The test above leaves its own axios spies in place, and they answer for this one
+            // unless they are cleared first.
+            vi.restoreAllMocks();
+            simulateBloomApiResponses("C:/elsewhere/narration.mp3", bookPath);
+
+            await recording.importRecordingAsync();
+
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(
+                decodeURIComponent(copyCall![1].to),
+                "The imported mp3 was not named after the audio-sentence text box, so nothing on the page owns it.",
+            ).toBe(`${bookPath}/audio/div1.mp3`);
+
+            // And it must not have invented an id on the paragraph to name the file after.
+            const pageFrame = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement | null;
+            const paragraph = (
+                pageFrame?.contentDocument ?? document
+            ).querySelector("p[data-test-preselect]");
+            expect(
+                paragraph?.getAttribute("id"),
+                "Import minted a stray id onto the highlighted paragraph.",
+            ).toBeFalsy();
+        });
+
+        // The other way the highlight goes wrong: it points at a node that is no longer IN the
+        // page -- CKEditor replacing the paragraph it lived in, or a previous page's document
+        // after a page change (BL-15300). Walking up parentElement from a detached node reaches
+        // null, so normalising upwards is not enough on its own; the highlight has to be
+        // re-pointed at the live page first.
+        it("importRecording() names the file after the text box even when the highlight is detached", async () => {
+            const div1 =
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p data-test-preselect="true">One. Two. Three.</p></div></div>';
+            SetupIFrameFromHtml(div1);
+
+            const recording = new AudioRecording();
+            setHighlightedElementFromDom(recording);
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Detach the highlighted paragraph the way CKEditor's initialization does: it
+            // REPLACES it with an equivalent one, so the old node is orphaned while the text box
+            // still holds its text (and so is still recordable). Simply removing it would leave an
+            // empty box, which is a different situation -- there would be nothing to record.
+            const pageFrame = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement | null;
+            const doc = pageFrame?.contentDocument ?? document;
+            const original = doc.querySelector("p[data-test-preselect]");
+            const replacement = doc.createElement("p");
+            replacement.textContent = original?.textContent ?? "";
+            original?.replaceWith(replacement);
+
+            const bookPath = "C:/Collection/Book";
+            vi.restoreAllMocks();
+            simulateBloomApiResponses("C:/elsewhere/narration.mp3", bookPath);
+
+            await recording.importRecordingAsync();
+
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(
+                decodeURIComponent(copyCall![1].to),
+                "The imported mp3 was named after a detached element, so nothing on the page owns it.",
+            ).toBe(`${bookPath}/audio/div1.mp3`);
+        });
+
+        // With only one text box on the page, every recovery route lands on the same element, so
+        // the test above cannot tell "recovered the right box" from "picked the only box". This
+        // one puts TWO boxes on the page and leaves the highlight on a detached copy of the
+        // SECOND -- the situation after CKEditor replaces a paragraph, or after paging away and
+        // back. The id is the thread back to the box the user meant, so the import has to land on
+        // div2; landing on div1 would mean the page default silently won.
+        it("importRecording() recovers the text box the highlight belonged to, not the first one", async () => {
+            const twoBoxes =
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div1"><p>First box.</p></div></div>' +
+                '<div class="bloom-translationGroup"><div class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox" id="div2"><p data-test-preselect="true">Second box.</p></div></div>';
+            SetupIFrameFromHtml(twoBoxes);
+
+            const recording = new AudioRecording();
+            recording.recordingMode = RecordingMode.TextBox;
+
+            // Highlight the SECOND box, then detach it the way a page reload does: the live page
+            // still has a div2 with the same id, but the highlighted node is not in it any more.
+            const pageFrame = parent.window.document.getElementById(
+                "page",
+            ) as HTMLIFrameElement | null;
+            const doc = pageFrame?.contentDocument ?? document;
+            const liveDiv2 = doc.getElementById("div2")!;
+            const detachedDiv2 = liveDiv2.cloneNode(true) as HTMLElement;
+            (
+                recording as unknown as {
+                    highlightedElement: HTMLElement | null;
+                }
+            ).highlightedElement = detachedDiv2;
+
+            const bookPath = "C:/Collection/Book";
+            vi.restoreAllMocks();
+            simulateBloomApiResponses("C:/elsewhere/narration.mp3", bookPath);
+
+            await recording.importRecordingAsync();
+
+            const copyCall = (
+                axios.post as unknown as {
+                    mock: { calls: [string, { to: string }][] };
+                }
+            ).mock.calls.find((call) => call[0].endsWith("fileIO/copyFile"));
+            expect(
+                copyCall,
+                "Import never asked the server to copy the audio file.",
+            ).toBeTruthy();
+            expect(
+                decodeURIComponent(copyCall![1].to),
+                "The import landed on the wrong text box: the highlight belonged to div2, so naming the file after div1 puts the narration on a box the user was not working in.",
+            ).toBe(`${bookPath}/audio/div2.mp3`);
+
+            // The filename alone does not prove recovery -- the detached clone carries the id
+            // "div2" too, so reading it straight off the stale node gives the same name. What has
+            // to be true is that the selection now points at the LIVE div2: everything the tool
+            // does next (marking it recorded, playing it, saving the page) acts on the node it
+            // holds, and a detached one silently drops all of that.
+            expect(
+                (
+                    recording as unknown as {
+                        highlightedElement: HTMLElement | null;
+                    }
+                ).highlightedElement,
+                "The selection is still the detached copy, so the import's follow-up work would act on a node that is not in the page.",
+            ).toBe(liveDiv2);
         });
     });
 

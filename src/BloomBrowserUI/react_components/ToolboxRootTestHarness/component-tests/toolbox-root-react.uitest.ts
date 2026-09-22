@@ -239,58 +239,58 @@ test.describe("ToolboxRoot React mode", () => {
         ).toHaveCount(0);
     });
 
-    // Split out of the test above and disabled rather than deleted, because it asserts on
-    // things the React header has never produced, and deciding what it *should* produce is a
-    // product question, not a test fix:
-    //  - ".subscription-badge" is emitted by the legacy jQuery toolbox
-    //    (toolbox.ts buildToolboxHeader), not by the React header, so the count is 0 here.
-    //  - ".toolbox-react-header-icon" does not exist anywhere in the app — no component or
-    //    stylesheet has ever defined that class.
-    // It also checks tool icons via computed background-image, which
-    // src/BloomBrowserUI/AGENTS.md tells us not to do ("Don't check for styles in tests as a
-    // way to know the status of something... have components add css classes"). So whoever
-    // re-enables this should first decide whether the React header renders subscription
-    // badges and icons at all, then give those elements stable classes/test ids to assert on.
-    test.fixme(
-        "header shows icons and subscription badges",
-        async ({ page }) => {
-            await routeToolboxApis(page);
+    // Canvas, Motion and Music are the tools that need a subscription, so each of their
+    // headers carries a badge; Talking Book does not. Every enabled tool's header carries
+    // an icon. Which image each icon shows is a static lookup table and is not asserted.
+    test("header shows icons and subscription badges", async ({ page }) => {
+        await routeToolboxApis(page);
 
-            await page.route(
-                "**/bloom/api/toolbox/enabledTools",
-                async (route) => {
-                    await route.fulfill({
-                        status: 200,
-                        contentType: "text/plain",
-                        body: "canvas,motion,music,settings",
-                    });
-                },
-            );
-
-            await page.goto("/?component=ToolboxRootTestHarness");
-
-            await expect(page.getByText("Loading component…")).toHaveCount(0, {
-                timeout: 15000,
+        await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "text/plain",
+                body: "canvas,motion,music,talkingBook,settings",
             });
+        });
 
-            await expect(page.locator(".subscription-badge")).toHaveCount(3);
+        await page.goto("/?component=ToolboxRootTestHarness");
 
-            await expect(
-                page.locator(
-                    ".toolbox-react-header-icon[data-toolid='canvas']",
-                ),
-            ).toHaveCSS(
-                "background-image",
-                /Canvas%20Icon\.svg|Canvas Icon\.svg/,
+        // The harness's first mount waits on the Vite dev server transforming the
+        // toolbox module graph, which on a cold server takes well over the default
+        // expect timeout; every test in this file uses the same wait for the same reason.
+        await expect(page.getByText("Loading component…")).toHaveCount(0, {
+            timeout: 15000,
+        });
+
+        // Five headers: the four tools plus the "More..." (settings) header. The component
+        // exposes each header's icon path as data-icon-src; "More..." has no icon of its own.
+        const icons = page.getByTestId("toolbox-header-icon");
+        await expect(icons).toHaveCount(5);
+        const icon = (toolId: string) =>
+            icons.and(page.locator(`[data-toolid='${toolId}']`));
+        for (const toolId of ["canvas", "motion", "music", "talkingBook"]) {
+            await expect(icon(toolId)).toHaveCount(1);
+            await expect(icon(toolId)).toHaveAttribute(
+                "data-icon-src",
+                /svg|png/,
             );
-            await expect(
-                page.locator(
-                    ".toolbox-react-header-icon[data-toolid='motion']",
-                ),
-            ).toHaveCSS("background-image", /motion\.svg/);
-            await expect(
-                page.locator(".toolbox-react-header-icon[data-toolid='music']"),
-            ).toHaveCSS("background-image", /music-notes-white\.svg/);
-        },
-    );
+        }
+        await expect(icon("settings")).toHaveCount(1);
+        await expect(icon("settings")).not.toHaveAttribute("data-icon-src");
+
+        // Scoped to the headers: the "More..." panel lists the tools with their own
+        // badges, which are not what this test is about.
+        const headerBadges = (toolId: string) =>
+            page
+                .locator(".MuiAccordionSummary-root", {
+                    has: icon(toolId),
+                })
+                .getByTestId("subscription-badge");
+        for (const toolId of ["canvas", "motion", "music"]) {
+            await expect(headerBadges(toolId)).toHaveCount(1);
+        }
+        for (const toolId of ["talkingBook", "settings"]) {
+            await expect(headerBadges(toolId)).toHaveCount(0);
+        }
+    });
 });
