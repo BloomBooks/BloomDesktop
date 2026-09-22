@@ -6,11 +6,16 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 // The menu command deliberately does NOT open the editor. Everything C# tells the editor
 // about the book is read from the SAVED book DOM, so an image the user just added — which
 // lives only in the live page — wouldn't be there (BL-16682). The command therefore reports
-// the clicked image and asks C# to save the page first; C# opens the overlay itself, in the
-// top window.
+// which slot was clicked and asks C# to save the page first; C# opens the overlay itself, in
+// the top window.
+//
+// A slot is an image container, and its index among the page's image containers is its whole
+// identity. C# numbers the same containers on the saved page (SelectImageSlotsOnPage), so an
+// index means the same thing on both sides. These tests are mostly about that agreement.
 
 const postJson = vi.fn();
 const changeImageByElement = vi.fn();
+const setActiveElementToClosest = vi.fn();
 
 vi.mock("../../utils/bloomApi", () => ({
     postJson: (...args: unknown[]) => postJson(...args),
@@ -20,33 +25,44 @@ vi.mock("../js/bloomEditing", () => ({
     changeImageByElement: (...args: unknown[]) => changeImageByElement(...args),
 }));
 
+vi.mock("../js/canvasElementManager/CanvasElementManager", () => ({
+    theOneCanvasElementManager: {
+        setActiveElementToClosest: (...args: unknown[]) =>
+            setActiveElementToClosest(...args),
+    },
+}));
+
 vi.mock("../js/bloomImages", () => ({
-    getImageUrlFromImageContainer: (container: HTMLElement) =>
-        container.getAttribute("data-url") ?? "",
-    // The matcher compares filenames off the live elements; in the real thing this reads
-    // an <img src> or a background-image url, which for our fixture is just the src.
-    GetRawImageUrl: (element: HTMLElement) => element.getAttribute("src") ?? "",
+    kImageContainerClass: "bloom-imageContainer",
 }));
 
 import {
     applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
     launchAiImageEditor,
 } from "./aiImageEditorPageCommands";
 
 const kPageId = "page1";
 
+// A page whose slots hold the given files, in order. Each slot is an image container inside
+// a canvas element, which is how a real page holds a picture.
 const makePageWithImages = (...fileNames: string[]) => {
     document.body.innerHTML = `
         <div class="bloom-page" id="${kPageId}">
             ${fileNames
                 .map(
                     (name) =>
-                        `<div class="bloom-canvas-element"><img src="${name}" /></div>`,
+                        `<div class="bloom-canvas-element"><div class="bloom-imageContainer"><img src="${name}" /></div></div>`,
                 )
                 .join("")}
         </div>`;
     return Array.from(document.querySelectorAll("img")) as HTMLImageElement[];
 };
+
+const containers = () =>
+    Array.from(
+        document.querySelectorAll(".bloom-imageContainer"),
+    ) as HTMLElement[];
 
 // A current-page commit result for slot `ordinal`, replacing `oldSrc` with `newSrc`.
 const currentPageResult = (
@@ -77,37 +93,157 @@ describe("aiImageEditorPageCommands: the menu command", () => {
 
         expect(postJson).toHaveBeenCalledTimes(1);
         expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
-            // Only the file name travels: the save reloads this frame, so a live element
+            // Only plain data travels: the save reloads this frame, so a live element
             // reference could not survive the round trip. C# adds the page id.
-            imageFileName: "old.png",
+            slotIndex: 0,
         });
     });
 
-    test("prefers the image container's url over the img src", () => {
-        // An image container's url is the authoritative one (it may be a background-image
-        // rather than an <img src>), which is why the command asks for it when there is one.
-        makePageWithImages("ignored.png");
-        const container = document.querySelector(
-            ".bloom-canvas-element",
-        ) as HTMLElement;
-        container.setAttribute("data-url", "fromContainer.png");
-        const img = document.querySelector("img") as HTMLImageElement;
+    test("numbers the slot that was clicked, not the picture it shows (BL-16744)", () => {
+        // Every empty slot shows placeHolder.png, so nothing about the picture could say
+        // which slot the user clicked. The index can, and it says so whatever the pictures
+        // are: here the same file twice.
+        const [first, second] = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+        );
 
-        launchAiImageEditor(img, container);
+        launchAiImageEditor(second, undefined);
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 1,
+        });
+
+        // Sanity: the other slot of the same pair is a different index.
+        postJson.mockClear();
+        launchAiImageEditor(first, undefined);
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 0,
+        });
+    });
+
+    test("the clicked container may be given instead of the img", () => {
+        // canvasControlRegistry passes both when it has both. Either must number the same
+        // slot, because they are the same slot.
+        makePageWithImages("a.png", "b.png");
+        const [, secondContainer] = containers();
+
+        launchAiImageEditor(
+            secondContainer.querySelector("img") as HTMLImageElement,
+            secondContainer,
+        );
 
         expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
-            imageFileName: "fromContainer.png",
+            slotIndex: 1,
         });
     });
+
+    test("a branding image does not shift the index", () => {
+        // Branding, license and QR-code images are not in image containers, so they are not
+        // slots at all — which is why neither side needs a list of them. C# will not offer
+        // one and cannot overwrite one.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <img class="branding" src="placeHolder.png" />
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        launchAiImageEditor(images[2], undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 1,
+        });
+    });
+
+    test("a control Bloom injects into the live page does not shift the index", () => {
+        // Injected controls live in the live page only — the save strips them — so the
+        // saved page C# numbers has none of them.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-ui"><div class="bloom-imageContainer"><img src="icon.png" /></div></div>
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        launchAiImageEditor(images[2], undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 1,
+        });
+    });
+
+    test("every slot counts, whatever picture it shows", () => {
+        // The index counts slots, not pictures of one name. A slot C# declines to offer —
+        // an svg it cannot open, say — still holds its place in the numbering on both
+        // sides, which is what lets this side number slots without knowing C#'s rules.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "photo.svg",
+            "placeHolder.png",
+        );
+
+        launchAiImageEditor(images[2], undefined);
+
+        expect(postJson).toHaveBeenCalledWith("aiImageEditor/saveThenLaunch", {
+            slotIndex: 2,
+        });
+    });
+
+    // A Bloom Games target holds a copy of its draggable's whole content, image container and
+    // all. That copy is written in by the browser when the draggable is selected or its picture
+    // changes, and an untouched target sits empty, so it must not be counted: if it were, the
+    // same page would number its slots differently here and in the saved HTML C# reads, and the
+    // replacement would land on whatever the number happened to mean there (BL-16793).
+    const gamePageHtml = (targetContent: string) => `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-canvas-element" data-draggable-id="d1">
+                    <div class="bloom-imageContainer"><img src="dog.png" /></div>
+                </div>
+                <div data-target-of="d1">${targetContent}</div>
+                <div class="bloom-canvas-element" data-draggable-id="d2">
+                    <div class="bloom-imageContainer"><img src="cat.png" /></div>
+                </div>
+            </div>`;
+    const filledTarget = `
+        <div class="bloom-targetWrapper">
+            <div class="bloom-imageContainer"><img src="dog.png" /></div>
+        </div>`;
+
+    test.each([
+        ["a target the browser has filled in", filledTarget],
+        ["a target still empty", ""],
+    ])(
+        "numbers a game page's slots the same with %s (BL-16793)",
+        (_name, targetContent) => {
+            document.body.innerHTML = gamePageHtml(targetContent);
+            const secondDraggablesImage = document.querySelector(
+                '[data-draggable-id="d2"] img',
+            ) as HTMLImageElement;
+
+            launchAiImageEditor(secondDraggablesImage, undefined);
+
+            expect(postJson).toHaveBeenCalledWith(
+                "aiImageEditor/saveThenLaunch",
+                { slotIndex: 1 },
+            );
+        },
+    );
 });
 
 describe("aiImageEditorPageCommands: applying current-page replacements", () => {
     beforeEach(() => {
         changeImageByElement.mockClear();
+        setActiveElementToClosest.mockClear();
         document.body.innerHTML = "";
     });
 
-    test("swaps the matching image and reports it applied", () => {
+    test("swaps the image of the named slot, undoably, and reports it applied", () => {
         const [img] = makePageWithImages("old.png");
 
         const outcome = applyAiImageEditorReplacements([
@@ -116,11 +252,96 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
 
         expect(outcome).toEqual({ applied: 1, expected: 1 });
         expect(changeImageByElement).toHaveBeenCalledTimes(1);
+        // The img, not the container: changeImageInfo paints a background image on anything
+        // that is not an <img>, which would leave the img showing the old picture.
         expect(changeImageByElement.mock.calls[0][0]).toBe(img);
         expect(changeImageByElement.mock.calls[0][1]).toMatchObject({
             src: "ai-image1.png",
-            undoable: "false",
+            // Registers an image undo, like a pasted image; that is why the overlay must
+            // not save afterwards (the reload would discard the undo stack).
+            undoable: "true",
         });
+        // The swapped slot becomes the active element, or canUndoImageOperation would
+        // refuse to offer the undo until the user clicked the image.
+        expect(setActiveElementToClosest).toHaveBeenCalledWith(img);
+    });
+
+    test("a slot with no img of its own is swapped on the container", () => {
+        // A slot can wear its picture as a background image instead of holding an img.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-imageContainer" style="background-image:url('old.png')"></div>
+            </div>`;
+        const [container] = containers();
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(0, "old.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement.mock.calls[0][0]).toBe(container);
+    });
+
+    test("a retry re-targets the same slot, though it no longer shows what C# read", () => {
+        // After a partial failure the overlay stays up and nothing was saved, so a retry's
+        // oldSrc (read from the saved page) still names the pre-swap file. The index does
+        // not care, which is the point: nothing here compares pictures.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+            "placeHolder.png",
+        );
+        applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image1.png"),
+        ]);
+        images[2].setAttribute("src", "ai-image1.png");
+        changeImageByElement.mockClear();
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image2.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
+    });
+
+    test("a lone swap lands on the slot its ordinal names (BL-16744)", () => {
+        // Every empty slot shows placeHolder.png. A commit for the third of them must not
+        // land on the first, which is where a filename-only match always put it.
+        const images = makePageWithImages(
+            "placeHolder.png",
+            "placeHolder.png",
+            "placeHolder.png",
+        );
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(2, "placeHolder.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement).toHaveBeenCalledTimes(1);
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
+    });
+
+    test("a control Bloom injects into the live page does not shift the ordinal", () => {
+        // Injected controls are in the live page only; the ordinal counts the saved page's
+        // slots, which have none of them.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-ui"><div class="bloom-imageContainer"><img src="icon.png" /></div></div>
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+                <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+            </div>`;
+        const images = Array.from(
+            document.querySelectorAll("img"),
+        ) as HTMLImageElement[];
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(1, "placeHolder.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement.mock.calls[0][0]).toBe(images[2]);
     });
 
     test("ignores results for other pages and results that failed", () => {
@@ -138,7 +359,7 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
         expect(changeImageByElement).not.toHaveBeenCalled();
     });
 
-    test("reports a shortfall when a slot cannot be matched", () => {
+    test("reports a shortfall when the page has no such slot", () => {
         // The caller turns applied < expected into "Only N of M ... could be updated", so
         // this has to be counted honestly rather than reported as success.
         makePageWithImages("old.png");
@@ -170,5 +391,99 @@ describe("aiImageEditorPageCommands: applying current-page replacements", () => 
         expect(outcome.applied).toBe(1);
         expect(outcome.expected).toBe(2);
         expect(outcome.error).toContain("kaboom");
+    });
+
+    test("a swap lands on the draggable, not its game target's copy (BL-16793)", () => {
+        // The failure this guards against: the target's copy of the picture is generated by the
+        // browser, so the live page can hold it while the saved HTML C# numbered does not (or
+        // the other way round). When the copies were counted, that shifted every later ordinal,
+        // and the replacement went into the target — where the next rebuild from the draggable
+        // threw it away. Here the ordinal names the second picture an author placed, and it has
+        // to reach that picture whatever state the targets are in.
+        document.body.innerHTML = `
+            <div class="bloom-page" id="${kPageId}">
+                <div class="bloom-canvas-element" data-draggable-id="d1">
+                    <div class="bloom-imageContainer"><img src="dog.png" /></div>
+                </div>
+                <div data-target-of="d1">
+                    <div class="bloom-targetWrapper">
+                        <div class="bloom-imageContainer"><img src="dog.png" /></div>
+                    </div>
+                </div>
+                <div class="bloom-canvas-element">
+                    <div class="bloom-imageContainer"><img src="placeHolder.png" /></div>
+                </div>
+            </div>`;
+        const placeholder = document.querySelector(
+            ".bloom-canvas-element:not([data-draggable-id]) img",
+        ) as HTMLImageElement;
+        // Sanity check: the element we expect the swap to reach, before it happens.
+        expect(placeholder.getAttribute("src")).toBe("placeHolder.png");
+
+        const outcome = applyAiImageEditorReplacements([
+            currentPageResult(1, "placeHolder.png", "ai-image1.png"),
+        ]);
+
+        expect(outcome).toEqual({ applied: 1, expected: 1 });
+        expect(changeImageByElement).toHaveBeenCalledTimes(1);
+        expect(changeImageByElement.mock.calls[0][0]).toBe(placeholder);
+        expect(
+            changeImageByElement.mock.calls[0][0].closest("[data-target-of]"),
+        ).toBeNull();
+    });
+});
+
+describe("aiImageEditorPageCommands: how big the open page is", () => {
+    // jsdom lays nothing out, so a page's size has to be stated for it to be measurable.
+    const setLayoutSize = (el: HTMLElement, width: number, height: number) => {
+        Object.defineProperty(el, "offsetWidth", {
+            value: width,
+            configurable: true,
+        });
+        Object.defineProperty(el, "offsetHeight", {
+            value: height,
+            configurable: true,
+        });
+    };
+
+    const makePage = (pageClass: string) => {
+        document.body.innerHTML = `<div class="bloom-page ${pageClass}" id="${kPageId}"></div>`;
+        return document.querySelector(".bloom-page") as HTMLElement;
+    };
+
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("reports a paper page's size in layout pixels", () => {
+        const page = makePage("A5Portrait");
+        setLayoutSize(page, 559, 794);
+        // Sanity check: without this a wrong answer below could just mean jsdom reported 0.
+        expect(page.offsetWidth).toBe(559);
+
+        expect(getAiImageEditorPageMetrics()).toEqual({
+            widthPx: 559,
+            heightPx: 794,
+            isDigital: false,
+        });
+    });
+
+    test("says a screen-sized layout is digital", () => {
+        const page = makePage("Device16x9Portrait");
+        setLayoutSize(page, 378, 672);
+
+        expect(getAiImageEditorPageMetrics()?.isDigital).toBe(true);
+    });
+
+    test("a page that is not laid out has no metrics", () => {
+        makePage("A5Portrait");
+
+        expect(getAiImageEditorPageMetrics()).toBeNull();
+    });
+
+    test("no page at all has no metrics", () => {
+        document.body.innerHTML = "";
+
+        expect(getAiImageEditorPageMetrics()).toBeNull();
     });
 });

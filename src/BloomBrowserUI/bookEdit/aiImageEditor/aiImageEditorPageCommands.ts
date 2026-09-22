@@ -6,20 +6,23 @@
 //   launchAiImageEditor            the "Edit with AI…" menu command: report the clicked
 //                                  image to C# and ask it to save the page.
 //   applyAiImageEditorReplacements the commit's current-page swaps, applied to the live DOM.
+//   getAiImageEditorPageMetrics    how big the open page is and whether it is meant for a
+//                                  screen, which only a laid-out browser page can say.
 //
 // Both are reached from elsewhere: the first from canvasControlRegistry (this frame), the
 // second from the overlay in the top window, via
 // getEditablePageBundleExports().applyAiImageEditorReplacements().
 
 import { postJson } from "../../utils/bloomApi";
+import { kImageContainerClass } from "../js/bloomImages";
 import {
-    getImageUrlFromImageContainer,
-    GetRawImageUrl,
-} from "../js/bloomImages";
+    getOpenPageMetrics,
+    IPageMetrics,
+    kGameTargetSelector,
+} from "../js/imageTargetResolution";
 import { changeImageByElement } from "../js/bloomEditing";
-import { matchReplacementsToElements } from "./aiImageEditorSlotMatching";
+import { theOneCanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import {
-    fileNameOf,
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
     isCurrentPageSwap,
@@ -40,12 +43,77 @@ export function launchAiImageEditor(
     img: HTMLImageElement,
     imgContainer: HTMLElement | undefined,
 ): void {
-    const clickedUrl = imgContainer
-        ? getImageUrlFromImageContainer(imgContainer)
-        : img?.getAttribute("src");
     postJson("aiImageEditor/saveThenLaunch", {
-        imageFileName: fileNameOf(clickedUrl),
+        slotIndex: slotIndexOnPage(imgContainer ?? img),
     });
+}
+
+// Which of this page's image slots the user clicked, as its index in the list imageSlotsOnPage
+// builds. An image container is exactly what a user may replace, so the branding, license and
+// QR-code images, which live outside any container, are not slots at all.
+//
+// That index IS the slot's identity — it is the "{pageId}:{ordinal}" ordinal C# builds — so this
+// side and C# have to count the same containers. Each applies the rule for itself, against a
+// different DOM: imageSlotsOnPage below, and SelectImageSlotsOnPage in AiImageEditorApi.cs.
+// Neither can change what it counts without the other.
+function slotIndexOnPage(clicked: HTMLElement | undefined): number {
+    if (!clicked) return 0;
+    const pageRoot = clicked.closest(".bloom-page") ?? document;
+    const slots = imageSlotsOnPage(pageRoot);
+    const index = slots.findIndex(
+        (el) => el === clicked || el.contains(clicked) || clicked.contains(el),
+    );
+    return index < 0 ? 0 : index;
+}
+
+// This page's image slots, in the order that gives each one its ordinal. The single place
+// that builds the list, so every caller agrees with C# (SelectImageSlotsOnPage in
+// AiImageEditorApi.cs) about which container is slot 3.
+//
+// Two kinds of image container are left out, and BOTH sides leave out the same ones, because
+// the ordinal in "{pageId}:{ordinal}" is an index into this list and C# indexes its own copy
+// of it:
+//
+//  - A Bloom Games target's copy of a draggable's picture. The browser writes that copy in
+//    when the draggable is selected or its picture changes (copyContentToTarget), and a target
+//    that has not had that done sits empty — so the live page and the saved HTML can honestly
+//    disagree about how many image containers a game page has. Counting the copies made the
+//    ordinal mean one slot in the browser and a different one in C#, which is how a
+//    replacement ended up in a target, to be thrown away at the next rebuild (BL-16793).
+//  - The controls Bloom injects into the live page, which no saved book has and which the save
+//    strips (Cleanup in bloomEditing.ts). C# never sees these, so it needs no rule for them.
+//
+// Which of the remaining slots the editor is OFFERED is still C#'s business alone: where it
+// declines one (a file format the editor cannot open, say) it skips that ordinal rather than
+// renumbering, so filtering any further here would shift every later slot's identity.
+function imageSlotsOnPage(pageRoot: ParentNode): HTMLElement[] {
+    return Array.from(
+        pageRoot.querySelectorAll("." + kImageContainerClass),
+    ).filter(
+        (el) =>
+            !el.closest(".bloom-ui") &&
+            !el.parentElement?.closest(kGameTargetSelector),
+    ) as HTMLElement[];
+}
+
+// How big the page the user is editing is, and whether it is one of the screen-sized layouts.
+// The AI image editor works out the size each slot wants from this plus the slot's share of
+// its page, which Bloom records in the HTML on every save; see imageTargetResolution.ts.
+//
+// Null when there is no laid-out page, which callers treat as "we don't know" rather than as
+// an error.
+export function getAiImageEditorPageMetrics(): IPageMetrics | null {
+    return getOpenPageMetrics(document.querySelector(".bloom-page"));
+}
+
+// The element of a slot that carries the picture: the container's own img, or the container
+// itself when it wears the picture as a background image. Mirrors GetImageElementOfSlot in
+// AiImageEditorApi.cs. It matters here because changeImageInfo sets a background image on
+// anything that is not an <img>, so handing it a container that holds an img would leave the
+// img untouched and paint the new picture behind it.
+function imageElementOfSlot(slot: HTMLElement): HTMLElement {
+    const img = Array.from(slot.children).find((c) => c.tagName === "IMG");
+    return (img as HTMLElement) ?? slot;
 }
 
 function asMessage(e: unknown): string {
@@ -57,6 +125,13 @@ function asMessage(e: unknown): string {
 // use Bloom's changeImageByElement() here. Returns how many swaps landed and how many were
 // asked for, so the caller can report a partial failure honestly.
 //
+// Each swap registers an image undo, like a pasted image or a picture chosen from the
+// gallery, so Ctrl+Z puts the old image back. That works because nothing here saves the
+// page: the save's reload would throw the live undo stack away (the same reasoning as
+// BL-16330 for ordinary image changes). The page is saved by the normal mechanisms when the
+// user moves on, and every editor launch saves first (see HandleSaveThenLaunch), so later
+// sessions still read a fresh book DOM.
+//
 // Called from the top window, so it must not assume anything about who is calling: `results`
 // has crossed a frame boundary but is plain data, and everything it touches is this
 // document.
@@ -67,29 +142,26 @@ export function applyAiImageEditorReplacements(
     if (toApply.length === 0) return { applied: 0, expected: 0 };
     const pageRoot =
         (document.querySelector(".bloom-page") as HTMLElement) || document;
-    // Look up the page's image-bearing elements once, not per replacement.
-    const candidates = Array.from(
-        pageRoot.querySelectorAll('img, [style*="background-image"]'),
-    );
-    // A page can have several slots sharing the same source (e.g. multiple empty
-    // placeholders). matchReplacementsToElements consumes each matched element once so
-    // distinct replacements land on distinct elements instead of collapsing onto the first
-    // match, and applies in slot (ordinal) order. We match by filename, not full src, so a
-    // cache-busting query string or path prefix on the live element doesn't cause a silent
-    // miss. oldSrc arrives from C# already decoded; the live srcs are encoded, so
-    // fileNameOf normalizes both sides.
-    const pairs = matchReplacementsToElements(
-        toApply,
-        (r) => parseInt((r.incomingId ?? "").split(":").pop() ?? "", 10) || 0,
-        (r) => fileNameOf(r.oldSrc, false),
-        candidates as HTMLElement[],
-        (el) => fileNameOf(GetRawImageUrl(el)),
-    );
-    // Count as we go rather than from pairs.length at the end: if a swap throws, the ones
-    // already made are in the live DOM and the caller still has to know to save them.
+    // The page's slots, numbered as slotIndexOnPage numbers them and as C# numbers them
+    // (SelectImageSlotsOnPage): the image containers, less the controls Bloom injects into
+    // the live page. The ordinal in a replacement's "{pageId}:{ordinal}" is an index into
+    // this list, and that index is the whole of a slot's identity — nothing here compares
+    // file names, because two slots can honestly show the same file (every empty slot shows
+    // placeHolder.png) and a slot we already swapped no longer shows what C# read.
+    const slots = imageSlotsOnPage(pageRoot);
+    // Count as we go rather than at the end: if a swap throws, the ones already made are in
+    // the live DOM and the caller still has to know to save them. A replacement whose slot
+    // this page does not have is left out, which the caller sees as applied < expected.
     let applied = 0;
     try {
-        pairs.forEach(({ replacement: r, element: target }) => {
+        toApply.forEach((r) => {
+            const slot =
+                slots[
+                    parseInt((r.incomingId ?? "").split(":").pop() ?? "", 10) ||
+                        0
+                ];
+            if (!slot) return;
+            const target = imageElementOfSlot(slot);
             changeImageByElement(target, {
                 src: r.newSrc as string,
                 // Take the credits from C#, which read them off the new image file.
@@ -101,11 +173,24 @@ export function applyAiImageEditorReplacements(
                 creator: r.creator ?? "",
                 copyright: r.copyright ?? "",
                 license: r.license ?? "",
-                // The AI commit applies replacements book-wide in C# (saved directly, not
-                // undoable), so don't register a separate per-image undo for the
-                // current-page piece.
-                undoable: "false",
+                // Register an image undo for each swap, like any other image change
+                // (see the header comment).
+                undoable: "true",
             });
+            // Make the swapped slot the active element. canUndoImageOperation only
+            // offers the undo while an image container is active, and after the launch
+            // saved and reloaded this page nothing is — so without this, Ctrl+Z right
+            // after the editor closes would do nothing until the user clicked the image.
+            //
+            // It does a second job, which matters on a Bloom Games page: a draggable's
+            // target holds a copy of the draggable's content, and activating the draggable
+            // is what makes Bloom rebuild that copy. changeImageByElement above does NOT
+            // (verified against a running Bloom: without this line the target went on
+            // showing the replaced picture), so the target would otherwise keep a picture
+            // we no longer offer any way to edit (BL-16793). An off-page slot has no
+            // active element to rely on, so C# repoints those copies itself — see
+            // GetGameTargetImageCopiesOfSlot in AiImageEditorApi.cs.
+            theOneCanvasElementManager.setActiveElementToClosest(target);
             applied++;
         });
     } catch (e) {

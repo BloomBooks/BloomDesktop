@@ -7,7 +7,7 @@ import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { tryProcessHyperlink } from "./hyperlinks";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import $ from "jquery";
-import { showLinkTargetChooserDialog } from "../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { getLocalization } from "../../react_components/l10n";
 import { kNoIndentClass } from "../textContextMenu/noIndent";
 
@@ -259,8 +259,8 @@ export default class BloomField {
                 }
             });
         }
-        // BL-16649: "No Indent" (see the text context menu) marks one
-        // paragraph as the continuation of a paragraph on the previous page. Pressing Enter
+        // BL-16649: "Do Not Indent This Paragraph" (see the text context menu)
+        // marks one paragraph as the continuation of a paragraph on the previous page. Pressing Enter
         // in such a paragraph makes a genuinely new paragraph, which should indent normally
         // -- but ckeditor builds it by shallow-cloning the paragraph it split, so it would
         // inherit the class. We note which paragraphs existed just before the Enter, then
@@ -401,6 +401,9 @@ export default class BloomField {
 
         ckeditor.addCommand("setupHyperlink", {
             exec: function (edt) {
+                // Shown from the workspace root so its backdrop covers the page list too.
+                const showLinkTargetChooserDialog =
+                    getWorkspaceBundleExports().showLinkTargetChooserDialog;
                 showLinkTargetChooserDialog("", (url) => {
                     if (!url) return;
                     get("app/selectedBookInfo", (bookInfo) => {

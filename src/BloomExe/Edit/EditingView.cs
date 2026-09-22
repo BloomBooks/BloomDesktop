@@ -94,14 +94,6 @@ namespace Bloom.Edit
             return _mainBrowser.Invoke(method);
         }
 
-        public IAsyncResult BeginInvoke(Delegate method)
-        {
-            if (_mainBrowser == null)
-                throw new InvalidOperationException("Main browser is not available.");
-
-            return _mainBrowser.BeginInvoke(method);
-        }
-
         public void Refresh()
         {
             _mainBrowser?.Refresh();
@@ -394,8 +386,11 @@ namespace Bloom.Edit
             {
                 // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
                 // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
-                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
-                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                // which will also cause a change to NoPage. But it may be helpful in some cases
+                // (e.g., if somehow we're navigating), so I decided to put it in.
+                // Careful: it is *not* ignored in the states where emptying the page is invalid; it
+                // throws. So anything that leads here has to have made sure we are not mid-save
+                // first — see EditingModel.OnTabAboutToChange and BL-16766.
                 _model.StateMachine.ToNoPage();
                 SaveZoomSettingNow();
             }
@@ -503,7 +498,7 @@ namespace Bloom.Edit
                 _model.SetupServerWithCurrentBookToolboxContents();
                 WorkspaceView.ReloadWorkspaceRootDocument();
             }
-            SetModalState(false); // ensure _pageListView is enabled (BL-9712).
+            SetModalState(false); // ensure the tabs are not left locked (BL-9712).
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
@@ -1542,8 +1537,17 @@ namespace Bloom.Edit
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
 
         /// <summary>
-        /// Prevent navigation, e.g. while a dialog box is showing in the browser control
+        /// Lock workspace navigation (the tabs), e.g. while a dialog box is showing in the browser
+        /// control. Calls nest: each true must be matched by a false.
         /// </summary>
+        /// <remarks>
+        /// This used to disable the page list as well, because the page list lived in its own
+        /// browser and a modal dialog's backdrop in the main browser could not cover it. The whole
+        /// edit tab is in one browser now, so the backdrop already blocks the page list, and the
+        /// C# gate could only do harm: the browser posted the dialog's "closed" notice and the command
+        /// the dialog confirmed (e.g. Remove Page) as two concurrent requests, and when the command was
+        /// handled first it was silently refused (BL-16809).
+        /// </remarks>
         internal void SetModalState(bool isModal)
         {
             if (isModal)
@@ -1551,9 +1555,7 @@ namespace Bloom.Edit
             else
                 _modalDialogDepth = Math.Max(0, _modalDialogDepth - 1);
 
-            var isActuallyModal = _modalDialogDepth > 0;
-            _pageListView.Enabled = !isActuallyModal;
-            _workspaceView?.SetTabsEnabled(!isActuallyModal);
+            _workspaceView?.SetTabsEnabled(_modalDialogDepth == 0);
         }
 
         public void ShowAddPageDialog()

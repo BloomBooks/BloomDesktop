@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,6 +12,8 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
+using Bloom.Utils;
+using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Core.ClearShare;
 using SIL.IO;
@@ -60,7 +64,6 @@ namespace Bloom.web.controllers
     ///                                    images + history, return the launch payload.
     ///        aiImageEditor/file          GET/POST/DELETE files under .ai-image-editor/.
     ///        aiImageEditor/commit        apply the chosen replacements to the book.
-    ///        aiImageEditor/saveCredentials  persist the user's OpenRouter API key.
     ///   2. window.postMessage on channel "bloom-ai-image-tools", between the overlay JS
     ///      (aiImageEditorOverlay.ts, in the TOP window) and the AI image editor's iframe: ready /
     ///      init / commit / cancel / log / ack. The overlay JS — NOT this class — sends
@@ -73,7 +76,7 @@ namespace Bloom.web.controllers
     ///   source of truth.
     ///
     /// SECURITY
-    ///   A per-launch session token (query param) gates /file, /commit, /saveCredentials.
+    ///   A per-launch session token (query param) gates /file and /commit.
     ///   File names are allow-listed; page/result ids are charset-restricted; reused
     ///   source URLs must resolve inside the book folder (no path traversal).
     ///
@@ -194,13 +197,17 @@ namespace Bloom.web.controllers
                 handleOnUiThread: true,
                 requiresSync: true
             );
-            apiHandler.RegisterEndpointHandler(
-                "aiImageEditor/saveCredentials",
-                HandleSaveCredentials,
-                handleOnUiThread: false,
-                requiresSync: false
-            );
         }
+
+        /// <summary>The book subfolder that holds everything this feature keeps on disk.</summary>
+        internal const string kWorkingFolderName = ".ai-image-editor";
+
+        /// <summary>
+        /// The subfolder of <see cref="kWorkingFolderName"/> holding the cropped renderings we
+        /// hand the AI image editor in place of a cropped image's file. See
+        /// <see cref="TryMakeCroppedViewOfSlotImage"/>.
+        /// </summary>
+        internal const string kCroppedViewFolderName = "cropped";
 
         /// <summary>
         /// The selected book's ".ai-image-editor" working folder (state, history images,
@@ -211,7 +218,7 @@ namespace Bloom.web.controllers
             var folderPath = _bookSelection.CurrentSelection?.FolderPath;
             return string.IsNullOrEmpty(folderPath)
                 ? null
-                : Path.Combine(folderPath, ".ai-image-editor");
+                : Path.Combine(folderPath, kWorkingFolderName);
         }
 
         private string GetAiImageEditorUrl()
@@ -277,14 +284,21 @@ namespace Bloom.web.controllers
 
         /// <summary>The image the user right-clicked, as the page frame sends it to
         /// <see cref="HandleSaveThenLaunch"/> and as we hand it back to the browser once the page
-        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends only
-        /// the file name; we fill in the page id, since we are the ones who know which page we
-        /// saved, and the overlay (in the top window) has no page DOM of its own to read it from.
+        /// has been saved. See IAiImageEditorTarget in aiImageEditorShared.ts. The page frame sends
+        /// only the slot's index among the page's image containers; we fill in the page id, since
+        /// we are the ones who know which page we saved, and the overlay (in the top window) has
+        /// no page DOM of its own to read it from.
         /// </summary>
         private class SaveThenLaunchRequest
         {
-            public string imageFileName { get; set; }
             public string pageId { get; set; }
+
+            /// <summary>Which image slot of that page the user clicked, as its index among the
+            /// page's image containers in document order. The page frame counts them, because
+            /// only it can see which slot the user clicked; we just carry it back to the
+            /// overlay, where it names the book image "{pageId}:{slotIndex}".
+            /// </summary>
+            public int slotIndex { get; set; }
         }
 
         /// <summary>
@@ -327,7 +341,7 @@ namespace Bloom.web.controllers
         {
             // Must be read before SaveThen: by the time our callbacks run the request is complete.
             // Deliberately unguarded: the only caller is launchAiImageEditor in
-            // aiImageEditorPageCommands.ts, which always sends {imageFileName}, so a parse failure means
+            // aiImageEditorPageCommands.ts, which always sends {slotIndex}, so a parse failure means
             // we broke our own contract and we want to hear about it with the real exception rather
             // than a generic "invalid payload" that says nothing (see AGENTS.md, "Don't be overly
             // defensive about error handling").
@@ -341,6 +355,24 @@ namespace Bloom.web.controllers
                 return;
             }
             payload.pageId = pageId;
+
+            // The AI image editor answers for EVERY page in the book, not just the open one: it
+            // offers each slot a size worked out from the share of its page that slot covers, which
+            // Bloom records only when a page is saved. A book that has not been through the per-page
+            // pass carries that on the pages someone happened to visit and nowhere else, so most of
+            // the book would get no suggested size. So if this book is behind the current browser
+            // maintenance level, bring the whole book up to it first, then open the editor on the
+            // page we were on. That path does its own save, so it replaces the one below. It is a
+            // no-op for a book already up to date, which is the normal case (BL-16852).
+            if (BookProcessor.NeedsPerPageFixup(model.CurrentBook))
+            {
+                model.BringBookToCurrentBrowserLevelThen(
+                    pageId,
+                    () => OpenEditorInBrowser(payload)
+                );
+                request.PostSucceeded();
+                return;
+            }
 
             // Ask NOW to be opened on the next page load, and record separately whether the book
             // DOM turned out to be sound. Both halves matter, for different reasons.
@@ -467,8 +499,19 @@ namespace Bloom.web.controllers
             // H3: ensure .ai-image-editor and history subfolder exist.
             var aiImageEditorFolder = GetAiImageEditorFolderPath();
             Directory.CreateDirectory(Path.Combine(aiImageEditorFolder, "history"));
+            // Unlike history, which is the source of truth and outlives every session, a
+            // cropped rendering is good only for the launch that made it: the user can re-crop
+            // the slot the moment the overlay closes. Start each launch with an empty folder.
+            EmptyTheCroppedViewFolder(aiImageEditorFolder);
 
             var httpBase = $"{BloomServer.ServerUrlWithBloomPrefixEndingInSlash}api/aiImageEditor";
+
+            // A Playground book is a place to look around: the editor opens and shows its
+            // tools, but nothing that would reach OpenRouter can be run. Reaching the editor
+            // at all still takes a subscription that covers AI image editing (the "Edit with
+            // AI..." menu command is gated on FeatureName.AiImageEditing), and a Playground
+            // book passes that gate because it counts as Enterprise for every feature.
+            var playgroundMode = book.IsPlayground;
 
             // Return the data the JS needs to create the iframe overlay. The AI image editor
             // runs in iframe mode and gets its `init` from the overlay JS (which builds it
@@ -481,21 +524,42 @@ namespace Bloom.web.controllers
                     httpBase,
                     sessionToken = _sessionToken,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
-                    bookImages = EnumerateBookImages(book),
+                    bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
+                    // How big a screen a digital copy of this book is made for: the BloomPUB
+                    // image limit the user set in Book Settings, which is the size the publish
+                    // step shrinks every image to. The front end turns it into a pixel count
+                    // for each slot, because that needs the page size, and only a page laid out
+                    // in a browser knows how big a page is. As in BloomPubMaker, MaxWidth is
+                    // the long edge and MaxHeight the short one whichever way round a page is.
+                    digitalScreen = new
+                    {
+                        longEdgePx = book.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth,
+                        shortEdgePx = book.BookInfo
+                            .PublishSettings
+                            .BloomPub
+                            .ImageSettings
+                            .MaxHeight,
+                    },
                     // The history folder is the source of truth; enumerate it so images
                     // (and their sidecars) appear even when state.json doesn't list them.
                     history = EnumerateHistoryImages(book),
                     references = Array.Empty<object>(),
                     // Bloom owns the OpenRouter key: supply the per-user stored key so the AI
                     // image editor doesn't have to ask for it again. It hands any newly
-                    // obtained key back via aiImageEditor/saveCredentials.
-                    apiKey = OpenRouterCredentialStore.GetApiKey(),
-                    // In a Playground template book all features are unlocked for
-                    // "try it out", so the AI image editor opens — but it's a shared demo
-                    // context, so it must not let the user set/save an OpenRouter API key.
-                    // The AI image editor disables its credential UI when this is true;
-                    // HandleSaveCredentials also refuses to persist.
-                    demoOnly = book.IsPlayground,
+                    // obtained key back to Bloom via serviceKeys/key (see ServiceKeysApi).
+                    // Nothing that costs money can be run in playground mode, so there the
+                    // key stays here: the editor's contract for playgroundMode is that no
+                    // key is sent.
+                    apiKey = playgroundMode
+                        ? null
+                        : ServiceKeyStore.Get(ServiceKeyStore.kOpenRouterName),
+                    // The editor calls this "look-around" mode: it shows its tools but
+                    // disables every one whose run would reach OpenRouter, and the
+                    // OpenRouter credential UI with them.
+                    // The name must stay `playgroundMode`: that is the field the editor
+                    // reads (it was called `demoOnly` before bloom-ai-image-tools 0.1.11),
+                    // and a name it doesn't know silently leaves the session unrestricted.
+                    playgroundMode,
                     // Let the AI image editor reveal its developer/tester tools (e.g. the
                     // "Local Dummy (No AI)" model, for cost-free testing). The AI image
                     // editor hides those tools unless the host opts in, so ordinary
@@ -547,46 +611,6 @@ namespace Bloom.web.controllers
                 ?.Trim();
             return optIn != null
                 && kTesterToolsOnValues.Contains(optIn, StringComparer.OrdinalIgnoreCase);
-        }
-
-        private class SaveCredentialsRequest
-        {
-            public string apiKey { get; set; }
-        }
-
-        /// <summary>
-        /// Receives the user's OpenRouter API key from the AI image editor (manual key entry)
-        /// and persists it per-user via <see cref="OpenRouterCredentialStore"/>. A null/empty
-        /// apiKey clears the stored key (sign-out). Session-gated so a stray frame can't
-        /// overwrite the user's stored key.
-        /// </summary>
-        private void HandleSaveCredentials(ApiRequest request)
-        {
-            if (!HasValidSession(request))
-                return;
-
-            // Defense in depth for the Playground "demo" case (see HandleLaunch): never
-            // persist a key obtained during a Playground session, even if a stray frame
-            // posts here despite the AI image editor's disabled credential UI.
-            if (_bookSelection.CurrentSelection?.IsPlayground == true)
-            {
-                request.PostSucceeded();
-                return;
-            }
-
-            SaveCredentialsRequest payload;
-            try
-            {
-                payload = request.RequiredPostObject<SaveCredentialsRequest>();
-            }
-            catch (Exception)
-            {
-                request.Failed(HttpStatusCode.BadRequest, "Invalid credentials payload");
-                return;
-            }
-
-            OpenRouterCredentialStore.Save(payload.apiKey);
-            request.PostSucceeded();
         }
 
         // Invalidates the current session. Called at the start of each launch to tear down
@@ -883,15 +907,143 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// True if an image-bearing element is one the user is allowed to replace. Branding,
-        /// license, and QR-code images are never user-changeable, so they are excluded both
-        /// from the list offered to the AI image editor and from being overwritten at commit.
-        /// Internal for testing.
+        /// Every image container under <paramref name="root"/>, in document order. The raw
+        /// selector, with no notion of what a slot means; <see cref="SelectImageSlotsOnPage"/>
+        /// is what numbers a page, and <see cref="GetGameTargetImageCopiesOfSlot"/> uses this
+        /// directly to look inside a draggable and inside a target, where the numbering rule
+        /// would throw away the very containers it is after.
         /// </summary>
-        internal static bool IsUserChangeableImageElement(SafeXmlElement element) =>
-            !element.HasClass("branding")
-            && !element.HasClass("licenseImage")
-            && !element.HasClass("bloom-qrcode");
+        internal static SafeXmlElement[] SelectImageContainersWithin(SafeXmlElement root) =>
+            root.SafeSelectNodes(
+                    ".//*[contains(concat(' ', normalize-space(@class), ' '), ' "
+                        + HtmlDom.kImageContainerClass
+                        + " ')]"
+                )
+                .OfType<SafeXmlElement>()
+                .ToArray();
+
+        /// <summary>
+        /// The image slots of one page, in document order: its image containers, less the copies
+        /// held by Bloom Games targets. A slot's index in this list is its whole identity, and it
+        /// is what "{pageId}:{ordinal}" holds. Internal for testing.
+        ///
+        /// An image container is otherwise exactly what a user may replace. The branding, license
+        /// and QR-code images live outside any container, so they are not slots and cannot be
+        /// edited or overwritten.
+        ///
+        /// A game target's copy has to be left OUT of the numbering, not merely declined later,
+        /// because it is generated rather than authored: the browser writes it into the target
+        /// when the draggable is selected or its picture changes (copyContentToTarget), and a
+        /// target that has not had that done sits empty. So the same page can honestly have a
+        /// different number of image containers in the live browser and in the saved HTML, and
+        /// counting the copies made the ordinal mean one slot here and a different one there —
+        /// which sent a replacement into a target, where the next rebuild threw it away
+        /// (BL-16793). Counting only what an author placed makes the ordinal mean the same thing
+        /// in both, whatever state the targets are in.
+        ///
+        /// slotIndexOnPage in aiImageEditorPageCommands.ts numbers the same containers on the live
+        /// page, with the same exclusion, so the index the page frame sends at launch means the
+        /// same thing here. It has one further exclusion this does not need: Bloom injects
+        /// controls into the live page, and a save strips them, so they are never in the DOM we
+        /// read.
+        ///
+        /// Deciding which of these slots to OFFER is still a separate job, done in
+        /// EnumerateBookImages: a slot it declines (an SVG, say) keeps its index here, so the page
+        /// frame can work out an index for itself without knowing which slots we kept.
+        /// </summary>
+        internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
+            SelectImageContainersWithin(page)
+                .Where(slot => !IsSlotInsideGameTarget(slot))
+                .ToArray();
+
+        /// <summary>
+        /// The element of a slot that carries the picture: the container's own img, or the
+        /// container itself when it wears the picture as a background image. Null when the slot
+        /// holds neither, which a slot with no picture at all can do.
+        /// </summary>
+        internal static SafeXmlElement GetImageElementOfSlot(SafeXmlElement slot)
+        {
+            var img = slot.SelectSingleNode("./img") as SafeXmlElement;
+            if (img != null)
+                return img;
+            return (slot.GetAttribute("style") ?? "").Contains("background-image") ? slot : null;
+        }
+
+        /// <summary>
+        /// Marks a Bloom Games target: the place a draggable is meant to be dragged to, whose
+        /// value is the data-draggable-id of that draggable. The rest of Bloom's knowledge of
+        /// games lives in the front end (see GameTool.tsx and bloom-player's
+        /// dragActivityRuntime.ts); these two constants are all this file needs.
+        /// </summary>
+        internal const string kGameTargetOfAttribute = "data-target-of";
+
+        /// <summary>Marks a canvas element the reader can drag in a Bloom Game.</summary>
+        internal const string kDraggableIdAttribute = "data-draggable-id";
+
+        /// <summary>
+        /// True when this image container is inside a Bloom Games target, which makes its picture
+        /// a COPY of a draggable's rather than an image of its own: Bloom fills a target by
+        /// cloning the whole content of its draggable, image container and all
+        /// (copyContentToTarget in bloom-player's dragActivityRuntime.ts). Such a container is not
+        /// a slot at all as far as the AI image editor is concerned — the draggable's own slot is
+        /// the real one, and Bloom regenerates target content from the draggable, so an edit made
+        /// to the copy would just be overwritten. It is also generated rather than stored, so
+        /// counting it would make a page's slot numbering depend on whether the browser had got
+        /// round to filling the targets (BL-16793); see SelectImageSlotsOnPage.
+        ///
+        /// Keyed on the attribute's PRESENCE, not its value: the Games templates ship
+        /// data-target-of="" and the id is filled in at runtime.
+        /// </summary>
+        internal static bool IsSlotInsideGameTarget(SafeXmlElement slot) =>
+            slot.ParentWithAttribute(kGameTargetOfAttribute) != null;
+
+        /// <summary>
+        /// The image elements of the Bloom Games target(s) that hold a copy of this slot's
+        /// picture — empty for the great majority of slots, which are not part of a game at all.
+        /// A slot has such copies only when it belongs to a draggable that has a target; a canvas
+        /// background, or a draggable whose target has no content, has none. Internal for testing.
+        /// </summary>
+        /// <param name="page">the page the slot lives on; targets are matched within it only</param>
+        /// <param name="slot">an image container from <see cref="SelectImageSlotsOnPage"/></param>
+        internal static SafeXmlElement[] GetGameTargetImageCopiesOfSlot(
+            SafeXmlElement page,
+            SafeXmlElement slot
+        )
+        {
+            var draggable = slot.ParentWithAttribute(kDraggableIdAttribute);
+            var draggableId = draggable?.GetAttribute(kDraggableIdAttribute);
+            if (string.IsNullOrEmpty(draggableId))
+                return Array.Empty<SafeXmlElement>();
+
+            // Which of the draggable's own slots this is. A target holds a copy of the
+            // draggable's whole content, so the copy of THIS slot is the one in the same position
+            // inside the target, not every slot the target happens to hold: taking them all would
+            // repoint every one of a draggable's copies at whichever single picture the user had
+            // edited. Nothing Bloom ships puts two pictures in one draggable, but
+            // copyContentToTarget copies a whole bloom-canvas when it finds one, which is exactly
+            // that shape, so pair by position rather than trusting there to be only one.
+            var positionInDraggable = Array.IndexOf(SelectImageContainersWithin(draggable), slot);
+            if (positionInDraggable < 0)
+                return Array.Empty<SafeXmlElement>();
+
+            // Compare the attribute here rather than building an XPath around draggableId, which
+            // comes out of the book's own markup and would need quoting.
+            return page.SafeSelectNodes(".//*[@" + kGameTargetOfAttribute + "]")
+                .OfType<SafeXmlElement>()
+                .Where(target => target.GetAttribute(kGameTargetOfAttribute) == draggableId)
+                // A target's copy is a whole image container, so it pairs with the
+                // draggable's containers position for position. The raw selector, not the
+                // page-numbering one, which exists precisely to drop these.
+                .Select(target =>
+                {
+                    var copies = SelectImageContainersWithin(target);
+                    return positionInDraggable < copies.Length ? copies[positionInDraggable] : null;
+                })
+                .Where(copy => copy != null)
+                .Select(GetImageElementOfSlot)
+                .Where(element => element != null)
+                .ToArray();
+        }
 
         /// <summary>
         /// Locates the bytes for a history result by id. The AI image editor may store a
@@ -1001,18 +1153,172 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
+        /// What to call a page when naming one of its image slots to the user: "Page 3" for a
+        /// numbered page, or the page's own name (e.g. "Front Cover") for front or back matter.
+        /// Null when the page says neither, in which case the slot goes unlabelled.
+        /// In the user interface language.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately not HtmlDom.GetNumberOrLabelOfPageWhereElementLives: that returns the
+        /// number bare, with no "Page", and answers "unknown" for a page whose
+        /// data-page-number attribute is missing rather than empty, which HtmlDom itself can
+        /// produce (see BL-12903). "unknown" would be worse than no label at all.
+        /// </remarks>
+        internal static string GetPageNameForImageSlotLabel(SafeXmlElement page)
+        {
+            // Back matter pages do carry page numbers, but they are clearer by name.
+            var number = page.GetAttribute("data-page-number");
+            if (!string.IsNullOrWhiteSpace(number) && !HtmlDom.IsBackMatterPage(page))
+                // "Page" plus the number, rather than a "Page {0}" string of our own: the
+                // word already exists in our strings, and a translator meeting a bare format
+                // string has less to go on than the word itself.
+                return LocalizationManager.GetString("ReaderSetup.PageHeader", "Page")
+                    + " "
+                    + number;
+
+            var label = page.SelectSingleNode("./div[@class='pageLabel']")?.InnerText.Trim();
+            if (string.IsNullOrEmpty(label))
+                return null;
+            // Page labels are localized under a dynamic id built from the English label, the
+            // same way the page list in the Edit tab does it.
+            return LocalizationManager.GetString("TemplateBooks.PageLabel." + label, label);
+        }
+
+        /// <summary>
+        /// Names one image slot for the user. A page with a single image slot needs no more than
+        /// the page name. A page with several says which slot this is: "Page 3 - Canvas
+        /// Background" for the canvas background image, "Page 3 - Image 1" for the pictures on
+        /// top of it. Every empty slot looks the same in the AI image editor, so this label is
+        /// the only thing that tells two of them apart (BL-16744).
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">true for the canvas background image</param>
+        /// <param name="imageNumber">
+        /// the 1-based position of this slot among the page's images, counting every slot that is
+        /// not being named as the canvas background. A page with several canvases names none of
+        /// them, so there every slot is counted. Ignored when isCanvasBackground is true.
+        /// </param>
+        /// <param name="slotCount">how many image slots this page offers in all</param>
+        internal static string BuildImageSlotLabel(
+            string pageName,
+            bool isCanvasBackground,
+            int imageNumber,
+            int slotCount
+        )
+        {
+            // The only picture on the page. There is nothing to tell it apart from.
+            if (slotCount < 2)
+                return pageName;
+
+            var whichSlot = isCanvasBackground
+                ? LocalizationManager.GetString(
+                    "AiImageEditor.SlotLabel.CanvasBackground",
+                    "Canvas Background"
+                )
+                : LocalizationManager.GetString("EditTab.CustomPage.Image", "Image")
+                    + " "
+                    + imageNumber;
+            if (string.IsNullOrEmpty(pageName))
+                return whichSlot;
+            // The separator is not localizable. It carries no meaning to translate, and a
+            // string of nothing but two placeholders and a dash gives a translator no context.
+            return pageName + " - " + whichSlot;
+        }
+
+        /// <summary>
+        /// Names every image slot of one page, in the order the page offers them. Kept in one
+        /// place because a slot's name depends on what else the page holds, not just on itself.
+        /// </summary>
+        /// <param name="pageName">from <see cref="GetPageNameForImageSlotLabel"/>, may be null</param>
+        /// <param name="isCanvasBackground">
+        /// for each slot of the page, in order, whether it is the background image of a canvas
+        /// </param>
+        internal static List<string> BuildImageSlotLabelsForPage(
+            string pageName,
+            IReadOnlyList<bool> isCanvasBackground
+        )
+        {
+            // "Canvas Background" names a slot only when the page has exactly one canvas. A
+            // Picture Dictionary page has six, so six background images; calling them all
+            // "Canvas Background" would be six identical labels, which is the very confusion
+            // the label exists to remove. There, plain numbering tells them apart.
+            var nameTheBackground = isCanvasBackground.Count(background => background) == 1;
+
+            var labels = new List<string>();
+            var imageNumber = 0;
+            foreach (var background in isCanvasBackground)
+            {
+                // The background is named, not numbered, so the numbering of the pictures on
+                // top of it starts at 1 whether or not the page has a background.
+                var nameAsBackground = background && nameTheBackground;
+                if (!nameAsBackground)
+                    imageNumber++;
+                labels.Add(
+                    BuildImageSlotLabel(
+                        pageName,
+                        nameAsBackground,
+                        imageNumber,
+                        isCanvasBackground.Count
+                    )
+                );
+            }
+            return labels;
+        }
+
+        /// <summary>
+        /// Reads the two numbers of <see cref="HtmlDom.kFractionOfPageAttribute"/> ("0.42,0.31"). Null
+        /// for anything else, including a missing attribute. A missing attribute is not the normal
+        /// state of a page by the time the editor sees it: launching the editor first puts the book
+        /// through the per-page pass when it needs it, re-saving every page (BL-16852), so every
+        /// slot ordinarily carries one. Null here is hardening against that pass having failed; the
+        /// AI image editor then simply offers that slot no automatic size rather than a guess,
+        /// which is better than a made-up one. Parsed with the invariant culture,
+        /// because the front end writes the numbers with JavaScript, which always uses a point
+        /// for the decimal separator.
+        /// </summary>
+        internal static (double width, double height)? TryParseFractionOfPage(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+            var parts = value.Split(',');
+            if (parts.Length != 2)
+                return null;
+            if (
+                !double.TryParse(
+                    parts[0].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var width
+                )
+                || !double.TryParse(
+                    parts[1].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var height
+                )
+            )
+                return null;
+            // A zero or negative share is not a real measurement, and neither is a NaN.
+            if (!(width > 0) || !(height > 0))
+                return null;
+            return (width, height);
+        }
+
+        /// <summary>
         /// Enumerates every image the user is allowed to change across the whole book — all
         /// pages including front cover and xmatter, including empty placeholder slots —
         /// excluding only branding and license images. Each entry is a reference (id +
         /// servable URL); image bytes are fetched lazily by the AI image editor, never
         /// inlined.
         /// </summary>
-        private List<object> EnumerateBookImages(Bloom.Book.Book book)
+        /// <param name="dom">the book's DOM, as <see cref="Bloom.Book.Book.OurHtmlDom"/></param>
+        /// <param name="bookFolderPath">the book's folder, which the served URLs are built from</param>
+        internal static List<object> EnumerateBookImages(HtmlDom dom, string bookFolderPath)
         {
             var images = new List<object>();
-            var folderAsUrlPrefix = book.FolderPath.Replace("\\", "/");
-            var pages = book
-                .OurHtmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
+            var folderAsUrlPrefix = bookFolderPath.Replace("\\", "/");
+            var pages = dom
+                .RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .OfType<SafeXmlElement>();
 
             foreach (var page in pages)
@@ -1020,17 +1326,30 @@ namespace Bloom.web.controllers
                 var pageId = page.GetAttribute("id");
                 if (string.IsNullOrEmpty(pageId) || !SafeId.IsMatch(pageId))
                     continue;
-                var pageLabel = page.GetAttribute("data-page-number");
+                var pageName = GetPageNameForImageSlotLabel(page);
 
-                var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-                // Ordinal is the index within the full holder list so that commit can
-                // re-find the element deterministically; the branding/license skip below
-                // only affects which slots we offer, not the indexing.
-                for (var ordinal = 0; ordinal < holders.Length; ordinal++)
+                var slots = SelectImageSlotsOnPage(page);
+                // The slots this page offers, gathered before any is added to the result,
+                // because a slot's label depends on how many the page has: a page with one
+                // image says just "Page 2", a page with more says "Page 2 - Image 1" and so on.
+                var slotsOnThisPage =
+                    new List<(
+                        string id,
+                        string src,
+                        bool isPlaceholder,
+                        bool isCanvasBackground,
+                        ImageCredits credits,
+                        (double width, double height)? fractionOfPage
+                    )>();
+                // Ordinal is the index within the page's whole slot list, so a slot we decline to
+                // offer below still holds its place. That is what lets the page frame send an index
+                // it worked out for itself, without knowing which slots we kept. (A Bloom Games
+                // target's copy of a picture is not in that list at all — see
+                // SelectImageSlotsOnPage — so it is neither offered nor counted.)
+                for (var ordinal = 0; ordinal < slots.Length; ordinal++)
                 {
-                    if (!(holders[ordinal] is SafeXmlElement element))
-                        continue;
-                    if (!IsUserChangeableImageElement(element))
+                    var element = GetImageElementOfSlot(slots[ordinal]);
+                    if (element == null)
                         continue;
 
                     var relativePath = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
@@ -1044,28 +1363,296 @@ namespace Bloom.web.controllers
                     if (!IsImageFileName(relativePath))
                         continue;
 
-                    images.Add(
-                        new
-                        {
-                            id = pageId + ":" + ordinal,
-                            src = (folderAsUrlPrefix + "/" + relativePath).ToLocalhost(),
-                            pageLabel = string.IsNullOrEmpty(pageLabel) ? null : pageLabel,
+                    // Offer the picture as the PAGE SHOWS it. A cropped image keeps its whole
+                    // frame in the book folder and wears the crop as styles, so the file holds
+                    // more than the reader ever sees; handing that over let the AI compose a
+                    // result around parts of the image the book does not show (BL-16868). Null
+                    // means nothing is hidden — nearly always — and then the file itself is
+                    // what the page shows, as before.
+                    var servedRelativePath =
+                        TryMakeCroppedViewOfSlotImage(bookFolderPath, element, pageId, ordinal)
+                        ?? relativePath;
+
+                    slotsOnThisPage.Add(
+                        (
+                            id: pageId + ":" + ordinal,
+                            src: (folderAsUrlPrefix + "/" + servedRelativePath).ToLocalhost(),
                             // The AI image editor shows its own placeholder graphic for empty
                             // slots rather than trying to load the (book-less)
                             // placeHolder.png.
-                            isPlaceholder = ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            isPlaceholder: ImageUtils.IsPlaceholderImageFilename(relativePath),
+                            // A bloom-canvas can hold one background image with pictures on
+                            // top of it. The background is worth naming as such, because the
+                            // user thinks of it as the page's picture, not as "image 1".
+                            isCanvasBackground: HtmlDom.IsBackgroundImage(element),
                             // The image's current credits, so a result derived from it can
                             // carry (or amend) them. The AI image editor owns the credit
                             // *decision* and hands back whatever it chose on commit; Bloom
                             // only embeds that into the file. Null when the image has no
                             // usable metadata.
-                            credits = GetCreditsForImageFile(book.FolderPath, relativePath),
+                            credits: GetCreditsForImageFile(bookFolderPath, relativePath),
+                            // How much of its page this slot covers, as the front end measured
+                            // it and wrote it into the HTML the last time this page was saved
+                            // (recordFractionOfPageOnImageSlots in imageTargetResolution.ts).
+                            // For a canvas background that is the share of the whole
+                            // bloom-canvas, which is what a replacement is re-fitted to fill;
+                            // for every other slot it is the container's own share. We only
+                            // carry it; the arithmetic that turns it into a number of dots
+                            // needs the page's size in pixels, which only a laid-out browser
+                            // page knows, so the overlay JS does it.
+                            fractionOfPage: TryParseFractionOfPage(
+                                slots[ordinal].GetAttribute(HtmlDom.kFractionOfPageAttribute)
+                            )
+                        )
+                    );
+                }
+
+                // Now that the whole page is known, name its slots and add them.
+                var labels = BuildImageSlotLabelsForPage(
+                    pageName,
+                    slotsOnThisPage.Select(slot => slot.isCanvasBackground).ToList()
+                );
+                for (var i = 0; i < slotsOnThisPage.Count; i++)
+                {
+                    var slot = slotsOnThisPage[i];
+                    images.Add(
+                        new
+                        {
+                            id = slot.id,
+                            src = slot.src,
+                            pageLabel = labels[i],
+                            isPlaceholder = slot.isPlaceholder,
+                            credits = slot.credits,
+                            fractionOfPage = slot.fractionOfPage.HasValue
+                                ? (object)
+                                    new
+                                    {
+                                        width = slot.fractionOfPage.Value.width,
+                                        height = slot.fractionOfPage.Value.height,
+                                    }
+                                : null,
                         }
                     );
                 }
             }
 
             return images;
+        }
+
+        /// <summary>
+        /// Empties (creating if need be) the folder holding the cropped renderings we hand to
+        /// the AI image editor. Never throws: a rendering we fail to delete is harmless,
+        /// because the names are per-slot and this launch's rendering simply overwrites it,
+        /// and because a slot is only ever offered a rendering we made during this launch.
+        /// </summary>
+        private static void EmptyTheCroppedViewFolder(string aiImageEditorFolder)
+        {
+            var folder = Path.Combine(aiImageEditorFolder, kCroppedViewFolderName);
+            try
+            {
+                if (Directory.Exists(folder))
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(folder);
+                Directory.CreateDirectory(folder);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteError("AiImageEditorApi: could not empty " + folder, ex);
+            }
+        }
+
+        /// <summary>
+        /// Renders the visible part of a cropped slot image to its own file under
+        /// .ai-image-editor/cropped/, and returns the book-folder-relative path to it. Returns
+        /// null — the ordinary case — when the slot's image is not cropped, and also whenever
+        /// the rendering cannot be made, so the caller falls back to offering the image file
+        /// itself.
+        /// </summary>
+        /// <remarks>
+        /// Cropping in Bloom is presentational: the image file keeps its whole frame and the
+        /// visible rectangle is expressed as width/left/top styles on an img inside a canvas
+        /// element that fixes the visible box (see ImageUtils.MakeCroppedImage, which reads
+        /// exactly that structure and is what publishing uses to bake a crop into a file).
+        ///
+        /// The other half of this is at commit time: a replacement stands for the whole of what
+        /// the slot should show, so the crop must not survive it. The current page gets that
+        /// from updateCanvasElementForChangedImage in CanvasElementManager.ts; off-page slots
+        /// are handled by <see cref="RemoveCropFromSlotImage"/> in TryApplyReplacement.
+        /// </remarks>
+        internal static string TryMakeCroppedViewOfSlotImage(
+            string bookFolderPath,
+            SafeXmlElement element,
+            string pageId,
+            int ordinal
+        )
+        {
+            // Only an img can be cropped; a container wearing its picture as a background image
+            // has no crop styles to read.
+            if (element.Name != "img")
+                return null;
+            // An empty slot's placeholder is never cropped, only hidden (BL-15201), so don't
+            // put GraphicsMagick to work deciding that.
+            var src = HtmlDom.GetImageElementUrl(element).PathOnly.NotEncoded;
+            if (string.IsNullOrEmpty(src) || ImageUtils.IsPlaceholderImageFilename(src))
+                return null;
+
+            // Ask whether the reader is actually seeing less than the file holds before doing
+            // any real work, cheapest question first. Most images are not cropped at all, and
+            // this one reads only the DOM; everything past it opens the image file, which costs
+            // a GraphicsMagick subprocess per slot.
+            if (!ImageUtils.HasCropStyles(element))
+                return null;
+
+            // Bloom writes width/left/top when it merely FITS a background image to its canvas
+            // as well as when the user crops, so the styles alone do not mean anything is
+            // hidden; without this check a book's background images would each be re-encoded at
+            // launch to produce a copy of themselves.
+            // A book's image src can still be percent-encoded, so decode our way to the real
+            // file the way the rest of Bloom does (BL-3901) instead of a plain Path.Combine.
+            var sourcePath = UrlPathString.GetFullyDecodedPath(bookFolderPath, ref src);
+            if (!RobustFile.Exists(sourcePath))
+                return null;
+            if (!ImageUtils.TryGetImageSize(sourcePath, out var imageSize))
+                return null;
+            if (!ImageUtils.CropHidesPartOfImage(element, imageSize))
+                return null;
+
+            var croppedViewFolder = Path.Combine(
+                bookFolderPath,
+                kWorkingFolderName,
+                kCroppedViewFolderName
+            );
+            try
+            {
+                Directory.CreateDirectory(croppedViewFolder);
+                // Returns null both for an uncropped image and for any failure along the way,
+                // which is the same answer as far as we are concerned.
+                var renderedPath = ImageUtils.MakeCroppedImage(
+                    element,
+                    bookFolderPath,
+                    croppedViewFolder
+                );
+                if (renderedPath == null)
+                    return null;
+
+                // Name it for the slot rather than keeping the guid MakeCroppedImage produces:
+                // the folder holds at most one rendering per slot, and a name that says which
+                // slot it came from is worth having when something looks wrong. The page id is
+                // already known to match SafeId, so it is safe in a file name.
+                var fileName = pageId + "-" + ordinal + Path.GetExtension(renderedPath);
+                var finalPath = Path.Combine(croppedViewFolder, fileName);
+                RobustFile.Move(renderedPath, finalPath, true);
+                return kWorkingFolderName + "/" + kCroppedViewFolderName + "/" + fileName;
+            }
+            catch (Exception ex)
+            {
+                // Offering the uncropped file is worse than offering the cropped view, but it
+                // is a great deal better than failing the launch.
+                Logger.WriteError(
+                    "AiImageEditorApi: could not render the cropped view of " + src,
+                    ex
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Re-frames a slot's image element for a replacement picture: drops the crop that was
+        /// computed for the image being replaced, and re-establishes the fill for a background
+        /// image that covers its canvas.
+        /// </summary>
+        /// <remarks>
+        /// A replacement is the whole of what the slot should now show — the AI image editor was
+        /// handed the picture as the page shows it, cropped view and all (see
+        /// <see cref="TryMakeCroppedViewOfSlotImage"/>) — so the crop must not outlive the image
+        /// it was computed for. Left in place it would crop the replacement a second time, by a
+        /// rectangle that means nothing for it (BL-16868).
+        ///
+        /// This is what updateCanvasElementForChangedImage (CanvasElementManager.ts) does for
+        /// the currently-open page: clear width/height/left/top, then re-fit. An off-page slot
+        /// has no live browser to do it, and nothing re-fits it when the page is next opened
+        /// (setupBackgroundImageAttributes returns early once the element has a data-bubble).
+        ///
+        /// The re-fit here covers the one case where clearing alone would change the page's
+        /// layout: a background image marked to cover its canvas is made to cover by these very
+        /// styles, so clearing them would letterbox a full-bleed picture. Centering the new
+        /// image so it fills the canvas element is what adjustBackgroundImageSizeToFit's cover
+        /// branch arrives at for an image with no crop to preserve. Every other case is left
+        /// fitted inside the canvas element it has, which is where the front end's own clearing
+        /// step leaves it.
+        ///
+        /// Internal for testing.
+        /// </remarks>
+        /// <param name="getNewImageSize">reads the replacement file's pixel size; called only
+        /// in the one case that needs it, because reading it costs a GraphicsMagick
+        /// subprocess. An empty size skips the re-fit.</param>
+        internal static void RefitSlotImageForNewPicture(
+            SafeXmlElement element,
+            Func<Size> getNewImageSize
+        )
+        {
+            // A container wearing its picture as a background image has no img, and no crop
+            // styles either; its width/height/left/top are its own geometry and must be left
+            // alone. GetImageElementOfSlot hands us the container in that case.
+            if (element.Name != "img")
+                return;
+
+            HtmlDom.RemoveStyleProperties(element, "width", "height", "left", "top");
+
+            if (!element.HasClass(kCoverFitClass))
+                return;
+            var newImageSize = getNewImageSize();
+            if (newImageSize.Width <= 0 || newImageSize.Height <= 0)
+                return;
+            // img -> image container -> canvas element, whose style holds the box to fill. The
+            // cover branch sets that box to the whole bloom-canvas, which is why filling it is
+            // the same thing as covering the page.
+            var canvasElement = element.ParentNode?.ParentNode as SafeXmlElement;
+            if (canvasElement == null || !canvasElement.HasClass(HtmlDom.kCanvasElementClass))
+                return;
+            var canvasElementStyle = canvasElement.GetAttribute("style");
+            var boxWidth = ImageUtils.GetNumberFromPx("width", canvasElementStyle);
+            var boxHeight = ImageUtils.GetNumberFromPx("height", canvasElementStyle);
+            if (boxWidth <= 0 || boxHeight <= 0)
+                return;
+
+            var scale = Math.Max(boxWidth / newImageSize.Width, boxHeight / newImageSize.Height);
+            var width = newImageSize.Width * scale;
+            var height = newImageSize.Height * scale;
+            // Negative or zero: the overflow is hidden evenly on both sides, as the front end's
+            // cover branch also arrives at when there is no earlier crop to preserve.
+            PrependStyleProperties(
+                element,
+                ("width", width),
+                ("left", (boxWidth - width) / 2),
+                ("top", (boxHeight - height) / 2)
+            );
+        }
+
+        /// <summary>The class Bloom puts on a background image that should fill its canvas
+        /// rather than fit inside it. Must match the front end's own spelling.</summary>
+        private const string kCoverFitClass = "bloom-imageObjectFit-cover";
+
+        /// <summary>
+        /// Puts the given pixel declarations at the front of the element's style attribute,
+        /// keeping whatever was already there. Invariant culture throughout: a decimal comma in
+        /// a style attribute is not a number to a browser.
+        /// </summary>
+        private static void PrependStyleProperties(
+            SafeXmlElement element,
+            params (string name, double pixels)[] declarations
+        )
+        {
+            var added = string.Join(
+                " ",
+                declarations.Select(d =>
+                    d.name + ": " + d.pixels.ToString("0.###", CultureInfo.InvariantCulture) + "px;"
+                )
+            );
+            var existing = element.GetAttribute("style");
+            element.SetAttribute(
+                "style",
+                string.IsNullOrEmpty(existing) ? added : added + " " + existing
+            );
         }
 
         /// <summary>
@@ -1339,20 +1926,16 @@ namespace Bloom.web.controllers
                 return false;
             }
 
-            var holders = HtmlDom.SelectChildImgAndBackgroundImageElements(page);
-            if (ordinal < 0 || ordinal >= holders.Length)
+            var slots = SelectImageSlotsOnPage(page);
+            if (ordinal < 0 || ordinal >= slots.Length)
             {
                 error = "Image index out of range";
                 return false;
             }
-            if (!(holders[ordinal] is SafeXmlElement element))
+            var element = GetImageElementOfSlot(slots[ordinal]);
+            if (element == null)
             {
                 error = "Image element not found";
-                return false;
-            }
-            if (!IsUserChangeableImageElement(element))
-            {
-                error = "Image is not user-changeable";
                 return false;
             }
 
@@ -1449,7 +2032,10 @@ namespace Bloom.web.controllers
             {
                 // Leave the live (current) page to the front-end: it will call Bloom's
                 // changeImage() with newSrc and these attributes so the canvas + normal save
-                // flow handle it.
+                // flow handle it. A game target on that page needs nothing from us either:
+                // applyAiImageEditorReplacements makes the swapped slot the active canvas
+                // element, and that is what makes Bloom rebuild the copy the draggable's
+                // target holds (see the comment on that line).
                 creditAttributes = ReadCreditAttributes(book.FolderPath, newFileName);
                 return true;
             }
@@ -1458,6 +2044,14 @@ namespace Bloom.web.controllers
                 element,
                 UrlPathString.CreateFromUnencodedString(newFileName)
             );
+            // Reading the size costs a GraphicsMagick subprocess and only the cover-fit case
+            // needs it, so this is a function rather than a value, shared by the slot and by any
+            // Bloom Games target copies of it below.
+            Func<Size> getNewImageSize = () =>
+                ImageUtils.TryGetImageSize(Path.Combine(book.FolderPath, newFileName), out var size)
+                    ? size
+                    : Size.Empty;
+            RefitSlotImageForNewPicture(element, getNewImageSize);
             // Now that the element points at the new file, Bloom's own updater can re-derive
             // the mirrored attributes for us.
             ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
@@ -1465,6 +2059,36 @@ namespace Bloom.web.controllers
                 element,
                 new NullProgress()
             );
+
+            // If this slot belongs to a Bloom Games draggable, its target holds a copy of the
+            // picture, and nothing else will repoint that copy: we no longer offer it to the AI
+            // image editor, and the front end rebuilds a target's copy only when its draggable
+            // becomes the selected canvas element — which, this not being the page the user has
+            // open, it never does. Left alone, the target would go on showing the replaced
+            // picture, and its reference to the old file would also stop
+            // DeleteSupersededAiImageFiles reclaiming it (BL-16793).
+            //
+            // This repoints the copy, re-derives its credit attributes, and drops the crop the
+            // copy inherited from the draggable — for the same reason the draggable's own crop
+            // goes: it was computed for the picture that is no longer there, and would crop the
+            // replacement a second time. It deliberately does NOT touch the copy's sizing, which
+            // suits the old image's shape and looks right again only once the user next selects
+            // that draggable and the front end rebuilds the copy. Guessing at that here would
+            // mean a second, poorer implementation of copyContentToTarget; the crop needs no
+            // guessing, because there is nothing left for it to describe.
+            foreach (var copy in GetGameTargetImageCopiesOfSlot(page, slots[ordinal]))
+            {
+                HtmlDom.SetImageElementUrl(
+                    copy,
+                    UrlPathString.CreateFromUnencodedString(newFileName)
+                );
+                ImageUpdater.UpdateImgMetadataAttributesToMatchImage(
+                    book.FolderPath,
+                    copy,
+                    new NullProgress()
+                );
+                RefitSlotImageForNewPicture(copy, getNewImageSize);
+            }
 
             if (element.HasAttribute("data-book"))
                 pageForDataDivSync = page;

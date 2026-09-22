@@ -179,6 +179,8 @@ namespace Bloom.Workspace
                 _workspaceReactControl.BrowserCreated += (unused, args) =>
                 {
                     _mainBrowser = _workspaceReactControl.Browser;
+                    if (Program.RunningE2eTests)
+                        MainBrowserForE2eTests = _mainBrowser;
                     _mainBrowser?.SetBuiltInBrowserZoomEnabled(false);
                     _editingView.InitializeMainBrowserForEditMode();
                     MaybeOpenMainBrowserDevTools();
@@ -280,6 +282,14 @@ namespace Bloom.Workspace
                 shouldHideSplashScreen: true
             ); // possibility of error message boxes (BL-12155)
         }
+
+        /// <summary>
+        /// The browser holding the workspace root document that Bloom drives: the one whose page
+        /// iframe the Edit tab navigates. Set only under --e2e, for the e2e/shellUrl endpoint.
+        /// More than one document in a run carries the workspace root's markup, and a test that
+        /// attaches to the wrong one sees its own clicks work while nothing Bloom does arrives.
+        /// </summary>
+        internal static Browser MainBrowserForE2eTests { get; private set; }
 
         internal void ReloadWorkspaceRootDocument()
         {
@@ -914,6 +924,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    if (lang == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue; // handled below, so that it sorts to the end rather than by name
                     var approved = FractionApproved(lang);
                     if (Settings.Default.ShowUnapprovedLocalizations)
                         approved = FractionTranslated(lang);
@@ -925,6 +937,22 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
 
             items.Sort(compareLangItems);
+
+            // The pseudo-locale is not a translation, so it does not belong in the alphabetical
+            // list of real languages; put it last. (It is only in
+            // GetAvailableLocalizedLanguages() at all when LocalizationManager.
+            // OfferPseudoLocalization is on, which Program.SetUpLocalization limits to the
+            // developer, alpha and internal channels. See BL-16748.)
+            if (
+                !onlyActiveItem
+                && LocalizationManager.OfferPseudoLocalization
+                && LocalizationManager
+                    .GetAvailableLocalizedLanguages()
+                    .Contains(LocalizationManager.PseudoLocalizationLanguageId)
+            )
+            {
+                items.Add(CreateLanguageItem(LocalizationManager.PseudoLocalizationLanguageId));
+            }
             return items;
         }
 
@@ -1269,8 +1297,32 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
+        /// <summary>
+        /// What we call the pseudo-locale in the UI language menu. Deliberately not localizable:
+        /// it is an internationalization-testing tool for developers and testers, and it must
+        /// stay recognizable in whatever (possibly pseudolocalized) UI language is current, so
+        /// that whoever turned it on can find their way back out. See BL-16748.
+        /// </summary>
+        internal const string kPseudoLocalizationMenuText = "Pseudo-English (i18n test)";
+
         public static LanguageItem CreateLanguageItem(string code)
         {
+            // The pseudo-locale is not a real language, so Palaso's language-name lookup has
+            // nothing useful to say about it; name it ourselves.
+            if (code == LocalizationManager.PseudoLocalizationLanguageId)
+            {
+                return new LanguageItem
+                {
+                    EnglishName = kPseudoLocalizationMenuText,
+                    LangTag = code,
+                    MenuText = kPseudoLocalizationMenuText,
+                    // It is derived from the English at lookup time, so it is by definition
+                    // exactly as complete as English is.
+                    FractionApproved = 1.0F,
+                    FractionTranslated = 1.0F,
+                };
+            }
+
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
             var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
@@ -1513,7 +1565,7 @@ window.showWorkspaceInitializationFailure = function(message) {
         /// attempt this, also merging the comments with some care. I'm not sure whether we should keep
         /// the argument as an IBloomTabArea of a WorkspaceTab value. If the latter, _previouslySelectedTabArea
         /// probably wants to change too, and perhaps other things.
-        /// Note that we don't want to make any actual changes of state until the PostponedWork callback runs
+        /// Note that we don't want to make any actual changes of state until the CompleteTheChange callback runs
         /// after we raise _selectedTabAboutToChangeEvent. The allows the current tab to shut down cleanly,
         /// before any changes that might do things like cleaning out its iframe. In particular, we have to wait
         /// until any changes are saved if we are leaving the edit tab.
@@ -1545,11 +1597,11 @@ window.showWorkspaceInitializationFailure = function(message) {
                 {
                     FromTab = previousTab,
                     ToTab = currentTab,
-                    PostponedWork = () =>
+                    CompleteTheChange = () =>
                     {
                         CurrentTabView = view;
 
-                        // Mark the tab active only when postponed work actually runs.
+                        // Mark the tab active only when we actually complete the change.
                         // When leaving Edit this is delayed until pending save completes.
                         if (currentTab.HasValue)
                         {
@@ -1576,6 +1628,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                         }
                         // TODO-WV2: Can we clear the cache in WV2?  Do we need to?
                     },
+                    // Starting over means re-running this whole method, so the "already on the
+                    // desired tab" check at the top makes it a no-op if some other path has
+                    // meanwhile switched to the tab we wanted. See BL-16766.
+                    StartTheChangeOver = () => ChangeTab(view),
                 }
             );
         }
@@ -1863,6 +1919,16 @@ window.showWorkspaceInitializationFailure = function(message) {
             ProblemReportApi.ShowProblemDialog(this, null);
         }
 
+        /// <summary>
+        /// Ask the tab bar to stop offering the tabs (or to offer them again).
+        /// </summary>
+        /// <remarks>
+        /// ADVISORY, not a lock: this only pushes new tab states to the React top bar over a
+        /// websocket, and nothing checks _tabsEnabled when a workspace/selectTab request arrives.
+        /// So a click made (or already in flight) before the browser catches up still gets acted
+        /// on — see BL-16766. Whatever must not happen mid-operation has to be handled where it
+        /// happens, not assumed to have been prevented here.
+        /// </remarks>
         public void SetTabsEnabled(bool enable)
         {
             _tabsEnabled = enable;
