@@ -15,6 +15,7 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import { E2eStepCaption } from "./e2eCaption/E2eStepCaption";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -66,6 +67,9 @@ export const App: React.FunctionComponent = () => {
             </div>
             <div id="modal-dialog-container" />
             <ToastHost />
+            {/* Says what an end-to-end test is doing. Renders nothing unless Bloom was
+                launched with --e2e. */}
+            <E2eStepCaption />
         </div>
     );
 };

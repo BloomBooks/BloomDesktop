@@ -297,6 +297,10 @@ namespace Bloom.web.controllers
                     // Control port of the dev launcher that started us (null when not
                     // launched via go.sh); see .claude/skills/run-bloom.
                     launcherControlPort = Program.StartupLauncherPort,
+                    // True when this Bloom was launched with --e2e. The workspace shell reads
+                    // this to decide whether to show the end-to-end step caption; nothing about
+                    // that caption exists in a normal run.
+                    runningE2eTests = Program.RunningE2eTests,
                     // Where this instance keeps its user settings (user.config): the folder
                     // --user-settings-folder named, or the usual per-version one. The e2e launch
                     // fixture checks this to be sure the Bloom it started is not sharing settings
