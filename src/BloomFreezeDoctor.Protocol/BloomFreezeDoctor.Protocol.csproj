@@ -38,6 +38,14 @@
     <PackageReference Include="SIL.Core.Desktop" Version="18.0.0-beta0028" />
     <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
     <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
+    <!--
+      Not used here: SIL.Core.Desktop drags both in, and on its own would settle on L10NSharp
+      10.0.0-beta0004 and System.Resources.Extensions 6.0.0. This project's .deps.json lands in the
+      shared folder beside Bloom's, so those must be pinned up to Bloom's versions or
+      build/check-dependency-versions.ps1 fails the installer build.
+    -->
+    <PackageReference Include="L10NSharp" Version="11.0.1" />
+    <PackageReference Include="System.Resources.Extensions" Version="10.0.11" />
   </ItemGroup>
 
 </Project>
