@@ -151,16 +151,23 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // Always post, even if these values are unchanged: reused components (subscription, team
         // collection, bookshelf) send their edits through their own endpoints, and this POST
         // applies everything pending.
-        postJson("collection/settings", latestValuesRef.current, (result) => {
-            const saveResult = result.data as ICollectionSettingsSaveResult;
-            if (saveResult.errorMessage) {
-                setSaveErrorMessage(saveResult.errorMessage);
-                setSaving(false);
-                return;
-            }
-            // C# performs the restart itself if one is needed.
-            closeDialog();
-        });
+        postJson(
+            "collection/settings",
+            latestValuesRef.current,
+            (result) => {
+                const saveResult = result.data as ICollectionSettingsSaveResult;
+                if (saveResult.errorMessage) {
+                    setSaveErrorMessage(saveResult.errorMessage);
+                    setSaving(false);
+                    return;
+                }
+                // C# performs the restart itself if one is needed.
+                closeDialog();
+            },
+            // If the save fails outright, the user keeps whatever they were editing and can try
+            // OK again; leaving the button disabled would strand them with no way but Cancel.
+            () => setSaving(false),
+        );
     }
 
     function cancelAndCloseDialog() {

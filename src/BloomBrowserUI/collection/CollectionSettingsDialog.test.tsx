@@ -298,6 +298,7 @@ describe("CollectionSettingsDialog", () => {
             "collection/settings",
             initialValues,
             expect.any(Function),
+            expect.any(Function),
         );
         expect(mockCloseDialog).toHaveBeenCalledTimes(1);
     });
@@ -384,6 +385,35 @@ describe("CollectionSettingsDialog", () => {
         click("dialog-ok");
 
         expect(mockPostJson).toHaveBeenCalledTimes(1);
+    });
+
+    it("lets the user try again when the save itself fails", async () => {
+        mockPostJson.mockImplementation(
+            (
+                _url: string,
+                _data: unknown,
+                _successCallback?: (r: unknown) => void,
+                errorCallback?: (r: unknown) => void,
+            ) => {
+                errorCallback?.({});
+            },
+        );
+        await renderDialog();
+        const okButton = () =>
+            container.querySelector(
+                '[data-testid="dialog-ok"]',
+            ) as HTMLButtonElement;
+        if (okButton().disabled) {
+            throw new Error(
+                "OK started out disabled; this test could pass without proving anything.",
+            );
+        }
+
+        click("dialog-ok");
+
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+        expect(okButton().disabled).toBe(false);
+        expect(mockCloseDialog).not.toHaveBeenCalled();
     });
 
     it("starts a later open from freshly fetched values, not the previous session's", async () => {
