@@ -205,7 +205,11 @@ paths too; remove the flag, the button, and the WinForms dialog in one cutover P
 
 ### Answer before the corresponding tab card
 
+Q5 to Q15 have tentative answers from John Thomson (2026-09-22), stated first in each; they
+may be overridden.
+
 **Q5. Page Numbering Style: per language (as drawn) or per collection (as stored)?**
+Tentative decision: per collection for now, on the Front & Back Matter page next to Style.
 Blocks: BL-16739 (and decides whether Front & Back Matter should host it instead).
 Recommendation: keep one collection-wide setting; a book has one page-number style. Put it in
 the Front & Back Matter page next to Style, since it is about the printed book rather than a
@@ -214,6 +218,9 @@ migration and no user request behind it.
 
 **Q6. The new per-language fields in "More": UI Font, Common Name, Alphabet, Keyboard,
 Sentence ending punctuation. Are they in scope for BL-16739?**
+Tentative decision: completely new fields (UI Font, Keyboard, Common Name) are out of scope.
+Alphabet and Sentence ending punctuation, which have existing backing in the reader-tool
+settings, are done as part of BL-16739.
 Blocks: BL-16739 scope only. Fonts (Default Font), "Font size when displayed in tools"
 (`BaseUIFontSizeInPoints`), "Default line spacing" (`LineHeight`), Asian word breaking
 (`BreaksLinesOnlyAtSpaces`) and RTL (`IsRightToLeft`) all map to existing `WritingSystem` fields
@@ -228,46 +235,53 @@ Name" overlaps the language chooser's custom-name flow (`WritingSystem.IsCustomN
 a definition. Ask Hatton
 whether these were intended for 6.6 or were the prototyper filling space.
 
-**Q7. Keep the restart reminder and OK→Restart?** The mockups show no buttons; the 2026-06-01
+**Q7. Keep the restart reminder and OK→Restart?** Tentative decision: keep the current restart
+strategy (done in BL-16902). The mockups show no buttons; the 2026-06-01
 comment asks. Blocks: nothing (the shell can do it cheaply, §3.1.5). Recommendation: keep; the
 behaviour is user-visible, tested by QA, and free in our own dialog shell. Restart-on-close
 without warning is the alternative; the only precedent is the App Builder toggle, where a
 restart prompt was added and then reverted in April 2026 (dedccf2b6d, 2f2e43c42d) with no
 recorded reason.
 
-**Q8. Keep the Help button?** The WinForms dialog maps each tab to a help page
+**Q8. Keep the Help button?** Tentative decision: one Help button in the bottom bar, opening the
+help page for the active Config-R page. The WinForms dialog maps each tab to a help page
 (`CollectionSettingsDialog.cs:740-755`). Blocks: nothing. Recommendation: keep one Help button in
 the bottom bar that opens the help page for the selected Config-R page; Book Settings has none,
 so this is a small addition to the shell. Needs the current page key, which `ConfigrPane` does
 not expose; track it from the launch key plus a click handler on the nav, or ask config-r for an
 `onPageChange`.
 
-**Q9. Experimental page contents.** Three of four mockup rows are unmerged features (John,
+**Q9. Experimental page contents.** Tentative decision: list-driven, initially with only the
+features that exist (Team Collections). Three of four mockup rows are unmerged features (John,
 2026-09-16). Blocks: BL-16738. Recommendation: build the page now as a generic list driven by a
 C# registry of experimental features (token, label, description, gating feature name), initially
 containing only `team-collections` (and `experimental-source-books` only if its hidden toggle is
 ever meant to come back); each feature branch adds one registry entry when it merges.
 That removes BL-16738 from the critical path and it can close when the page exists.
 
-**Q10. Bloom Library page gating.** The card says "the standard subscription required thing"
-should be there. Which one: the overlay wrapper the Team Collection tab uses
+**Q10. Bloom Library page gating.** Tentative decision: badge beside the control, as in Book
+Settings, for every subscription-gated feature. The card says "the standard subscription
+required thing" should be there. Which one: the overlay wrapper the Team Collection tab uses
 (`RequiresSubscriptionOverlayWrapper`) or the badge-beside-control pattern Book Settings uses
 (`BloomSubscriptionIndicatorIconAndText`)? Blocks: BL-16736 polish only. Recommendation: badge
 beside the disabled control, consistent with the Experimental page and Book Settings.
 
-**Q11. Languages: does "Change…" keep the ethnolib chooser in a nested dialog?** Today C# opens
-a `ReactDialog("languageChooserBundle")`. Blocks: BL-16739 mechanics only. Recommendation: mount
+**Q11. Languages: does "Change…" keep the ethnolib chooser in a nested dialog?** Tentative
+decision: yes, the ethnolib chooser in a nested React dialog, not a separate WinForms-hosted
+one. Today C# opens a `ReactDialog("languageChooserBundle")`. Blocks: BL-16739 mechanics only. Recommendation: mount
 `LanguageChooserDialog.tsx` as a nested `BloomDialog` inside the React dialog and drop the C#
 `ReactDialog` path and the `settings/changeLanguage` event dance at cutover; the chooser's
 result (`languageData.ts`) goes straight into the pending values.
 
-**Q12. Team Collection page: creating a TC from inside the new dialog.** Today
-`TeamCollectionApi.SetCallbackToReopenCollection` forces a restart and clicks OK on the WinForms
-dialog. Blocks: BL-16735. Recommendation: the create-TC flow posts a "close settings dialog and
-restart" websocket event the React dialog handles; the pending session is applied first so
-nothing typed is lost.
+**Q12. Team Collection page: creating a TC from inside the new dialog.** Tentative decision:
+converting to a Team Collection becomes a pending change that waits for OK, like every other
+change (so Cancel abandons it). Today `TeamCollectionApi.SetCallbackToReopenCollection` forces a
+restart and clicks OK on the WinForms dialog. Blocks: BL-16735. The alternative considered was
+a "close settings dialog and restart" websocket event applied immediately.
 
 ### Nice to settle, blocks nothing
+
+Tentative decision on all three: as recommended.
 
 **Q13.** Dialog size: fixed 900×720 like Book Settings, or resizable? Recommend fixed, same size.
 **Q14.** Collection rename: the WinForms path raises `_queueRenameOfCollection` and restarts.
@@ -322,7 +336,7 @@ collection is not a TC, and when editing a Bloom Library book, matching
 Sign Language: Language row with name and "Change…" (Q11), Default Font row using the existing
 `FontSelectComponent`, "Remove" for L3 and SL, "More" per Q3 holding Fonts (Default Font, font
 size in tools, line spacing) and Script (Asian breaking, RTL) from `WritingSystem`, plus
-whatever Q6 admits. Reuse `UpdateLanguageSettings` for the apply. Retires `ScriptSettingsDialog`,
+Alphabet and Sentence ending punctuation backed by the per-language reader-tool settings (Q6). Reuse `UpdateLanguageSettings` for the apply. Retires `ScriptSettingsDialog`,
 `fontScriptSettingsControl`, `singleFontSection`, `bookMakingSettingsControl`. Could be split:
 6a language rows and fonts, 6b "More" once Q3 is decided.
 
