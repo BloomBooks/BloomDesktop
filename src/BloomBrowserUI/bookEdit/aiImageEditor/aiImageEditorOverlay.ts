@@ -48,28 +48,18 @@ import {
     isCurrentPageSwap,
 } from "./aiImageEditorShared";
 
-// The analytics events the AI Image Editor may ask us to send, mapping the name IT uses to the
-// name we record. Bloom is what actually posts to Segment, and a name it does not recognize
-// would create a
-// new event type in our data rather than land in an existing one, so the vocabulary is pinned on
-// this side.
+// The AI Image Editor owns its own analytics vocabulary; Bloom forwards what it is given, names
+// and properties alike. A list here of the events it is allowed to send only meant that adding
+// one needed a matching change in this repo, and until that change landed the event vanished --
+// which is indistinguishable from nobody using the feature. See this folder's AGENTS.md.
 //
-// The rename is why this is a map and not just a list: our events say "AI Image Editor" because
-// one day there may be an AI editor for text, or video, or games, and "AI Editor Generate" would
-// then be ambiguous. Doing the translation here rather than in the AI Image Editor means Bloom's
-// vocabulary is Bloom's business, and a package release is not needed to change it.
-//
-// Their PROPERTIES are not filtered. We control both ends of this channel, so an allow-list of
-// property names would only be guarding against ourselves; if something specific ever must not be
-// forwarded, the place to stop it is in the AI Image Editor, or by removing that one property here.
-// Today it sends nothing but ids, enums, numbers and booleans -- no free-form text of any kind.
-//
-// A Map, not an object literal: with an object, `event in obj` is also true for inherited members,
-// so an event named "toString" or "constructor" would be treated as permitted. Map.get() only sees
-// real entries.
-const kAnalyticsEventsTheAiImageEditorMaySend = new Map<string, string>([
-    ["AI Editor Generate", "AI Image Editor Generate"],
-]);
+// The single thing we do to a name is this rename. Bloom's events say "AI Image Editor" because
+// one day there may be an AI editing tool for text, or video, or games, and "AI Editor Generate"
+// would then be ambiguous. A prefix rewrite rather than a lookup keeps Bloom's vocabulary Bloom's
+// business while still working for events the AI Image Editor has not invented yet.
+function bloomsNameForEditorEvent(event: string): string {
+    return event.replace(/^AI Editor /, "AI Image Editor ");
+}
 
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
@@ -253,12 +243,13 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
-        // ----- Analytics for this AI Image Editor session (BL-16716) -----
+        // ----- Analytics for this AI Image Editor session (BL-16716, BL-16901) -----
         // Generation happens inside the AI Image Editor app, which reports each attempt to us
-        // over the bridge (the "analytics" message below); we count those so that a session the user
-        // abandons can say how much AI work was thrown away. That is the clearest signal we
-        // have that the output was not good enough -- much better than a count of generations,
-        // which goes up whether people liked what they got or not.
+        // over the bridge (the "analytics" message below) and we pass those straight on. We do
+        // not count them: that would mean recognizing an event name the AI Image Editor owns,
+        // which is the coupling BL-16901 removed. How much AI work a session threw away is
+        // answered by grouping its rows on aiEditorSessionId -- in more detail than a count
+        // could, since each attempt says which tool and model it used and what it cost.
         //
         // ONE event per session, "AI Image Editor Closed", sent when the session settles. It says
         // what the session achieved, and an appliedCount of zero IS the cancel -- which is why
@@ -271,7 +262,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // whose pictures did land could be filed as one that threw everything away. Waiting costs
         // us a session that is never closed at all (Bloom quit with the overlay still up), which
         // is the rarer and less misleading loss.
-        let generationsThisSession = 0;
+
+        // Ties this session's rows together in Segment. Nothing else does: every event carries
+        // BookId and branding, but neither says WHICH trip through the AI Image Editor it belongs
+        // to, so its events and Bloom's closing summary cannot otherwise be joined -- and that
+        // join is the only way to ask how much AI work was generated and then thrown away.
+        //
+        // Bloom mints it rather than the AI Image Editor because Bloom owns the session boundary;
+        // the AI Image Editor need not know it exists. Deliberately NOT launchData.sessionToken,
+        // which is a capability token for the commit endpoint and has no business in analytics.
+        const analyticsSessionId = crypto.randomUUID();
+
         // What every commit in this session added up to. failedCount is derived from the first two.
         let replacementsAttempted = 0;
         let picturesApplied = 0;
@@ -301,17 +302,18 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             closedReported = true;
             // Did anything actually reach the book? A non-zero failedCount is exactly the class of
             // bug BL-16702 was: a commit that silently did nothing. Generated versus reused says
-            // whether people are paying for new pictures or re-using ones they already have. And
-            // generatedThisSession against a zero appliedCount is how much AI work was thrown away
-            // -- the clearest signal we have that the output was not good enough, and much better
-            // than a count of generations, which goes up whether people liked what they got or not.
+            // whether people are paying for new pictures or re-using ones they already have.
+            //
+            // Every count here is Bloom's own, derived from what C# said each commit did. An
+            // appliedCount of zero IS the abandoned session; what was generated and then thrown
+            // away is the AI Image Editor's own generate events, which carry this session id.
             trackEvent("AI Image Editor Closed", {
+                aiEditorSessionId: analyticsSessionId,
                 replacementCount: replacementsAttempted,
                 appliedCount: picturesApplied,
                 failedCount: replacementsAttempted - picturesApplied,
                 generatedCount: picturesGenerated,
                 reusedCount: picturesReused,
-                generatedThisSession: generationsThisSession,
                 historyCount: (launchData.history ?? []).length,
             });
         };
@@ -686,26 +688,17 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // whatever host it is running in. C# adds BookId; branding is already on every
                     // event as "BrandingProjectName" (see AnalyticsApi).
                     //
-                    // Known event names only, so an unrecognized one cannot invent a new event type
-                    // in our data, and each is recorded under Bloom's own name for it. Their
-                    // properties are passed through as sent -- see the comment on
-                    // kAnalyticsEventsTheAiImageEditorMaySend.
+                    // Whatever it sends is forwarded, under Bloom's own name for it and with its
+                    // properties as sent -- see the comment on bloomsNameForEditorEvent. The one
+                    // property we add is our session id, which is host context the AI Image
+                    // Editor cannot supply, in the same spirit as C# adding BookId.
                     const event = data.payload?.event;
-                    const ourNameForIt = event
-                        ? kAnalyticsEventsTheAiImageEditorMaySend.get(event)
-                        : undefined;
-                    if (!ourNameForIt) {
-                        if (event) {
-                            console.warn(
-                                `[AI Image Editor] not forwarding unrecognized analytics event "${event}"`,
-                            );
-                        }
-                        break;
-                    }
-                    if (event === "AI Editor Generate") {
-                        generationsThisSession++;
-                    }
-                    trackEvent(ourNameForIt, data.payload?.properties);
+                    if (!event) break;
+                    const ourNameForIt = bloomsNameForEditorEvent(event);
+                    trackEvent(ourNameForIt, {
+                        ...data.payload?.properties,
+                        aiEditorSessionId: analyticsSessionId,
+                    });
                     break;
                 }
                 case "log":

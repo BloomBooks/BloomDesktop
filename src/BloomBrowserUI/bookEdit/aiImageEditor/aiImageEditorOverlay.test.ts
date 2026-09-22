@@ -417,7 +417,7 @@ describe("aiImageEditorOverlay: analytics", () => {
             (call) => (call[1] as { appliedCount: number }).appliedCount === 0,
         );
 
-    test("closing without committing reports a cancel, with what was generated", () => {
+    test("closing without committing reports a cancel", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
         postFromEditor({
             channel: "bloom-ai-image-tools",
@@ -432,40 +432,135 @@ describe("aiImageEditorOverlay: analytics", () => {
         expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Generate", {
             model: "some-model",
             result: "success",
+            aiEditorSessionId: expect.any(String),
         });
         expect(abandonedEvents()).toHaveLength(0);
 
         closeButton.click();
 
         expect(abandonedEvents()).toHaveLength(1);
-        expect(abandonedEvents()[0][1]).toMatchObject({
-            generatedThisSession: 1,
-        });
+        // Bloom does not count the AI Image Editor's generations. Counting them would mean
+        // recognizing an event name the AI Image Editor owns, which is the coupling BL-16901
+        // removed; the session id below is what ties those events to this row instead.
+        expect(abandonedEvents()[0][1]).not.toHaveProperty(
+            "generatedThisSession",
+        );
     });
 
-    test("an event name we do not know is ignored, and does not break the session", () => {
+    test("an event name Bloom has never heard of is forwarded, not dropped", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
-        // "toString" is the interesting case rather than a random word: with an object literal
-        // instead of a Map, `"toString" in list` answers true, so the name would be treated as one
-        // we know and would go on to create a junk event type in our data.
+        // "toString" is the interesting case rather than a random word: there is no lookup left
+        // for an inherited member to answer for, so it must come through like any other string.
         postFromEditor({
             channel: "bloom-ai-image-tools",
             type: "analytics",
             payload: {
                 event: "toString",
-                properties: { prompt: "leaked book text" },
+                properties: { somethingNew: 1 },
             },
         });
 
-        expect(trackEvent).not.toHaveBeenCalled();
+        // No "AI Editor " prefix to rewrite, so it is recorded under the name it arrived with.
+        expect(trackEvent).toHaveBeenCalledWith("toString", {
+            somethingNew: 1,
+            aiEditorSessionId: expect.any(String),
+        });
 
         // The session must still be alive: closing still reports the cancel.
         closeButton.click();
         expect(abandonedEvents()).toHaveLength(1);
     });
 
-    test("the properties of a known event are passed on as the AI Image Editor sent them", () => {
+    test("an event added to the AI Image Editor since this code was written is forwarded", () => {
+        // The whole point of the change that removed the allow-list: the AI Image Editor can add
+        // an event and have it recorded, with no release of Bloom. "AI Editor Accept" is one
+        // of the names the allow-list used to swallow.
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: {
+                event: "AI Editor Accept",
+                properties: { tool: "change-style", isFinalTool: true },
+            },
+        });
+
+        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Accept", {
+            tool: "change-style",
+            isFinalTool: true,
+            aiEditorSessionId: expect.any(String),
+        });
+    });
+
+    test("only the AI Editor prefix is rewritten, and only at the start", () => {
+        // Bloom's vocabulary is Bloom's business, but the rewrite is a prefix, not a search: a
+        // name that merely mentions the AI Image Editor must not be mangled in the middle.
+        const { postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: { event: "Something AI Editor Related", properties: {} },
+        });
+
+        expect(trackEvent).toHaveBeenCalledWith("Something AI Editor Related", {
+            aiEditorSessionId: expect.any(String),
+        });
+    });
+
+    test("one session id ties the AI Image Editor's events to Bloom's closing summary", () => {
+        // This is what answers "how much was generated and then thrown away", now that Bloom
+        // does not count generations itself. Nothing else in the data says which trip through
+        // the AI Image Editor a row belongs to, so if these two ids differ the question cannot
+        // be asked at all.
+        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+
+        postFromEditor({
+            channel: "bloom-ai-image-tools",
+            type: "analytics",
+            payload: { event: "AI Editor Generate", properties: {} },
+        });
+
+        const forwarded = trackEvent.mock.calls.find(
+            (call) => call[0] === "AI Image Editor Generate",
+        );
+        if (!forwarded)
+            throw new Error(
+                "setup: the generate event was not forwarded, so there is nothing to join",
+            );
+        const sessionId = (forwarded[1] as { aiEditorSessionId: string })
+            .aiEditorSessionId;
+        // Sanity: a real id. An empty string would "match" below and prove nothing.
+        expect(sessionId).toBeTruthy();
+
+        closeButton.click();
+
+        expect(abandonedEvents()).toHaveLength(1);
+        expect(abandonedEvents()[0][1]).toMatchObject({
+            aiEditorSessionId: sessionId,
+        });
+    });
+
+    test("a second trip through the AI Image Editor is a separate session", () => {
+        const first = openAgainstABookWithOneImage();
+        first.closeButton.click();
+        expect(abandonedEvents()).toHaveLength(1);
+
+        // The helper insists the launch is the only post it has seen.
+        post.mockClear();
+        const second = openAgainstABookWithOneImage();
+        second.closeButton.click();
+
+        expect(abandonedEvents()).toHaveLength(2);
+        const idOf = (index: number) =>
+            (abandonedEvents()[index][1] as { aiEditorSessionId: string })
+                .aiEditorSessionId;
+        expect(idOf(1)).not.toBe(idOf(0));
+    });
+
+    test("the properties of an event are passed on as the AI Image Editor sent them", () => {
         // Deliberately not filtered: we control both ends of this channel. If a property ever must
         // not be forwarded, it is stopped in the AI Image Editor or removed by name here -- not
         // by an allow-list that only guards us against ourselves.
@@ -488,6 +583,7 @@ describe("aiImageEditorOverlay: analytics", () => {
             model: "some-model",
             costUSD: 0.0733,
             spentCredits: true,
+            aiEditorSessionId: expect.any(String),
         });
     });
 
