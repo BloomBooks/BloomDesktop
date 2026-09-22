@@ -160,6 +160,17 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
         if (props.open) {
             everOpened.current = true;
             setPercent(0); // always want to start here
+            // And start clean on everything else too. The cleanup below only runs for a dialog
+            // that has been open before, but our listener is alive from the moment we mount and
+            // "progress" is a shared channel -- another dialog's run (e.g. Update Book, which has
+            // its own EmbeddedSimpleProgressDialog) can leave us holding its error state and its
+            // show-buttons before we have ever been shown.
+            setMessages([]);
+            setMessagesForErrorReporting("");
+            setSawAnError(false);
+            setSawAWarning(false);
+            setSawFatalError(false);
+            setDone(false);
         } else {
             // Once the dialog has been open, the only way this effect runs again is if it
             // it's open state changes. But we don't want this to happen on the initial

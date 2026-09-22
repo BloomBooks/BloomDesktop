@@ -76,6 +76,8 @@ export const SimpleProgressDialog: React.FunctionComponent<
     const [problems, setProblems] = useState<IProblem[]>([]);
     const [done, setDone] = useState(false);
     const [socketReady, setSocketReady] = useState(false);
+    // Every message of the run, shown or not, for the Report button to send.
+    const messagesForErrorReporting = useRef<string[]>([]);
 
     const sawFatalError = problems.some((p) => p.kind === "Fatal");
     const sawAnError = problems.some(
@@ -83,25 +85,39 @@ export const SimpleProgressDialog: React.FunctionComponent<
     );
     const sawAWarning = problems.some((p) => p.kind === "Warning");
 
+    // True exactly while this dialog is the one showing. The listener below consults it because
+    // "progress" is a shared channel: every progress dialog in the document, and in Bloom's other
+    // browsers, hears every event on it. Without this we would quietly record somebody else's
+    // percent, errors and show-buttons while closed, and then open showing them -- a full bar, a
+    // red title, and a live Close button, before our own job had done anything.
+    const isShowing = useRef(false);
+
     // This effect is required because the websocket is an external subscription outside React,
     // and it must be listening before C# starts sending (hence the progress/ready handshake below).
     useMountEffect(() => {
         const listener = (e: IBloomWebSocketProgressEvent) => {
+            if (!isShowing.current) {
+                return; // not our job; see isShowing
+            }
             if (e.id === "percent" && e.percent !== undefined) {
                 setPercent(e.percent);
             }
-            // Ordinary progress messages are deliberately ignored; props.message is the whole
-            // story we want to tell. But a warning or error is news, so show it.
-            if (
-                e.id === "message" &&
-                (e.progressKind === "Error" ||
+            if (e.id === "message") {
+                // Everything goes into the problem report, so that a user who presses Report
+                // sends the whole story rather than only the part we chose to show.
+                messagesForErrorReporting.current.push(e.message ?? "");
+                // On screen, though, ordinary progress messages are deliberately ignored:
+                // props.message is the whole story we want to tell. A warning or error is news.
+                if (
+                    e.progressKind === "Error" ||
                     e.progressKind === "Fatal" ||
-                    e.progressKind === "Warning")
-            ) {
-                setProblems((current) => [
-                    ...current,
-                    { text: e.message ?? "", kind: e.progressKind! },
-                ]);
+                    e.progressKind === "Warning"
+                ) {
+                    setProblems((current) => [
+                        ...current,
+                        { text: e.message ?? "", kind: e.progressKind! },
+                    ]);
+                }
             }
             if (e.id === "show-buttons") {
                 setDone(true);
@@ -134,19 +150,25 @@ export const SimpleProgressDialog: React.FunctionComponent<
     const everOpened = useRef(false);
     useEffect(() => {
         if (props.open) {
+            // Start listening before we say we are ready, never the other way round.
+            isShowing.current = true;
             if (!socketReady) {
                 return; // we'll be back as soon as the socket opens
             }
             everOpened.current = true;
             post("progress/ready");
-        } else if (everOpened.current) {
-            // Clear up as we go, rather than as we open, so that nothing from the last run
-            // flickers into view while the next one is opening. (The embedded dialog is mounted
-            // once and opened again and again.)
-            setPercent(0);
-            setProblems([]);
-            setDone(false);
-            post("progress/closed");
+        } else {
+            isShowing.current = false;
+            if (everOpened.current) {
+                // Clear up as we go, rather than as we open, so that nothing from the last run
+                // flickers into view while the next one is opening. (The embedded dialog is
+                // mounted once and opened again and again.)
+                setPercent(0);
+                setProblems([]);
+                setDone(false);
+                messagesForErrorReporting.current = [];
+                post("progress/closed");
+            }
         }
     }, [props.open, socketReady]);
 
@@ -241,9 +263,10 @@ export const SimpleProgressDialog: React.FunctionComponent<
                                 variant="text"
                                 onClick={() => {
                                     postJson("problemReport/showDialog", {
-                                        message: problems
-                                            .map((p) => p.text)
-                                            .join("\r\n"),
+                                        message:
+                                            messagesForErrorReporting.current.join(
+                                                "\r\n",
+                                            ),
                                         shortMessage: `The user reported a problem from "${props.title}".`,
                                     });
                                 }}

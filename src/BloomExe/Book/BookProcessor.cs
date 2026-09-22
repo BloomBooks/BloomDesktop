@@ -351,14 +351,27 @@ namespace Bloom.Book
         {
             if (dialog == null || dialog.IsDisposed)
                 return;
-            // We are on the dialog's background worker, so the resize has to go to the UI thread.
-            dialog.Invoke(
-                (Action)(
-                    () =>
-                        dialog.Height = (int)
-                            Math.Round(kErrorDialogHeight * dialog.DeviceDpi / 96.0)
-                )
-            );
+            try
+            {
+                // We are on the dialog's background worker, so the resize has to go to the UI thread.
+                dialog.Invoke(
+                    (Action)(
+                        () =>
+                            dialog.Height = (int)
+                                Math.Round(kErrorDialogHeight * dialog.DeviceDpi / 96.0)
+                    )
+                );
+            }
+            catch (Exception e)
+            {
+                // Only ever called from a catch block that is about to rethrow the real failure.
+                // Losing that to "Invoke cannot be called before the window handle is created"
+                // would tell the user (and the problem report) nothing about what actually broke,
+                // so a dialog we could not resize is something we simply live with.
+                SIL.Reporting.Logger.WriteMinorEvent(
+                    "Could not resize the update dialog for its error message: " + e.Message
+                );
+            }
         }
 
         /// <summary>
