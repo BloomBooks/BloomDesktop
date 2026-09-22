@@ -1,5 +1,9 @@
 ﻿// Styles that are shared by both the regular book css and the more minimalist epub css.
 @import (reference) "../../BloomBrowserUI/bloomUI.less";
+// Inline (Word-style) images docked inside a bloom-editable with text wrapping around
+// them. In its own file because basePage-legacy-5-6.less needs the same rules and we
+// don't want two copies of them.
+@import "inlineImages.less";
 
 @preferredBackgroundGray: hsl(0, 0%, 86%);
 
