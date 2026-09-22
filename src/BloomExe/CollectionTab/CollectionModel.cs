@@ -773,7 +773,11 @@ namespace Bloom.CollectionTab
                         Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
                         throw;
                     }
-                    return Task.FromResult(false); // false => close the dialog when we finish
+                    // As with the automatic update (BookProcessor.EnsurePerPageFixupIfNeeded): if a
+                    // warning or error reached the dialog without stopping the run, keep the dialog
+                    // up (true) so the user can read it, rather than closing the moment the work
+                    // finishes. Either way the book is reselected when the dialog closes.
+                    return Task.FromResult(progress.HaveProblemsBeenReported);
                 },
                 doWhenDialogCloses: () => SelectBookOnUiThread(b)
             );

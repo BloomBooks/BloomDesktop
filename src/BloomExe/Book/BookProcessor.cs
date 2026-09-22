@@ -335,19 +335,20 @@ namespace Bloom.Book
             );
 
         // The size of the automatic update's dialog in the ordinary case: the bar, and the one
-        // sentence under it. And the height it grows to if something goes wrong, which has to fit
-        // an error message and the buttons that come with it as well.
+        // sentence under it. And the height it grows to if a problem is reported, which has to fit
+        // the message and the buttons that come with it as well.
         private const int kNormalDialogWidth = 620;
         private const int kNormalDialogHeight = 180;
-        private const int kErrorDialogHeight = 300;
+        private const int kProblemDialogHeight = 300;
 
         /// <summary>
-        /// Make a dialog created at the normal size tall enough for an error message and the Close
-        /// and Report buttons that come with it. Needed because the automatic update's dialog is a
-        /// WinForms form, which is sized in C# and cannot grow to fit its HTML content, and we would
-        /// rather not leave that room standing empty for the whole of a run that goes well.
+        /// Make a dialog created at the normal size tall enough for a warning or error message and
+        /// the Close and Report buttons that come with it. Needed because the automatic update's
+        /// dialog is a WinForms form, which is sized in C# and cannot grow to fit its HTML content,
+        /// and we would rather not leave that room standing empty for the whole of a run that goes
+        /// well.
         /// </summary>
-        private static void GrowDialogForError(ReactDialog dialog)
+        private static void GrowDialogForProblem(ReactDialog dialog)
         {
             if (dialog == null || dialog.IsDisposed)
                 return;
@@ -358,18 +359,18 @@ namespace Bloom.Book
                     (Action)(
                         () =>
                             dialog.Height = (int)
-                                Math.Round(kErrorDialogHeight * dialog.DeviceDpi / 96.0)
+                                Math.Round(kProblemDialogHeight * dialog.DeviceDpi / 96.0)
                     )
                 );
             }
             catch (Exception e)
             {
-                // Only ever called from a catch block that is about to rethrow the real failure.
-                // Losing that to "Invoke cannot be called before the window handle is created"
-                // would tell the user (and the problem report) nothing about what actually broke,
-                // so a dialog we could not resize is something we simply live with.
+                // One caller is a catch block about to rethrow the real failure. Losing that to
+                // "Invoke cannot be called before the window handle is created" would tell the user
+                // (and the problem report) nothing about what actually broke, so a dialog we could
+                // not resize is something we simply live with.
                 SIL.Reporting.Logger.WriteMinorEvent(
-                    "Could not resize the update dialog for its error message: " + e.Message
+                    "Could not resize the update dialog for its problem message: " + e.Message
                 );
             }
         }
@@ -457,10 +458,21 @@ namespace Bloom.Book
                         );
                         // Make room for the error message and the buttons that are about to appear.
                         // BrowserProgressDialog turns this exception into both of them.
-                        GrowDialogForError(dialog);
+                        GrowDialogForProblem(dialog);
                         throw;
                     }
-                    return false; // no error: close the dialog automatically
+                    // A warning or error can also reach the dialog as a message, without stopping
+                    // the run (HaveProblemsBeenReported covers Warning, Error and Fatal alike).
+                    // Nothing on this path does that today, but the dialog shows such a message if
+                    // it comes, and returning false here would close the dialog the instant the
+                    // work finished -- so the user would never get to read it. Keep the dialog up
+                    // instead, with room for the message and the Close button that comes with it.
+                    if (progress.HaveProblemsBeenReported)
+                    {
+                        GrowDialogForProblem(dialog);
+                        return true; // wait for the user to close it
+                    }
+                    return false; // nothing to report: close the dialog automatically
                 }
             );
             return true;
