@@ -196,6 +196,42 @@ describe("SourceBubbles", () => {
         ]);
     });
 
+    // Inline (Word-style) images live inside each bloom-editable, so they are inside the
+    // clone that becomes the source bubble too. They must not show up there: a source bubble
+    // is for reading another language's text, and the picture is the same in every language
+    // anyway. Nothing in this file does that on purpose -- the existing hasNoText pass drops
+    // the text-less wrapper div, taking the img with it -- so this test pins that down,
+    // because the whole v1 design leans on it. See INLINE-IMAGES-PLAN.md.
+    it("MakeSourceTextDivForGroup drops inline images from the bubble", () => {
+        const inlineImage =
+            "<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval' contenteditable='false'><img src='flower.jpg'/></div>";
+        const testHtml = $(
+            [
+                "<div id='testTarget' class='bloom-translationGroup'>",
+                `   <div class='bloom-editable' lang='es'>${inlineImage}<p>Spanish text</p></div>`,
+                `   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>${inlineImage}<p>English text</p></div>`,
+                `   <div class='bloom-editable' lang='tpi'>${inlineImage}<p>Tok Pisin text</p></div>`,
+                "</div>",
+            ].join("\n"),
+        );
+        $("body").append(testHtml);
+        // Sanity check: the images really are in the group we are about to clone.
+        expect($("#testTarget img").length).toBe(3);
+
+        const result = BloomSourceBubbles.MakeSourceTextDivForGroup(
+            $("body").find("#testTarget")[0],
+        );
+
+        // The bubble still has the source languages...
+        expect(result.find("div.source-text").length).toBe(2);
+        expect(result.find("div.source-text[lang=es]").text().trim()).toBe(
+            "Spanish text",
+        );
+        // ...but no trace of the image.
+        expect(result.find("img").length).toBe(0);
+        expect(result.find(".bloom-inlineImage").length).toBe(0);
+    });
+
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
         const testHtml = $(
             [

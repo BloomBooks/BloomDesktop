@@ -682,6 +682,36 @@ describe("audio recording tests", () => {
             );
         });
 
+        // An inline (Word-style) image is a contenteditable=false island inside the
+        // bloom-editable. It holds no recordable text, and recursing into it bottoms out at
+        // the img, which would then be treated as a leaf and get audio markup written into
+        // it. See inlineImages.ts.
+        it("skips a contenteditable=false island such as an inline image", () => {
+            const islandHtml =
+                '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false"><img src="flower.jpg"></div>';
+            const div = $(
+                `<div class="bloom-editable">${islandHtml}<p>This is a sentence. This is another.</p></div>`,
+            );
+            const recording = new AudioRecording();
+            recording.makeAudioSentenceElementsTest(
+                div,
+                RecordingMode.Sentence,
+            );
+
+            // The paragraph got its sentence spans as usual...
+            const spans = div.find("p span.audio-sentence");
+            expect(spans.length).toBe(2);
+            // ...and the island came through untouched: no spans, no id, no audio class.
+            const island = div.find(".bloom-inlineImage");
+            expect(island.length).toBe(1);
+            expect(island.find("span").length).toBe(0);
+            expect(island.attr("class")).toBe(
+                "bloom-inlineImage bloom-inlineImageRight",
+            );
+            expect(island.attr("id")).toBeUndefined();
+            expect(island.html()).toBe('<img src="flower.jpg">');
+        });
+
         it("flattens nested audio spans", () => {
             const p = $(
                 '<p><span id="efgh" recordingmd5="xyz" class="audio-sentence"><span id="abcd" recordingmd5="qed" class="audio-sentence">This is the first.</span> <span id="abde" recordingmd5="qef" class="audio-sentence">This is the second.</span> This is the third.</span></p>',
