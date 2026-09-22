@@ -26,6 +26,18 @@ namespace BloomTests.web.controllers
             controller.RegisterWithApiHandler(_server.ApiHandler);
         }
 
+        [OneTimeTearDown]
+        public void FinalTearDown()
+        {
+            // This fixture's tests go through ApiTest, which makes the server listen, but nothing
+            // ever released it -- so it held one of EnsureListening's twenty ports for the whole
+            // rest of the run. Pre-existing, and harmless until the port budget started to matter;
+            // Devin spotted it while reviewing that budget. Retired rather than disposed, like
+            // every other fixture that listens (BL-16667).
+            RetiredTestServers.Retire(_server);
+            _server = null;
+        }
+
         [SetUp]
         public void Setup()
         {

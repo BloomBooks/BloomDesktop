@@ -437,6 +437,9 @@ interface IEmbeddedProgressDialogConfig {
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
     showOkButtonWhenDone?: boolean;
+    // Show a percent-done bar (fed by "percent" events) instead of the spinner.
+    determinate?: boolean;
+    linearProgress?: boolean;
 }
 
 // Simply render one of these, with no props, at the top level of any document where the

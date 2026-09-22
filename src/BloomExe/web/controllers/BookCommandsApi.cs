@@ -19,7 +19,6 @@ using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -162,15 +161,17 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler(
+            // Async, off the UI thread, like importBloomSource: the work runs behind the collection
+            // tab's embedded progress dialog, and this returns once that dialog is open.
+            apiHandler.RegisterAsyncEndpointHandler(
                 "bookCommand/updateBook",
-                (request) =>
+                async (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
-                    HandleBringBookUpToDate(book);
+                    await HandleBringBookUpToDateAsync(book);
                     request.PostSucceeded();
                 },
-                true
+                handleOnUiThread: false
             );
             apiHandler.RegisterEndpointHandler(
                 "bookCommand/rename",
@@ -437,7 +438,7 @@ namespace Bloom.web.controllers
 
                 _collectionModel.ExportDocFormat(destPath);
                 ProcessExtra.SafeStartInFront(destPath);
-                Analytics.Track("Exported To Doc format");
+                BloomAnalytics.Track("Exported To Doc format");
             }
             catch (IOException error)
             {
@@ -446,12 +447,12 @@ namespace Bloom.web.controllers
                     error.Message,
                     "Could not export the book"
                 );
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
             catch (Exception error)
             {
                 SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Could not export the book");
-                Analytics.ReportException(error);
+                BloomAnalytics.ReportException(error);
             }
         }
 
@@ -513,13 +514,18 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleBringBookUpToDate(Book.Book book)
+        private async Task HandleBringBookUpToDateAsync(Book.Book book)
         {
             try
             {
                 // Currently this works on the current book, so the argument is ignored.
                 // That's OK for now as currently the book passed will always be the current one.
-                _collectionModel.BringBookUpToDate();
+                // Besides the whole-book migrations, this runs the edit-tab page fix-up code over
+                // every page (off-screen), so users no longer have to "go to edit and click on each
+                // page" themselves (BL-16595). See CollectionModel.BringBookUpToDateAsync. Problems
+                // in the work itself are reported by its progress dialog; this catch is for failing
+                // to get that far.
+                await _collectionModel.BringBookUpToDateAsync();
             }
             catch (Exception error)
             {

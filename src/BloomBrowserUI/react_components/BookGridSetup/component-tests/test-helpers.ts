@@ -126,7 +126,7 @@ export async function expectTargetBookNotVisible(page: Page, bookId: string) {
  */
 export async function getTargetCount(page: Page): Promise<number> {
     const header = page.getByRole("heading", {
-        name: /links in grid|book in app/i,
+        name: /links in grid|books in app/i,
     });
     const text = await header.textContent();
     const match = text?.match(/\((\d+)\)/);

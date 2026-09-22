@@ -264,6 +264,54 @@ describe("BloomField", () => {
         expect($("div p").length).toBeGreaterThan(0);
     });
 
+    // Content converted from other formats can arrive with a real heading as the first thing
+    // in the box. Prepending an empty paragraph above it would show the reader a blank first
+    // line, and saving the page would make that permanent.
+    it("bloom-editable div starting with a heading does not get a paragraph prepended", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h1>The Heading</h1><p>The body.</p>";
+        // Sanity check on the setup: the heading really is first before we do anything.
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+
+        WireUp();
+
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+        expect(editable.getElementsByTagName("p").length).toBe(1);
+    });
+
+    // A heading is a block, so a box holding nothing else needs no paragraph added. This is
+    // also the case that used to make MoveCursorToEdgeOfField throw, since it looked for a
+    // paragraph and found none.
+    it("bloom-editable div holding only a heading is left alone", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h2>Only a heading</h2>";
+
+        WireUp();
+
+        expect(editable.innerHTML).toBe("<h2>Only a heading</h2>");
+    });
+
+    // The other half of the rule: a box with no block element at all still gets a paragraph,
+    // which is what everything from styling to the Talking Book tool assumes.
+    it("bloom-editable div with only bare text still gets a paragraph", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "loose text";
+        expect(editable.getElementsByTagName("p").length).toBe(0); // sanity check
+
+        WireUp();
+
+        expect(editable.getElementsByTagName("p").length).toBe(1);
+    });
+
     describe("backspacePreventionTests", () => {
         it("backspace prevented at start of paragraph", () => {
             const shouldBeCanceled = true;

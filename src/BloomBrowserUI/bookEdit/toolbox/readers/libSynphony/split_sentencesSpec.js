@@ -333,6 +333,20 @@ describe("Splitting text into sentences", function () {
         expect(sentences[0].text).toBe("« Et toi&nbsp;?&nbsp;»&nbsp;'");
         expect(sentences[1].text).toBe("What next?");
     });
+    // The two tests around this one use the "&nbsp;" entity and the narrow NBSP. A caller that
+    // passes plain text rather than HTML - the reader tools' visible-text snapshot, or anything
+    // that went through removeAllHtmlMarkupFromString, which decodes entities - has the real
+    // NO-BREAK SPACE character instead, and it has to behave the same way. It used not to, so
+    // the closing guillemet ended up starting the next sentence.
+    it("Split into sentences, real NO-BREAK SPACE between sentence-ending punct and other punct puts other punct in previous", function () {
+        var inputText = "« Et toi\u00A0?\u00A0»\u00A0' What next?";
+        var fragments = theOneLibSynphony.stringToSentences(inputText);
+        var sentences = _.filter(fragments, function (frag) {
+            return frag.isSentence;
+        });
+        expect(sentences[0].text).toBe("« Et toi\u00A0?\u00A0»\u00A0'");
+        expect(sentences[1].text).toBe("What next?");
+    });
     it("Split into sentences, narrow NBSP between sentence-ending punct and other punct puts other punct in previous", function () {
         var inputText = "« Et toi\u202F?\u202F»\u202F'\u202F What next?";
         var fragments = theOneLibSynphony.stringToSentences(inputText);

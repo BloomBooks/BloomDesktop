@@ -40,8 +40,8 @@ const footerBandStyle = css`
     margin-right: -24px;
     margin-bottom: -10px;
     padding: 14px 24px;
-    background-color: #fafafa;
-    border-top: 1px solid #eee;
+    background-color: #f0f0f0;
+    border-top: 1px solid #e0e0e0;
     & > div {
         padding-top: 0;
     }
@@ -56,10 +56,7 @@ const titleRightGroupStyle = css`
     display: flex;
     align-items: center;
     gap: 8px;
-    // The language button sets text-transform:none on itself; override it here
-    // (only in this dialog) so the label reads uppercase per the design.
     & button {
-        text-transform: uppercase !important;
         font-size: 14px;
     }
     // DialogTitle forces font-weight:bold on all its descendants; the design

@@ -1088,6 +1088,9 @@ const DragActivityControls: React.FunctionComponent<{
         copyBuiltIn: boolean,
     ) => {
         const page = getPage();
+        // The sound attributes hold the plain file name, deliberately NOT URL-encoded (unlike
+        // data-backgroundaudio, which the toolbox does encode). C# reads these straight back as
+        // file names. See the encoding conventions note on UrlPathString.cs.
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
             if (newSoundId === "default") {
                 page.removeAttribute(soundAttr);
@@ -1846,7 +1849,13 @@ export function playSound(
     page: HTMLElement,
     soundType?: SoundType,
 ) {
-    let url = "audio/" + newSoundId;
+    // encodeURIComponent because newSoundId is a plain file name, not a URL: the sound
+    // attributes deliberately store the unencoded name (see the encoding conventions note on
+    // UrlPathString.cs), so anything in it that means something in a URL has to be escaped
+    // here, when we build one. Without this, a sound genuinely called "beep%41.mp3" is asked
+    // for as "beepA.mp3" and silently doesn't play. Safe to encode the whole thing because
+    // this is a bare file name -- no '/' of its own to preserve. (BL-16669)
+    let url = "audio/" + encodeURIComponent(newSoundId);
     if (newSoundId === "default") {
         if (soundType === undefined) {
             throw new Error(
