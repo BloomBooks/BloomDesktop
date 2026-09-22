@@ -195,9 +195,25 @@ namespace Bloom.Book
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
+        /// History of kBrowserMaintenanceLevel (introduced in 6.5)
+        ///   The migrations above are all done by C# on the DOM. This one tracks the quite
+        ///   different set of fix-ups that only the editing JavaScript can do, because they need a
+        ///   real browser that has laid the page out: converting an old-style image to the
+        ///   background canvas element, recording each image slot's share of its page, canvas
+        ///   element geometry, and so on. They used to happen only when the user opened a page in
+        ///   the Edit tab, so a book carried them on the pages someone had visited and nowhere
+        ///   else. BookProcessor now applies them to every page off-screen when this level says
+        ///   the book is behind. See NeedsPerPageFixup.
+        ///              0 = missing: no page has reliably been through the editing JavaScript
+        ///   Bloom 6.5: 1 = every page has been through it (BL-16852)
+        ///   BUMP THIS whenever a change to the editing JavaScript means existing books need to be
+        ///   put through it again. Deliberately NOT tied to the Bloom version: version numbers are
+        ///   not comparable across channels (release 6.5.1, alpha and BetaInternal all use
+        ///   different sequences), and we do not want to reprocess every book for every build.
         /// </summary>
         public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
+        public const int kBrowserMaintenanceLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
         private IChangeableFileLocator _fileLocator;
@@ -644,6 +660,18 @@ namespace Bloom.Book
                 "Generator",
                 "Bloom " + ErrorReport.GetVersionForErrorReporting()
             );
+            // We are about to write this book with our editing code, so it cannot honestly claim a
+            // browser maintenance level beyond what we know how to produce. See the method.
+            // Remember what it said: the clamp has to happen before we serialize Dom, but if the
+            // write never reaches disk we have to put it back, because the in-memory value is what
+            // Book.SavePageToDisk consults to decide this book still needs the full save. Left
+            // lowered after a failed write, it would let later single-page saves go out over a file
+            // whose head still records the higher level, and that level would then stand for good.
+            var levelBeforeClamp = Dom.GetMetaValue(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                null
+            );
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
             var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
             if (!Program.RunningUnitTests)
             {
@@ -662,8 +690,21 @@ namespace Bloom.Book
                 Dom.RemoveMetaElement("FeatureRequirement");
             }
 
-            string tempPath = SaveHtml(Dom);
-            ValidateSave(tempPath);
+            try
+            {
+                string tempPath = SaveHtml(Dom);
+                ValidateSave(tempPath);
+            }
+            catch
+            {
+                // The book on disk still says whatever it said; make the DOM agree again.
+                if (levelBeforeClamp != null)
+                    Dom.UpdateMetaElement(
+                        BookProcessor.kBrowserMaintenanceLevelMeta,
+                        levelBeforeClamp
+                    );
+                throw;
+            }
 
             BookInfo.Save();
         }
@@ -4134,12 +4175,13 @@ namespace Bloom.Book
                 // Note the invariant this puts on such a caller: taking the caller's progress also
                 // means doing the shrinking synchronously on the caller's thread, so a caller that
                 // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
-                // for the whole (potentially minutes-long) shrink. Today the only UI-thread caller
-                // with a real progress is CollectionModel.BringBookUpToDate ("Update Book"), which
-                // is safe on both counts: ProgressDialogForeground runs all of BringBookUpToDate on
-                // the UI thread anyway, and its MultiProgress includes an ApplicationDoEventsProgress
-                // that pumps on every message. A future UI-thread caller passing a progress that does
-                // not pump would need the dialog branch below instead.
+                // for the whole (potentially minutes-long) shrink. Today no UI-thread caller passes
+                // a real progress: "Update Book" (CollectionModel.BringBookUpToDateAsync) and the
+                // automatic per-page fix-up both run BookProcessor.ProcessBook on a worker thread
+                // behind the React progress dialog, and DoUpdatesOfAllBooks runs on
+                // ProgressDialogBackground's worker, so all of them arrive here with InvokeRequired
+                // true and simply use the progress they were given. A future UI-thread caller
+                // passing a progress that does not pump would need the dialog branch below instead.
                 var haveSomewhereToReport = progress != null && !(progress is NullProgress);
                 var shell = Shell.GetShellOrOtherOpenForm();
                 // shell is null when no window is open at all -- the bulk-upload and hydrate CLI

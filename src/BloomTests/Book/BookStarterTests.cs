@@ -280,38 +280,6 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'titlePage')]", 1);
         }
 
-        [
-            Test,
-            Ignore(
-                "Current architecture gives responsibility for updating to Book, so can't be tested here."
-            )
-        ]
-        public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectImageOnCover()
-        {
-            AssertThatXmlIn
-                .HtmlFile(GetNewMoonAndCapBookPath())
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'cover')]//img[@src='HL0014-1.png']",
-                    1
-                );
-        }
-
-        [
-            Test,
-            Ignore(
-                "Current architecture spreads this responsibility for updating to Book, so can't be tested here."
-            )
-        ]
-        public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
-        {
-            AssertThatXmlIn
-                .HtmlFile(GetNewMoonAndCapBookPath())
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'cover')]//*[@data-derived='topic' and text()='Health']",
-                    1
-                );
-        }
-
         private string GetNewMoonAndCapBookPath()
         {
             var source = Path.Combine(
