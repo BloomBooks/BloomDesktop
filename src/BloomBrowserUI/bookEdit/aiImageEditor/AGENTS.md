@@ -75,8 +75,9 @@ The one event Bloom sends *about* the AI Image Editor rather than for it is
 Bloom knows whether a commit actually reached the book; the library deliberately has no session-end
 event of its own. The pin is currently `dist-v0.2.5`, which sends only `AI Editor Generate`; when it
 moves, move it to `dist-v0.2.10` or later, because 0.2.9 still sent an `AI Editor Close` that would
-now be forwarded and sit next to ours. `AI Image Editor Closed` carries only counts Bloom derives
-from what C# said each commit did, so it needs no name from the library at all.
+now be forwarded and sit next to ours. `AI Image Editor Closed` carries only what Bloom itself
+knows -- the counts C# reported for each commit, and how long the overlay was up -- so it needs no
+name from the library at all.
 
 **Do not add a count of the AI Image Editor's generations to that row.** Counting them means
 recognizing an event name the library owns. "Generated 11, applied 0" is a group-by on

@@ -543,6 +543,25 @@ describe("aiImageEditorOverlay: analytics", () => {
         });
     });
 
+    test("the closing summary says how long the session lasted", () => {
+        // Bloom measures this because it owns the overlay's lifetime; the iframe cannot. Date.now
+        // is stubbed rather than using fake timers, which would also replace setTimeout.
+        const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
+        try {
+            const { closeButton } = openAgainstABookWithOneImage();
+            // Sanity: nothing has been reported yet, so the value below comes from the close.
+            expect(closedEvents()).toHaveLength(0);
+
+            nowSpy.mockReturnValue(1_090_000);
+            closeButton.click();
+
+            expect(closedEvents()).toHaveLength(1);
+            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 90 });
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
     test("a second trip through the AI Image Editor is a separate session", () => {
         const first = openAgainstABookWithOneImage();
         first.closeButton.click();

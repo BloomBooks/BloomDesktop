@@ -272,6 +272,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // the AI Image Editor need not know it exists. Deliberately NOT launchData.sessionToken,
         // which is a capability token for the commit endpoint and has no business in analytics.
         const analyticsSessionId = crypto.randomUUID();
+        // How long the user had the AI Image Editor open. Bloom is the right side to measure it:
+        // it owns the overlay's lifetime, and the iframe inside does not know when it was put up
+        // or taken down.
+        const sessionStartedAtMs = Date.now();
 
         // What every commit in this session added up to. failedCount is derived from the first two.
         let replacementsAttempted = 0;
@@ -314,6 +318,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 failedCount: replacementsAttempted - picturesApplied,
                 generatedCount: picturesGenerated,
                 reusedCount: picturesReused,
+                durationSeconds: Math.round(
+                    (Date.now() - sessionStartedAtMs) / 1000,
+                ),
                 historyCount: (launchData.history ?? []).length,
             });
         };
