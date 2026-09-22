@@ -26,6 +26,7 @@ import {
 import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { FieldVisibilityGroup } from "./FieldVisibilityGroup";
 import { StyleAndFontTable } from "./StyleAndFontTable";
+import { splitAtLinkText } from "../../utils/textUtils";
 
 // Should stay in sync with AppearanceSettings.PageNumberPosition
 enum PageNumberPosition {
@@ -597,16 +598,15 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
         "BookSettings.ThemeDisablesOptionsNoticeWithLink",
     );
 
-    const linkStart = message.indexOf("[");
-    const linkEnd = message.indexOf("]", linkStart >= 0 ? linkStart + 1 : 0);
+    const parts = splitAtLinkText(message);
 
-    if (linkStart < 0 || linkEnd <= linkStart) {
+    if (!parts.found) {
         return <span>{message}</span>;
     }
 
     return (
         <span>
-            {message.substring(0, linkStart)}
+            {parts.beforeLink}
             <Link
                 component="button"
                 type="button"
@@ -616,9 +616,9 @@ export const ThemeDisablesOptionsNoticeWithLink: React.FunctionComponent<{
                     props.onGoToThemeAndLayout?.();
                 }}
             >
-                {message.substring(linkStart + 1, linkEnd)}
+                {parts.linkText}
             </Link>
-            {message.substring(linkEnd + 1)}
+            {parts.afterLink}
         </span>
     );
 };
