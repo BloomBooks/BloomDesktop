@@ -274,7 +274,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         const analyticsSessionId = crypto.randomUUID();
         // How long the user had the AI Image Editor open. Bloom is the right side to measure it:
         // it owns the overlay's lifetime, and the iframe inside does not know when it was put up
-        // or taken down.
+        // or taken down. Paired with sessionEndedAtMs below, which is the other half of "open".
         const sessionStartedAtMs = Date.now();
 
         // What every commit in this session added up to. failedCount is derived from the first two.
@@ -292,6 +292,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // Set by cleanup. Asking the DOM whether the overlay is still there would not do: a
         // relaunch tears this session down and immediately puts up a new overlay with the same id.
         let sessionEnded = false;
+        // When the overlay went away, which is NOT when the closing event is sent: a commit still
+        // in flight postpones the report, and asking the clock at that point would charge the
+        // session for however long C# took to answer, after the user had stopped looking at it.
+        let sessionEndedAtMs = 0;
 
         // Report how this session turned out. Safe -- and expected -- to call from anywhere that
         // might have settled the last thing we were waiting for: it does nothing until both
@@ -319,7 +323,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                 generatedCount: picturesGenerated,
                 reusedCount: picturesReused,
                 durationSeconds: Math.round(
-                    (Date.now() - sessionStartedAtMs) / 1000,
+                    (sessionEndedAtMs - sessionStartedAtMs) / 1000,
                 ),
                 historyCount: (launchData.history ?? []).length,
             });
@@ -343,6 +347,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // reply made it easier to reach.)
             if (sessionEnded) return;
             sessionEnded = true;
+            sessionEndedAtMs = Date.now();
             reportClosed();
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-image-editor-overlay")?.remove();

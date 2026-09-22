@@ -562,6 +562,46 @@ describe("aiImageEditorOverlay: analytics", () => {
         }
     });
 
+    test("a commit settling after the close does not stretch the duration", () => {
+        // The close box takes the overlay away at once, but reportClosed waits for a commit that
+        // is still in the air. Reading the clock at that point would charge the session for how
+        // long C# took to answer, after the user had stopped looking at it.
+        const nowSpy = vi.spyOn(Date, "now").mockReturnValue(1_000_000);
+        try {
+            const { closeButton, postFromEditor } =
+                openAgainstABookWithOneImage();
+
+            postFromEditor({
+                channel: "bloom-ai-image-tools",
+                type: "commit",
+                requestId: "req1",
+                payload: {
+                    replacements: [
+                        { incomingId: `${kPageId}:0`, resultId: "result1" },
+                    ],
+                },
+            });
+
+            // 30 seconds in, the user closes; the commit is still outstanding.
+            nowSpy.mockReturnValue(1_030_000);
+            closeButton.click();
+            // Sanity: nothing reported yet, so the value below is not from the click.
+            expect(closedEvents()).toHaveLength(0);
+
+            // C# answers 20 seconds after the overlay was already gone.
+            nowSpy.mockReturnValue(1_050_000);
+            const onSuccess = postJson.mock.calls[0][2] as (r: {
+                data: unknown;
+            }) => void;
+            onSuccess({ data: { ok: true, appliedCount: 0, results: [] } });
+
+            expect(closedEvents()).toHaveLength(1);
+            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 30 });
+        } finally {
+            nowSpy.mockRestore();
+        }
+    });
+
     test("a second trip through the AI Image Editor is a separate session", () => {
         const first = openAgainstABookWithOneImage();
         first.closeButton.click();
