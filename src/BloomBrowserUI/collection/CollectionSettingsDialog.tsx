@@ -164,9 +164,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 // C# performs the restart itself if one is needed.
                 closeDialog();
             },
-            // If the save fails outright, the user keeps whatever they were editing and can try
-            // OK again; leaving the button disabled would strand them with no way but Cancel.
-            () => setSaving(false),
+            (error) => {
+                // If the save fails outright, the user keeps whatever they were editing and can
+                // try OK again; leaving the button disabled would strand them with no way out
+                // but Cancel. Re-throwing keeps the failure going to Bloom's usual error
+                // reporting, which is what happens when no error callback is supplied at all.
+                setSaving(false);
+                throw error;
+            },
         );
     }
 

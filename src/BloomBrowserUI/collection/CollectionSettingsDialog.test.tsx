@@ -388,6 +388,7 @@ describe("CollectionSettingsDialog", () => {
     });
 
     it("lets the user try again when the save itself fails", async () => {
+        let reportedToBloom = false;
         mockPostJson.mockImplementation(
             (
                 _url: string,
@@ -395,7 +396,13 @@ describe("CollectionSettingsDialog", () => {
                 _successCallback?: (r: unknown) => void,
                 errorCallback?: (r: unknown) => void,
             ) => {
-                errorCallback?.({});
+                // bloomApi runs the error callback inside its own catch and reports whatever it
+                // throws, so a throw from there does not escape to the caller.
+                try {
+                    errorCallback?.({});
+                } catch {
+                    reportedToBloom = true;
+                }
             },
         );
         await renderDialog();
@@ -413,6 +420,7 @@ describe("CollectionSettingsDialog", () => {
 
         expect(mockPostJson).toHaveBeenCalledTimes(1);
         expect(okButton().disabled).toBe(false);
+        expect(reportedToBloom).toBe(true);
         expect(mockCloseDialog).not.toHaveBeenCalled();
     });
 
