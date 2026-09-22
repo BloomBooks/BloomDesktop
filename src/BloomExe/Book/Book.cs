@@ -20,6 +20,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -455,6 +456,22 @@ namespace Bloom.Book
 
                 const char kBOM = '\uFEFF'; // Unicode Byte Order Mark character.
 
+                // The user sees a line break both for Shift+Enter (a bloom-linebreak span) and for
+                // plain Enter (a new block element), so both get the same replacement text.
+                var lineBreakReplacement = "";
+                switch (lineBreakSpanConversionOption)
+                {
+                    case LineBreakSpanConversionMode.ToNewline:
+                        lineBreakReplacement = Environment.NewLine;
+                        break;
+                    case LineBreakSpanConversionMode.ToSpace:
+                        lineBreakReplacement = " ";
+                        break;
+                    case LineBreakSpanConversionMode.ToSimpleNewline:
+                        lineBreakReplacement = "\n";
+                        break;
+                }
+
                 // Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
                 // This is being handled using at the XML level instead of string level, so that it'll work regardless of
                 // whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
@@ -480,21 +497,40 @@ namespace Bloom.Book
                     }
 
                     // Now delete lineBreakSpan and replace it
-                    var replacementForLinebreakSpan = "";
-                    switch (lineBreakSpanConversionOption)
-                    {
-                        case LineBreakSpanConversionMode.ToNewline:
-                            replacementForLinebreakSpan = Environment.NewLine;
-                            break;
-                        case LineBreakSpanConversionMode.ToSpace:
-                            replacementForLinebreakSpan = " ";
-                            break;
-                        case LineBreakSpanConversionMode.ToSimpleNewline:
-                            replacementForLinebreakSpan = "\n";
-                            break;
-                    }
-                    var newlineNode = doc.CreateTextNode(replacementForLinebreakSpan);
+                    var newlineNode = doc.CreateTextNode(lineBreakReplacement);
                     lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
+                }
+
+                // Handle plain Enter, which starts a new block element (a paragraph, or with the
+                // heading support added in 6.4, a heading). InnerText just runs the blocks
+                // together, so we have to put the line break in ourselves. Up through Bloom 6.2 we
+                // got away without this because HTML Tidy always left whitespace between block
+                // elements when it wrote the book out; HtmlAgilityPack, which replaced Tidy in the
+                // .NET 8 upgrade, does not. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+                var blocks = doc.SafeSelectNodes("//p | //h1 | //h2 | //h3 | //h4 | //h5 | //h6")
+                    .Cast<SafeXmlElement>()
+                    .ToArray();
+                foreach (var block in blocks)
+                {
+                    var previous = block.PreviousSibling;
+                    if (previous == null)
+                        continue; // nothing comes before it, so there is no boundary to mark
+
+                    // Throw away any whitespace Tidy left between the block elements (books
+                    // written out by Bloom 6.2 and earlier have it). It isn't rendered anywhere,
+                    // and it is what used to stand in for the line break the user sees, so
+                    // replacing it rather than adding to it makes a book written by an older
+                    // Bloom give the same answer as one written by this one.
+                    var isWhitespaceNode =
+                        previous.NodeType == XmlNodeType.Whitespace
+                        || (
+                            previous.NodeType == XmlNodeType.Text
+                            && String.IsNullOrWhiteSpace(previous.Value)
+                        );
+                    if (isWhitespaceNode)
+                        block.ParentNode.RemoveChild(previous);
+
+                    block.ParentNode.InsertBefore(doc.CreateTextNode(lineBreakReplacement), block);
                 }
 
                 return doc.DocumentElement.InnerText;
@@ -1059,6 +1095,29 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// The caller's progress with its status lines suppressed (warnings, errors and the percent
+        /// still get through). Used for the passes that work through the book's images one by one
+        /// (mirroring their metadata into the HTML, shrinking oversized files), which report a
+        /// status line per image as well as the percent done. Here, bringing a book up to date, the
+        /// dialog is determinate, so the percent bar already shows how far along we are, and a line
+        /// per image only fills the log with dozens of near-identical entries (BL-16893). The stage
+        /// statuses this class writes itself ("Updating pages...") are not suppressed: callers with
+        /// an overwriting status label (Update All Books, importing a .bloomSource) still want
+        /// them. The one place the per-image lines are wanted, the Copyright and License dialog's
+        /// "add this to all images", does not come through here.
+        /// </summary>
+        private static IProgress NoStatusProgress(IProgress progress)
+        {
+            if (
+                progress == null
+                || progress is NullProgress
+                || progress is QuietStatusProgress // already quiet (e.g. from BookProcessor.ProcessBook)
+            )
+                return progress;
+            return new QuietStatusProgress(progress);
+        }
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
@@ -1107,7 +1166,7 @@ namespace Bloom.Book
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
@@ -1882,7 +1941,7 @@ namespace Bloom.Book
                 ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
                     FolderPath,
                     OurHtmlDom,
-                    progress
+                    NoStatusProgress(progress)
                 );
             }
             catch (UnauthorizedAccessException e)
@@ -1898,7 +1957,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
@@ -2658,7 +2717,7 @@ namespace Bloom.Book
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
-                // spans are the only paragraph internal elements that should have any attributes.
+                // spans and hyperlinks are the only paragraph internal elements that should have any attributes.
                 RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
@@ -2731,11 +2790,17 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Strip attributes from character-style markup (b, i, strong, em, u, sup...) inside a paragraph.
+        /// Spans keep theirs (audio-sentence ids, bloom-linebreak, etc.), and so do hyperlinks: an
+        /// anchor without its href is no longer a link at all (BL-16892).
+        /// </summary>
         private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
         {
             foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (child.Name.ToLowerInvariant() != "span")
+                var name = child.Name.ToLowerInvariant();
+                if (name != "span" && name != "a")
                 {
                     foreach (var attrName in child.AttributeNames)
                         child.RemoveAttribute(attrName);
@@ -4280,7 +4345,16 @@ namespace Bloom.Book
             {
                 try
                 {
-                    if (pageToSaveToDisk != null && !reallyNeedFullSave)
+                    // A book still recording a browser maintenance level above ours has to go
+                    // through the full Save, which is what brings that level down to what we can
+                    // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
+                    // and replaces one page, so it would leave the old level in the head. This costs
+                    // one full save: afterwards the level is ours and the fast path resumes.
+                    if (
+                        pageToSaveToDisk != null
+                        && !reallyNeedFullSave
+                        && !BookProcessor.RecordsBrowserMaintenanceLevelAboveOurs(OurHtmlDom)
+                    )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.

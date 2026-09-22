@@ -1,255 +1,319 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-// Comical wants paper.js and a real <canvas>, which jsdom doesn't give us. Nothing in the
-// code under test needs it to do anything.
-vi.mock("comicaljs", () => ({
-    Bubble: class {},
-    Comical: {
-        setSelectorForBubblesWhichTailMidpointMayOverlap: () => {},
-        activateElement: () => {},
-        update: () => {},
+// A faithful stand-in for the requestPageContent delay bookkeeping in bloomEditing.ts, which we
+// can't import here (it pulls in the whole editing world). What matters for this suite is the
+// ordering the real code has: a save requested while delays are active is captured
+// SYNCHRONOUSLY, the instant the last delay is released, before any promise continuation of
+// the work that held the delay gets to run. vi.hoisted so the mock factory below (which vitest
+// hoists above the imports) can see it.
+const saveTracker = vi.hoisted(() => ({
+    activeDelays: 0,
+    savePending: false,
+    capturedBodyHtml: undefined as string | undefined,
+    // What C#'s RequestBrowserToSave ends up calling.
+    requestPageContent() {
+        if (this.activeDelays > 0) {
+            this.savePending = true;
+        } else {
+            this.capturedBodyHtml = document.body.innerHTML;
+        }
+    },
+    releaseDelay() {
+        this.activeDelays--;
+        if (this.activeDelays === 0 && this.savePending) {
+            this.savePending = false;
+            this.capturedBodyHtml = document.body.innerHTML;
+        }
+    },
+    reset() {
+        this.activeDelays = 0;
+        this.savePending = false;
+        this.capturedBodyHtml = undefined;
     },
 }));
 
-// jsdom gives every element a zero bounding rectangle, so the real getExactClientSize
-// could only ever report the zero-area case. We control the reported size instead, so
-// the test can also show what happens when the bloom-canvas does have a size.
-const reportedSize = { width: 0, height: 0 };
-vi.mock("../../../utils/elementUtils", async (importOriginal) => {
-    const actual =
-        await importOriginal<typeof import("../../../utils/elementUtils")>();
+vi.mock("../bloomEditing", () => ({
+    wrapWithRequestPageContentDelay: async <T>(
+        fn: () => Promise<T>,
+        _delayId: string,
+    ): Promise<T> => {
+        saveTracker.activeDelays++;
+        try {
+            return await fn();
+        } finally {
+            saveTracker.releaseDelay();
+        }
+    },
+}));
+
+// The real helpers in bloomImages.ts, minus the module's heavy imports.
+vi.mock("../bloomImages", () => {
+    const getImageFromContainer = (container: HTMLElement) =>
+        Array.from(container.children).find((x) => x.nodeName === "IMG") as
+            | HTMLImageElement
+            | undefined;
+    const getImageFromCanvasElement = (canvasElement: HTMLElement) => {
+        const container = canvasElement.getElementsByClassName(
+            "bloom-imageContainer",
+        )[0];
+        return container
+            ? getImageFromContainer(container as HTMLElement)
+            : null;
+    };
     return {
-        ...actual,
-        getExactClientSize: () => ({
-            width: reportedSize.width,
-            height: reportedSize.height,
-        }),
+        isPlaceHolderImage: (src: string | null) =>
+            !!src && src.toLowerCase().includes("placeholder.png"),
+        HandleImageError: vi.fn(),
+        SetupMetadataButton: vi.fn(),
+        getImageFromContainer,
+        getImageFromCanvasElement,
+        getBackgroundImageFromBloomCanvas: (bloomCanvas: HTMLElement) => {
+            const bg = bloomCanvas.getElementsByClassName(
+                "bloom-backgroundImage",
+            )[0] as HTMLElement | undefined;
+            return bg ? getImageFromCanvasElement(bg) : null;
+        },
     };
 });
 
-// These imports deliberately come after the vi.mock calls above, so that the module graph
-// they pull in gets the stubbed modules.
+// Enough of comicaljs for putBubbleBefore: specs live in data-bubble, as in the real thing.
+vi.mock("comicaljs", () => {
+    class Bubble {
+        private spec: { level: number };
+        constructor(private element: HTMLElement) {
+            this.spec = Bubble.getBubbleSpec(element);
+        }
+        static getBubbleSpec(element: HTMLElement): { level: number } {
+            const raw = element.getAttribute("data-bubble");
+            return raw ? JSON.parse(raw) : { level: 1 };
+        }
+        getBubbleSpec() {
+            return this.spec;
+        }
+        persistBubbleSpec() {
+            this.element.setAttribute("data-bubble", JSON.stringify(this.spec));
+        }
+    }
+    return { Bubble, Comical: { update: vi.fn() } };
+});
+
+vi.mock("./CanvasElementContextControls", () => ({
+    renderCanvasElementContextControls: vi.fn(),
+}));
+
+// jsdom has no layout; give the bloom-canvas a size so the fit arithmetic is real numbers.
+vi.mock("../../../utils/elementUtils", () => ({
+    getExactClientSize: () => ({ width: 400, height: 300 }),
+}));
+
 import {
-    adjustBackgroundImageSize,
-    getBackgroundCanvasElement,
+    BackgroundImageManagerState,
+    handleResizeAdjustments,
+    repairInterruptedBackgroundConversion,
 } from "./CanvasElementBackgroundImageManager";
-import type { BackgroundImageManagerState } from "./CanvasElementBackgroundImageManager";
 
-// The inline styles a background image already has when something asks for a refit.
-const initialCanvasElementStyle = {
-    width: "300px",
-    height: "200px",
-    left: "10px",
-    top: "20px",
-};
+// Old-style page markup (Bloom 6.2 and earlier): the img sits directly in the bloom-canvas, with
+// no bloom-backgroundImage canvas element yet. handleResizeAdjustments converts it on page load.
+const kOldStylePage = `<div class="bloom-page"><div class="marginBox">
+    <div class="bloom-canvas"><img src="image3.png" data-copyright="Copyright © 2011, Pam Gregory" /></div>
+</div></div>`;
 
-function setUpBackgroundImage(): {
-    bloomCanvas: HTMLElement;
-    bgCanvasElement: HTMLElement;
-    img: HTMLImageElement;
-} {
-    document.body.innerHTML = `
-        <div class="bloom-page">
-            <div class="bloom-canvas">
-                <div class="bloom-canvas-element bloom-backgroundImage">
-                    <div class="bloom-imageContainer">
-                        <img src="rabbit.png" class="bloom-imageLoadError" />
-                    </div>
-                </div>
-            </div>
-        </div>`;
-    const bloomCanvas = document.querySelector(".bloom-canvas") as HTMLElement;
-    const bgCanvasElement = document.querySelector(
-        ".bloom-backgroundImage",
-    ) as HTMLElement;
-    bgCanvasElement.style.width = initialCanvasElementStyle.width;
-    bgCanvasElement.style.height = initialCanvasElementStyle.height;
-    bgCanvasElement.style.left = initialCanvasElementStyle.left;
-    bgCanvasElement.style.top = initialCanvasElementStyle.top;
-    return {
-        bloomCanvas,
-        bgCanvasElement,
-        img: bgCanvasElement.getElementsByTagName("img")[0],
-    };
-}
+const directImgChildren = (bloomCanvas: Element) =>
+    Array.from(bloomCanvas.children).filter((c) => c.nodeName === "IMG");
 
-function makeState(): BackgroundImageManagerState {
-    return { bgImageLoadListeners: new WeakMap() };
-}
+describe("switchBackgroundToCanvasElement vs. a save requested mid-conversion (BL-16870)", () => {
+    let state: BackgroundImageManagerState;
+    let bloomCanvas: HTMLElement;
 
-function refit(
-    bloomCanvas: HTMLElement,
-    bgCanvasElement: HTMLElement,
-): Promise<void> {
-    return adjustBackgroundImageSize(
-        makeState(),
-        bloomCanvas,
-        bgCanvasElement,
-        false,
-        () => undefined, // nothing is the active element, so no controls get rendered
-        () => {},
-    );
-}
-
-describe("adjustBackgroundImageSize", () => {
     beforeEach(() => {
-        reportedSize.width = 0;
-        reportedSize.height = 0;
+        vi.useFakeTimers();
+        saveTracker.reset();
+        document.body.innerHTML = kOldStylePage;
+        bloomCanvas = document.querySelector(".bloom-canvas") as HTMLElement;
+        state = { bgImageLoadListeners: new WeakMap() };
     });
 
-    test("leaves the background image alone when the bloom-canvas has no area", async () => {
-        const { bloomCanvas, bgCanvasElement, img } = setUpBackgroundImage();
-        // Sanity check: the styles we expect to survive the call are there to start with.
-        expect(bgCanvasElement.style.width).toBe(
-            initialCanvasElementStyle.width,
-        );
-        expect(bgCanvasElement.style.left).toBe(initialCanvasElementStyle.left);
-        expect(img.style.width).toBe("");
-
-        await refit(bloomCanvas, bgCanvasElement);
-
-        expect(bgCanvasElement.style.width).toBe(
-            initialCanvasElementStyle.width,
-        );
-        expect(bgCanvasElement.style.height).toBe(
-            initialCanvasElementStyle.height,
-        );
-        expect(bgCanvasElement.style.left).toBe(initialCanvasElementStyle.left);
-        expect(bgCanvasElement.style.top).toBe(initialCanvasElementStyle.top);
-        // and it did not start cropping the image either
-        expect(img.style.width).toBe("");
+    afterEach(() => {
+        vi.useRealTimers();
+        document.body.innerHTML = "";
     });
 
-    test("leaves the background image alone when the bloom-canvas has width but no height", async () => {
-        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
-        reportedSize.width = 400;
-        reportedSize.height = 0;
+    // Drive the conversion to completion. The new img never loads in jsdom, so mark it failed;
+    // the sizing code then stops waiting on its next (100ms timer) attempt and finishes.
+    const letTheConversionSettle = async () => {
+        const newImg = bloomCanvas.querySelector(
+            ".bloom-backgroundImage img",
+        ) as HTMLImageElement;
+        expect(newImg).not.toBeNull();
+        newImg.classList.add("bloom-imageLoadError");
+        await vi.advanceTimersByTimeAsync(200);
+    };
 
-        await refit(bloomCanvas, bgCanvasElement);
+    test("a save requested while the image is still loading waits for the conversion, and captures a clean page", async () => {
+        // Sanity: the page starts old-style.
+        expect(directImgChildren(bloomCanvas)).toHaveLength(1);
+        expect(
+            bloomCanvas.getElementsByClassName("bloom-backgroundImage"),
+        ).toHaveLength(0);
 
-        expect(bgCanvasElement.style.width).toBe(
-            initialCanvasElementStyle.width,
+        handleResizeAdjustments(
+            state,
+            [bloomCanvas],
+            () => {},
+            () => undefined,
+            () => {},
         );
-        expect(bgCanvasElement.style.height).toBe(
-            initialCanvasElementStyle.height,
+
+        // Mid-conversion: the new element exists but is hidden, and the old img is still there.
+        // This is the state that must never reach the saved book.
+        const bgElement = bloomCanvas.getElementsByClassName(
+            "bloom-backgroundImage",
+        )[0] as HTMLElement;
+        expect(bgElement).toBeDefined();
+        expect(bgElement.style.visibility).toBe("hidden");
+        expect(directImgChildren(bloomCanvas)).toHaveLength(1);
+
+        // C# asks for the page content now, as the Update Book page walk did the instant the
+        // page's DOM had loaded. The conversion is in flight, so the save must wait...
+        saveTracker.requestPageContent();
+        expect(saveTracker.activeDelays).toBeGreaterThan(0);
+        expect(saveTracker.capturedBodyHtml).toBeUndefined();
+
+        await letTheConversionSettle();
+
+        // ...and be captured only once the conversion, cleanup included, is done.
+        expect(saveTracker.capturedBodyHtml).toBeDefined();
+        const saved = document.createElement("div");
+        saved.innerHTML = saveTracker.capturedBodyHtml!;
+        const savedCanvas = saved.querySelector(".bloom-canvas") as HTMLElement;
+        expect(directImgChildren(savedCanvas)).toHaveLength(0);
+        const savedBg = savedCanvas.querySelector(
+            ".bloom-backgroundImage",
+        ) as HTMLElement;
+        expect(savedBg).not.toBeNull();
+        expect(savedBg.style.visibility).toBe("");
+        const savedImg = savedBg.querySelector("img") as HTMLImageElement;
+        expect(savedImg.getAttribute("src")).toBe("image3.png");
+        expect(savedImg.getAttribute("data-copyright")).toBe(
+            "Copyright © 2011, Pam Gregory",
         );
+
+        // And the live page ends in the same clean state, with nothing left in flight.
+        expect(directImgChildren(bloomCanvas)).toHaveLength(0);
+        expect(bgElement.style.visibility).toBe("");
+        expect(saveTracker.activeDelays).toBe(0);
     });
 
-    // A hidden bloom-canvas that has a border reports a negative size, because
-    // getExactClientSize subtracts the border from a zero bounding rectangle.
-    test("leaves the background image alone when the bloom-canvas reports a negative size", async () => {
-        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
-        reportedSize.width = -2;
-        reportedSize.height = -2;
-
-        await refit(bloomCanvas, bgCanvasElement);
-
-        expect(bgCanvasElement.style.width).toBe(
-            initialCanvasElementStyle.width,
+    test("with no save pending, the conversion still cleans up and releases all its delays", async () => {
+        handleResizeAdjustments(
+            state,
+            [bloomCanvas],
+            () => {},
+            () => undefined,
+            () => {},
         );
-        expect(bgCanvasElement.style.height).toBe(
-            initialCanvasElementStyle.height,
-        );
-    });
+        await letTheConversionSettle();
 
-    // This is the guard against the tests above passing for the wrong reason: given a
-    // bloom-canvas that does have a size, the same call really does resize the background
-    // image. (The image here has failed to load, which is the one case the code can size
-    // synchronously, since it then fills the container to show the error message.)
-    test("fits the background image to a bloom-canvas that has a size", async () => {
-        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
-        reportedSize.width = 400;
-        reportedSize.height = 500;
-
-        await refit(bloomCanvas, bgCanvasElement);
-
-        expect(bgCanvasElement.style.width).toBe("400px");
-        expect(bgCanvasElement.style.height).toBe("500px");
-        expect(bgCanvasElement.style.left).toBe("0px");
-        expect(bgCanvasElement.style.top).toBe("0px");
+        expect(directImgChildren(bloomCanvas)).toHaveLength(0);
+        const bgElement = bloomCanvas.getElementsByClassName(
+            "bloom-backgroundImage",
+        )[0] as HTMLElement;
+        expect(bgElement.style.visibility).toBe("");
+        // A leaked delay would make every later save in the session wait out the 4s timeout.
+        expect(saveTracker.activeDelays).toBe(0);
+        expect(saveTracker.capturedBodyHtml).toBeUndefined();
     });
 });
 
-describe("getBackgroundCanvasElement", () => {
-    test("finds the background image that is a direct child of the bloom-canvas", () => {
-        const { bloomCanvas, bgCanvasElement } = setUpBackgroundImage();
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(bgCanvasElement);
+// A page saved by an early 6.5 "Update Book" part-way through the conversion: the old-style img is
+// still directly in the bloom-canvas, and the new background canvas element was saved hidden.
+const kDamagedPage = `<div class="bloom-page"><div class="marginBox">
+    <div class="bloom-canvas bloom-has-canvas-element">
+        <img src="image3.png" data-copyright="Copyright © 2011, Pam Gregory" />
+        <div class="bloom-canvas-element bloom-backgroundImage" style="visibility: hidden;" data-bubble="{&quot;level&quot;:1}">
+            <div class="bloom-imageContainer"><img src="image3.png" data-copyright="Copyright © 2011, Pam Gregory" /></div>
+        </div>
+    </div>
+</div></div>`;
+
+// The normal state of a converted bloom-canvas from an older book: a visible background canvas
+// element, plus the obsolete placeholder img that older Bloom left as a direct child.
+const kConvertedPageWithPlaceholder = `<div class="bloom-page"><div class="marginBox">
+    <div class="bloom-canvas bloom-has-canvas-element">
+        <img src="placeHolder.png" />
+        <div class="bloom-canvas-element bloom-backgroundImage" style="width: 300px;" data-bubble="{&quot;level&quot;:1}">
+            <div class="bloom-imageContainer"><img src="image3.png" /></div>
+        </div>
+    </div>
+</div></div>`;
+
+describe("repairInterruptedBackgroundConversion (BL-16870)", () => {
+    let state: BackgroundImageManagerState;
+
+    beforeEach(() => {
+        saveTracker.reset();
+        state = { bgImageLoadListeners: new WeakMap() };
     });
 
-    test("returns undefined when the bloom-canvas has no background image", () => {
-        document.body.innerHTML = `
-            <div class="bloom-canvas">
-                <div class="bloom-canvas-element"><div class="bloom-imageContainer"><img src="a.png"/></div></div>
-            </div>`;
+    afterEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("a page saved mid-conversion is repaired when it loads: stray picture removed, element shown", () => {
+        document.body.innerHTML = kDamagedPage;
         const bloomCanvas = document.querySelector(
             ".bloom-canvas",
         ) as HTMLElement;
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBeUndefined();
-    });
+        const bgElement = bloomCanvas.querySelector(
+            ".bloom-backgroundImage",
+        ) as HTMLElement;
+        // Sanity: the damage is present.
+        expect(directImgChildren(bloomCanvas)).toHaveLength(1);
+        expect(bgElement.style.visibility).toBe("hidden");
 
-    test("does not take a nested bloom-canvas's background image for the outer one", () => {
-        document.body.innerHTML = `
-            <div class="bloom-canvas" id="outer">
-                <div class="bloom-canvas-element">
-                    <div class="bloom-canvas" id="inner">
-                        <div class="bloom-canvas-element bloom-backgroundImage" id="innerBg">
-                            <div class="bloom-imageContainer"><img src="inner.png"/></div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        const outer = document.getElementById("outer") as HTMLElement;
-        const inner = document.getElementById("inner") as HTMLElement;
-        const innerBg = document.getElementById("innerBg") as HTMLElement;
-        // Sanity check: a plain descendant search would have found the inner one.
-        expect(outer.getElementsByClassName("bloom-backgroundImage")[0]).toBe(
-            innerBg,
+        handleResizeAdjustments(
+            state,
+            [bloomCanvas],
+            () => {},
+            () => undefined,
+            () => {},
         );
 
-        expect(getBackgroundCanvasElement(outer)).toBeUndefined();
-        expect(getBackgroundCanvasElement(inner)).toBe(innerBg);
+        expect(directImgChildren(bloomCanvas)).toHaveLength(0);
+        expect(bgElement.style.visibility).toBe("");
+        // Repaired in place: no second background element, and the real picture survives inside it.
+        expect(
+            bloomCanvas.querySelectorAll(".bloom-backgroundImage"),
+        ).toHaveLength(1);
+        expect(bgElement.querySelector("img")!.getAttribute("src")).toBe(
+            "image3.png",
+        );
+        // The repair is synchronous and holds no save delay.
+        expect(saveTracker.activeDelays).toBe(0);
     });
 
-    test("finds each bloom-canvas's own background image when both have one", () => {
-        document.body.innerHTML = `
-            <div class="bloom-canvas" id="outer">
-                <div class="bloom-canvas-element bloom-backgroundImage" id="outerBg">
-                    <div class="bloom-imageContainer"><img src="outer.png"/></div>
-                </div>
-                <div class="bloom-canvas-element">
-                    <div class="bloom-canvas" id="inner">
-                        <div class="bloom-canvas-element bloom-backgroundImage" id="innerBg">
-                            <div class="bloom-imageContainer"><img src="inner.png"/></div>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        const outer = document.getElementById("outer") as HTMLElement;
-        const inner = document.getElementById("inner") as HTMLElement;
-        expect(getBackgroundCanvasElement(outer)).toBe(
-            document.getElementById("outerBg"),
-        );
-        expect(getBackgroundCanvasElement(inner)).toBe(
-            document.getElementById("innerBg"),
-        );
-    });
-
-    // The Image Description tool wraps the background image in a bloom-describedImage
-    // while it is active, so the background image is not a direct child then.
-    test("still finds the background image when the Image Description tool has wrapped it", () => {
-        document.body.innerHTML = `
-            <div class="bloom-canvas">
-                <div class="bloom-describedImage">
-                    <div class="bloom-canvas-element bloom-backgroundImage" id="bg">
-                        <div class="bloom-imageContainer"><img src="a.png"/></div>
-                    </div>
-                </div>
-            </div>`;
+    test("a normally converted page, with the obsolete placeholder img, is left alone", () => {
+        document.body.innerHTML = kConvertedPageWithPlaceholder;
         const bloomCanvas = document.querySelector(
             ".bloom-canvas",
         ) as HTMLElement;
-        expect(getBackgroundCanvasElement(bloomCanvas)).toBe(
-            document.getElementById("bg"),
+        const bgElement = bloomCanvas.querySelector(
+            ".bloom-backgroundImage",
+        ) as HTMLElement;
+        const before = bloomCanvas.innerHTML;
+
+        handleResizeAdjustments(
+            state,
+            [bloomCanvas],
+            () => {},
+            () => undefined,
+            () => {},
         );
+
+        expect(
+            repairInterruptedBackgroundConversion(bloomCanvas, bgElement),
+        ).toBe(false);
+        expect(bloomCanvas.innerHTML).toBe(before);
+        expect(directImgChildren(bloomCanvas)).toHaveLength(1);
     });
 });

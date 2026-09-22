@@ -296,6 +296,73 @@ namespace BloomTests.Book
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
         }
 
+        /// <summary>
+        /// BL-16819: the user's Transparency choice for the cover image (here Opaque) is a class on the
+        /// img and, once the page is saved, on the data-div copy. Bringing the book up to date replaces
+        /// the xmatter with a fresh template page and refills the cover image from the data-div, and the
+        /// choice must survive that.
+        /// </summary>
+        [Test]
+        public void BringBookUpToDate_CoverImageTransparencyChoiceSurvives()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*' src='aor.png' data-canvas-element-style='width: 468px; height: 479px; top: 31px; left: 0px;' data-canvas-imgsizebasedon='469,545' class=' bloom-imageLoadError bloom-opaque' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa'>aor.png</div>
+					</div>
+					<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' data-xmatter-page='frontCover' data-custom-layout-id='customOutsideFrontCover' id='cover' lang='en'>
+						<div class='marginBox'>
+							<div class='bloom-canvas bloom-has-canvas-element' data-imgsizebasedon='469,545'>
+								<div class='bloom-canvas-element bloom-backgroundImage' style='width: 468px; height: 479px; top: 31px; left: 0px;'>
+									<div class='bloom-imageContainer'>
+										<img data-book='coverImage' src='aor.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' class='bloom-opaque' alt='' />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>"
+            );
+            var book = CreateBook();
+            var dom = book.RawDom;
+            var pageImageXpath =
+                "//div[contains(@class,'bloom-page')]//img[@data-book='coverImage']";
+            Assert.That(
+                ((SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath)).HasClass(
+                    "bloom-opaque"
+                ),
+                Is.True,
+                "sanity check: the cover image starts out Opaque"
+            );
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var dataDivImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+            Assert.That(
+                dataDivImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the data-div copy should keep the Opaque choice"
+            );
+            var pageImage = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("aor.png"));
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the cover image should still be Opaque after the xmatter is regenerated"
+            );
+
+            // And the page as prepared for the Edit tab must show the choice too.
+            var coverPage = book.GetPages().First(p => p.IsXMatter);
+            var editDom = book.GetEditableHtmlDomForPage(coverPage);
+            var editImg = (SafeXmlElement)editDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(
+                editImg.HasClass("bloom-opaque"),
+                Is.True,
+                "the page prepared for editing should keep the Opaque choice"
+            );
+        }
+
         // Unless it's part of a bloom-canvas that has an image description, an image
         // should have an alt attr that is exactly an empty string.
         [Test]
@@ -2088,13 +2155,6 @@ namespace BloomTests.Book
             Assert.IsTrue(book.CanDelete);
         }
 
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
-        }
-
         [Test]
         public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
         {
@@ -3151,6 +3211,29 @@ namespace BloomTests.Book
             Assert.That(innerXml, Does.Not.Contain("style=\"color:red\""));
             Assert.That(innerXml, Does.Not.Contain("lang=\"en\""));
             Assert.That(innerXml, Does.Contain("<strong><em>text</em></strong>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_PreservesHyperlinkHref()
+        {
+            // A hyperlink is an <a> inside the paragraph; stripping its href would silently destroy the link (BL-16892).
+            // The character-style markup nested inside it should still be cleaned up.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>See <a href='https://bloomlibrary.org/page#frag'><b style='color:red'>this book</b></a> now.</p></div></body></html>"
+            );
+            var para = GetFirstEditableParagraph(dom);
+            Assert.That(
+                para.InnerXml,
+                Does.Contain("href=\"https://bloomlibrary.org/page#frag\""),
+                "sanity check: test data has the link"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                para.InnerXml,
+                Is.EqualTo(
+                    "See <a href=\"https://bloomlibrary.org/page#frag\"><strong>this book</strong></a> now."
+                )
+            );
         }
 
         [Test]
@@ -7180,7 +7263,81 @@ namespace BloomTests.Book
                 default:
                     break;
             }
-            Assert.That(result, Is.EqualTo($"Enter Shift-Enter{replacement}Last Line "));
+            // The space between the two paragraphs is what Bloom 6.2 and earlier wrote out; the
+            // paragraph boundary it stood for now gets the same replacement as the linebreak span.
+            Assert.That(
+                result,
+                Is.EqualTo($"Enter{replacement}Shift-Enter{replacement}Last Line ")
+            );
+        }
+
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace)]
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToNewline)]
+        [TestCase(Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline)]
+        public void RemoveHtmlMarkup_AdjacentParagraphs_BoundaryBecomesLineBreak(
+            Bloom.Book.Book.LineBreakSpanConversionMode conversionMode
+        )
+        {
+            // What the browser gives us for "a", Enter, "b": no whitespace at all between the
+            // paragraphs. See https://issues.bloomlibrary.org/youtrack/issue/BL-16808.
+            string input = "<p>a</p><p>b</p>";
+
+            // Sanity check: without the paragraph handling this runs the two together.
+            Assert.That(
+                input.Contains("</p><p>"),
+                Is.True,
+                "test input is supposed to have no whitespace between the paragraphs"
+            );
+
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(input, conversionMode);
+
+            string replacement = " ";
+            switch (conversionMode)
+            {
+                case Bloom.Book.Book.LineBreakSpanConversionMode.ToNewline:
+                    replacement = Environment.NewLine;
+                    break;
+                case Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline:
+                    replacement = "\n";
+                    break;
+                default:
+                    break;
+            }
+            Assert.That(result, Is.EqualTo($"a{replacement}b"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_HeadingFollowsParagraph_BoundaryBecomesLineBreak()
+        {
+            string input = "<p>a</p><h1>b</h1><p>c</p>";
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                input,
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("a\nb\nc"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_SingleParagraph_NoLeadingLineBreak()
+        {
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                "<p>a</p>",
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("a"));
+        }
+
+        [Test]
+        public void RemoveHtmlMarkup_MarkupInsideParagraph_NoSpuriousLineBreak()
+        {
+            var result = Bloom.Book.Book.RemoveHtmlMarkup(
+                "<p><strong>Where Are</strong></p><p><strong>The Fish Going?</strong></p>",
+                Bloom.Book.Book.LineBreakSpanConversionMode.ToSimpleNewline
+            );
+
+            Assert.That(result, Is.EqualTo("Where Are\nThe Fish Going?"));
         }
 
         [Test]

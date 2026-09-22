@@ -23,6 +23,9 @@ import {
     type ICollectionSpec,
 } from "./launchBloom";
 import { chromium } from "@playwright/test";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as Path from "node:path";
 import {
     describeProblems,
     startProblemDialogWatcher,
@@ -44,6 +47,12 @@ export interface IBloomApp {
     bloomPid: number;
     /** The collection folder Bloom has open: a temp folder, never the inputs repository itself. */
     collectionDir: string;
+    /**
+     * The folder this Bloom keeps its user settings in (its user.config), beside the collection in
+     * the temp folder, so nothing it saves reaches the developer's own Bloom or the next run. It
+     * starts empty, and a restart keeps it. See helpers/userSettings.ts to read what is in it.
+     */
+    userSettingsDir: string;
     /**
      * Quit Bloom and start it again on the same collection folder, and return the new shell page.
      *
@@ -69,6 +78,12 @@ interface IBloomWorkerFixtures {
     collectionName: string | undefined;
     /** A collection to create for this test alone. Set it with test.use(). Preferred. */
     collectionSpec: ICollectionSpec | undefined;
+    /**
+     * Experimental features this Bloom should have on, by their ExperimentalFeatures.cs tokens
+     * (e.g. ["team-collections"]). Set it with test.use(). See
+     * ILaunchBloomOptions.experimentalFeatures for why this is not done the way a person does it.
+     */
+    experimentalFeatures: string[] | undefined;
     /** The launched Bloom. Prefer the `page` fixture unless you need a port or the folder. */
     bloomApp: IBloomApp;
     problemDialogWatcher: IProblemDialogWatcher;
@@ -78,7 +93,20 @@ interface IBloomWorkerFixtures {
 interface IBloomTestFixtures {
     /** Fails the test when Bloom raised a problem dialog while it ran. Runs automatically. */
     failOnBloomProblem: void;
+    /**
+     * When a test fails, keeps what explains it beside Playwright's own trace and screenshot: Bloom's
+     * log, and a copy of the collection as Bloom left it. Runs automatically.
+     */
+    keepEvidenceOnFailure: void;
 }
+
+/**
+ * Where the Bloom under test writes its log. Bloom logs to %TEMP%\SIL\Bloom\Log.txt whatever
+ * folder its settings are in, so this is the developer's or the runner's temp folder, and a run's
+ * successive Blooms overwrite one another there: what is there when a test fails is the log of the
+ * Bloom that was running.
+ */
+const BLOOM_LOG_PATH = Path.join(os.tmpdir(), "SIL", "Bloom", "Log.txt");
 
 // How long we wait for Bloom's WebView2 to expose the shell document after the HTTP server is up.
 // The first navigation after launch is slow: WebView2 starts, the bundle loads, and React mounts.
@@ -222,9 +250,13 @@ async function findShellPage(
 export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     collectionName: [undefined, { scope: "worker", option: true }],
     collectionSpec: [undefined, { scope: "worker", option: true }],
+    experimentalFeatures: [undefined, { scope: "worker", option: true }],
 
     bloomApp: [
-        async ({ collectionName, collectionSpec }, use) => {
+        async (
+            { collectionName, collectionSpec, experimentalFeatures },
+            use,
+        ) => {
             let launched: ILaunchedBloom | undefined;
             // Reassigned by restart(), and read by the teardown below, so the connection we close
             // is always the current one.
@@ -233,6 +265,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 launched = await launchBloom({
                     collectionName,
                     collectionSpec,
+                    experimentalFeatures,
                 });
                 // CDP must go to 127.0.0.1: on Windows "localhost" resolves to ::1 first, and
                 // WebView2's debugging port does not answer there — you get an empty or wrong
@@ -245,6 +278,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
+                    userSettingsDir: launched.userSettingsDir,
                     restart: async (betweenStopAndStart) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
@@ -303,8 +337,71 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
         await use(bloomApp.page);
     },
 
+    // Torn down after every other test-scoped fixture (failOnBloomProblem depends on it, so it is
+    // set up first), so a failure raised by one of them is still seen here. Everything goes under
+    // testInfo.outputDir, which is test-results/<test>/, the folder CI already uploads on failure.
+    //
+    // The collection folder is copied rather than described because the failures this is for are
+    // the ones where Bloom's state on disk disagrees with what the test saw: a title typed on the
+    // cover that the collection never learned (AUTOMATION-DEBT.md). The book's HTML and meta.json
+    // say which side lost it.
+    //
+    // The user-settings folder is deliberately NOT kept. These artifacts are public (the repository
+    // is), and user.config is where a Bloom that signed in to Bloom Library for real
+    // (helpers/bloomLibraryAccount.ts) saves its session token and account, and where the next
+    // secret-shaped setting would land too. Redacting known names would protect only against the
+    // ones we thought of. helpers/userSettings.ts reads that file for a test while it runs instead.
+    keepEvidenceOnFailure: [
+        async ({ bloomApp }, use, testInfo) => {
+            await use();
+            if (testInfo.status === testInfo.expectedStatus) return;
+            // Bloom may still be writing; a moment lets its last save land in the copy.
+            await delay(1000);
+            // Best effort throughout: this runs on a test that has already failed, and a file
+            // Bloom still holds open must cost only that file, never the rest of the evidence or
+            // a second error on top of the real one. Each step is contained on its own, and the
+            // copy filter really opens each file, because on Windows accessSync checks attributes,
+            // not whether another process has the file locked.
+            try {
+                if (fs.existsSync(BLOOM_LOG_PATH))
+                    await testInfo.attach("bloom-log", {
+                        body: fs.readFileSync(BLOOM_LOG_PATH),
+                        contentType: "text/plain",
+                    });
+            } catch (error) {
+                console.warn(`Could not keep Bloom's log: ${error}`);
+            }
+            try {
+                fs.cpSync(
+                    bloomApp.collectionDir,
+                    testInfo.outputPath("collection"),
+                    {
+                        recursive: true,
+                        errorOnExist: false,
+                        filter: (source) => {
+                            if (fs.statSync(source).isDirectory()) return true;
+                            try {
+                                fs.closeSync(fs.openSync(source, "r"));
+                                return true;
+                            } catch {
+                                console.warn(
+                                    `Left out of the collection copy (locked?): ${source}`,
+                                );
+                                return false;
+                            }
+                        },
+                    },
+                );
+            } catch (error) {
+                console.warn(`Could not copy the collection folder: ${error}`);
+            }
+        },
+        { auto: true },
+    ],
+
     failOnBloomProblem: [
-        async ({ problemDialogWatcher }, use) => {
+        async ({ problemDialogWatcher, keepEvidenceOnFailure }, use) => {
+            void keepEvidenceOnFailure;
             // Discard anything raised before this test started, so one test's problem is not
             // reported against the next.
             problemDialogWatcher.takeProblems();
