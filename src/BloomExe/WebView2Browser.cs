@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -357,6 +359,131 @@ namespace Bloom
             );
         }
 
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindowEx(
+            IntPtr parent,
+            IntPtr childAfter,
+            string className,
+            string windowName
+        );
+
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out NativeRect rect);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr insertAfter,
+            int x,
+            int y,
+            int cx,
+            int cy,
+            uint flags
+        );
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
+        {
+            public int Left,
+                Top,
+                Right,
+                Bottom;
+        }
+
+        private const uint kSwpNoMove = 0x0002;
+        private const uint kSwpNoZOrder = 0x0004;
+        private const uint kSwpNoActivate = 0x0010;
+
+        // Set once we have complained about this workaround failing, so a problem that repeats on every
+        // resize does not fill the log.
+        private bool _reportedHostWindowCorrectionFailure;
+
+        /// <summary>
+        /// Works around a WebView2 bug (BL-16876) that truncates our content whenever the browser is
+        /// hosted in one of the dialogs that LegacyDpiDialogLauncher shows under a SYSTEM_AWARE thread
+        /// DPI context (see that class, and WorkspaceView.OpenLegacySettingsDialog).
+        ///
+        /// WebView2 ties DPI awareness to the msedgewebview2.exe browser process, which inherits the
+        /// awareness of the HWND that hosts it. Bloom's process is PerMonitorV2, so a browser created for
+        /// a System-aware dialog is born with a different awareness than the app. In that state WebView2
+        /// ignores the bounds we gave it: with Bounds=636x446, BoundsMode=UseRawPixels and
+        /// RasterizationScale=1 it still creates its own host window (Chrome_WidgetWin_0) at
+        /// systemDpi/monitorDpi of that size -- 509x357 on a 125% monitor. It sizes the *content* window
+        /// correctly, so the content ends up clipped by its own undersized parent.
+        ///
+        /// We cannot fix this by changing anyone's DPI awareness: making the dialogs PerMonitorV2 changes
+        /// how the WinForms half of them lays out, and forcing PerMonitorV2 around environment or
+        /// controller creation either does nothing or makes the mismatch worse. So we simply put the host
+        /// window back to the size WebView2 was asked for. Input still maps correctly afterwards.
+        ///
+        /// This is a no-op unless the sizes actually disagree, so it costs nothing in the normal case and
+        /// stops doing anything if WebView2 fixes the bug.
+        /// </summary>
+        private void CorrectTruncatedWebView2HostWindow()
+        {
+            // This is a cosmetic workaround for someone else's bug, reaching into window handles that
+            // WebView2 owns and does not document. If any of that ever misbehaves we want a slightly
+            // clipped dialog, not a dead Bloom, so nothing in here is allowed to escape.
+            try
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                var webviewWindow = _webview.Handle;
+                if (!LegacyDpiDialogLauncher.IsWindowLegacyDpiAware(webviewWindow))
+                    return;
+                // The controller's own window is a direct child of the WebView2 control's window.
+                var hostWindow = FindWindowEx(
+                    webviewWindow,
+                    IntPtr.Zero,
+                    "Chrome_WidgetWin_0",
+                    null
+                );
+                if (hostWindow == IntPtr.Zero)
+                    return; // not created yet; a later resize will catch it
+                if (!GetClientRect(webviewWindow, out var want))
+                    return;
+                var wantWidth = want.Right - want.Left;
+                var wantHeight = want.Bottom - want.Top;
+                if (wantWidth <= 0 || wantHeight <= 0)
+                    return;
+                if (!GetClientRect(hostWindow, out var have))
+                    return;
+                if (have.Right - have.Left == wantWidth && have.Bottom - have.Top == wantHeight)
+                    return; // WebView2 got it right; leave it alone
+                // SetWindowPos reports failure by returning false, not by throwing, so without this
+                // check a rejected resize (e.g. WebView2 destroyed the host window between our
+                // finding it and our resizing it) would leave the dialog clipped and say nothing.
+                if (
+                    !SetWindowPos(
+                        hostWindow,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        wantWidth,
+                        wantHeight,
+                        kSwpNoMove | kSwpNoZOrder | kSwpNoActivate
+                    )
+                )
+                {
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                }
+            }
+            catch (Exception e)
+            {
+                // Log once per browser; this runs again on every resize, and a repeating failure would
+                // otherwise bury everything else in the log.
+                if (!_reportedHostWindowCorrectionFailure)
+                {
+                    _reportedHostWindowCorrectionFailure = true;
+                    Logger.WriteMinorEvent(
+                        "Could not correct the WebView2 host window size (BL-16876 workaround); the dialog"
+                            + " may show clipped content: "
+                            + e.Message
+                    );
+                }
+            }
+        }
+
         private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -550,6 +677,22 @@ namespace Bloom
                     _environmentForE2eTests = env;
             }
             await _webview.EnsureCoreWebView2Async(env);
+            // WebView2 has now created its host window, which is where it gets the size wrong
+            // (BL-16876), so correct it. In practice this one call is enough: once the host window
+            // has the right size, WebView2's own resizing keeps it that way.
+            CorrectTruncatedWebView2HostWindow();
+            // Re-check after a resize as well, in case initialization finished before the dialog's
+            // final layout and the correction above therefore ran against a stale size. This has to
+            // be POSTED rather than done in the handler: WebView2.OnSizeChanged raises SizeChanged
+            // first and only then applies the new Bounds, so work done inline here would be
+            // overwritten a moment later. By the time the posted call runs, the resize has settled,
+            // and it costs nothing because it is a no-op whenever the sizes already agree.
+            _webview.SizeChanged += (o, e) =>
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                _webview.BeginInvoke((Action)CorrectTruncatedWebView2HostWindow);
+            };
             // Added as a footnote to BL-15466 to prevent popups generated from title
             // attributes being white on black, presumably because of some setting the
             // user has made for Chrome/Edge generally.

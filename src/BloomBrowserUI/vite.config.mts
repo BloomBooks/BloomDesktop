@@ -715,6 +715,24 @@ export default defineConfig(async ({ command }) => {
             },
         },
 
+        // CSS PREPROCESSING
+        css: {
+            // Compile LESS on the main thread instead of in Vite's worker pool.
+            //
+            // In the pool, the worker blocks on Atomics.wait() while the main thread
+            // resolves each @import for it, and gives up after ~5s if the main thread
+            // looks idle, on the theory that the two have deadlocked. A busy CI machine
+            // makes that guess wrong: the build dies with "[vite:css] [less] timed-out"
+            // naming whichever .less file was in flight, which reads like a fault in that
+            // file and isn't one.
+            //
+            // 0 means "no worker" (Vite treats max <= 0 as disabling the real worker), so
+            // the watchdog does not exist and the error cannot occur. We lose preprocessor
+            // parallelism, which is nearly free here: most of our LESS is compiled by the
+            // compile-less plugin in closeBundle, not through this path.
+            preprocessorMaxWorkers: 0,
+        },
+
         // BUILD CONFIGURATION
         // Controls how Vite creates production bundles
         build: {
