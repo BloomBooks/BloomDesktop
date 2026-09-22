@@ -40,7 +40,7 @@ const NoIndentMenuItem: React.FunctionComponent<{
     onDone: () => void;
 }> = (props) => (
     <LocalizableSelectableMenuItem
-        english="No Indent"
+        english="Do Not Indent This Paragraph"
         l10nId="EditTab.TextContextMenu.NoIndent"
         selected={isNoIndentOn(props.paragraph)}
         disabled={!canToggleNoIndent(props.paragraph)}
