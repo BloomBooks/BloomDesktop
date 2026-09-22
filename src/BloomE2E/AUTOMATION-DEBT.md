@@ -79,7 +79,7 @@ investigated 2026-09-16, which splits this entry in two:
 
 - **The WinForms half is drivable now.** Windows UI Automation reaches every WinForms control
   by its designer name with no pointer, keystroke or focus change:
-  `.github/skills/bloom-automation/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
+  `.claude/skills/run-bloom/winformsUia.ps1` (see "Driving WinForms and OS dialogs" in
   that skill's SKILL.md). Verified on the Settings dialog: `select` on the "Book Making" tab item
   and `invoke` on `_cancelButton` both worked, headless. The `WireUpForWinforms` dialogs'
   OK/Cancel buttons and the Settings tab strip are therefore no longer a reason a step stays
@@ -115,7 +115,7 @@ File pickers and video capture open native windows that Playwright cannot see or
 test that triggers one unprepared hangs the run. (The WinForms Image Toolbox this entry used
 to name is gone: choosing an image is a web dialog now, and only its "Open File..." button
 under "This Computer", and changing a GIF, reach a native file picker.) Since 2026-09-16 the
-picker itself is no longer undrivable: `.github/skills/bloom-automation/winformsUia.ps1`
+picker itself is no longer undrivable: `.claude/skills/run-bloom/winformsUia.ps1`
 fills its "File name:" box and presses Open over UI Automation, proven against Bloom's own
 image picker. A test should still prefer `e2e/nextFileToChoose` (below), which never shows
 the dialog; UIA is the fallback for whatever that hook does not cover, and for reading a
@@ -763,10 +763,13 @@ It is timing-dependent (the stale-highlight window is normally repaired within 2
 it shows up on a loaded runner and not on a developer machine — do not expect to reproduce it
 locally, and do not write it off when you cannot.
 
-Fixed in PR #8363; as of 2026-09-15 that is still in review, so a nightly on master can still hit
-it. If it recurs **after** #8363 merges, it is a new mechanism rather than a return of this one —
-say so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes
-them.
+Fixed in PR #8363, which is still in review — so until that merges, this is the expected state of
+master's nightly, and it is not occasional: it failed two of the last three (09-15 fail, 09-16
+pass, 09-17 fail). A red nightly whose only failure is this one needs no investigation; check the
+occurrence log on BL-16873 and move on.
+
+If it recurs **after** #8363 merges, that is a new mechanism rather than a return of this one — say
+so on BL-16873 and keep the trace, because the api-timeline read below is what distinguishes them.
 
 ## A failed run's Bloom API traffic is what settles things, and only hand-parsing reaches it
 
@@ -813,3 +816,53 @@ the renderer — background CPU load while the test runs at normal speed, plus a
 stays drivable while the app's own async work gets pushed around. Worth pairing with a way to
 run one spec N times under that load, since these failures are all intermittent.
 (Found 2026-09-15.)
+
+## A component test lost its connection to the dev server, and we cannot say why
+
+On 2026-09-21 the nightly failed on one component test — `registration-validation.uitest.ts:279`
+("Handles mixed tabs and spaces in multiline field") — with
+`page.goto: net::ERR_CONNECTION_FAILED at http://127.0.0.1:5183/`, raised from
+`setTestComponent.ts:56` on the very first navigation of the test.
+
+**The dev server did not go down.** Five more tests navigated to the same URL in the twenty
+seconds after the failure and all passed, and Vite logged no restart, reload or dependency
+re-optimisation anywhere in the run. A single TCP connect to localhost failed and nothing else
+did. 144 of 145 tests passed. It is the first occurrence in ten nightlies.
+
+The cost is a whole red nightly for one test, and — until now — nothing to look at afterwards.
+The config asked for `trace: "on-first-retry"` while setting no `retries`, so Playwright's
+default of 0 applied and no trace was ever written; the nightly also uploaded only that suite's
+JUnit XML. PR #8383 changed the trace to `retain-on-failure` and added an "Upload
+component-tester traces" step, so the next occurrence leaves a trace to download.
+
+Fix direction: unknown, and deliberately not "add a retry" — `playwright.config.ts` in
+`src/BloomE2E` keeps `retries: 0` on purpose, because a retry hides exactly the flakiness worth
+seeing. Start from the trace the next occurrence leaves. Worth checking there whether the
+failure is a refused connect or a reset, and what else the runner was doing at that instant.
+
+How to react meanwhile: **do not re-run and move on without first looking for the trace
+artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
+collected is a wasted one.
+(Found 2026-09-21.)
+
+---
+
+## Changing the UI language reopens the project, invalidating the test's page
+
+Choosing a language in the top bar's UI language menu makes Bloom reopen the collection
+(`WorkspaceView.SetUiLanguage` calls `ReopenCurrentProject`, because many surfaces only pick up
+a new language when they are rebuilt). That replaces the shell document, so the `page` a test is
+holding goes dead — the same thing `bloomApp.restart()` warns about, but with no equivalent way
+to get the new page: `findShellPage` is private to the fixture, and nothing re-resolves the shell
+after a reopen that the test did not initiate.
+
+The cost today is that `pseudo-english-ui-language.spec.ts` covers only the *offer* — that the
+pseudo-locale is listed, named right, and sorted last — and not the switch itself, which is the
+more interesting half: that choosing it really does pseudolocalize the UI, and that choosing
+English again puts it back. The same limit will bite any future test of a real UI language.
+
+Fix direction: export the shell resolution from the fixture (or expose it as
+`bloomApp.waitForNewShell()`), so a helper that knowingly triggers a reopen can return the new
+page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
+back a usable page, and the switch becomes testable.
+(Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)

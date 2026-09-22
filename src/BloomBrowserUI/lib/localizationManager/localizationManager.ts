@@ -515,7 +515,11 @@ export class LocalizationManager {
         let newstr = text.replace(reStrong, "$1<strong>$2</strong>$3");
         const reEm = /(^|[^*])\*([^*]+)\*([^*]|$)/g;
         newstr = newstr.replace(reEm, "$1<em>$2</em>$3");
-        const reA = /\[([^\]]*)\]\(([^)]*)\)/g;
+        // The link text may not itself contain "[". That keeps the Pseudo-English UI
+        // language working (BL-16748): pseudo-localization wraps the whole string in
+        // square brackets, and if the link text were allowed to span a "[" this would
+        // start matching at that wrapper and swallow the whole sentence into the link.
+        const reA = /\[([^[\]]*)\]\(([^)]*)\)/g;
         newstr = newstr.replace(reA, '<a href="$2">$1</a>');
         return newstr;
     }
