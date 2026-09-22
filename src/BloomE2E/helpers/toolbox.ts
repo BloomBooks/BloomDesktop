@@ -171,3 +171,15 @@ export async function enableTool(page: Page, tool: ToolId): Promise<void> {
     await checkbox.click();
     await header.waitFor({ state: "visible", timeout: 30000 });
 }
+
+/**
+ * The name of the tool whose section of the toolbox is open, as its header shows it, e.g.
+ * "Talking Book Tool", or undefined when no tool is open.
+ */
+export async function getOpenToolName(page: Page): Promise<string | undefined> {
+    const open = toolboxFrame(page).locator(
+        '.MuiAccordionSummary-root[aria-expanded="true"]',
+    );
+    if ((await open.count()) === 0) return undefined;
+    return (await open.first().innerText()).trim();
+}
