@@ -352,33 +352,20 @@ test.describe("the Text Languages publish list", () => {
         await setContentLanguages(page, ["en"]);
     });
 
-    // Skipped until BL-16806 lands: https://issues.bloomlibrary.org/youtrack/issue/BL-16806
+    // This assertion is what caught BL-16806: the name of a language the collection has stopped
+    // listing used to depend on the machine, not on the request. It asserts "Spanish" because the
+    // fallback in CollectionSettings.GetDisplayNameForLanguage now reads the subtag registry.
     //
-    // It fails on CI every time, on the language NAME. The difference it catches is real -- it is
-    // what Bloom shows a user -- but the fix has to settle WHICH name a dropped language gets, and
-    // until that is decided this test would keep the nightly red over a known cause. Re-enable it
-    // with the fix, and expect whatever name BL-16806 settles on.
-    //
-    //     Expected: español      Received: espagnol
-    //
-    // "espagnol" is French for Spanish, and the answer depends on the machine, not on the run.
-    // Bloom asks LibPalaso for the name of the dropped language "in" the collection's metadata
-    // language, which is French here; LibPalaso honors that request only where a native ICU
-    // library is findable, and Bloom ships icu.net but no icuuc.dll. So the CI runner gives
-    // "espagnol" (nightly runs 33665790357 and 33685669405) while a developer machine ignores the
-    // request and gives the autonym "español" (checked in the real Publish tab). Everything else
-    // about the row -- unchecked, not incomplete, enabled -- is right.
-    //
-    // A local failure of this test is usually something else: it has other steps that time out on
-    // a loaded machine, and dies before reaching this assertion.
-    test.skip("keeps a language that the collection no longer has, under its own name [Test Case ID 169]", async ({
+    // A local failure here is usually something else: earlier steps time out on a loaded machine
+    // and the run dies before reaching this assertion.
+    test("keeps a language that the collection no longer has, under its standard name [Test Case ID 169]", async ({
         bloomApp,
     }) => {
         test.setTimeout(180000);
 
         // Drop Spanish from the collection. The book still has Spanish text, so the language stays
         // in the list; but the collection no longer supplies a name for it, so Bloom falls back to
-        // the name the language calls itself.
+        // the language's standard name.
         const withoutSpanish = await restartWithCollectionSettings(bloomApp, {
             languages: ["en", "fr"],
         });
@@ -403,13 +390,13 @@ test.describe("the Text Languages publish list", () => {
                     disabled: false,
                 },
                 {
-                    name: "español",
+                    name: "Spanish",
                     incomplete: false,
                     checked: false,
                     disabled: false,
                 },
             ],
-            "Spanish did not stay in the list, unchecked and under its own name.",
+            "Spanish did not stay in the list, unchecked and under its standard name.",
         );
 
         // Put Spanish back, for the test that follows.

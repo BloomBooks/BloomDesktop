@@ -12,7 +12,6 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
-using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Spreadsheet;
@@ -34,21 +33,18 @@ namespace Bloom.web.controllers
         private BookSelection _bookSelection;
         private readonly SpreadsheetApi _spreadsheetApi;
         private readonly BloomWebSocketServer _webSocketServer;
-        private readonly EditingModel _editingModel;
 
         public BookCommandsApi(
             CollectionModel collectionModel,
             BloomWebSocketServer webSocketServer,
             BookSelection bookSelection,
-            SpreadsheetApi spreadsheetApi,
-            EditingModel editingModel
+            SpreadsheetApi spreadsheetApi
         )
         {
             _collectionModel = collectionModel;
             _webSocketServer = webSocketServer;
             _bookSelection = bookSelection;
             this._spreadsheetApi = spreadsheetApi;
-            _editingModel = editingModel;
             _collectionModel.BookCommands = this;
         }
 
@@ -164,15 +160,17 @@ namespace Bloom.web.controllers
                 },
                 true
             );
-            apiHandler.RegisterEndpointHandler(
+            // Async, off the UI thread, like importBloomSource: the work runs behind the collection
+            // tab's embedded progress dialog, and this returns once that dialog is open.
+            apiHandler.RegisterAsyncEndpointHandler(
                 "bookCommand/updateBook",
-                (request) =>
+                async (request) =>
                 {
                     var book = GetBookObjectFromPost(request);
-                    HandleBringBookUpToDate(book);
+                    await HandleBringBookUpToDateAsync(book);
                     request.PostSucceeded();
                 },
-                true
+                handleOnUiThread: false
             );
             apiHandler.RegisterEndpointHandler(
                 "bookCommand/rename",
@@ -502,20 +500,18 @@ namespace Bloom.web.controllers
             }
         }
 
-        private void HandleBringBookUpToDate(Book.Book book)
+        private async Task HandleBringBookUpToDateAsync(Book.Book book)
         {
             try
             {
                 // Currently this works on the current book, so the argument is ignored.
                 // That's OK for now as currently the book passed will always be the current one.
-                _collectionModel.BringBookUpToDate();
-
-                // In addition to the whole-book update above, visit every page as if the user had
-                // clicked on each one in the Edit tab, saving each. This applies the edit-tab page
-                // setup/update code to every page, so users no longer have to "go to edit and click
-                // on each page" themselves (BL-16595). This runs asynchronously: it switches to the
-                // Edit tab, steps through the pages, and returns to the Collection tab when done.
-                _editingModel.StartUpdatingAllPages();
+                // Besides the whole-book migrations, this runs the edit-tab page fix-up code over
+                // every page (off-screen), so users no longer have to "go to edit and click on each
+                // page" themselves (BL-16595). See CollectionModel.BringBookUpToDateAsync. Problems
+                // in the work itself are reported by its progress dialog; this catch is for failing
+                // to get that far.
+                await _collectionModel.BringBookUpToDateAsync();
             }
             catch (Exception error)
             {
