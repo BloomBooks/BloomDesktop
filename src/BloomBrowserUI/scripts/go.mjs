@@ -143,6 +143,12 @@ const parseArgs = () => {
     const args = process.argv.slice(2);
     const options = {
         vitePort: undefined,
+        // Skip "dotnet watch" and just build and run Bloom once. Roughly halves the time to a running
+        // Bloom, at the cost of C# edits no longer rebuilding by themselves - which is the right trade
+        // whenever you are not editing C#, and most of the time you are not. The front end still runs
+        // through Vite, so TypeScript and LESS edits are live exactly as before; this option only
+        // concerns the C# half.
+        noWatch: false,
         // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
         withLibs: [],
     };
@@ -164,6 +170,11 @@ const parseArgs = () => {
                 "--vite-port",
                 arg.slice("--vite-port=".length),
             );
+            continue;
+        }
+
+        if (arg === "--nowatch" || arg === "--no-watch") {
+            options.noWatch = true;
             continue;
         }
 
@@ -783,6 +794,92 @@ const startDevServer = async () => {
     throw lastError ?? new Error("Unable to start Vite on a random port.");
 };
 
+/**
+ * Stops any running Bloom Freeze Doctor, because one will otherwise fail the build.
+ *
+ * The Doctor loads BloomFreezeDoctor.Core.dll and .Protocol.dll from output/Debug/AnyCPU and holds them
+ * open, so any build that needs to refresh those files dies with MSB3027 ("being used by another
+ * process"). BloomExe's own build copies Protocol.dll, so this is not confined to building the Doctor:
+ * it stops Bloom building at all. It cost a developer a whole test run before anyone worked out why -
+ * the build failed, Bloom never started, and the only symptom was a Doctor sitting there watching for a
+ * Bloom that could not come.
+ *
+ * Killing it outright is safe enough. The Doctor keeps nothing in memory that matters: reports are
+ * written to its outbox on disk as they are gathered, and a send interrupted part way is picked up by
+ * the next drain. And if the user has the Doctor switched on, Bloom starts a new one moments later.
+ */
+const stopAnyFreezeDoctor = () =>
+    new Promise((resolve) => {
+        if (process.platform !== "win32") {
+            resolve();
+            return;
+        }
+        // /F because a tray application does not necessarily close on a polite request, and a build that
+        // fails ten seconds from now is a worse outcome than a diagnostic tool losing its place.
+        //
+        // Named by full path rather than relying on PATH. This did nothing at all the first time it ran -
+        // the build went on to fail on exactly the lock this exists to release - and a spawn that cannot
+        // find its executable was one of the few explanations that fitted, since everything else about the
+        // call worked when tried on its own.
+        const taskkill = path.join(
+            process.env.SystemRoot || "C:\\Windows",
+            "System32",
+            "taskkill.exe",
+        );
+        // stderr is IGNORED rather than piped, and that detail cost a debugging round. Piping a stream and
+        // never reading it leaves it paused, and "close" waits for every stdio stream to end - so the
+        // promise never settled, and because the launcher awaits it, Bloom was never started at all. A
+        // convenience that can hang the launcher is worse than the problem it solves, hence also the
+        // timeout below and resolving on "exit" rather than "close".
+        const killer = spawn(taskkill, ["/IM", "BloomFreezeDoctor.exe", "/F"], {
+            stdio: ["ignore", "pipe", "ignore"],
+            shell: false,
+        });
+
+        let settled = false;
+        const finish = (message) => {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            if (message) {
+                console.log(message);
+            }
+            resolve();
+        };
+
+        let sawIt = false;
+        killer.stdout?.on("data", (chunk) => {
+            if (String(chunk).includes("BloomFreezeDoctor")) {
+                sawIt = true;
+            }
+        });
+        // A failure to RUN taskkill is worth a line. The ordinary "nothing to kill" is not - taskkill exits
+        // non-zero for that, and it is the usual case.
+        killer.on("error", (error) =>
+            finish(
+                `[go] Could not run taskkill to stop the Freeze Doctor (${error.message}). ` +
+                    "If a Doctor is running, this build may fail on a locked DLL.",
+            ),
+        );
+        killer.on("exit", () =>
+            finish(
+                sawIt
+                    ? "[go] Stopped the Bloom Freeze Doctor: it holds the DLLs this build has to replace." +
+                          " Bloom will start a new one if you have it switched on."
+                    : undefined,
+            ),
+        );
+        setTimeout(
+            () =>
+                finish(
+                    "[go] Gave up waiting for taskkill to stop the Freeze Doctor; carrying on. " +
+                        "If a Doctor is running, this build may fail on a locked DLL.",
+                ),
+            15000,
+        ).unref?.();
+    });
+
 const startBloomExe = (vitePort) => {
     const args = [
         exeScriptPath,
@@ -791,6 +888,10 @@ const startBloomExe = (vitePort) => {
         "--vite-port",
         String(vitePort),
     ];
+
+    if (options.noWatch) {
+        args.push("--nowatch");
+    }
 
     const child = spawn(process.execPath, args, {
         cwd: browserUIRoot,
@@ -1012,6 +1113,13 @@ const resolveLinks = () => {
 const main = async () => {
     await warnIfAnotherLauncherActive();
     updateLauncherPhase("starting");
+
+    // Before anything else starts competing for the machine. It only has to happen before the BUILD, but
+    // doing it here rather than just before it is what makes it reliable: `taskkill /IM` walks the whole
+    // process table, and run a moment before the build it was doing that while Vite, LESS and seven file
+    // watchers were all starting - where it took longer than the five seconds allowed and was abandoned.
+    // Here the machine is quiet and it returns immediately.
+    await stopAnyFreezeDoctor();
 
     // Defensive reap: a prior launcher that was hard-killed (terminal closed,
     // SIGKILL, timeout) cannot run its shutdown handlers, so its Vite + watcher

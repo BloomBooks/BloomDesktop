@@ -68,10 +68,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
 
     const dialogTitle = useL10n("Copyright and License", "CopyrightAndLicense");
 
-    // Tell edit tab to disable everything when the dialog is up.
-    // (Without this, the page list is not disabled since the modal
-    // div only exists in the book pane. Once the whole edit tab is inside
-    // one browser, this would not be necessary.)
+    // Tell C# to lock the workspace tabs while the dialog is up.
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
 

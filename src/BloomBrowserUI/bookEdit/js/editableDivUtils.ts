@@ -335,9 +335,12 @@ export class EditableDivUtils {
 
     // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
     // Specifically, we want it to remove the zero-width space characters that ckeditor inserts.
-    // See BL-12391. Note that getData() only removes the filling char ckeditor is actively
-    // tracking; an orphaned one survives it, so we also strip stray filling chars explicitly
-    // (see removeCkEditorFillingChars and BL-16490).
+    // See BL-12391. Note that getData() only leaves out the filling char ckeditor is actively
+    // tracking. An orphaned one (see removeTrackedCkEditorFillingChar) survives it, and we
+    // deliberately do NOT strip such characters here: Thai, Khmer and Myanmar text uses U+200B
+    // as a real word break, and a blanket strip deleted those from every box on save (BL-16843).
+    // Instead, the code that rewrites a box's html takes the tracked char out first, so it is
+    // never orphaned to begin with.
     // Return the bookmarks for each editable div, so that we can restore the selection after
     // modifying the divs.
     // Changes to this logic may need to be reflected in audioRecording.ts' cleanUpCkEditorHtml.
@@ -366,13 +369,7 @@ export class EditableDivUtils {
                     }
                 }
 
-                // Strip stray filling chars before comparing: if the live DOM has an
-                // orphaned filling char that getData() didn't remove, the stripped data
-                // will differ from div.innerHTML and trigger the replacement that removes it.
-                const ckEditorData =
-                    EditableDivUtils.removeCkEditorFillingChars(
-                        ckeditorOfThisBox.getData(),
-                    );
+                const ckEditorData = ckeditorOfThisBox.getData();
                 if (ckEditorData !== div.innerHTML) {
                     this.safelyReplaceContentWithCkEditorData(
                         div,
@@ -393,12 +390,6 @@ export class EditableDivUtils {
         div: HTMLDivElement,
         ckEditorData: string,
     ) {
-        // Belt-and-suspenders for callers that pass getData() directly (e.g.
-        // audioRecording.cleanUpCkEditorHtml): make sure we never write an
-        // orphaned ckeditor filling char into the DOM. See BL-16490.
-        ckEditorData =
-            EditableDivUtils.removeCkEditorFillingChars(ckEditorData);
-
         let needToRemoveInitialParagraph = false;
         let divChildNodes = Array.from(div.childNodes);
         if (
@@ -451,17 +442,51 @@ export class EditableDivUtils {
     }
 
     // CKEditor 4 inserts a "filling char" (U+200B ZERO WIDTH SPACE) at the caret on
-    // WebKit/Blink to keep the cursor navigable near inline-element boundaries and
-    // before <br>. It removes the one it is tracking, but when the decodable/leveled
-    // reader rewrites a box's innerHTML out from under ckeditor, that filling char is
-    // orphaned: getData() no longer strips it, so it gets saved and corrupts reader
-    // word matching (the analyzer treats U+200B as a word split while the highlighter
-    // does not). Strip any such stray filling chars. See BL-16490.
-    // We deliberately remove only U+200B; U+200C (ZWNJ) and U+200D (ZWJ) are legitimate
-    // in some scripts and must be preserved.
-    public static removeCkEditorFillingChars(html: string): string {
-        const fillingChar = String.fromCharCode(0x200b); // U+200B ZERO WIDTH SPACE
-        return html.split(fillingChar).join("");
+    // WebKit/Blink to keep the cursor navigable near inline-element boundaries and before
+    // <br>. It remembers THE NODE it put the character in (custom data "cke-fillingChar" on
+    // the editable) and later takes the character out of that node again; getData() leaves
+    // it out too. So the character is only a problem when something rewrites the box's
+    // innerHTML from the live DOM: the string carries the U+200B as ordinary text, the node
+    // ckeditor remembers is detached, and the character is "orphaned" - nothing will ever
+    // remove it, it gets saved into the book, and it corrupts reader word matching (the
+    // analyzer treats U+200B as a word split while the highlighter does not). See BL-16490.
+    //
+    // Call this BEFORE any such rewrite, so the character never gets baked into the string.
+    // It takes out only the character ckeditor is tracking, exactly as ckeditor itself would
+    // (a U+200B followed by a plain space becomes an nbsp, so the space is not lost to
+    // whitespace collapsing), and forgets the reference so ckeditor does not write to a
+    // detached node later. An earlier fix for BL-16490 instead stripped every U+200B from
+    // a box's html on save, which also deleted the real word-break characters that Thai,
+    // Khmer and Myanmar text depends on (BL-16843). U+200B outside the tracked node is
+    // deliberately left alone here for the same reason.
+    // Rewrites fed from getData() (doCkEditorCleanup, audioRecording.cleanUpCkEditorHtml)
+    // don't need this, because getData() has already left the tracked character out.
+    public static removeTrackedCkEditorFillingChar(element: HTMLElement): void {
+        const editable = EditableDivUtils.ckEditorEditableOf(element);
+        const trackedNode = editable?.getCustomData("cke-fillingChar")?.$;
+        if (!trackedNode) {
+            return;
+        }
+        editable!.removeCustomData("cke-fillingChar");
+        if (!element.contains(trackedNode)) {
+            return; // already orphaned by some earlier rewrite; nothing left to take out
+        }
+        // The node can hold more than the filling char: text the user typed right after the
+        // caret was placed lands in the same node, and in Khmer, Thai or Myanmar that text can
+        // itself contain U+200B word breaks. ckeditor planted exactly one character, so take out
+        // only the first U+200B and leave any later ones alone. (ckeditor's own removal is less
+        // careful and strips every U+200B in the node; we don't copy that.)
+        // Edit in place with deleteData/replaceData rather than assigning the whole text, so
+        // live ranges (the caret, reader highlights) in the rest of the node keep their places.
+        const text = trackedNode as Text;
+        const i = text.data.indexOf("\u200B");
+        if (i < 0) {
+            return; // ckeditor already took it out (its own removal leaves the node behind)
+        }
+        text.deleteData(i, 1);
+        if (text.data[i] === " ") {
+            text.replaceData(i, 1, "\u00A0");
+        }
     }
 
     // I don't know why cdEditor's getData() converts paragraphs with only a <br>
@@ -689,37 +714,53 @@ export class EditableDivUtils {
     // word break, and searching for the character would have quietly turned the repair off
     // for a whole book in those languages.
     // Asking is not enough on its own, though: ckeditor keeps the reference as custom data on
-    // the editable DIV, so anything that rewrites the box's innerHTML (doCkEditorCleanup,
-    // cleanUpNbsps) detaches the text node while leaving the reference behind. That is the
-    // BL-16490 "orphaned filling char", and it must NOT block the repair - nothing is tracking
-    // it any more, so nothing will write to it. Hence the isConnected/contains check: what
-    // blocks us is a node ckeditor is tracking that is still in this box.
+    // the editable DIV, so a rewrite of the box's innerHTML (doCkEditorCleanup, or any rewrite
+    // that didn't call removeTrackedCkEditorFillingChar first) detaches the text node while
+    // leaving the reference behind. That is the BL-16490 "orphaned filling char", and it must
+    // NOT block the repair - nothing is tracking it any more, so nothing will write to it.
+    // Hence the isConnected/contains check: what blocks us is a node ckeditor is tracking that
+    // is still in this box.
     // If a ckeditor upgrade ever renamed this key, or changed the shape it stores, this would
     // stop guarding and we would be back to the behavior that shipped in the first fix for
     // BL-16717, which merged regardless.
-    // (Typed locally rather than through CKEDITOR.editor: our ckeditor.d.ts only declares the
-    // editable(element) setter overloads, not the no-argument getter that actually exists. The
-    // value is a CKEDITOR.dom.text, whose `$` is the DOM node it wraps.)
     private static ckEditorFillingCharNodeIn(
         element: HTMLElement,
     ): Node | undefined {
-        const ckEditorOfThisBox = (
-            element as HTMLElement & {
-                bloomCkEditor?: {
-                    editable: () => {
-                        getCustomData: (
-                            key: string,
-                        ) => { $?: Node } | undefined;
-                    };
-                };
-            }
-        ).bloomCkEditor;
-        const trackedNode = ckEditorOfThisBox
-            ?.editable()
-            ?.getCustomData("cke-fillingChar")?.$;
+        const trackedNode =
+            EditableDivUtils.ckEditorEditableOf(element)?.getCustomData(
+                "cke-fillingChar",
+            )?.$;
         return trackedNode && element.contains(trackedNode)
             ? trackedNode
             : undefined;
+    }
+
+    // The CKEDITOR.editable of the ckeditor instance on this box, if it has one: the object
+    // ckeditor keeps its filling-char reference on.
+    // (Typed locally rather than through CKEDITOR.editor: our ckeditor.d.ts only declares the
+    // editable(element) setter overloads, not the no-argument getter that actually exists. The
+    // custom-data value is a CKEDITOR.dom.text, whose `$` is the DOM node it wraps.)
+    private static ckEditorEditableOf(element: HTMLElement):
+        | {
+              getCustomData: (key: string) => { $?: Node } | undefined;
+              removeCustomData: (key: string) => unknown;
+          }
+        | undefined {
+        const ckEditorOfThisBox = (
+            element as HTMLElement & {
+                bloomCkEditor?: {
+                    editable: () =>
+                        | {
+                              getCustomData: (
+                                  key: string,
+                              ) => { $?: Node } | undefined;
+                              removeCustomData: (key: string) => unknown;
+                          }
+                        | undefined;
+                };
+            }
+        ).bloomCkEditor;
+        return ckEditorOfThisBox?.editable();
     }
 
     public static restoreSelectionFromCkEditorBookmarks(
