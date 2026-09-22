@@ -6,7 +6,7 @@
 // to scan every page for the `.problem-dialog` root rather than look in one known place.
 //
 // Two rules this file exists to enforce, adapted from
-// .github/skills/bloom-automation/dismissProblemDialog.mjs:
+// .claude/skills/run-bloom/dismissProblemDialog.mjs:
 //
 //  - We NEVER click Submit, and never POST problemReport/submit. Submitting sends the report, a
 //    screenshot, and the book to Bloom's servers, which an automated run must not do. We close
