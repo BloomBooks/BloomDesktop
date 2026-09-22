@@ -13,6 +13,7 @@ using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
@@ -64,7 +65,41 @@ namespace Bloom.WebLibraryIntegration
         /// Implicitly use the sandbox as the destination target.  Can be explicitly overridden
         /// on the command line in upload commands.  See <see cref="Destination"/>.
         /// </summary>
+        /// <remarks>
+        /// On a developer, alpha, unstable, or internal beta build, the user can choose the
+        /// destination with the "Use dev.BloomLibrary.org" item of the top bar context menu.
+        /// We store that choice only while it differs from
+        /// <see cref="UseSandboxWithoutUserChoice"/>, so the "BloomSandbox" environment
+        /// variable controls Bloom again as soon as the user agrees with it.
+        /// </remarks>
         internal static bool UseSandboxByDefault
+        {
+            get
+            {
+                // A unit test run must not depend on what the developer chose in the menu.
+                // A build that does not show the menu must not obey a choice that it cannot
+                // change: user settings live in a folder named for the version, so a build
+                // without the menu could otherwise read a choice that another build wrote.
+                if (Program.RunningUnitTests || !UserCanChooseWebSite)
+                    return UseSandboxWithoutUserChoice;
+                switch (Settings.Default.WebSiteDestinationOverride)
+                {
+                    case UploadDestination.Development:
+                        return true;
+                    case UploadDestination.Production:
+                        return false;
+                    default:
+                        return UseSandboxWithoutUserChoice;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The destination that this build uses when the user makes no choice in the
+        /// "Use dev.BloomLibrary.org" menu item: a DEBUG build, or any build that has the
+        /// "BloomSandbox" environment variable set to yes, true, y, or t.
+        /// </summary>
+        internal static bool UseSandboxWithoutUserChoice
         {
             get
             {
@@ -79,6 +114,38 @@ namespace Bloom.WebLibraryIntegration
 #endif
             }
         }
+
+        /// <summary>
+        /// Records the user's choice from the "Use dev.BloomLibrary.org" menu item, and returns
+        /// true if the choice differs from the destination of the current run.  The caller
+        /// restarts Bloom when it does, because <see cref="Destination"/> and the saved login
+        /// belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// If the choice matches what this build would do on its own, we clear the setting
+        /// instead of storing it.  See the remarks on <see cref="UseSandboxByDefault"/>.
+        /// </remarks>
+        public static bool SetUserChoiceOfDevWebSite(bool useDevSite)
+        {
+            var wasUsingSandbox = UseSandbox;
+            if (useDevSite == UseSandboxWithoutUserChoice)
+                Settings.Default.WebSiteDestinationOverride = "";
+            else
+                Settings.Default.WebSiteDestinationOverride = useDevSite
+                    ? UploadDestination.Development
+                    : UploadDestination.Production;
+            Settings.Default.Save();
+            return useDevSite != wasUsingSandbox;
+        }
+
+        /// <summary>
+        /// True on the builds that let the user choose between bloomlibrary.org and
+        /// dev.bloomlibrary.org: a developer, alpha, or unstable build, and the internal beta
+        /// build.  A public beta build and a release build always use bloomlibrary.org.
+        /// </summary>
+        public static bool UserCanChooseWebSite =>
+            ApplicationUpdateSupport.IsDevOrAlpha
+            || ApplicationUpdateSupport.ChannelName.ToLowerInvariant().Contains("betainternal");
 
         /// <summary>
         /// whereas we can *download* from anywhere regardless of production, debug, or unit test,
@@ -908,6 +975,12 @@ namespace Bloom.WebLibraryIntegration
             bool changeUploader = false
         )
         {
+            // Slowest exactly where our users are: a book with audio and video over a poor connection
+            // routinely takes many minutes.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "uploading a book to Bloom Library"
+            );
+
             // this (isForPublish:true) is dangerous and the product of much discussion.
             // See "finally" block later to see that we put branding files back
             book.Storage.CleanupUnusedSupportFiles(isForPublish: true);
@@ -1000,7 +1073,17 @@ namespace Bloom.WebLibraryIntegration
                         );
                         progress.WriteStatus(pdfMsg);
 
-                        publishModel.MakePDFForUpload(progress);
+                        if (!publishModel.MakePDFForUpload(progress))
+                        {
+                            // A partial PDF may well exist on disk (the failure can happen after the
+                            // file is written, while adding metadata), so we must not fall through to
+                            // the Exists() check and upload it as though all was well. (BL-16869)
+                            progress.WriteError(
+                                "{0} was not uploaded because Bloom could not make its PDF.",
+                                bookFolder
+                            );
+                            return "";
+                        }
                         if (RobustFile.Exists(publishModel.PdfFilePath))
                         {
                             RobustFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);

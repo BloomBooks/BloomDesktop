@@ -195,6 +195,13 @@ namespace Bloom.SubscriptionAndFeatures
             return true;
         }
 
+        /// <summary>
+        /// True if the subscription is no longer usable. A subscription remains valid through the
+        /// end of its expiration date, so it only becomes expired on the following day. (BL-16786:
+        /// ExpirationDate is midnight at the start of the expiration day, so comparing it to
+        /// DateTime.Now made us expire a day early, contradicting the Subscription tab of the
+        /// Collection Settings dialog, which compares whole dates.)
+        /// </summary>
         public bool IsExpired()
         {
             if (Code == null)
@@ -202,7 +209,7 @@ namespace Bloom.SubscriptionAndFeatures
             var date = ExpirationDate;
             if (date == DateTime.MinValue)
                 return true; // invalid code
-            return date < DateTime.Now;
+            return date.Date < DateTime.Now.Date;
         }
 
         private bool LooksIncomplete()
@@ -385,7 +392,9 @@ namespace Bloom.SubscriptionAndFeatures
 
         private SubscriptionTier CalculateTier()
         {
-            if (GetIntegrityLabel() != "ok" || ExpirationDate < DateTime.Now)
+            // Note that IsExpired() allows the subscription to work through the end of its
+            // expiration date; see the comment there.
+            if (GetIntegrityLabel() != "ok" || IsExpired())
                 return SubscriptionTier.Basic;
             var descriptor = CalculateDescriptor();
             if (string.IsNullOrWhiteSpace(descriptor) || descriptor == "Default")

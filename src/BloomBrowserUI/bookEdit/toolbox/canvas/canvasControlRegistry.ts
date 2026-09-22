@@ -74,7 +74,6 @@ import {
     showDialogToChooseSoundFileAsync,
 } from "../games/GameTool";
 import { showTalkingBookTool } from "../talkingBook/showTalkingBookTool";
-import { showLinkTargetChooserDialog } from "../../../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { trackEvent } from "../../../utils/bloomApi";
 import {
@@ -1149,6 +1148,9 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             // element itself (not on any nested image container).
             const currentUrl =
                 ctx.canvasElement.getAttribute("data-href") ?? "";
+            // Shown from the workspace root so its backdrop covers the page list too.
+            const showLinkTargetChooserDialog =
+                getWorkspaceBundleExports().showLinkTargetChooserDialog;
             showLinkTargetChooserDialog(currentUrl, (newUrl) => {
                 if (newUrl) {
                     ctx.canvasElement.setAttribute("data-href", newUrl);

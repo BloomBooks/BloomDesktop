@@ -200,8 +200,31 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// Uploading to bloomlibrary.org itself is refused while Bloom is running e2e tests (the
+        /// --e2e flag); an automated run may upload only to the sandbox, dev.bloomlibrary.org. A
+        /// test signs in there for real, with a test account, by posting the account's session token
+        /// to external/login, the route the website uses; and a test's Bloom keeps its login in a
+        /// settings folder of its own (see BloomSettingsProvider), so it is never the developer's
+        /// account that uploads. Production stays closed all the same, so that no automated click
+        /// can ever publish a book where the public would see it, whatever account is signed in.
+        /// The refusal goes to the progress box, which is where this screen shows upload trouble.
+        /// </summary>
+        private bool RefuseUploadWhileRunningE2eTests()
+        {
+            if (!Program.RunningE2eTests || BookUpload.UseSandbox)
+                return false;
+            _webSocketProgress.MessageWithoutLocalizing(
+                "Uploading to bloomlibrary.org is disabled while Bloom is running e2e tests (--e2e); an automated run may upload only to dev.bloomlibrary.org.",
+                ProgressKind.Error
+            );
+            return true;
+        }
+
         private async Task UploadBookAsync()
         {
+            if (RefuseUploadWhileRunningE2eTests())
+                return;
             _webSocketProgress.Message("Common.Starting", "Starting...");
             SetParentControlsState(false); // Disable UI
 
@@ -334,6 +357,11 @@ namespace Bloom.web.controllers
 
         private void HandleUploadCollection(ApiRequest request)
         {
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!ValidateBookshelfBeforeBulkUpload())
             {
                 request.PostSucceeded();
@@ -346,6 +374,11 @@ namespace Bloom.web.controllers
 
         private void HandleUploadFolderOfCollections(ApiRequest request)
         {
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!ValidateBookshelfBeforeBulkUpload())
             {
                 request.PostSucceeded();
@@ -436,6 +469,13 @@ namespace Bloom.web.controllers
 
         private async Task HandleUploadAfterChangingBookId(ApiRequest request)
         {
+            // Before ChangeBookInstanceId, not after: refusing later would still have given the
+            // book a new identity it never needed.
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!Model.ChangeBookInstanceId(_progress))
             {
                 request.Failed("Can't fix ID because in TC");

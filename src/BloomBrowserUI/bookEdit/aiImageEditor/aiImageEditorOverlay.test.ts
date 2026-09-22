@@ -37,7 +37,6 @@ vi.mock("../js/workspaceFrames", () => ({
 
 import { openAiImageEditor } from "./aiImageEditorOverlay";
 
-const kSaveEvent = "common/saveChangesAndRethinkPageEvent";
 const kEditorUrl = "http://localhost:8089/bloom/aiImageEditor/index.html";
 const kPageId = "page1";
 const kImageFile = "old.png";
@@ -45,13 +44,18 @@ const kImageFile = "old.png";
 // Opens the overlay as C# does, and answers the launch request as C# would. Returns the
 // handles a test needs, with the overlay up and the AI Image Editor about to be sent its `init`.
 const openAgainstABookWithOneImage = (
-    target = { pageId: kPageId, imageFileName: kImageFile },
+    target = { pageId: kPageId, slotIndex: 0 },
     bookImages: Array<{ id: string; src: string; isPlaceholder?: boolean }> = [
         {
             id: `${kPageId}:0`,
             src: `http://localhost:8089/bloom/book/${kImageFile}`,
         },
     ],
+    // The book's BloomPUB image limit, which C# always sends with the launch reply.
+    digitalScreen: { longEdgePx: number; shortEdgePx: number } = {
+        longEdgePx: 1280,
+        shortEdgePx: 720,
+    },
 ) => {
     openAiImageEditor(target);
 
@@ -66,6 +70,7 @@ const openAgainstABookWithOneImage = (
             sessionToken: "token123",
             book: { id: "book1", title: "Test Book" },
             bookImages,
+            digitalScreen,
             history: [],
         },
     });
@@ -159,6 +164,8 @@ beforeEach(() => {
     });
     getEditablePageBundleExports.mockReturnValue({
         applyAiImageEditorReplacements,
+        // The real page frame always has this; a test that cares what it answers overrides it.
+        getAiImageEditorPageMetrics: () => null,
     });
     delete (window as Window & { __bloomAiImageEditorCleanup?: () => void })
         .__bloomAiImageEditorCleanup;
@@ -175,12 +182,13 @@ describe("aiImageEditorOverlay: the edit target", () => {
         expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
     });
 
-    test("an image the saved book doesn't have leaves the target unset", () => {
-        // Sanity check on the matching: the book image list names old.png, so a click on
-        // some other file must not silently select old.png.
+    test("a slot the saved book doesn't offer leaves the target unset", () => {
+        // C# leaves a slot out when it holds a picture the editor cannot open, so a page
+        // can hold slots the list does not name. Naming one anyway would send the editor an
+        // id it knows nothing about; leaving it unset is what the editor understands.
         const { iframe, postFromEditor } = openAgainstABookWithOneImage({
             pageId: kPageId,
-            imageFileName: "somethingElse.png",
+            slotIndex: 3,
         });
 
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
@@ -190,7 +198,7 @@ describe("aiImageEditorOverlay: the edit target", () => {
 
     test("a matching slot on a different page is not selected", () => {
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
-            { pageId: "page2", imageFileName: kImageFile },
+            { pageId: "page2", slotIndex: 0 },
             [
                 {
                     id: `${kPageId}:0`,
@@ -204,11 +212,18 @@ describe("aiImageEditorOverlay: the edit target", () => {
         expect(payload.selectedBookImageId).toBeUndefined();
     });
 
-    test("an empty placeholder slot is not preloaded as the target", () => {
-        // There is nothing to edit, and the placeholder graphic isn't a real raster image.
+    test("an empty placeholder slot becomes the target too (BL-16744)", () => {
+        // The user launched on an empty slot to create an image for it, so that slot is
+        // the target. Withholding it made the editor fall back to the first image of the
+        // book (usually the front cover), which is not what the user clicked.
+        const kCoverId = "cover:0";
         const { iframe, postFromEditor } = openAgainstABookWithOneImage(
-            { pageId: kPageId, imageFileName: "placeHolder.png" },
+            { pageId: kPageId, slotIndex: 0 },
             [
+                {
+                    id: kCoverId,
+                    src: "http://localhost:8089/bloom/book/cover.png",
+                },
                 {
                     id: `${kPageId}:0`,
                     src: "http://localhost:8089/bloom/book/placeHolder.png",
@@ -219,12 +234,43 @@ describe("aiImageEditorOverlay: the edit target", () => {
 
         const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
 
-        expect(payload.selectedBookImageId).toBeUndefined();
+        // Sanity: the cover comes first in the list, so a fallback would have picked it.
+        expect(payload.selectedBookImageId).not.toBe(kCoverId);
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:0`);
+    });
+
+    test("the SECOND of two empty slots is the target when that is the one clicked (BL-16744)", () => {
+        // Both empty slots show placeHolder.png, so nothing about the picture could tell
+        // them apart. The page frame numbered the slot; without that the editor opened on
+        // slot 0 and the created image landed in the wrong box.
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            { pageId: kPageId, slotIndex: 1 },
+            [
+                {
+                    id: `${kPageId}:0`,
+                    src: "http://localhost:8089/bloom/book/placeHolder.png",
+                    isPlaceholder: true,
+                },
+                {
+                    id: `${kPageId}:1`,
+                    src: "http://localhost:8089/bloom/book/placeHolder.png",
+                    isPlaceholder: true,
+                },
+            ],
+        );
+
+        const payload = getInitPayloadSentToEditor(iframe, postFromEditor);
+
+        expect(payload.selectedBookImageId).toBe(`${kPageId}:1`);
     });
 });
 
-describe("aiImageEditorOverlay: saving the live page after a commit", () => {
-    test("a successful commit closes the overlay and saves at once", () => {
+describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () => {
+    // A current-page swap registers an image undo in the page frame, and a save would
+    // reload that frame and discard the undo (BL-16330's reasoning for ordinary image
+    // changes). So the overlay must never post the save event: the page saves by the
+    // normal mechanisms when the user moves on, and every launch saves first.
+    test("a successful commit closes the overlay without saving", () => {
         const { postFromEditor } = openAgainstABookWithOneImage();
 
         commitAndReplyFromHost(postFromEditor, true);
@@ -233,45 +279,22 @@ describe("aiImageEditorOverlay: saving the live page after a commit", () => {
         // assertions below aren't just watching a no-op.
         expect(applyAiImageEditorReplacements).toHaveBeenCalledTimes(1);
         expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
-    test("a partial failure keeps the overlay up AND still saves what landed", () => {
+    test("a partial failure keeps the overlay up, still without saving", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
 
         commitAndReplyFromHost(postFromEditor, false);
 
-        // The overlay stays up so the user can read the error about the slot that failed —
-        // and, unlike when this code lived in the page frame, saving now does not endanger
-        // it, so the swap that did land is persisted immediately rather than held hostage
-        // until the user closes the overlay.
+        // The overlay stays up so the user can read the error about the slot that failed.
         expect(
             document.getElementById("ai-image-editor-overlay"),
         ).not.toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
 
-        // The ✕ still works after that save, because these controls belong to the top
-        // window, not to the page frame the save reloaded.
         closeButton.click();
         expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
-        expect(postThatMightNavigate).toHaveBeenCalledTimes(1);
-    });
-
-    test("a commit that changed nothing on this page never saves", () => {
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 0,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        // C# applied everything itself (all the slots were off-page), so there is no
-        // live-DOM change here to persist.
-        commitAndReplyFromHost(postFromEditor, true);
-
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
-        closeButton.click();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
@@ -298,16 +321,15 @@ describe("aiImageEditorOverlay: saving the live page after a commit", () => {
         expect(ack.ok).toBe(false);
         expect(ack.error).toContain("Only 1 of 2");
         expect(ack.error).toContain("kaboom");
-        // What did land still gets saved.
-        expect(postThatMightNavigate).toHaveBeenCalledWith(kSaveEvent);
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
         postMessageToEditor.mockRestore();
     });
 
     test("an all-off-page commit succeeds even if the page frame is unreachable", () => {
-        // The page frame is briefly null while it reloads — which this feature's own
-        // post-commit save causes. Asking for it when the commit has nothing to do on the
-        // open page reported an error for images C# had in fact replaced and saved, and
-        // invited a retry that would redo them and orphan the files.
+        // The page frame is briefly null while it reloads (e.g. from the save at launch).
+        // Asking for it when the commit has nothing to do on the open page reported an
+        // error for images C# had in fact replaced and saved, and invited a retry that
+        // would redo them and orphan the files.
         getEditablePageBundleExports.mockReturnValue(null);
         const { iframe, postFromEditor } = openAgainstABookWithOneImage();
         const postMessageToEditor = vi.spyOn(
@@ -511,12 +533,13 @@ describe("aiImageEditorOverlay: analytics", () => {
         });
 
         expect(abandonedEvents()).toHaveLength(0);
-        // And the swap that landed on the page is still saved. Answering an AI Image Editor that has
-        // gone away used to throw from inside postMessage, which skipped everything after it
-        // in the finally block -- including this save, losing the user's picture.
-        expect(postThatMightNavigate).toHaveBeenCalledWith(
-            "common/saveChangesAndRethinkPageEvent",
-        );
+        // And the commit was still counted. Answering an AI Image Editor that has gone away
+        // used to throw from inside postMessage, which skipped everything after it in the
+        // finally block -- including this count, losing the user's pictures from the totals.
+        expect(closedEvents()).toHaveLength(1);
+        // The swap on the page being edited is NOT saved here; the normal page save keeps it,
+        // which is what leaves the picture undoable (BL-16744).
+        expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
 
     test("closing while a commit is in flight DOES report a cancel if the commit then fails", () => {
@@ -991,5 +1014,143 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
             failedCount: 1,
         });
         expect(trackChangePicture).not.toHaveBeenCalled();
+    });
+});
+
+describe("aiImageEditorOverlay: the size each slot wants", () => {
+    // Every page's slots can be answered for, because C# hands over the share of its page each
+    // slot covers (recorded in the HTML when the page was saved). All this half supplies is how
+    // big a page of this book is, which it gets from the one page that is laid out.
+    const kOtherPageId = "page2";
+    const kPaperPage = { widthPx: 559, heightPx: 794, isDigital: false };
+
+    const bookImagesAcrossTwoPages = () => [
+        {
+            id: `${kPageId}:0`,
+            src: `http://localhost:8089/bloom/book/${kImageFile}`,
+            fractionOfPage: { width: 0.84, height: 0.69 },
+        },
+        {
+            id: `${kPageId}:1`,
+            src: "http://localhost:8089/bloom/book/second.png",
+            // No share recorded. Not the normal state (the whole-book update re-saves every
+            // page before editing, BL-16852); this exercises the hardening for when that
+            // update did not run or failed, so nothing is known.
+            fractionOfPage: null,
+        },
+        {
+            id: `${kOtherPageId}:0`,
+            src: "http://localhost:8089/bloom/book/elsewhere.png",
+            fractionOfPage: { width: 0.5, height: 0.25 },
+        },
+    ];
+
+    const getBookImagesSentToEditor = (digitalScreen?: {
+        longEdgePx: number;
+        shortEdgePx: number;
+    }) => {
+        const { iframe, postFromEditor } = openAgainstABookWithOneImage(
+            { pageId: kPageId, slotIndex: 0 },
+            bookImagesAcrossTwoPages(),
+            digitalScreen,
+        );
+        const payload = getInitPayloadSentToEditor(
+            iframe,
+            postFromEditor,
+        ) as unknown as {
+            bookImages: Array<{
+                id: string;
+                suggestedTarget?: {
+                    width: number;
+                    height: number;
+                    memo: string;
+                };
+            }>;
+        };
+        return payload.bookImages;
+    };
+
+    test("a slot on any page gets a suggested target, including one on a page nobody has open", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => kPaperPage,
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        // Sanity check: all three slots still reach the editor.
+        expect(bookImages.length).toBe(3);
+        // 0.84 of 559 px and 0.69 of 794 px, at 300 dots to 96 px.
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: Math.ceil((300 * 0.84 * 559) / 96),
+            height: Math.ceil((300 * 0.69 * 794) / 96),
+            memo: expect.stringContaining("300 DPI"),
+        });
+        // The point of the whole mechanism: a slot on a page that is not open is answered too.
+        expect(bookImages[2].suggestedTarget).toEqual({
+            width: Math.ceil((300 * 0.5 * 559) / 96),
+            height: Math.ceil((300 * 0.25 * 794) / 96),
+            memo: expect.stringContaining("300 DPI"),
+        });
+    });
+
+    test("a slot on a screen-sized page is sized for this book's BloomPUB resolution setting", () => {
+        // 378 x 672 is a 16x9 device page, and this book's Resolution slider has been moved
+        // up from the 1280 x 720 default to 1920 x 1080.
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => ({
+                widthPx: 378,
+                heightPx: 672,
+                isDigital: true,
+            }),
+        });
+
+        const bookImages = getBookImagesSentToEditor({
+            longEdgePx: 1920,
+            shortEdgePx: 1080,
+        });
+
+        expect(bookImages[0].suggestedTarget).toEqual({
+            width: 908,
+            height: 1325,
+            memo: expect.stringContaining("1920 x 1080 screen"),
+        });
+    });
+
+    test("a slot whose share of its page was never recorded gets no target", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => kPaperPage,
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages[1].suggestedTarget).toBeUndefined();
+    });
+
+    test("the editor still opens when the page frame cannot say how big a page is", () => {
+        // The page bundle may not be attached yet. The editor matters more than the size
+        // hint.
+        getEditablePageBundleExports.mockReturnValue(null);
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages.length).toBe(3);
+        expect(bookImages[0].suggestedTarget).toBeUndefined();
+    });
+
+    test("the editor still opens when measuring throws", () => {
+        getEditablePageBundleExports.mockReturnValue({
+            applyAiImageEditorReplacements,
+            getAiImageEditorPageMetrics: () => {
+                throw new Error("kaboom");
+            },
+        });
+
+        const bookImages = getBookImagesSentToEditor();
+
+        expect(bookImages.length).toBe(3);
+        expect(bookImages[0].suggestedTarget).toBeUndefined();
     });
 });

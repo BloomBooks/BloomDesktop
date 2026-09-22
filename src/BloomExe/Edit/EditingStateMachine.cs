@@ -144,6 +144,12 @@ public class EditingStateMachine
     public bool SavePending => _currentState == State.SavePending;
 
     /// <summary>
+    /// True if a page is loaded and being edited, so that a save (and anything that starts with
+    /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
+    /// </summary>
+    public bool Editing => _currentState == State.Editing;
+
+    /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).
     /// Should not be called when there are unsaved (or incompletely saved) changes.
     /// </summary>
@@ -283,6 +289,12 @@ public class EditingStateMachine
         }
         catch (Exception)
         {
+            // The caller's failure action is how it recovers from work that did not get done;
+            // it is needed just as much when the post-save action is what threw as when saving
+            // the page content did. Without this, an exception here left the caller believing
+            // its work was still in progress forever -- which is what made Bloom impossible to
+            // close in BL-16776.
+            failureAction?.Invoke();
             // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
             // we were on before the save.
             ToNavigating(pageId);
