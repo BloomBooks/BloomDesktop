@@ -595,9 +595,78 @@ export async function goToPage(page: Page, pageId: string): Promise<void> {
 }
 
 /**
+ * Wait until CKEditor has finished taking this box over, on the boxes it takes over at all.
+ *
+ * Bloom's `bootstrap()` calls `CKEDITOR.inline()` on every field `ckeditableSelector` matches and
+ * then returns, but the editor only finishes initialising some time later — and when it does, it
+ * writes the snapshot it took at `inline()` time over whatever the element holds by then. Anything
+ * typed in that window is destroyed, silently. Watching a real Bloom over CDP: a title typed at
+ * 942ms after the page loaded was gone at 1215ms, in the very same DOM mutation that added the
+ * `cke_editable` class. That window is why three nightlies lost a cover title
+ * (AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to reach the
+ * collection"), and a person who types fast enough loses it too.
+ *
+ * `cke_editable` is how the editor announces it is ready, so wait for that before touching the box.
+ * We only wait on boxes that will actually get an editor, because most will not and waiting on
+ * those would cost every test the whole timeout. Even a matching box can miss out —
+ * `attachToCkEditor` skips a page that has a `.bloom-canvas`, and any field whose cursor is
+ * `not-allowed` — so this gives up quietly rather than failing: the caller is no worse off than
+ * before this wait existed.
+ *
+ * This is a workaround in the tests for a real Bloom defect, and it is deliberately not a fix for
+ * it. Delete it when CKEditor goes (the `retireCkEditor` work).
+ */
+async function waitForCkEditorToTakeTheBox(box: Locator): Promise<void> {
+    // Ask the page what is actually bound to this box, rather than trying to predict it. An
+    // earlier version of this replicated bloomEditing.ts's three conditions for attaching an
+    // editor (matches ckeditableSelector, no .bloom-canvas on the page, not read-only) and
+    // returned at once when they said no editor was coming. That is a copy of somebody else's
+    // rules that can silently drift out of step with them, and when it guesses "no editor" wrongly
+    // it skips the wait entirely — which is the one failure that looks exactly like no bug.
+    //
+    // So: wait for an editor to report itself ready. If no editor has even been bound after a
+    // short grace period, none is coming for this box and there is nothing to wait for.
+    const start = Date.now();
+    const deadline = start + 20000;
+    while (Date.now() < deadline) {
+        const state = await ckEditorStateOn(box);
+        if (state === "ready") return;
+        if (state === "none" && Date.now() - start > 3000) return;
+        await box.page().waitForTimeout(50);
+    }
+}
+
+/**
+ * What CKEditor has bound to this box: "ready" when an editor has finished initialising, "pending"
+ * when one is attached but not ready yet, "none" when nothing is attached.
+ *
+ * Ask CKEditor itself — `editor.status`, which reads "ready" from the moment it fires
+ * instanceReady. Do NOT go by the `cke_editable` class: the class reaches the element BEFORE the
+ * editor is ready, so waiting on it returns while the box is still inside the window where the
+ * editor will overwrite anything typed. That is precisely the mistake that let the nightly go on
+ * losing cover titles after this wait was first added, and the console trace caught it — the
+ * typing landed between "attaching an editor" and "editor ready".
+ */
+async function ckEditorStateOn(
+    box: Locator,
+): Promise<"ready" | "pending" | "none"> {
+    return box.evaluate((element) => {
+        const ckeditor = (window as unknown as Record<string, any>).CKEDITOR;
+        if (!ckeditor?.instances) return "none";
+        for (const key of Object.keys(ckeditor.instances)) {
+            const editor = ckeditor.instances[key];
+            if (editor?.element?.$ === element)
+                return editor.status === "ready" ? "ready" : "pending";
+        }
+        return "none";
+    });
+}
+
+/**
  * Click in one language's box of one translation group on the page being shown, so that it has the
  * focus, the way a person starts editing it. `groupSelector` picks the group, e.g. ".bookTitle" for
- * the cover title. Waits until the box has the focus, and returns it.
+ * the cover title; when the page has several groups that match, `groupIndex` says which one, in
+ * document order. Waits until the box has the focus, and returns it.
  *
  * Focusing a box is also what makes Bloom show the box's format gear (see helpers/formatDialog.ts).
  */
@@ -605,11 +674,15 @@ export async function clickInGroup(
     page: Page,
     groupSelector: string,
     languageTag: string,
+    groupIndex = 0,
 ): Promise<Locator> {
     const box = editablePageFrame(page)
-        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .locator(groupSelector)
+        .nth(groupIndex)
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
         .first();
     await box.waitFor({ state: "visible", timeout: 30000 });
+    await waitForCkEditorToTakeTheBox(box);
     await box.click();
     await expect(
         box,
@@ -620,9 +693,11 @@ export async function clickInGroup(
 
 /**
  * Type text into one language's box of one translation group on the page being shown, the way a
- * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title.
+ * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
+ * page has several groups that match, `groupIndex` says which one, in document order.
  *
- * Pass an empty string to clear the box; that is how a test makes a translation incomplete.
+ * Pass an empty string to clear the box; that is how a test makes a translation incomplete. A
+ * newline in `text` presses Enter, which starts a new paragraph, as it does for a person.
  * Nothing reaches the file until the book leaves this page — see goToPage.
  */
 export async function typeInGroup(
@@ -630,10 +705,16 @@ export async function typeInGroup(
     groupSelector: string,
     languageTag: string,
     text: string,
+    groupIndex = 0,
 ): Promise<void> {
     // Click in, select what is there, and type over it. A box here is a CKEditor surface, and
     // filling it directly leaves part of the old text behind.
-    const box = await clickInGroup(page, groupSelector, languageTag);
+    const box = await clickInGroup(
+        page,
+        groupSelector,
+        languageTag,
+        groupIndex,
+    );
     await box.press("Control+a");
     await box.press("Delete");
     // One insertion rather than a key press per character: the box has focus, and CKEditor and
@@ -647,8 +728,32 @@ export async function typeInGroup(
     // no key events".)
     if (text) await page.keyboard.insertText(text);
     // Bloom's editor reacts to typing; confirm the box holds what we meant before moving on, so a
-    // later failure cannot be blamed on text that never arrived.
-    await expect(box).toHaveText(text, { timeout: 15000 });
+    // later failure cannot be blamed on text that never arrived. innerText, rather than textContent,
+    // so that a paragraph break reads back as the newline that made it.
+    await expect(box).toHaveText(text, { timeout: 15000, useInnerText: true });
+}
+
+/**
+ * The font one language's box of one translation group is shown in: the first family of its computed
+ * font-family, without quotes, e.g. "Andika". This is how a test checks that a font chosen in the
+ * Format dialog reached the text.
+ */
+export async function getFontFamilyInGroup(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+): Promise<string> {
+    const box = editablePageFrame(page)
+        .locator(`${groupSelector} .bloom-editable[lang="${languageTag}"]`)
+        .first();
+    await box.waitFor({ state: "visible", timeout: 30000 });
+    const family = await box.evaluate(
+        (element) => getComputedStyle(element).fontFamily,
+    );
+    return family
+        .split(",")[0]
+        .trim()
+        .replace(/^["']|["']$/g, "");
 }
 
 /** One front or back matter page, as the Edit tab showed it. */
