@@ -245,8 +245,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // event names. To see how much AI work a session threw away, group its events by
         // aiEditorSessionId.
         //
-        // ONE event per session, "AI Image Editor Closed", sent when the session settles. It says
-        // what the session achieved, and an appliedCount of zero IS the cancel -- which is why
+        // ONE event per session, "AI Image Editor Session", sent when the session settles. It says
+        // what the session achieved, and a picturesApplied of zero IS the cancel -- which is why
         // there is no separate cancel event to keep in step with this one.
         //
         // "Settles" means the overlay has gone AND no commit is still outstanding, which is why
@@ -265,11 +265,12 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         // performance.now, not Date.now, so a change to the computer's clock can't skew it.
         const sessionStartedAtMs = performance.now();
 
-        // What every commit in this session added up to. failedCount is derived from the first two.
-        let replacementsAttempted = 0;
+        // What every commit in this session added up to. chosenNew and chosenReused are a
+        // breakdown of picturesChosen, not of picturesApplied (see noteCommitResult).
+        let picturesChosen = 0;
         let picturesApplied = 0;
-        let picturesGenerated = 0;
-        let picturesReused = 0;
+        let chosenNew = 0;
+        let chosenReused = 0;
         let closedReported = false;
         // How many commits we have sent and not yet had an answer to. Reporting the session while
         // any is outstanding must not happen: the pictures may be moments from being saved. A count
@@ -295,23 +296,23 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
         const reportClosed = () => {
             if (closedReported || !sessionEnded || commitsInFlight > 0) return;
             closedReported = true;
-            // Did anything actually reach the book? A non-zero failedCount is exactly the class of
-            // bug BL-16702 was: a commit that silently did nothing. Generated versus reused says
-            // whether people are paying for new pictures or re-using ones they already have.
+            // Did anything actually reach the book? picturesChosen above picturesApplied is
+            // exactly the class of bug BL-16702 was: a commit that silently did nothing. New versus
+            // reused says whether people are paying for new pictures or re-using ones they already
+            // have.
             //
             // These counts all come from what C# reported for each commit, so none of them depends
             // on the AI Image Editor's event names.
-            trackEvent("AI Image Editor Closed", {
+            trackEvent("AI Image Editor Session", {
                 aiEditorSessionId: analyticsSessionId,
-                replacementCount: replacementsAttempted,
-                appliedCount: picturesApplied,
-                failedCount: replacementsAttempted - picturesApplied,
-                generatedCount: picturesGenerated,
-                reusedCount: picturesReused,
+                picturesChosen,
+                picturesApplied,
+                chosenNew,
+                chosenReused,
                 durationSeconds: Math.round(
                     (sessionEndedAtMs - sessionStartedAtMs) / 1000,
                 ),
-                historyCount: (launchData.history ?? []).length,
+                historyItemsAtLaunch: (launchData.history ?? []).length,
             });
         };
 
@@ -543,19 +544,19 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         if (commitCounted) return;
                         commitCounted = true;
                         const applied = offPageApplied + currentPageApplied;
-                        replacementsAttempted += replacements.length;
+                        picturesChosen += replacements.length;
                         picturesApplied += applied;
                         // Deliberately counted over every replacement the AI Image Editor sent,
-                        // not only the ones that landed -- so generatedCount and reusedCount are NOT
-                        // comparable with appliedCount, and do not sum to it when a swap fails.
+                        // not only the ones that landed -- so chosenNew and chosenReused are NOT
+                        // comparable with picturesApplied, and do not sum to it when a swap fails.
                         // They answer a different question: what the user chose, and therefore what
                         // they paid OpenRouter for, which is true whether or not the picture then
-                        // made it into the book. appliedCount and failedCount are the pair that
-                        // says what landed.
-                        picturesGenerated += replacements.filter(
+                        // made it into the book. picturesChosen and picturesApplied are the pair
+                        // that says what landed.
+                        chosenNew += replacements.filter(
                             (r) => !!r?.resultId,
                         ).length;
-                        picturesReused += replacements.filter(
+                        chosenReused += replacements.filter(
                             (r) => !r?.resultId && !!r?.sourceUrl,
                         ).length;
                         // Count each picture that reached the book the same way a pasted or
@@ -673,7 +674,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                             // user. Counting the attempt matters more than the small chance that C#
                             // did the work and only the reply went missing: a commit that reaches
                             // nobody is the failure this event was added to make visible, and it
-                            // shows up as replacementCount without appliedCount.
+                            // shows up as picturesChosen without picturesApplied.
                             noteCommitResult(0, 0);
                             ackEditor(false, "Failed to apply replacements.");
                             reportClosed();

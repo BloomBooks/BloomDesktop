@@ -61,9 +61,13 @@ Bloom adds one property on the way through: `aiEditorSessionId`, a new id for ea
 events from one visit can be grouped together. Don't use `launchData.sessionToken` for this; it is
 a capability token and must not go to Segment.
 
-Bloom also sends one event of its own per session, `AI Image Editor Closed` (from `reportClosed`),
+Bloom also sends one event of its own per session, `AI Image Editor Session` (from `reportClosed`),
 because only Bloom knows what actually reached the book and how long the overlay was open. Its
 counts come from the C# commit replies, not from the AI Image Editor's events.
+
+Its counts are `picturesChosen` (what the user picked for the book), `picturesApplied` (how many of
+those got there, the same meaning as `appliedCount` in the commit reply), and `chosenNew` /
+`chosenReused` (a breakdown of `picturesChosen`, not of `picturesApplied`).
 
 **Don't count the AI Image Editor's events in Bloom** (for example, how many generations a session
 had). That means knowing its event names. Group its events by `aiEditorSessionId` instead. If a

@@ -404,17 +404,18 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
 });
 
 describe("aiImageEditorOverlay: analytics", () => {
-    // One "AI Image Editor Closed" event per session, sent when the session settles. An
-    // appliedCount of zero is what makes it the abandoned case: nothing reached the book. It must
-    // be zero when a session ends without committing, and must NOT be zero when the session ended
-    // because the work was accepted.
+    // One "AI Image Editor Session" event per session, sent when the session settles. A
+    // picturesApplied of zero is what makes it the abandoned case: nothing reached the book. It
+    // must be zero when a session ends without committing, and must NOT be zero when the session
+    // ended because the work was accepted.
     const closedEvents = () =>
         trackEvent.mock.calls.filter(
-            (call) => call[0] === "AI Image Editor Closed",
+            (call) => call[0] === "AI Image Editor Session",
         );
     const abandonedEvents = () =>
         closedEvents().filter(
-            (call) => (call[1] as { appliedCount: number }).appliedCount === 0,
+            (call) =>
+                (call[1] as { picturesApplied: number }).picturesApplied === 0,
         );
 
     test("closing without committing reports a cancel", () => {
@@ -847,7 +848,7 @@ describe("aiImageEditorOverlay: analytics", () => {
 
         // Sanity: the session really was reported as putting a picture in the book.
         expect(closedEvents()).toHaveLength(1);
-        expect(closedEvents()[0][1]).toMatchObject({ appliedCount: 1 });
+        expect(closedEvents()[0][1]).toMatchObject({ picturesApplied: 1 });
         expect(abandonedEvents()).toHaveLength(0);
     });
     test("a commit answered after the AI Image Editor was reopened leaves the new overlay alone", () => {
@@ -929,7 +930,7 @@ describe("aiImageEditorOverlay: analytics", () => {
     });
 });
 
-// "AI Image Editor Closed" and the per-picture "Change Picture" events are reported from the
+// "AI Image Editor Session" and the per-picture "Change Picture" events are reported from the
 // overlay rather than from C#, because C# cannot know whether a picture on the page being edited
 // actually got swapped in -- it only stages those. These tests are what makes that worth having:
 // they pin that a swap the page frame failed to make is NOT counted as a picture that reached the
@@ -940,7 +941,7 @@ describe("aiImageEditorOverlay: analytics", () => {
 describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
     const closedEvents = () =>
         trackEvent.mock.calls.filter(
-            (call) => call[0] === "AI Image Editor Closed",
+            (call) => call[0] === "AI Image Editor Session",
         );
 
     // Sends a commit for the given replacements and answers it with C#'s reply.
@@ -995,9 +996,8 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
 
         expect(closedEvents()).toHaveLength(1);
         expect(closedEvents()[0][1]).toMatchObject({
-            replacementCount: 1,
-            appliedCount: 0,
-            failedCount: 1,
+            picturesChosen: 1,
+            picturesApplied: 0,
         });
         // And no picture is added to the where-do-pictures-come-from breakdown.
         expect(trackChangePicture).not.toHaveBeenCalled();
@@ -1027,9 +1027,8 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
         );
 
         expect(closedEvents()[0][1]).toMatchObject({
-            replacementCount: 3,
-            appliedCount: 2,
-            failedCount: 1,
+            picturesChosen: 3,
+            picturesApplied: 2,
         });
         // One per picture that reached the book, in the same vocabulary as the other routes.
         expect(trackChangePicture).toHaveBeenCalledTimes(2);
@@ -1061,8 +1060,8 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
         );
 
         expect(closedEvents()[0][1]).toMatchObject({
-            generatedCount: 1,
-            reusedCount: 1,
+            chosenNew: 1,
+            chosenReused: 1,
         });
     });
 
@@ -1125,8 +1124,8 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
         // One event, and it says a picture landed -- not a session that threw everything away.
         expect(closedEvents()).toHaveLength(1);
         expect(closedEvents()[0][1]).toMatchObject({
-            appliedCount: 1,
-            failedCount: 1,
+            picturesChosen: 2,
+            picturesApplied: 1,
         });
     });
     test("a commit whose request fails reports that nothing landed", () => {
@@ -1151,12 +1150,11 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
         // closes it.
         closeButton.click();
 
-        // The attempt survives as a replacementCount with nothing applied, which is the
+        // The attempt survives as a picturesChosen with nothing applied, which is the
         // BL-16702 shape: a commit that reached nobody.
         expect(closedEvents()[0][1]).toMatchObject({
-            replacementCount: 1,
-            appliedCount: 0,
-            failedCount: 1,
+            picturesChosen: 1,
+            picturesApplied: 0,
         });
         expect(trackChangePicture).not.toHaveBeenCalled();
     });
