@@ -195,7 +195,8 @@ namespace Bloom.Book
         private static bool IsNonPaperLayout(string pageSizeName)
         {
             return pageSizeName.StartsWith("Device", StringComparison.OrdinalIgnoreCase)
-                || pageSizeName.StartsWith("PictureStory", StringComparison.OrdinalIgnoreCase);
+                || pageSizeName.StartsWith("PictureStory", StringComparison.OrdinalIgnoreCase)
+                || pageSizeName.StartsWith("Ebook", StringComparison.OrdinalIgnoreCase);
         }
 
         public static void AddClassesForLayout(HtmlDom dom, Layout layout)

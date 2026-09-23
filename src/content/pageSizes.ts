@@ -52,11 +52,13 @@ function convertDimensionToMillimeters(value: string): number {
 }
 
 /**
- * Returns true when the layout is a printable paper layout (not a device/story preset).
+ * Returns true when the layout is a printable paper layout (not a device/story/ebook preset).
  */
 function isPaperLayout(sizeName: string): boolean {
     return (
-        !sizeName.startsWith("Device") && !sizeName.startsWith("PictureStory")
+        !sizeName.startsWith("Device") &&
+        !sizeName.startsWith("PictureStory") &&
+        !sizeName.startsWith("Ebook")
     );
 }
 
