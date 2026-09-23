@@ -276,9 +276,12 @@ const OnlyAdminsNote: React.FunctionComponent<{ isShared: boolean }> = (
 
 const InviteRow: React.FunctionComponent<{
     members: ISharingMember[];
-    onInvite: (email: string, role: SharingRole) => void;
+    // Resolves to whether the invitation was made.
+    onInvite: (email: string, role: SharingRole) => Promise<boolean>;
 }> = (props) => {
     const [email, setEmail] = useState("");
+    // True while an invitation is on its way, so it can't be sent twice.
+    const [pending, setPending] = useState(false);
     const [role, setRoleValue] = useState<SharingRole>("editor");
     const [triedInvalid, setTriedInvalid] = useState(false);
     const emailLabel = useL10n(
@@ -307,9 +310,15 @@ const InviteRow: React.FunctionComponent<{
             setTriedInvalid(true);
             return;
         }
-        props.onInvite(trimmed, role);
-        setEmail("");
-        setTriedInvalid(false);
+        setPending(true);
+        void props.onInvite(trimmed, role).then((invited) => {
+            setPending(false);
+            // Keep what was typed if it failed, so the admin can try again.
+            if (invited) {
+                setEmail("");
+                setTriedInvalid(false);
+            }
+        });
     };
 
     return (
@@ -333,7 +342,7 @@ const InviteRow: React.FunctionComponent<{
                 onKeyDown={(event) => {
                     if (event.key === "Enter") {
                         event.preventDefault();
-                        tryInvite();
+                        if (!pending) tryInvite();
                     }
                 }}
                 css={css`
@@ -350,7 +359,7 @@ const InviteRow: React.FunctionComponent<{
             <BloomButton
                 data-testid="share-invite-button"
                 l10nKey="Sharing.ShareDialog.Invite"
-                enabled={trimmed.length > 0 && !alreadyHasAccess}
+                enabled={trimmed.length > 0 && !alreadyHasAccess && !pending}
                 hasText={true}
                 variant="contained"
                 onClick={tryInvite}
@@ -371,6 +380,10 @@ const SuggestionsPanel: React.FunctionComponent<{
 }> = (props) => {
     const [unchecked, setUnchecked] = useState<string[]>([]);
     const [hidden, setHidden] = useState(false);
+    // True from clicking Invite Selected until the answer comes back, so the same people
+    // can't be sent twice. After a successful invite it stays true: the refreshed state
+    // replaces this panel (or removes it).
+    const [pending, setPending] = useState(false);
     const heading = useL10n(
         "These people have worked on this Team Collection. Do you want to invite them?",
         "Sharing.ShareDialog.SuggestionsHeading",
@@ -384,9 +397,11 @@ const SuggestionsPanel: React.FunctionComponent<{
         const declined = props.suggestions
             .filter((s) => unchecked.includes(s.email))
             .map((s) => s.email);
+        setPending(true);
         void props.actions
             .invite(checked.map((s) => ({ email: s.email, role: s.role })))
             .then((invited) => {
+                if (!invited) setPending(false);
                 // Once the invitations are made the collection is certainly shared, so the
                 // ones left unchecked can be remembered as "don't suggest". If inviting failed,
                 // leave the suggestions alone so the admin can try again.
@@ -458,7 +473,7 @@ const SuggestionsPanel: React.FunctionComponent<{
                 <BloomButton
                     data-testid="share-invite-suggestions"
                     l10nKey="Sharing.ShareDialog.InviteSelected"
-                    enabled={checked.length > 0}
+                    enabled={checked.length > 0 && !pending}
                     hasText={true}
                     variant="contained"
                     onClick={inviteChecked}

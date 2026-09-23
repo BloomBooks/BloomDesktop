@@ -261,12 +261,16 @@ namespace Bloom.Sharing
             );
         }
 
+        // Write via a temporary file that replaces the real one only once it is complete, so
+        // Bloom stopping part way through can't leave a truncated record that no longer reads.
         private void Write(CollectionSharingRecord record)
         {
+            var temp = new TempFileForSafeWriting(_filePath);
             RobustFile.WriteAllText(
-                _filePath,
+                temp.TempFilePath,
                 JsonConvert.SerializeObject(record, Formatting.Indented)
             );
+            temp.WriteWasSuccessful();
         }
     }
 }

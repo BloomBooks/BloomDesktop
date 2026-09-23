@@ -142,7 +142,7 @@ describe("ShareDialogContents", () => {
         expect(actions.signIn).toHaveBeenCalledTimes(1);
     });
 
-    it("before sharing, shows the admin as the sole admin and lets them invite", () => {
+    it("before sharing, shows the admin as the sole admin and lets them invite", async () => {
         const actions = render(makeState({ isShared: false, members: [] }));
         const rows = findAll("share-member");
         expect(rows.map((r) => r.dataset.email)).toEqual([ruth]);
@@ -155,7 +155,22 @@ describe("ShareDialogContents", () => {
         expect(actions.invite).toHaveBeenCalledWith([
             { email: "amina@example.org", role: "editor" },
         ]);
+        // While the invitation is on its way, it can't be sent again.
+        expect(inviteButton()?.disabled).toBe(true);
+        await act(async () => {});
         expect(emailInput()?.value).toBe("");
+    });
+
+    it("keeps the typed email if the invitation fails", async () => {
+        const actions = makeActions();
+        actions.invite.mockImplementation(() => Promise.resolve(false));
+        render(makeState({}), actions);
+        typeInto(emailInput(), "amina@example.org");
+        click(inviteButton(), "the Invite button");
+        await act(async () => {});
+        expect(actions.invite).toHaveBeenCalledTimes(1);
+        expect(emailInput()?.value).toBe("amina@example.org");
+        expect(inviteButton()?.disabled).toBe(false);
     });
 
     it("does not invite something that is not an email address", () => {
