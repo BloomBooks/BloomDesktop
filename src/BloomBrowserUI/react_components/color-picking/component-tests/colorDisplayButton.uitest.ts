@@ -105,7 +105,10 @@ test.describe("ColorDisplayButton + ColorPickerDialog", () => {
         await page.mouse.move(box!.x + 5, y);
         await page.mouse.down();
         await page.mouse.move(box!.x + box!.width * 0.35, y, { steps: 4 });
-        // Longer than the 100ms debounce, like a user pausing mid-drag.
+        // A user pausing mid-drag, for longer than the 100ms debounce. This timed wait is an
+        // approved exception to the no-timed-waits rule in .claude/skills/component-test: it is
+        // not waiting for the app to finish anything. The pause is itself the input under test,
+        // so there is no condition to wait on instead.
         await page.waitForTimeout(250);
         await page.mouse.move(box!.x + box!.width * 0.65, y, { steps: 4 });
         await page.mouse.up();
