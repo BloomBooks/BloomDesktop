@@ -171,6 +171,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
             setSawAWarning(false);
             setSawFatalError(false);
             setDone(false);
+            // The spinner especially: it is switched off by "finished", which is broadcast to
+            // every dialog on the channel, so somebody else's run can leave us with no spinner
+            // for a job of ours that has no percentage to show instead.
+            setShowSpinner(props.determinate !== true);
         } else {
             // Once the dialog has been open, the only way this effect runs again is if it
             // it's open state changes. But we don't want this to happen on the initial
@@ -193,7 +197,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                 post("progress/closed");
             }
         }
-    }, [props.open]);
+    }, [props.open, props.determinate]);
 
     const buttonForSendingErrorReportIsRelevant =
         props.showReportButton == "always" ||
