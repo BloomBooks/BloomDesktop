@@ -24,12 +24,12 @@ mixin mxb-contributions
 	+field-prototypeDeclaredExplicity("N1")#contributions
 		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
 			| The contributions made by writers, illustrators, editors, etc., in {lang}
-		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
+		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-padForOverflow.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
 
 mixin mxb-titlePage-contents
 	+field-prototypeDeclaredExplicity("V, N1")#titlePageTitleBlock
 		label.bubble Book title in {lang}
-		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
 	#languageInformation.Credits-Page-style('lang'='N1')
 		.languagesOfBook.L1-Name-TitlePage-style(data-derived='languagesOfBook')
 		.langName('data-library'='dialect')
@@ -37,12 +37,12 @@ mixin mxb-titlePage-contents
 	+mxb-contributions
 	+field-prototypeDeclaredExplicity("N1")#funding.prepub-invisible
 		label.bubble Use this to acknowledge any funding agencies.
-		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-padForOverflow.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 	#prepubNotice.prepub-only
 		h3 Versión Preliminar
 	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative.prepub-only
 		label.bubble Use this for Printing History (1st Edition, etc.)
-		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-padForOverflow.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 	+title-page-branding-bottom
 
 mixin mxb-titlePage
@@ -67,7 +67,7 @@ mixin mxb-nationalSummaryCreditsPage-back-title-page-contents
 	+field-ISBN.prepub-invisible
 	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative.prepub-invisible
 		label.bubble Use this for Printing History (1st Edition, etc.)
-		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-padForOverflow.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 
 mixin mxb-creditsPage
 	+page-xmatter('Credits Page').credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#69EF35AE-5BF1-49F1-89E7-2A932DAD932C

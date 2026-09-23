@@ -1,5 +1,8 @@
 import { expect, test } from "../../component-tester/playwrightTest";
 
+const getToolHeader = (page: import("@playwright/test").Page, label: string) =>
+    page.locator(".MuiAccordionSummary-root", { hasText: label });
+
 const getToolHeaderTexts = async (
     page: import("@playwright/test").Page,
 ): Promise<string[]> => {
@@ -16,71 +19,26 @@ const routeToolboxApis = async (page: import("@playwright/test").Page) => {
             body: "talkingBook,settings",
         });
     });
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/talkingBook/talkingBookToolboxTool.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='talkingBookTool'>Talking Book</h3><div><div>Talking tool content injected</div></div>",
-            });
-        },
-    );
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/settings/Settings.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='settingsTool'>More...</h3><div><div>Settings tool content injected</div></div>",
-            });
-        },
-    );
-
-    await page.route(
-        "**/bloom/bookEdit/toolbox/readers/decodableReader/decodableReaderToolboxTool.html",
-        async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: "<h3 data-toolId='decodableReaderTool'>Decodable Reader</h3><div><div>Decodable controls injected</div></div>",
-            });
-        },
-    );
 };
 
 test.describe("ToolboxRoot React mode", () => {
-    test("renders legacy HTML sections and switches active section", async ({
-        page,
-    }) => {
+    test("switches active React section", async ({ page }) => {
         await routeToolboxApis(page);
 
         await page.goto("/?component=ToolboxRootTestHarness");
 
-        await expect(page.getByText("Loading component…")).toHaveCount(0, {
-            timeout: 15000,
-        });
+        const talkingBook = getToolHeader(page, "Talking Book Tool");
+        const more = getToolHeader(page, "More...");
 
-        await expect(page.getByText("Talking Book Tool").first()).toBeVisible({
-            timeout: 10000,
-        });
-        await expect(page.getByText("More...").first()).toBeVisible({
-            timeout: 10000,
-        });
+        await expect(talkingBook).toBeVisible({ timeout: 10000 });
+        await expect(more).toBeVisible();
 
-        await page.getByText("Talking Book Tool").first().click();
+        await talkingBook.click();
+        await expect(talkingBook).toHaveAttribute("aria-expanded", "true");
 
-        await expect(
-            page.getByText("Talking tool content injected"),
-        ).toBeVisible();
-
-        await page.getByText("More...").first().click();
-
-        await expect(
-            page.getByText("Settings tool content injected"),
-        ).toBeVisible();
+        await more.click();
+        await expect(more).toHaveAttribute("aria-expanded", "true");
+        await expect(talkingBook).toHaveAttribute("aria-expanded", "false");
     });
 
     test("initial selection follows restored current tool", async ({
@@ -113,11 +71,9 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Decodable controls injected")).toBeVisible(
-            {
-                timeout: 10000,
-            },
-        );
+        await expect(
+            getToolHeader(page, "Decodable Reader Tool"),
+        ).toHaveAttribute("aria-expanded", "true");
     });
 
     test("dynamically added decodable reader can be activated", async ({
@@ -131,7 +87,12 @@ test.describe("ToolboxRoot React mode", () => {
             timeout: 15000,
         });
 
-        await expect(page.getByText("Decodable Reader Tool")).toHaveCount(0);
+        // Scoped to the accordion headers on purpose: the "More..." panel lists every
+        // registered tool as a checkbox, so a bare getByText would match that label and
+        // report the tool as present before it has been added as a section.
+        await expect(getToolHeader(page, "Decodable Reader Tool")).toHaveCount(
+            0,
+        );
 
         await page.evaluate(() => {
             window.dispatchEvent(
@@ -144,16 +105,12 @@ test.describe("ToolboxRoot React mode", () => {
             );
         });
 
-        await expect(
-            page.getByText("Decodable Reader Tool").first(),
-        ).toBeVisible({
+        await expect(getToolHeader(page, "Decodable Reader Tool")).toBeVisible({
             timeout: 10000,
         });
-        await expect(page.getByText("Decodable controls injected")).toBeVisible(
-            {
-                timeout: 10000,
-            },
-        );
+        await expect(
+            getToolHeader(page, "Decodable Reader Tool"),
+        ).toHaveAttribute("aria-expanded", "true");
     });
 
     test("tools are alphabetical on initial render with More last", async ({
@@ -252,9 +209,7 @@ test.describe("ToolboxRoot React mode", () => {
         ]);
     });
 
-    test("header shows icons and subscription badges without chevrons", async ({
-        page,
-    }) => {
+    test("headers show tool names without chevrons", async ({ page }) => {
         await routeToolboxApis(page);
 
         await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
@@ -282,17 +237,60 @@ test.describe("ToolboxRoot React mode", () => {
         await expect(
             page.locator(".MuiAccordionSummary-expandIconWrapper"),
         ).toHaveCount(0);
+    });
 
-        await expect(page.locator(".subscription-badge")).toHaveCount(3);
+    // Canvas, Motion and Music are the tools that need a subscription, so each of their
+    // headers carries a badge; Talking Book does not. Every enabled tool's header carries
+    // an icon. Which image each icon shows is a static lookup table and is not asserted.
+    test("header shows icons and subscription badges", async ({ page }) => {
+        await routeToolboxApis(page);
 
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='canvas']"),
-        ).toHaveCSS("background-image", /Canvas%20Icon\.svg|Canvas Icon\.svg/);
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='motion']"),
-        ).toHaveCSS("background-image", /motion\.svg/);
-        await expect(
-            page.locator(".toolbox-react-header-icon[data-toolid='music']"),
-        ).toHaveCSS("background-image", /music-notes-white\.svg/);
+        await page.route("**/bloom/api/toolbox/enabledTools", async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "text/plain",
+                body: "canvas,motion,music,talkingBook,settings",
+            });
+        });
+
+        await page.goto("/?component=ToolboxRootTestHarness");
+
+        // The harness's first mount waits on the Vite dev server transforming the
+        // toolbox module graph, which on a cold server takes well over the default
+        // expect timeout; every test in this file uses the same wait for the same reason.
+        await expect(page.getByText("Loading component…")).toHaveCount(0, {
+            timeout: 15000,
+        });
+
+        // Five headers: the four tools plus the "More..." (settings) header. The component
+        // exposes each header's icon path as data-icon-src; "More..." has no icon of its own.
+        const icons = page.getByTestId("toolbox-header-icon");
+        await expect(icons).toHaveCount(5);
+        const icon = (toolId: string) =>
+            icons.and(page.locator(`[data-toolid='${toolId}']`));
+        for (const toolId of ["canvas", "motion", "music", "talkingBook"]) {
+            await expect(icon(toolId)).toHaveCount(1);
+            await expect(icon(toolId)).toHaveAttribute(
+                "data-icon-src",
+                /svg|png/,
+            );
+        }
+        await expect(icon("settings")).toHaveCount(1);
+        await expect(icon("settings")).not.toHaveAttribute("data-icon-src");
+
+        // Scoped to the headers: the "More..." panel lists the tools with their own
+        // badges, which are not what this test is about.
+        const headerBadges = (toolId: string) =>
+            page
+                .locator(".MuiAccordionSummary-root", {
+                    has: icon(toolId),
+                })
+                .getByTestId("subscription-badge");
+        for (const toolId of ["canvas", "motion", "music"]) {
+            await expect(headerBadges(toolId)).toHaveCount(1);
+        }
+        for (const toolId of ["talkingBook", "settings"]) {
+            await expect(headerBadges(toolId)).toHaveCount(0);
+        }
     });
 });

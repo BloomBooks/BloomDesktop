@@ -29,6 +29,7 @@ namespace Bloom.SubscriptionAndFeatures
         BulkBloomPub,
         Bookshelf,
         AppBuilder,
+        AiImageEditing,
         AiSourceBubbles,
     }
 
@@ -183,6 +184,7 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.TeamCollection,
                 SubscriptionTier = SubscriptionTier.LocalCommunity,
+                UnlockedByPlayground = false,
             },
             new FeatureInfo
             {
@@ -193,7 +195,15 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.AppBuilder,
                 SubscriptionTier = SubscriptionTier.Pro,
-                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAppBuilder,
+                // An app can include other books from the collection, so a selected Playground
+                // book must not unlock the Apps screen; it shows its "requires a subscription"
+                // overlay as for any other book. See UnlockedByPlayground (BL-16855).
+                UnlockedByPlayground = false,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AiImageEditing,
+                SubscriptionTier = SubscriptionTier.Pro,
             },
             new FeatureInfo
             {

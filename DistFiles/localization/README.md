@@ -24,6 +24,57 @@ Once the translation process is started on Crowdin for a given language, transla
 made outside of Crowdin are discouraged because it complicates merging changes made on Crowdin
 and it negates most of the value of using Crowdin to begin with.
 
+## The "Pseudo-English" UI language (qps-ploc) has no files here, and never should
+
+On the developer, alpha and internal (BetaInternal, ReleaseInternal) channels, the UI Language menu offers **Pseudo-English (i18n test)**,
+whose language tag is the standard pseudo-locale `qps-ploc`.  It is *not* a translation.  It is
+produced by L10NSharp at lookup time by transforming the live English text: every vowel is
+doubled with an accent on the first of the pair, and the whole string is wrapped in brackets, so
+`Title Missing` becomes `[Tîitlée Mîissîing]`.  Format placeholders (`{0}`, `%0`, `{name}`) and
+markup pass through untouched.
+
+It exists so we can see internationalization problems that are invisible in English:
+
+- plain English in the UI = a hard-coded string that was never internationalized;
+- a visible `{0}` / `%0` / `{name}` = a broken placeholder;
+- a missing `]` = the string is being truncated;
+- brackets in the middle of a sentence = the sentence is being concatenated at runtime;
+- clipped or overflowing layout = the layout can't cope with the ~30-40% growth that real
+  translations routinely bring.
+
+Because the pseudo text is derived from the English at the moment of lookup, **no `qps-*`
+xliff files exist, are loaded, or are ever written**, and none should ever be added here or to
+Crowdin.  The pseudo-locale is always exactly as complete as the English source strings are.
+(The unrelated `qaa` folder here is a leftover from Crowdin and has nothing to do with this.)
+
+### What stays plain English on purpose
+
+A few surfaces are localized by *whole file* rather than string by string: the file for the
+current UI language is chosen at runtime, or the English one is used if there isn't one.  There
+is no `qps-ploc` file for any of them and there should not be, so under the pseudo-locale they
+correctly show English:
+
+- the built-in template readmes (`ReadMe-en.htm`, baked from
+  `DistFiles/localization/<Template>/ReadMe-<lang>.xlf` at build time by
+  `src/BloomBrowserUI/scripts/l10n-build.js`);
+- readmes of downloaded or user-made templates (`ReadMe-en.md`) -- author content, never
+  localized by us at all;
+- help and documentation pages reached through
+  `BloomFileLocator.GetBestLocalizableFileDistributedWithApplication`;
+- xmatter descriptions (`<desc>-<lang>.txt`, see `XMatterInfo`).
+
+This does not weaken the pseudo-locale: a whole document is either the translated file or the
+English one, so there is no mixed population to read a signal from, and "the readme is in
+English" is already obvious without any transform.  So the tester's rule is: **plain English
+means the string was never internationalized, unless it is one of the whole-file surfaces
+listed above.**
+
+(Note too that a development build generates only `ReadMe-en.htm`, so template readmes show
+English there for *every* UI language, not just the pseudo-locale.)
+
+See BL-16748, and `LocalizationManager.PseudoLocalizationLanguageId` /
+`OfferPseudoLocalization` / `PseudoLocalize` in L10NSharp.
+
 ## Effects of English xliff file changes
 
 - Changing the *original* attribute of the *file* element in the xliff file causes all *target*
@@ -48,8 +99,11 @@ and it negates most of the value of using Crowdin to begin with.
   cleared.  (This appears to be a corner case in Crowdin's code that may or not be intentional.)
 
 - Adding, removing, or reordering *trans-unit* elements in the English xliff file without
-  changing them merely causes the corresponding addition, removal, or reordering in the
-  translation xliff file.
+  changing them causes the corresponding addition, removal, or reordering in the translation
+  xliff file.  Note what the "removal" half of that means in practice: **deleting a
+  *trans-unit* from the English file deletes its translations too.**  That is why we normally
+  mark a string obsolete rather than deleting it — see "Why we can't just delete a string"
+  below.
 
 - I (AP, May 2026) am pretty sure this is affected by the `update_option` option in crowdin.yml.
   - What I think is true today with `update_option: update_without_changes` on master: Editing the *source* element content does not affect the translation.
@@ -98,9 +152,55 @@ and it negates most of the value of using Crowdin to begin with.
   uploading it to Crowdin has no effect on what you see on Crowdin.
 
 
+## Why we can't just delete a string
+
+This is the reasoning behind the "mark it obsolete, don't delete it" convention. It is written
+down **here and nowhere else**; `src/BloomBrowserUI/AGENTS.md` and
+`.claude/skills/xlf-strings/SKILL.md` state the resulting rules and point back at this section.
+If you are about to argue that some particular deletion is safe, read this first — the wrong
+argument for it is an easy one to reach.
+
+**Translations only ever travel one route, and every leg of it runs through master:**
+
+1. Crowdin takes its **source** strings from the English xliff files **on master**. Remove an id
+   from master and Crowdin stops knowing about that string.
+2. Finished translations come **back into master** as the periodic `l10n_master` pull request
+   (see "Merging Crowdin pull requests" below).
+3. A release branch gets those translations **only** by cherry-picking that merge — we do this
+   for beta, and it is conceivable though not usual for a release.
+
+So an id deleted from master is gone from Crowdin, therefore absent from every later
+`l10n_master` merge, therefore absent from anything picked into `Version6.x`. **The release
+branch still listing the entry in its own copy of the file saves nothing** — its translations
+were never going to come from that copy; they were going to come from master. This is the trap:
+"but the 6.4 branch still has the entry" feels like a safety argument and is not one.
+
+That is also why a deletion is only *eventually* safe. Once the version in which the string went
+obsolete has shipped and no longer receives updates, nothing will ever need to pick translations
+for it again, and the entry can go. Judging that is a human call.
+
+### The exception: a string Crowdin never had
+
+New entries are added with `translate="no"`, which is what keeps them out of Crowdin until we
+say they are ready. An entry that carried `translate="no"` from the day it was added until the
+day it became unused was therefore never offered to a translator, has no translations anywhere,
+and appears in none of the language subdirectories. Deleting it loses nothing, and an obsolete
+note on it protects nothing.
+
+Establishing that is mechanical — print the entry's line as it stood in every commit that ever
+touched it, on master and on the current release branch, and confirm `translate="no"` on all of
+them; then confirm the id appears only under `en/`. `.claude/skills/xlf-strings/SKILL.md` has
+the exact commands. Deciding to act on it is still the developer's call, and the evidence
+belongs in the commit message and in the PR-review reply, because a reviewer — human or bot —
+reading only the rule will otherwise flag the deletion, quite correctly.
+
 ## Restrictions on xliff file changes
 
 - ***Never*** change the *original* attribute of the *file* element in a source xliff file.
+
+- **Do not delete a *trans-unit* from a source xliff file.**  Mark it obsolete instead.  See
+  "Why we can't just delete a string" above for the reasoning and for the one exception, and
+  `.claude/skills/xlf-strings/SKILL.md` for the note format itself.
 
 - Change the *product-version* attribute of the *file* element in a source xliff file only when
   you think it is really needed.

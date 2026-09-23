@@ -24,14 +24,22 @@ declare global {
     interface ToolboxBundleApi {
         getTheOneToolbox: () => ToolboxApi | undefined;
         scheduleMarkupUpdateAfterPaste: unknown;
+        updateMarkupAfterUndoOrRedo: unknown;
         applyToolboxStateToPage: unknown;
         removeToolboxMarkup: unknown;
         showSetupDialog: unknown;
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
+        beginLoadSynphonySettings: unknown;
+        getDecodableStageMatchingWords: unknown;
+        getSynphonyAlwaysMatchSymbols: unknown;
+        classifySampleTextFiles: unknown;
+        addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;
         makeLetterWordList: unknown;
+        removeSampleTextFilesChangedListener: unknown;
+        removeWordListChangedListener: unknown;
         activateLongPressFor: unknown;
         TalkingBookTool: unknown;
         canUndo: unknown;

@@ -12,6 +12,9 @@ namespace BloomTests.WebLibraryIntegration
     /// This file now contains only edge cases. For a more efficient upload/download test,
     /// the more standard tests have been separated out into BloomS3StandardUpDownloadTests.
     /// </summary>
+    // The test marked [Category("Integration")] talks to the live unit-test S3 bucket, so it
+    // needs internet access. Exclude it from a quick local run with
+    // --filter TestCategory!=Integration. The rest of the fixture is local-only and fast.
     [TestFixture]
     public class BloomS3ClientTests
     {
@@ -51,6 +54,7 @@ namespace BloomTests.WebLibraryIntegration
         }
 
         [Test]
+        [Category("Integration")]
         public void DownloadBook_DoesNotExist_Throws()
         {
             Assert.Throws<DirectoryNotFoundException>(() =>

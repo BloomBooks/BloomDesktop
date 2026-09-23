@@ -33,6 +33,7 @@ import {
     postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
+import { theOneReaderHighlightManager } from "./readerHighlights";
 import {
     allPromiseSettled,
     setTimeoutPromise,
@@ -54,6 +55,38 @@ export class DRTState {
     public stage: number = 1;
     public level: number = 1;
     public markupType: number = MarkupType.Decodable;
+}
+
+/**
+ * The sample-text file types Bloom can actually read. Single source of truth: the setup dialog
+ * asks for this (through the toolbox bundle) rather than keeping its own copy, so what the dialog
+ * lists cannot drift from what Bloom loads.
+ */
+export const kReadableSampleTextFileExtensions = ["txt", "js", "json"];
+
+/**
+ * Gets a file's extension, lowercased, or undefined when it has none. Only the file name is
+ * considered: a dot in a folder name (say C:\My.Books\wordlist) is not a file type, and treating
+ * it as one would make a file with no extension look like it had an unreadable one.
+ */
+export function getFileExtension(path: string): string | undefined {
+    const fileName = path.split(/[\\/]/).pop() ?? "";
+    const lastDot = fileName.lastIndexOf(".");
+    if (lastDot === -1) return undefined;
+    return fileName.slice(lastDot + 1).toLowerCase();
+}
+
+/**
+ * Whether this sample-text file has a type Bloom knows how to read. It looks only at the
+ * extension; it does not check that the file exists or can actually be opened. Compared without
+ * regard to case, so a file named .TXT counts just as .txt does.
+ */
+export function isValidSampleTextFileType(path: string): boolean {
+    const extension = getFileExtension(path);
+    return (
+        extension !== undefined &&
+        kReadableSampleTextFileExtensions.includes(extension)
+    );
 }
 
 export class ReaderToolsModel {
@@ -100,8 +133,9 @@ export class ReaderToolsModel {
     // (The constructor must return synchronously)
     public async initAsync(): Promise<void> {
         const keys = {
-            "EditTab.Toolbox.DecodableReaderTool.StageNofM": "Stage {0} of {1}",
-            "EditTab.Toolbox.LeveledReaderTool.LevelNofM": "Level {0} of {1}",
+            "EditTab.Toolbox.DecodableReaderTool.StageNumber": "Stage {0}",
+            "EditTab.Toolbox.LeveledReaderTool.LevelNumber": "Level {0}",
+            "EditTab.Toolbox.ReaderTools.OfCount": "of {0}",
         };
 
         // Asynchronously pre-load the localizations (in the UI language) of the specified keys
@@ -130,7 +164,7 @@ export class ReaderToolsModel {
         this.wordListChangedListeners = {};
     }
     public getReadableFileExtensions() {
-        return ["txt", "js", "json"];
+        return kReadableSampleTextFileExtensions;
     }
 
     public readyToDoMarkup(): boolean {
@@ -520,6 +554,18 @@ export class ReaderToolsModel {
         return didMarkup;
     }
 
+    /**
+     * Remove the decodable/leveled reader highlights from the page, e.g. when the tool is turned
+     * off or the page has nothing we can mark.
+     */
+    private clearReaderHighlights(): void {
+        // the contentWindow is not available during unit testing
+        const contentWindow = this.safelyGetContentWindow();
+        theOneReaderHighlightManager.clearAll(
+            contentWindow?.document.body ?? undefined,
+        );
+    }
+
     private safelyGetContentWindow(): Window | null {
         const page = parent.window.document.getElementById("page");
         if (!page) return null;
@@ -631,7 +677,10 @@ export class ReaderToolsModel {
      */
     public doMarkup(createCkEditorBookMarks: boolean = true): void {
         if (!this.readyToDoMarkup()) return;
-        if (this.currentMarkupType === MarkupType.None) return;
+        if (this.currentMarkupType === MarkupType.None) {
+            this.clearReaderHighlights();
+            return;
+        }
 
         let oldSelectionPosition = -1;
         if (this.activeElement)
@@ -645,6 +694,11 @@ export class ReaderToolsModel {
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
         let bookmarksForEachEditable: object[] = [];
+        if (editableElements.length === 0) {
+            // e.g. a cover page. There is nothing to mark, so make sure nothing is left
+            // highlighted from a page that did have something.
+            this.clearReaderHighlights();
+        }
         if (editableElements.length > 0) {
             // qtips can be orphaned if the element they belong to is deleted
             // (and so the mouse can't move off their owning element, and they never go away).
@@ -760,12 +814,6 @@ export class ReaderToolsModel {
                 offset: oldSelectionPosition,
             });
             this.redoStack = []; // ok because only referred to by this variable.
-        }
-
-        // the contentWindow is not available during unit testing
-        const contentWindow = this.safelyGetContentWindow();
-        if (contentWindow) {
-            contentWindow.postMessage("Qtips", "*");
         }
     }
 
@@ -1303,29 +1351,28 @@ export class ReaderToolsModel {
 
     public beginSetTextsList(textsArg: string[]): Promise<void> {
         // only save the file types we can read
-        this.texts = textsArg.filter((t) => {
-            const ext = t.split(".").pop();
-            if (!ext) return false;
-            return this.getReadableFileExtensions().indexOf(ext) > -1;
-        });
+        this.texts = textsArg.filter((t) => isValidSampleTextFileType(t));
         return this.beginGetAllSampleFiles().then(() => {
             this.addWordsToSynphony();
 
             // The word list has been received. Now we are using setTimeout() to delay the remainder of the word
             // list processing so the UI doesn't appear frozen as long.
-            setTimeout(() => {
-                this.wordListLoaded = true;
-                this.updateControlContents(); // needed if user deletes all of the stages.
-                this.doMarkup();
-                this.processWordListChangedListeners();
+            return new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    this.wordListLoaded = true;
+                    this.updateControlContents(); // needed if user deletes all of the stages.
+                    this.doMarkup();
+                    this.processWordListChangedListeners();
 
-                //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
-                //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                postData(
-                    "readers/io/synphonyLanguageData",
-                    theOneLanguageDataInstance,
-                );
-            }, 200);
+                    //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
+                    //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
+                    postData(
+                        "readers/io/synphonyLanguageData",
+                        theOneLanguageDataInstance,
+                    );
+                    resolve();
+                }, 200);
+            });
         });
     }
 

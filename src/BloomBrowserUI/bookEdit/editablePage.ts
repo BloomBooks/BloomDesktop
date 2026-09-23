@@ -104,6 +104,10 @@ export interface IPageFrameExports {
         imageInfo: Omit<IImageInfo, "imageId">,
     ): void;
     removeImageId(imageId: string): void;
+    applyAiImageEditorReplacements(
+        results?: IAiImageEditorCommitResult[],
+    ): IAiImageEditorApplyOutcome;
+    getAiImageEditorPageMetrics(): IPageMetrics | null;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -130,6 +134,17 @@ import {
     removeRequestPageContentDelay,
 } from "./js/bloomEditing";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
+// Called from the AI Image Editor overlay in the top window, which owns the session but
+// cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
+import {
+    applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
+} from "./aiImageEditor/aiImageEditorPageCommands";
+import type {
+    IAiImageEditorApplyOutcome,
+    IAiImageEditorCommitResult,
+} from "./aiImageEditor/aiImageEditorShared";
+import type { IPageMetrics } from "./js/imageTargetResolution";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -153,6 +168,8 @@ export {
     renderDragActivityTabControl,
     getTheOneCanvasElementManager,
     showGamePromptDialog,
+    applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -428,6 +445,8 @@ interface EditablePageBundleApi {
     SayHello: typeof SayHello;
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
+    applyAiImageEditorReplacements: typeof applyAiImageEditorReplacements;
+    getAiImageEditorPageMetrics: typeof getAiImageEditorPageMetrics;
 }
 
 declare global {
@@ -506,4 +525,6 @@ window.editablePageBundle = {
     SayHello,
     renderDragActivityTabControl,
     showGamePromptDialog,
+    applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
 };

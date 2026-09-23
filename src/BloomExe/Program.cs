@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -16,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -26,10 +28,12 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using BloomFreezeDoctor.Protocol;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
+using Newtonsoft.Json.Linq;
 using Sentry;
 using SIL.Core.Desktop.i18n;
 using SIL.IO;
@@ -106,6 +110,22 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // Experimental features an e2e run asked for, passed as
+        // --experimental-features <comma-separated tokens>, or null when none were asked for.
+        // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
+        internal static string StartupExperimentalFeatures { get; private set; }
+
+        // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
+        // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
+        // pending C# changes and offers a dev-only toast that asks the launcher to
+        // rebuild and relaunch us.
+        internal static int? StartupLauncherPort { get; private set; }
+
+        // The folder --user-settings-folder asked Bloom to keep its user settings in, or null
+        // when none was named. BloomSettingsProvider is what acts on it; this copy is only for
+        // reporting what was requested.
+        internal static string StartupUserSettingsFolder { get; private set; }
+
         internal static string StartupRequestedPortSummary =>
             string.Join(
                 ", ",
@@ -113,6 +133,12 @@ namespace Bloom
                 {
                     StartupAutomation ? "automation=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
+                    StartupLauncherPort.HasValue
+                        ? $"launcherPort={StartupLauncherPort.Value}"
+                        : null,
+                    StartupUserSettingsFolder != null
+                        ? $"userSettingsFolder={StartupUserSettingsFolder}"
+                        : null,
                 }.Where(value => value != null)
             );
 
@@ -123,12 +149,47 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            BloomAssertListener.Install();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+
+            // Parse our own startup arguments before anything reads Settings.Default:
+            // --user-settings-folder decides where the settings live (the parser hands it to
+            // BloomSettingsProvider), and a settings provider fixes its location when it is
+            // constructed, which happens the first time a setting is read.
+            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                // A rejected launch touches no settings, its own or anyone else's, so the error is
+                // reported before anything reads Settings.Default. CheckForCorruptUserConfig and
+                // SetUpLocalization below both do, and a rejected launch owns no settings folder
+                // (the parser hands one to BloomSettingsProvider only for an accepted command
+                // line), so they would read, and might repair, the shared profile of whoever is
+                // running Bloom. Only what a message box needs is set up.
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             CheckForCorruptUserConfig();
+            // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
+            // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
+            // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
+            // a Doctor is already watching; announced from where the Doctor is launched, much further
+            // down, it would arrive after the sweep had found us anyway.
+            //
+            // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
+            // what makes reading one safe.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
@@ -166,18 +227,6 @@ namespace Bloom
             // Another goal is for it to happen before this method breaks off into various paths, so that
             // every startup path calls it.
             SetUpLocalization();
-
-            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
-            if (startupPortErrorMessage != null)
-            {
-                MessageBox.Show(
-                    startupPortErrorMessage,
-                    "Bloom",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-                return 1;
-            }
 
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
@@ -332,6 +381,7 @@ namespace Bloom
                 if (Settings.Default.NeedUpgrade)
                 {
                     //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+                    // (BloomSettingsProvider decides what, if anything, there is to bring in.)
                     Settings.Default.Upgrade();
                     Settings.Default.Reload();
                     Settings.Default.NeedUpgrade = false;
@@ -339,6 +389,11 @@ namespace Bloom
                     Settings.Default.Save();
 
                     StartUpWithFirstOrNewVersionBehavior = true;
+
+                    // The announcement at the top of Main read RunFreezeDoctor before this migration, so on
+                    // the first run of a new version it saw the default (off) and stayed silent. Now that the
+                    // user's real value is in, tell a running Doctor again; a repeat is harmless.
+                    DoctorLauncher.AnnounceToAnyDoctor();
                 }
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
@@ -352,12 +407,25 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
-                    using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
-                    using (var dlg = new LicenseDialog("license.htm"))
-                        if (dlg.ShowDialog() != DialogResult.OK)
-                            return 1;
-                    Settings.Default.LicenseAccepted = true;
-                    Settings.Default.Save();
+                    if (RunningE2eTests)
+                    {
+                        // e2e / visual-regression runs (--e2e) launch Bloom with a collection
+                        // argument and no human to click Accept. Showing the modal LicenseDialog
+                        // would block startup forever (Bloom never opens the collection or starts
+                        // its server), so treat the license as accepted and proceed. Mirrors the
+                        // debugger-prompt skip below.
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
+                    else
+                    {
+                        using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
+                        using (var dlg = new LicenseDialog("license.htm"))
+                            if (dlg.ShowDialog() != DialogResult.OK)
+                                return 1;
+                        Settings.Default.LicenseAccepted = true;
+                        Settings.Default.Save();
+                    }
                 }
 
 #if DEBUG
@@ -365,9 +433,14 @@ namespace Bloom
                 {
                     if (IsLocalizationHarvestingLaunch(args))
                         LocalizationManager.IgnoreExistingEnglishTranslationFiles = true;
-                    else
-                        // This allows us to debug things like  interpreting a URL.
-                        MessageBox.Show("Attach debugger now");
+                    // Commented out because it fired for ANY argument, not just the URL case it was
+                    // meant for. A Debug Bloom launched on a collection path then blocked forever on
+                    // a modal dialog, which no script or external tool can get past (and which looks
+                    // like a hang: alive, no window, no server). Uncomment if you need to attach
+                    // before Bloom interprets its arguments.
+                    //else
+                    //    // This allows us to debug things like  interpreting a URL.
+                    //    MessageBox.Show("Attach debugger now");
                 }
                 var harvest = Environment.GetEnvironmentVariable("HARVEST_FOR_LOCALIZATION");
                 if (
@@ -542,6 +615,7 @@ namespace Bloom
                             Settings.Default.MruProjects = new MostRecentPathsList();
                         }
 
+                        // The Save() below covers both this and the list we may just have created.
                         Settings.Default.MruProjects.AddNewPath(newCollection);
                         Settings.Default.Save();
 
@@ -755,7 +829,16 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupLauncherPort = null;
+            StartupUserSettingsFolder = null;
+            BloomSettingsProvider.SetUserSettingsFolder(null);
+            RunningE2eTests = false;
+            StartupExperimentalFeatures = null;
 
+            // Collected here and handed to BloomSettingsProvider only once the whole command line
+            // has been accepted, so a rejected launch never owns a settings folder: Main reports
+            // the error before anything reads settings, and there is nothing to undo here.
+            string userSettingsFolder = null;
             var remainingArgs = new List<string>();
 
             for (var i = 0; i < args.Length; i++)
@@ -767,6 +850,14 @@ namespace Bloom
                         "--vite-port",
                         () => StartupVitePort,
                         value => StartupVitePort = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupPortArgument(
+                        args,
+                        ref i,
+                        "--launcher-port",
+                        () => StartupLauncherPort,
+                        value => StartupLauncherPort = value,
                         out errorMessage
                     )
                     || TryHandleStartupStringArgument(
@@ -786,6 +877,28 @@ namespace Bloom
                         value => StartupAutomation = value,
                         out errorMessage
                     )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--e2e",
+                        () => RunningE2eTests,
+                        value => RunningE2eTests = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupStringArgument(
+                        args,
+                        ref i,
+                        "--experimental-features",
+                        () => StartupExperimentalFeatures,
+                        value => StartupExperimentalFeatures = value,
+                        out errorMessage
+                    )
+                    || TryHandleUserSettingsFolderArgument(
+                        args,
+                        ref i,
+                        ref userSettingsFolder,
+                        out errorMessage
+                    )
                 )
                 {
                     if (errorMessage != null)
@@ -797,7 +910,68 @@ namespace Bloom
                 remainingArgs.Add(args[i]);
             }
 
+            // Refuse rather than ignore: a run that asks for a feature and does not get it fails
+            // in some far-away place, looking like a broken feature instead of a bad command line.
+            if (StartupExperimentalFeatures != null && !RunningE2eTests)
+            {
+                errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                return Array.Empty<string>();
+            }
+
+            StartupUserSettingsFolder = userSettingsFolder;
+            BloomSettingsProvider.SetUserSettingsFolder(userSettingsFolder);
             return remainingArgs.ToArray();
+        }
+
+        /// <summary>
+        /// Handle --user-settings-folder: the folder to keep user.config in, which the caller
+        /// hands to BloomSettingsProvider. Stored as a full path, because Bloom changes its
+        /// working directory during startup (NormalizeWorkingDirectory) and a relative path would
+        /// otherwise point somewhere else by the time the settings are saved.
+        /// </summary>
+        private static bool TryHandleUserSettingsFolderArgument(
+            string[] args,
+            ref int index,
+            ref string folder,
+            out string errorMessage
+        )
+        {
+            const string optionName = "--user-settings-folder";
+            if (
+                !TryParseStartupStringArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var value,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (folder != null)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            try
+            {
+                folder = Path.GetFullPath(value);
+            }
+            catch (Exception e)
+                when (e is ArgumentException
+                    || e is NotSupportedException
+                    || e is System.IO.PathTooLongException
+                )
+            {
+                errorMessage = $"Bloom cannot use \"{value}\" as the {optionName}: {e.Message}";
+            }
+            return true;
         }
 
         private static bool TryHandleStartupFlagArgument(
@@ -1263,6 +1437,11 @@ namespace Bloom
         {
             try
             {
+                // A Bloom that ./go.sh launched cannot restart itself: the launcher owns the
+                // Vite dev server and the process tree, and it stops the whole stack when
+                // Bloom exits.  So we ask the launcher to do the restart instead.
+                if (args == null && AskDevLauncherToRestartBloom())
+                    return;
                 var program = BloomExePath;
                 if (SIL.PlatformUtilities.Platform.IsLinux)
                 {
@@ -1297,6 +1476,73 @@ namespace Bloom
             catch (Exception e)
             {
                 ErrorReport.NotifyUserOfProblem(e, "Bloom encountered a problem while restarting.");
+            }
+        }
+
+        /// <summary>
+        /// If ./go.sh launched this Bloom, tells its launcher to restart Bloom, and returns
+        /// true.  The launcher rebuilds, relaunches Bloom, and closes this instance itself.
+        /// Returns false for an installed Bloom, and when the launcher does not answer.
+        /// </summary>
+        /// <remarks>
+        /// The launcher writes output/bloom-launcher.json beside the folder that holds
+        /// Bloom.exe.  That file can be stale, so we ask the control API for its status
+        /// before we trust it.  See scripts/watchBloomExeControl.mjs.
+        ///
+        /// The launcher answers before it does the work, so a launcher that accepts and then
+        /// fails leaves this Bloom running.  Whatever the caller saved is still saved, so the
+        /// next start of Bloom uses it.
+        /// </remarks>
+        private static bool AskDevLauncherToRestartBloom()
+        {
+            var exeFolder = Path.GetDirectoryName(BloomExePath);
+            if (string.IsNullOrEmpty(exeFolder))
+                return false;
+            // Bloom.exe is at <repo>/output/Debug/AnyCPU/Bloom.exe, the launcher file at
+            // <repo>/output/bloom-launcher.json.
+            var launcherFile = Path.GetFullPath(
+                Path.Combine(exeFolder, "..", "..", "bloom-launcher.json")
+            );
+            if (!RobustFile.Exists(launcherFile))
+                return false;
+            try
+            {
+                var record = JObject.Parse(RobustFile.ReadAllText(launcherFile));
+                var controlUrl = record["controlUrl"]?.ToString();
+                if (string.IsNullOrEmpty(controlUrl))
+                    return false;
+                var ourProcessId = Process.GetCurrentProcess().Id;
+                // Task.Run keeps this off the user interface thread, which the caller may be on.
+                var launcherAccepted = Task.Run(async () =>
+                {
+                    using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) })
+                    {
+                        // The file survives a hard kill of the launcher, so this probe is
+                        // the only trustworthy sign that somebody is listening.
+                        var response = await client.GetAsync(controlUrl.TrimEnd('/') + "/status");
+                        if (!response.IsSuccessStatusCode)
+                            return false;
+                        var status = JObject.Parse(await response.Content.ReadAsStringAsync());
+                        // The launcher restarts the Bloom that it started.  If that is some
+                        // other Bloom, asking would close that one and leave this one running.
+                        if ((int?)status["bloomProcessId"] != ourProcessId)
+                            return false;
+                        var restart = await client.PostAsync(
+                            controlUrl.TrimEnd('/') + "/restart",
+                            new StringContent("")
+                        );
+                        return restart.IsSuccessStatusCode;
+                    }
+                }).Result;
+                if (!launcherAccepted)
+                    return false;
+                Logger.WriteEvent("Asked the dev launcher to restart Bloom.");
+                return true;
+            }
+            catch (Exception e)
+            {
+                Logger.WriteEvent("Could not ask the dev launcher to restart Bloom: " + e.Message);
+                return false;
             }
         }
 
@@ -1347,7 +1593,7 @@ namespace Bloom
                     var shell = _projectContext.ProjectWindow as Shell;
                     if (shell != null)
                     {
-                        shell.Invoke((Action)(() => shell.ReallyComeToFront()));
+                        shell.Invoke((Action)(() => shell.FinishPuttingShellInFront()));
                     }
                 }
             };
@@ -1363,6 +1609,18 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+
+            // Publish our health for the Freeze Doctor. Started here, just before the message loop,
+            // because the UI heartbeat is a WinForms timer: it only ticks while messages are being pumped,
+            // which is exactly what makes its silence meaningful.
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has switched it on, since a diagnostic tool is no use
+            // unless it is already running when the trouble starts.
+            DoctorLauncher.LaunchIfWanted();
+            // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
+            // AND this is a developer build.
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+
             try
             {
                 Application.Run();
@@ -1385,6 +1643,8 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1400,6 +1660,7 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1409,6 +1670,10 @@ namespace Bloom
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
             }
+
+            // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
+            // can say WHERE it stopped rather than only that it did.
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.MessageLoopReturned);
 
             try
             {
@@ -1426,6 +1691,7 @@ namespace Bloom
                 }
             }
 
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1436,9 +1702,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.LogWritten);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.ProjectContextDisposed);
         }
 
         /// <summary>
@@ -1588,6 +1856,90 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void StartUpShellBasedOnMostRecentUsedIfPossible()
         {
+            var opened = false;
+            try
+            {
+                opened = TryOpenMostRecentlyUsedCollection();
+            }
+            catch (Exception error)
+            {
+                // OpenProjectWindow reports and returns false for anything that goes wrong while
+                // actually opening, so reaching here means something around it threw. Report it, but
+                // carry on to the chooser below: if we let this out, we would never get there, and a
+                // startup action that throws leaves Bloom running with no window at all. (BL-16678)
+                Logger.WriteError("Error opening the most recently used collection", error);
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.None,
+                    "Bloom had a problem opening the collection you were last using.",
+                    null,
+                    error
+                );
+            }
+
+            if (!opened)
+            {
+                // Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
+                // and that the splash screen will be closed to make way for it.
+                StartupScreenManager.AddStartupAction(
+                    () => ChooseACollectionOrQuit(),
+                    shouldHideSplashScreen: true
+                );
+            }
+        }
+
+        /// <summary>
+        /// Offer the collection chooser, and if even that fails, quit.
+        /// </summary>
+        /// <remarks>
+        /// Use this wherever the chooser is our recovery from not having a collection open, as opposed
+        /// to the user asking for it while a collection is open. On those paths there is no Shell: if
+        /// showing the chooser throws, the exception goes to FatalExceptionHandler, which during startup
+        /// is in fallback mode and so shows a message and lets the application carry on -- carrying on
+        /// with no window and no way to quit, holding the single-instance token so that the next launch
+        /// is turned away with "Bloom is already running". Quitting is a poor outcome, but it is a much
+        /// better one than that, and ProgramExit arms the force-quit net in case shutdown is stuck too.
+        /// (BL-16678)
+        /// </remarks>
+        private static void ChooseACollectionOrQuit()
+        {
+            try
+            {
+                ChooseACollection();
+            }
+            catch (System.IO.PathTooLongException error)
+            {
+                // ChooseACollection raises this on purpose when the collection the user picked has too
+                // long a path, so that we can say so specifically instead of blaming the chooser. Do
+                // that report here rather than letting it out: the tailored one lives in
+                // ProblemReportApi, which is not in play on these paths (no project, so we are still on
+                // the WinForms fallback reporter), and an exception let out of here reaches
+                // FatalExceptionHandler, which in fallback mode shows a message and lets Bloom carry on
+                // -- windowless, which is the very thing this method exists to prevent. (BL-16678)
+                Logger.WriteError("A collection was chosen whose path is too long", error);
+                LongPathAware.ReportLongPath(error);
+                ProgramExit.Exit();
+            }
+            catch (Exception error)
+            {
+                Logger.WriteError("Error offering the collection chooser", error);
+                NonFatalProblem.Report(
+                    ModalIf.All,
+                    PassiveIf.None,
+                    "Bloom was not able to show you the list of collections, and has to quit.",
+                    null,
+                    error
+                );
+                ProgramExit.Exit();
+            }
+        }
+
+        /// <summary>
+        /// Open the collection the user was last in, if we have a usable one remembered.
+        /// </summary>
+        /// <returns>true if a project window is now open</returns>
+        private static bool TryOpenMostRecentlyUsedCollection()
+        {
             var path = Settings.Default.MruProjects.Latest;
 
             if (!string.IsNullOrEmpty(path))
@@ -1602,7 +1954,9 @@ namespace Bloom
                 }
                 else
                 {
-                    while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
+                    // The null check matters: once we have removed the last entry, Latest returns null,
+                    // and IsInvalidCollectionToEdit would then throw on it. (BL-16678)
+                    while (path != null && Utils.MiscUtils.IsInvalidCollectionToEdit(path))
                     {
                         // Somehow...from a previous version?...we have an invalid file in our MRU list.
                         Settings.Default.MruProjects.RemovePath(path);
@@ -1611,15 +1965,7 @@ namespace Bloom
                 }
             }
 
-            if (path == null || !OpenProjectWindow(path))
-            {
-                // Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
-                // and that the splash screen will be closed to make way for it.
-                StartupScreenManager.AddStartupAction(
-                    () => ChooseACollection(),
-                    shouldHideSplashScreen: true
-                );
-            }
+            return path != null && OpenProjectWindow(path);
         }
 
         /// ------------------------------------------------------------------------------------
@@ -1630,10 +1976,57 @@ namespace Bloom
             try
             {
                 //// See BL-10012.
-                var path = Bloom.Utils.LongPathAware.GetLongPath(collectionPath);
+                // GetFullPath: a collection name ending in a period or space leaves us with a
+                // path whose folder part doesn't literally exist, which breaks the FileSystemWatchers
+                // that TeamCollection and BookCollection set up on the collection folder. See BL-16679.
+                var path = MiscUtils.GetFullPath(
+                    Bloom.Utils.LongPathAware.GetLongPath(collectionPath)
+                );
                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
                 {
                     Utils.LongPathAware.ReportLongPath(path);
+                    return false;
+                }
+
+                // The collection may declare a minimum Bloom version. Check that before we go to the
+                // trouble of building a ProjectContext around it. This is the one place all the ways
+                // of opening a collection funnel through, and each caller responds to a false return
+                // by putting up the collection chooser, which is one of the two choices we offer the
+                // user here. See BL-16690.
+                //
+                // Deliberately, this gates only the interactive ways of opening a collection. The
+                // command-line commands and BulkUploader build a ProjectContext directly and so are
+                // not stopped by a minimum version. We decided to leave it that way: those tools have
+                // no user to read a dialog or choose another collection, and failing an overnight
+                // upload job is its own kind of damage. If the flag ever needs to protect the files
+                // themselves rather than warn a person, this is the decision to revisit.
+                if (MinimumBloomVersionCheck.IsThisBloomTooOld(path, out var minimumBloomVersion))
+                {
+                    // We're normally still showing the splash screen at this point, and it would sit on
+                    // top of our dialog. Also, the dialog is a ReactDialog, so it needs the server.
+                    StartupScreenManager.HideSplashScreenForDialog();
+                    _applicationContainer.BloomServer.EnsureListening();
+                    if (
+                        MinimumBloomVersionCheck.ReportCollectionNeedsNewerBloom(
+                            Path.GetFileNameWithoutExtension(path),
+                            minimumBloomVersion
+                        )
+                    )
+                    {
+                        // The user chose to upgrade: a newer Bloom has been downloaded and we have
+                        // asked Bloom to quit so it can be installed. Claim success, not because we
+                        // opened anything, but so that no caller puts up the collection chooser
+                        // while we are shutting down -- that would start a fresh modal message loop
+                        // and could keep Bloom alive.
+                        //
+                        // NOTE for anyone adding a caller: this is the one path where we return true
+                        // with _projectContext still null. It suits today's callers, which only use
+                        // the result to decide whether to offer the chooser (and recording this
+                        // collection as most-recently-used is right, since the upgraded Bloom should
+                        // reopen it). A caller that goes on to use _projectContext would need a
+                        // three-way result -- opened / refused / quitting -- instead of this bool.
+                        return true;
+                    }
                     return false;
                 }
 
@@ -1656,9 +2049,24 @@ namespace Bloom
 
                 StartupScreenManager.PutSplashAbove(_projectContext.ProjectWindow);
 
+                // At first startup, closing the splash screen brings the main window to the front, and
+                // doing it here as well would put the main window on top of the dialogs that startup
+                // puts up. But every later time we open a collection -- above all when the user switches
+                // collections -- there is no splash screen and nothing else that will do it, and the new
+                // Shell has only Show()'s implicit activation to rely on. Windows refuses that once
+                // another application (Chrome, say) took the foreground as our previous window closed,
+                // and Bloom comes up invisible behind it. BL-16784.
+                if (!StartupScreenManager.WillBringMainWindowToFrontWhenSplashCloses)
+                    (_projectContext.ProjectWindow as Shell)?.FinishPuttingShellInFront();
+
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();
                 BloomThreadCancelService = new CancellationTokenSource();
+
+                // We have a collection open, so no lock-out is in progress any more. Without this,
+                // a user locked out of collection A who moved to B and later came back to A would
+                // find that A could never lock them out again this session. See BL-16690.
+                MinimumBloomVersionCheck.NoteCollectionOpened();
 
                 return true;
             }
@@ -1684,27 +2092,122 @@ namespace Bloom
         /// ------------------------------------------------------------------------------------
         private static void HandleErrorOpeningProjectWindow(Exception error, string projectPath)
         {
-            if (_projectContext != null)
+            // The finally matters. This block only runs when the failure came *after* the
+            // ProjectContext was built (the constructor's own failures never assign _projectContext,
+            // and clean up after themselves), and closing a half-working window or disposing a
+            // half-working project can throw in its own right. If that took out the two lines below it,
+            // we would be left with the failed project's API handlers still registered and a stale
+            // _projectContext -- so the next collection would hit the duplicate-key failure this whole
+            // change is about, and trip the Debug.Assert in OpenProjectWindow on the way. (BL-16678)
+            try
             {
-                if (_projectContext.ProjectWindow != null)
+                if (_projectContext != null)
                 {
-                    _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
-                    _projectContext.ProjectWindow.Close();
-                }
+                    if (_projectContext.ProjectWindow != null)
+                    {
+                        _projectContext.ProjectWindow.Closed -= HandleProjectWindowClosed;
+                        _projectContext.ProjectWindow.Close();
+                    }
 
-                _projectContext.Dispose();
+                    _projectContext.Dispose();
+                }
+            }
+            catch (Exception teardownError)
+            {
+                Logger.WriteError(
+                    "Error shutting down a project that failed to open",
+                    teardownError
+                );
+            }
+            finally
+            {
                 _projectContext = null;
+                EnsureNoProjectStateSurvivesAFailedOpen();
             }
 
+            try
+            {
+                ReportErrorOpeningProjectWindow(error, projectPath);
+            }
+            catch (Exception reportingError)
+            {
+                // Reporting runs inside OpenProjectWindow's catch, and its callers depend on
+                // OpenProjectWindow returning false to put up the collection chooser. If a failure to
+                // report escaped from here, it would take that recovery with it and leave Bloom running
+                // with no window and no way to quit. The user has already lost the collection they asked
+                // for; don't also cost them the way back in. (BL-16678)
+                Logger.WriteError("Error reporting a failure to open a collection", reportingError);
+            }
+        }
+
+        /// <summary>
+        /// Make sure nothing the failed project left on application-level objects can spoil the next
+        /// collection the user picks.
+        /// </summary>
+        /// <remarks>
+        /// ProjectContext.Dispose does this for itself, but only as far as it gets: if its own teardown
+        /// throws part way, the constructor logs that and carries on, and the API endpoint handlers the
+        /// failed project registered are still there. The next collection then re-registers the same
+        /// patterns and dies on a duplicate key ("An item with the same key has already been added.
+        /// Key: audio/startrecord"), so one bad collection cost the user every later one until they
+        /// restarted Bloom. This is the one place that knows we have failed and are about to offer
+        /// another collection, so make it certain here. It is cheap and idempotent. (BL-16678)
+        /// </remarks>
+        private static void EnsureNoProjectStateSurvivesAFailedOpen()
+        {
+            try
+            {
+                var server = _applicationContainer?.BloomServer;
+                Debug.Assert(
+                    server?.ApiHandler.HasProjectLevelHandlers != true,
+                    "ProjectContext.Dispose should already have removed the failed project's API endpoint handlers (BL-16678)"
+                );
+                ProjectContext.ReleaseApplicationLevelProjectState(server);
+            }
+            catch (Exception e)
+            {
+                // Same reasoning as the caller's guard: getting back to the collection chooser matters
+                // more than this cleanup succeeding.
+                Logger.WriteError(
+                    "Error clearing state left by a collection that failed to open",
+                    e
+                );
+            }
+        }
+
+        private static void ReportErrorOpeningProjectWindow(Exception error, string projectPath)
+        {
             // FileException is a Bloom exception to capture the filepath. We want to report the inner, original exception.
             Exception originalError = FileException.UnwrapIfFileException(error);
             string errorFilePath = FileException.GetFilePathIfPresent(error);
             // We want to skip over exceptions thrown by Autofac.
             originalError = MiscUtils.UnwrapUntilInterestingException(originalError);
+            // The FileException is usually inside the Autofac wrappers, not outside them
+            // (CollectionSettings is built by the project container), so look again now that
+            // they are gone. Without this the report says only "FileException" and the cause,
+            // which FileException deliberately keeps out of InnerException, is lost. (BL-16802)
+            if (originalError is FileException fileError)
+            {
+                errorFilePath = errorFilePath ?? fileError.FilePath;
+                originalError = fileError.OriginalException ?? originalError;
+            }
             Logger.WriteError(
                 $"*** Error loading collection {Path.GetFileNameWithoutExtension(projectPath)}, on filepath: {errorFilePath}",
                 originalError
             );
+
+            if (RunningE2eTests)
+            {
+                // No human is present during an e2e run to dismiss the dialog below, and each
+                // occurrence would file an error report. Put the cause where the test harness
+                // captures Bloom's output, then quit: without a collection the only thing left
+                // would be the collection chooser, which the harness cannot drive either, and a
+                // Bloom that exits before serving the collection is what fails the test. (BL-16802)
+                Console.Error.WriteLine(
+                    $"Error loading collection (e2e): {errorFilePath}{Environment.NewLine}{originalError}"
+                );
+                Environment.Exit(1);
+            }
 
             // Normally, NotifyUserOfProblem would take an exception and do this special-exception processing for us.
             // But in this case, we don't pass the exception to NotifyUserOfProblem because we may subsequently end up
@@ -1788,10 +2291,12 @@ namespace Bloom
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
                     dlg.ShowInTaskbar = true;
-                    // Ensure the dialog comes to the foreground even when opened
-                    // programmatically (e.g. after closing/reopening for a language change).
-                    dlg.TopMost = true;
-                    dlg.Activated += (s, e) => dlg.TopMost = false;
+                    // With no owner window to hand it the foreground, this opens behind
+                    // whatever the user launched Bloom from (Windows Explorer, say) -- notably
+                    // when the minimum-version gate's "Open a Different Collection" brings us
+                    // here at startup -- and also when we reopen it programmatically after a
+                    // language change. See BL-16690.
+                    dlg.BringToFrontWhenShown();
                     dlg.ShowDialog();
                     closeSource = dlg.CloseSource;
                 }
@@ -1827,7 +2332,23 @@ namespace Bloom
         {
             if (OpenProjectWindow(path))
             {
-                Settings.Default.MruProjects.AddNewPath(path);
+                // Note that OpenProjectWindow also reports success when the user chose to upgrade
+                // rather than open anything. Recording the collection is right in that case too: an
+                // upgrade has been downloaded and will be installed as Bloom closes, so the next
+                // Bloom to start really can open this collection, and landing straight back in it is
+                // exactly what the user was trying to do.
+                //
+                // Remember the collection by the path that really exists on disk, so that a path saved
+                // by an older Bloom with trailing periods or spaces on the folder name heals rather
+                // than being handed back to us on every launch. See BL-16679.
+                var pathAsOnDisk = MiscUtils.GetFullPath(path);
+                if (pathAsOnDisk != path)
+                {
+                    // The list matches paths as exact strings, so without this the old spelling stays
+                    // in it and the collection is listed twice in the Open/Create Collections dialog.
+                    Settings.Default.MruProjects.RemovePath(path);
+                }
+                Settings.Default.MruProjects.AddNewPath(pathAsOnDisk);
                 Settings.Default.Save();
                 return true;
             }
@@ -1842,6 +2363,22 @@ namespace Bloom
         public static void SwitchToCollection(string path, Shell formToClose)
         {
             _collectionPathToOpenAfterCurrentProjectClosed = path;
+            formToClose.UserWantsToOpenADifferentProject = true;
+            formToClose.Close();
+        }
+
+        /// <summary>
+        /// Closes the current collection's window and puts up the collection chooser, as if the
+        /// user had chosen Open/Create Collection but without a destination collection chosen yet.
+        /// Used when the open collection can no longer stay open -- a Team Collection minimum
+        /// Bloom version we don't meet arrived mid-session (BL-16690). Cancelling the chooser
+        /// exits Bloom (see ChooseACollection), which preserves the rule that staying in the
+        /// locked-out collection is not an option.
+        /// </summary>
+        public static void CloseCurrentCollectionAndChooseAnother(Shell formToClose)
+        {
+            // No chosen path: OpenCollectionChosenInDialog reads null as "show the chooser".
+            _collectionPathToOpenAfterCurrentProjectClosed = null;
             formToClose.UserWantsToOpenADifferentProject = true;
             formToClose.Close();
         }
@@ -1882,7 +2419,17 @@ namespace Bloom
         private static void ReopenProject(object sender, EventArgs e)
         {
             Application.Idle -= ReopenProject;
-            OpenCollection(Settings.Default.MruProjects.Latest);
+            if (!OpenCollection(Settings.Default.MruProjects.Latest))
+            {
+                // Fall back to letting the user choose again, exactly as OpenCollectionChosenInDialog
+                // does. We get here from a UI language change or from the Collection Settings dialog,
+                // and HandleProjectWindowClosed has already closed the Shell and disposed the project.
+                // Without this, a reopen that fails leaves Application.Run() with no window, and since
+                // nothing goes on to call ProgramExit.Exit(), not even its 20-second force-quit net is
+                // armed: Bloom sits there invisibly holding the single-instance token, so the next
+                // launch is turned away with "Bloom is already running". (BL-16678)
+                ChooseACollectionOrQuit();
+            }
         }
 
         private static void OpenCollectionChosenInDialog(object sender, EventArgs e)
@@ -1890,16 +2437,27 @@ namespace Bloom
             Application.Idle -= OpenCollectionChosenInDialog;
             var pathToOpen = _collectionPathToOpenAfterCurrentProjectClosed;
             _collectionPathToOpenAfterCurrentProjectClosed = null;
-            Debug.Assert(!string.IsNullOrEmpty(pathToOpen));
-            if (!OpenCollection(pathToOpen))
+            // pathToOpen is null when CloseCurrentCollectionAndChooseAnother closed the shell:
+            // no collection has been chosen yet, so go straight to the chooser.
+            if (string.IsNullOrEmpty(pathToOpen) || !OpenCollection(pathToOpen))
             {
-                // If opening failed, fall back to letting the user choose again.
-                ChooseACollection();
+                // If opening failed, fall back to letting the user choose again. (The Shell was closed
+                // before we got here, so if even the chooser fails we have to quit rather than leave
+                // Bloom running with no window. See ChooseACollectionOrQuit. BL-16678)
+                ChooseACollectionOrQuit();
             }
         }
 
         public static void SetUpLocalization()
         {
+            // Offer the pseudo-locale ("Pseudo-English") in the UI language menu on developer, alpha
+            // and internal channels only. It is an internationalization-testing tool, not a translation:
+            // see BL-16748 and OfferPseudoLocalizationForI18nTesting below. Note that this gates
+            // only whether the locale is *offered*; L10NSharp will pseudolocalize lookups for
+            // qps-ploc whenever that is the current UI language, which is why GetDesiredUiLanguage
+            // also refuses a stored qps-ploc on channels where we don't offer it.
+            LocalizationManager.OfferPseudoLocalization = OfferPseudoLocalizationForI18nTesting;
+
             ILocalizationManager lm;
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
@@ -2003,6 +2561,16 @@ namespace Bloom
                 );
 
                 Settings.Default.UserInterfaceLanguage = LocalizationManager.UILanguageId;
+                // Deliberately NOT saved here, unlike the other settings this branch made save
+                // promptly. This runs on every startup path, and very early: before Main sets
+                // RunningInConsoleMode and dispatches the command-line verbs, so saving would make
+                // `bloom upload`, `hydrate` and friends rewrite the user's settings file - a smaller
+                // version of the very problem BL-16660 is about - and would risk failing an
+                // unattended run at startup. It is also before Main migrates the previous version's
+                // settings, whose Reload() would discard whatever we wrote anyway.
+                // Nothing is lost: this is a value derived at startup, not a user's choice, and
+                // GetDesiredUiLanguage derives it again next launch. When the user actually picks a
+                // language, WorkspaceView.ApplyUiLanguageChange saves both settings immediately.
 
                 // Per BL-6449, these two languages should try Spanish before English if a localization is missing.
                 // (If they ever get localized enough to show up in our list.)
@@ -2045,6 +2613,31 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Whether we offer the "Pseudo-English" pseudo-locale (qps-ploc) as a UI language.
+        /// It exists so that we (and testers) can spot internationalization problems: every
+        /// string that goes through localization comes back visibly transformed, so anything
+        /// still showing as plain English is hard-coded. That is a developer/tester tool, so we
+        /// offer it only where developers and testers are: see OffersPseudoLocalizationOnChannel.
+        /// See BL-16748.
+        /// </summary>
+        public static bool OfferPseudoLocalizationForI18nTesting =>
+            OffersPseudoLocalizationOnChannel(ApplicationUpdateSupport.ChannelName);
+
+        /// <summary>
+        /// Whether a build on the named channel offers the pseudo-locale: the developer and alpha
+        /// channels, plus the staff-only internal ones (BetaInternal and ReleaseInternal), since
+        /// most of our systematic testing happens on those. Never the public Beta or Release.
+        /// </summary>
+        internal static bool OffersPseudoLocalizationOnChannel(string channelName)
+        {
+            var channel = channelName.ToLowerInvariant();
+            return channel.Contains("developer")
+                || channel.Contains("alpha")
+                || channel.Contains("unstable")
+                || channel.Contains("internal");
+        }
+
+        /// <summary>
         /// Derive the desired UI language from the stored value, or from matching the OS value against
         /// the available localizations if nothing has been explicitly stored yet.
         /// </summary>
@@ -2054,6 +2647,20 @@ namespace Bloom
         private static string GetDesiredUiLanguage(string installedStringFileFolder)
         {
             var desiredLanguage = Settings.Default.UserInterfaceLanguage;
+            // A build that does not offer the pseudo-locale can still find qps-ploc stored: a
+            // developer build shares a settings folder with the Release channel, as neither is
+            // stamped with a channel name (installed Alpha and Beta each get their own). Lookups
+            // for qps-ploc would still work, so fall back to English rather than leave anyone with
+            // a mangled UI and no menu entry to escape it. Only a developer's machine can reach
+            // that state, so it is not worth chasing further than this. See BL-16748.
+            if (
+                desiredLanguage == LocalizationManager.PseudoLocalizationLanguageId
+                && !OfferPseudoLocalizationForI18nTesting
+            )
+            {
+                // SetUpLocalization stores whatever we return back into the setting.
+                return "en";
+            }
             if (
                 String.IsNullOrEmpty(desiredLanguage)
                 || !Settings.Default.UserInterfaceLanguageSetExplicitly
@@ -2136,6 +2743,89 @@ namespace Bloom
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
 
+        /// <summary>
+        /// Whether this Bloom holds the single-instance token, which the channels deliberately share, so
+        /// that at most one Bloom is normally running. Published in the Doctor's session file: it is what
+        /// tells the Doctor which running Bloom is actually standing in the way of a restart, as against
+        /// the ones that bypassed the token (an --automation run) or never took it (a Ctrl-held launch
+        /// that was not first).
+        /// </summary>
+        internal static bool OwnsSingleInstanceToken => _ownsSingleInstanceToken;
+
+        /// <summary>
+        /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
+        /// that we want to drop rather than report. Used by the BeforeSend filter installed in
+        /// SetUpErrorHandling.
+        ///
+        /// Background: the Sentry .NET SDK auto-subscribes to TaskScheduler.UnobservedTaskException.
+        /// Fleck (our WebSocket library, see BloomWebSocketServer) does fire-and-forget socket.Send()
+        /// calls whose faulted Tasks are never observed; when a socket aborts (mostly at app shutdown)
+        /// the finalizer thread surfaces a benign SocketException/IOException and Sentry reports it.
+        /// An earlier IsAvailable-check mitigation (BL-11124) did not stop it, so tens of thousands of
+        /// these events accumulated with zero user impact (Sentry BLOOM-DESKTOP-EQ4 / -E4J / -E9K).
+        ///
+        /// We drop ONLY this exact pattern - an event carrying the UnobservedTaskException mechanism
+        /// whose exception chain contains a benign socket/IO abort type - so genuine unobserved-Task
+        /// bugs are still reported. The decision is carried by exception TYPE plus the mechanism, never
+        /// by message text: the message ("The I/O operation has been aborted...") is localized by the
+        /// user's OS language, which is why it showed up as several separate Sentry issues.
+        /// </summary>
+        internal static bool IsBenignUnobservedTaskSocketNoise(SentryEvent sentryEvent)
+        {
+            var exceptions = sentryEvent.SentryExceptions?.ToList();
+            if (exceptions == null || exceptions.Count == 0)
+                return false;
+
+            // Must have come through the TaskScheduler.UnobservedTaskException integration.
+            // Any (not All) is required here: Sentry attaches the mechanism only to the outer
+            // AggregateException wrapper, never to the inner exceptions in the chain, so
+            // requiring it on every entry would mean the filter never matched anything.
+            var isUnobservedTask = exceptions.Any(e =>
+                e.Mechanism?.Type == "UnobservedTaskException"
+            );
+            if (!isUnobservedTask)
+                return false;
+
+            // ...and the underlying fault must be a benign socket/IO abort (match on type, not
+            // text). At least one benign abort must be present, and nothing else may be in the
+            // chain except the AggregateException wrapper the unobserved-Task path adds: an
+            // AggregateException can aggregate several faults, and if a real bug is mixed in
+            // with the socket noise we still want the report.
+            if (!exceptions.Any(e => IsBenignSocketAbortExceptionType(e.Type)))
+                return false;
+            return exceptions.All(e =>
+                e.Type == "System.AggregateException" || IsBenignSocketAbortExceptionType(e.Type)
+            );
+        }
+
+        /// <summary>
+        /// True for the exception types that represent a benign socket/IO abort or cancellation
+        /// (as opposed to something we would actually want to know about). Matched by full type
+        /// name so it is independent of the OS-localized exception message.
+        /// </summary>
+        private static bool IsBenignSocketAbortExceptionType(string exceptionTypeName)
+        {
+            switch (exceptionTypeName)
+            {
+                // The observed noise is a SocketException, but the abort surfaces from the socket
+                // stack as an IOException just as often (an IOException frequently wraps the
+                // SocketException), and a shutdown race can instead cancel the send. All three are
+                // benign teardown outcomes of an *unobserved* fire-and-forget socket.Send(); this
+                // predicate only ever runs for events already carrying the UnobservedTaskException
+                // mechanism (see IsBenignUnobservedTaskSocketNoise), which is what keeps it from
+                // suppressing these same types when they arrive through a normal, observed path.
+                // The trade-off is accepted deliberately: an unobserved-Task IOException/cancellation
+                // is treated as noise here rather than reported.
+                case "System.Net.Sockets.SocketException":
+                case "System.IO.IOException":
+                case "System.OperationCanceledException":
+                case "System.Threading.Tasks.TaskCanceledException":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
         {
@@ -2146,9 +2836,15 @@ namespace Bloom
             {
                 try
                 {
-                    _sentry = SentrySdk.Init(
-                        "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534"
-                    );
+                    _sentry = SentrySdk.Init(options =>
+                    {
+                        options.Dsn =
+                            "https://bba22972ad6b4c2ab03a056f549cc23d@o1009031.ingest.sentry.io/5983534";
+                        // Screen out the benign unobserved-Task socket/IO abort noise
+                        // (Sentry BLOOM-DESKTOP-EQ4/E4J/E9K). See IsBenignUnobservedTaskSocketNoise.
+                        options.BeforeSend = sentryEvent =>
+                            IsBenignUnobservedTaskSocketNoise(sentryEvent) ? null : sentryEvent;
+                    });
                     SentrySdk.ConfigureScope(scope =>
                     {
                         scope.SetExtra("channel", ApplicationUpdateSupport.ChannelName);
@@ -2215,9 +2911,7 @@ Anyone looking specifically at our issue tracking system can read what you sent 
                 versionNumber + " " + ApplicationUpdateSupport.ChannelName;
             SIL.Reporting.ExceptionHandler.Init(new FatalExceptionHandler());
 
-            ExceptionHandler.AddDelegate(
-                (w, e) => DesktopAnalytics.Analytics.ReportException(e.Exception)
-            );
+            ExceptionHandler.AddDelegate((w, e) => BloomAnalytics.ReportException(e.Exception));
             if (!ApplicationUpdateSupport.IsDev)
             {
                 ExceptionHandler.AddDelegate(
@@ -2412,7 +3106,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         private static void CheckForCorruptUserConfig()
         {
             //First check the user.config we get through using the palaso stuff.  This is the one in a folder with a name like Bloom/3.5.0.0
-            var palasoSettings = new SIL.Settings.CrossPlatformSettingsProvider();
+            // (or the folder --user-settings-folder named; BloomSettingsProvider knows which).
+            var palasoSettings = new BloomSettingsProvider();
             palasoSettings.Initialize(null, null);
             var error = palasoSettings.CheckForErrorsInSettingsFile();
             if (error != null)
@@ -2498,6 +3193,33 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
+
+        /// <summary>
+        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb,
+        /// including the child Bloom that `upload` starts for a bulk upload. Code that would
+        /// otherwise show modal UI must report the problem some other way (typically stderr) and
+        /// return, because a modal here blocks the process forever -- no failure, no exit code,
+        /// just a hang (BL-16869).
+        /// </summary>
+        /// <remarks>
+        /// Deliberately NOT including RunningE2eTests, even though NonFatalProblem.Report treats
+        /// the two alike. The e2e suite's problemDialogWatcher fixture
+        /// (src/BloomE2E/fixtures/problemDialogWatcher.ts) finds the problem dialog among the CDP
+        /// page targets, scrapes the exception from behind its "Learn More" link, and fails the
+        /// test with it. Suppressing the dialog under --e2e would take that away and let tests go
+        /// green through exceptions they currently catch. Nothing is lost by excluding it: the
+        /// bulk-upload child that BL-16869 is about runs the `upload` verb, so it is in console
+        /// mode regardless.
+        /// </remarks>
+        public static bool RunningNonInteractive => RunningInConsoleMode;
+
+        // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
+        // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
+        // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
+        // surfaces as a failed API call / logged error and fails the test, instead of popping a
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report,
+        // FatalExceptionHandler, and BloomAssertListener (which does the same for Debug.Assert).
+        public static bool RunningE2eTests { get; set; }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.

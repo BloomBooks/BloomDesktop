@@ -36,7 +36,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
         const emailField = await field.email.getElement();
 
         await expect(emailField).toHaveValue("");
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Email field loads with pre-populated valid email", async ({
@@ -52,7 +52,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
         const emailField = await field.email.getElement();
 
         await expect(emailField).toHaveValue("john.doe@example.com");
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Email field shows error on load with invalid pre-populated email", async ({
@@ -69,7 +69,7 @@ test.describe("Registration Dialog - Email Field - Initial Load", () => {
 
         await expect(emailField).toHaveValue("invalid-email");
         // Error should show immediately for pre-populated invalid email
-        expect(await field.email.markedInvalid).toBe(true);
+        await field.email.expectMarkedInvalid(true);
     });
 });
 
@@ -100,7 +100,7 @@ test.describe("Registration Dialog - Email Field - Valid Formats", () => {
             await emailInput.fill(email);
             await page.keyboard.press("Tab");
             await expect(emailInput).toHaveValue(email);
-            expect(await field.email.markedInvalid).toBe(false);
+            await field.email.expectMarkedInvalid(false);
         }
     });
 });
@@ -131,7 +131,7 @@ test.describe("Registration Dialog - Email Field - Invalid Formats", () => {
             await emailInput.fill(email);
             await page.keyboard.press("Tab");
             await expect(emailInput).toHaveValue(email);
-            expect(await field.email.markedInvalid).toBe(true);
+            await field.email.expectMarkedInvalid(true);
         }
     });
 });
@@ -149,12 +149,12 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
         // Enter invalid email and trigger validation
         await emailInput.fill("invalid");
         await clickRegisterButton(page);
-        expect(await field.email.markedInvalid).toBe(true);
+        await field.email.expectMarkedInvalid(true);
 
         // Now type a valid email
         await emailInput.fill("valid@email.com");
         // Error should clear immediately on valid input
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Can clear email field", async ({ page }) => {
@@ -172,7 +172,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
         await field.email.clear();
         await expect(emailInput).toHaveValue("");
         // Empty email is valid in optional mode
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Can modify existing email", async ({ page }) => {
@@ -189,7 +189,7 @@ test.describe("Registration Dialog - Email Field - Typing Behavior", () => {
 
         await emailInput.fill("new@example.com");
         await expect(emailInput).toHaveValue("new@example.com");
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 });
 
@@ -205,7 +205,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         await clickRegisterButton(page);
 
         // Email should NOT show error when it's optional
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Empty email is required when emailRequiredForTeamCollection is true", async ({
@@ -221,7 +221,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         await clickRegisterButton(page);
 
         // Email should show error when required
-        expect(await field.email.markedInvalid).toBe(true);
+        await field.email.expectMarkedInvalid(true);
     });
 
     test("Email Required mode displays correctly", async ({ page }) => {
@@ -249,7 +249,7 @@ test.describe("Registration Dialog - Email Field - Optional vs Required", () => 
         await clickRegisterButton(page);
 
         // Valid email should not show error even when required
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 });
 
@@ -265,7 +265,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
             "very.long.username.with.many.dots@subdomain.example.com";
         await emailInput.fill(longEmail);
         await expect(emailInput).toHaveValue(longEmail);
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Handles email with just whitespace", async ({ page }) => {
@@ -279,7 +279,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
         await clickRegisterButton(page);
 
         // Whitespace-only should be treated as empty (valid in optional mode)
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 
     test("Trims whitespace from email before validation", async ({ page }) => {
@@ -292,7 +292,7 @@ test.describe("Registration Dialog - Email Field - Edge Cases", () => {
         // Email with leading/trailing spaces should still be valid
         await emailInput.fill("  user@example.com  ");
         // Should not show error as trimmed value is valid
-        expect(await field.email.markedInvalid).toBe(false);
+        await field.email.expectMarkedInvalid(false);
     });
 });
 
@@ -329,7 +329,7 @@ test.describe("Registration Dialog - Email Case Sensitivity", () => {
         for (const email of caseVariations) {
             await emailField.fill(email);
             await page.keyboard.press("Tab");
-            expect(await field.email.markedInvalid).toBe(false);
+            await field.email.expectMarkedInvalid(false);
         }
     });
 });

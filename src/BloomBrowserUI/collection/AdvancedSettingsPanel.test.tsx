@@ -23,7 +23,6 @@ const {
             autoUpdate: true,
             showExperimentalBookSources: false,
             allowTeamCollection: false,
-            allowAppBuilder: false,
             allowAiSourceBubbles: false,
             aiTranslation: {
                 targetLanguageTag: "en",
@@ -289,7 +288,6 @@ describe("AdvancedSettingsPanel", () => {
             autoUpdate: true,
             showExperimentalBookSources: false,
             allowTeamCollection: false,
-            allowAppBuilder: false,
             allowAiSourceBubbles: false,
             aiTranslation: {
                 targetLanguageTag: "en",

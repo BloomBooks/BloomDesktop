@@ -1,15 +1,18 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
-/// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
-import { getTheOneReaderToolsModel } from "./readerToolsModel";
-import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
+import {
+    getFileExtension,
+    getTheOneReaderToolsModel,
+    isValidSampleTextFileType,
+} from "./readerToolsModel";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
+    ResetLanguageDataGraphemes,
     ResetLanguageDataInstance,
 } from "./libSynphony/synphony_lib";
 import "./libSynphony/synphony_lib";
@@ -23,13 +26,6 @@ import * as _ from "underscore";
 import { renderRoot } from "../../../utils/reactRender";
 import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
-
-interface textMarkup extends JQueryStatic {
-    cssSentenceTooLong(): JQuery;
-    cssSightWord(): JQuery;
-    cssWordNotFound(): JQuery;
-    cssPossibleWord(): JQuery;
-}
 
 // listen for messages sent to this page
 window.addEventListener("message", processDLRMessage, false);
@@ -91,15 +87,7 @@ function loadReaderSettingsWithRetry(
     onLoaded: (settings: ReaderSettings) => void,
     onFailed: () => void,
 ): void {
-    get("readers/io/readerToolSettings", (settingsFileContent) => {
-        const normalizedSettings = tryNormalizeReaderSettings(
-            settingsFileContent.data,
-        );
-        if (normalizedSettings) {
-            onLoaded(normalizedSettings);
-            return;
-        }
-
+    const retryOrFail = () => {
         if (attemptsRemaining > 1) {
             window.setTimeout(() => {
                 loadReaderSettingsWithRetry(
@@ -112,7 +100,35 @@ function loadReaderSettingsWithRetry(
         }
 
         onFailed();
-    });
+    };
+
+    get(
+        "readers/io/readerToolSettings",
+        (settingsFileContent) => {
+            const normalizedSettings = tryNormalizeReaderSettings(
+                settingsFileContent.data,
+            );
+            // Act on the reply outside the request's promise chain. bloomApi.get() hangs
+            // our error callback on a .catch() *after* this handler, so anything thrown in
+            // here -- a genuine bug in onLoaded, not a failed request -- would otherwise be
+            // caught, retried, and finally reported as a load failure, hiding it. Out here
+            // it fails fast and gets reported, which is what this repo wants. (BL-16732)
+            window.setTimeout(() => {
+                if (normalizedSettings) {
+                    onLoaded(normalizedSettings);
+                    return;
+                }
+
+                retryOrFail();
+            }, 0);
+        },
+        // A request that outright fails has to count as a failed attempt too. Without this
+        // error callback, bloomApi.get() reports the error and never calls anyone back, so
+        // neither onLoaded nor onFailed ever runs -- and every caller waiting on us waits
+        // forever. Callers act on that by doing nothing at all, which is invisible.
+        // (BL-16732)
+        retryOrFail,
+    );
 }
 
 function getSetupDialogWindow(): Window | null {
@@ -191,59 +207,8 @@ function processDLRMessage(event: MessageEvent): void {
             getTheOneReaderToolsModel().setMarkupType(parseInt(params[1]));
             return;
 
-        case "Qtips": // request from toolbox to add qtips to marked-up spans
-            // We could make separate messages for these...
-            markDecodableStatus();
-            markLeveledStatus();
-
-            return;
-
         default:
     }
-}
-
-function markDecodableStatus(): void {
-    // q-tips; mark sight words and non-decodable words
-    const sightWord = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
-        "Sight Word",
-    );
-    const notDecodable = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
-        "This word is not decodable in this stage.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function () {
-            this.qtip({ content: sightWord });
-        });
-
-    editableElements
-        .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function () {
-            this.qtip({ content: notDecodable });
-        });
-
-    // we're considering dropping this entirely
-    // We are disabling the "Possible Word" feature at this time.
-    //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-    //    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-    //});
-}
-
-function markLeveledStatus(): void {
-    // q-tips; mark sentences that are too long
-    const tooLong = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
-        "This sentence is too long for this level.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function () {
-            $(this).qtip({ content: tooLong });
-        });
 }
 
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
@@ -276,16 +241,34 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
             maxReaderSettingsLoadAttempts,
             (normalizedSettings) => {
                 const newSettingsContent = JSON.stringify(normalizedSettings);
+                // readerToolsInitialized and lastReaderToolSettingsContent are module state
+                // in whichever frame loaded this module, but the ReaderToolsModel they
+                // describe lives in a holder on the top window which
+                // getTheOneReaderToolsModel() deliberately *replaces* when the frame that
+                // created it is reloaded. So our memory of having loaded the settings can
+                // outlive the model that holds them, and then "the settings are unchanged"
+                // is no reason to skip the work: the model in front of us has never seen
+                // them. Refreshing is what gets them into it. Without this, synphony stays
+                // undefined and every reader-tool feature needing it is silently dead
+                // (e.g. Set Up Levels/Stages) until Bloom is restarted. (BL-16732)
                 const shouldRefresh =
-                    newSettingsContent !== lastReaderToolSettingsContent;
+                    newSettingsContent !== lastReaderToolSettingsContent ||
+                    !getTheOneReaderToolsModel().synphony;
                 if (!shouldRefresh) {
                     result.resolve();
                     return;
                 }
-                beginRefreshEverything(normalizedSettings).then(() => {
-                    lastReaderToolSettingsContent = newSettingsContent;
-                    result.resolve();
-                });
+                beginRefreshEverything(normalizedSettings).then(
+                    () => {
+                        lastReaderToolSettingsContent = newSettingsContent;
+                        result.resolve();
+                    },
+                    // Refreshing fetches the sample-texts list, and if that request fails we
+                    // have no settings worth remembering -- but our callers still have to be
+                    // released. A caller left waiting forever is precisely what the user
+                    // experiences as a button that does nothing. (BL-16732)
+                    () => result.resolve(),
+                );
             },
             () => {
                 readerToolsInitialized = false;
@@ -313,6 +296,32 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
 }
 
 /**
+ * Make sure the one ReaderToolsModel has a watcher running on the collection's Sample Texts
+ * folder.
+ *
+ * Both paths that load settings into a model call this, because whichever one ran, the model
+ * needs the watcher afterwards: anything asking to be told about sample-file changes, such as
+ * the setup dialog's Sample Words tab, relies on it being there. (That includes the path taken
+ * when the model has been replaced -- the case beginLoadSynphonySettings describes, where the
+ * settings are loaded by beginRefreshEverything.) (BL-16607)
+ *
+ * It creates the watcher only when there is none, so it is safe on the paths through
+ * beginRefreshEverything that run on every settings save.
+ */
+function ensureSampleTextsDirectoryWatcher(): void {
+    const model = getTheOneReaderToolsModel();
+    if (model.directoryWatcher) {
+        return;
+    }
+    model.directoryWatcher = new DirectoryWatcher("Sample Texts", 10);
+    model.directoryWatcher.onChanged(
+        "SampleFilesChanged.ReaderTools",
+        readerSampleFilesChanged,
+    );
+    model.directoryWatcher.start();
+}
+
+/**
  * The function that is called to hook everything up.
  * Note: settingsFileContent may be empty.
  *
@@ -329,16 +338,7 @@ function initializeSynphony(
 
     getTheOneReaderToolsModel().updateControlContents();
 
-    // set up a DirectoryWatcher on the Sample Texts directory
-    getTheOneReaderToolsModel().directoryWatcher = new DirectoryWatcher(
-        "Sample Texts",
-        10,
-    );
-    getTheOneReaderToolsModel().directoryWatcher.onChanged(
-        "SampleFilesChanged.ReaderTools",
-        readerSampleFilesChanged,
-    );
-    getTheOneReaderToolsModel().directoryWatcher.start();
+    ensureSampleTextsDirectoryWatcher();
 
     if (synphony.source.useAllowedWords) {
         // get the allowed words for each stage
@@ -389,16 +389,21 @@ function refreshSettingsExceptSampleWords(newSettings) {
 }
 
 /**
- * Re-creates the one instance of LanguageData and ReadersSynphonyWrapper, populates them from the supplied or current
- * settings and sample word files, and updates the UI to match. Because of the convoluted way we build
- * the indexes inside the LanguageData object, this is the only currently feasible way to get it in
- * a consistent state after changes to the sample words files or the panel in the settings dialog.
+ * Refreshes the reader setup and, for sample-word mode, rebuilds its language data from the sample files.
  * Returns a promise which is resolved when all the sample words files are loaded and the model is ready to use.
  */
 function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
-    // reset the file and word list
-    ResetLanguageDataInstance();
-    getTheOneReaderToolsModel().allWords = {};
+    if (settings.useAllowedWords) {
+        // Allowed-word-list mode does not use sample-word data, and we deliberately keep what
+        // is already loaded so the setup dialog can still preview matching words if the user
+        // switches back to stages mode. The graphemes must still be rebuilt though: loadSettings
+        // only adds them, so without this a letter combination the user just deleted would keep
+        // being counted as one letter (getWordLength) for the rest of the session.
+        ResetLanguageDataGraphemes();
+    } else {
+        ResetLanguageDataInstance();
+        getTheOneReaderToolsModel().allWords = {};
+    }
     // This helps with updating the matching words panel in the setup dialog. If we switched to the
     // sample words tab, changed sample words, and switched back, or if the user just edited the sample
     // words files in the background, nothing will have changed that indicates the cache is invalid;
@@ -409,6 +414,7 @@ function beginRefreshEverything(settings: ReaderSettings): JQueryPromise<void> {
     const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settings);
     getTheOneReaderToolsModel().setSynphony(synphony);
+    ensureSampleTextsDirectoryWatcher();
 
     if (synphony.source.useAllowedWords) {
         // reload the allowed words for each stage
@@ -435,20 +441,31 @@ export function beginSaveChangedSettings(
     settings: ReaderSettings,
     previousMoreWords: string,
     previousLetters: string,
+    previousUseAllowedWords?: number,
 ): Promise<void> {
+    // useAllowedWords is a number only because the settings file stores it as 0 or 1.
+    let useAllowedWordsChanged: boolean;
+    if (previousUseAllowedWords !== undefined) {
+        useAllowedWordsChanged =
+            settings.useAllowedWords !== previousUseAllowedWords;
+    } else {
+        // The legacy jQuery dialog (still used for leveled readers) does not pass the previous
+        // value. For it, keep the old rule: refresh everything whenever allowed words are in use.
+        // That misses the case where they were in use and are now turned off, but switching back
+        // and forth like that is something only testers are likely to do. This goes away when
+        // the leveled dialog is converted.
+        useAllowedWordsChanged = !!settings.useAllowedWords;
+    }
+
     // Using axios directly because our api at this point calls for returning the promise.
     return <any>(
         axios
             .post("/bloom/api/readers/io/readerToolSettings", settings)
             .then(() => {
-                // reviewslog: following previous logic that we need to reload files if useAllowedWords
-                // is true. Seems we should at least need to do it ALSO if it was PREVIOUSLY true.
-                // But that is a very obscure case...we don't expect users to switch back and forth
-                // in the basic mechanism by which they define stages.
                 if (
                     settings.moreWords !== previousMoreWords ||
                     settings.letters !== previousLetters ||
-                    settings.useAllowedWords
+                    useAllowedWordsChanged
                 ) {
                     return beginRefreshEverything(settings); // caller will resolve when everything is refreshed
                 } else {
@@ -470,6 +487,101 @@ export function addWordListChangedListener(
     getTheOneReaderToolsModel().wordListChangedListeners[
         listenerNameAndContext
     ] = callback;
+}
+
+/**
+ * Forgets a callback registered with addWordListChangedListener. Like that function, this
+ * works on the model's own table of callbacks, not on DOM event listeners.
+ */
+export function removeWordListChangedListener(
+    listenerNameAndContext: string,
+): void {
+    delete getTheOneReaderToolsModel().wordListChangedListeners[
+        listenerNameAndContext
+    ];
+}
+
+/**
+ * Gets the symbols this language allows inside a word regardless of the reader's stage — a
+ * syllable break, a stress mark and so on. They live only on the toolbox frame's copy of the
+ * Synphony data (and only when the collection's imported language data defines them), so the
+ * setup dialog, which runs in the workspace frame, has to ask for them across the bundle
+ * boundary the same way it asks for matching words.
+ */
+export function getSynphonyAlwaysMatchSymbols(): string[] {
+    // Match how selectWordsFromSynphony assembles its own copy of this list: it *concats*
+    // AlwaysMatch, so that field may hold either one symbol or an array of them, and pushes
+    // the other three, which are single symbols. Flattening with concat here covers both
+    // shapes — a plain `typeof === "string"` test would silently drop an array-valued
+    // AlwaysMatch, which is the sort of quiet omission this function exists to avoid.
+    const symbols: unknown[] = ([] as unknown[]).concat(
+        theOneLanguageDataInstance["AlwaysMatch"] ?? [],
+        theOneLanguageDataInstance["SyllableBreak"] ?? [],
+        theOneLanguageDataInstance["StressSymbol"] ?? [],
+        theOneLanguageDataInstance["MorphemeBreak"] ?? [],
+    );
+    // `symbol is string` is a type predicate: it tells TypeScript the filter's result is string[].
+    return symbols.filter(
+        (symbol): symbol is string =>
+            typeof symbol === "string" && symbol !== "",
+    );
+}
+
+/**
+ * Classifies the Sample Texts folder listing for the setup dialog, which runs in another frame
+ * and so cannot reach the model directly. Answering from here — rather than letting the dialog
+ * keep its own copy of the readable-extension list — is what keeps what the dialog shows in step
+ * with what Bloom actually loads, including the case-insensitive comparison.
+ */
+export function classifySampleTextFiles(
+    paths: string[],
+): { path: string; validType: boolean; hasExtension: boolean }[] {
+    return paths.map((path) => ({
+        path,
+        validType: isValidSampleTextFileType(path),
+        hasExtension: getFileExtension(path) !== undefined,
+    }));
+}
+
+/**
+ * Gets the loaded sample words decodable with the given graphemes.
+ *
+ * The `true` first argument asks for word names rather than DataWord objects, which is all the
+ * setup dialog wants. It is worth noting that this is a *different* entry point from the one the
+ * toolbox's own getStageWords uses (which passes `false`), because that looks like a discrepancy
+ * on a quick read and was raised as one during review. It is not: both end up in
+ * libSynphony's selectGPCWordsWithArrayCompare with the same arguments, and the names variant
+ * simply plucks Name off the results. The only real difference is that the `false` path memoizes
+ * through theOneWordCache while this one does not, so this always reflects the current data.
+ */
+export function getDecodableStageMatchingWords(knownGpcs: string[]): string[] {
+    return getTheOneReaderToolsModel().selectWordsFromSynphony(
+        true,
+        knownGpcs,
+        knownGpcs,
+        true,
+        true,
+    ) as string[];
+}
+
+/** Adds a listener that runs when the Sample Texts folder changes. */
+export function addSampleTextFilesChangedListener(
+    listenerNameAndContext: string,
+    callback: () => void,
+): void {
+    getTheOneReaderToolsModel().directoryWatcher!.onChanged(
+        listenerNameAndContext,
+        callback,
+    );
+}
+
+/** Removes a listener previously added for Sample Texts folder changes. */
+export function removeSampleTextFilesChangedListener(
+    listenerNameAndContext: string,
+): void {
+    getTheOneReaderToolsModel().directoryWatcher!.offChanged(
+        listenerNameAndContext,
+    );
 }
 
 export function makeLetterWordList(): void {

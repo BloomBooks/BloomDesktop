@@ -34,7 +34,7 @@ test.describe("BookGridSetup - Initial Setup", () => {
         });
 
         await expect(
-            page.getByRole("heading", { name: /book in app/i }),
+            page.getByRole("heading", { name: /books in app/i }),
         ).toBeVisible();
     });
 

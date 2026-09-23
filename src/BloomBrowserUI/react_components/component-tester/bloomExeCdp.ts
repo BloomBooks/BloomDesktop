@@ -1,4 +1,8 @@
-import { Browser, Page, chromium } from "./playwrightTest";
+// The bloom-exe CDP suite runs against the repo-root Playwright install (`playwright/test`),
+// not the component-tester's own `@playwright/test`. Import from the same module the runner
+// uses so the whole run shares one Playwright instance (mixing the two throws
+// "Requiring @playwright/test a second time").
+import { Browser, Page, chromium } from "playwright/test";
 
 type WorkspaceTabId = "collection" | "edit" | "publish";
 const configuredCdpPort = process.env.BLOOM_CDP_PORT;
@@ -66,23 +70,20 @@ export const connectToBloomExe = async (): Promise<{
     return { browser, page };
 };
 
+/**
+ * Click a workspace tab in the real top bar. The tab is found by the test id that
+ * react_components/TopBar/TopBar.tsx puts on it, so this works in any UI language.
+ *
+ * Bloom hides the Edit and Publish tabs until a book is selected, so a caller that wants either
+ * of them must select a book first.
+ */
 export const clickWorkspaceTab = async (
     page: Page,
-    name: WorkspaceTabId extends infer _T
-        ? "Collections" | "Edit" | "Publish"
-        : never,
+    tab: WorkspaceTabId,
 ): Promise<void> => {
-    await page.waitForSelector("#main-tabs button", {
-        timeout: 10000,
-    });
-
-    await page.locator("#main-tabs button").filter({ hasText: name }).first();
-
-    await page
-        .locator("#main-tabs button")
-        .filter({ hasText: name })
-        .first()
-        .click();
+    const target = page.getByTestId(`workspace-tab-${tab}`);
+    await target.waitFor({ state: "visible", timeout: 10000 });
+    await target.click();
 };
 
 export const getWorkspaceTabs = async (): Promise<{

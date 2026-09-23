@@ -15,19 +15,19 @@ body {
 // Bloom applies in the talking-book tool. Accordingly, we tell the agent to
 // apply that class. However, the user may NOT have configured a custom highlighting.
 // In case they do not, this provides the default highlighting. In this location,
-// it works for edit mode, bloomPubs, both kinds of ePUBs, and very likely anywhere
-// else we'd want ui-audioCurrent to produce a highlight.
+// it works for bloomPubs and both kinds of ePUBs, and very likely anywhere
+// else we'd want ui-audioCurrent to produce a highlight. (As of March 2026, in the
+// edit tab we are using highlighting pseudo-elements instead, BL-15300. Those read
+// the computed highlight colors and copy them to document-level variables.)
 // Setting the foreground color is usually redundant, but digital comic book covers
 // use white text, and it's now possible for the user to choose a text color, so
 // we want to ensure a contrast with the background color (unless the user overrides,
 // in which case, adequate contrast is up to them).
 // (Color is @bloom-yellow.)
-// (When editing the text, this background causes problems (due to a Chromium bug)
-// if the elements have their default position: relative. This is overidden in
-// audioRecording.less.)
 span.ui-audioCurrent,
 div.ui-audioCurrent p,
 .ui-audioCurrent .ui-enableHighlight {
+    // Default audio highlight colors
     background-color: #febf00;
     color: black;
 }
@@ -188,6 +188,26 @@ textarea,
 span.bloom-linebreak {
     display: block;
     text-indent: 0;
+}
+
+// BL-16649: the user can put this on an individual paragraph with the "Do Not Indent
+// This Paragraph" command on the right-click menu of a text box. It is for continuation paragraphs, e.g. where the
+// author has manually split a paragraph across two pages and the part at the top of the
+// second page should not get the style's first-line indent.
+//
+// The Format dialog writes rules like `.mystyle-style > p {text-indent: 20pt !important}`
+// into userModifiedStyles, so this has to be !important too. It also has to out-specify
+// hand-written rules in customBookStyles/customCollectionStyles, which we cannot win on
+// source order: StyleSheetLinkSorter puts basePage *before* those, so among equally
+// specific !important rules theirs would win. Hence the deliberately long selector
+// (0-3-1) rather than just `.bloom-page p.bloom-noIndent` (0-2-1), which a custom
+// `.bloom-page .mystyle-style p` (also 0-2-1, but loaded later) would have beaten.
+// The marked paragraph is always inside a .bloom-editable -- that is the only place the
+// command is offered -- so requiring it here costs us no matches.
+//
+// NB: there is a copy of this rule in basePage-legacy-5-6.less, which does not import this file.
+.bloom-page .bloom-editable p.bloom-noIndent {
+    text-indent: 0 !important;
 }
 
 // Text wrapping algorithms.

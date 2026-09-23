@@ -23,8 +23,19 @@ export const ReaderToolSwitch: React.FunctionComponent<{
         <ThemeProvider theme={toolboxTheme}>
             <BloomSwitch
                 size="small"
+                // A stable hook for the e2e suite; the switch's label is localized and also
+                // changes wording when it is on.
+                data-testid={
+                    props.isForLeveled
+                        ? "leveled-reader-switch"
+                        : "decodable-reader-switch"
+                }
                 css={css`
                     margin-left: 2px; // by experimentation. We have to override the default -11px.
+                    // Uppercase the label to match the uppercase button labels in
+                    // the reader tool panels (Set Up, Copy Book Stats, etc.).
+                    // (BL-16585)
+                    text-transform: uppercase;
                 `}
                 l10nKey={
                     props.isForLeveled
