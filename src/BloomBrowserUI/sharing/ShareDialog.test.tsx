@@ -155,8 +155,10 @@ describe("ShareDialogContents", () => {
         expect(actions.invite).toHaveBeenCalledWith([
             { email: "amina@example.org", role: "editor" },
         ]);
-        // While the invitation is on its way, it can't be sent again.
+        // While the invitation is on its way, it can't be sent again, and nothing new can
+        // be typed for the successful result to wipe out.
         expect(inviteButton()?.disabled).toBe(true);
+        expect(emailInput()?.disabled).toBe(true);
         await act(async () => {});
         expect(emailInput()?.value).toBe("");
     });

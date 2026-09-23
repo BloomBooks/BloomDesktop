@@ -335,6 +335,9 @@ const InviteRow: React.FunctionComponent<{
                 size="small"
                 placeholder={emailLabel}
                 value={email}
+                // Read-only while an invitation is on its way, since a successful one clears
+                // the box and would otherwise wipe out a next address typed meanwhile.
+                disabled={pending}
                 error={!!error}
                 helperText={error || undefined}
                 autoFocus={true}
