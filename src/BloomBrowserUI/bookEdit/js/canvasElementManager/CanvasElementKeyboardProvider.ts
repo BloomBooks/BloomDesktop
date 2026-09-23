@@ -14,27 +14,30 @@ const kArrowMoveByKey: Record<string, { dx: number; dy: number }> = {
 };
 
 // The z-order (Layer menu) shortcuts: Ctrl+] brings forward, Ctrl+[ sends backward, and
-// adding Alt goes all the way to the front or back. These are the shortcuts the Layer submenu
-// displays (see makeLayerMenuItem). We accept either the physical bracket keys of a US layout
-// (event.code), which stay put on layouts where those keys produce other characters, or the
-// bracket characters themselves (event.key), which is what a user on such a layout gets from
-// the key the menu names.
+// adding Shift goes all the way to the front or back, as in PowerPoint and Illustrator. These are the
+// shortcuts the Layer submenu displays (see makeLayerMenuItem). We accept either the physical
+// bracket keys of a US layout (event.code), which stay put on layouts where those keys produce
+// other characters, or the bracket characters themselves (event.key), which is what a user on
+// such a layout gets from the key the menu names.
 // Returns the move the event asks for, or undefined if it is not one of these shortcuts.
 export const getZOrderMoveForShortcut = (
     event: KeyboardEvent,
 ): ZOrderMove | undefined => {
-    if (!(event.ctrlKey || event.metaKey) || event.shiftKey) {
+    if (!(event.ctrlKey || event.metaKey)) {
         return undefined;
     }
     // On a layout where a bracket needs AltGr (German: ] is AltGr+9), Windows reports AltGr as
     // Ctrl+Alt, so a plain Ctrl+] arrives with altKey set. That Alt is part of typing the
-    // bracket, not a request for the all-the-way variant.
-    const altForAllTheWay = event.altKey && !event.getModifierState("AltGraph");
+    // bracket. Any other Alt means some other shortcut.
+    if (event.altKey && !event.getModifierState("AltGraph")) {
+        return undefined;
+    }
+    const allTheWay = event.shiftKey;
     if (event.code === "BracketRight" || event.key === "]") {
-        return altForAllTheWay ? "front" : "forward";
+        return allTheWay ? "front" : "forward";
     }
     if (event.code === "BracketLeft" || event.key === "[") {
-        return altForAllTheWay ? "back" : "backward";
+        return allTheWay ? "back" : "backward";
     }
     return undefined;
 };

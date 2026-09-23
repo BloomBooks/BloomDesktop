@@ -8,14 +8,14 @@ import {
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 
 // Tests for the keyboard shortcuts of the Layer commands (BL-15992): Ctrl+] / Ctrl+[ move the
-// active canvas element one step forward / backward, and Ctrl+Alt+] / Ctrl+Alt+[ move it all
+// active canvas element one step forward / backward, and Ctrl+Shift+] / Ctrl+Shift+[ move it all
 // the way to the front / back.
 
 const makeKeyEvent = (init: KeyboardEventInit): KeyboardEvent =>
     new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
 
 describe("getZOrderMoveForShortcut", () => {
-    test("Ctrl+] is forward and Ctrl+Alt+] is front", () => {
+    test("Ctrl+] is forward and Ctrl+Shift+] is front", () => {
         expect(
             getZOrderMoveForShortcut(
                 makeKeyEvent({ code: "BracketRight", ctrlKey: true }),
@@ -24,15 +24,16 @@ describe("getZOrderMoveForShortcut", () => {
         expect(
             getZOrderMoveForShortcut(
                 makeKeyEvent({
+                    key: "}",
                     code: "BracketRight",
                     ctrlKey: true,
-                    altKey: true,
+                    shiftKey: true,
                 }),
             ),
         ).toBe("front");
     });
 
-    test("Ctrl+[ is backward and Ctrl+Alt+[ is back", () => {
+    test("Ctrl+[ is backward and Ctrl+Shift+[ is back", () => {
         expect(
             getZOrderMoveForShortcut(
                 makeKeyEvent({ code: "BracketLeft", ctrlKey: true }),
@@ -41,9 +42,10 @@ describe("getZOrderMoveForShortcut", () => {
         expect(
             getZOrderMoveForShortcut(
                 makeKeyEvent({
+                    key: "{",
                     code: "BracketLeft",
                     ctrlKey: true,
-                    altKey: true,
+                    shiftKey: true,
                 }),
             ),
         ).toBe("back");
@@ -63,7 +65,7 @@ describe("getZOrderMoveForShortcut", () => {
         ).toBe("backward");
     });
 
-    test("a bracket typed with AltGr is the one-step shortcut, not the all-the-way one", () => {
+    test("a bracket typed with AltGr counts as the bracket", () => {
         // Windows reports AltGr as Ctrl+Alt with the AltGraph modifier state set.
         expect(
             getZOrderMoveForShortcut(
@@ -76,14 +78,14 @@ describe("getZOrderMoveForShortcut", () => {
                 }),
             ),
         ).toBe("forward");
-        // Whereas a real Ctrl+Alt on the physical bracket key still goes all the way.
+        // And Shift on the physical bracket key still goes all the way on that layout.
         expect(
             getZOrderMoveForShortcut(
                 makeKeyEvent({
-                    key: "+",
+                    key: "*",
                     code: "BracketRight",
                     ctrlKey: true,
-                    altKey: true,
+                    shiftKey: true,
                 }),
             ),
         ).toBe("front");
@@ -97,7 +99,7 @@ describe("getZOrderMoveForShortcut", () => {
         ).toBe("forward");
     });
 
-    test("without Ctrl, with Shift, or on another key it is not a layer shortcut", () => {
+    test("without Ctrl, with a real Alt, or on another key it is not a layer shortcut", () => {
         expect(
             getZOrderMoveForShortcut(makeKeyEvent({ code: "BracketRight" })),
         ).toBeUndefined();
@@ -106,7 +108,7 @@ describe("getZOrderMoveForShortcut", () => {
                 makeKeyEvent({
                     code: "BracketRight",
                     ctrlKey: true,
-                    shiftKey: true,
+                    altKey: true,
                 }),
             ),
         ).toBeUndefined();
@@ -158,9 +160,14 @@ describe("CanvasElementKeyboardProvider layer shortcuts", () => {
         expect(actions.deleteCurrentCanvasElement).not.toHaveBeenCalled();
     });
 
-    test("Ctrl+Alt+[ sends it to the back", () => {
+    test("Ctrl+Shift+[ sends it to the back", () => {
         activeElement.dispatchEvent(
-            makeKeyEvent({ code: "BracketLeft", ctrlKey: true, altKey: true }),
+            makeKeyEvent({
+                key: "{",
+                code: "BracketLeft",
+                ctrlKey: true,
+                shiftKey: true,
+            }),
         );
         expect(actions.moveActiveCanvasElementInZOrder).toHaveBeenCalledWith(
             "back",

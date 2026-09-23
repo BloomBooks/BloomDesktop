@@ -161,13 +161,13 @@ describe("Layer submenu", () => {
             "Ctrl+]",
         );
         expect(subRow(layerRow, "bringToFront").shortcut?.display).toBe(
-            "Ctrl+Alt+]",
+            "Ctrl+Shift+]",
         );
         expect(subRow(layerRow, "sendBackward").shortcut?.display).toBe(
             "Ctrl+[",
         );
         expect(subRow(layerRow, "sendToBack").shortcut?.display).toBe(
-            "Ctrl+Alt+[",
+            "Ctrl+Shift+[",
         );
         layerRow.subMenuItems?.forEach((item) => {
             expect(item.icon, `${item.id} should have an icon`).toBeTruthy();
