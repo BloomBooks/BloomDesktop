@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Bloom.TeamCollection;
 using Bloom.web;
+using BloomTemp;
+using Moq;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -392,6 +394,207 @@ namespace BloomTests.TeamCollection
             AssertNewBookMessage(messages, 0, "This is new since reload");
             AssertChangedBookMessage(messages, 1, "This is changed since reload");
             Assert.That(messages, Has.Count.EqualTo(2));
+        }
+
+        /// <summary>
+        /// Writers are not all on the UI thread, and the file is no longer appended to under the
+        /// lock that guards the in-memory list, so this pins down the thing that buys: the file
+        /// must still end up in exactly the order of the in-memory log, with nothing lost.
+        /// </summary>
+        [Test]
+        public void WriteMessage_ManyThreadsAtOnce_FileIsInTheSameOrderAsTheMessages()
+        {
+            const int threadCount = 8;
+            const int messagesPerThread = 25;
+            // History messages are never treated as redundant, so every one of these must be
+            // kept; and each has distinct parameters, so the order of the file is meaningful.
+            var writers = Enumerable
+                .Range(0, threadCount)
+                .Select(thread =>
+                    Task.Run(() =>
+                    {
+                        for (var i = 0; i < messagesPerThread; i++)
+                            _messageLog.WriteMessage(
+                                MessageAndMilestoneType.History,
+                                "TeamCollection.CheckoutMsg",
+                                "{0} checked out the book {1}",
+                                $"user{thread}@somewhere.org",
+                                // Non-ASCII, so that this also catches the two append paths
+                                // (File.AppendAllText and RobustFile's) disagreeing about
+                                // encoding, which would leave the file unreadable.
+                                $"Böök {i} — ñ"
+                            );
+                    })
+                )
+                .ToArray();
+            Assert.That(
+                Task.WaitAll(writers, TimeSpan.FromMinutes(1)),
+                Is.True,
+                "the writers should all have finished"
+            );
+
+            var expected = _messageLog.Messages.Select(m => m.ToPersistedForm).ToList();
+            Assert.That(
+                expected,
+                Has.Count.EqualTo(threadCount * messagesPerThread),
+                "sanity check: every message should have been kept in memory"
+            );
+            Assert.That(
+                expected.Distinct().Count(),
+                Is.EqualTo(expected.Count),
+                "sanity check: the messages must be distinguishable, or this proves nothing "
+                    + "about their order"
+            );
+
+            Assert.That(
+                ReadPersistedLines(),
+                Is.EqualTo(expected),
+                "the log file should hold every message, in the order of the in-memory log"
+            );
+        }
+
+        /// <summary>
+        /// An ordinary append gives up quickly rather than stall the thread writing the message,
+        /// which is usually the UI thread. What it could not write must not be lost, and must not
+        /// jump ahead of later messages when it is finally written.
+        /// </summary>
+        [Test]
+        public void WriteMessage_LogFileBusy_CarriedOverAndWrittenInOrderByTheNextMessage()
+        {
+            using (
+                new FileStream(
+                    _logFile.Path,
+                    FileMode.Open,
+                    FileAccess.Write,
+                    FileShare.None // nothing else can write while we hold this
+                )
+            )
+            {
+                MakeHistory1();
+            }
+            Assert.That(
+                ReadPersistedLines(),
+                Is.Empty,
+                "setup problem: the message should not have reached the file while it was held"
+            );
+
+            // A later message, written when the file is free again.
+            MakeHistory2();
+
+            var expected = _messageLog.Messages.Select(m => m.ToPersistedForm).ToList();
+            Assert.That(
+                expected,
+                Has.Count.EqualTo(2),
+                "sanity check: both messages should be in memory whatever the file did"
+            );
+            Assert.That(
+                ReadPersistedLines(),
+                Is.EqualTo(expected),
+                "the carried-over message should have been written, ahead of the later one"
+            );
+        }
+
+        [Test]
+        public void Flush_MessageCouldNotBeWrittenEarlier_WritesIt()
+        {
+            using (
+                new FileStream(_logFile.Path, FileMode.Open, FileAccess.Write, FileShare.None)
+            )
+            {
+                MakeHistory1();
+            }
+            Assert.That(
+                ReadPersistedLines(),
+                Is.Empty,
+                "setup problem: the message should not have reached the file while it was held"
+            );
+
+            // sut: at shutdown there is no next message to carry it out, so this is its last chance.
+            _messageLog.Flush();
+
+            Assert.That(
+                ReadPersistedLines(),
+                Is.EqualTo(_messageLog.Messages.Select(m => m.ToPersistedForm).ToList()),
+                "Flush should have written the message the busy file rejected"
+            );
+        }
+
+        [Test]
+        public void Flush_NothingOutstanding_WritesNothingAgain()
+        {
+            MakeHistory1();
+            var afterWrite = ReadPersistedLines();
+            Assert.That(
+                afterWrite,
+                Has.Count.EqualTo(1),
+                "sanity check: the message should have been written normally"
+            );
+
+            // sut
+            _messageLog.Flush();
+
+            Assert.That(
+                ReadPersistedLines(),
+                Is.EqualTo(afterWrite),
+                "Flush must not write messages the file already has"
+            );
+        }
+
+        /// <summary>
+        /// Message writes give up quickly on a busy log file so as not to stall the UI thread,
+        /// and leave what they could not write for the next message to carry out. At shutdown
+        /// there is no next message, so disposing the collection that owns the log must flush it.
+        /// </summary>
+        [Test]
+        public void TeamCollectionDispose_MessageCouldNotBeWrittenEarlier_FlushesItToTheLogFile()
+        {
+            using (var collectionFolder = new TemporaryFolder("FlushOnDispose_Collection"))
+            using (var repoFolder = new TemporaryFolder("FlushOnDispose_Repo"))
+            {
+                var logPath = TeamCollectionManager.GetTcLogPathFromLcPath(
+                    collectionFolder.FolderPath
+                );
+                RobustFile.WriteAllText(logPath, "");
+                var log = new TeamCollectionMessageLog(logPath);
+                var tc = new TestFolderTeamCollection(
+                    new Mock<ITeamCollectionManager>().Object,
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath,
+                    log
+                );
+
+                using (new FileStream(logPath, FileMode.Open, FileAccess.Write, FileShare.None))
+                {
+                    log.WriteMessage(
+                        MessageAndMilestoneType.History,
+                        "TeamCollection.CheckoutMsg",
+                        "{0} checked out the book {1}",
+                        "joe@somewhere.org",
+                        "Joe hunts pigs"
+                    );
+                }
+                Assert.That(
+                    RobustFile.ReadAllText(logPath),
+                    Is.Empty,
+                    "setup problem: the message should not have reached the file while it was held"
+                );
+
+                // sut
+                tc.Dispose();
+
+                Assert.That(
+                    File.ReadAllLines(logPath),
+                    Is.EqualTo(log.Messages.Select(m => m.ToPersistedForm).ToArray()),
+                    "disposing the collection should have flushed the outstanding message"
+                );
+            }
+        }
+
+        private List<string> ReadPersistedLines()
+        {
+            return File.ReadAllLines(_logFile.Path)
+                .Where(line => !string.IsNullOrEmpty(line))
+                .ToList();
         }
 
         [Test]

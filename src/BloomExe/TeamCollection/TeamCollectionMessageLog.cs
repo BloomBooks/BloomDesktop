@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Bloom.web;
 using SIL.Code;
 using SIL.IO;
@@ -39,6 +41,7 @@ namespace Bloom.TeamCollection
         );
         void WriteMessage(TeamCollectionMessage message);
         void WriteMilestone(MessageAndMilestoneType milestoneType);
+        void Flush();
         BloomWebSocketProgressEvent[] GetProgressMessages();
     }
 
@@ -61,29 +64,104 @@ namespace Bloom.TeamCollection
             {
                 _oldMessageLength = new FileInfo(_logFilePath).Length;
             }
-            Messages = new List<TeamCollectionMessage>();
         }
 
         // Review: currently includes milestones. Should it?
-        public List<TeamCollectionMessage> Messages { get; private set; }
+        private readonly List<TeamCollectionMessage> _messages = new List<TeamCollectionMessage>();
+
+        /// <summary>
+        /// A snapshot of the messages so far. Deliberately a copy: callers enumerate this from
+        /// threads that are not the UI thread (teamCollection/getLog and
+        /// teamCollection/logImportant are both registered with handleOnUiThread false), and
+        /// enumerating the live list while another thread appends to it throws
+        /// "Collection was modified". See BL-16729.
+        /// </summary>
+        public List<TeamCollectionMessage> Messages
+        {
+            get
+            {
+                lock (_messagesLock)
+                {
+                    return new List<TeamCollectionMessage>(_messages);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Guards Messages. Writers are not all on the UI thread: several API endpoints are
+        /// registered with handleOnUiThread false and can end up here via CheckConnection, and
+        /// (BL-16729) a file system watcher failing calls in from a thread-pool thread. Because
+        /// WriteMessage enumerates the list to de-duplicate and then appends to it, while the
+        /// status properties below enumerate the same list, an unguarded overlap could produce
+        /// duplicate entries or throw InvalidOperationException.
+        /// </summary>
+        private readonly object _messagesLock = new object();
+
+        /// <summary>
+        /// Guards the log file. Deliberately NOT _messagesLock: appending is normally a matter
+        /// of microseconds, but when something else has the file open (antivirus, a backup
+        /// agent, the read-only collection folder of BL-16772) RobustFile retries over a period
+        /// of seconds, and for all that time nothing may read Messages, TeamCollectionStatus and
+        /// the rest -- TeamCollectionStatus is read on the UI thread whenever the Team
+        /// Collection button refreshes.
+        /// </summary>
+        private readonly object _fileLock = new object();
+
+        /// <summary>
+        /// Lines waiting to be appended to the log file. Enqueued while _messagesLock is held,
+        /// so their order is exactly the order of _messages, and dequeued only while _fileLock
+        /// is held, so one thread writes at a time. Between them the file ends up in the same
+        /// order as the in-memory list, without the file being touched under _messagesLock.
+        /// </summary>
+        private readonly ConcurrentQueue<string> _pendingWrites = new ConcurrentQueue<string>();
+
+        /// <summary>
+        /// Lines an append failed to write, kept in order and written ahead of everything else
+        /// by the next attempt. Guarded by _fileLock.
+        /// </summary>
+        private List<string> _carryOver = new List<string>();
+
+        // How hard an ordinary append tries. This often runs on the UI thread (every remote
+        // change is handled from Application.Idle), so we must not stall it for seconds the way
+        // RobustFile would: a couple of quick tries catches the usual transient sharing
+        // violation, and anything still unwritten waits in _carryOver for the next message, or
+        // for the stubborn Flush at shutdown.
+        private const int kQuickAppendAttempts = 2;
+        private const int kQuickAppendRetryMs = 50;
+
+        // Only IOException is worth a second try: that is the transient case, something else
+        // holding the file open for a moment. A permissions failure (the read-only collection
+        // folder of BL-16772) will not get better while we wait, so let it out at once.
+        private static readonly ISet<Type> kTransientAppendExceptions = new HashSet<Type>
+        {
+            typeof(IOException),
+        };
+
+        // A ceiling on _carryOver, so that a log file that stays unwritable for the rest of the
+        // session cannot grow it without bound. Generous: the messages are short, and this is
+        // only reached when something is badly wrong.
+        private const int kMaxCarryOverChars = 64 * 1024;
 
         public List<TeamCollectionMessage> CurrentErrors
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m =>
-                        m.MessageType == MessageAndMilestoneType.LogDisplayed
-                        || m.MessageType == MessageAndMilestoneType.Reloaded
-                    ) + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m =>
-                        m.MessageType == MessageAndMilestoneType.Error
-                        || m.MessageType == MessageAndMilestoneType.ErrorNoReload
-                    )
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        _messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.LogDisplayed
+                            || m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return _messages
+                        .Skip(index)
+                        .Where(m =>
+                            m.MessageType == MessageAndMilestoneType.Error
+                            || m.MessageType == MessageAndMilestoneType.ErrorNoReload
+                        )
+                        .ToList();
+                }
             }
         }
 
@@ -101,17 +179,21 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m => m.MessageType == MessageAndMilestoneType.Reloaded)
-                    + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m =>
-                        m.MessageType == MessageAndMilestoneType.Error
-                        || m.MessageType == MessageAndMilestoneType.NewStuff
-                    )
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        _messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return _messages
+                        .Skip(index)
+                        .Where(m =>
+                            m.MessageType == MessageAndMilestoneType.Error
+                            || m.MessageType == MessageAndMilestoneType.NewStuff
+                        )
+                        .ToList();
+                }
             }
         }
 
@@ -127,14 +209,18 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                // correctly 0 if none match
-                var index =
-                    Messages.FindLastIndex(m => m.MessageType == MessageAndMilestoneType.Reloaded)
-                    + 1;
-                return Messages
-                    .Skip(index)
-                    .Where(m => m.MessageType == MessageAndMilestoneType.NewStuff)
-                    .ToList();
+                lock (_messagesLock)
+                {
+                    // correctly 0 if none match
+                    var index =
+                        _messages.FindLastIndex(m =>
+                            m.MessageType == MessageAndMilestoneType.Reloaded
+                        ) + 1;
+                    return _messages
+                        .Skip(index)
+                        .Where(m => m.MessageType == MessageAndMilestoneType.NewStuff)
+                        .ToList();
+                }
             }
         }
 
@@ -142,12 +228,17 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(m =>
-                    m.MessageType == MessageAndMilestoneType.ClobberPending
-                    || m.MessageType == MessageAndMilestoneType.ShowedClobbered
-                    || m.MessageType == MessageAndMilestoneType.Reloaded
-                );
-                return last?.MessageType == MessageAndMilestoneType.ClobberPending ? last : null;
+                lock (_messagesLock)
+                {
+                    var last = _messages.FindLast(m =>
+                        m.MessageType == MessageAndMilestoneType.ClobberPending
+                        || m.MessageType == MessageAndMilestoneType.ShowedClobbered
+                        || m.MessageType == MessageAndMilestoneType.Reloaded
+                    );
+                    return last?.MessageType == MessageAndMilestoneType.ClobberPending
+                        ? last
+                        : null;
+                }
             }
         }
 
@@ -155,10 +246,13 @@ namespace Bloom.TeamCollection
         {
             get
             {
-                var last = Messages.FindLast(m =>
-                    m.MessageType == MessageAndMilestoneType.Reloaded
-                );
-                return last == null ? DateTime.MinValue : last.When;
+                lock (_messagesLock)
+                {
+                    var last = _messages.FindLast(m =>
+                        m.MessageType == MessageAndMilestoneType.Reloaded
+                    );
+                    return last == null ? DateTime.MinValue : last.When;
+                }
             }
         }
 
@@ -184,39 +278,169 @@ namespace Bloom.TeamCollection
             string param1 = ""
         )
         {
-            if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
-                return;
             var msg = new TeamCollectionMessage(messageType, l10nId, message, param0, param1);
-            WriteMessage(msg);
+            // The de-duplication check and the append have to be one atomic step, or two
+            // concurrent writers can both decide the message is new and both add it.
+            lock (_messagesLock)
+            {
+                if (IsRedundantMessage(messageType, l10nId, message, param0, param1))
+                    return;
+                _messages.Add(msg);
+                QueueForPersisting(msg);
+            }
+            DrainPendingWrites();
+            AfterMessageAdded(msg);
         }
 
         public void WriteMessage(TeamCollectionMessage message)
         {
-            Messages.Add(message);
-            SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
-            TeamCollectionManager.RaiseTeamCollectionStatusChanged();
+            lock (_messagesLock)
+            {
+                _messages.Add(message);
+                QueueForPersisting(message);
+            }
+            DrainPendingWrites();
+            AfterMessageAdded(message);
+        }
+
+        /// <summary>
+        /// Line up one message to be appended to the log file. Called with _messagesLock held,
+        /// which is what makes the queue's order the same as the in-memory list's.
+        /// </summary>
+        private void QueueForPersisting(TeamCollectionMessage message)
+        {
             // Using Environment.NewLine here means the format of the file will be appropriate for the
             // computer we are running on. It's possible a shared collection might be used by both
             // Linux and Windows. But that's OK, because .NET line reading accepts either line
             // break on either platform.
-            var toPersist = message.ToPersistedForm + Environment.NewLine;
+            _pendingWrites.Enqueue(message.ToPersistedForm + Environment.NewLine);
+        }
+
+        /// <summary>
+        /// Append everything queued so far to the log file, giving up quickly if the file is
+        /// busy. Deliberately called with _messagesLock released, so a slow append cannot block
+        /// the readers; _fileLock instead keeps two threads from colliding over the file, and
+        /// because the queue is FIFO and is only ever drained under that lock, the file stays in
+        /// the same order as _messages.
+        /// </summary>
+        /// <remarks>
+        /// Nothing can be left behind unwritten: whoever queues a message goes on to call this,
+        /// and waits for _fileLock rather than giving up, so its line is written either by this
+        /// call or by the drain that is already running. Finding nothing to write, which is what
+        /// happens when that other drain took our line, is therefore a normal outcome.
+        /// </remarks>
+        private void DrainPendingWrites()
+        {
+            WritePendingMessages(beStubborn: false);
+        }
+
+        /// <summary>
+        /// Write anything still waiting, trying as hard as RobustFile does. Ordinary appends give
+        /// up quickly so as not to stall the thread writing the message -- usually the UI thread
+        /// -- and leave what they could not write for the next message to carry out. At shutdown
+        /// there is no next message, so this is those lines' last chance to reach the file, and
+        /// here it is worth waiting out whatever has the file open.
+        /// </summary>
+        public void Flush()
+        {
+            WritePendingMessages(beStubborn: true);
+        }
+
+        private void WritePendingMessages(bool beStubborn)
+        {
+            lock (_fileLock)
+            {
+                // Whatever an earlier attempt could not write goes first, so that the file stays
+                // in the order of the in-memory list. A burst of messages (SyncAtStartup
+                // produces one) thus costs a single append rather than one per message.
+                var lines = _carryOver;
+                _carryOver = new List<string>();
+                while (_pendingWrites.TryDequeue(out var line))
+                    lines.Add(line);
+                if (lines.Count == 0)
+                    return;
+                if (TryAppend(string.Concat(lines), beStubborn))
+                    return;
+                // The messages are already in Messages, so the current session still shows them,
+                // and AfterMessageAdded writes them to the ordinary log as well; the worst case
+                // is that they don't survive a restart. Keep them for the next attempt.
+                _carryOver = lines;
+                TrimCarryOverIfTooBig();
+            }
+        }
+
+        /// <summary>
+        /// Called with _fileLock held.
+        /// </summary>
+        /// <returns>true if the text reached the file.</returns>
+        private bool TryAppend(string text, bool beStubborn)
+        {
             try
             {
-                RobustFile.AppendAllText(_logFilePath, toPersist);
+                if (beStubborn)
+                {
+                    RobustFile.AppendAllText(_logFilePath, text);
+                }
+                else
+                {
+                    // What RobustFile.AppendAllText does -- the same call, and so the same
+                    // encoding (UTF-8, no BOM), so the two paths can append to one file
+                    // interchangeably -- but over milliseconds rather than seconds.
+                    RetryUtility.Retry(
+                        () => File.AppendAllText(_logFilePath, text),
+                        kQuickAppendAttempts,
+                        kQuickAppendRetryMs,
+                        kTransientAppendExceptions,
+                        memo: $"AppendAllText {_logFilePath}"
+                    );
+                }
+                return true;
             }
             catch (Exception ex)
             {
-                // The message is already in Messages (so the current session still shows it) and in
-                // the Logger above; it just won't survive a restart. Not being able to write it must
-                // not take Bloom down: this very method is called while reporting a TC initialization
-                // failure, and when the underlying problem is an unwritable collection folder
-                // (e.g. read-only files, BL-16772), throwing here turned a degraded-but-working
-                // Team Collection into a collection that could not open at all.
+                // Not being able to write must not take Bloom down: this path is used while
+                // reporting a TC initialization failure, and when the underlying problem is an
+                // unwritable collection folder (e.g. read-only files, BL-16772), throwing here
+                // turned a degraded-but-working Team Collection into a collection that could not
+                // open at all.
                 SIL.Reporting.Logger.WriteError(
-                    $"Could not persist Team Collection message to {_logFilePath}",
+                    $"Could not persist Team Collection messages to {_logFilePath}",
                     ex
                 );
+                return false;
             }
+        }
+
+        /// <summary>
+        /// Called with _fileLock held. Drops the oldest unwritten lines if they have piled up,
+        /// keeping the most recent, which are the ones most likely to explain what went wrong.
+        /// </summary>
+        private void TrimCarryOverIfTooBig()
+        {
+            var total = _carryOver.Sum(line => line.Length);
+            if (total <= kMaxCarryOverChars)
+                return;
+            var toDrop = 0;
+            while (toDrop < _carryOver.Count && total > kMaxCarryOverChars)
+            {
+                total -= _carryOver[toDrop].Length;
+                toDrop++;
+            }
+            _carryOver.RemoveRange(0, toDrop);
+            SIL.Reporting.Logger.WriteEvent(
+                $"Gave up on {toDrop} Team Collection messages that could not be written to {_logFilePath}"
+            );
+        }
+
+        /// <summary>
+        /// Deliberately called with the lock released: raising the status-changed event reaches
+        /// WinForms and the websocket server, and holding a lock across that is how deadlocks
+        /// happen. Everything here reads only the message it was handed.
+        /// </summary>
+        private void AfterMessageAdded(TeamCollectionMessage message)
+        {
+            SIL.Reporting.Logger.WriteEvent(message.TextForDisplay);
+            TeamCollectionManager.RaiseTeamCollectionStatusChanged();
         }
 
         private bool MatchParams(string p1, string p2)
@@ -254,7 +478,7 @@ namespace Bloom.TeamCollection
                 // the message is redundant with a current session report. But currently we reset completely for each
                 // session, and problems (particularly the one produced by a bad zip file in the repo) tend to be very
                 // frequent. We need to look at everything to weed out duplicates.
-                return Messages.Any(msg =>
+                return _messages.Any(msg =>
                     (
                         msg.MessageType == MessageAndMilestoneType.Error
                         || msg.MessageType == MessageAndMilestoneType.ErrorNoReload
