@@ -1729,6 +1729,34 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ReallyCropImages_UploadMode_DuplicateCropFails_LeavesDataDivCropStyle()
+        {
+            // A second img with the same src and crop must not treat the first one's failed crop
+            // as done, which would take the duplicate path and clear the data-div crop.
+            using (var folder = new TemporaryFolder("UploadDuplicateCropFailsDataDiv"))
+            {
+                // Deliberately no cover.png in the folder, so the crop fails.
+                var dom = MakeCroppedCoverDom();
+                var page = dom.SelectSingleNode("//div[@id='frontCover']");
+                page.ParentNode.AppendChild(page.CloneNode(true));
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                // Sanity check
+                Assert.That(
+                    dom.SafeSelectNodes("//img[@data-book='coverImage']").Length,
+                    Is.EqualTo(2)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                Assert.That(dataDivEntry.GetAttribute("style"), Is.EqualTo(originalDataDivStyle));
+            }
+        }
+
+        [Test]
         public void ReallyCropImages_UploadMode_CustomLayoutCoverImage_LeavesDataDivStyleAlone()
         {
             // The data-div entry belongs to the standard cover layout, so the crop style of an img
