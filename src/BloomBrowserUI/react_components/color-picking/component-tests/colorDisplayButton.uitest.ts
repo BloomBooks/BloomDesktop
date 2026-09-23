@@ -63,7 +63,14 @@ test.describe("ColorDisplayButton + ColorPickerDialog", () => {
         );
     });
 
-    test("deferred change waits until drag completes and cancel restores", async ({
+    // With deferOnChangeUntilComplete, onChange follows react-color's onChangeComplete, which
+    // is a 100ms debounce of the picker's changes, not a mouse-up event. So a drag that pauses
+    // sends a change while the button is still held, and how many changes a drag sends depends
+    // on how fast the machine delivers the mouse moves. This test therefore asserts only what
+    // does not depend on timing: the changes settle on the dragged color, and Cancel then sends
+    // the original color back exactly once. The drag pauses halfway on purpose, so the test
+    // always exercises the mid-drag change a slow machine produces.
+    test("deferred change settles on the dragged color and cancel restores", async ({
         page,
     }) => {
         await page.route(
@@ -94,28 +101,37 @@ test.describe("ColorDisplayButton + ColorPickerDialog", () => {
         const box = await hue.boundingBox();
         expect(box).not.toBeNull();
 
-        await page.mouse.move(box!.x + 5, box!.y + box!.height / 2);
+        const y = box!.y + box!.height / 2;
+        await page.mouse.move(box!.x + 5, y);
         await page.mouse.down();
-        await page.mouse.move(
-            box!.x + box!.width * 0.65,
-            box!.y + box!.height / 2,
-            {
-                steps: 8,
-            },
-        );
-
-        await expect(page.getByTestId("change-count")).toHaveText("0");
-
+        await page.mouse.move(box!.x + box!.width * 0.35, y, { steps: 4 });
+        // Longer than the 100ms debounce, like a user pausing mid-drag.
+        await page.waitForTimeout(250);
+        await page.mouse.move(box!.x + box!.width * 0.65, y, { steps: 4 });
         await page.mouse.up();
 
-        await expect(page.getByTestId("change-count")).toHaveText("1");
-        await expect(page.getByTestId("last-changed-color")).not.toHaveText(
-            "#00AA00",
+        // Once the last change carries the color the dialog shows, the debounce has
+        // delivered its final call and nothing more is pending.
+        const hexInput = page.getByRole("dialog").locator('input[type="text"]');
+        await expect
+            .poll(async () => {
+                const shown = (await hexInput.inputValue()).toLowerCase();
+                const last = await page
+                    .getByTestId("last-changed-color")
+                    .textContent();
+                return shown !== "#00aa00" && last === shown;
+            })
+            .toBe(true);
+        const changesAfterDrag = Number(
+            await page.getByTestId("change-count").textContent(),
         );
+        expect(changesAfterDrag).toBeGreaterThan(0);
 
         await page.getByRole("button", { name: "Cancel" }).click();
 
-        await expect(page.getByTestId("change-count")).toHaveText("2");
+        await expect(page.getByTestId("change-count")).toHaveText(
+            String(changesAfterDrag + 1),
+        );
         await expect(page.getByTestId("last-changed-color")).toHaveText(
             "#00aa00",
         );
