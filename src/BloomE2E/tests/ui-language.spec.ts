@@ -12,13 +12,9 @@
 // setting is off, the Turkish UI must fall back to English for these strings; once it is on, the
 // Turkish text must appear.
 //
-// The UI language and the unapproved-translations setting are MACHINE-WIDE user settings - even
-// this dedicated e2e Bloom shares them with the developer's own Bloom - so the test records what
-// it finds, and its finally block puts that back, even after a failure.
-// Known limitation: restoring goes through the production language endpoint, which marks the
-// language as explicitly chosen. A profile that had never chosen one - and so was following the
-// operating-system language - keeps its resolved language but stops following the OS. An exact
-// restore would need a test-only settings API; accepted for now.
+// The UI language and the unapproved-translations setting are user settings, and this Bloom
+// keeps its own (the launch fixture gives it a fresh user-settings folder), so the test changes
+// them freely and has nothing to put back.
 //
 // Turkish must be in the language menu for the approved-only leg: dev/alpha builds list a
 // language once >=1% of its strings are approved (Turkish has ~7%), which holds for any Bloom
@@ -82,79 +78,47 @@ test("change UI language repeatedly [Test Case ID 69]", async ({
     // own tighter wait with a more specific message.
     testInfo.setTimeout(15 * 60 * 1000);
 
-    const originalLanguage = await getCurrentUiLanguageTag(page);
-    const originalShowUnapproved = await getShowUnapprovedTranslations(page);
-    // Not a plain finally for the restore: an exception from a failed restore would REPLACE
-    // the error that actually failed the test, which is what matters to whoever reads the
-    // failure. So the restore only throws when the test body succeeded.
-    let bodyError: unknown;
-    try {
-        // The assertions assume English with approved-only translations; the developer's
-        // machine-wide settings may say otherwise. (No UI refresh is needed here: if the
-        // language changed, the reopen refreshed everything, and if only the setting changed,
-        // the visible strings are English either way.)
-        if (originalLanguage !== "en" || originalShowUnapproved) {
-            await setUiStateViaApi(bloomApp, "en", false);
-        }
-        // The top bar hides the Edit tab until a book is selected, and that tab's label is one
-        // of the strings verified after every language change - so make a book, then come back
-        // to the Collections tab, where the other checked strings live. (The selection
-        // survives the project reopens below.)
-        await makeBookFromTemplate(bloomApp.page, "Basic Book");
-        await switchTab(bloomApp.page, "collection");
-        // Sanity-check the starting state so the assertions below cannot pass for the wrong
-        // reason, then verify the English strings before anything changes.
-        expect(await getCurrentUiLanguageTag(bloomApp.page)).toBe("en");
-        expect(await getShowUnapprovedTranslations(bloomApp.page)).toBe(false);
-        await expectUiStrings(bloomApp.page, stringsByLanguage.en);
-
-        await chooseUiLanguage(bloomApp, "fr");
-        await expectUiStrings(bloomApp.page, stringsByLanguage.fr);
-
-        await chooseUiLanguage(bloomApp, "es");
-        await expectUiStrings(bloomApp.page, stringsByLanguage.es);
-
-        // Turkish while unapproved translations are still hidden: Bloom is IN Turkish (the menu
-        // button label proves it), but every string checked must fall back to English, because
-        // its Turkish translation exists and is unapproved.
-        await chooseUiLanguage(bloomApp, "tr");
-        await expectUiStrings(bloomApp.page, {
-            ...stringsByLanguage.en,
-            languageMenuButton: stringsByLanguage.tr.languageMenuButton,
-        });
-
-        // Turn on "Show translations which have not been approved yet"; the same strings must
-        // now show their unapproved Turkish text.
-        await setShowUnapprovedTranslations(bloomApp, true);
-        await expectUiStrings(bloomApp.page, stringsByLanguage.tr);
-
-        // Back to English with the setting off again, through the same UI, which re-verifies
-        // both directions of the gate.
-        await chooseUiLanguage(bloomApp, "en");
-        await setShowUnapprovedTranslations(bloomApp, false);
-        await expectUiStrings(bloomApp.page, stringsByLanguage.en);
-    } catch (error) {
-        bodyError = error;
-        throw error;
-    } finally {
-        // Put the developer's machine-wide settings back exactly as found, whatever happened
-        // above. (They may deliberately run with another UI language or with unapproved
-        // translations showing.)
-        try {
-            await setUiStateViaApi(
-                bloomApp,
-                originalLanguage,
-                originalShowUnapproved,
-            );
-        } catch (restoreError) {
-            if (bodyError) {
-                console.error(
-                    `Also failed to restore the UI language settings (wanted "${originalLanguage}", ` +
-                        `showUnapproved=${originalShowUnapproved}): ${restoreError}`,
-                );
-            } else {
-                throw restoreError;
-            }
-        }
+    // The assertions assume English with approved-only translations. A fresh Bloom has the
+    // latter, but its UI language follows the operating system's. (No UI refresh is needed here:
+    // if the language changed, the reopen refreshed everything.)
+    if ((await getCurrentUiLanguageTag(page)) !== "en") {
+        await setUiStateViaApi(bloomApp, "en", false);
     }
+    // The top bar hides the Edit tab until a book is selected, and that tab's label is one of the
+    // strings verified after every language change - so make a book, then come back to the
+    // Collections tab, where the other checked strings live. (The selection survives the project
+    // reopens below.)
+    await makeBookFromTemplate(bloomApp.page, "Basic Book");
+    await switchTab(bloomApp.page, "collection");
+    // Sanity-check the starting state so the assertions below cannot pass for the wrong reason,
+    // then verify the English strings before anything changes.
+    expect(await getCurrentUiLanguageTag(bloomApp.page)).toBe("en");
+    expect(await getShowUnapprovedTranslations(bloomApp.page)).toBe(false);
+    await expectUiStrings(bloomApp.page, stringsByLanguage.en);
+
+    await chooseUiLanguage(bloomApp, "fr");
+    await expectUiStrings(bloomApp.page, stringsByLanguage.fr);
+
+    await chooseUiLanguage(bloomApp, "es");
+    await expectUiStrings(bloomApp.page, stringsByLanguage.es);
+
+    // Turkish while unapproved translations are still hidden: Bloom is IN Turkish (the menu button
+    // label proves it), but every string checked must fall back to English, because its Turkish
+    // translation exists and is unapproved.
+    await chooseUiLanguage(bloomApp, "tr");
+    await expectUiStrings(bloomApp.page, {
+        ...stringsByLanguage.en,
+        languageMenuButton: stringsByLanguage.tr.languageMenuButton,
+    });
+
+    // Turn on "Show translations which have not been approved yet"; the same strings must now show
+    // their unapproved Turkish text.
+    await setShowUnapprovedTranslations(bloomApp, true);
+    await expectUiStrings(bloomApp.page, stringsByLanguage.tr);
+
+    // Back to English with the setting off again, through the same UI, which re-verifies both
+    // directions of the gate.
+    await chooseUiLanguage(bloomApp, "en");
+    await setShowUnapprovedTranslations(bloomApp, false);
+    await expectUiStrings(bloomApp.page, stringsByLanguage.en);
 });

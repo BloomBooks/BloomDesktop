@@ -98,6 +98,11 @@ export interface IChooserBloomApp extends IBloomAppBase {
     /** The .bloomCollection file of the collection created for this test to open from the dialog. */
     collectionToOpen: string;
     /**
+     * The folder this Bloom keeps its user settings in, as for IBloomApp. It starts empty, which
+     * is what brings Bloom up at the chooser: there is no recent collection for it to reopen.
+     */
+    userSettingsDir: string;
+    /**
      * Find the Choose Collection dialog's page again after an action that made Bloom rebuild the
      * dialog - choosing a language there does. Reconnects over CDP (a connection from before the
      * rebuild never sees the new page), updates page, and returns it. The caller makes sure the
@@ -136,9 +141,8 @@ interface IBloomWorkerFixtures {
      * the test then uses the chooserApp fixture instead of bloomApp. collectionSpec still names
      * the collection the test can open FROM the dialog (chooserApp.collectionToOpen).
      *
-     * CAUTION: reaching the chooser requires an empty MRU list, so this launch mode backs up,
-     * edits, and restores the developer's machine-wide user.config - see launchBloomIntoChooser
-     * for exactly what is touched and how it is put back.
+     * Bloom reaches the chooser because its user-settings folder, its own like every launched
+     * Bloom's, starts with an empty most-recently-used list (see launchBloomIntoChooser).
      */
     startAtChooser: boolean;
     /** The launched Bloom, whichever mode. Internal: tests use bloomApp or chooserApp. */
@@ -403,6 +407,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         cdpPort: launched.cdpPort,
                         bloomPid: launched.bloomPid,
                         collectionToOpen: launched.collectionToOpen,
+                        userSettingsDir: launched.userSettingsDir,
                         reattachToChooser: async () => {
                             app.page = await reconnectAndFind(
                                 launched!.cdpPort,
@@ -421,7 +426,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     await use(app);
                 } finally {
                     // Close the CDP connection first: it keeps a socket into the process we are
-                    // about to kill. stop() also restores the developer's user.config.
+                    // about to kill. Then kill Bloom and delete the temp folder.
                     await browser?.close();
                     await launched?.stop();
                 }
@@ -539,6 +544,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // set up first), so a failure raised by one of them is still seen here. Everything goes under
     // testInfo.outputDir, which is test-results/<test>/, the folder CI already uploads on failure.
     //
+    // For a Bloom launched at the Choose Collection dialog, the collection kept is the one the test
+    // opens from it (chooserApp.collectionToOpen), which is the only one that Bloom has.
+    //
     // The collection folder is copied rather than described because the failures this is for are
     // the ones where Bloom's state on disk disagrees with what the test saw: a title typed on the
     // cover that the collection never learned (AUTOMATION-DEBT.md). The book's HTML and meta.json
@@ -550,7 +558,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // secret-shaped setting would land too. Redacting known names would protect only against the
     // ones we thought of. helpers/userSettings.ts reads that file for a test while it runs instead.
     keepEvidenceOnFailure: [
-        async ({ bloomApp }, use, testInfo) => {
+        async ({ _launchedApp }, use, testInfo) => {
             await use();
             if (testInfo.status === testInfo.expectedStatus) return;
             // Bloom may still be writing; a moment lets its last save land in the copy.
@@ -570,26 +578,26 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 console.warn(`Could not keep Bloom's log: ${error}`);
             }
             try {
-                fs.cpSync(
-                    bloomApp.collectionDir,
-                    testInfo.outputPath("collection"),
-                    {
-                        recursive: true,
-                        errorOnExist: false,
-                        filter: (source) => {
-                            if (fs.statSync(source).isDirectory()) return true;
-                            try {
-                                fs.closeSync(fs.openSync(source, "r"));
-                                return true;
-                            } catch {
-                                console.warn(
-                                    `Left out of the collection copy (locked?): ${source}`,
-                                );
-                                return false;
-                            }
-                        },
+                const collectionDir =
+                    _launchedApp.mode === "collection"
+                        ? _launchedApp.collectionDir
+                        : Path.dirname(_launchedApp.collectionToOpen);
+                fs.cpSync(collectionDir, testInfo.outputPath("collection"), {
+                    recursive: true,
+                    errorOnExist: false,
+                    filter: (source) => {
+                        if (fs.statSync(source).isDirectory()) return true;
+                        try {
+                            fs.closeSync(fs.openSync(source, "r"));
+                            return true;
+                        } catch {
+                            console.warn(
+                                `Left out of the collection copy (locked?): ${source}`,
+                            );
+                            return false;
+                        }
                     },
-                );
+                });
             } catch (error) {
                 console.warn(`Could not copy the collection folder: ${error}`);
             }

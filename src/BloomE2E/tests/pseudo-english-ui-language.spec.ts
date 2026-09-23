@@ -9,9 +9,11 @@
 // WorkspaceView (CreateLanguageItem's special case, and the append-after-sort in GetLanguageItems);
 // the transformation itself belongs to L10NSharp and is covered by its own tests.
 //
-// Actually *choosing* the entry is not covered here: that makes Bloom reopen the collection, which
-// replaces the shell document and invalidates the page this test holds. See AUTOMATION-DEBT.md,
-// "Changing the UI language reopens the project".
+// Actually *choosing* the entry is not covered yet. That makes Bloom reopen the collection, which
+// replaces the shell document; chooseUiLanguage in helpers/uiLanguage.ts waits that out and hands
+// back the new page (ui-language.spec.ts switches real languages with it), so that the choice
+// really does pseudolocalize the UI, and that choosing English again puts it back, can now be
+// tested the same way.
 //
 // This test has no "[Test Case ID N]" tag because no row in the Notion test inventory covers the
 // UI language menu yet. Add one (and put its id in the title) if this becomes a tracked case.

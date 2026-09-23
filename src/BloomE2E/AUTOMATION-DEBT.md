@@ -844,25 +844,3 @@ How to react meanwhile: **do not re-run and move on without first looking for th
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
 (Found 2026-09-21.)
-
----
-
-## Changing the UI language reopens the project, invalidating the test's page
-
-Choosing a language in the top bar's UI language menu makes Bloom reopen the collection
-(`WorkspaceView.SetUiLanguage` calls `ReopenCurrentProject`, because many surfaces only pick up
-a new language when they are rebuilt). That replaces the shell document, so the `page` a test is
-holding goes dead — the same thing `bloomApp.restart()` warns about, but with no equivalent way
-to get the new page: `findShellPage` is private to the fixture, and nothing re-resolves the shell
-after a reopen that the test did not initiate.
-
-The cost today is that `pseudo-english-ui-language.spec.ts` covers only the *offer* — that the
-pseudo-locale is listed, named right, and sorted last — and not the switch itself, which is the
-more interesting half: that choosing it really does pseudolocalize the UI, and that choosing
-English again puts it back. The same limit will bite any future test of a real UI language.
-
-Fix direction: export the shell resolution from the fixture (or expose it as
-`bloomApp.waitForNewShell()`), so a helper that knowingly triggers a reopen can return the new
-page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
-back a usable page, and the switch becomes testable.
-(Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)

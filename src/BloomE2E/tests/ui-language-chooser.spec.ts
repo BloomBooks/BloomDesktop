@@ -3,9 +3,9 @@
 // repeatedly" (Test Case ID 69).
 //
 // The dialog only really matters when Bloom starts with no collection to reopen, so this file
-// sets startAtChooser: the fixture blanks the MRU list (touching the developer's machine-wide
-// user.config - backed up and spliced back afterward; see launchBloomIntoChooser) and Bloom
-// lands in the chooser. There the test operates the real language menu and verifies the
+// sets startAtChooser: the fixture launches Bloom with no collection and a fresh user-settings
+// folder, so there is no recent collection to reopen and Bloom lands in the chooser (see
+// launchBloomIntoChooser). There the test operates the real language menu and verifies the
 // dialog's own strings change - the <h1> title (useL10n), the Create New Collection button (a
 // BloomButton LocalizableElement), and the language button's label (C#-localized data) - then
 // opens a collection and verifies the whole workspace comes up in the chosen language too.
@@ -32,7 +32,8 @@ test("change UI language in the Choose Collection dialog [Test Case ID 69]", asy
     testInfo.setTimeout(10 * 60 * 1000);
 
     // The dialog in English first, so the French assertions below cannot pass for the wrong
-    // reason. (The fixture's launch normalized the profile to English.)
+    // reason. (A fresh Bloom's UI language follows the operating system's, so on a machine set up
+    // in another language this check is where the test fails.)
     await expectChooserStrings(chooserApp.page, {
         title: "Open / Create Collections",
         createButton: "Create New Collection",
