@@ -2431,6 +2431,13 @@ namespace Bloom.Api
                     return "image/jpeg";
                 case ".js":
                     return "application/x-javascript";
+                // Chromium refuses to run a module script (e.g. a dynamic import()) served with
+                // a non-JavaScript MIME type, so .mjs must not fall through to octet-stream.
+                case ".mjs":
+                    return "text/javascript";
+                // WebAssembly.instantiateStreaming likewise rejects anything but application/wasm.
+                case ".wasm":
+                    return "application/wasm";
                 case ".png":
                     return "image/png";
                 case ".pdf":
