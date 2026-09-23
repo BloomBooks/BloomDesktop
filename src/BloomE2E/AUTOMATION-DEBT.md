@@ -866,24 +866,3 @@ Fix direction: export the shell resolution from the fixture (or expose it as
 page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
 back a usable page, and the switch becomes testable.
 (Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)
-
-## The canvas element menu ignores Escape, and its submenus outlive a click
-
-Two behaviours of the "..." menu over a selected canvas element (the MUI `Menu` in
-`CanvasElementContextControls.tsx`, with `mui-nested-menu-item` for its submenus) that
-`helpers/canvasElements.ts` has to work round:
-
-- The menu opens with `disableAutoFocus`, so the keyboard focus stays where it was, often in a
-  text box, and a bare Escape never reaches the menu. While a submenu such as Flip or
-  Transparency is open it is the topmost MUI modal, and MUI lets only the topmost modal answer
-  Escape, so even an Escape pressed on the menu itself does nothing. `closeCanvasElementMenu`
-  takes the pointer off the submenu's row first, then presses Escape on the menu.
-- Clicking a submenu command shuts the menu, but the submenu stays drawn until the pointer moves:
-  its parent row stays mounted in the shut menu, and `parentMenuOpen` is always true in
-  `LocalizableNestedMenuItem`. `clickCanvasElementSubmenuItem` moves the pointer away after the
-  click, as a person's hand does.
-
-A person sees the second one as a submenu that lingers for a moment, and the first as a menu
-Escape cannot close. Fix direction: let the menu take the focus when it opens, and tie the
-submenu's `parentMenuOpen` to the menu's own open state.
-(Found 2026-09-23, while adding the rotate and flip test for BL-16741.)

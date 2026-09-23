@@ -509,10 +509,6 @@ export async function clickCanvasElementSubmenuItem(
         );
     }
     await item.click();
-    // The click shuts the menu, but the submenu stays drawn until the pointer leaves it: its
-    // parent row stays mounted in the shut menu and still counts the pointer as resting on it. A
-    // person's pointer moves on at once, and so does this one.
-    await page.mouse.move(5, 5);
     await frame
         .locator(MENU)
         .first()
@@ -719,30 +715,30 @@ export async function dragRotateHandle(
 }
 
 /**
- * Close the canvas element menu without choosing anything, the way pressing Escape does. This also
- * closes a submenu that is open beside it.
- *
- * The key is pressed on the menu itself. The menu opens without taking the keyboard focus, so a
- * bare Escape goes to whatever had the focus before, such as a text box, and the menu never sees it.
- * An open submenu is shut first, by taking the pointer off its row: while it is open it is the
- * topmost menu, and MUI lets only the topmost one answer Escape.
+ * Close the canvas element menu without choosing anything by pressing Escape, the way a person
+ * does, into whatever has the focus: the menu does not take it when it opens. Waits until neither
+ * the menu nor a submenu open beside it is showing.
  */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
-    const frame = editablePageFrame(page);
-    const menu = frame.locator(MENU).first();
+    const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    if ((await frame.locator(MENU).count()) > 1) {
-        await page.mouse.move(5, 5);
-        await expect
-            .poll(async () => frame.locator(MENU).count(), {
-                timeout: 15000,
-                message:
-                    "Taking the pointer off the menu did not shut its submenu.",
-            })
-            .toBe(1);
-    }
-    await menu.press("Escape");
-    await menu.waitFor({ state: "hidden", timeout: 30000 });
+    await page.keyboard.press("Escape");
+    await expect
+        .poll(async () => getOpenCanvasElementMenuCount(page), {
+            timeout: 30000,
+            message: "Pressing Escape did not close the canvas element menu.",
+        })
+        .toBe(0);
+}
+
+/**
+ * How many of the selected canvas element's menus are showing: 0 when the "..." menu is shut, 1
+ * when it is open, 2 when a submenu is open beside it.
+ */
+export async function getOpenCanvasElementMenuCount(
+    page: Page,
+): Promise<number> {
+    return editablePageFrame(page).locator(MENU).count();
 }
 
 /**

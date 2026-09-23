@@ -152,8 +152,9 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
-  and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`, `openCanvasElementSubmenu`,
-  `clickCanvasElementSubmenuItem`); the picture commands on the menu (`rotateSelectedImageRight`,
+  and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
+  `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
+  the picture commands on the menu (`rotateSelectedImageRight`,
   `flipSelectedImage`, `setSelectedImageTransparency`, `resetSelectedImage`); and the rotation knob
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the

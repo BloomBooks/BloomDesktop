@@ -38,6 +38,7 @@ import {
     getCanvasElementMenuItems,
     getCanvasElementPlacement,
     getCanvasElementRotation,
+    getOpenCanvasElementMenuCount,
     openCanvasElementMenu,
     openCanvasElementSubmenu,
     resetSelectedImage,
@@ -213,7 +214,7 @@ test.describe("rotating and flipping pictures", () => {
         await saveScreenshotIfAsked([canvas(page)], "04-no-knob-on-background");
     });
 
-    test("the picture menu groups Rotate right and Flip with Reset Image, which comes last [Test Case ID 827]", async ({
+    test("the picture menu groups Rotate right and Flip with Reset Image, which comes last, and Escape shuts it [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, itemsPage.id);
@@ -240,7 +241,11 @@ test.describe("rotating and flipping pictures", () => {
             ],
             "06-flip-submenu",
         );
+        // THE ACTION UNDER TEST: Escape, pressed into the page the way a person presses it, with
+        // the Flip submenu open beside the menu. Both have to go.
+        expect(await getOpenCanvasElementMenuCount(page)).toBe(2);
         await closeCanvasElementMenu(page);
+        expect(await getOpenCanvasElementMenuCount(page)).toBe(0);
     });
 
     test("Rotate right turns an overlay picture's whole box a quarter turn clockwise, and four turns bring it upright [Test Case ID 827]", async ({
@@ -300,6 +305,12 @@ test.describe("rotating and flipping pictures", () => {
         const placement = await getCanvasElementPlacement(picture);
 
         await flipSelectedImage(page, "horizontal");
+        // The click on Flip horizontal shuts the submenu along with the menu, though the pointer
+        // has not moved off where the submenu was.
+        expect(
+            await getOpenCanvasElementMenuCount(page),
+            "The Flip submenu is still showing after its command was clicked.",
+        ).toBe(0);
         await expect
             .poll(async () => getPictureTurn(page, picture))
             .toEqual(mirroredOnScreen(kUprightPicture, "horizontal"));
