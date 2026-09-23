@@ -573,6 +573,8 @@ export default defineConfig(async ({ command }) => {
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
         bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
+        simpleProgressDialogBundle:
+            "./react_components/Progress/SimpleProgressDialog.entry.tsx",
         requiresSubscriptionBundle:
             "./react_components/requiresSubscription.tsx",
         createTeamCollectionDialogBundle:
