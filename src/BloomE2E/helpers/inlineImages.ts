@@ -49,6 +49,12 @@ const kDeleteCommand = "Common.Delete";
 /** The localization id of the command that opens the image chooser on an existing inline image. */
 const kChooseImageCommand = "EditTab.Image.ChooseImage";
 
+/**
+ * The localization id of "Set Image Information...", the command on an existing inline image's menu
+ * that opens the Copyright and License dialog for the picture.
+ */
+const kSetImageInformationCommand = "EditTab.Image.EditMetadataOverlay";
+
 // The markup, all of it confined to this file. A test never names any of these.
 const kWrapperClass = "bloom-inlineImage";
 const kIdAttribute = "data-bloom-inline-image-id";
@@ -83,6 +89,12 @@ export interface IInlineImageState {
     aspectRatio: string;
     /** The file name in the picture's src; "placeHolder.png" while no picture has been chosen. */
     fileName: string;
+    /**
+     * The picture's data-copyright attribute, which is where Bloom records the image's credits on
+     * the page; empty when it has none. The toolbar's missing-information warning shows while it
+     * is empty.
+     */
+    copyright: string;
     /**
      * The wrapper's contenteditable attribute. It must stay "false" in the saved markup: that is
      * the only thing stopping Bloom's language-stamping sweep from treating the wrapper as a text
@@ -198,6 +210,8 @@ export async function getInlineImages(
                                 (source.split("?")[0].split("/").pop() ??
                                     source) as string,
                             ),
+                            copyright:
+                                picture?.getAttribute("data-copyright") ?? "",
                             contentEditable:
                                 wrapper.getAttribute("contenteditable"),
                             slot: {
@@ -408,6 +422,21 @@ export async function getInlineImageToolbarRect(
     const bar = editablePageFrame(page).locator(kToolbarSelector);
     if (!(await bar.isVisible().catch(() => false))) return undefined;
     return (await bar.boundingBox()) ?? undefined;
+}
+
+/**
+ * Open the Copyright and License dialog for an inline image's picture the way a person does:
+ * right-click the picture and choose "Set Image Information...". The dialog opens in the shell,
+ * not in the page, so drive it with helpers/copyrightAndLicense.ts.
+ */
+export async function openInlineImageInformation(
+    page: Page,
+    groupSelector: string,
+    languageTag: string,
+    id: string,
+): Promise<void> {
+    await openInlineImageMenu(page, groupSelector, languageTag, id);
+    await clickInlineImageMenuCommand(page, kSetImageInformationCommand);
 }
 
 /** True when the block's right-click menu offers to add an inline image at all. */
@@ -1026,6 +1055,8 @@ export interface ISavedInlineImage {
     style: string;
     /** The picture's src, relative to the book folder. */
     source: string;
+    /** The picture's data-copyright attribute, the image's credits; empty when it has none. */
+    copyright: string;
     contentEditable: string | null;
     /** Which slot the wrapper holds among the block's children, and how many there are. */
     slot: { index: number; childCount: number };
@@ -1062,6 +1093,10 @@ export async function readSavedInlineImages(
                     style: wrapper.getAttribute("style") ?? "",
                     source:
                         wrapper.querySelector("img")?.getAttribute("src") ?? "",
+                    copyright:
+                        wrapper
+                            .querySelector("img")
+                            ?.getAttribute("data-copyright") ?? "",
                     contentEditable: wrapper.getAttribute("contenteditable"),
                     slot: {
                         index: children.indexOf(wrapper),
