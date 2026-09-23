@@ -1549,6 +1549,11 @@ export class CanvasElementManager {
             this.alignControlFrameWithActiveElement();
             return;
         }
+        if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
+            // Table cells size their own pictures and videos; the element keeps the size the user gave it.
+            this.alignControlFrameWithActiveElement();
+            return;
+        }
         const imgOrVideo = this.getImageOrVideo();
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
