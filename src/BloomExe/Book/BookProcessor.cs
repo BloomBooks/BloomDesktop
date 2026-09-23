@@ -58,7 +58,7 @@ namespace Bloom.Book
         internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
         internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
 
-        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeeded) was tried this
+        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
         // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
         // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
@@ -98,7 +98,7 @@ namespace Bloom.Book
         /// update and its per-image passes write ("Updating pages...", one line per image), nor a
         /// per-page message: the bar already shows how far along we are, and those lines just fill
         /// the dialog's log (BL-16893). A caller that wants the dialog to say what is happening
-        /// writes that itself before calling (see EnsurePerPageFixupIfNeeded). It may be called on
+        /// writes that itself before calling (see EnsurePerPageFixupIfNeededThen). It may be called on
         /// whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
@@ -397,46 +397,68 @@ namespace Bloom.Book
 
             // Deliberately not awaited: this returns as soon as the dialog is open, not when the
             // work is done, so awaiting it would tell us nothing. doAfter is how we learn it finished.
-            var _ = BrowserProgressDialog.DoWorkWithProgressDialogAsync(
-                webSocketServer,
-                MakeUpdateBookProgressProps(),
-                (progress, worker) =>
-                {
-                    try
+            //
+            // We do have to watch it fail, though. That method is `async Task` with no await in its
+            // own body, so if opening the dialog throws -- the websocket send -- the exception lands
+            // in the returned task instead of being thrown here, and simply discarding the task would
+            // swallow it. Our callers have already emptied the editor and doAfter is the only thing
+            // that puts a page back, so losing it would leave the user looking at a blank Edit tab
+            // with no dialog and no error: the very thing ReturnToPageAfterFixup exists to avoid.
+            BrowserProgressDialog
+                .DoWorkWithProgressDialogAsync(
+                    webSocketServer,
+                    MakeUpdateBookProgressProps(),
+                    (progress, worker) =>
                     {
-                        ProcessBook(book, progress: new WebProgressAdapter(progress));
-                    }
-                    catch (Exception e)
+                        try
+                        {
+                            ProcessBook(book, progress: new WebProgressAdapter(progress));
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
+                            // and make sure the details reach the log; the dialog shows the message to the user.
+                            //
+                            // Pages that were processed before the failure stay updated in the book's
+                            // in-memory DOM on purpose. A page is replaced only after its capture
+                            // succeeded, and each replaced page is a complete, correctly migrated page,
+                            // exactly what visiting it in the Edit tab produces, so a later ordinary save
+                            // persisting some migrated pages alongside unmigrated ones loses nothing: that
+                            // mixture is just the state every book was in before this feature. And since
+                            // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
+                            // true and a later run finishes the rest. (BloomBridge's process-book gets its
+                            // all-or-nothing behavior by reloading its own separate book object; the live
+                            // book has no need of that.)
+                            s_perPageFixupFailedThisSession.Add(book.ID);
+                            SIL.Reporting.Logger.WriteError(
+                                "Automatic page update failed for " + book.NameBestForUserDisplay,
+                                e
+                            );
+                            throw;
+                        }
+                        // A warning or error can reach the dialog as a message, without stopping the run
+                        // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
+                        // this path does that today, but the dialog shows such a message if it comes, and
+                        // returning false here would close the dialog the instant the work finished -- so
+                        // the user would never get to read it. Keep the dialog up instead.
+                        return Task.FromResult(progress.HaveProblemsBeenReported);
+                    },
+                    doWhenDialogCloses: doAfter
+                )
+                .ContinueWith(
+                    t =>
                     {
-                        // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
-                        // and make sure the details reach the log; the dialog shows the message to the user.
-                        //
-                        // Pages that were processed before the failure stay updated in the book's
-                        // in-memory DOM on purpose. A page is replaced only after its capture
-                        // succeeded, and each replaced page is a complete, correctly migrated page,
-                        // exactly what visiting it in the Edit tab produces, so a later ordinary save
-                        // persisting some migrated pages alongside unmigrated ones loses nothing: that
-                        // mixture is just the state every book was in before this feature. And since
-                        // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
-                        // true and a later run finishes the rest. (BloomBridge's process-book gets its
-                        // all-or-nothing behavior by reloading its own separate book object; the live
-                        // book has no need of that.)
-                        s_perPageFixupFailedThisSession.Add(book.ID);
                         SIL.Reporting.Logger.WriteError(
-                            "Automatic page update failed for " + book.NameBestForUserDisplay,
-                            e
+                            "Could not show the update dialog for " + book.NameBestForUserDisplay,
+                            t.Exception
                         );
-                        throw;
-                    }
-                    // A warning or error can reach the dialog as a message, without stopping the run
-                    // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
-                    // this path does that today, but the dialog shows such a message if it comes, and
-                    // returning false here would close the dialog the instant the work finished -- so
-                    // the user would never get to read it. Keep the dialog up instead.
-                    return Task.FromResult(progress.HaveProblemsBeenReported);
-                },
-                doWhenDialogCloses: doAfter
-            );
+                        // Don't keep trying on a Bloom that cannot show it, and get the user's
+                        // page back rather than leaving the editor empty.
+                        s_perPageFixupFailedThisSession.Add(book.ID);
+                        doAfter();
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
