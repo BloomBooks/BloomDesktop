@@ -1,0 +1,275 @@
+// What a book must have before Bloom will upload it to BloomLibrary.org: a title, a copyright,
+// the agreements, and a signed-in user. Automates the manual test "Required Items Before Upload"
+// (Test Case ID 606).
+//
+// Every step of the card is covered. The one thing that is not real is the login: the test tells
+// Bloom what login state to report, because the real one lives in machine-wide settings shared
+// with the developer's own Bloom — a test signing out would sign the developer out, and signing in
+// needs an external browser and real credentials. So this proves the gate (a signed-out user is
+// offered Sign in, never Upload), not that a real account can upload; the cards that upload for
+// real (#204, #205, #211-#213, #215, #217, #218, #220) cover that. See AUTOMATION-DEBT.md.
+//
+// The tests are serial: each one starts from the book the one before it left behind, which is how
+// the manual test reads too.
+
+import * as Path from "node:path";
+import { fileURLToPath } from "node:url";
+import { type Page } from "@playwright/test";
+import { expect, test } from "../fixtures/bloomTest";
+import {
+    addPage,
+    getContentPages,
+    getPages,
+    getShownPageId,
+    goToPage,
+    makeBookFromTemplate,
+    typeInGroup,
+} from "../helpers/bookMaking";
+import { setCopyrightHolder } from "../helpers/copyrightAndLicense";
+import { chooseImageFile } from "../helpers/images";
+import {
+    acceptAllAgreements,
+    clickToFixMissingItem,
+    clickUploadBook,
+    declineTemplateUploadWarning,
+    expectAgreementsShowing,
+    expectMissingRequirements,
+    expectUploadStepButtons,
+    openPublishToWeb,
+    pretendLoginState,
+    stopPretendingAboutLogin,
+    waitForTemplateUploadWarning,
+} from "../helpers/libraryPublish";
+import { switchTab, waitForActiveTab } from "../helpers/workspace";
+
+test.use({
+    collectionSpec: { name: "upload-required-items", languages: ["en"] },
+});
+
+test.describe.configure({ mode: "serial" });
+
+// The picture the picture-only book gets. Shipped with the suite, so the test needs nothing from
+// outside this folder.
+const IMAGE_FILE = Path.resolve(
+    Path.dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "fixtures",
+    "images",
+    "bird.png",
+);
+
+const TITLE = "A Book With A Title";
+const COPYRIGHT_HOLDER = "Test Publisher";
+const SIGNED_IN_EMAIL = "e2e-tester@example.com";
+
+/**
+ * Make a book that has neither a title nor a copyright, which is what a book made from a template
+ * starts as, and give it one content page of the kind asked for. Leaves the book selected and the
+ * Edit tab showing it.
+ */
+async function makeBookWithNothingRequired(
+    page: Page,
+    kind: "text-less" | "picture-only",
+): Promise<void> {
+    await switchTab(page, "collection");
+    await makeBookFromTemplate(page, "Basic Book");
+    if (kind === "text-less") {
+        // A "Just Text" page, with nothing typed in it: the book has no text anywhere.
+        await addPage(page, "Just Text");
+    } else {
+        await addPage(page, "Just an Image");
+        const [contentPage] = await getContentPages(page);
+        await goToPage(page, contentPage.id);
+        await chooseImageFile(page, IMAGE_FILE);
+    }
+}
+
+test.describe("the items a book needs before it can be uploaded", () => {
+    test("a text-less book with no title and no copyright is refused [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await makeBookWithNothingRequired(page, "text-less");
+        await openPublishToWeb(page);
+
+        await expectMissingRequirements(
+            page,
+            ["Title", "Copyright"],
+            "Publish: Web did not warn that a book with no title and no copyright is missing both.",
+        );
+        await expectAgreementsShowing(
+            page,
+            false,
+            "The Agreements appeared even though the book was missing its title and copyright.",
+        );
+        await expectUploadStepButtons(
+            page,
+            { signIn: "absent", uploadBook: "absent", signOut: "absent" },
+            "The Upload step offered a button even though the book was missing its title and copyright.",
+        );
+    });
+
+    test("a picture-only book with no title and no copyright is refused too [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await makeBookWithNothingRequired(page, "picture-only");
+        await openPublishToWeb(page);
+
+        await expectMissingRequirements(
+            page,
+            ["Title", "Copyright"],
+            "Publish: Web did not warn that a picture-only book with no title and no copyright is missing both.",
+        );
+        await expectAgreementsShowing(
+            page,
+            false,
+            "The Agreements appeared even though the picture-only book was missing its title and copyright.",
+        );
+    });
+
+    test("Click to fix on the copyright takes that warning away [Test Case ID 606]", async ({
+        page,
+    }) => {
+        // THE ACTION UNDER TEST: the "Click to fix" link, and the dialog it opens.
+        await clickToFixMissingItem(page, "Copyright");
+        await setCopyrightHolder(page, COPYRIGHT_HOLDER);
+
+        await expectMissingRequirements(
+            page,
+            ["Title"],
+            "The Missing Copyright warning did not go away after a copyright was added.",
+        );
+        await expectAgreementsShowing(
+            page,
+            false,
+            "The Agreements appeared while the book still had no title.",
+        );
+    });
+
+    test("Click to fix on the title opens the front cover, and the warning stays until a title is typed [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // THE ACTION UNDER TEST: the "Click to fix" link of the Missing Title warning.
+        await clickToFixMissingItem(page, "Title");
+
+        await waitForActiveTab(page, "edit");
+        const frontCover = (await getPages(page))[0];
+        expect(frontCover.caption).toBe("Front Cover");
+        await expect
+            .poll(async () => getShownPageId(page), {
+                timeout: 60000,
+                message:
+                    "Click to fix on the title did not open the book at its front cover.",
+            })
+            .toBe(frontCover.id);
+
+        // Go back without typing a title: Bloom should still be asking for one.
+        await openPublishToWeb(page);
+        await expectMissingRequirements(
+            page,
+            ["Title"],
+            "The Missing Title warning went away even though no title was typed.",
+        );
+    });
+
+    test("adding a title clears the last warning and brings up the Agreements [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        await switchTab(page, "edit");
+        const frontCover = (await getPages(page))[0];
+        await goToPage(page, frontCover.id);
+        await typeInGroup(page, ".bookTitle", "en", TITLE);
+        // Bloom writes a page only when the book leaves it, so move off the cover to save it.
+        const [contentPage] = await getContentPages(page);
+        await goToPage(page, contentPage.id);
+
+        await openPublishToWeb(page);
+        await expectMissingRequirements(
+            page,
+            [],
+            "Publish: Web was still asking for something after the book had both a title and a copyright.",
+        );
+        await expectAgreementsShowing(
+            page,
+            true,
+            "The Agreements did not appear once the book had a title and a copyright.",
+        );
+    });
+
+    test("uploading is offered only to a signed-in user [Test Case ID 606]", async ({
+        page,
+    }) => {
+        // Nobody signed in. Until the agreements are ticked the Upload step is not even open, so
+        // there is nothing to upload with and nothing to sign in with.
+        await pretendLoginState(page, "");
+        await expectUploadStepButtons(
+            page,
+            { signIn: "absent", uploadBook: "absent", signOut: "absent" },
+            "The Upload step offered a button while the agreements were still unticked.",
+        );
+
+        // THE ACTION UNDER TEST for this step: ticking the three agreements, which opens the
+        // Upload step — and it asks the user to sign in rather than offering to upload.
+        await acceptAllAgreements(page);
+        await expectUploadStepButtons(
+            page,
+            { signIn: "enabled", uploadBook: "absent", signOut: "absent" },
+            "With the agreements ticked and nobody signed in, the Upload step should offer Sign in and still no way to upload.",
+        );
+
+        // Signed in, everything else being ready: now, and only now, the book can be uploaded.
+        await pretendLoginState(page, SIGNED_IN_EMAIL);
+        await expectUploadStepButtons(
+            page,
+            { signIn: "absent", uploadBook: "enabled", signOut: "enabled" },
+            "A signed-in user with the agreements ticked was not offered the Upload Book button.",
+        );
+
+        // Stop pretending, so the rest of this Bloom sees the machine's real login state again.
+        await stopPretendingAboutLogin(page);
+    });
+
+    test("a template is let through without a copyright, after a warning [Test Case ID 606]", async ({
+        page,
+    }) => {
+        test.setTimeout(300000);
+        // A book made from Template Starter is a template, and Bloom titles it for us, so this one
+        // is short of a copyright and nothing else.
+        await switchTab(page, "collection");
+        await makeBookFromTemplate(page, "Template Starter");
+        await openPublishToWeb(page);
+
+        await expectMissingRequirements(
+            page,
+            [],
+            "Publish: Web asked a template for something, but a template needs no copyright.",
+        );
+        await expectAgreementsShowing(
+            page,
+            true,
+            "The Agreements did not appear for a template with no copyright.",
+        );
+
+        await acceptAllAgreements(page);
+        await pretendLoginState(page, SIGNED_IN_EMAIL);
+        await expectUploadStepButtons(
+            page,
+            { signIn: "absent", uploadBook: "enabled", signOut: "enabled" },
+            "A template with no copyright was not offered the Upload Book button.",
+        );
+
+        // THE ACTION UNDER TEST: clicking Upload on a template. Bloom lets it through, but warns
+        // first, in case the book is a template by accident.
+        await clickUploadBook(page);
+        const warning = await waitForTemplateUploadWarning(page);
+        expect(warning).toContain("Do you want to go ahead?");
+
+        // Answering Yes would upload to a real server, so this is where an automated run stops:
+        // being offered the choice IS the "upload is allowed" the manual test looks for.
+        await declineTemplateUploadWarning(page);
+        await stopPretendingAboutLogin(page);
+    });
+});

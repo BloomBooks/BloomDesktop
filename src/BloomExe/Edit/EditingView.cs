@@ -1,5 +1,6 @@
 //#define MEMORYCHECK
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -50,6 +51,10 @@ namespace Bloom.Edit
         private ZoomModel _zoomModel;
         private PageListApi _pageListApi;
         private Timer _editButtonsUpdateTimer;
+        private Timer _saveZoomSettingTimer;
+
+        /// <summary>How long the zoom must hold still before we write it to the settings file.</summary>
+        private const int kSaveZoomSettingDelayMs = 2000;
         private Browser _mainBrowser => WorkspaceView?.MainBrowser;
         private WorkspaceView _workspaceView;
         private Form _hostFormForEvents;
@@ -107,6 +112,7 @@ namespace Bloom.Edit
             SignLanguageApi signLanguageApi,
             CommonApi commonApi,
             EditingViewApi editingViewApi,
+            AiImageEditorApi aiImageEditorApi,
             ImageGalleryApi imageGalleryApi,
             PageListApi pageListApi,
             BookRenamedEvent bookRenamedEvent,
@@ -125,6 +131,13 @@ namespace Bloom.Edit
             _pageListApi = pageListApi;
             _editButtonsUpdateTimer = new Timer();
             _editButtonsUpdateTimer.Tick += _editButtonsUpdateTimer_Tick;
+            // A Ctrl+mousewheel spin changes the zoom many times a second. A write of the
+            // settings file on each change holds the UI thread while the browser process tries
+            // to call into it, which can freeze Bloom for minutes (BL-16762, BL-16763). So we
+            // write once, after the zoom stops. See SetZoom() and SaveZoomSettingNow().
+            _saveZoomSettingTimer = new Timer();
+            _saveZoomSettingTimer.Interval = kSaveZoomSettingDelayMs;
+            _saveZoomSettingTimer.Tick += (sender, e) => SaveZoomSettingNow();
 
             //SetupThumbnailLists();
             _model.SetView(this);
@@ -134,6 +147,7 @@ namespace Bloom.Edit
             signLanguageApi.Model = _model;
             signLanguageApi.View = this;
             editingViewApi.View = this;
+            aiImageEditorApi.View = this;
             imageGalleryApi.View = this;
             commonApi.Model = _model;
             _copyrightAndLicenseApi = copyrightAndLicenseApi;
@@ -142,38 +156,7 @@ namespace Bloom.Edit
 
             controlKeyEvent.Subscribe(HandleControlKeyEvent);
 
-            bookRenamedEvent.Subscribe(
-                (oldToNewPath) =>
-                {
-                    // If the selected book is renamed, we should update our saved CurrentBookPath.
-                    if (model.CurrentBook == null)
-                    {
-                        // Note: possibly all we need is this branch, which doesn't actually depend
-                        // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
-                        // that's the definitive source of truth. We don't want by any chance to
-                        // be updating our settings to indicate that anything else is selected.
-                        // So I decided to use this only when we don't have that...usually only
-                        // during startup, I think because of a duplicate name.
-                        if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
-                        {
-                            Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                        }
-                    }
-                    else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
-                    {
-                        // This is the usual path, updating the settings to match the model's current book.
-                        Settings.Default.CurrentBookPath = oldToNewPath.Value;
-                    }
-                    UpdatePageList(true);
-                    if (_model.CurrentBook != null)
-                    {
-                        var url = _model.GetUrlForPageListFile();
-                        _mainBrowser.RunJavascriptFireAndForget(
-                            $"workspaceBundle.switchThumbnailPage('{url}');"
-                        );
-                    }
-                }
-            );
+            bookRenamedEvent.Subscribe(HandleBookRenamedOnUiThread);
 #if __MonoCS__
             // The inactive button images look garishly pink on Linux/Mono, but look okay on Windows.
             // Merely introducing an "identity color matrix" to the image attributes appears to fix
@@ -209,6 +192,70 @@ namespace Bloom.Edit
                 ColorAdjustType.Bitmap
             );
 #endif
+        }
+
+        /// <summary>
+        /// Runs <see cref="HandleBookRenamed"/> on the UI thread. A book can be renamed from a
+        /// background thread - BookStorage.SetBookName raises BookRenamedEvent inline, and several
+        /// operations that bring a book up to date (notably the .bloomSource import, which runs
+        /// behind a progress dialog) do that off the UI thread - but what we do in response drives
+        /// WinForms and the WebView2, both of which are UI-thread-only. Doing it directly from the
+        /// import's worker thread is what threw "CoreWebView2 can only be accessed from the UI
+        /// thread" and abandoned the import (BL-16749). When no window is open (e.g. unit tests)
+        /// this just runs inline; the same pattern as CollectionModel.SelectBookOnUiThread.
+        /// The Invoke is deliberately synchronous, which keeps the handler's old ordering (the
+        /// settings write and the page-list refresh both finish before the rename returns). That
+        /// would only deadlock if the UI thread were blocked waiting on this worker, which no
+        /// current path does: the import's progress dialog does not block it, and a modal dialog
+        /// would still pump messages.
+        /// </summary>
+        private void HandleBookRenamedOnUiThread(KeyValuePair<string, string> oldToNewPath)
+        {
+            var form = Shell.GetShellOrOtherOpenForm();
+            if (form != null && form.InvokeRequired)
+                form.Invoke((Action)(() => HandleBookRenamed(oldToNewPath)));
+            else
+                HandleBookRenamed(oldToNewPath);
+        }
+
+        /// <summary>
+        /// Updates our saved CurrentBookPath and refreshes the page list after a book has been
+        /// renamed. Call it only on the UI thread (see <see cref="HandleBookRenamedOnUiThread"/>).
+        /// </summary>
+        private void HandleBookRenamed(KeyValuePair<string, string> oldToNewPath)
+        {
+            // If the selected book is renamed, we should update our saved CurrentBookPath.
+            // Each branch below saves the settings itself: it used to be enough to change
+            // the value in memory, because the next SelectBook() would flush it, but
+            // SelectBook() no longer writes settings at all (BL-16660).
+            if (_model.CurrentBook == null)
+            {
+                // Note: possibly all we need is this branch, which doesn't actually depend
+                // on model.CurrentBook being null. However, if we do have a model.CurrentBook,
+                // that's the definitive source of truth. We don't want by any chance to
+                // be updating our settings to indicate that anything else is selected.
+                // So I decided to use this only when we don't have that...usually only
+                // during startup, I think because of a duplicate name.
+                if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
+                {
+                    Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                    Settings.Default.Save();
+                }
+            }
+            else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
+            {
+                // This is the usual path, updating the settings to match the model's current book.
+                Settings.Default.CurrentBookPath = oldToNewPath.Value;
+                Settings.Default.Save();
+            }
+            UpdatePageList(true);
+            if (_model.CurrentBook != null)
+            {
+                var url = _model.GetUrlForPageListFile();
+                _mainBrowser.RunJavascriptFireAndForget(
+                    $"workspaceBundle.switchThumbnailPage('{url}');"
+                );
+            }
         }
 
         public EditingModel Model => _model;
@@ -260,6 +307,9 @@ namespace Bloom.Edit
         void ParentForm_Deactivate(object sender, EventArgs e)
         {
             _editButtonsUpdateTimer.Enabled = false;
+            // Safe here, unlike the model save the comment below warns about: this only
+            // serializes the in-memory settings, and runs no Javascript.
+            SaveZoomSettingNow();
             // Save when we leave the main window, even just switching to the epub a11y check window.
             // See https://silbloom.myjetbrains.com/youtrack/issue/BL-6228. This control can lose/regain
             // focus erratically on Linux, so we don't want this save on its LostFocus event.
@@ -336,9 +386,13 @@ namespace Bloom.Edit
             {
                 // This will rarely do anything. It's typically called from the OnTabChanged event, which is invoked after
                 // onTabAboutToChange, which (typically, in state Editing) initiates a Save with a pending action that returns null,
-                // which will also cause a change to NoPage. However, it will be ignored in states where it's not valid,
-                // and may be helpful in some cases (e.g., if somehow we're navigating), so I decided to put it in.
+                // which will also cause a change to NoPage. But it may be helpful in some cases
+                // (e.g., if somehow we're navigating), so I decided to put it in.
+                // Careful: it is *not* ignored in the states where emptying the page is invalid; it
+                // throws. So anything that leads here has to have made sure we are not mid-save
+                // first — see EditingModel.OnTabAboutToChange and BL-16766.
                 _model.StateMachine.ToNoPage();
+                SaveZoomSettingNow();
             }
         }
 
@@ -444,7 +498,7 @@ namespace Bloom.Edit
                 _model.SetupServerWithCurrentBookToolboxContents();
                 WorkspaceView.ReloadWorkspaceRootDocument();
             }
-            SetModalState(false); // ensure _pageListView is enabled (BL-9712).
+            SetModalState(false); // ensure the tabs are not left locked (BL-9712).
 #if MEMORYCHECK
             // Check memory for the benefit of developers.
             Bloom.Utils.MemoryManagement.CheckMemory(
@@ -526,14 +580,31 @@ namespace Bloom.Edit
             }
 
             // The fileName comes straight from the html src attribute, so it may carry a query
-            // string (e.g. "image1.png?transparent=yes") and/or still be URL-encoded. Reduce it
-            // to the actual file name on disk before we try to load the image; otherwise
-            // PalasoImage fails to find the file and we wrongly report it as corrupt. (BL-16446)
-            // CreateFromUnencodedString only decodes if the string still looks encoded (the
-            // server already decodes query parameters once), and PathOnly drops the query string.
+            // string (e.g. "image1.png?transparent=yes"). Reduce it to the actual file name on
+            // disk before we try to load the image; otherwise PalasoImage fails to find the file
+            // and we wrongly report it as corrupt. (BL-16446)
+            //
+            // The server already decoded the query parameter once, so normally what we have here
+            // is the real file name and we must NOT decode again, or a name that merely looks
+            // encoded ("photo%41.jpg") becomes one that isn't there ("photoA.jpg"). (BL-16669)
+            // But some old books have srcs that were encoded more than once (BL-3835), and for
+            // those one more decode is exactly what finds the file. The two are indistinguishable
+            // by inspection, so let the disk decide: GetFullyDecodedPath keeps the name it is
+            // given when that file exists, and only decodes further when that is what finds it.
             fileName = UrlPathString.CreateFromUnencodedString(fileName).PathOnly.NotEncoded;
+            UrlPathString.GetFullyDecodedPath(_model.CurrentBook.FolderPath, ref fileName);
 
             // keep a reference to the fileName rather the image to avoid dispose issues
+            //
+            // Note that what we keep is the name as it is ON DISK, which for one of those legacy
+            // doubly-encoded books is not what the page's @src says. EditingModel.UpdateMetaData
+            // re-encodes this once to go looking for the img, so for such a book it will not find
+            // it and the mirrored data-copyright/data-creator attributes won't be refreshed. The
+            // metadata is still written to the image file itself, which is the part that matters,
+            // and this mismatch predates the disk lookup above -- but the lookup does make it
+            // systematic rather than accidental. Fixing it properly means remembering the original
+            // src alongside the disk name; not worth it until someone shows such a book still in
+            // use. (BL-16669)
             _fileNameOfImageBeingModified = fileName;
 
             using (
@@ -685,10 +756,24 @@ namespace Bloom.Edit
 
                     if (clipboardImage == null)
                     {
+                        // The clipboard held nothing we could even attempt to load as an image.
+                        // But if what's there looks like it was *meant* to be one (e.g. a copied
+                        // image file whose path no longer exists, or text that looks like a path
+                        // or URL to an image file), the "failed to interpret" message is more
+                        // helpful than telling the user to go copy an image.
+                        if (ClipboardContentsSuggestImage())
+                        {
+                            throw new InvalidOperationException(
+                                LocalizationManager.GetString(
+                                    "EditTab.NoValidImageFoundOnClipboard",
+                                    "Bloom failed to interpret the clipboard contents as an image. Possibly it was a damaged file, or too large. Try copying something else."
+                                )
+                            );
+                        }
                         throw new InvalidOperationException(
                             LocalizationManager.GetString(
                                 "EditTab.NoImageFoundOnClipboard",
-                                "Before you can paste an image, copy one onto your 'clipboard', from another program."
+                                "Bloom did not find an image on your clipboard. Copy one first, then paste again."
                             )
                         );
                     }
@@ -708,6 +793,7 @@ namespace Bloom.Edit
                             imageId,
                             priorImageSrc,
                             clipboardImage,
+                            "clipboard",
                             pageBackgroundColor
                         );
                         pictureChanged = true;
@@ -724,6 +810,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -742,6 +829,7 @@ namespace Bloom.Edit
                                 imageId,
                                 priorImageSrc,
                                 clipboardImage,
+                                "clipboard",
                                 pageBackgroundColor
                             );
                             pictureChanged = true;
@@ -777,6 +865,7 @@ namespace Bloom.Edit
                                         imageId,
                                         priorImageSrc,
                                         palasoImage,
+                                        "clipboard",
                                         pageBackgroundColor
                                     );
                                     pictureChanged = true;
@@ -811,6 +900,86 @@ namespace Bloom.Edit
         private static PalasoImage GetImageFromClipboard()
         {
             return PortableClipboard.GetImageFromClipboard();
+        }
+
+        // Extensions that suggest the user intended a file or path to be understood as an
+        // image. Deliberately broader than what Bloom can actually load: if the user copied
+        // a path to (say) a .webp file, they clearly meant it as an image, and "Bloom failed
+        // to interpret..." is a more helpful response than telling them to copy an image first.
+        private static readonly HashSet<string> _probableImageExtensions = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        )
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".tiff",
+            ".tif",
+            ".webp",
+            ".svg",
+            ".heic",
+            ".avif",
+        };
+
+        /// <summary>
+        /// True if the clipboard holds something that was probably intended as an image
+        /// even though we could not load it as one: a copied file with an image extension,
+        /// or text that looks like a path or URL to an image file.
+        /// </summary>
+        private static bool ClipboardContentsSuggestImage()
+        {
+            try
+            {
+                string[] fileDropPaths = Clipboard.ContainsFileDropList()
+                    ? Clipboard.GetFileDropList().Cast<string>().ToArray()
+                    : null;
+                var text = PortableClipboard.ContainsText() ? PortableClipboard.GetText() : null;
+                return ClipboardContentsSuggestImage(fileDropPaths, text);
+            }
+            catch (Exception)
+            {
+                // Clipboard reads can genuinely fail at any moment (another process may hold
+                // the clipboard). This method only chooses between two error messages, so
+                // failing to read just means we fall back to the generic one.
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The testable core of ClipboardContentsSuggestImage(): decides from the clipboard's
+        /// file-drop paths and/or text whether the user probably intended to paste an image.
+        /// </summary>
+        internal static bool ClipboardContentsSuggestImage(
+            IEnumerable<string> fileDropPaths,
+            string clipboardText
+        )
+        {
+            if (fileDropPaths != null && fileDropPaths.Any(HasProbableImageExtension))
+                return true;
+            return HasProbableImageExtension(clipboardText);
+        }
+
+        private static bool HasProbableImageExtension(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+            // Explorer's "Copy as path" wraps the path in quotes; ignore them, along with
+            // stray whitespace, so such a path is still recognized as image-intended.
+            var candidate = path.Trim().Trim('"');
+            // For URLs, ignore any query string or fragment (".../bird.png?width=800").
+            // Only for URLs: '#' is a legal character in a Windows file name.
+            if (
+                candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                var cut = candidate.IndexOfAny(new[] { '?', '#' });
+                if (cut >= 0)
+                    candidate = candidate.Substring(0, cut);
+            }
+            return _probableImageExtensions.Contains(Path.GetExtension(candidate));
         }
 
         private bool CopyImageToClipboard(
@@ -915,6 +1084,8 @@ namespace Bloom.Edit
             var args = new PageEditingModel.ImageInfoForJavascript()
             {
                 imageId = imageId,
+                // destName is the name of the file we just copied into the book folder, so it is
+                // certainly not URL-encoded; see the same call in PageEditingModel.ChangePicture.
                 src = UrlPathString.CreateFromUnencodedString(destName).UrlEncoded,
                 // Enhance: can we provide any of this for a GIF?
                 copyright = "",
@@ -922,7 +1093,7 @@ namespace Bloom.Edit
                 creator = "",
                 undoable = "true",
             };
-            _model.UpdateImageInBrowser(args);
+            _model.UpdateImageInBrowser(args, "clipboard");
         }
 
         /// <summary>
@@ -1051,6 +1222,12 @@ namespace Bloom.Edit
             );
         }
 
+        /// <summary>
+        /// Nothing calls this at present -- it is left from an older path -- so the "clipboard"
+        /// source it reports below is the route it USED to serve, not one derived from anything
+        /// the caller says. Anyone reusing this method from somewhere else must pass the real
+        /// route through instead; see AnalyticsApi.TrackChangePicture for the vocabulary.
+        /// </summary>
         public void SaveChangedImage(
             string imageId,
             UrlPathString priorImageSrc,
@@ -1064,7 +1241,13 @@ namespace Bloom.Edit
             {
                 if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
                     return;
-                _model.ChangePicture(imageId, priorImageSrc, imageInfo, pageBackgroundColor);
+                _model.ChangePicture(
+                    imageId,
+                    priorImageSrc,
+                    imageInfo,
+                    "clipboard",
+                    pageBackgroundColor
+                );
                 imageChanged = true;
             }
             catch (System.IO.IOException error)
@@ -1342,13 +1525,29 @@ namespace Bloom.Edit
                 _editButtonsUpdateTimer.Dispose();
                 _editButtonsUpdateTimer = null;
             }
+
+            if (_saveZoomSettingTimer != null)
+            {
+                SaveZoomSettingNow();
+                _saveZoomSettingTimer.Dispose();
+                _saveZoomSettingTimer = null;
+            }
         }
 
         public string HelpTopicUrl => "/Tasks/Edit_tasks/Edit_tasks_overview.htm";
 
         /// <summary>
-        /// Prevent navigation, e.g. while a dialog box is showing in the browser control
+        /// Lock workspace navigation (the tabs), e.g. while a dialog box is showing in the browser
+        /// control. Calls nest: each true must be matched by a false.
         /// </summary>
+        /// <remarks>
+        /// This used to disable the page list as well, because the page list lived in its own
+        /// browser and a modal dialog's backdrop in the main browser could not cover it. The whole
+        /// edit tab is in one browser now, so the backdrop already blocks the page list, and the
+        /// C# gate could only do harm: the browser posted the dialog's "closed" notice and the command
+        /// the dialog confirmed (e.g. Remove Page) as two concurrent requests, and when the command was
+        /// handled first it was silently refused (BL-16809).
+        /// </remarks>
         internal void SetModalState(bool isModal)
         {
             if (isModal)
@@ -1356,9 +1555,7 @@ namespace Bloom.Edit
             else
                 _modalDialogDepth = Math.Max(0, _modalDialogDepth - 1);
 
-            var isActuallyModal = _modalDialogDepth > 0;
-            _pageListView.Enabled = !isActuallyModal;
-            _workspaceView?.SetTabsEnabled(!isActuallyModal);
+            _workspaceView?.SetTabsEnabled(_modalDialogDepth == 0);
         }
 
         public void ShowAddPageDialog()
@@ -1453,13 +1650,29 @@ namespace Bloom.Edit
             // setting below, so there's no reason to wait for the script to finish.
             _mainBrowser.RunJavascriptFireAndForget($"workspaceBundle.setZoom({zoomFactor});");
             Settings.Default.PageZoom = zoom.ToString(CultureInfo.InvariantCulture);
-            Settings.Default.Save();
+            // Do not write the settings file here. Restart the timer, so that the write happens
+            // two seconds after the last zoom change. SaveZoomSettingNow() also writes the file
+            // if we leave the Edit tab, lose the main window, or shut down before the tick.
+            _saveZoomSettingTimer.Stop();
+            _saveZoomSettingTimer.Start();
             // Note: July 29 2025 we removed code that handled zoom by reloading the page,
             // with some complicated mess involving timers to make sure one reload for zoom
             // didn't interfere with another. I eventually tracked this down to when we made
             // canvas elements draggable (6/28/2017). I think the old JQuery draggable code was
             // messed up by scaling and had to be adjusted somehow. Now we're not using that,
             // so updating in place is much cleaner (and faster!).
+        }
+
+        /// <summary>
+        /// Writes the deferred zoom setting to disk now, if SetZoom() left one pending, and stops
+        /// the timer that would have written it later. Does nothing if no write is pending.
+        /// </summary>
+        private void SaveZoomSettingNow()
+        {
+            if (_saveZoomSettingTimer == null || !_saveZoomSettingTimer.Enabled)
+                return;
+            _saveZoomSettingTimer.Stop();
+            Settings.Default.Save();
         }
 
         public void AdjustPageZoom(int delta)
@@ -1579,7 +1792,11 @@ namespace Bloom.Edit
                 }
                 catch (Exception ex)
                 {
-                    BloomWebSocketServer.Instance.SendEvent(
+                    // Instance is only set while a collection is open, so this can be null while one
+                    // is closing -- and it used to be a disposed server instead, which swallowed the
+                    // message silently. Losing the notification is the right failure here; turning a
+                    // handled download error into a NullReferenceException is not.
+                    BloomWebSocketServer.Instance?.SendEvent(
                         "makeThumbnailFile-" + desiredFileNameWithoutExtension,
                         "error: " + ex.Message
                     );

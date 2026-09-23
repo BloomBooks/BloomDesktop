@@ -345,6 +345,19 @@
     --cover-margin-left: 0px;
     --cover-margin-right: 0px;
     --cover-margin-side: 0px;
+    // Only the outside front and back covers actually consume the --cover-margin-*
+    // variables (see basePage.less); the inside covers get the ordinary page margins and
+    // gutter like any other page. So we have to zero those too, or a "full page" canvas on
+    // a custom inside back cover stops short of the page edges, and is off-centre as well,
+    // because the inside back cover is a side-left page and so picks up the gutter.
+    // (No need to do anything about the page-number allowance that basePage.less adds to
+    // padding-bottom: --pageNumber-extra-height is only ever non-zero on .numberedPage, and
+    // xmatter pages are never numbered.)
+    --page-margin-top: 0px;
+    --page-margin-bottom: 0px;
+    --page-margin-left: 0px;
+    --page-margin-right: 0px;
+    --page-gutter: 0px;
     .bloom-canvas {
         margin: 0;
     }

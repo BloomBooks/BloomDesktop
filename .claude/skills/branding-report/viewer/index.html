@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Bloom branding-report viewer</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                --ground: #faf8f6;
+                --panel: #fff;
+                --ink: #23201e;
+                --muted: #6b645f;
+                --hairline: #e7e0d9;
+                --accent: #d65649;
+                --accent-soft: #f5ddd8;
+                --page-surround: #ece8e3;
+                --bad: #c0392b;
+                --bad-soft: #fbeae7;
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --ground: #1a1817;
+                    --panel: #232019;
+                    --ink: #ece7e2;
+                    --muted: #a59d95;
+                    --hairline: #38332e;
+                    --accent: #e8776b;
+                    --accent-soft: #3a2622;
+                    --page-surround: #0f0e0d;
+                    --bad: #e8776b;
+                    --bad-soft: #3a2622;
+                }
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                margin: 0;
+                background: var(--ground);
+                color: var(--ink);
+                font-family:
+                    "Segoe UI",
+                    system-ui,
+                    -apple-system,
+                    Roboto,
+                    sans-serif;
+            }
+            header {
+                padding: 18px 22px 12px;
+                border-bottom: 1px solid var(--hairline);
+            }
+            h1 {
+                margin: 0 0 2px;
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+            .sub {
+                color: var(--muted);
+                font-size: 0.82rem;
+            }
+            .controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 18px;
+                padding: 14px 22px;
+                border-bottom: 1px solid var(--hairline);
+                position: sticky;
+                top: 0;
+                background: var(--ground);
+                z-index: 5;
+            }
+            .group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                min-width: 120px;
+            }
+            .group > label {
+                font-size: 0.68rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                color: var(--accent);
+                font-weight: 700;
+            }
+            .opts {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                max-height: 150px;
+                overflow: auto;
+                border: 1px solid var(--hairline);
+                border-radius: 8px;
+                padding: 6px 8px;
+                background: var(--panel);
+            }
+            .opts.inline {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+                max-height: none;
+            }
+            .opts label {
+                font-size: 0.82rem;
+                display: flex;
+                gap: 5px;
+                align-items: center;
+                white-space: nowrap;
+                cursor: pointer;
+            }
+            select {
+                font: inherit;
+                padding: 5px 7px;
+                border: 1px solid var(--hairline);
+                border-radius: 8px;
+                background: var(--panel);
+                color: var(--ink);
+            }
+            .count {
+                color: var(--muted);
+                font-size: 0.8rem;
+                align-self: flex-end;
+                margin-left: auto;
+            }
+            main {
+                padding: 20px 22px 60px;
+            }
+            /* matrix */
+            table {
+                border-collapse: separate;
+                border-spacing: 10px;
+            }
+            th {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--muted);
+                text-align: center;
+                padding: 2px 4px;
+                vertical-align: bottom;
+            }
+            th.rowhead {
+                text-align: right;
+                white-space: nowrap;
+            }
+            td {
+                vertical-align: top;
+            }
+            .cell {
+                width: 200px;
+                height: 150px;
+                border: 1px solid var(--hairline);
+                border-radius: 6px;
+                overflow: hidden;
+                background: var(--page-surround);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                cursor: zoom-in;
+            }
+            .cell img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+            }
+            .cell.bad {
+                background: var(--bad-soft);
+                cursor: default;
+            }
+            .cell .err {
+                color: var(--bad);
+                font-size: 0.72rem;
+                padding: 8px;
+                text-align: center;
+            }
+            /* grid */
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+                gap: 22px;
+            }
+            figure {
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 7px;
+            }
+            figcaption {
+                font-size: 0.78rem;
+                color: var(--muted);
+                line-height: 1.35;
+            }
+            figcaption b {
+                color: var(--ink);
+            }
+            /* overlay */
+            #overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.82);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: 12px;
+                z-index: 20;
+                padding: 24px;
+            }
+            #overlay img {
+                max-width: 94vw;
+                max-height: 82vh;
+                object-fit: contain;
+                background: var(--page-surround);
+                border-radius: 6px;
+            }
+            #overlay .meta {
+                color: #eee;
+                font-size: 0.85rem;
+                text-align: center;
+            }
+            #overlay .close {
+                position: absolute;
+                top: 16px;
+                right: 22px;
+                color: #fff;
+                font-size: 1.6rem;
+                cursor: pointer;
+                line-height: 1;
+            }
+            .pill {
+                display: inline-block;
+                background: var(--accent-soft);
+                color: var(--ink);
+                border-radius: 20px;
+                padding: 2px 9px;
+                font-size: 0.72rem;
+                margin: 0 3px;
+            }
+            .empty {
+                color: var(--muted);
+                padding: 40px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Bloom branding-report</h1>
+            <div class="sub" id="subtitle">loading…</div>
+        </header>
+        <div class="controls" id="controls"></div>
+        <main id="main"></main>
+
+        <div id="overlay">
+            <div class="close" onclick="closeOverlay()">×</div>
+            <img id="overlayImg" alt="" />
+            <div class="meta" id="overlayMeta"></div>
+        </div>
+
+        <script>
+            const AXES = ["branding", "page", "layout", "xmatter"];
+            const AXIS_LABEL = {
+                branding: "Branding",
+                page: "Page",
+                layout: "Layout",
+                xmatter: "XMatter",
+            };
+            let CELLS = [],
+                VALUES = {},
+                state = {};
+
+            function uniq(arr) {
+                return [...new Set(arr)];
+            }
+            function valuesFor(axis) {
+                return uniq(CELLS.map((c) => c[axis] ?? "current")).sort();
+            }
+
+            async function boot() {
+                const data = await (await fetch("manifest.json")).json();
+                CELLS = (data.cells || []).map((c) => ({
+                    ...c,
+                    layout: c.layout || "current",
+                    xmatter: c.xmatter || "current",
+                }));
+                document.getElementById("subtitle").textContent =
+                    `book: ${data.generatedAxes?.book || "?"} · ${CELLS.length} captures · ` +
+                    AXES.map((a) => `${valuesFor(a).length} ${a}`).join(" · ");
+                AXES.forEach((a) => (VALUES[a] = valuesFor(a)));
+                // default filter: everything on
+                state.filter = {};
+                AXES.forEach((a) => (state.filter[a] = new Set(VALUES[a])));
+                // default view: matrix if >1 branding & >1 page, else grid
+                state.view =
+                    VALUES.branding.length > 1 && VALUES.page.length > 1
+                        ? "matrix"
+                        : "grid";
+                state.rows = "branding";
+                state.cols =
+                    VALUES.page.length > 1
+                        ? "page"
+                        : VALUES.layout.length > 1
+                          ? "layout"
+                          : "xmatter";
+                renderControls();
+                render();
+            }
+
+            function renderControls() {
+                const c = document.getElementById("controls");
+                c.innerHTML = "";
+                // view selector
+                const vg = group("View");
+                const vsel = document.createElement("select");
+                ["matrix", "grid", "detail-list"].forEach((v) =>
+                    vsel.add(new Option(v, v, false, v === state.view)),
+                );
+                vsel.onchange = () => {
+                    state.view = vsel.value;
+                    renderControls();
+                    render();
+                };
+                vg.appendChild(vsel);
+                c.appendChild(vg);
+                // matrix axis pickers
+                if (state.view === "matrix") {
+                    for (const which of ["rows", "cols"]) {
+                        const g = group(which === "rows" ? "Rows" : "Columns");
+                        const s = document.createElement("select");
+                        AXES.filter((a) => VALUES[a].length > 0).forEach((a) =>
+                            s.add(
+                                new Option(
+                                    AXIS_LABEL[a],
+                                    a,
+                                    false,
+                                    a === state[which],
+                                ),
+                            ),
+                        );
+                        s.onchange = () => {
+                            state[which] = s.value;
+                            render();
+                        };
+                        g.appendChild(s);
+                        c.appendChild(g);
+                    }
+                }
+                // one filter box per axis (only axes with >1 value are worth showing, but show all)
+                AXES.forEach((a) => {
+                    if (VALUES[a].length <= 1) return;
+                    const g = group(AXIS_LABEL[a]);
+                    const box = document.createElement("div");
+                    box.className =
+                        "opts" + (VALUES[a].length <= 6 ? " inline" : "");
+                    VALUES[a].forEach((v) => {
+                        const id = `f_${a}_${v}`;
+                        const lab = document.createElement("label");
+                        const cb = document.createElement("input");
+                        cb.type = "checkbox";
+                        cb.checked = state.filter[a].has(v);
+                        cb.onchange = () => {
+                            cb.checked
+                                ? state.filter[a].add(v)
+                                : state.filter[a].delete(v);
+                            render();
+                        };
+                        lab.appendChild(cb);
+                        lab.appendChild(document.createTextNode(" " + v));
+                        box.appendChild(lab);
+                    });
+                    g.appendChild(box);
+                    c.appendChild(g);
+                });
+            }
+            function group(label) {
+                const g = document.createElement("div");
+                g.className = "group";
+                const l = document.createElement("label");
+                l.textContent = label;
+                g.appendChild(l);
+                return g;
+            }
+
+            function passesFilter(cell) {
+                return AXES.every((a) =>
+                    state.filter[a].has(cell[a] ?? "current"),
+                );
+            }
+            function filtered() {
+                return CELLS.filter(passesFilter);
+            }
+
+            function cellNode(cell) {
+                const d = document.createElement("div");
+                d.className = "cell" + (cell.ok ? "" : " bad");
+                if (cell.ok && cell.file) {
+                    const img = document.createElement("img");
+                    img.loading = "lazy";
+                    img.src = cell.file;
+                    img.alt = describe(cell);
+                    d.appendChild(img);
+                    d.onclick = () => openOverlay(cell);
+                } else {
+                    const e = document.createElement("div");
+                    e.className = "err";
+                    e.textContent = cell.error || "not present";
+                    d.appendChild(e);
+                }
+                return d;
+            }
+            function describe(cell) {
+                return AXES.map((a) => `${a}:${cell[a] ?? "current"}`).join(
+                    "  ",
+                );
+            }
+
+            function render() {
+                const m = document.getElementById("main");
+                m.innerHTML = "";
+                const cells = filtered();
+                if (!cells.length) {
+                    m.innerHTML =
+                        '<div class="empty">No captures match the current filters.</div>';
+                    return;
+                }
+                if (state.view === "matrix") renderMatrix(m, cells);
+                else if (state.view === "grid") renderGrid(m, cells);
+                else renderList(m, cells);
+            }
+
+            function renderMatrix(m, cells) {
+                const rowsAxis = state.rows,
+                    colsAxis = state.cols;
+                const rowVals = uniq(cells.map((c) => c[rowsAxis])).sort();
+                const colVals = uniq(cells.map((c) => c[colsAxis])).sort();
+                const otherAxes = AXES.filter(
+                    (a) => a !== rowsAxis && a !== colsAxis,
+                );
+                const note = document.createElement("div");
+                note.className = "sub";
+                note.style.marginBottom = "10px";
+                note.innerHTML =
+                    "each cell = first match; pinned: " +
+                    otherAxes
+                        .map(
+                            (a) =>
+                                `${a} ∈ {${uniq(cells.map((c) => c[a])).join(", ")}}`,
+                        )
+                        .join(" · ");
+                m.appendChild(note);
+                const table = document.createElement("table");
+                const head = table.insertRow();
+                head.appendChild(document.createElement("th"));
+                colVals.forEach((cv) => {
+                    const th = document.createElement("th");
+                    th.textContent = cv;
+                    head.appendChild(th);
+                });
+                rowVals.forEach((rv) => {
+                    const tr = table.insertRow();
+                    const th = document.createElement("th");
+                    th.className = "rowhead";
+                    th.textContent = rv;
+                    tr.appendChild(th);
+                    colVals.forEach((cv) => {
+                        const td = tr.insertCell();
+                        const match = cells.find(
+                            (c) => c[rowsAxis] === rv && c[colsAxis] === cv,
+                        );
+                        if (match) td.appendChild(cellNode(match));
+                    });
+                });
+                m.appendChild(table);
+            }
+            function renderGrid(m, cells) {
+                const g = document.createElement("div");
+                g.className = "grid";
+                cells.forEach((cell) => {
+                    const fig = document.createElement("figure");
+                    fig.appendChild(cellNode(cell));
+                    const cap = document.createElement("figcaption");
+                    cap.innerHTML =
+                        `<b>${cell.branding}</b> · ${cell.pageLabel || cell.page}` +
+                        (cell.layout !== "current" ? ` · ${cell.layout}` : "") +
+                        (cell.xmatter !== "current"
+                            ? ` · ${cell.xmatter}`
+                            : "");
+                    fig.appendChild(cap);
+                    g.appendChild(fig);
+                });
+                m.appendChild(g);
+            }
+            function renderList(m, cells) {
+                cells.forEach((cell) => {
+                    const fig = document.createElement("figure");
+                    fig.style.marginBottom = "26px";
+                    const cap = document.createElement("figcaption");
+                    cap.innerHTML = AXES.map(
+                        (a) => `<span class="pill">${a}: ${cell[a]}</span>`,
+                    ).join("");
+                    fig.appendChild(cap);
+                    const c = cellNode(cell);
+                    c.style.width = "360px";
+                    c.style.height = "270px";
+                    fig.appendChild(c);
+                    m.appendChild(fig);
+                });
+            }
+
+            function openOverlay(cell) {
+                document.getElementById("overlayImg").src = cell.file;
+                document.getElementById("overlayMeta").innerHTML =
+                    AXES.map(
+                        (a) => `<span class="pill">${a}: ${cell[a]}</span>`,
+                    ).join("") +
+                    (cell.width ? `<br>${cell.width}×${cell.height}px` : "");
+                document.getElementById("overlay").style.display = "flex";
+            }
+            function closeOverlay() {
+                document.getElementById("overlay").style.display = "none";
+            }
+            document.getElementById("overlay").onclick = (e) => {
+                if (e.target.id === "overlay") closeOverlay();
+            };
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closeOverlay();
+            });
+
+            boot().catch((e) => {
+                document.getElementById("subtitle").textContent =
+                    "error: " + e.message;
+            });
+        </script>
+    </body>
+</html>

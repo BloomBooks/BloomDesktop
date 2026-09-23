@@ -12,10 +12,16 @@
 import * as React from "react";
 import { flushSync } from "react-dom";
 import { createRoot, Root } from "react-dom/client";
+import { ensureUiFontFacesInstalled } from "./uiFontFaces";
 
 const rootsByContainer = new WeakMap<Element | DocumentFragment, Root>();
 
 function getOrCreateRoot(container: Element | DocumentFragment): Root {
+    // Every document that renders Bloom React UI needs the UI @font-face declarations, exactly
+    // once (see bloomUIFontFaces.css / BL-15300). Since every React mount funnels through here,
+    // this is the one place that guarantees the WinForms-hosted React documents get them; in
+    // documents that already have them (e.g. the edit page, via editMode.css) it is a no-op.
+    ensureUiFontFacesInstalled(container.ownerDocument ?? document);
     let root = rootsByContainer.get(container);
     if (!root) {
         root = createRoot(container);

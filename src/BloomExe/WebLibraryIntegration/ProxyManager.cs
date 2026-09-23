@@ -12,10 +12,18 @@ namespace Bloom.WebLibraryIntegration
     public class ProxyManager
     {
         public ProxyManager()
+            : this(Environment.GetEnvironmentVariable) { }
+
+        /// <summary>
+        /// Reads the proxy from the given environment lookup. The lowercase name wins when both
+        /// are set, which can only happen where variable names are case-sensitive (Linux), so
+        /// the lookup is injectable to let tests exercise that rule on any platform.
+        /// </summary>
+        internal ProxyManager(Func<string, string> getEnvironmentVariable)
         {
-            var proxy = Environment.GetEnvironmentVariable("http_proxy");
+            var proxy = getEnvironmentVariable("http_proxy");
             if (string.IsNullOrEmpty(proxy))
-                proxy = Environment.GetEnvironmentVariable("HTTP_PROXY");
+                proxy = getEnvironmentVariable("HTTP_PROXY");
 
             Parse(proxy);
         }

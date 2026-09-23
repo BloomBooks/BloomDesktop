@@ -38,13 +38,22 @@ export const BookSettingsButton: React.FunctionComponent = (props) => {
             textColor={kTextOnPurple}
             disabledTextColor={kDisabledTextOnPurple}
             cssOverrides={css`
-                width: 88px;
+                // The label wraps, and the TopBar is only as tall as its tallest child, so a
+                // label that wraps to three lines makes the whole bar taller (BL-16834, with
+                // the French "Paramètres du Livre et de la Page"). Let the button widen enough
+                // for long translations to fit on two lines, and clamp the label to two lines
+                // regardless so no translation can ever change the bar's height.
+                min-width: 88px;
+                max-width: 124px;
                 white-space: normal;
                 line-height: 1.15;
 
                 span {
-                    display: inline-block;
-                    max-width: 72px;
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 2;
+                    overflow: hidden;
+                    max-width: 108px;
                 }
 
                 // Recolor the (solid black) icon to black at 80% opacity so it matches

@@ -1,7 +1,36 @@
 import { describe, it, expect } from "vitest";
-import { cleanUpNbsps, removeCommentsFromEditableHtml } from "./toolbox";
+import {
+    cleanUpNbsps,
+    editableMightBeRewritten,
+    removeCommentsFromEditableHtml,
+} from "./toolbox";
 
 describe("toolbox tests", () => {
+    // This gate decides whether we take a ckeditor bookmark, which splits the text node the
+    // user is typing in. Saying "no" when one of the clean-ups would in fact rewrite the box
+    // would lose the user's insertion point, so it must catch everything they act on.
+    it("editableMightBeRewritten says no for ordinary text", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>overflow</p><p>plain text, nothing to clean up</p>";
+
+        expect(editableMightBeRewritten(div)).toBe(false);
+    });
+
+    it("editableMightBeRewritten says yes for anything the clean-ups act on", () => {
+        const withComment = document.createElement("div");
+        withComment.innerHTML = "<p>text</p>";
+        withComment.firstChild!.appendChild(document.createComment("x"));
+        // sanity check: this is the case removeCommentsFromEditableHtml rewrites
+        expect(withComment.innerHTML).toContain("<!--");
+        expect(editableMightBeRewritten(withComment)).toBe(true);
+
+        const withNbsp = document.createElement("div");
+        withNbsp.innerHTML = "<p>a&nbsp;b</p>";
+        // sanity check: the nbsp really did survive into the html cleanUpNbsps scans
+        expect(withNbsp.innerHTML).toContain("&nbsp;");
+        expect(editableMightBeRewritten(withNbsp)).toBe(true);
+    });
+
     it("removeCommentsFromEditableHtml removes comments correctly including ones with new lines", () => {
         const p = document.createElement("p");
         const span1 = document.createElement("span");
@@ -123,5 +152,133 @@ describe("toolbox tests", () => {
         // Ideally, we would remove the nbsp here, but in this corner case, the most
         // important thing is to do no harm.
         runNbspTest('<span data-attr="&nbsp;yuck!">A&nbsp;B</span>');
+    });
+
+    // runNbspTest only compares serialized html, which cannot tell "we left the DOM alone" apart
+    // from "we rebuilt it into something that serializes the same". These two check the actual
+    // nodes, because rebuilding matters: the reader tools' violation highlights and the Talking
+    // Book tool's audio highlights are live Ranges, and replacing a text node collapses any Range
+    // pointing into it. See the note where handlePageEditing() calls cleanUpNbsps.
+    it("cleanUpNbsps keeps the same text node when there is nothing to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A b&nbsp;</p>"; // trailing nbsp, so nothing to convert
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: we mean to be watching a text node.
+        expect(textNodeBefore?.nodeType).toBe(Node.TEXT_NODE);
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b&nbsp;</p>");
+        expect(div.querySelector("p")!.firstChild).toBe(textNodeBefore);
+    });
+
+    it("cleanUpNbsps does rebuild the content when there is something to convert", () => {
+        const div = document.createElement("div");
+        div.innerHTML = "<p>A&nbsp;b c</p>";
+        const textNodeBefore = div.querySelector("p")!.firstChild;
+        // Sanity check the setup: this nbsp is one we expect to be converted.
+        expect(textNodeBefore?.textContent).toBe("A\u00A0b c");
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe("<p>A b c</p>");
+        expect(div.querySelector("p")!.firstChild).not.toBe(textNodeBefore);
+    });
+
+    // Make div look like a box whose ckeditor is tracking fillingCharNode as its zero-width
+    // "filling char" (see EditableDivUtils.removeTrackedCkEditorFillingChar).
+    function stubCkEditorTracking(div: HTMLElement, fillingCharNode: Node) {
+        let tracked: Node | undefined = fillingCharNode;
+        (div as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            editable: () => ({
+                getCustomData: (key: string) =>
+                    key === "cke-fillingChar" && tracked
+                        ? { $: tracked }
+                        : undefined,
+                removeCustomData: () => {
+                    tracked = undefined;
+                },
+            }),
+        };
+    }
+
+    // When the rebuild does happen, the html written back is read from the live DOM, so
+    // ckeditor's filling char would be baked in as ordinary text and orphaned - the
+    // BL-16490 hazard. It must be taken out first; but a U+200B that is real text (a Thai,
+    // Khmer or Myanmar word break) must survive (BL-16843).
+    it("cleanUpNbsps takes out ckeditor's filling char, and only that, before rebuilding the box", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(`a${zwsp}b\u00A0c d`));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // Sanity check the setup: there is an nbsp to convert, so the box will be rebuilt,
+        // and both zero-width spaces are in it.
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b&nbsp;c d${zwsp}</p>`);
+
+        cleanUpNbsps(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b c d</p>`);
+    });
+
+    it("cleanUpNbsps leaves ckeditor's filling char alone when there is no nbsp to consider", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode("ab"));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+
+        cleanUpNbsps(div);
+
+        // ckeditor still needs it to show the caret; it will remove it itself.
+        expect(fillingCharNode.textContent).toBe(zwsp);
+        expect(p.childNodes[1]).toBe(fillingCharNode);
+    });
+
+    it("removeCommentsFromEditableHtml takes out ckeditor's filling char before rebuilding the box", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        p.appendChild(document.createTextNode(`a${zwsp}b`));
+        p.appendChild(document.createComment("x"));
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b<!--x-->${zwsp}</p>`);
+
+        removeCommentsFromEditableHtml(div);
+
+        expect(div.innerHTML).toBe(`<p>a${zwsp}b</p>`);
+    });
+
+    it("removeCommentsFromEditableHtml leaves the box (and ckeditor's filling char) alone when there is no comment to remove", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const div = document.createElement("div");
+        const p = document.createElement("p");
+        // "<!--" can appear in serialized html without being a comment node: attribute
+        // values don't escape "<". That must not count as something to rewrite.
+        p.setAttribute("data-note", "<!-- not a comment");
+        const textNode = document.createTextNode("ab");
+        p.appendChild(textNode);
+        const fillingCharNode = document.createTextNode(zwsp);
+        p.appendChild(fillingCharNode);
+        div.appendChild(p);
+        stubCkEditorTracking(div, fillingCharNode);
+        // sanity check the setup
+        expect(div.innerHTML).toContain("<!--");
+
+        removeCommentsFromEditableHtml(div);
+
+        expect(p.childNodes[0]).toBe(textNode); // not rebuilt
+        expect(fillingCharNode.textContent).toBe(zwsp);
+        expect(p.childNodes[1]).toBe(fillingCharNode);
     });
 });

@@ -1,4 +1,5 @@
 ﻿using System;
+using BloomFreezeDoctor.Protocol;
 using SIL.IO;
 
 namespace Bloom.WebLibraryIntegration
@@ -10,7 +11,8 @@ namespace Bloom.WebLibraryIntegration
     /// and easily find our keys and use our storage.
     /// The keys are currently stored in a file called connections.dll. The installer must place a version of this
     /// in the EXE directory. Developers get it automatically, along with other dependencies.
-    /// You can see what keys are stored in what order by checking the constructor.
+    /// Which line holds which key is named once, in <see cref="SupportUploadCredentials"/>, because the
+    /// Freeze Doctor reads the same file.
     /// </summary>
     public class AccessKeys
     {
@@ -26,25 +28,33 @@ namespace Bloom.WebLibraryIntegration
         //Factory
         public static AccessKeys GetAccessKeys(string bucket)
         {
-            var connectionsPath = FileLocationUtilities.GetFileDistributedWithApplication(
-                "connections.dll"
-            );
-            var lines = RobustFile.ReadAllLines(connectionsPath);
+            // Located and read by the project Bloom and the Freeze Doctor share, which needs the same keys
+            // to upload a minidump too large for a tracker attachment. One definition of where this file is
+            // and what its lines mean: two independent readers of an undocumented line-ordered file is how
+            // a line added at the top comes to mean different things in two programs.
+            var lines =
+                SupportUploadCredentials.TryReadLines()
+                ?? throw new ApplicationException(
+                    "Could not find or read " + SupportUploadCredentials.ConnectionsFileName
+                );
             switch (bucket)
             {
                 case BloomS3Client.SandboxBucketName:
                     // S3 'uploaderDev' user, who has permission to use the BloomLibraryBooks-Sandbox bucket.
                     if (BookUpload.IsDryRun)
                         return new AccessKeys(null, null);
-                    return new AccessKeys(lines[2], lines[3]);
+                    return UploaderDev(lines);
                 case BloomS3Client.UnitTestBucketName:
                 case BloomS3Client.ProblemBookUploadsBucketName:
-                    return new AccessKeys(lines[2], lines[3]);
+                    return UploaderDev(lines);
                 case BloomS3Client.ProductionBucketName:
                     //S3 'uploader' user, who has permission to use the BloomLibraryBooks bucket
                     if (BookUpload.IsDryRun)
                         return new AccessKeys(null, null);
-                    return new AccessKeys(lines[0], lines[1]);
+                    return new AccessKeys(
+                        lines[SupportUploadCredentials.UploaderAccessKeyLine],
+                        lines[SupportUploadCredentials.UploaderSecretLine]
+                    );
                 case BloomS3Client.BloomDesktopFiles:
                     // For now, this is public read, and no one needs to write.
                     return new AccessKeys(null, null);
@@ -53,5 +63,14 @@ namespace Bloom.WebLibraryIntegration
                     throw new ApplicationException("Bucket name not recognized: " + bucket);
             }
         }
+
+        /// <summary>
+        /// The <c>uploaderDev</c> credentials, which three of the buckets above share.
+        /// </summary>
+        private static AccessKeys UploaderDev(string[] lines) =>
+            new AccessKeys(
+                lines[SupportUploadCredentials.UploaderDevAccessKeyLine],
+                lines[SupportUploadCredentials.UploaderDevSecretLine]
+            );
     }
 }

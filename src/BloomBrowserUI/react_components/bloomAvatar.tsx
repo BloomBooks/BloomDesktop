@@ -15,7 +15,9 @@ const emptyAvatarCache = new Cache({
 });
 
 export const BloomAvatar: React.FunctionComponent<{
-    email: string;
+    // Nullable on purpose: some callers get this from data that genuinely has no user
+    // recorded, such as a book history event written by an older Bloom (BL-16757).
+    email: string | null | undefined;
     name: string;
     borderColor?: string;
     avatarSizeInt?: number;

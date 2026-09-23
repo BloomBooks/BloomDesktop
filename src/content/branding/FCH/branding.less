@@ -1,0 +1,93 @@
+/*{
+    label: "FCH branding";
+    compatibleWithAppearanceVersion: 6.0;
+}*/
+@import "../branding-base.less";
+
+// Layout "1b" from the back cover layout study: the publisher logo sits high and centred,
+// a hairline runs low across the page, and the "Made with Bloom" badge is centred beneath it.
+// Proportions below are taken from that mock (a 575x815 page, i.e. A5 proportions) and
+// re-expressed against var(--page-height) so they hold on every page size.
+
+// --- The logo, high on the page ---------------------------------------------------------
+// Ask for it by HEIGHT, not width. The logo is square, so a width that looks right on a
+// portrait page is a height that doesn't fit a short one.
+// Set it on the SLOT, as a flex-basis, rather than on the image: the slot is a flex item of
+// the back cover's marginBox, so a flex-basis is a request that flexbox honours when there is
+// room and shrinks when there isn't (see bloom-xmatter-common.less). Putting the height on the
+// image instead would make it a demand that overflows the page.
+// The mock draws the logo at 28% of page height; 0.36 rather than 0.28 because this SVG
+// carries ~20% of its own whitespace, so the visible logo is smaller than the box it is given.
+[data-book="outside-back-cover-branding-top-html"] {
+    flex-basis: calc(var(--page-height) * 0.36);
+
+    // ...and make that flex-basis a request rather than a demand, so the logo can never run
+    // off the page. Flex items default to min-height:auto, which forbids shrinking below the
+    // image's natural height: without this the column would overflow the page instead of
+    // compressing, and the logo would be cut off at the bottom edge (very visible on a short
+    // page such as Device16x9Landscape). min-height:0 lets the slot take part in flex
+    // shrinking, and max-height:100% lets the image shrink along with it; object-fit:contain
+    // (branding-base.less) keeps the aspect ratio while it does.
+    //
+    // NB: this belongs in this file, not in the shared back-cover CSS, even though the trap is
+    // general — a branding sizes its logo by width, which says nothing about height. Fixing it
+    // for every branding at once changes how ~70 existing packs lay out, which is too much risk
+    // to take on a beta. Keep it scoped to FCH; branding.css only loads for FCH books.
+    min-height: 0;
+    > img {
+        min-height: 0;
+        max-height: 100%;
+    }
+}
+
+// --- The hairline, and the badge below it ------------------------------------------------
+// The rule is a border on the badge's slot rather than an element of its own, so it can't get
+// out of step with the badge or need a place in the xmatter markup.
+// Nothing here touches the badge's own size: it lives inside .bloom-branding-wrapper and is
+// sized in cm alongside the QR code by branding-base.less. Overriding images in this slot
+// would hit the QR code too and break that layout.
+[data-book="outside-back-cover-branding-bottom-html"] {
+    // branding-base.less sets width:100% on this slot. Left at 100%, the margins below would
+    // not inset the box at all — they would shove the full-width box to the right, so the
+    // rule would hang off the right edge and the badge would no longer share the logo's
+    // centre line. width:auto lets the margins actually narrow it, keeping both centred.
+    width: auto;
+    // Inset the rule from the page edges, as the mock does (60px of a 575px-wide page).
+    margin-left: 10%;
+    margin-right: 10%;
+
+    // The rule has to sit on whatever cover colour the book happens to use, as well as on
+    // white, so it cannot be a fixed colour. The mock's light warm grey is right on the mock's
+    // white page but glows against a saturated cover, reading as a bright filament rather than
+    // a quiet division.
+    // Translucent black instead: it only ever *darkens* what is behind it, so it settles into
+    // any colour — a soft grey on white, a slightly deeper shade of the cover colour on a
+    // saturated one — and never glows.
+    border-top: 1px solid rgba(0, 0, 0, 0.5);
+    // Breathing room between the rule and the badge.
+    padding-top: calc(var(--page-height) * 0.04);
+}
+
+// Darkening does nothing on a dark cover, so there flip to translucent white, which lightens
+// by the same small amount. Bloom adds .darkCoverColor to the cover pages itself
+// (Book.DetectAndMarkDarkCoverColor), so this tracks whatever colour the user picks.
+.bloom-page.coverColor.outsideBackCover.darkCoverColor {
+    [data-book="outside-back-cover-branding-bottom-html"] {
+        border-top-color: rgba(255, 255, 255, 0.35);
+    }
+}
+
+// The badge is a fixed-size block (4.7cm of logo plus a 2.8cm QR code, sized in cm by
+// branding-base.less), which is a lot of a short page. Unlike a bare logo it cannot be
+// shrunk by the back cover's flex column, because it is a wrapper div rather than an image,
+// so on these layouts it would run off the bottom of the page. zoom scales the whole wrapper
+// — badge, QR code and caption together, keeping their proportions — and, unlike transform,
+// it shrinks the space the wrapper occupies, which is what actually buys back the room.
+.Device16x9Landscape,
+.A6Portrait,
+[class*="Landscape"] {
+    [data-book="outside-back-cover-branding-bottom-html"]
+        .bloom-branding-wrapper {
+        zoom: 0.62;
+    }
+}

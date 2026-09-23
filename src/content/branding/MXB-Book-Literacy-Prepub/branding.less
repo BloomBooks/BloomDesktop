@@ -1,9 +1,8 @@
 @import "../branding-base.less";
 
-[data-book="outside-back-cover-branding-bottom-html"] img {
-    max-width: unset !important;
-    width: 50%;
-}
+// The back-cover "Made with Bloom" badge now uses the standard QR-code badge
+// markup (.bloom-branding-wrapper), which is sized by branding-base.less; don't
+// force its images to 50% width here or the badge + QR code layout breaks.
 
 [data-book="title-page-branding-bottom-html"] img {
     width: 50%;

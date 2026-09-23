@@ -33,6 +33,15 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
     is picture on top, text on the bottom, we need to make room for the page number */
     --pageNumber-extra-height: 12mm !important;
 }
+.Ebook2x3Portrait.numberedPage:not(.bloom-interactive-page),
+.Device16x9Portrait.numberedPage:not(.bloom-interactive-page) {
+    /* The page margin is zero, so a page number the user forces to the left or right would
+       sit flush against the page edge. Inset it to line up with the thin visual margin the
+       text box gets from --topLevel-text-padding (BL-16695).
+       Not on interactive pages: they keep a nonzero margin (the zero-margin rule above
+       excludes them), so the forced number already sits at the page margin there. */
+    --pageNumber-forced-side-extra-margin: var(--topLevel-text-padding);
+}
 .bloom-fullBleed .Ebook7x5Landscape.numberedPage,
 .bloom-fullBleed .Device16x9Landscape.numberedPage {
     /* On full-bleed pages we want the page number positioned based on the ideal place where
@@ -77,8 +86,26 @@ Note that hiding the page numbers is done by a setting in appearance.json, not h
 .numberedPage:where([class*="Device"]:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
 }
-[class*="Ebook"].numberedPage:not(.bloom-interactive-page),
-[class*="Device"].numberedPage:not(.bloom-interactive-page) {
-    /* move so that page number doesn't it hide it if the text box is in the lower left */
+.Ebook7x5Landscape.numberedPage:not(.bloom-interactive-page),
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* how far the format button moves to clear this theme's page number when the user's
+       Page Numbers setting forces the number to the bottom left; editMode.less applies
+       it in that situation whatever the rules below decide (BL-14901).
+       Landscape only: this theme's portrait pages reserve 12mm below the text box for
+       the page number (--pageNumber-extra-height above), so there the number sits below
+       the text box wherever it is placed horizontally, and the button need not move */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
+}
+.Ebook7x5Landscape.numberedPage:not(.bloom-interactive-page),
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* move so that page number doesn't hide it if the text box is in the lower left.
+       Landscape only: on portrait pages this theme leaves the page number centered
+       (the default for these page sizes), so there is nothing to dodge (BL-14901) */
     --formatButton-pageNumber-dodge: 20px;
+}
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight {
+    /* On these pages the page number moves to the right side (rule above),
+       so the format button has nothing to dodge (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
 }

@@ -23,8 +23,37 @@ namespace BloomTests.Book
         public void OneTimeSetup()
         {
             _factoryXMatter = BloomFileLocator.GetFactoryXMatterDirectory();
-            var codeBaseDir = BloomFileLocator.GetCodeBaseFolder();
-            _testXmatter = $"{codeBaseDir}/../../../src/BloomTests/xMatter";
+            _testXmatter = FindTestXMatterDirectory();
+        }
+
+        /// <summary>
+        /// Locates the xmatter packs checked in at src/BloomTests/xMatter (Test-XMatter
+        /// and Test-Device-XMatter), which several tests here use to exercise xmatter
+        /// selection without depending on the shipping packs.
+        /// Found by walking up from the test assembly rather than by a fixed number of
+        /// "../" steps: the assembly sits three levels below the repo root in a normal
+        /// build (output/Tests/Debug/AnyCPU) but four in the isolated tree the agent
+        /// build wrapper uses (output/agent/&lt;key&gt;/bin), and a hard-coded depth
+        /// silently resolved to a nonexistent folder there.
+        /// </summary>
+        private static string FindTestXMatterDirectory()
+        {
+            const string relativePath = "src/BloomTests/xMatter";
+            var directory = new DirectoryInfo(BloomFileLocator.GetCodeBaseFolder());
+
+            while (directory != null)
+            {
+                var candidate = Path.Combine(directory.FullName, relativePath);
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                directory = directory.Parent;
+            }
+
+            Assert.Fail(
+                $"Could not find {relativePath} above {BloomFileLocator.GetCodeBaseFolder()}."
+            );
+            return null; // unreachable; keeps the compiler happy
         }
 
         [SetUp]
@@ -73,6 +102,61 @@ namespace BloomTests.Book
         {
             string actual = XMatterHelper.GetXMatterFromStyleSheetFileName(filename);
             Assert.AreEqual(expectedXMatterName, actual, "XMatterName did not match.");
+        }
+
+        /// <summary>
+        /// The Inside Back Cover is opted in to custom layout by carrying data-custom-layout-id
+        /// (BL-16648). The paper version of the page (Factory xmatter) and the device version
+        /// (Device xmatter's "End Extra 2") must use the SAME id, so that a book keeps its
+        /// customized inside back cover when it moves between paper and device xmatter. The two
+        /// pages come from different pug mixins and nothing else enforces the match, so it would be
+        /// easy to break silently.
+        /// </summary>
+        [Test]
+        public void InsideBackCover_PaperAndDeviceXMatter_ShareOneCustomLayoutId()
+        {
+            var paperId = GetInsideBackCoverCustomLayoutId("Factory");
+            var deviceId = GetInsideBackCoverCustomLayoutId("Device");
+
+            Assert.That(
+                paperId,
+                Is.EqualTo("customInsideBackCover"),
+                "paper (Factory) xmatter inside back cover"
+            );
+            Assert.That(
+                deviceId,
+                Is.EqualTo("customInsideBackCover"),
+                "device xmatter inside back cover"
+            );
+            Assert.That(
+                deviceId,
+                Is.EqualTo(paperId),
+                "paper and device inside back covers must share one custom layout id, or a book loses its custom inside back cover when it changes xmatter"
+            );
+        }
+
+        /// <summary>
+        /// Returns the data-custom-layout-id of the inside back cover page of the given xmatter pack.
+        /// </summary>
+        private string GetInsideBackCoverCustomLayoutId(string xmatterName)
+        {
+            var helper = new XMatterHelper(
+                _dom,
+                xmatterName,
+                new FileLocator(new[] { _factoryXMatter })
+            );
+            var pages = helper.XMatterDom.SafeSelectNodes(
+                "//div[contains(@class,'bloom-page') and @data-xmatter-page='insideBackCover']"
+            );
+            // Sanity check: without this, an xmatter pack that had no inside back cover at all
+            // would make the test above fail in a confusing way (or, if we returned "", look like
+            // a missing attribute rather than a missing page).
+            Assert.That(
+                pages.Length,
+                Is.EqualTo(1),
+                $"{xmatterName} xmatter should have exactly one inside back cover page"
+            );
+            return ((SafeXmlElement)pages[0]).GetAttribute("data-custom-layout-id");
         }
 
         [Test]

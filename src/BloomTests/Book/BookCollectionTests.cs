@@ -143,6 +143,73 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void GetBookInfos_XmatterInCollectionPathAndBookName_StillListsBooks()
+        {
+            // A checkout, a user folder, a collection, or a book with "xmatter" somewhere in its
+            // name must not lose its books. Only a folder named exactly xMatter is special.
+            using (var folder = new TemporaryFolder("BookCollectionTests-xmatter-in-path"))
+            {
+                AddBook(folder, "alpha");
+                AddBook(folder, "Xmatter Packs Test");
+                var collection = new BookCollection(
+                    folder.Path,
+                    BookCollection.CollectionType.SourceCollection,
+                    new BookSelection()
+                );
+
+                Assert.That(
+                    collection.GetBookInfos().Select(b => b.FolderName).ToArray(),
+                    Is.EquivalentTo(new[] { "alpha", "Xmatter Packs Test" })
+                );
+            }
+        }
+
+        [Test]
+        public void GetBookInfos_CollectionFolderIsXMatter_ListsNothing()
+        {
+            // templates/xMatter is scanned like any other source collection folder, but what it
+            // holds are front/back matter packs, not books.
+            using (var folder = new TemporaryFolder("BookCollectionTests-xmatter-folders"))
+            {
+                var xmatterFolder = Path.Combine(folder.Path, "xMatter");
+                Directory.CreateDirectory(xmatterFolder);
+                var pack = Path.Combine(xmatterFolder, "SIL-Cameroon-Mothballed");
+                Directory.CreateDirectory(pack);
+                File.WriteAllText(
+                    Path.Combine(pack, "SIL-Cameroon-Mothballed.htm"),
+                    "<html></html>"
+                );
+                var collection = new BookCollection(
+                    xmatterFolder,
+                    BookCollection.CollectionType.SourceCollection,
+                    new BookSelection()
+                );
+
+                Assert.That(collection.GetBookInfos(), Is.Empty);
+            }
+        }
+
+        [Test]
+        public void GetBookInfos_BookFolderNamedXMatter_IsSkipped()
+        {
+            using (var folder = new TemporaryFolder("BookCollectionTests-xmatter-child"))
+            {
+                AddBook(folder, "alpha");
+                AddBook(folder, "xMatter");
+                var collection = new BookCollection(
+                    folder.Path,
+                    BookCollection.CollectionType.SourceCollection,
+                    new BookSelection()
+                );
+
+                Assert.That(
+                    collection.GetBookInfos().Select(b => b.FolderName).ToArray(),
+                    Is.EqualTo(new[] { "alpha" })
+                );
+            }
+        }
+
+        [Test]
         public void InsertBook_Present_Replaces()
         {
             var info1 = new BookInfo("book1", true);

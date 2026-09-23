@@ -17,12 +17,6 @@
         <target xml:lang="es-ES" state="final">En este contexto, texto "simple" se refiere a texto que se selecciona dentro de un párrafo y que no está asociado a múltiples grabaciones de audio o a segmentos de audio divididos. También ciertas selecciones que incluyen texto formateado pueden ser problemáticas si no se selecciona la palabra entera.</target>
         <note>ID: hyperlink.2</note>
       </trans-unit>
-      <trans-unit id="hyperlink.title" approved="yes">
-        <source xml:lang="en">Can't Paste Hyperlink</source>
-        <target xml:lang="es-ES" state="final">No se pudo pegar el enlace</target>
-        <note>ID: hyperlink.title</note>
-        <note>obsolete as of Bloom 6.3</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

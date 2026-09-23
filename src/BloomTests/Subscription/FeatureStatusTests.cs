@@ -97,21 +97,34 @@ namespace BloomTests.FeatureStatusTests
             StringAssert.Contains("\"visible\":true", json);
         }
 
+        // No feature in the registry is currently gated by an experimental token, so these two
+        // tests exercise the mechanism itself with a FeatureInfo made up here. The token is one
+        // no real feature uses, so flipping it cannot disturb any other test.
+        private const string kTestExperimentalToken = "test-only-experimental-feature";
+
+        private static FeatureInfo MakeExperimentalProFeature()
+        {
+            return new FeatureInfo
+            {
+                Feature = FeatureName.AppBuilder,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = kTestExperimentalToken,
+            };
+        }
+
         [Test]
         public void GetFeatureStatus_ExperimentalFeatureHiddenUnlessEnabled()
         {
             var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
+            var feature = MakeExperimentalProFeature();
 
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
-            var hiddenStatus = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AppBuilder);
+            ExperimentalFeatures.SetValue(kTestExperimentalToken, false);
+            var hiddenStatus = FeatureStatus.GetFeatureStatus(subscription, feature);
 
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, true);
-            var visibleStatus = FeatureStatus.GetFeatureStatus(
-                subscription,
-                FeatureName.AppBuilder
-            );
+            ExperimentalFeatures.SetValue(kTestExperimentalToken, true);
+            var visibleStatus = FeatureStatus.GetFeatureStatus(subscription, feature);
 
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
+            ExperimentalFeatures.SetValue(kTestExperimentalToken, false);
 
             Assert.That(hiddenStatus.Visible, Is.False);
             Assert.That(hiddenStatus.Enabled, Is.True);
@@ -123,15 +136,34 @@ namespace BloomTests.FeatureStatusTests
         public void GetFeatureStatus_ExperimentalFeatureStillRequiresSubscription()
         {
             var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Basic);
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, true);
+            ExperimentalFeatures.SetValue(kTestExperimentalToken, true);
 
-            var status = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AppBuilder);
+            var status = FeatureStatus.GetFeatureStatus(subscription, MakeExperimentalProFeature());
 
-            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAppBuilder, false);
+            ExperimentalFeatures.SetValue(kTestExperimentalToken, false);
 
             Assert.That(status.Visible, Is.True);
             Assert.That(status.Enabled, Is.False);
             Assert.That(status.SubscriptionTier, Is.EqualTo(SubscriptionTier.Pro));
+        }
+
+        [Test]
+        public void GetFeatureStatus_NonExperimentalFeatureIsAlwaysVisible()
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Pro);
+
+            // AppBuilder and AiImageEditing stopped being experimental in 6.5 (BL-16731):
+            // they are visible to everyone and gated only by the subscription tier.
+            var appBuilder = FeatureStatus.GetFeatureStatus(subscription, FeatureName.AppBuilder);
+            var aiImageEditing = FeatureStatus.GetFeatureStatus(
+                subscription,
+                FeatureName.AiImageEditing
+            );
+
+            Assert.That(appBuilder.Visible, Is.True);
+            Assert.That(appBuilder.Enabled, Is.True);
+            Assert.That(aiImageEditing.Visible, Is.True);
+            Assert.That(aiImageEditing.Enabled, Is.True);
         }
 
         [Test]

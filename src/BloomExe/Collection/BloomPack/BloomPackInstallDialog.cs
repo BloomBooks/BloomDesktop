@@ -359,7 +359,7 @@ namespace Bloom.Collection.BloomPack
                     "Common.CancelButton",
                     "&Cancel"
                 );
-                DesktopAnalytics.Analytics.ReportException(e.Error);
+                BloomAnalytics.ReportException(e.Error);
                 ErrorReport.NotifyUserOfProblem(e.Error, _message.Text);
                 return;
             }
@@ -385,7 +385,7 @@ namespace Bloom.Collection.BloomPack
                 }
                 ExitWithoutRunningBloom = true;
             }
-            //Analytics.Track("Install Bloom Pack");
+            //BloomAnalytics.Track("Install Bloom Pack");
         }
 
         private void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)

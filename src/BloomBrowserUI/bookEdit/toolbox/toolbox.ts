@@ -14,7 +14,14 @@ import {
     getPageIframeBody,
 } from "../../utils/shared";
 import { GameTool } from "./games/GameTool";
+import {
+    boxParticipatesInMarkup,
+    restoreAndResaveSelectionForMarkup,
+    restoreSelectionAfterMarkup,
+    saveSelectionForMarkup,
+} from "./markupSelectionPreservation";
 import { isLongPressEvaluating } from "../longPressShared";
+import { EditableDivUtils } from "../js/editableDivUtils";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import { showRequiresSubscriptionDialogInAnyView } from "../../react_components/requiresSubscription";
 import {
@@ -35,6 +42,23 @@ let savedSettings: ToolboxSettings = {};
 
 let keypressTimer: ReturnType<typeof setTimeout> | null = null;
 
+// The pending markup update asked for by an undo or redo, if any. It deliberately does NOT
+// share keypressTimer: every keystroke cancels that one, and Ctrl+Z ends with a keyup, which
+// would therefore throw away the very update the undo just asked for.
+let undoRedoMarkupTimer: ReturnType<typeof setTimeout> | null = null;
+
+// When the last undo/redo markup pass that actually got as far as doing the markup began, and
+// how close together we will let them be.
+// A single undo asks for its markup at once, because the whole point is to repaint the
+// highlights it just detached before anyone sees them missing. But holding Ctrl+Z down
+// auto-repeats the undo, and each repeat asks for another pass; with no delay to coalesce
+// them, that is a full re-markup of the page per repeat, which is what the 500ms typing
+// throttle exists to avoid. So the first one runs immediately and any that pile in behind it
+// wait their turn. (A burst is bounded anyway - ckeditor's undo stack is 20 deep - but 20
+// re-markups in half a second while ckeditor is mid-burst is still worth not doing.)
+let lastUndoRedoMarkupStartTime = 0;
+const minMillisecondsBetweenUndoRedoMarkups = 150;
+
 // This variable stores all the ids of the enabled tools, so
 // that the React toolbox settings can initially check the
 // checkboxes that correspond to the enabled tools
@@ -44,6 +68,20 @@ let enabledToolIds = new Set<string>();
 // name and the enabledToolIds set
 export function isToolEnabledInToolbox(toolName: string): boolean {
     return enabledToolIds.has(toolName);
+}
+
+// a function to update the state of the checkboxes in the toolbox settings,
+// whenever a tool is enabled and activated using setToolEnabledFromSettings(). This
+// function starts out unimplemented, but is later implemented by SettingsToolControls.tsx
+// when it gets mounted.
+let changeToolboxSettingsState:
+    | ((which: string, value: boolean) => void)
+    | undefined;
+
+export function setToolboxSettingsChangeHandler(
+    handler: ((which: string, value: boolean) => void) | undefined,
+): void {
+    changeToolboxSettingsState = handler;
 }
 
 // Each tool implements this interface and adds an instance of its implementation to the
@@ -126,7 +164,20 @@ export class ToolBox {
     }
     private builtToolbox: boolean = false;
     public adjustToolListForPage(page: HTMLElement) {
-        const requiredToolId = page.getAttribute("data-tool-id");
+        let requiredToolId = page.getAttribute("data-tool-id");
+        // Books made from the Leveled/Decodable Reader templates have pages that carry
+        // data-tool-id="leveledReader" or "decodableReader". Unlike the Game tool, these
+        // reader tools don't actually require a particular page type, and honoring the
+        // attribute here would force the reader tool open and keep the book "stuck" to its
+        // original type, preventing the user from switching to (and staying on) another
+        // tool. So we ignore those values and leave the last tool shown (stored in the
+        // book's metadata) as the current tool. (BL-16615)
+        if (
+            requiredToolId === "leveledReader" ||
+            requiredToolId === "decodableReader"
+        ) {
+            requiredToolId = null;
+        }
         newToolId = requiredToolId || undefined;
 
         // This function is the main task of adjustToolListForPage. It may have to be postponed
@@ -239,6 +290,48 @@ export class ToolBox {
         $(container)
             .find(".bloom-editable")
             .keydown((event) => {
+                // Repair a split paragraph BEFORE this keystroke lands in it. Chromium drops
+                // glyphs from a ligature when the paragraph's text is in two adjacent text
+                // nodes and something then edits one of them - and that "something" is normally
+                // just this keystroke, so by the time we hear the keyup the letters have already
+                // stopped being painted, and the caret has stopped moving through them
+                // (BL-16717). Doing it here means the character arrives in a box whose paragraph
+                // is one whole text node again, which Chromium shapes correctly.
+                // The splits get there without our help: backspacing in the middle of a word
+                // leaves the paragraph in two pieces, and so does long-press inserting the
+                // character it composed. So the sweep at the end of handlePageEditing's mainTask
+                // is not enough on its own: it runs half a second after the box goes quiet, and
+                // the damaging keystroke is the one that comes BEFORE that.
+                // NB: do NOT gate this on window.top[isLongPressEvaluating] the way mainTask
+                // does. Long-press sets that flag in its own keydown handler, so it is true
+                // during every keydown, and gating on it here does nothing but turn the repair
+                // off completely (measured: it never ran). What we actually have to stay out of
+                // is the window while the long-press popup is up and the user is choosing a
+                // character, because long-press composes into a text node of its own and takes
+                // that character out again if they choose another one. Its own test for "the
+                // popup is showing" is the presence of .long-press-popup in the page, so we use
+                // that. An IME composition is the same kind of hazard, hence isComposing.
+                // This deliberately runs for EVERY key, not just the ones that insert text.
+                // Skipping the arrow keys the way the keyup handler below does would look like
+                // a free saving and would quietly give back half the bug: a split paragraph is
+                // also what makes the caret stop moving, so it is the arrow key's own keydown
+                // that has to repair it. Measured in a running Bloom: with "waffle" split as
+                // "waf"|"fle", three consecutive ArrowLefts left the caret drawn at the same x;
+                // repairing on the first of them restores one-character-per-press exactly.
+                const editableBeingTypedIn = event.currentTarget as HTMLElement;
+                const longPressPopupIsUp =
+                    !!editableBeingTypedIn.ownerDocument.querySelector(
+                        ".long-press-popup",
+                    );
+                if (
+                    !longPressPopupIsUp &&
+                    !(event.originalEvent as KeyboardEvent)?.isComposing
+                ) {
+                    EditableDivUtils.mergeAdjacentTextNodes(
+                        editableBeingTypedIn,
+                    );
+                }
+
                 // Ctrl/Cmd+V doesn't always produce a keyup we can rely on in all environments.
                 // Schedule the same markup-update side effects explicitly when paste is requested.
                 // This should not interact with longpress, which doesn't handle keypresses with ctrl.
@@ -252,10 +345,7 @@ export class ToolBox {
                 const isPasteShortcut =
                     (event.ctrlKey || event.metaKey) && event.keyCode === 86;
                 if (isPasteShortcut) {
-                    setTimeout(
-                        () => handlePageEditing(maxPasteMarkupUpdateRetries),
-                        0,
-                    );
+                    setTimeout(() => handlePageEditing("paste"), 0);
                 }
             })
             .keyup((event) => {
@@ -602,6 +692,14 @@ export class ToolBox {
         });
     }
 
+    // Enables a tool from an in-page action, ensuring the toolbox is visible.
+    public enableToolFromPage(toolId: string): void {
+        if (!this.toolboxIsShowing()) {
+            this.toggleToolbox();
+        }
+        setToolEnabledFromSettings(toolId, true);
+    }
+
     public activateToolFromId(toolId: string) {
         if (!getITool(toolId)) {
             // Normally we won't even give a way to see this tool if it's
@@ -768,6 +866,10 @@ export function setToolEnabledFromSettings(
         "editView/saveToolboxSetting",
         "active\t" + toolName + "Check\t" + (turnOn ? "1" : "0"),
     );
+
+    if (changeToolboxSettingsState !== undefined) {
+        changeToolboxSettingsState(toolName, turnOn);
+    }
 
     // A pending deferred open (below) reflects an earlier state; this call
     // supersedes it, so cancel it. Without this, ticking a tool on and then off
@@ -1273,119 +1375,93 @@ function beginAddTool(
     openTool: boolean,
     whenLoaded?: () => void,
 ): void {
-    const subpath = {
-        talkingBookTool: "talkingBook/talkingBookToolboxTool.html",
-        // none for music: done in React
-    };
-    const subPathToPremadeHtml = subpath[toolId];
-    if (subPathToPremadeHtml) {
-        // old-style tool implemented in pug and typescript
-        // Using axios because this is retrieving a file, not invoking an api,
-        // so the required path does not start with /bloom/api/
-        wrapAxios(
-            axios
-                .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
-                .then((result) => {
-                    loadToolboxToolText(result.data, toolId, openTool);
-                    if (whenLoaded) {
-                        whenLoaded();
-                    }
-                }),
+    // new-style tool implemented in React
+    const tool = getITool(toolId);
+    if (!tool) {
+        console.error(
+            `Tool ${toolId} not found, assuming that was from a different version of Bloom.`,
         );
-    } else {
-        // new-style tool implemented in React
-        const tool = getITool(toolId);
-        if (!tool) {
-            console.error(
-                `Tool ${toolId} not found, assuming that was from a different version of Bloom.`,
-            );
-            return;
-        }
+        return;
+    }
 
-        if (isToolInitialized(tool)) {
-            if (openTool && toolbox.toolboxIsShowing()) {
-                const toolName = ToolBox.addToolToString(tool.id());
-                const adapter = getToolboxReactAdapter();
-                if (adapter) {
-                    adapter.setActiveToolByToolId(toolName);
-                }
+    if (isToolInitialized(tool)) {
+        if (openTool && toolbox.toolboxIsShowing()) {
+            const toolName = ToolBox.addToolToString(tool.id());
+            const adapter = getToolboxReactAdapter();
+            if (adapter) {
+                adapter.setActiveToolByToolId(toolName);
             }
-
-            if (whenLoaded) {
-                whenLoaded();
-            }
-            return;
         }
 
-        const content = $(tool.makeRootElement());
-
-        // the settings for the toolbox is React, but
-        // its localization works a little differently
-        // than the other toolbox tools. So, special-case
-        // handling is needed for the settings
-        const isSettingsTool = tool.id() === "settings";
-
-        const toolName = ToolBox.addToolToString(tool.id());
-        // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
-        //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
-
-        const toolIdUpper =
-            tool.id()[0].toUpperCase() +
-            tool.id().substring(1, tool.id().length);
-        const i18Id = isSettingsTool
-            ? "EditTab.Toolbox.More"
-            : "EditTab.Toolbox." +
-              toolIdUpper +
-              (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
-        // Not sure this will always work, but we can do something more complicated...maybe a new method
-        // on ITool...if we need it. Note that this is just a way to come up with the English,
-        // we don't do it to localizations. But in English, the code value beats the xlf one.
-        const toolLabel = isSettingsTool
-            ? "More..."
-            : ToolBox.addToolToString(
-                  toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
-                  true,
-              );
-
-        const reactTool = tool as unknown as IReactTool;
-
-        // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
-        const possibleSubscriptionBadge = reactTool.featureName
-            ? `<span class="subscription-badge"></span>`
-            : "";
-        const header = $(
-            `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
-        );
-        header.attr("data-toolId", toolName);
-        content.attr("data-toolId", toolName);
-
-        // Check feature status asynchronously and apply subscription requirements if needed
-        if (reactTool.featureName) {
-            header.attr("data-feature", reactTool.featureName);
-            addFeatureStatusMessageTitlesToSubscriptionBadges(header);
-
-            getFeatureStatusAsync(reactTool.featureName).then(
-                (featureStatus) => {
-                    if (
-                        featureStatus &&
-                        featureStatus.subscriptionTier !== "Basic"
-                    ) {
-                        header.addClass("requiresSubscription");
-                    }
-                },
-            );
-        }
-
-        loadToolboxTool(header, content, toolId, openTool);
         if (whenLoaded) {
             whenLoaded();
         }
+        return;
     }
+
+    const content = $(tool.makeRootElement());
+
+    // the settings for the toolbox is React, but
+    // its localization works a little differently
+    // than the other toolbox tools. So, special-case
+    // handling is needed for the settings
+    const isSettingsTool = tool.id() === "settings";
+
+    const toolName = ToolBox.addToolToString(tool.id());
+    // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
+    //     + "Music Tool</h3><div data-toolId='musicTool' class='musicBody'/>");
+
+    const toolIdUpper =
+        tool.id()[0].toUpperCase() + tool.id().substring(1, tool.id().length);
+    const i18Id = isSettingsTool
+        ? "EditTab.Toolbox.More"
+        : "EditTab.Toolbox." +
+          toolIdUpper +
+          (toolName.indexOf(checkLeaveOffTool) === -1 ? "Tool" : "");
+    // Not sure this will always work, but we can do something more complicated...maybe a new method
+    // on ITool...if we need it. Note that this is just a way to come up with the English,
+    // we don't do it to localizations. But in English, the code value beats the xlf one.
+    const toolLabel = isSettingsTool
+        ? "More..."
+        : ToolBox.addToolToString(
+              toolIdUpper.replace(/([A-Z])/g, " $1").trim(),
+              true,
+          );
+
+    const reactTool = tool as unknown as IReactTool;
+
+    // Currently, all subscription tools are React, so we haven't implemented a way to add the subscription badge to old-style tools
+    const possibleSubscriptionBadge = reactTool.featureName
+        ? `<span class="subscription-badge"></span>`
+        : "";
+    const header = $(
+        `<h3><div class="toolbox-accordion-header-text" data-i18n=${i18Id}>${toolLabel}</div>${possibleSubscriptionBadge}</span></h3>`,
+    );
+    header.attr("data-toolId", toolName);
+    content.attr("data-toolId", toolName);
+
+    // Check feature status asynchronously and apply subscription requirements if needed
+    if (reactTool.featureName) {
+        header.attr("data-feature", reactTool.featureName);
+        addFeatureStatusMessageTitlesToSubscriptionBadges(header);
+
+        getFeatureStatusAsync(reactTool.featureName).then((featureStatus) => {
+            if (featureStatus && featureStatus.subscriptionTier !== "Basic") {
+                header.addClass("requiresSubscription");
+            }
+        });
+    }
+
+    loadToolboxTool(header, content, toolId, openTool);
+    if (whenLoaded) {
+        whenLoaded();
+    }
+    //}
 }
 
 let keydownEventCounter = 0;
-const retryDelayForPasteMarkupUpdateInMilliseconds = 100;
-const maxPasteMarkupUpdateRetries = 3;
+const retryDelayForMarkupUpdateInMilliseconds = 100;
+const maxMarkupUpdateRetries = 3;
 
 export function scheduleMarkupUpdateAfterPaste(): void {
     // AI thinks we might need this to "allow the DOM to settle" even before we do the
@@ -1395,17 +1471,46 @@ export function scheduleMarkupUpdateAfterPaste(): void {
     // that is hard to reproduce reliably. I'd rather have a timeout that we don't
     // need than have the markup occasionally not update, let alone somehow have
     // the markup update somehow mess up the paste. So I decided to leave it in.
-    setTimeout(() => handlePageEditing(maxPasteMarkupUpdateRetries), 0);
+    setTimeout(() => handlePageEditing("paste"), 0);
 }
 
-// Handle edits to the page: mainly triggered by key up, but also by paste.
+// Call this whenever an Undo or Redo has replaced the content of an editable, from wherever
+// that Undo was initiated (Ctrl+Z in the text, the Undo button in the top bar, the reader
+// tools' own undo stack).
+//
+// It matters more than it looks. Undo does not edit the text in place: it writes a whole
+// saved snapshot over the editable, which builds new text nodes for everything in the box.
+// The tools' highlights are ::highlight() pseudo-elements painted over live Ranges into
+// those text nodes (see textHighlightManager.ts), so every highlight in that box dies at
+// that moment - it stays in the registry but paints nothing, and only a markup pass can put
+// it back. Left to itself, the markup pass either doesn't happen at all (a click on the top
+// bar's Undo button produces no keystroke) or happens and gives up (see the three places
+// below where "undoOrRedo" is treated differently), which is why the Leveled and Decodable
+// Reader highlights could stay gone until the user typed something (BL-16558).
+export function updateMarkupAfterUndoOrRedo(): void {
+    handlePageEditing("undoOrRedo");
+}
+
+// What asked for a markup update. It decides several things below, because an undo is not
+// just another edit: it is a single deliberate action, and it can leave the page in states
+// that we would rather not do the markup in but have no choice about.
+type MarkupUpdateTrigger = "editing" | "paste" | "undoOrRedo";
+
+// Handle edits to the page: mainly triggered by key up, but also by paste and by undo/redo.
 // For various reasons a single paste may cause this to get called several times, but the 500ms
 // delay should prevent us from doing the markup more than once per paste.
 // Similarly, since updating the markup is fairly costly, it's good not to do it on every keystroke
 // while the user is typing rapidly.
-function handlePageEditing(
-    remainingRetriesForInvalidSelectionState: number = 0,
-): void {
+function handlePageEditing(trigger: MarkupUpdateTrigger = "editing"): void {
+    const isUndoOrRedo = trigger === "undoOrRedo";
+    // Typing gets no retries because the next keystroke brings another update along anyway.
+    // The other two have no such fallback: a paste can leave the selection temporarily in a
+    // state we can't mark up in, and an undo can leave it with no selection at all (e.g.
+    // readerToolsModel.undo() restores the html but returns before makeSelectionIn() when it
+    // has no saved offset). An undo from the top bar button has no keystroke behind it, so
+    // giving up on the first look would leave the highlights dead with no second chance.
+    const remainingRetriesForInvalidSelectionState =
+        trigger === "editing" ? 0 : maxMarkupUpdateRetries;
     // BL-599: "Unresponsive script" while typing in text.
     // The function setTimeout() returns an integer, not a timer object, and therefore it does not have a member
     // function called "clearTimeout." Because of this, the jQuery method $.isFunction(keypressTimer.clearTimeout)
@@ -1418,7 +1523,32 @@ function handlePageEditing(
     //  this.keypressTimer.clearTimeout();
     //}
     const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
-    if (keypressTimer) clearTimeout(keypressTimer);
+    // An undo waits on its own timer rather than the shared one, because every keystroke
+    // cancels the shared one - and Ctrl+Z ends with a keyup, which would therefore throw away
+    // the very update the undo just asked for. These two put the choice in one place so the
+    // rest of the method doesn't have to care which timer it is. Replacing whatever that same
+    // timer was already waiting for is what makes a burst of events do the markup just once.
+    function cancelPendingUpdate(): void {
+        if (isUndoOrRedo) {
+            if (undoRedoMarkupTimer) clearTimeout(undoRedoMarkupTimer);
+            undoRedoMarkupTimer = null;
+            return;
+        }
+        if (keypressTimer) clearTimeout(keypressTimer);
+        keypressTimer = null;
+    }
+    function scheduleMainTask(
+        task: () => void,
+        delayMilliseconds: number,
+    ): void {
+        cancelPendingUpdate();
+        if (isUndoOrRedo) {
+            undoRedoMarkupTimer = setTimeout(task, delayMilliseconds);
+        } else {
+            keypressTimer = setTimeout(task, delayMilliseconds);
+        }
+    }
+    cancelPendingUpdate();
     // Not sure we need this now the method is triggered by keyup. If it is triggered by keydown,
     // we have a problem:
     // If we don't do this check, then the last keydown from autorepeat during longpress will
@@ -1429,7 +1559,11 @@ function handlePageEditing(
     // I'm leaving it in for now because the method might get called on a keyup connected with using
     // a key in longpress to select one of the options, and in that case, we don't want to do the markup
     // (until the keyup from the original key, of course).
-    if (window?.top?.[isLongPressEvaluating]) {
+    // Undo/redo is exempt: longpress sets that flag on EVERY keydown (see its onKeyDown) and
+    // clears it on keyup, so Ctrl+Z, which does its work on the keydown, always finds it set,
+    // and honoring it here meant the undo never got its markup update at all. Ctrl+Z can't be
+    // a longpress in any case: longpress is about holding down a letter key on its own.
+    if (!isUndoOrRedo && window?.top?.[isLongPressEvaluating]) {
         return;
     }
     // If this was making DOM changes that we want to save, we would want to try to use
@@ -1455,21 +1589,29 @@ function handlePageEditing(
         const active = anchor
             ? <HTMLDivElement>$(anchor).closest("div").get(0)
             : null;
+        // A selection that covers a range of text, rather than being a simple insertion point,
+        // normally makes us leave the markup alone until the user does something simpler.
+        // Undo/redo is the exception: it restores whatever selection its snapshot was taken
+        // with, and the markup (and with it the highlights) has to be brought up to date
+        // regardless. The bookmark machinery below preserves a range just as it does an
+        // insertion point.
+        const selectionIsRange = !!(
+            selection &&
+            (selection.rangeCount > 1 ||
+                (selection.rangeCount === 1 &&
+                    !selection.getRangeAt(0).collapsed))
+        );
         const selectionStateIsInvalidForMarkup =
-            !active ||
-            (selection &&
-                (selection.rangeCount > 1 ||
-                    (selection.rangeCount === 1 &&
-                        !selection.getRangeAt(0).collapsed)));
+            !active || (selectionIsRange && !isUndoOrRedo);
 
         if (selectionStateIsInvalidForMarkup) {
             // Copilot suggested that there are some cases after a paste where the selection
             // is only temporarily a range, so it's worth trying again a few times.
             // This callback can also be canceled by a new keypress etc.
             if (remainingRetries > 0) {
-                keypressTimer = setTimeout(
+                scheduleMainTask(
                     () => mainTask(remainingRetries - 1),
-                    retryDelayForPasteMarkupUpdateInMilliseconds,
+                    retryDelayForMarkupUpdateInMilliseconds,
                 );
             }
             return; // don't even try to adjust markup while there is some complex selection
@@ -1490,22 +1632,15 @@ function handlePageEditing(
         // It would be great if we didn't have settle for using window.top,
         // but the other player here (jquery.longpress.js) is in a totally different
         // context currently, so my other attempts to share a boolean failed.
-        if (window.top[isLongPressEvaluating]) {
+        // (Undo/redo is exempt, for the reason given where this flag is tested above.)
+        if (!isUndoOrRedo && window.top[isLongPressEvaluating]) {
             return;
         }
 
-        // the hard thing about all this is preserving the user's insertion point while we change the actual
-        // html out from under them to add/remove markup.
-        // ckeditor specific discussion: http://stackoverflow.com/questions/16835365/set-cursor-to-specific-position-in-ckeditor
-        // This "bookmark" approach makes that easy:
-        // We insert a dummy element where the insert point is. Later when we do the markup,
-        // we'll find the bookmark again, put the selection there, and remove this element.
-        // The problem with this approach is that when the user is fixing an existing word, the markup
-        // will see our bookmark as a word-breaking element. For example, if I type "houze" and go
-        // to fix that z, the markup routine is going to see "hous"-bookmark-"e". When the user
-        // clicks away, the markup will be redone and fixed. So this is a known tradeoff; we get
-        // more reliable insertion-point-preservation, at the cost of some temporarily inaccurate
-        // markup.
+        // The hard thing about all this is preserving the user's insertion point while we change the
+        // actual html out from under them to add/remove markup. That job — and the known tradeoff
+        // in how it is currently done — now lives in markupSelectionPreservation.ts, so that it can
+        // be reimplemented without touching this pipeline. See BL-6681.
         const selNode = selection ? selection.anchorNode : null;
         const editableDiv = selNode
             ? $(selNode).parents(".bloom-editable")[0]
@@ -1513,34 +1648,53 @@ function handlePageEditing(
         // In 3.9, this is null when you press backspace in an empty box; the selection.anchorNode is itself a .bloom-editable, so
         // presumably we could adjust the above query to still get the div it's looking for.
         if (editableDiv) {
-            const ckeditorOfThisBox = (
-                editableDiv as HTMLElement & { bloomCkEditor?: CKEDITOR.editor }
-            ).bloomCkEditor;
-            // Normally every editable box has a ckeditor attached. But some arithmetic template boxes are
-            // intended to contain numbers not needing translation and don't get one...because the logic
-            // that invokes WireToCKEditor is looking for classes like bloom-content1 that are not present
-            // in ArithmeticTemplate. Here we're presuming that if a block didn't get one attached,
-            // it's not true vernacular text and doesn't need markup. So all the code below is skipped
-            // if we don't have one.
-            if (ckeditorOfThisBox) {
-                let ckeditorSelection = ckeditorOfThisBox.getSelection();
-                if (!ckeditorSelection) {
+            // Normally every editable box has a rich-text editor attached, and so participates in
+            // markup. If a block didn't get one, we presume it isn't true vernacular text and
+            // doesn't need markup, so all the code below is skipped.
+            if (boxParticipatesInMarkup(editableDiv)) {
+                // If there's no tool active, we don't need to update the markup.
+                const activeTool =
+                    currentTool && toolbox.toolboxIsShowing()
+                        ? currentTool
+                        : undefined;
+
+                // Recording the caret with a CKEditor bookmark inserts a hidden span at the
+                // insertion point, which SPLITS the text node the user is typing in. That is
+                // destructive enough to be worth avoiding: even though removing the bookmark and
+                // rejoining the text leaves the DOM exactly as it was, Chromium goes on painting
+                // the paragraph's old glyphs where a ligature straddled the split, so letters the
+                // user typed stop being drawn until something else forces a repaint (BL-16717).
+                // Nothing below rewrites this box unless a tool is active, or there is actually
+                // a comment or an nbsp to clean up - and if nothing rewrites the box, there is no
+                // selection to preserve. So only record the caret when one of those is true,
+                // which for ordinary typing is never. (Decided BEFORE the record is made: a
+                // bookmark span itself contains an nbsp, so the test would answer yes after it.)
+                const boxMightBeRewritten =
+                    !!activeTool || editableMightBeRewritten(editableDiv);
+
+                let savedSelection = saveSelectionForMarkup(
+                    editableDiv,
+                    boxMightBeRewritten,
+                );
+                if (!savedSelection) {
                     return; // may be changing pages?
                 }
-                // there is also createBookmarks2(), which avoids actually inserting anything. That has the
-                // advantage that changing a character in the middle of a word will allow the entire word to
-                // be evaluated by the markup routine. However, testing shows that the cursor then doesn't
-                // actually go back to where it was: it gets shifted to the right.
-                let bookmarks = ckeditorSelection.createBookmarks(true);
+                // We are now certainly going to do the markup, which is the work the next
+                // undo/redo has to wait behind. Anything that gave up before this point - an
+                // unusable selection and each of its retries, no editable under the caret, a
+                // box with no ckeditor - did none of that work and must not make one wait.
+                // (Below this point we always at least remove comments and clean up nbsps,
+                // whether or not a tool is active, so the work is real either way.)
+                if (isUndoOrRedo) {
+                    lastUndoRedoMarkupStartTime = Date.now();
+                }
 
                 // For some reason, we have cases, mostly (always?) on paste, where
                 // ckeditor is inserting tons of comments which are messing with our parsing
                 // See http://issues.bloomlibrary.org/youtrack/issue/BL-4775
                 removeCommentsFromEditableHtml(editableDiv);
-
-                // If there's no tool active, we don't need to update the markup.
-                if (currentTool && toolbox.toolboxIsShowing()) {
-                    if (currentTool.isUpdateMarkupAsync()) {
+                if (activeTool) {
+                    if (activeTool.isUpdateMarkupAsync()) {
                         // It's possible that removeCommentsFromEditableHtml moved the selection, typically
                         // to the start of the editableDiv. This doesn't matter on the synchronous branch,
                         // because we restore it at the end of this method, after the other updates, and no
@@ -1552,14 +1706,29 @@ function handlePageEditing(
                         // it now, and then again after actually changing the markup, which might move the selection again.
                         // (This is why we don't allow updateMarkupAsync to modify the DOM, except by means of
                         // the function it returns, which is executed synchronously with fixing the selection.)
-                        ckeditorOfThisBox
-                            .getSelection()
-                            .selectBookmarks(bookmarks);
-                        ckeditorSelection = ckeditorOfThisBox.getSelection();
-                        bookmarks = ckeditorSelection.createBookmarks(true);
+                        const resaved = restoreAndResaveSelectionForMarkup(
+                            editableDiv,
+                            savedSelection,
+                        );
+                        // One of two deliberate differences from the pre-extraction code (the other
+                        // is noted on restoreSelectionAfterMarkup), and it is a narrow one. That
+                        // code did restore-then-re-save here, both steps
+                        // dereferencing getSelection() unguarded. The restore is still unguarded
+                        // (see restoreSelectionAfterMarkup), so a null selection there still throws
+                        // exactly where it used to. What this guard covers is only the case where
+                        // the restore's getSelection() succeeds and the immediately following
+                        // re-save's returns null: previously that threw inside an async function
+                        // nobody awaits, so the pass died half-done -- comments already stripped,
+                        // marker spans possibly left in the DOM -- via an unhandled rejection.
+                        // Abandoning the pass cleanly is the same outcome without the wreckage, and
+                        // is how the first save above has always behaved.
+                        if (!resaved) {
+                            return;
+                        }
+                        savedSelection = resaved;
 
                         const actualUpdateFunc =
-                            await currentTool.updateMarkupAsync();
+                            await activeTool.updateMarkupAsync();
                         if (
                             keydownEventCounter ===
                             counterValueThatIdentifiesThisKeyDown
@@ -1570,34 +1739,80 @@ function handlePageEditing(
                             // of updating for the earlier keystroke.)
                             actualUpdateFunc();
                         }
-                    } else {
-                        // Note, the updateMarkup routine must be sure to use the result of
-                        // ckEditor's getData() method, not the raw HTML of the editableDivs.
-                        // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
-                        // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
-                        // our current architecture. Namely, the reader tools have a lower-level
-                        // doMarkup() which gets called more than just from here.
-                        currentTool.updateMarkup();
                     }
                 }
 
                 cleanUpNbsps(editableDiv);
 
-                //set the selection to wherever our bookmark node ended up
+                // The synchronous branch is used only by the decodable and leveled reader tools,
+                // and their markup no longer changes the DOM: it paints violations with
+                // ::highlight() over live Ranges (BL-16558). Those Ranges must therefore be
+                // created AFTER the last thing that rewrites this editable's content.
+                // cleanUpNbsps() ends with an unconditional `editableDiv.innerHTML = ...`, which
+                // replaces every text node in the box, so any Range pointing into them collapses.
+                // While this call came before it, the reader highlights were painted and then
+                // immediately detached on every pause in typing, and nothing reappeared until
+                // some other path redid the markup (e.g. changing the level).
+                //
+                // Not covered by a unit test: the pieces are (cleanUpNbsps in toolboxSpec.ts,
+                // which now checks that it leaves the text nodes alone when it has nothing to
+                // convert; the highlight primitives in textHighlightManagerSpec.ts), but the
+                // *ordering* between them is only exercised by running handlePageEditing, and
+                // that needs a live ckeditor instance on the editable div plus the parent
+                // window's "page" iframe and a real Selection - none of which we can stand up in
+                // jsdom. So if you reorder anything in here, test it by typing in a Leveled
+                // Reader book and watching the over-long sentences stay highlighted.
+                if (activeTool && !activeTool.isUpdateMarkupAsync()) {
+                    // Note, the updateMarkup routine must be sure to use the result of
+                    // ckEditor's getData() method, not the raw HTML of the editableDivs.
+                    // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
+                    // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
+                    // our current architecture. Namely, the reader tools have a lower-level
+                    // doMarkup() which gets called more than just from here.
+                    activeTool.updateMarkup();
+                }
+
+                //put the caret back where it was before all of the above
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
-                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
-                ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
+                restoreSelectionAfterMarkup(editableDiv, savedSelection);
+
+                // Restoring the caret from a bookmark leaves the text that was on either side of
+                // it as two adjacent text nodes, which makes Chromium drop glyphs from ligatures
+                // near the join (BL-16717). But bookmarks are only one of the things that split a
+                // paragraph's text - Chromium's own backspace and long-press's inserted character
+                // do it too - so this is not conditional on our having recorded one, and it must
+                // stay even once the caret is recorded some other way. It is the box-is-quiet
+                // sweep that catches whatever the per-keystroke repair in ToolBox's keydown
+                // handler could not (a paste from the menu, an IME, an undo). It costs a walk of
+                // the box's text nodes and does nothing at all unless it finds a split. See
+                // mergeAdjacentTextNodes().
+                EditableDivUtils.mergeAdjacentTextNodes(editableDiv);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
-        keypressTimer = null;
+        if (isUndoOrRedo) {
+            undoRedoMarkupTimer = null;
+        } else {
+            keypressTimer = null;
+        }
     };
-    keypressTimer = setTimeout(
+    scheduleMainTask(
         () => mainTask(remainingRetriesForInvalidSelectionState),
-        500,
+        // An undo has already put the restored text in the DOM, and unlike typing it is a
+        // single deliberate action, so there is nothing to wait for. Doing it at once (rather
+        // than after the usual 500ms of quiet) keeps the highlights, which the undo has just
+        // detached from the text, from visibly blinking off. The only reason to wait at all is
+        // to keep an auto-repeating Ctrl+Z from re-marking the page on every repeat.
+        isUndoOrRedo
+            ? Math.max(
+                  0,
+                  minMillisecondsBetweenUndoRedoMarkups -
+                      (Date.now() - lastUndoRedoMarkupStartTime),
+              )
+            : 500,
     );
 }
 
@@ -1637,6 +1852,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
     // We'll put them back in at the end.
     const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
 
+    // If we end up rewriting the box (below), the html we write back must not carry ckeditor's
+    // zero-width "filling char" as ordinary text, or it is orphaned and saved into the book
+    // (BL-16490; and see removeTrackedCkEditorFillingChar). So take it out of the DOM first,
+    // before we read the html. We don't yet know whether we will convert anything, so this
+    // over-estimates the same way editableMightBeRewritten does: any nbsp at all. The only cost
+    // of a false yes is removing a character ckeditor was about to remove itself.
+    if (editableDiv.innerHTML.includes("&nbsp;")) {
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editableDiv);
+    }
+
     let editableDivHtml = editableDiv.innerHTML;
     // innerText does not include hidden text; innerHTML does.
     // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
@@ -1645,6 +1870,16 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
 
     const preserveNbspAfter = [" ", "«", "—"];
     const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
+
+    // Whether we actually converted anything. Assigning innerHTML rebuilds every node in the box
+    // even when the string is unchanged, which loses the selection and collapses any Range
+    // pointing into the old text nodes -- and the reader tools' highlights and the Talking Book
+    // tool's audio highlights are live Ranges. It also detaches the text node holding
+    // ckeditor's zero-width "filling char", which ckeditor removes by node reference; once
+    // detached, the U+200B stays in the text and gets saved into the book, where a line break
+    // next to it renders as nothing (BL-16808). Almost every keystroke leaves nothing to convert,
+    // so only write when there is something to write.
+    let replacedAnNbsp = false;
 
     let i = -1;
     let j = -1;
@@ -1693,9 +1928,10 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
                 editableDivText.substring(0, j) +
                 " " +
                 editableDivText.substring(j + 1);
+            replacedAnNbsp = true;
         }
     }
-    editableDiv.innerHTML = editableDivHtml;
+    if (replacedAnNbsp) editableDiv.innerHTML = editableDivHtml;
 
     // Restore the bookmarks. See comment above.
     if (originalBookMarkContent)
@@ -1720,17 +1956,37 @@ function setCkeditorBookmarkContent(
     return existingContent;
 }
 
+// Could the clean-up steps in handlePageEditing's mainTask (removeCommentsFromEditableHtml and
+// cleanUpNbsps) actually change this box? Both rewrite innerHTML only when they find something
+// to fix, so this looks for the two things they look for, in the same place and the same way
+// they look for them: their own searches are over innerHTML too, so this cannot miss an nbsp
+// that cleanUpNbsps would go on to find, whatever the serializer does with U+00A0. It
+// deliberately over-estimates - an nbsp that cleanUpNbsps would decide to keep still counts -
+// because the only cost of a false yes is that we take a ckeditor bookmark we didn't need,
+// which is what the code did unconditionally before. A false NO would be a bug: we'd lose the
+// user's insertion point when one of them did rewrite the box.
+// (exported for testing)
+export function editableMightBeRewritten(editable: HTMLElement): boolean {
+    const html = editable.innerHTML;
+    return html.includes("<!--") || html.includes("&nbsp;");
+}
+
 // exported for testing
 // Warning: if the current selection is inside the element we're fixing,
 // and there are comments to remove, the selection will contract to an
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     // [\s\S] is a hack representing every character (including newline)
-    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    const commentRegex = /<!--[\s\S]*?-->/g;
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
-    if (fixedHtml !== editable.innerHTML) {
-        editable.innerHTML = fixedHtml;
+    if (editable.innerHTML.replace(commentRegex, "") !== editable.innerHTML) {
+        // Don't bake ckeditor's zero-width filling char into the html we write back, where it
+        // would be orphaned and saved into the book (BL-16490). See
+        // removeTrackedCkEditorFillingChar, and the same step in cleanUpNbsps. Taking it out
+        // changes the html, so read it again afterwards.
+        EditableDivUtils.removeTrackedCkEditorFillingChar(editable);
+        editable.innerHTML = editable.innerHTML.replace(commentRegex, "");
     }
 }
 

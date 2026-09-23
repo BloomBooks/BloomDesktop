@@ -11,11 +11,23 @@ namespace BloomTests.CLI
     [TestFixture]
     public class CreateArtifactsCommandTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            // Program.Main sets this for a real command-line run, before it dispatches to the verb. These
+            // tests call HandleInternal directly and so bypass Main, which means they have to stand in for
+            // it — exactly as TearDown below already does for RunningHarvesterMode. ApplicationContainer
+            // reads this flag to know there is no GUI application whose exit it should listen for; without
+            // it set, the container tears itself down mid-run and the epub step fails (BL-16668).
+            Program.RunningInConsoleMode = true;
+        }
+
         [TearDown]
         public void TearDown()
         {
             // Without this, subsequent tests will fail because they think the harvester is still running.
             Program.RunningHarvesterMode = false;
+            Program.RunningInConsoleMode = false;
         }
 
         [Test]
@@ -235,6 +247,99 @@ namespace BloomTests.CLI
                 );
 
                 Assert.That(result, Is.EqualTo(CreateArtifactsExitCode.LegacyBookCannotHarvest));
+            }
+        }
+
+        // The harvester never asks for just one artifact: it passes --bloomdOutputPath,
+        // --bloomDigitalOutputPath AND --epubOutputPath in a single createArtifacts run. That
+        // combination is what BL-16668 broke, and why every other test here missed it. Making the
+        // bloomdigital spins up (and then tears down) PublishHelper's off-screen browser, whose
+        // dedicated thread runs the only WinForms message loop a CLI process has. Ending that loop
+        // made WinForms raise Application.ApplicationExit, which disposed the ApplicationContainer --
+        // the parent scope of our still-in-use ProjectContext -- so the epub step, which runs
+        // afterwards, died with ObjectDisposedException resolving ProjectContext.BookServer and
+        // createArtifacts returned EpubException. A test that requests a single artifact cannot
+        // catch that, because nothing runs after the premature disposal.
+        [Test]
+        public void CreateArtifacts_BloomDigitalAndEpubRequestedTogether_BothCreated()
+        {
+            using (
+                var testFolder = new TemporaryFolder(
+                    "CreateArtifacts_BloomDigitalAndEpubRequestedTogether_BothCreated"
+                )
+            )
+            {
+                var collectionFolderPath = testFolder.Combine("collection");
+
+                var bookFolderPath = Path.Combine(collectionFolderPath, "book");
+                System.IO.Directory.CreateDirectory(bookFolderPath);
+                var collectionFilePath = Path.Combine(
+                    collectionFolderPath,
+                    "collection.bloomCollection"
+                );
+                var settings = new CollectionSettings(collectionFilePath);
+                settings.Save();
+                var metaData = new BookMetaData();
+                metaData.WriteToFolder(bookFolderPath);
+                var bookPath = System.IO.Path.Combine(bookFolderPath, "book.htm");
+                System.IO.File.WriteAllText(
+                    bookPath,
+                    @"<html>
+                    <body>
+						<div class='bloom-page'>
+							<div class='marginBox'>
+								<div class='bloom-translationGroup normal-style'>
+									<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='en'>
+                                        Hello
+									</div>
+								</div>
+							</div>
+						</div>
+					</body>
+				</html>"
+                );
+
+                var bloomDigitalOutputPath = Path.Combine(testFolder.FolderPath, "bloomdigital");
+                var epubOutputPath = Path.Combine(testFolder.FolderPath, "epub", "book.epub");
+                // Sanity check: neither artifact exists yet, so finding them later really does mean
+                // this run made them.
+                Assert.That(
+                    Directory.Exists(bloomDigitalOutputPath),
+                    Is.False,
+                    "test setup: bloomdigital output should not exist before the run"
+                );
+                Assert.That(
+                    File.Exists(epubOutputPath),
+                    Is.False,
+                    "test setup: epub output should not exist before the run"
+                );
+
+                var result = CreateArtifactsCommand.HandleInternal(
+                    new CreateArtifactsParameters()
+                    {
+                        BookPath = bookFolderPath,
+                        CollectionPath = collectionFilePath,
+                        BloomDigitalOutputPath = bloomDigitalOutputPath,
+                        EpubOutputPath = epubOutputPath,
+                        NoAnalytics = true,
+                    }
+                );
+
+                Assert.That(
+                    result,
+                    Is.EqualTo(CreateArtifactsExitCode.Success),
+                    "createArtifacts should succeed when both a bloomdigital and an epub are requested"
+                );
+                Assert.That(
+                    File.Exists(Path.Combine(bloomDigitalOutputPath, "index.htm")),
+                    Is.True,
+                    "the bloomdigital artifact should have been created"
+                );
+                Assert.That(
+                    File.Exists(epubOutputPath),
+                    Is.True,
+                    "the epub artifact should have been created"
+                );
             }
         }
 

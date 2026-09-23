@@ -240,6 +240,54 @@ const dismissPasteDialogIfPresent = async (
     return false;
 };
 
+// A real (non-placeholder) image that the running Bloom can serve. Used to give the
+// background image real content so the paste-replace branch (not the empty-canvas branch)
+// is the one under test. Mirrors the deterministic setup in spec 13's Become Background test.
+const kRealBackgroundImageUrl =
+    "http://localhost:8089/bloom/images/SIL_Logo_80pxTall.png";
+
+const getBackgroundImageSrc = async (
+    pageFrame: Frame,
+): Promise<string | null> => {
+    return pageFrame.evaluate((selector) => {
+        const img = document.querySelector(selector);
+        return img ? img.getAttribute("src") : null;
+    }, `${canvasSelectors.page.backgroundImage} ${canvasSelectors.page.imageContainer} img`);
+};
+
+const setActiveCanvasImageToRealImage = async (
+    pageFrame: Frame,
+    src: string,
+): Promise<void> => {
+    // Give the active image element a real (non-placeholder) src without depending on the
+    // host clipboard, the same way spec 13 establishes a real image before Become Background.
+    await pageFrame.evaluate((imageSrc) => {
+        const active = document.querySelector(
+            '.bloom-canvas-element[data-bloom-active="true"]',
+        );
+        const image = active?.querySelector(
+            ".bloom-imageContainer img",
+        ) as HTMLImageElement | null;
+        if (!image) {
+            throw new Error(
+                "No active canvas image element to set a real src on.",
+            );
+        }
+        image.setAttribute("src", imageSrc);
+        image.classList.remove("bloom-imageLoadError");
+        image.parentElement?.classList.remove("bloom-imageLoadError");
+    }, src);
+};
+
+const findBackgroundImageIndex = async (pageFrame: Frame): Promise<number> => {
+    return pageFrame.evaluate((selector) => {
+        const elements = Array.from(document.querySelectorAll(selector));
+        return elements.findIndex((element) =>
+            element.classList.contains("bloom-backgroundImage"),
+        );
+    }, canvasSelectors.page.canvasElements);
+};
+
 // ── I1: Image element has an image container (paste target) ─────────────
 
 test("I1: newly created image element has an image container", async ({
@@ -456,4 +504,169 @@ test("test pasting a PNG  with ellipsis menu, then copying image into another el
     await selectCanvasElementAtIndex(canvasTestContext, secondIndex);
 
     await expectAnyCanvasElementActive(canvasTestContext);
+});
+
+// ── I-regression (BL-16542): Ctrl+V replaces the selected background image ──
+//
+// When a Standard Layout page's picture (the bloom-canvas background image) is the selected
+// element, Ctrl+V / the top-bar Paste button route through
+// CanvasElementClipboard.finishPasteImageFromClipboard(), which must REPLACE the selected
+// background image with the clipboard image rather than creating a new overlay on top of it.
+// Previously the background image was excluded from the "replace selected image" branch, so
+// the paste fell through to the "add a new overlay" branch (BL-16542).
+//
+// The clipboard-image bytes only reach this path when the host clipboard actually carries an
+// image (the same host-integration limitation the other tests in this file guard for). So we
+// only assert the replacement when we can observe the paste taking effect; if the host
+// clipboard does not deliver an image, we annotate and skip. But if the paste adds a new
+// canvas element, that is exactly the bug and we fail.
+test("I-regression: pasting an image while the background image is selected replaces it, not add an overlay (BL-16542)", async ({
+    canvasTestContext,
+}) => {
+    // 1. Get a background image to work with. A Standard Layout cover already has one, and
+    // in that mode you cannot drag new overlays onto the canvas anyway. On pages that have no
+    // background yet, fall back to creating an image overlay and promoting it with Become
+    // Background (which also confirms we are on a standard, non-custom-layout page).
+    let backgroundIndex = await findBackgroundImageIndex(
+        canvasTestContext.pageFrame,
+    );
+
+    if (backgroundIndex < 0) {
+        const overlayIndex = await createElementWithRetry({
+            canvasTestContext,
+            paletteItem: "image",
+        });
+        await selectCanvasElementAtIndex(canvasTestContext, overlayIndex);
+
+        const isCustomPage = await canvasTestContext.pageFrame.evaluate(() => {
+            const active = document.querySelector(
+                '.bloom-canvas-element[data-bloom-active="true"]',
+            );
+            return !!active
+                ?.closest(".bloom-page")
+                ?.classList.contains("bloom-customLayout");
+        });
+        if (isCustomPage) {
+            test.info().annotations.push({
+                type: "note",
+                description:
+                    "Current canvas test page is a custom layout with no background image; cannot set up the scenario, skipping.",
+            });
+            return;
+        }
+
+        await setActiveCanvasImageToRealImage(
+            canvasTestContext.pageFrame,
+            kRealBackgroundImageUrl,
+        );
+        await openContextMenuFromToolbar(canvasTestContext);
+        await clickContextMenuItem(canvasTestContext, "Become Background");
+
+        backgroundIndex = await findBackgroundImageIndex(
+            canvasTestContext.pageFrame,
+        );
+        if (backgroundIndex < 0) {
+            test.info().annotations.push({
+                type: "note",
+                description:
+                    "Become Background did not produce a background image canvas element in this run; skipping.",
+            });
+            return;
+        }
+    }
+
+    // 2. Select the background image and make sure it holds a real (non-placeholder) image, so
+    // the paste goes through the "replace selected image" branch rather than the
+    // "empty canvas -> set background" branch.
+    await selectCanvasElementAtIndex(canvasTestContext, backgroundIndex);
+
+    let backgroundSrcBefore = await getBackgroundImageSrc(
+        canvasTestContext.pageFrame,
+    );
+    if (
+        !backgroundSrcBefore ||
+        backgroundSrcBefore.toLowerCase().includes("placeholder.png")
+    ) {
+        await setActiveCanvasImageToRealImage(
+            canvasTestContext.pageFrame,
+            kRealBackgroundImageUrl,
+        );
+        backgroundSrcBefore = await getBackgroundImageSrc(
+            canvasTestContext.pageFrame,
+        );
+    }
+    expect(
+        backgroundSrcBefore?.toLowerCase(),
+        "Background image must be non-placeholder for this scenario.",
+    ).not.toContain("placeholder.png");
+
+    // 3. Paste an image from the clipboard with Ctrl+V while the background image is selected.
+    await selectCanvasElementAtIndex(canvasTestContext, backgroundIndex);
+
+    const clipboardResult = await writeRepoImageToClipboard(
+        canvasTestContext.page,
+    );
+    if (!clipboardResult.ok) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                clipboardResult.error ??
+                "Clipboard setup failed; cannot exercise the paste path in this run.",
+        });
+        return;
+    }
+
+    const countBeforePaste = await getCanvasElementCount(canvasTestContext);
+
+    await canvasTestContext.page.keyboard.press("Control+v");
+
+    // If the host clipboard has no image, C# reports it and shows the "Before you can paste
+    // an image" dialog; that means the paste-replace path was not exercised in this run.
+    if (await dismissPasteDialogIfPresent(canvasTestContext)) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Host clipboard integration did not deliver an image; paste-replace path not exercised in this run.",
+        });
+        return;
+    }
+
+    // 4. Observe the outcome:
+    //    - a new canvas element => an overlay was pasted on top of the image: the bug;
+    //    - the background image's src changing => it was replaced in place: the fix;
+    //    - no change => the host clipboard silently provided no image: skip.
+    const deadline = Date.now() + 5000;
+    let sawReplacement = false;
+    while (Date.now() < deadline) {
+        const currentCount = await getCanvasElementCount(canvasTestContext);
+        expect(
+            currentCount,
+            "Pasting onto the selected background image must not add a new overlay (BL-16542).",
+        ).toBeLessThanOrEqual(countBeforePaste);
+
+        const backgroundSrcNow = await getBackgroundImageSrc(
+            canvasTestContext.pageFrame,
+        );
+        if (backgroundSrcNow !== backgroundSrcBefore) {
+            sawReplacement = true;
+            break;
+        }
+        await canvasTestContext.page.waitForTimeout(100);
+    }
+
+    if (!sawReplacement) {
+        test.info().annotations.push({
+            type: "note",
+            description:
+                "Host clipboard integration did not deliver an image; background image was unchanged, so the paste-replace path was not exercised in this run.",
+        });
+        return;
+    }
+
+    // The background image was replaced in place; confirm no overlay was created.
+    const finalCount = await getCanvasElementCount(canvasTestContext);
+    expect(
+        finalCount,
+        "Replacing the background image must not change the canvas element count.",
+    ).toBe(countBeforePaste);
 });

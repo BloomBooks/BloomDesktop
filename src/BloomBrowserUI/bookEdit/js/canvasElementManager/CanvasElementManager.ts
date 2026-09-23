@@ -2625,22 +2625,15 @@ export class CanvasElementManager {
         return bloomCanvases.length > 0 ? bloomCanvases[0] : null;
     }
 
-    // This is called when the user pastes an image from the clipboard.
-    // If there is an active canvas element that is an image, and it is empty (placeholder),
-    // set its image to the pasted image.
-    // Otherwise, if there is a bloom canvas on the page, it will pick the one that has the active element
-    // or the first one if none has an active element.
-    // (If there is no canvas, it returns false.)
-    // If the canvas is empty (including the background), set the background to the image.
-    // Else if canvas is allowed by the subscription tier, add the image as a canvas/game item.
-    // Make it up to 1/3 width and 1/3 height of the canvas, roughly centered on the canvas.
-    // Is it a draggable item? Yes, if we are in the "Start" mode of a game.
-    // In that case, we put it a bit higher and further left, so there is room for the target.
-    // Otherwise it's just a normal canvas overlay item (restricted to the appropriate state,
-    // if we're in the Correct or Wrong state of a game).
+    // This is called when the user pastes an image from the clipboard. See
+    // CanvasElementClipboard.pasteImageFromClipboard() for the rules about where the pasted image
+    // lands; keeping them documented in only that one place stops the two copies from drifting.
+    // Returns false if there is no bloom canvas on the page to paste into.
     public pasteImageFromClipboard(): boolean {
         return this.clipboard.pasteImageFromClipboard();
     }
+    // Called (indirectly) by C# once it has put the clipboard image in a file and knows its
+    // metadata; this is where the paste actually changes the page.
     public finishPasteImageFromClipboard(imageInfo: IImageInfo): void {
         this.clipboard.finishPasteImageFromClipboard(imageInfo);
     }
@@ -2777,6 +2770,14 @@ export class CanvasElementManager {
         ) {
             Comical.update(containerElement);
         }
+
+        // The qtip bubbles belonging to things inside this canvas element (source bubbles, hint
+        // bubbles, and in particular the "Choose topic" link on a data-derived="topic" field)
+        // are not children of it; they live in the page scaling container. So removing the
+        // canvas element would leave them behind until the page is reloaded. Destroy them now,
+        // while the divs they are attached to still exist. This is scoped to this canvas
+        // element, so other canvas elements (e.g., a second topic field) keep their bubbles.
+        BloomSourceBubbles.removeSourceBubbles(textOverPicDiv);
 
         Comical.deleteBubbleFromFamily(textOverPicDiv, containerElement);
 

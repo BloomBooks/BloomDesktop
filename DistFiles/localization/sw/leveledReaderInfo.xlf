@@ -76,22 +76,22 @@ duku duku lemba kwa fuus!</g>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex images may be difficult to understand.</source>
         <target xml:lang="sw" state="final">Maelezo hupeana usaidizi kwa hadithi. Maelezo huhusiana na hadithi kwa njia tofauti kwa ngazi tofauti <g id="genid-5" ctype="x-html-em">ngazi</g> na kwa wasomajii wa aina mbalimbali (tazama hapa chini). Kumbuka kuwa katika tamaduni nyingi ambazo huwa hazina maandishi mengi yaliyochapiswa, inaweza kuwa vigumu kuelewa picha ngumu.</target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the images should closely match the storyline. The reader should be able to predict the story line just by looking at the images. The illustrations at this level should be simple.</source>
         <target xml:lang="sw" state="final">Kwa <g id="genid-6" ctype="x-html-strong">Wasomaji wanaoibuka</g> picha zinapaswa kufanana kwa karibu na mfuatano wa hadithi. Msomaji anapaswa kuwa na uwezo wa kubahatisha mfuatano wa hadithi kwa kutazama picha tu. Maelezo katika ngazi hii yanapaswa kuwa rahisi.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the images should offer some support to the story line. As the amount of text increases, the reader is less reliant on the images and gets more meaning from the text. The illustrations can be more complex.</source>
         <target xml:lang="sw" state="final">Kwa <g id="genid-7" ctype="x-html-strong">Wasomaji wa mapema</g> picha zinapaswa kupeana baadhi ya usaidizi kwa mfuatano wa hadithi. Jinsi kiwango cha matini kinavyoongezeka, msomaji anaendelea kutotegemea picha sana na kupata maana zaidi kutoka kwa maandishi. Michoro inaweza kuwa magumu.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the images should offer little or no support to the story line. The reader relies more on the text than the images for meaning. The illustrations can be even more complex.</source>
         <target xml:lang="sw" state="final">Kwa <g id="genid-8" ctype="x-html-strong">Msomaji aliye na ufasaha</g> picha zinapaswa kupeana usaidizi mdogo au kutosaidia kabisa katika kuelewa mfuatano wa hadithi. Msomaji anategemea sana matini kuliko picha ili kupata maana. Maelezo hata yanaweza kuwa magumu zaidi.</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>

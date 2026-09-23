@@ -106,7 +106,16 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
     ));
 
     return (
-        <div className="publishLanguagesGroup">
+        <div
+            className="publishLanguagesGroup"
+            // The text group and the audio group are otherwise identical in the DOM, so an
+            // e2e test has no way to say which one it means. See src/BloomE2E.
+            data-testid={
+                props.forAudioLanguages
+                    ? "audio-languages-group"
+                    : "text-languages-group"
+            }
+        >
             <SettingsGroup
                 label={props.forAudioLanguages ? talkingLabel : textLabel}
             >

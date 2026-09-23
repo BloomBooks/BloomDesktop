@@ -768,6 +768,60 @@ export async function postJsonAsync(
     });
 }
 
+// Report an analytics event to Segment, by way of C#'s Analytics.Track (see AnalyticsApi.cs).
+// The current book's id arrives as BookId, added by C#; do not pass it yourself unless you mean a
+// different book. The collection's branding needs no property at all: every event already carries
+// it as "BrandingProjectName" (see AnalyticsApi).
+// Property values may be strings, numbers or booleans; they all arrive as strings. Omit a
+// property (or pass undefined) when you don't have a value for it, rather than sending "".
+// Note that DEBUG builds initialize DesktopAnalytics with allowTracking:false, so nothing sent
+// from a developer machine reaches Segment. What confirms a new event fired is the line
+// BloomAnalytics writes to Bloom's log (Help > Show Event Log) and to standard error.
+//
+// Recording an event must never break -- or appear to break -- whatever the user was doing.
+// Two ways it otherwise could, both closed here deliberately:
+//   - Callers report events from inside try/catch blocks that mean something else entirely
+//     ("Sorry, there was a problem adding the image"), so anything thrown from here would be
+//     caught there and blamed on that instead.
+//   - A failed request would go through wrapAxios's default error reporting and raise a problem
+//     report about analytics, which is never worth interrupting anyone for. Passing an
+//     errorCallback is what suppresses that -- compare postThatMightNavigate's `report: false`.
+// Both failures still reach the browser console, so a genuinely broken endpoint is findable;
+// an event that goes missing is a far smaller problem than either alternative.
+export function trackEvent(
+    event: string,
+    properties?: Record<string, string | number | boolean | undefined>,
+): void {
+    try {
+        postJson(
+            "analytics/track",
+            { event, properties: properties ?? {} },
+            undefined,
+            (r) => console.error(`analytics/track failed for "${event}"`, r),
+        );
+    } catch (error) {
+        console.error(
+            `analytics/track could not be sent for "${event}"`,
+            error,
+        );
+    }
+}
+
+// The "Change Picture" vocabulary for front-end callers, mirroring
+// AnalyticsApi.TrackChangePicture, which does the same job for the routes that report from C#
+// (the image chooser, a file from disk, a paste). One event covers every way a picture gets into
+// a book, so it is worthless if the routes disagree about the words -- hence one spelling of them
+// per side rather than one per call site.
+//
+// source: where the picture came from -- an image-gallery provider id ("pixabay", "openverse", a
+// local collection slug), "local-disk", "clipboard", or "ai-editor".
+//
+// BookId is filled in by the analytics/track endpoint, which has the selected book. Branding needs
+// no property: every event already carries "BrandingProjectName" (see AnalyticsApi).
+export function trackChangePicture(source: string): void {
+    trackEvent("Change Picture", { source });
+}
+
 let debugMessageCount = 0; // used to serialize debug messages
 // This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
 // to see it used anywhere in code that gets submitted and merged.

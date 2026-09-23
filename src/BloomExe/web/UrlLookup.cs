@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using Newtonsoft.Json;
+using Sentry;
 using SIL.Reporting;
 
 namespace Bloom.web
@@ -106,6 +108,9 @@ namespace Bloom.web
         /// a fallback one, which in practice is going to be right unless this is an old version of Bloom
         /// and one of our main server URLs has changed for some reason. A retrieval will be started in the
         /// background, and when we get the data the correct value will be passed to acceptFinalUrl.
+        /// Prefer providing it: as well as not blocking the caller, the background retrieval is given
+        /// a far more generous timeout, so it is much more likely to actually get the live URLs on a
+        /// slow connection. A blocking call has to give up quickly to avoid freezing the UI.
         /// </param>
         /// <returns></returns>
         public static string LookupUrl(
@@ -146,7 +151,10 @@ namespace Bloom.web
                         "If at all possible, you should provide an appropriate acceptFinalUrl param when looking up a url during startup."
                     );
                     // We need the true value now. Get it.
-                    if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
+                    if (
+                        TryGetUrlDataFromServer(inBackground: false)
+                        && s_liveUrlCache.TryGetValue(urlType, out url)
+                    )
                     {
                         return url;
                     }
@@ -161,7 +169,7 @@ namespace Bloom.web
                     backgroundWorker.DoWork += (sender, args) =>
                     {
                         if (
-                            TryGetUrlDataFromServer()
+                            TryGetUrlDataFromServer(inBackground: true)
                             && s_liveUrlCache.TryGetValue(urlType, out url)
                         )
                         {
@@ -200,31 +208,72 @@ namespace Bloom.web
 
         private static bool _gotJsonFromServer;
 
-        private static bool TryGetUrlDataFromServer()
+        // Timeouts for retrieving the URL data from the server. There are two per case because
+        // they cover different things: the "attempt" one becomes the S3 client's Timeout, which
+        // bounds only connecting and receiving the response headers of a single attempt; the
+        // "overall" one bounds the entire operation - every attempt, the SDK's backoff between
+        // them, and reading the response body - and so is the real ceiling on how long we take.
+
+        // When a caller needs the answer now, the calling thread is frozen until we return, and
+        // it is often the UI thread (e.g. a Help menu item). So give up quickly and use the
+        // fallback URL rather than making Bloom look hung. Note that the retry here only helps
+        // for failures that come back fast (DNS failure, connection refused); if the first
+        // attempt actually times out, the overall timeout cancels us before a second one could
+        // achieve anything. That's the intended tradeoff: responsiveness over success rate.
+        private static readonly TimeSpan kBlockingAttemptTimeout = TimeSpan.FromSeconds(2.5);
+        private static readonly TimeSpan kBlockingOverallTimeout = TimeSpan.FromSeconds(3);
+        private const int kBlockingMaxRetries = 1;
+
+        // Nothing is waiting on a background retrieval: the caller already has a fallback URL and
+        // will get the real one later through its acceptFinalUrl callback. So here we can be
+        // patient enough to succeed even on a slow or flaky connection. Succeeding matters for
+        // more than the URLs: failure sets _internetAvailable false for the rest of the run,
+        // which switches off other online features, and reports to Sentry. Three attempts of 10
+        // seconds each leaves plenty of room inside the 40 second ceiling for the SDK's backoff
+        // between them, so all three can actually run.
+        private static readonly TimeSpan kBackgroundAttemptTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan kBackgroundOverallTimeout = TimeSpan.FromSeconds(40);
+        private const int kBackgroundMaxRetries = 2;
+
+        /// <summary>
+        /// Retrieve the current URLs from the server and cache them all.
+        /// </summary>
+        /// <param name="inBackground">True when nothing is waiting on the result, so we can
+        /// afford to be patient. False when a thread (often the UI thread) is blocked until we
+        /// return, in which case we give up quickly and let the caller use a fallback URL.</param>
+        private static bool TryGetUrlDataFromServer(bool inBackground)
         {
             // Once the internet has been found missing, don't bother trying it again for the duration of the program.
             // And if we got the data once, it's very unlikely we'll get something new by trying again.
             if (!_internetAvailable || _gotJsonFromServer)
                 return false;
-            // It's pathologically possible that two threads at about the same time come here and both send
-            // the query. If so, no great harm done...they'll both put the same values into the dictionary.
-            // And in practice, it won't happen...one call to this, and only one, happens very early in
-            // Bloom's startup code, and after that _gotJsonFromServer will be true.
-            // I don't think it's worth the effort to set up locks and guarantee that only on thread
-            // sends the request.
+            // Two threads can get here at once and both send the query. That used to be described as
+            // pathological, on the grounds that the one startup call would have set _gotJsonFromServer
+            // within a few seconds; but now that the background retrieval is allowed up to
+            // kBackgroundOverallTimeout, the window in which a blocking caller can arrive and find the
+            // cache still empty is much wider. So it is worth knowing what happens: the blocking caller
+            // sends its own second request rather than waiting on the one already in flight, and gets
+            // its own (short) budget. No great harm done - they both put the same values into the
+            // dictionary, and AddOrUpdate below keeps whichever arrived first - and it does mean a
+            // blocking caller is never made to wait for the patient budget. Still not worth setting up
+            // locks to guarantee only one thread sends the request.
+            var attemptTimeout = inBackground ? kBackgroundAttemptTimeout : kBlockingAttemptTimeout;
+            var overallTimeout = inBackground ? kBackgroundOverallTimeout : kBlockingOverallTimeout;
+            var maxRetries = inBackground ? kBackgroundMaxRetries : kBlockingMaxRetries;
             try
             {
                 using (var s3Client = new BloomS3Client(null))
                 {
-                    s3Client.Timeout = TimeSpan.FromMilliseconds(2500.0);
-                    s3Client.MaxErrorRetry = 1;
+                    s3Client.Timeout = attemptTimeout;
+                    s3Client.MaxErrorRetry = maxRetries;
                     // Timeout (above) only covers connecting and receiving the response headers;
-                    // this overall timeout also covers reading the (small) response body, so a
-                    // stalled connection can't leave us waiting forever. See BloomS3Client.DownloadFile.
+                    // this overall timeout also covers reading the (small) response body and any
+                    // retries, so a stalled connection can't leave us waiting forever.
+                    // See BloomS3Client.DownloadFile.
                     var jsonContent = s3Client.DownloadFile(
                         BloomS3Client.BloomDesktopFiles,
                         kUrlLookupFileName,
-                        TimeSpan.FromMilliseconds(3000.0)
+                        overallTimeout
                     );
                     Urls urls = JsonConvert.DeserializeObject<Urls>(jsonContent);
                     // cache them all, so we don't have to repeat the server request.
@@ -240,17 +289,92 @@ namespace Bloom.web
                     // another thread to return false because it thinks things are already loaded
                     // when the value it wanted isn't in the dictionary.
                     _gotJsonFromServer = true;
+                    // We just talked to the server, so we know the internet is available. Say so
+                    // even if something already concluded otherwise: while a patient background
+                    // retrieval is running, a blocking one can time out and set this false, and
+                    // we don't want that stale verdict switching off online features all session.
+                    _internetAvailable = true;
                     return true; // we did the retrieval, it's worth checking the dictionary again.
                 }
             }
             catch (Exception e)
             {
+                // If another thread finished successfully while we were failing, our failure says
+                // nothing about whether the internet works - it demonstrably does - and the data
+                // the caller wanted is already in the cache. Latching "no internet" here would
+                // switch off online features for the rest of the session on the strength of a
+                // lost race, and the Sentry report would be exactly the noise this is meant to
+                // stop. This is not hypothetical: the patient background retrieval can now be
+                // running for 40 seconds, so it can easily succeed while a blocking caller that
+                // started later is still burning its own short budget. Return true, because by
+                // the time _gotJsonFromServer is set the dictionary is populated (see above), so
+                // it really is worth the caller looking again.
+                if (_gotJsonFromServer)
+                    return true;
+
                 _internetAvailable = false;
-                var msg = $"Exception while attempting get URL data from server";
+                var mode = ModeName(inBackground);
+                // Invariant culture so this reads the same as the urlLookupBudgetSeconds tag
+                // (see DescribeFailureForSentry) rather than picking up a comma decimal
+                // separator on some machines and disagreeing with it.
+                var msg =
+                    $"Exception while attempting to get URL data from server ({mode} retrieval, {BudgetSecondsText(overallTimeout)}s budget)";
                 Logger.WriteEvent($"{msg}: {e.Message}");
-                NonFatalProblem.ReportSentryOnly(e, msg);
+                NonFatalProblem.ReportSentryOnly(
+                    e,
+                    msg,
+                    configureScope: scope =>
+                        DescribeFailureForSentry(scope, mode, overallTimeout, e)
+                );
             }
             return false;
+        }
+
+        /// <summary>
+        /// The name we use, in logging and in Sentry, for which of the two time budgets was in force.
+        /// </summary>
+        internal static string ModeName(bool inBackground)
+        {
+            return inBackground ? "background" : "blocking";
+        }
+
+        /// <summary>
+        /// Label a failed retrieval so that we can tell the three interesting cases apart in Sentry.
+        /// The fingerprint is what does the real work, because it is what decides how events are
+        /// grouped into issues; left to Sentry's default grouping, by exception and stack, our two
+        /// cases would be indistinguishable from each other and from pre-BL-16575 events:
+        /// - Events from before this change stay in the old issues (BLOOM-DESKTOP-ERZ / -2H2), and
+        ///   nothing new can join them, since those were grouped by the default and these are not.
+        ///   So anything appearing there is by definition from an older version of Bloom.
+        /// - A "blocking" failure means a synchronous lookup lost the short race. It should be rare,
+        ///   because startup normally fills the cache long before anything asks synchronously.
+        /// - A "background" failure means the internet looked available and yet we could not fetch a
+        ///   small file within the whole patient budget. That is genuinely surprising and worth
+        ///   investigating, so it must never be buried among the routine quick timeouts.
+        /// The tags are what make these searchable and filterable; note that the message passed to
+        /// ReportSentryOnly becomes only a breadcrumb, which Sentry neither indexes nor groups by.
+        /// </summary>
+        internal static void DescribeFailureForSentry(
+            Scope scope,
+            string mode,
+            TimeSpan overallTimeout,
+            Exception e
+        )
+        {
+            scope.SetTag("urlLookupMode", mode);
+            scope.SetTag("urlLookupBudgetSeconds", BudgetSecondsText(overallTimeout));
+            scope.SetFingerprint("UrlLookup.TryGetUrlDataFromServer", mode, e.GetType().FullName);
+        }
+
+        /// <summary>
+        /// How we render a time budget wherever we report one. Invariant culture, so that the
+        /// number reads the same in the log, the Sentry breadcrumb, and the Sentry tag, on every
+        /// machine - a comma decimal separator in one of the three but not the others would make
+        /// them look like they were describing different things.
+        /// </summary>
+        private static string BudgetSecondsText(TimeSpan budget)
+        {
+            return budget.TotalSeconds.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>

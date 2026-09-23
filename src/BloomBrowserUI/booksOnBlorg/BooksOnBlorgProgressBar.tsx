@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { get, useWatchApiData } from "../utils/bloomApi";
 import { ProgressBar } from "../react_components/Progress/ProgressBar";
 import { kBloomBlue } from "../bloomMaterialUITheme";
@@ -15,6 +15,10 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
     const [languageName, setLanguageName] = useState("");
     const [languageCode, setLanguageCode] = useState("");
     const [webGoal, setWebGoal] = useState(-1);
+    // When a long language name makes the label ellipsize, we show the full label in the
+    // tooltip. (A native title would pop up alongside the tooltip, so we don't use one.)
+    const labelRef = useRef<HTMLDivElement>(null);
+    const [isLabelClipped, setIsLabelClipped] = useState(false);
 
     const bookCount = useWatchApiData(
         "collections/getBookCountByLanguage",
@@ -33,9 +37,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
         "BooksOnBlorg.Progress.CountOfBooksLabel",
         "Books on website label under progress bar on Collection tab.",
         bookCount.toString(),
-        languageName.length > 12
-            ? languageName.substring(0, 11) + "..."
-            : languageName,
+        languageName,
     );
 
     useEffect(() => {
@@ -93,8 +95,12 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
 
     return (
         <div
+            // Normally 312px wide, but grow (up to the pane's width) when a long language
+            // name needs the room. Beyond that the label ellipsizes.
             css={css`
-                width: 312px;
+                width: fit-content;
+                min-width: min(312px, 100%);
+                max-width: 100%;
             `}
         >
             <BloomTooltip
@@ -102,6 +108,7 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                 enableClickInTooltip={true}
                 tip={
                     <div>
+                        {isLabelClipped && <div>{countOfBooksLabel}</div>}
                         <Link
                             l10nKey="CollectionTab.OnBlorgBadge.ViewOnBlorg"
                             href={tooltipHref}
@@ -122,22 +129,40 @@ export const BooksOnBlorgProgressBar: React.FunctionComponent = () => {
                         height: ${height}px;
                         overflow: hidden;
                     `}
+                    onMouseEnter={() => {
+                        const label = labelRef.current!;
+                        setIsLabelClipped(
+                            label.scrollWidth > label.clientWidth,
+                        );
+                    }}
                 >
                     <div
                         css={css`
                             display: flex;
                             justify-content: space-between;
                             flex-direction: row;
+                            gap: 20px;
                             font-size: 12px;
                             color: ${kBloomBlue};
                             margin-top: 2px;
                             margin-bottom: 2px;
                         `}
                     >
-                        <div>{countOfBooksLabel}</div>
+                        <div
+                            css={css`
+                                min-width: 0;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-overflow: ellipsis;
+                            `}
+                            ref={labelRef}
+                        >
+                            {countOfBooksLabel}
+                        </div>
                         <div
                             css={css`
                                 align-self: center;
+                                flex-shrink: 0;
                             `}
                         >
                             {goalLabel} {webGoal}

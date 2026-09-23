@@ -108,13 +108,27 @@ const run = async () => {
     console.log("Building content assets...");
     await runCommand("node", ["checkForNodeModules.js"], { cwd: contentRoot });
 
-    const tsNodeBin = resolvePackageBin(contentRoot, "ts-node", "ts-node");
     const cpxBin = resolvePackageBin(contentRoot, "cpx", "cpx");
     const rimrafBin = resolvePackageBin(contentRoot, "rimraf", "rimraf");
 
-    await runCommand("node", [tsNodeBin, "pageSizes.ts"], {
-        cwd: contentRoot,
-    });
+    // Run pageSizes.ts through Node's native TypeScript type stripping rather
+    // than ts-node: the TypeScript 6.0 + ts-node combo fails on Node 22
+    // (ERR_UNKNOWN_FILE_EXTENSION and a TS5107 deprecation error).
+    // --experimental-strip-types is required for earlier versions of Node
+    // (stripping is on by default only from 22.18); the disable-warning flags
+    // silence the harmless experimental and typeless-package.json notices.
+    await runCommand(
+        "node",
+        [
+            "--experimental-strip-types",
+            "--disable-warning=ExperimentalWarning",
+            "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+            "pageSizes.ts",
+        ],
+        {
+            cwd: contentRoot,
+        },
+    );
 
     // Type-check before bundling. Vite/esbuild strips types without checking them,
     // so this is our only build-time guard against type errors (it fails on the

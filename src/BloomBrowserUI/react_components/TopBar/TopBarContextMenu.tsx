@@ -30,6 +30,12 @@ export const TopBarContextMenu: React.FunctionComponent<{
         React.useState(false);
     const [isMeddlingWithNewFiles, setIsMeddlingWithNewFiles] =
         React.useState(false);
+    const [runFreezeDoctor, setRunFreezeDoctor] = React.useState(false);
+    const [canChooseDevBloomLibrary, setCanChooseDevBloomLibrary] =
+        React.useState(false);
+    const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
+    const [canRestartViaDevLauncher, setCanRestartViaDevLauncher] =
+        React.useState(false);
 
     const onClose = React.useCallback(() => {
         setMenuPoint(undefined);
@@ -49,6 +55,24 @@ export const TopBarContextMenu: React.FunctionComponent<{
         // the back end for the current value.
         getBoolean("app/isMeddlingWithNewFiles", (value) => {
             setIsMeddlingWithNewFiles(value);
+        });
+        // Persisted across runs, so the check mark has to come from the back end rather than
+        // from local state: it may well have been turned on during a previous session.
+        getBoolean("app/runFreezeDoctor", (value) => {
+            setRunFreezeDoctor(value);
+        });
+        // Only some builds offer the choice of web site, and only the back end knows
+        // which web site this run of Bloom uses.
+        getBoolean("app/canChooseDevBloomLibrary", (value) => {
+            setCanChooseDevBloomLibrary(value);
+        });
+        getBoolean("app/useDevBloomLibrary", (value) => {
+            setUseDevBloomLibrary(value);
+        });
+        // Only a Bloom that go.sh started has a launcher to ask for a restart; in any
+        // other build (including an installed one) there is nothing to talk to.
+        getBoolean("app/canRestartViaDevLauncher", (value) => {
+            setCanRestartViaDevLauncher(value);
         });
 
         const target = props.targetRef.current;
@@ -86,7 +110,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
     }
 
     const menuItems = React.useMemo<ITopBarContextMenuItem[]>(() => {
-        return [
+        const items: ITopBarContextMenuItem[] = [
             {
                 label: "1024 x 586 Low-end netbook with windows Task bar",
                 onClick: () => {
@@ -152,8 +176,55 @@ export const TopBarContextMenu: React.FunctionComponent<{
                     setIsMeddlingWithNewFiles(newValue);
                 },
             },
+            {
+                // The Freeze Doctor ships inside Bloom but does nothing unless switched on here.
+                // Turning it on starts it immediately, so you can switch it on while chasing a freeze
+                // rather than having to restart Bloom first.
+                label: "Run Freeze Doctor",
+                selected: runFreezeDoctor,
+                onClick: () => {
+                    const newValue = !runFreezeDoctor;
+                    postBoolean("app/runFreezeDoctor", newValue);
+                    setRunFreezeDoctor(newValue);
+                },
+            },
         ];
-    }, [alwaysMeasurePerformance, currentlyMeasuring, isMeddlingWithNewFiles]);
+        if (canRestartViaDevLauncher) {
+            items.push({ label: "-" });
+            items.push({
+                // The launcher quits this Bloom, lets dotnet watch rebuild, and starts it
+                // again -- the terminal's own "Ctrl+R" offer never reaches dotnet watch,
+                // whose stdin the launcher leaves closed.
+                label: "Restart Bloom (rebuilds C#)",
+                onClick: () => {
+                    post("app/restartViaDevLauncher");
+                },
+            });
+        }
+        if (canChooseDevBloomLibrary) {
+            items.push({ label: "-" });
+            items.push({
+                // Changing this restarts Bloom, because the upload destination and the login
+                // belong to one run only.
+                label: "Use dev.BloomLibrary.org (restarts Bloom)",
+                selected: useDevBloomLibrary,
+                onClick: () => {
+                    const newValue = !useDevBloomLibrary;
+                    postBoolean("app/useDevBloomLibrary", newValue);
+                    setUseDevBloomLibrary(newValue);
+                },
+            });
+        }
+        return items;
+    }, [
+        alwaysMeasurePerformance,
+        currentlyMeasuring,
+        isMeddlingWithNewFiles,
+        runFreezeDoctor,
+        canChooseDevBloomLibrary,
+        useDevBloomLibrary,
+        canRestartViaDevLauncher,
+    ]);
 
     return (
         <Menu

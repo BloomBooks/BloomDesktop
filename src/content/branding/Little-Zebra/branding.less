@@ -24,9 +24,19 @@
 div.titlePage [data-book="title-page-branding-bottom-html"] {
     max-height: 24mm;
     line-height: 18px;
+    // This block is a flex column (see branding-base.less) and the xmatter lets the flexbox
+    // shrink it when the title page is tight. By default the logo refuses to shrink
+    // (min-height:auto on a replaced element), so the tagline was the only thing that could
+    // give, and its second line ended up off the bottom of the page (BL-16774). Reverse
+    // that: the logo yields height (object-fit:contain keeps its shape), the tagline always
+    // keeps both of its lines. Where there is room, nothing changes.
     img {
         margin-bottom: 5px;
         height: 13mm;
+        min-height: 0;
+    }
+    p {
+        flex-shrink: 0;
     }
 }
 [data-book="credits-page-branding-top-html"] img {

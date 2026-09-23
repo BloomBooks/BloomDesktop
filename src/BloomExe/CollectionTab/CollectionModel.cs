@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -19,8 +20,8 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
-using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
@@ -708,19 +709,63 @@ namespace Bloom.CollectionTab
             }
         }
 
-        public void BringBookUpToDate()
+        /// <summary>
+        /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
+        /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind the collection
+        /// tab's embedded React progress dialog, and reselects the book once the dialog closes so
+        /// the collection shows the result.
+        /// </summary>
+        /// <remarks>
+        /// The per-page part used to be done by driving the live Edit tab through the pages
+        /// (BL-16595). That saved each page the instant it loaded, which could capture a page in the
+        /// middle of an asynchronous fix-up (BL-16870). ProcessBook's off-screen capture waits for
+        /// those to finish, and it is all-or-nothing: a failure on any page leaves the book as the
+        /// whole-book update left it rather than half-processed.
+        ///
+        /// The work runs on the progress dialog's background worker: ProcessBook blocks on its own
+        /// off-screen browser thread, and the pages it loads call back into Bloom's API server, so
+        /// it must not run on the UI thread. Like the other embedded-dialog callers, this returns
+        /// as soon as the dialog is open, not when the work is done. If ProcessBook throws, the
+        /// dialog shows the error and stays open with Close and Report buttons; either way the book
+        /// is reselected when the dialog closes.
+        /// </remarks>
+        public async Task BringBookUpToDateAsync()
         {
             var b = _bookSelection.CurrentSelection;
-            _bookSelection.SelectBook(null);
+            if (b == null)
+                return;
+            // Deselect while we rewrite the book, so nothing (e.g. the preview) holds its files.
+            SelectBookOnUiThread(null);
 
-            using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
-            {
-                // Since the user explicitly told us to do this again, we will, even if we think
-                // it's already been done.
-                dlg.ShowAndDoWork(progress => b.BringBookUpToDate(progress));
-            }
-
-            _bookSelection.SelectBook(b);
+            await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
+                _webSocketServer,
+                (progress, worker) =>
+                {
+                    try
+                    {
+                        // Since the user explicitly told us to do this again, we will, even if we
+                        // think it's already been done. (ProcessBook calls BringBookUpToDate, which
+                        // forces a full update.)
+                        BookProcessor.ProcessBook(b, progress: new WebProgressAdapter(progress));
+                    }
+                    catch (Exception e)
+                    {
+                        // The dialog will show the message; make sure the details reach the log too.
+                        Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
+                        throw;
+                    }
+                    return Task.FromResult(false); // false => close the dialog when we finish
+                },
+                "collectionTab",
+                // Same string (and id) as the menu command that got us here.
+                LocalizationManager.GetString(
+                    "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                    "Update Book"
+                ),
+                showCancelButton: false,
+                doWhenDialogCloses: () => SelectBookOnUiThread(b),
+                determinate: true
+            );
         }
 
         /// <summary>
@@ -1010,7 +1055,7 @@ namespace Bloom.CollectionTab
                         // show it
                         Logger.WriteEvent("Showing BloomPack on disk");
                         ProcessExtra.ShowFileInExplorerInFront(outputPath);
-                        Analytics.Track("Create BloomPack");
+                        BloomAnalytics.Track("Create BloomPack");
                     }
                     finally
                     {
@@ -1222,7 +1267,7 @@ namespace Bloom.CollectionTab
                 //enhance: would be nice to know if this is a new shell
                 if (!sourceBook.IsInEditableCollection)
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "Create Book",
                         new Dictionary<string, string>()
                         {

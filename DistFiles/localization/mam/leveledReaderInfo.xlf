@@ -73,22 +73,22 @@ Tana tal nchi’sa tzul b’ina tu'n ya’ xjaw</g>
         <note>ID: leveled.reader.illustrations</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.help" approved="yes">
-        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex pictures may be difficult to understand.</source>
+        <source xml:lang="en">Illustrations provide support to the story. Illustrations relate to the story in different ways at different <g id="genid-5" ctype="x-html-em">levels</g> and for different types of readers (see below). Remember that in many cultures that don't have a lot of printed material around, complex images may be difficult to understand.</source>
         <target xml:lang="mam" state="final">Qe' tilb’ilal tuj jun pakab’ nchi ajb’en te onb’il. At kyoklen tilb’ilal tuj qe' b'ib'itz tuj qe ila’ wiq tnab’il tuj qe ila’ wiq <g id="genid-5" ctype="x-html-em">kol nya' ma' tuj</g> ex kye qe' ila wiq u'jil (ka'yin tjaq’). Min ku'x naj ti'j tk'u'ja qa tuj qe ila’ wiq kyanq’ib’il qe xjal nti’ u’jb'il b'incha'n, ja'ka b’ant kyiw ti'j tu'n tel kyniky’ ti’j tilb’ilal nim kyxilen.</target>
         <note>ID: leveled.reader.illustrations.help</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.emergent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the pictures should closely match the storyline. The reader should be able to predict the story line just by looking at the pictures. The illustrations at this level should be simple.</source>
+        <source xml:lang="en">For <g id="genid-6" ctype="x-html-strong">Emergent Readers</g> the images should closely match the storyline. The reader should be able to predict the story line just by looking at the images. The illustrations at this level should be simple.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-6" ctype="x-html-strong">u'jil na'mx tb'ant kyu'n</g> qe' tilb’ilal ilti’j at kyxilen tuk'il b'ib'il mo tuk'il na'l tqanil. Ok til jun tilb’ilal jun u'jil, ja'ku b'a'n tzaj tq'uma'n ti' t-xilen b'ib'il mo na'l tqanil. Qe' tilb’ilal tuj kol mya' ma' tuj lu’ ilti’j mya’ nim tok ti’j.</target>
         <note>ID: leveled.reader.illustrations.emergent.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.illustrations.early.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the pictures should offer some support to the story line. As the amount of text increases, the reader is less reliant on the pictures and gets more meaning from the text. The illustrations can be more complex.</source>
+        <source xml:lang="en">For <g id="genid-7" ctype="x-html-strong">Early Readers</g> the images should offer some support to the story line. As the amount of text increases, the reader is less reliant on the images and gets more meaning from the text. The illustrations can be more complex.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-7" ctype="x-html-strong">U'jil ma nb'ant kyu'nl</g> qe tilb’ilal ilti’j tu’n t-xi’ toyin onb’il ti’j t-xilen b'ib'il tza’n nch’iy txolyol, te u'jil mya’ nxi’ qe’ tk’u’j ti’j qe tilb’ilal ex ne’lxe tniky’ ti'j txolyol. B'a'n tu'n kyb'ant qe' tilb’ilal kyiw tu’n tel qniky’ ti’j.</target>
         <note>ID: leveled.reader.illustrations.early.reader</note>
       </trans-unit>
       <trans-unit id="leveled.reader.fluent.reader" approved="yes">
-        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the pictures should offer little or no support to the story line. The reader relies more on the text than the pictures for meaning. The illustrations can be even more complex.</source>
+        <source xml:lang="en">For <g id="genid-8" ctype="x-html-strong">Fluent Readers</g> the images should offer little or no support to the story line. The reader relies more on the text than the images for meaning. The illustrations can be even more complex.</source>
         <target xml:lang="mam" state="final">Kye qe <g id="genid-8" ctype="x-html-strong">u'jil b'a'nxix kyu'n</g> qe tilb’ilal ja'ka b’ant noq ch'in mo min ntzaj kyq’o’n onb’il ti’j t-xilen b'ib'itz. K'elel tniky' u'jil o'kx tu'n txolyol, mya' ilti'j qe' tilb'ilal. Aqe tzan tilb'ilal ja'ka b’ant tu’n kyok kyiwxix tu’n tel qniky’ kyi’j.</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>

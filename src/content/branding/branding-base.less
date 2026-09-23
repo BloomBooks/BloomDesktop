@@ -34,6 +34,32 @@ Rules that format the branding go in branding-base.less, or in the branding.less
     // the height.   img {   height: 20mm;  }
 }
 
+// Opt-in mixin for brandings that put the tall "Made with Bloom" QR badge in the back cover's
+// TOP slot and their own logo in the BOTTOM slot.
+//
+// The back cover's marginBox is a flex column: [top slot] [editable "more info" text box]
+// [bottom slot]. The shared rule in bloom-xmatter-common.less gives the text box
+// `min-height: 30%; flex: 1`. The `flex: 1` is what pushes the bottom slot down to the bottom of
+// the page, and it already fills whatever space is going spare, so the 30% floor only ever comes
+// into play when there ISN'T that much space — and then, being a floor, it can't yield. The
+// column overflows instead, and since .bloom-page clips, the bottom logo loses its lower edge.
+// That is BL-16370: on Device16x9Landscape the marginBox is only ~94.7mm tall, so 30% is ~28.4mm,
+// and once the badge's caption wraps to a third line the badge + 28.4mm + gap + logo no longer
+// fit. Dropping the floor to 0 lets the gap simply collapse on a short page; on a tall page
+// `flex: 1` still expands the box, so the badge stays at the top and the logo at the bottom.
+// (The box still grows to hold whatever text the user actually types.)
+//
+// This is a mixin rather than a plain rule because it must NOT apply to every branding: the
+// ~70 existing packs were laid out against the 30% floor, and changing it for all of them is
+// too much risk (the same reasoning as the note in FCH/branding.less). Call it from the
+// branding.less of any pack that stacks the badge above a bottom-slot logo.
+.allow-back-cover-text-box-to-squeeze() {
+    .outsideBackCover .marginBox .bloom-translationGroup {
+        min-height: 0;
+        flex: 1; // grow to fill the space between the top badge and the bottom-anchored logo
+    }
+}
+
 /*  these rules allow different branding insertions depending on orientation */
 .portraitOnly,
 .landscapeOnly {
@@ -69,6 +95,12 @@ Rules that format the branding go in branding-base.less, or in the branding.less
     }
 }
 
+// Note for branding authors: the badge inside this wrapper has its own
+// img.branding. If your branding also puts artwork of its own on the same
+// data-book element, don't style bare `img.branding` there or you will hit the
+// badge too. Use a child selector (`> img.branding`) for your artwork. A
+// percentage height/max-height is especially dangerous, since inside the wrapper
+// it resolves against the short wrapper rather than the page. (BL-16598)
 .bloom-branding-wrapper {
     border: 5px solid @bloom-red;
     // there may be a little space between our logo and the border,
@@ -111,13 +143,32 @@ Rules that format the branding go in branding-base.less, or in the branding.less
         // and probably won't look bad for wider logos, though it might
         // look strange with a much narrower one.
         max-width: 7cm;
+
+        // The BloomLibrary.org address sits on its own line beneath the caption
+        // text, in Bloom red to read as a link.
+        .bloom-blorg-url {
+            color: @bloom-red;
+            font-weight: bold;
+        }
     }
 }
 
-// Allow all custom back cover pages to use text canvas elements, even when the branding
-// prevents customized text in the normal places by hiding the .bloom-translationGroup. (BL-16106)
+// Allow any custom-layout xmatter page to use text canvas elements, even when the branding
+// prevents customized text in the normal places by hiding the .bloom-translationGroup.
+// (BL-16106 for the outside back cover; generalized to any such page for BL-16648, which
+// enables custom layout on the inside back cover.)
 // (But, we don't want to force any image description to be visible!)
-.outsideBackCover.bloom-customLayout[data-custom-layout-id="customOutsideBackCover"]
+//
+// About the !important and the specificity: brandings hide these groups in their own
+// branding.less files, each of which @imports this file first, so on a tie the branding
+// wins. Almost every branding hides the group without !important, so it loses to the
+// !important here whatever its specificity. The one exception is RobotsMali, which hides
+// the inside back cover's group with !important at (0,3,0)
+// (.insideBackCover .marginBox .bloom-translationGroup); it is the only reason we need both
+// !important and a selector above (0,4,0). This selector is (0,6,0) -- the same as the
+// outside-back-cover-only rule it replaced -- which leaves headroom if some branding ever
+// gets more specific still.
+.bloom-page.bloom-customLayout[data-custom-layout-id]
     .marginBox
     .bloom-translationGroup:not(.bloom-imageDescription) {
     display: flex !important; // flex is the default set in basePage.less for .bloom-translationGroup

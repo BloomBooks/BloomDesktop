@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Bloom.web.controllers;
 using BloomTemp;
@@ -153,6 +155,82 @@ namespace BloomTests.web.controllers
                     sourceBookPaths
                 );
                 Assert.AreEqual(3, result.Count, "Should list each unique path, not name.");
+            }
+        }
+
+        /// <summary>
+        /// A book folder can be deleted while we are part way through scanning its collection --
+        /// by a sync client, an antivirus tool, or the user. That must not abort the whole scan.
+        /// See BL-16661, where one folder disappearing took out a whole test fixture.
+        /// </summary>
+        [Test]
+        public void GetBooksInCollectionDirectories_FolderDeletedPartWayThrough_SkipsItAndKeepsGoing()
+        {
+            using (var collection = new TemporaryFolder("FolderDeletedPartWayThrough"))
+            {
+                var bookA = new TemplateBookTestFolder(collection.FolderPath, "a book");
+                File.WriteAllText(bookA.HtmlPath, "<html></html>");
+                var bookB = new TemplateBookTestFolder(collection.FolderPath, "b book");
+                File.WriteAllText(bookB.HtmlPath, "<html></html>");
+
+                // Sanity check: both books are really there, and findable, before we start.
+                Assert.That(File.Exists(bookA.HtmlPath), Is.True);
+                Assert.That(File.Exists(bookB.HtmlPath), Is.True);
+                Assert.That(
+                    Directory.GetDirectories(collection.FolderPath).Length,
+                    Is.EqualTo(2),
+                    "Setup sanity check: the collection should contain exactly the two book folders."
+                );
+
+                var found = new List<string>();
+                string deletedBookPath;
+                // The result is lazy, so pulling one item at a time lets us delete a book folder
+                // mid-scan -- exactly the race this guards against.
+                using (
+                    var scan = PageTemplatesApi
+                        .GetBooksInCollectionDirectories(new[] { collection.FolderPath })
+                        .GetEnumerator()
+                )
+                {
+                    Assert.That(scan.MoveNext(), Is.True, "Should have found one of the books.");
+                    found.Add(scan.Current);
+
+                    // Delete whichever book the scan has NOT yet handed us. Which one that is
+                    // depends on the order Directory.GetDirectories returns folders in, and that
+                    // is up to the file system -- alphabetical on NTFS, arbitrary on ext4 -- so
+                    // work it out at run time rather than assuming "b book" comes second.
+                    var notYetSeen = string.Equals(
+                        found[0],
+                        bookA.HtmlPath,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                        ? bookB
+                        : bookA;
+                    deletedBookPath = notYetSeen.HtmlPath;
+                    var deletedFolder = Path.GetDirectoryName(deletedBookPath);
+
+                    SIL.IO.RobustIO.DeleteDirectoryAndContents(deletedFolder);
+                    Assert.That(
+                        Directory.Exists(deletedFolder),
+                        Is.False,
+                        "Sanity check: the book folder we deleted should now be gone."
+                    );
+
+                    // Before the fix this threw, killing the whole scan.
+                    while (scan.MoveNext())
+                        found.Add(scan.Current);
+                }
+
+                Assert.That(
+                    found,
+                    Has.None.EqualTo(deletedBookPath),
+                    "The book whose folder was deleted should not have been reported as a book."
+                );
+                Assert.That(
+                    found.Count,
+                    Is.EqualTo(1),
+                    "The surviving book should have been found, and the deleted one skipped rather than aborting the scan."
+                );
             }
         }
     }

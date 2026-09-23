@@ -8,7 +8,7 @@
         <note>ID: wall.calendar</note>
       </trans-unit>
       <trans-unit id="wall.calendar.use" approved="yes">
-        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with a picture and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
+        <source xml:lang="en">Using this template, you can make an A5-size 12 month calendar, with an image and quotation on the top page, and days on the bottom. The calendar will use the names of months and days in your language.</source>
         <target xml:lang="zh-CN" state="final">使用此模板，您可以制作A5尺寸的全年挂历，图片和引用语句在页面上方，页面下方显示日期。 将用您的语言显示日历上的月份和日期。</target>
         <note>ID: wall.calendar.use</note>
       </trans-unit>

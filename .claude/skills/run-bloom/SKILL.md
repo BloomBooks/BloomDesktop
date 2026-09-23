@@ -1,165 +1,101 @@
 ---
 name: run-bloom
-description: Run, launch, screenshot, or drive the Bloom desktop app (Bloom.exe with embedded WebView2). Use when you need to start Bloom from this worktree, attach to a running Bloom, switch workspace tabs, take a screenshot, inspect DOM/console/network over CDP, or stop a Bloom instance.
-model: sonnet
+description: Run, restart, stop, or drive the Bloom desktop app (Bloom.exe with its embedded WebView2) from this worktree — start it through the dev launcher, attach over CDP to inspect DOM/console/network or take a screenshot, switch workspace tabs, drive its HTTP API, dismiss a "Bloom had a problem" dialog, find or stop a Bloom another worktree started. Use whenever a task needs a running Bloom or needs to look at what Bloom is showing.
+argument-hint: "what you need: status, start, restart after a C# change, screenshot, attach, stop; and which worktree"
 ---
 
 # Run Bloom (desktop app)
 
-Bloom is a C#/WinForms shell hosting a React UI in WebView2. You drive it
-programmatically: launch with `./go.sh`, discover the instance's HTTP/CDP
-ports, then attach over CDP. The driver scripts live in
-`.github/skills/bloom-automation/` (shared with Copilot agents) plus
-`screenshotBloom.mjs` in this skill directory. All paths below are relative
-to the repo root; all commands are bash unless noted.
+Bloom is a C#/WinForms shell hosting a React UI in WebView2. You drive it through the dev
+launcher's control API and CDP. This file is the quick path; `reference.md` beside it has every
+mechanism, rule, and field-verified gotcha, and the driver scripts live in this folder. Paths
+are repo-root-relative; commands are bash.
 
-For deep detail (multi-instance rules, exe-backed Playwright tests, CDP
-workflow), read `.github/skills/bloom-automation/SKILL.md`. This skill is the
-verified quick path.
-
-## Prerequisites
-
-Dev machines already have: node 22 + pnpm 11.5.2 (see .node-version and the
-packageManager field), .NET SDK 10, WebView2 runtime. On a machine missing
-dependencies, run `./init.sh` (fetches C# deps, pnpm installs, initial
-`pnpm build`) — documented but not re-verified here; a failed C# build with
-CS0246 errors (missing `PodcastUtilities` etc.) means `./init.sh` is needed.
-
-Never run `pnpm build` while a watch/dev build is running (see AGENTS.md).
-Never launch a previously built `Bloom.exe` directly — it can be stale.
-
-## Step 1: Is Bloom already running?
+## 1. Make sure Bloom is running
 
 ```bash
-node .github/skills/bloom-automation/bloomProcessStatus.mjs --running-bloom --json
+node .claude/skills/run-bloom/launcherControl.mjs --status --json
+# exit 0 → launcher live; status has state, httpPort, cdpPort, vitePort, bloomProcessId
+# exit 2 → nobody home (or starting:true = a launch is underway; never start another)
+node .claude/skills/run-bloom/launcherControl.mjs --ensure-running --wait-ready --json
 ```
 
-Look at `runningBloomInstances` — each entry has `httpPort`, `cdpPort`,
-`processId`, `detectedRepoRoot`, `vitePort`. This discovery is HTTP-based
-(scans Bloom's standard port range, asks each instance
-`/bloom/api/common/instanceInfo`) and keeps working even when WMI breaks
-(see Gotchas). If an instance from **this** worktree is running, reuse it
-and skip to Step 3. Don't kill another worktree's Bloom without asking.
+`--ensure-running` handles everything: stale discovery files, a launcher mid-startup (waits
+instead of double-launching), an uninitialized worktree (go.mjs runs `./init.sh` itself,
+`phase:"init"`), and starting the stack decoupled from your session (an Orca terminal tab when
+available, else detached to `output/bloom-launcher.log`). Never launch `./go.sh` tied to your own
+shell except when debugging the launcher itself, and never run an already-built `Bloom.exe`
+directly (it is stale).
 
-## Step 2: Launch from source
+A cold first build outlasts `--wait-ready`'s default patience: the wait can give up while
+`--status` still says `state:"building"`, and that is not a failure. Pass `--timeout-ms 600000`,
+run the command as a background task and act on its completion; never sleep-poll `--status`, and
+never re-invoke `--ensure-running` after a timeout without checking `--status` first.
 
-Run in a **background** task (it is a long-lived launcher — never wait for
-exit):
+## 2. Get a .NET change into Bloom
 
 ```bash
-./go.sh > /tmp/go-bloom.log 2>&1   # run_in_background
+node .claude/skills/run-bloom/launcherControl.mjs --restart --wait-ready --json
 ```
 
-It starts Vite on a random port, waits for quiescence, then `dotnet watch
-run` on `src/BloomExe`. Poll the log for the ready line (~2–4 min when the
-C# build is warm):
+The only way: never ask the human to quit and restart, never kill and relaunch by hand. It
+returns the fresh ports. Front-end (`.ts`/`.tsx`/`.less`) edits need no restart; the Vite dev
+server pushes them into the running Bloom.
+
+## 3. Drive it
 
 ```bash
-until grep -qE "Bloom ready\. HTTP|exited shortly after" /tmp/go-bloom.log; do sleep 2; done
-grep -E "Bloom ready\. HTTP" /tmp/go-bloom.log | tail -1
-# => Bloom ready. HTTP 8092, CDP 8094, Bloom PID 51040.
-```
-
-The same info is on the machine-readable line
-`BLOOM_AUTOMATION_READY {"processId":...,"httpPort":...,"cdpPort":...}`.
-Use that HTTP port as the identity of your instance in every later command.
-Multiple instances coexist; each takes the next port block (8089, 8092, …).
-
-Sanity check the instance:
-
-```bash
-curl -s http://localhost:<httpPort>/bloom/api/common/instanceInfo
-```
-
-## Step 3: Drive it
-
-Switch workspace tabs (clicks the real tab over CDP, waits for the backend
-to report it active):
-
-```bash
-node .github/skills/bloom-automation/switchWorkspaceTab.mjs --http-port <httpPort> --tab edit --json
-# --tab collection | edit | publish
-```
-
-Screenshot the embedded browser (lands in git-ignored `output/`):
-
-```bash
+node .claude/skills/run-bloom/switchWorkspaceTab.mjs --http-port <httpPort> --tab edit --json   # collection | edit | publish
 node .claude/skills/run-bloom/screenshotBloom.mjs --http-port <httpPort> --out output/screenshots/bloom.png --json
+node .claude/skills/run-bloom/webview2Targets.mjs --http-port <httpPort> --json --wait          # the live CDP target
 ```
 
 For arbitrary DOM/console/network work, attach Playwright (loaded from
-`src/BloomBrowserUI/react_components/component-tester`) to
-`http://localhost:<cdpPort>` with `chromium.connectOverCDP` — see
-`switchWorkspaceTab.mjs` and `screenshotBloom.mjs` as templates. On the Edit
-tab, the page content lives inside the iframe named `page`; the top-level
-document is shell UI.
+`src/BloomBrowserUI/react_components/component-tester`) to `http://127.0.0.1:<cdpPort>` with
+`chromium.connectOverCDP`; the scripts above are templates. On the Edit tab the page content is
+inside the iframe named `page`. Drive the UI by clicking and typing; use Bloom's HTTP API only for
+scripted batch setup, from inside the page (`reference.md`, "Driving Bloom HTTP APIs over CDP").
+Never send a request to a live Bloom just to see whether an endpoint exists: an unknown endpoint
+raises a modal error dialog on the developer's screen. Grep `src/BloomExe/web` instead.
 
-## Step 4: Stop the instance you started
+If a **"Bloom had a problem"** dialog appears, never leave it or click past it:
+`node .claude/skills/run-bloom/dismissProblemDialog.mjs --http-port <httpPort> --json` gathers the
+underlying exception and closes it without submitting a report. A problem that reappears after
+being closed is a real bug in the code under test.
+
+## 4. Stop it
 
 ```bash
-node .github/skills/bloom-automation/killBloomProcess.mjs --http-port <httpPort> --json
+node .claude/skills/run-bloom/launcherControl.mjs --quit-bloom   # Bloom off (graceful); launcher parked for --start/--restart
+node .claude/skills/run-bloom/launcherControl.mjs --shutdown     # everything down: Bloom, dotnet watch, launcher, Vite
 ```
 
-Check that `killedProcessIds` includes **the Bloom PID itself**, not just
-its `dotnet` parents. In real runs here it was sometimes `[]` (WMI blind +
-`taskkill` failing silently) and sometimes partial (parents killed, Bloom.exe
-survived). For any PID still standing, fall back to PowerShell:
+## Behavior notes
 
-```powershell
-Stop-Process -Id <bloomPid> -Force
-```
+- **The human closing Bloom (window X) shuts the whole stack down** (by design, to free memory).
+  A launcher that was there and is gone usually means exactly that; `--ensure-running` again when
+  needed. dotnet-watch rebuilds after C# edits do not tear the stack down.
+- `/status`'s `sourceChangedSinceReady` says whether a restart would pick up .NET changes; it also
+  drives the dev-only restart toast Bloom shows itself.
+- **Port 8089 is first-come, not per-worktree.** Always take `httpPort`/`cdpPort` from the
+  launcher status; a hard-coded 8089 may be another worktree's Bloom.
+- Human path: `./go.sh` in a terminal; Ctrl+C tears everything down.
 
-Then stop the `./go.sh` background task itself (TaskStop or kill its shell).
-This matters: after Bloom.exe dies, its `dotnet watch` chain stays alive
-("Waiting for a file to change before restarting") and will **relaunch Bloom
-on the next C# file edit** if left orphaned.
+## No launcher? (Bloom started some other way)
 
-## Human path
+Discover instances with `node .claude/skills/run-bloom/bloomProcessStatus.mjs --running-bloom --json`
+(HTTP-based; each entry has httpPort/cdpPort/processId/detectedRepoRoot) and stop with
+`killBloomProcess.mjs`. That path has sharp edges (WMI going blind, under-kills, orphaned
+watchers): read "Field-verified gotchas" in `reference.md` first, and never kill another
+worktree's Bloom without asking. A Bloom from the wrong worktree is a blocker, not something to
+work around.
 
-`./go.sh` in a terminal; the Bloom window opens on the desktop; Ctrl+C shuts
-the whole flow down.
+## Beyond the web content
 
-## Gotchas (all hit in real runs)
+The "Edit with AI…" image editor spans a third frame and has a free dummy model for zero-cost
+runs: `ai-image-editor-driving.md` in this folder and `driveAiImageEditor.mjs`.
 
-- **WMI/wmic can go blind mid-session.** `bloomProcessStatus.mjs` (plain
-  mode) and `killBloomProcess.mjs` enumerate processes via `wmic`; on this
-  machine WMI stopped answering partway through a session — status reported
-  zero Bloom processes while one was demonstrably serving HTTP, and
-  `Get-CimInstance` hung for minutes. Trust the HTTP-based
-  `--running-bloom` discovery and `instanceInfo` over process enumeration.
-- **`killBloomProcess.mjs` under-kills.** Observed both `killedProcessIds:
-  []` for a valid target and partial kills where the `dotnet watch` parents
-  died but Bloom.exe survived. Always verify the port went dark
-  (`instanceInfo` curl fails) and the Bloom PID is gone; `Stop-Process` any
-  survivors.
-- **Orphaned `dotnet watch` chains relaunch Bloom.** If Bloom.exe is killed
-  but its watcher chain survives (e.g. someone kills Blooms from Task
-  Manager), the watchers sit at "Waiting for a file to change" and respawn
-  Bloom on the next C# edit. Check with `bloomProcessStatus.mjs --json`
-  (`watchProcesses`) and `Stop-Process` stale ones.
-- **Never type `taskkill /PID ...` in Git Bash** — MSYS rewrites `/PID` to
-  `C:/Program Files/Git/PID`. Use the node helpers or PowerShell.
-- **Grep for `Bloom ready\. HTTP`, not `Bloom ready\.`** — early in the log
-  watchBloomExe prints an instructional message that *quotes* the phrase
-  `'Bloom ready.'`, which matches the looser pattern long before launch
-  completes.
-- **`dotnet watch` noise:** the launch log contains scary
-  `⚠ msbuild: [Failure] Package 'X' was restored using .NETFramework...`
-  lines. They are warnings; launch still succeeds. Don't grep the log for
-  bare `Failure`/`error` as a failure signal — wait for `Bloom ready.` or
-  `exited shortly after` instead.
-- **`bloomProcessStatus.mjs` may print
-  `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`** (libuv, on
-  exit, after the JSON is complete). Ignore it; the JSON on stdout is valid.
-- **Agent shells may auto-background kill commands.** Capture the task
-  output file and read it; don't assume the inline result is the output.
-- `body.className` of the top-level page is `developer` in dev builds;
-  page URL looks like `http://localhost:<port>/bloom/C%3A/...Temp/bloomXXXX.htm`.
-
-## Tests
-
-Exe-backed Playwright suite (not re-run this session; see
-`.github/skills/bloom-automation/SKILL.md` for detail): from
-`src/BloomBrowserUI/react_components/component-tester`,
-`BLOOM_HTTP_PORT=<httpPort> pnpm playwright test --config playwright.bloom-exe.config.ts`.
-TypeScript unit tests: `pnpm test` in `src/BloomBrowserUI` (Vitest).
+WinForms dialogs (the collection Settings dialog's tabs and buttons) and native OS dialogs (the
+file picker, a raw `MessageBox`) are outside CDP's reach; `winformsUia.ps1` in this folder drives
+them over Windows UI Automation with no pointer or keyboard input (`reference.md`, "Driving
+WinForms and OS dialogs").

@@ -36,6 +36,13 @@ namespace Bloom.Spreadsheet
         private const int languageColumnWidth = 30;
         private const int defaultImageWidth = 150; //width of images in pixels.
 
+        // The resolution we stamp on every thumbnail we embed, so that the spreadsheet does not
+        // depend on the display of the machine that exported it. See SaveThumbnailForEmbedding.
+        // Row heights are converted from thumbnail pixels to points against this same value, so the
+        // two must agree: use this constant rather than writing 96 again, or a change here would
+        // leave the rows sized for a resolution the images no longer have.
+        private const int standardImageDpi = 96;
+
         static SpreadsheetIO()
         {
             // The package requires us to do this as a way of acknowledging that we
@@ -153,7 +160,7 @@ namespace Bloom.Spreadsheet
                                 //Images show up in the cell 1 row greater and 1 column greater than assigned
                                 //So this will put them in row r, column imageThumbnailColumn+1 like we want
                                 var rowHeight = embedImage(imagePath, r - 1, imageThumbnailColumn);
-                                worksheet.Row(r).Height = rowHeight * 72 / 96 + 3; //so the image is visible; height seems to be points
+                                worksheet.Row(r).Height = rowHeight * 72 / standardImageDpi + 3; //so the image is visible; height seems to be points
                             }
                         }
                     }
@@ -214,16 +221,19 @@ namespace Bloom.Spreadsheet
                             finalHeight = (int)(finalWidth * origImageHeight / origImageWidth);
                             var size = new Size(finalWidth, finalHeight);
                             using (
-                                Image thumbnail = ImageUtils.ResizeImageIfNecessary(
-                                    size,
-                                    image,
-                                    false
-                                )
+                                var thumbnail = (Bitmap)
+                                    ImageUtils.ResizeImageIfNecessary(size, image, false)
                             )
                             {
+                                // Size the row from the thumbnail we actually embedded, not from the target
+                                // computed above: ResizeImageIfNecessary never enlarges, so a source
+                                // narrower than defaultImageWidth is embedded at its original, smaller
+                                // size, and sizing the row from the target would leave dead space below
+                                // the image. See BL-16529.
+                                finalHeight = thumbnail.Height;
                                 using (var ms = new MemoryStream())
                                 {
-                                    thumbnail.Save(ms, ImageFormat.Jpeg);
+                                    SaveThumbnailForEmbedding(thumbnail, ms);
                                     ms.Seek(0, SeekOrigin.Begin);
                                     var excelImage = worksheet.Drawings.AddPicture(imageName, ms);
                                     excelImage.SetPosition(rowNum, 2, colNum, 2);
@@ -274,6 +284,33 @@ namespace Bloom.Spreadsheet
                 var xlFile = new FileInfo(outputPath);
                 package.SaveAs(xlFile);
             }
+        }
+
+        /// <summary>
+        /// Write the thumbnail into the stream as the JPEG we embed in the spreadsheet, stamped with
+        /// the standard 96dpi.
+        ///
+        /// The stamping is the whole point of this method. ResizeImageIfNecessary hands back a GDI+
+        /// bitmap, which inherits the screen's DPI -- and since Bloom became PerMonitorV2 DPI aware
+        /// (see Program.cs), that is 192 on a 200%-scaled display rather than 96. EPPlus converts the
+        /// image's pixel size into the drawing's physical extent using the image's own resolution, so
+        /// a 192dpi thumbnail got laid out at half its intended size: the "images only take up half
+        /// the column width" symptom. Stamping 96dpi makes the spreadsheet we write the same whatever
+        /// display the exporting machine has. See BL-16529.
+        ///
+        /// This is a separate method only so a test can prove the stamping happens: it can hand us a
+        /// bitmap deliberately marked 192dpi, which is something no test can arrange by exporting on
+        /// a machine whose display is at 100% (where the bitmap already arrives at 96dpi, so a missing
+        /// stamp looks identical to a working one). Our build machines are all at 100%.
+        ///
+        /// Note this alters the bitmap you pass in: SetResolution works in place, and Bitmap.Save
+        /// offers no way to override the resolution as it writes. Harmless for the thumbnails we
+        /// create and dispose here, but don't hand this a bitmap that is shared or cached.
+        /// </summary>
+        internal static void SaveThumbnailForEmbedding(Bitmap thumbnail, Stream destination)
+        {
+            thumbnail.SetResolution(standardImageDpi, standardImageDpi);
+            thumbnail.Save(destination, ImageFormat.Jpeg);
         }
 
         private static bool IsWysiwygFormattedRow(SpreadsheetRow row)

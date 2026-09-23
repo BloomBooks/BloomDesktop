@@ -19,9 +19,10 @@ import { getCanvasElementManager } from "../../toolbox/canvas/canvasElementPageB
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { useL10n } from "../../../react_components/l10nHooks";
+import { useGetFeatureStatus } from "../../../react_components/featureStatus";
 import { kBloomDisabledOpacity } from "../../../utils/colorUtils";
 import { getAsync, useApiObject } from "../../../utils/bloomApi";
-import AudioRecording from "../../toolbox/talkingBook/audioRecording";
+import { audioExistsForIdsAsync } from "../../toolbox/talkingBook/audioUtils";
 import { getAudioSentencesOfVisibleEditables } from "bloom-player";
 import { canvasElementControlRegistry } from "../../toolbox/canvas/canvasElementControlRegistry";
 import { buildCanvasElementControlRegistryContext } from "../../toolbox/canvas/buildCanvasElementControlRegistryContext";
@@ -88,6 +89,10 @@ const CanvasElementContextControls: React.FunctionComponent<{
     };
 
     const menuEl = useRef<HTMLElement | null>(null);
+    // The "Edit with AI" command is an experimental, subscription-gated feature.
+    // Its FeatureStatus.visible reflects whether the experimental feature is on;
+    // we feed that into the control context so the menu item is hidden when off.
+    const aiImageEditingStatus = useGetFeatureStatus("AiImageEditing");
     const languageNameValues = useApiObject<ILanguageNameValues>(
         "settings/languageNames",
         {
@@ -156,7 +161,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
             props.canvasElement,
         );
         const ids = audioSentences.map((sentence) => sentence.id);
-        AudioRecording.audioExistsForIdsAsync(ids)
+        audioExistsForIdsAsync(ids)
             .then((audioExists) => {
                 setTextHasAudio(audioExists);
             })
@@ -454,6 +459,7 @@ const CanvasElementContextControls: React.FunctionComponent<{
         textHasAudio,
         hasClipboardText,
         languageNameValues,
+        aiImageEditingAvailable: aiImageEditingStatus?.visible ?? false,
     };
 
     const definition =

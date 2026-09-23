@@ -72,21 +72,6 @@ namespace BloomTests.Edit
             );
         }
 
-        [Test, Ignore("UI-By hand")]
-        [STAThread]
-        public void ShowConfigureDialog()
-        {
-            var c = new Configurator(_collectionFolder.Path);
-
-            var stringRep = DynamicJson.Serialize(
-                new { library = new { calendar = new { year = "2088" } } }
-            );
-            c.CollectJsonData(stringRep);
-
-            c.ShowConfigurationDialog(Get_NotYetConfigured_CalendardBookStorage().FolderPath);
-            Assert.IsTrue(c.GetCollectionData().Contains("year"));
-        }
-
         [Test]
         public void GetAllData_LocalOnly_ReturnLocal()
         {

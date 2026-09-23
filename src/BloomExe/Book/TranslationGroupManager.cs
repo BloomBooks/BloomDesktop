@@ -154,6 +154,11 @@ namespace Bloom.Book
 
                 foreach (var uiLanguage in LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    // The pseudo-locale is a UI-testing device, not a translation; this loop
+                    // writes into the book's own content, which must never be pseudolocalized.
+                    // See BL-16748.
+                    if (uiLanguage == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue;
                     var translation = LocalizationManager.GetDynamicStringOrEnglish(
                         "Bloom",
                         l10nId,

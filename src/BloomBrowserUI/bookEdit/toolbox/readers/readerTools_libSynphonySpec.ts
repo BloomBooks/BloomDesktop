@@ -7,6 +7,14 @@ import * as _ from "underscore";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import $ from "jquery";
+import {
+    kSightWordHighlight,
+    kWordNotDecodableHighlight,
+} from "./readerHighlights";
+import {
+    getHighlightTexts,
+    installHighlightPolyfill,
+} from "../../test/highlightTestSupport";
 
 describe("readerTools-libSynphony tests", () => {
     function generateTestData() {
@@ -75,7 +83,14 @@ describe("readerTools-libSynphony tests", () => {
     let divTextEntry2;
     let divTextEntry3;
 
+    // The reader tools paint violations with ::highlight() pseudo-elements over Ranges rather
+    // than by inserting spans, so this is how a test sees what got marked.
+    function highlighted(highlightName: string): string[] {
+        return getHighlightTexts(window, highlightName);
+    }
+
     beforeEach(() => {
+        installHighlightPolyfill(window);
         divTextEntry1 = addDiv("text_entry1");
         divTextEntry2 = addDiv("text_entry2");
         divTextEntry3 = addDiv("text_entry3");
@@ -174,34 +189,20 @@ describe("readerTools-libSynphony tests", () => {
         ];
         const text1 = $("#text_entry1");
 
-        // test empty div (just a <br>)
-        text1
-            .html("<br>")
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual("<br>");
-
-        // test end of text followed by <br>
-        text1
-            .html("Cat dog.<br>")
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span> <span class="possible-word" data-segment="word">dog</span>.<br>',
-        );
-
-        // test <br> in middle of text
-        text1
-            .html("Cat.<br>Dog.")
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span>.<br><span class="possible-word" data-segment="word">Dog</span>.',
-        );
-
-        text1
-            .html("Cat<br>Dog.")
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.',
-        );
+        // Every word here is decodable with the given graphemes but was not collected from the
+        // sample texts, so nothing should be marked. (We used to mark these "possible words",
+        // but that feature has long been disabled: it had neither a color nor a tooltip.)
+        // What the original bug was about is that the markup must not disturb the HTML - and
+        // now it never does, whatever it finds.
+        const inputs = ["<br>", "Cat dog.<br>", "Cat.<br>Dog.", "Cat<br>Dog."];
+        inputs.forEach((input) => {
+            text1
+                .html(input)
+                .checkDecodableReader({ knownGraphemes: knownGraphemes });
+            expect(text1.html()).toEqual(input);
+            expect(highlighted(kWordNotDecodableHighlight)).toEqual([]);
+            expect(highlighted(kSightWordHighlight)).toEqual([]);
+        });
     });
 
     it("sightWordOnlyStages", () => {
@@ -215,28 +216,29 @@ describe("readerTools-libSynphony tests", () => {
             .html("<br>")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
         expect(text1.html()).toEqual("<br>");
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual([]);
 
         // no sight words
         text1
             .html("Cat dog.")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
-        expect(text1.html()).toEqual(
-            '<span class="word-not-found" data-segment="word">Cat</span> <span class="word-not-found" data-segment="word">dog</span>.',
-        );
+        expect(text1.html()).toEqual("Cat dog.");
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual(["Cat", "dog"]);
+        expect(highlighted(kSightWordHighlight)).toEqual([]);
 
         // test one sight word
         text1
             .html("Canine Dog.")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
-        expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.',
-        );
+        expect(text1.html()).toEqual("Canine Dog.");
+        expect(highlighted(kSightWordHighlight)).toEqual(["Canine"]);
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual(["Dog"]);
 
         text1
             .html("Canine feline")
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
-        expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Canine</span> <span class="sight-word" data-segment="word">feline</span>',
-        );
+        expect(text1.html()).toEqual("Canine feline");
+        expect(highlighted(kSightWordHighlight)).toEqual(["Canine", "feline"]);
+        expect(highlighted(kWordNotDecodableHighlight)).toEqual([]);
     });
 });

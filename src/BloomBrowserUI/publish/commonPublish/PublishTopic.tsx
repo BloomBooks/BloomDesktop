@@ -17,6 +17,9 @@ import {
 
 export const PublishTopic: React.FunctionComponent = () => {
     const [topicName, setTopicName] = React.useState("");
+    // Note: the "Missing" we compare against below is a sentinel the api returns
+    // (LibraryPublishApi.HandleTopic), not display text, so it stays in English.
+    const missingLabel = useL10n("Missing", "Topic.Missing");
 
     function retrieveTopic() {
         get("libraryPublish/topic", (result) => {
@@ -52,7 +55,7 @@ export const PublishTopic: React.FunctionComponent = () => {
                                     margin-right: 5px;
                                 `}
                             />
-                            Missing
+                            {missingLabel}
                         </span>
                     ) : (
                         <span>{topicName}</span>

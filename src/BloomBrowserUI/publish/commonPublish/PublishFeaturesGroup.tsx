@@ -239,15 +239,24 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     showDisabled={!isTalkingBook}
                     tipWhenDisabled={talkingBookDisabledTooltip}
                 >
-                    <BloomCheckbox
-                        label="Talking Book"
-                        l10nKey="PublishTab.TalkingBook"
-                        icon={<TalkingBookIcon />}
-                        iconScale={0.9}
-                        checked={isTalkingBook}
-                        onCheckChanged={() => {}}
-                        hideBox={true}
-                    />
+                    {/* The Talking Book row shows its state as a check mark that is present but
+                        CSS-hidden when off (BloomCheckbox's hideBox), so nothing in the DOM says
+                        whether the feature is on. These two attributes say it, for e2e tests; see
+                        src/BloomE2E. */}
+                    <span
+                        data-testid="feature-talking-book"
+                        data-feature-on={isTalkingBook ? "true" : "false"}
+                    >
+                        <BloomCheckbox
+                            label="Talking Book"
+                            l10nKey="PublishTab.TalkingBook"
+                            icon={<TalkingBookIcon />}
+                            iconScale={0.9}
+                            checked={isTalkingBook}
+                            onCheckChanged={() => {}}
+                            hideBox={true}
+                        />
+                    </span>
                 </BloomTooltip>
                 <BloomTooltip
                     key={"sl-tooltip"}

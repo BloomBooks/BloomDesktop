@@ -578,8 +578,12 @@ export default class StyleEditor {
         create: boolean,
         documentToUse: Document = document,
     ): CSSStyleRule | null {
-        const styleSheet =
-            this.GetOrCreateUserModifiedStyleSheet(documentToUse);
+        // When we are only reading (create === false), do not create a userModifiedStyles
+        // sheet as a side effect: a caller looking up a rule that isn't there should not
+        // mutate the document. Only create the sheet when we actually intend to add a rule.
+        const styleSheet = create
+            ? this.GetOrCreateUserModifiedStyleSheet(documentToUse)
+            : this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
         }
@@ -685,7 +689,10 @@ export default class StyleEditor {
         }
     }
 
-    public getAudioHiliteProps(styleName: string): {
+    public getAudioHiliteProps(
+        styleName: string,
+        documentToUse: Document = document,
+    ): {
         hiliteTextColor: string | undefined;
         hiliteBgColor: string;
     } {
@@ -694,9 +701,12 @@ export default class StyleEditor {
             // The two should have the same content, so for reading, we only need one.
             this.sentenceHiliteRuleSelector,
             false,
+            documentToUse,
         );
-        const hiliteTextColor = sentenceRule?.style?.color;
-        let hiliteBgColor = sentenceRule?.style?.backgroundColor;
+        const hiliteTextColor =
+            sentenceRule?.style?.getPropertyValue("color") || undefined;
+        let hiliteBgColor =
+            sentenceRule?.style?.getPropertyValue("background-color");
         if (!hiliteBgColor) {
             hiliteBgColor = kBloomYellow;
         }
@@ -1611,11 +1621,25 @@ export default class StyleEditor {
     // Make a new style. Initialize to all current values. Caller should ensure it is a valid new style.
     public createStyle() {
         const typedStyle = $("#style-select-input").val();
-        StyleEditor.SetStyleNameForElement(
-            this.boxBeingEdited,
-            typedStyle + "-style",
-        );
+        // A box's font normally comes from the collection's language settings, not from its style,
+        // so the new style says nothing about the font unless the old style did: only a font the
+        // user set explicitly carries over, per language, for every language in the group (the
+        // whole group moves to the new style). Read them before the style changes.
+        const explicitFonts = this.getExplicitFontsForGroup();
+        const newStyleName = typedStyle + "-style";
+        StyleEditor.SetStyleNameForElement(this.boxBeingEdited, newStyleName);
         this.updateStyle();
+        if (explicitFonts.size > 0) {
+            explicitFonts.forEach((font, languageSelector) => {
+                const rule = this.GetRuleForStyle(
+                    newStyleName,
+                    languageSelector,
+                    true,
+                );
+                rule?.style.setProperty("font-family", font, "important");
+            });
+            this.cleanupAfterStyleChange();
+        }
 
         // Recommended way to insert an item into a select2 control and select it (one of the trues makes it selected)
         // See http://codepen.io/alexweissman/pen/zremOV
@@ -1630,6 +1654,47 @@ export default class StyleEditor {
         $("#style-select-input").val("");
     }
 
+    /**
+     * The fonts the box's style sets explicitly (the rules changeFont writes), for the box being
+     * edited and every other language's box in its translation group: a map from the language
+     * part of the selector ('[lang="fr"]', or "" for a box that uses language-independent rules)
+     * to the font. A language whose font comes from the collection's settings is not in the map.
+     * Reads only; never creates a rule.
+     */
+    private getExplicitFontsForGroup(): Map<string, string> {
+        const fonts = new Map<string, string>();
+        const target = this.boxBeingEdited;
+        const styleName = StyleEditor.GetStyleNameForElement(target);
+        if (!styleName) {
+            return fonts;
+        }
+        const group = target.closest(".bloom-translationGroup");
+        const boxes = group
+            ? Array.from(group.getElementsByClassName("bloom-editable"))
+            : [target];
+        for (const box of boxes) {
+            let languageSelector = "";
+            if (!this.targetUsesLanguageIndependentRules(box as HTMLElement)) {
+                const lang = StyleEditor.GetLangValueOrNull(box as HTMLElement);
+                languageSelector = lang
+                    ? '[lang="' + lang + '"]'
+                    : ":not([lang])";
+            }
+            const rule = this.GetRuleForStyle(
+                styleName,
+                languageSelector,
+                false,
+            );
+            const font = rule?.style.getPropertyValue("font-family");
+            if (font) {
+                fonts.set(languageSelector, font);
+            }
+        }
+        return fonts;
+    }
+
+    // Copy every control's current value into the box's (new) style. The font is deliberately
+    // not among them: see createStyle.
     public updateStyle() {
         this.changeSize();
         this.changeLineheight();
@@ -1864,11 +1929,22 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        const rule = this.getStyleRule(false);
+        // Like the other Characters-tab controls (bold, size, spacing...): the color always goes
+        // into the language-specific rule, and when the box being edited is in the collection's
+        // first language it goes into the language-independent rule as well, so that the other
+        // languages of the style pick it up too (BL-16803). Font family is the one deliberate
+        // exception to that pattern, because a font suits a script, not a style.
+        let rule = this.getStyleRule(false);
         if (rule != null) {
             rule.style.setProperty("color", color);
-            this.cleanupAfterStyleChange();
         }
+        if (this.shouldSetDefaultRule()) {
+            rule = this.getStyleRule(true);
+            if (rule != null) {
+                rule.style.setProperty("color", color);
+            }
+        }
+        this.cleanupAfterStyleChange();
         this.setColorButtonColor("colorSelectButton", color);
     }
 
@@ -2200,37 +2276,48 @@ export default class StyleEditor {
 
     public UpdateControlsToReflectAppliedStyle(oldFontName: string) {
         const current = this.getFormatValues();
+        // While we push the new style's values into the controls, their change handlers
+        // must not treat those updates as user edits. The finally is essential: if any
+        // step here throws, leaving ignoreControlChanges stuck true would silently
+        // disable every control in the dialog from then on (the document would stop
+        // responding to them) for the rest of the page's life.
         this.ignoreControlChanges = true;
-
-        // IF the new style changed fonts, we need to reset the font control
-        if (oldFontName !== current.fontName) {
-            get("fonts/metadata", (result) => {
-                const fontMetadata: IFontMetaData[] = result.data;
-                this.updateFontControl(fontMetadata, current.fontName);
-            });
+        try {
+            // IF the new style changed fonts, we need to reset the font control
+            if (oldFontName !== current.fontName) {
+                get("fonts/metadata", (result) => {
+                    const fontMetadata: IFontMetaData[] = result.data;
+                    this.updateFontControl(fontMetadata, current.fontName);
+                });
+            }
+            this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
+            this.setValueAndUpdateSelect2Control(
+                "line-height-select",
+                current.lineHeight,
+            );
+            this.setValueAndUpdateSelect2Control(
+                "word-space-select",
+                current.wordSpacing,
+            );
+            this.setValueAndUpdateSelect2Control(
+                "para-spacing-select",
+                current.paraSpacing,
+            );
+            const buttonIds = this.getButtonIds();
+            for (let i = 0; i < buttonIds.length; i++) {
+                $("#" + buttonIds[i]).removeClass("selectedIcon");
+            }
+            this.selectButtons(current);
+            this.setColorButtonColor("colorSelectButton", current.color);
+            this.changeHiliteProps(
+                current.hiliteTextColor,
+                current.hiliteBgColor,
+                current.color,
+            );
+            this.changeCanvasElementProps(current.padding);
+        } finally {
+            this.ignoreControlChanges = false;
         }
-        this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
-        this.setValueAndUpdateSelect2Control(
-            "line-height-select",
-            current.lineHeight,
-        );
-        this.setValueAndUpdateSelect2Control(
-            "word-space-select",
-            current.wordSpacing,
-        );
-        this.setValueAndUpdateSelect2Control(
-            "para-spacing-select",
-            current.paraSpacing,
-        );
-        const buttonIds = this.getButtonIds();
-        for (let i = 0; i < buttonIds.length; i++) {
-            $("#" + buttonIds[i]).removeClass("selectedIcon");
-        }
-        this.selectButtons(current);
-        this.setColorButtonColor("colorSelectButton", current.color);
-        this.changeHiliteProps(current.color, current.hiliteBgColor);
-        this.changeCanvasElementProps(current.padding);
-        this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
 
@@ -2384,6 +2471,11 @@ export default class StyleEditor {
                     this.textColorTitle = results[2].data.text;
 
                     this.boxBeingEdited = targetBox;
+                    // Make sure a freshly opened dialog never starts with its control
+                    // change handlers disabled (e.g. if some earlier failure left this
+                    // flag set); otherwise the dialog looks fine but nothing the user
+                    // chooses affects the document.
+                    this.ignoreControlChanges = false;
                     const styleName =
                         StyleEditor.GetBaseStyleNameForElement(targetBox);
                     const current = this.getFormatValues();

@@ -96,9 +96,12 @@ namespace Bloom.web.controllers
                 "common/clickHereForHelp",
                 request =>
                 {
-                    var problemFilePath = UrlPathString
-                        .CreateFromUrlEncodedString(request.RequiredParam("problem"))
-                        .NotEncoded;
+                    // No decoding here: ApiRequest.Parameters comes from
+                    // RequestInfo.GetQueryParameters(), i.e. HttpUtility.ParseQueryString, which
+                    // has already decoded the value once. Decoding again turned a path that
+                    // genuinely contains a '%' ("photo%41.bloom") into a different one
+                    // ("photoA.bloom"). (BL-16669)
+                    var problemFilePath = request.RequiredParam("problem");
                     request.ReplyWithText(
                         CommonMessages.GetPleaseClickHereForHelpMessage(problemFilePath)
                     );
@@ -130,10 +133,17 @@ namespace Bloom.web.controllers
                                     // Need to make sure to handle exceptions.
                                     // If the worker thread dies with an unhandled exception,
                                     // it causes the whole program to immediately crash without opportunity for error reporting
+                                    // A clipboard failure is not worth a modal problem-report dialog: whatever the
+                                    // cause, all the user can do is try again (BL-16459). So we just toast, which
+                                    // still offers a "Report" link and still tells Sentry.
                                     NonFatalProblem.Report(
-                                        ModalIf.All,
-                                        PassiveIf.None,
-                                        "Error pasting text",
+                                        ModalIf.None,
+                                        PassiveIf.All,
+                                        LocalizationManager.GetDynamicString(
+                                            "BloomLowPriority",
+                                            "EditTab.PasteTextFailed",
+                                            "Bloom was not able to paste."
+                                        ),
                                         exception: e
                                     );
                                 }
@@ -161,10 +171,17 @@ namespace Bloom.web.controllers
                                         // Need to make sure to handle exceptions.
                                         // If the worker thread dies with an unhandled exception,
                                         // it causes the whole program to immediately crash without opportunity for error reporting
+                                        // A clipboard failure is not worth a modal problem-report dialog: whatever the
+                                        // cause, all the user can do is try again (BL-16459). So we just toast, which
+                                        // still offers a "Report" link and still tells Sentry.
                                         NonFatalProblem.Report(
-                                            ModalIf.All,
-                                            PassiveIf.None,
-                                            "Error copying text",
+                                            ModalIf.None,
+                                            PassiveIf.All,
+                                            LocalizationManager.GetDynamicString(
+                                                "BloomLowPriority",
+                                                "EditTab.CopyTextFailed",
+                                                "Bloom was not able to copy that."
+                                            ),
                                             exception: e
                                         );
                                     }
@@ -277,6 +294,14 @@ namespace Bloom.web.controllers
                     cdpPort,
                     vitePort,
                     cdpOrigin = cdpPort.HasValue ? $"http://localhost:{cdpPort.Value}" : null,
+                    // Control port of the dev launcher that started us (null when not
+                    // launched via go.sh); see .claude/skills/run-bloom.
+                    launcherControlPort = Program.StartupLauncherPort,
+                    // Where this instance keeps its user settings (user.config): the folder
+                    // --user-settings-folder named, or the usual per-version one. The e2e launch
+                    // fixture checks this to be sure the Bloom it started is not sharing settings
+                    // with anyone; see BloomSettingsProvider.
+                    userSettingsFolder = BloomSettingsProvider.GetUserSettingsFolder(),
                 }
             );
         }
@@ -604,6 +629,11 @@ namespace Bloom.web.controllers
                 var langs = new List<object>();
                 foreach (var code in L10NSharp.LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    // The hints the user writes in this dialog are stored in the book, so the
+                    // pseudo-locale (a UI-testing device, not a language anyone writes in) has
+                    // no business being offered here. See BL-16748.
+                    if (code == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue;
                     var langItem = WorkspaceView.CreateLanguageItem(code);
                     langs.Add(new { label = langItem.MenuText, tag = code });
                 }

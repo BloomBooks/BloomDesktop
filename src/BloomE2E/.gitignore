@@ -1,0 +1,15 @@
+# The test input collections live in the inputs repository
+# (https://github.com/BloomBooks/bloom-testing-inputs), fetched into output/testing-inputs, which
+# the repository root already ignores. Nothing about them needs ignoring here.
+
+node_modules
+
+# Playwright's own output.
+test-results
+playwright-report
+blob-report
+.playwright
+
+# Logs
+*.log
+pnpm-debug.log*

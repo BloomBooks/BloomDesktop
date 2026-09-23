@@ -62,6 +62,9 @@ export default class BloomSourceBubbles {
         contentsOfBubble: JQuery,
         selectLangTag?: string,
         forceShowAlwaysOnBody?: boolean,
+        // Show the bubble as soon as it is built, even in the focus-only mode that narrow
+        // translation groups use. See CreateAndShowQtipBubbleFromDiv.
+        showImmediately?: boolean,
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
@@ -81,6 +84,7 @@ export default class BloomSourceBubbles {
             elementThatHasBubble,
             divForBubble,
             forceShowAlwaysOnBody,
+            showImmediately,
         );
     }
 
@@ -196,7 +200,12 @@ export default class BloomSourceBubbles {
                     list.get(0) as HTMLElement
                 ).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
-                    () => postString("editView/sourceTextTab", langTag),
+                    () => {
+                        // Keep the in-session order in sync so the next bubble (e.g. on the next
+                        // page, or after choosing a dropdown language) orders this tab correctly.
+                        BloomSourceBubbles.recordSourceLangViewed(langTag);
+                        postString("editView/sourceTextTab", langTag);
+                    },
                 );
                 // BL-8174: Add a tooltip with the language tag to the item
                 // BL-15212: we no longer want the tag here, just on the language-name label
@@ -264,6 +273,31 @@ export default class BloomSourceBubbles {
         editableDiv.css("min-height", "");
     }
 
+    // The (up to) two source languages the user has viewed most recently during this editing
+    // session, most-recently-viewed first. GetSettings().defaultSourceLanguage[2] only reflects the
+    // two remembered languages as of when C# injected them at page load; it is NOT refreshed as the
+    // user clicks tabs. So we mirror the tab selections here (see recordSourceLangViewed) and let
+    // them take precedence over the injected values when ordering tabs. Without this, choosing a tab
+    // updated the server-side Settings but the in-session tab order kept using the stale page-load
+    // values, so the second remembered tab was wrong until the page was reloaded. See BL-14330.
+    // We keep only two, exactly mirroring the server's LastSourceLanguageViewed/Viewed2, so the
+    // in-session order matches what a reload would inject.
+    private static recentlyViewedSourceLangs: string[] = [];
+
+    // Record that the user just viewed a source language tab, keeping the two most-recently-viewed
+    // (most recent first, no duplicates). Mirrors the shift logic in EditingViewApi.HandleSourceTextTab
+    // so the in-session tab ordering matches what the server persists (and will inject on the next
+    // load). 'hint' is ignored to match the server, which does not remember it.
+    public static recordSourceLangViewed(langTag: string): void {
+        if (!langTag || langTag === "hint") return;
+        BloomSourceBubbles.recentlyViewedSourceLangs = [
+            langTag,
+            ...BloomSourceBubbles.recentlyViewedSourceLangs.filter(
+                (lang) => lang !== langTag,
+            ),
+        ].slice(0, 2);
+    }
+
     // 'Smart' orders the tabs putting the latest viewed languages first, followed by others in the collection
     // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
     // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
@@ -274,12 +308,15 @@ export default class BloomSourceBubbles {
         const settings = GetSettings();
 
         // Get language preferences in priority order, filtering out any empty/undefined values
-        // and removing duplicates (same language codes) using Set
+        // and removing duplicates (same language codes) using Set.
+        // The in-session recentlyViewedSourceLangs come before the injected defaultSourceLanguage[2]
+        // so that selections made since page load win over the (possibly stale) injected values.
         const preferredLanguages = [
             newLangTag, // Highest priority - explicitly selected
-            settings.defaultSourceLanguage, // Second priority - primary source language
-            settings.defaultSourceLanguage2, // Third priority - secondary source language
-            settings.currentCollectionLanguage2, // Fourth priority - collection languages
+            ...BloomSourceBubbles.recentlyViewedSourceLangs, // languages viewed during this session, most recent first
+            settings.defaultSourceLanguage, // primary source language as of page load
+            settings.defaultSourceLanguage2, // secondary source language as of page load
+            settings.currentCollectionLanguage2, // then collection languages
             settings.currentCollectionLanguage3,
         ].filter((lang) => Boolean(lang?.trim())); // Remove empty/undefined/whitespace-only values
 
@@ -304,7 +341,9 @@ export default class BloomSourceBubbles {
             if (indexA >= 0) return -1;
             if (indexB >= 0) return 1;
             // Neither in preferred list - maintain alphabetical order
-            return langA < langB ? (langA > langB ? 1 : 0) : -1;
+            if (langA < langB) return -1;
+            if (langA > langB) return 1;
+            return 0;
         });
 
         return $(itemArray);
@@ -429,6 +468,10 @@ export default class BloomSourceBubbles {
     private static styledSelectChangeHandler(event) {
         const newLangTag = event.target.href.split("#")[1];
 
+        // Record before re-producing the bubble below, so SmartOrderSourceTabs orders against
+        // the updated in-session list rather than the stale injected settings.
+        BloomSourceBubbles.recordSourceLangViewed(newLangTag);
+
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         const qtip = $(event.target).closest(".qtip").attr("id");
         const group = $(document).find(
@@ -453,6 +496,11 @@ export default class BloomSourceBubbles {
                     group.get(0),
                     divForBubble,
                     newLangTag,
+                    undefined, // forceShowAlwaysOnBody, default
+                    // The user just picked this language from the pull-down, so show the
+                    // rebuilt bubble now rather than waiting for a focus event that will
+                    // never come (the click left focus in the text box). See BL-16874.
+                    true,
                 );
             }
         }
@@ -504,6 +552,11 @@ export default class BloomSourceBubbles {
         // will make it look wrong in both size and position. And it only shows when hovering the dialog,
         // so conflicting with other bubbles is not an issue.
         forceShowAlwaysOnBody?: boolean,
+        // Normally a bubble that might overlap its neighbors is only rendered when its group
+        // gets focus. That is wrong when we are rebuilding a bubble the user is looking at
+        // right now: qtip renders lazily, so without this the bubble would simply vanish until
+        // the group next receives focus. See https://issues.bloomlibrary.org/youtrack/issue/BL-16874.
+        showImmediately?: boolean,
     ): void {
         let showEvents = false;
         let hideEvents = false;
@@ -548,7 +601,7 @@ export default class BloomSourceBubbles {
 
                 show: {
                     event: showEvents ? showEventsStr : showEvents,
-                    ready: shouldShowAlways,
+                    ready: shouldShowAlways || !!showImmediately,
                 },
                 style: {
                     tip: {

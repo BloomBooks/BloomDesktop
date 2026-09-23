@@ -1,7 +1,11 @@
 import { css } from "@emotion/react";
 import { ImageGallery } from "bloom-image-gallery";
-import type { IImage, IProviderKeysV1 } from "bloom-image-gallery";
-import React, { useEffect, useState } from "react";
+import type {
+    IImage,
+    IProviderKeysV1,
+    ISearchReport,
+} from "bloom-image-gallery";
+import React, { useRef, useState } from "react";
 import {
     BloomDialog,
     DialogTitle,
@@ -9,12 +13,16 @@ import {
 import {
     getBloomApiPrefix,
     getAsync,
+    postJson,
     postJsonAsync,
     postDataWithConfigAsync,
+    trackEvent,
 } from "../../utils/bloomApi";
+import { useMountEffect } from "../../utils/useMountEffect";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import { getEditablePageBundleExports } from "../../bookEdit/js/workspaceFrames";
+import { useL10n } from "../l10nHooks";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
 
 // The shape of what C# returns from imageGallery/imageGalleryResult
@@ -25,37 +33,95 @@ interface IImageGalleryApiResult {
     license: string;
 }
 
+// The provider id the gallery stamps on an image the user opened from their own disk.
+const kLocalDiskProviderId = "local-disk";
+
 const ImageGalleryDialog: React.FunctionComponent<{
     img: HTMLElement;
     searchLang: string;
 }> = (props) => {
     const [open, setOpen] = useState(true);
-    // Keys are loaded from durable Bloom settings before the gallery is rendered,
-    // so providers (e.g. Pixabay) receive their initial API key in their constructor.
+    // Keys are loaded from Bloom's per-user service key store before the gallery is
+    // rendered, so providers (e.g. Pixabay) receive their initial API key in their
+    // constructor.
     const [providerKeys, setProviderKeys] = useState<
         IProviderKeysV1 | undefined
     >(undefined);
     const [keysLoaded, setKeysLoaded] = useState(false);
 
-    // useEffect justified: this is a one-time async fetch that must run after mount
+    // ----- Analytics for this visit to the chooser (BL-16716) -----
+    // The unit of analysis is the visit, not the query: people usually run several searches
+    // before accepting an image, and a search's outcome is only known later. So a visit
+    // accumulates what it did in the refs below and reports it all in one event when it closes.
+    // Refs, not state: they are written from callbacks, read at close time, and must never cause
+    // a re-render of the gallery.
+    const searchCountRef = useRef(0);
+    // In the order the user tried them, which is more telling than the bare count.
+    const providersTriedRef = useRef(new Set<string>());
+    // Pixabay is the one source a user cannot simply use -- it needs an API key fetched from
+    // Pixabay's site -- so whether this session had one is the headline number for how much of
+    // an obstacle that is.
+    const pixabayKeyPresentRef = useRef(false);
+    // Exactly one "Image Chooser Closed" event per dialog session.
+    const closeReportedRef = useRef(false);
+
+    // A mount effect is justified: this is a one-time async fetch that must run after mount
     // so the component can render before the network round-trip completes.
-    // There are no dependencies to react to; [] is correct.
-    useEffect(() => {
-        getAsync("app/userSetting?settingName=ImageGalleryProviderKeys")
+    useMountEffect(() => {
+        getAsync("serviceKeys/keys?prefix=imageGallery.")
             .then((r) => {
-                const json = r?.data?.settingValue as string;
-                if (json) {
-                    try {
-                        setProviderKeys(JSON.parse(json) as IProviderKeysV1);
-                    } catch {
-                        // ignore malformed stored value
-                    }
+                const keys = r?.data as IProviderKeysV1;
+                // Bloom replies with the format version plus one property per provider the
+                // user has a key for, so anything past the version means there is a key.
+                if (keys && Object.keys(keys).length > 1) {
+                    setProviderKeys(keys);
+                    pixabayKeyPresentRef.current = !!keys.pixabay;
                 }
             })
             .finally(() => setKeysLoaded(true));
-    }, []);
+    });
+
+    // Searches are counted, not reported one by one: how many a visit took and which sources it
+    // tried are what the close event needs, and a per-query event adds nothing on top of them.
+    //
+    // WE DO NOT SEND THE SEARCH TERM. It is the only free-form user text this instrumentation ever
+    // had, an earlier round of BL-16716 did send it, and we were then told not to. It is dropped
+    // here, at Bloom's boundary, deliberately rather than by omission -- `report.term` is still
+    // handed to us by the image gallery (see ISearchReport), because if the decision is revisited
+    // the change is one property and nothing in the gallery has to move.
+    //
+    // What that costs us: we cannot see WHICH subjects people search for and never find, which
+    // was the original argument for the term; and we cannot tell one idea tried in three
+    // languages from three different ideas, so searchCount counts queries and nothing finer.
+    const handleSearch = (report: ISearchReport) => {
+        searchCountRef.current++;
+        providersTriedRef.current.add(report.providerId);
+    };
+
+    // What turns a list of searches into a success rate. Note that a result count could never
+    // do this job: Pixabay and Openverse nearly always return *some* pictures, so the failure
+    // we care about isn't an empty page, it's a full page of pictures that are all wrong -- and
+    // the only reliable sign of that is what the user did next.
+    const reportChooserClosed = (
+        outcome: "accepted" | "local disk" | "cancelled",
+        acceptedProvider?: string,
+    ) => {
+        if (closeReportedRef.current) return;
+        closeReportedRef.current = true;
+        trackEvent("Image Chooser Closed", {
+            outcome,
+            acceptedProvider,
+            // No acceptedTerm: see handleSearch above. Which SOURCE satisfied the user is the part
+            // that makes this a success rate, and that is not user text.
+            searchCount: searchCountRef.current,
+            providersTried: providersTriedRef.current.size,
+            providers: [...providersTriedRef.current].join(","),
+            pixabayKeyPresent: pixabayKeyPresentRef.current,
+        });
+    };
 
     const handleClose = () => {
+        reportChooserClosed("cancelled");
         setOpen(false);
     };
 
@@ -70,6 +136,9 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 licenseUrl: image.licenseUrl,
                 credits: image.credits,
                 creator: image.creator,
+                // Which source the picture came from, so C#'s "Change Picture" event can say
+                // where pictures actually come from rather than only how many there were.
+                provider: image.providerId,
             };
             const response = await postJsonAsync(
                 "imageGallery/imageGalleryResult",
@@ -83,6 +152,14 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 license: result.license,
                 undoable: "true",
             });
+            // A file the user opened from disk is a different outcome from finding a picture in
+            // one of the collections we offer, even though both end in an image being used.
+            reportChooserClosed(
+                image.providerId === kLocalDiskProviderId
+                    ? "local disk"
+                    : "accepted",
+                image.providerId,
+            );
             setOpen(false);
         } catch {
             BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
@@ -101,19 +178,34 @@ const ImageGalleryDialog: React.FunctionComponent<{
             {},
         );
         if (!response) return undefined;
-        const { filePath, previewUrl } = response.data as {
+        const { filePath, previewUrl, width, height, size } = response.data as {
             filePath: string;
             previewUrl: string;
+            width: number;
+            height: number;
+            size: number;
         };
         if (!filePath) return undefined;
         return {
             thumbnailUrl: previewUrl,
             reasonableSizeUrl: previewUrl,
             localPath: filePath,
-            size: 0,
+            // Set here as well as by the gallery, so that the "local disk" outcome and the
+            // Change Picture provider do not silently depend on the package continuing to stamp
+            // it. If it ever stopped, every disk-opened picture would be recorded as an ordinary
+            // chooser accept from an unknown provider -- the exact split this event exists for.
+            providerId: kLocalDiskProviderId,
+            // C# reports the original file's dimensions and byte count. These matter because
+            // previewUrl may serve a downscaled stand-in for an image too large for the
+            // browser to display, and we want to report what the user actually chose.
+            width: width || undefined,
+            height: height || undefined,
+            size: size ?? 0,
             type: "image",
         };
     };
+
+    const dialogTitle = useL10n("Image Chooser", "ImageLibrary.ImageChooser");
 
     const localCollectionsBaseUrl = getBloomApiPrefix() + "imageGallery";
 
@@ -132,7 +224,7 @@ const ImageGalleryDialog: React.FunctionComponent<{
                 }
             `}
         >
-            <DialogTitle title="Image Chooser" />
+            <DialogTitle title={dialogTitle} />
             <div
                 css={css`
                     flex: 1;
@@ -163,12 +255,17 @@ const ImageGalleryDialog: React.FunctionComponent<{
                         lang={props.searchLang}
                         initialProviderKeys={providerKeys}
                         primaryColor={kBloomBlue}
-                        onProviderKeysChange={(keys) =>
-                            postJsonAsync("app/userSetting", {
-                                settingName: "ImageGalleryProviderKeys",
-                                settingValue: JSON.stringify(keys),
-                            })
-                        }
+                        onSearch={handleSearch}
+                        onProviderKeysChange={(keys) => {
+                            // Kept up to date mid-visit as well as read at startup, so that a
+                            // key supplied while the chooser is open is reflected in what this
+                            // visit reports.
+                            pixabayKeyPresentRef.current = !!keys.pixabay;
+                            postJson(
+                                "serviceKeys/keys?prefix=imageGallery.",
+                                keys,
+                            );
+                        }}
                         onLanguageChange={(lang) =>
                             postJsonAsync("app/userSetting", {
                                 settingName: "ImageSearchLanguage",

@@ -1,6 +1,8 @@
-# generated screenshots that we don't want to commit
-*-current.png
-*-diff.png
+# The books, the reference screenshots, and the ignore rules for what Bloom regenerates inside a
+# book folder all live in the inputs repository now
+# (https://github.com/BloomBooks/bloom-testing-inputs), which this project fetches into
+# output/testing-inputs (gitignored at the repository root). So nothing about the test collections
+# needs ignoring here.
 
 # Logs
 logs

@@ -80,7 +80,14 @@ export const UiLanguageMenu: React.FunctionComponent = () => {
                         languageName,
                         label: languageName,
                         enabled: true,
-                        checked: languageName === label,
+                        // The button label is the menu text shortened at its first " ("
+                        // (see WorkspaceView.GetShortenedLanguageName), so "ไทย (Thai)"
+                        // must match a button reading "ไทย" (BL-16894). This string matching
+                        // is a hack so we can safely fix 6.4 just before release; the proper
+                        // fix is to compare language tags instead of display names.
+                        checked:
+                            languageName === label ||
+                            languageName.startsWith(label + " ("),
                     }),
                 );
                 items.push({ separator: true });

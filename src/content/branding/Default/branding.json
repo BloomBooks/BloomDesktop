@@ -3,8 +3,8 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "//": "The href in the <a> element below will be replaced at runtime",
-            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
+            "//": "{bloom-badge-default} expands to the 'Made with Bloom' QR badge markup; the link and QR image are filled in at runtime.",
+            "content": "{bloom-badge-default}",
             "condition": "always"
         }
     ]

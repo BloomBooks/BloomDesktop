@@ -233,6 +233,7 @@ namespace BloomTests.Spreadsheet
         private List<ContentRow> _rows;
         private List<ContentRow> _pageContentRows;
 
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _spreadsheetFolder;
         private TemporaryFolder _bookFolder;
         private ProgressSpy _progressSpy;
@@ -242,8 +243,9 @@ namespace BloomTests.Spreadsheet
         {
             var dom = new HtmlDom(videoAndWidgetBook, true);
 
-            _spreadsheetFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests");
-            _bookFolder = new TemporaryFolder("SpreadsheetVideoWidgetsTests_Book");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _spreadsheetFolder = new TemporaryFolder(_testFolder, "Spreadsheet");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
             mockLangDisplayNameResolver
@@ -292,8 +294,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _spreadsheetFolder?.Dispose();
-            _bookFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [Test]

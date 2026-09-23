@@ -195,6 +195,10 @@ namespace Bloom.Api
                         }
                     }
                 }
+                // Numbers are excluded: they are not text we would ever localize, and IsInteger
+                // above has already turned this into the number itself.
+                if (!IsInteger(id))
+                    englishText = PseudoLocalizeIfPseudoLocale(langId, englishText);
                 request.ReplyWithJson(new { text = englishText, success = idFound });
             }
         }
@@ -259,7 +263,16 @@ namespace Bloom.Api
 
         public static string GetTranslation(string id)
         {
-            if (LocalizationManager.UILanguageId != "en")
+            var uiLanguage = LocalizationManager.UILanguageId;
+            // The sentinel trick below cannot work in the pseudo-locale, so don't try it there.
+            // L10NSharp pseudolocalizes the caller-supplied default rather than consulting the
+            // cache, so GetString hands back a transformed *sentinel*
+            // ("[***doon'tuusethiis***]"), which of course does not equal the sentinel -- and we
+            // would then return that as the string to show the user. Falling through to the XLF
+            // English below and transforming that is both correct and what the rest of the
+            // pseudo-locale does. See BL-16748.
+            var isPseudoLocale = uiLanguage == LocalizationManager.PseudoLocalizationLanguageId;
+            if (uiLanguage != "en" && !isPseudoLocale)
             {
                 // Try to get a localization normally, but if we don't find one, it will fall back to
                 // the "English" passed as the second argument, rather than the English in the XLF.
@@ -275,7 +288,8 @@ namespace Bloom.Api
             {
                 return id; // sometimes this might be OK
             }
-            return result2;
+            // An id is not English prose, so the early return above is deliberately left alone.
+            return PseudoLocalizeIfPseudoLocale(uiLanguage, result2);
         }
 
         private static string GetLocalizedStringInOneLanguage(string id, string langId)
@@ -339,6 +353,24 @@ namespace Bloom.Api
                     langId
                 );
             return localizedString;
+        }
+
+        /// <summary>
+        /// When the UI language is the pseudo-locale, a string that we are about to hand back as
+        /// plain, untransformed English -- because its id is not in the English XLIFF, so
+        /// L10NSharp never had a chance to pseudolocalize it -- would look exactly like a string
+        /// that was never internationalized at all. Since "plain English means hard-coded" is the
+        /// whole point of the pseudo-locale, run it through the same transform L10NSharp would
+        /// have used. See BL-16748.
+        /// </summary>
+        private static string PseudoLocalizeIfPseudoLocale(string langId, string text)
+        {
+            if (
+                langId != LocalizationManager.PseudoLocalizationLanguageId
+                || string.IsNullOrEmpty(text)
+            )
+                return text;
+            return LocalizationManager.PseudoLocalize(text);
         }
 
         private static bool IsTemplateBookKey(string key)
@@ -423,6 +455,10 @@ namespace Bloom.Api
                         if (!IsTemplateBookKey(key))
                             ReportL10NMissingString(key, translation, comment);
                     }
+                    translation = PseudoLocalizeIfPseudoLocale(
+                        LocalizationManager.UILanguageId,
+                        translation
+                    );
                 }
             }
             return translation;

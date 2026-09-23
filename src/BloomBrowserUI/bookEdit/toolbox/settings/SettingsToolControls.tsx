@@ -1,20 +1,23 @@
 import { FunctionComponent, useState } from "react";
 import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
-import { isToolEnabledInToolbox, setToolEnabledFromSettings } from "../toolbox";
+import {
+    isToolEnabledInToolbox,
+    setToolEnabledFromSettings,
+    setToolboxSettingsChangeHandler,
+} from "../toolbox";
 import { css } from "@emotion/react";
 import { SubscriptionBadgeWithTooltipAndDialog } from "../../../react_components/requiresSubscription";
 import { ThemeProvider } from "@mui/material/styles";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
+import { useMountEffect } from "../../../utils/useMountEffect";
 
 const ToolboxCheckbox: FunctionComponent<{
     tool: string;
     l10nKeySuffix: string;
     toolLabel: string;
+    shouldCheck: boolean;
     requiresSubscription?: boolean;
 }> = (props) => {
-    const [checked, setChecked] = useState<boolean>(
-        isToolEnabledInToolbox(props.tool),
-    );
     return (
         <div
             css={css`
@@ -38,13 +41,12 @@ const ToolboxCheckbox: FunctionComponent<{
                 size="small"
                 label={props.toolLabel}
                 l10nKey={`EditTab.Toolbox.${props.l10nKeySuffix}`}
-                checked={checked}
+                checked={props.shouldCheck}
                 onCheckChanged={(checked) => {
                     // Pass true so that, when enabling, the tool opens after a
                     // brief delay letting the user see this checkbox tick before
                     // the "More..." section collapses to reveal the tool. (BL-16501)
                     setToolEnabledFromSettings(props.tool, checked!, true);
-                    setChecked(checked!);
                 }}
             />
             {props.requiresSubscription && (
@@ -64,6 +66,70 @@ const ToolboxCheckbox: FunctionComponent<{
 };
 
 export const SettingsToolControls: FunctionComponent = () => {
+    const kToolDefs = [
+        {
+            tool: "canvas",
+            l10nKeySuffix: "CanvasTool",
+            toolLabel: "Canvas Tool",
+            requiresSubscription: true,
+        },
+        {
+            tool: "decodableReader",
+            l10nKeySuffix: "DecodableReaderTool",
+            toolLabel: "Decodable Reader Tool",
+        },
+        {
+            tool: "imageDescription",
+            l10nKeySuffix: "ImageDescriptionTool",
+            toolLabel: "Image Description Tool",
+        },
+        {
+            tool: "impairmentVisualizer",
+            l10nKeySuffix: "ImpairmentVisualizer",
+            toolLabel: "Impairment Visualizer",
+        },
+        {
+            tool: "leveledReader",
+            l10nKeySuffix: "LeveledReaderTool",
+            toolLabel: "Leveled Reader Tool",
+        },
+        {
+            tool: "motion",
+            l10nKeySuffix: "MotionTool",
+            toolLabel: "Motion Tool",
+            requiresSubscription: true,
+        },
+        {
+            tool: "music",
+            l10nKeySuffix: "MusicTool",
+            toolLabel: "Music Tool",
+            requiresSubscription: true,
+        },
+        {
+            tool: "signLanguage",
+            l10nKeySuffix: "SignLanguageTool",
+            toolLabel: "Sign Language Tool",
+        },
+    ];
+    const [checkedState, setCheckedState] = useState<Record<string, boolean>>(
+        () =>
+            Object.fromEntries(
+                kToolDefs.map((t) => [t.tool, isToolEnabledInToolbox(t.tool)]),
+            ),
+    );
+
+    function updateState(which: string, value: boolean): void {
+        setCheckedState((previous) => ({ ...previous, [which]: value }));
+    }
+
+    useMountEffect(() => {
+        setToolboxSettingsChangeHandler((which, value) =>
+            updateState(which, value),
+        );
+        return () => {
+            setToolboxSettingsChangeHandler(undefined);
+        };
+    });
     return (
         <ThemeProvider theme={toolboxTheme}>
             <div
@@ -71,49 +137,13 @@ export const SettingsToolControls: FunctionComponent = () => {
                     margin-top: 6px;
                 `}
             >
-                <ToolboxCheckbox
-                    tool="canvas"
-                    l10nKeySuffix="CanvasTool"
-                    toolLabel="Canvas Tool"
-                    requiresSubscription
-                />
-                <ToolboxCheckbox
-                    tool="decodableReader"
-                    l10nKeySuffix="DecodableReaderTool"
-                    toolLabel="Decodable Reader Tool"
-                />
-                <ToolboxCheckbox
-                    tool="imageDescription"
-                    l10nKeySuffix="ImageDescriptionTool"
-                    toolLabel="Image Description Tool"
-                />
-                <ToolboxCheckbox
-                    tool="impairmentVisualizer"
-                    l10nKeySuffix="ImpairmentVisualizer"
-                    toolLabel="Impairment Visualizer"
-                />
-                <ToolboxCheckbox
-                    tool="leveledReader"
-                    l10nKeySuffix="LeveledReaderTool"
-                    toolLabel="Leveled Reader Tool"
-                />
-                <ToolboxCheckbox
-                    tool="motion"
-                    l10nKeySuffix="MotionTool"
-                    toolLabel="Motion Tool"
-                    requiresSubscription
-                />
-                <ToolboxCheckbox
-                    tool="music"
-                    l10nKeySuffix="MusicTool"
-                    toolLabel="Music Tool"
-                    requiresSubscription
-                />
-                <ToolboxCheckbox
-                    tool="signLanguage"
-                    l10nKeySuffix="SignLanguageTool"
-                    toolLabel="Sign Language Tool"
-                />
+                {kToolDefs.map((t) => (
+                    <ToolboxCheckbox
+                        key={t.tool}
+                        {...t}
+                        shouldCheck={!!checkedState[t.tool]}
+                    />
+                ))}
             </div>
         </ThemeProvider>
     );
