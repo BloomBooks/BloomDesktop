@@ -177,9 +177,10 @@ namespace Bloom.web.controllers
                     throw new SharingNotAllowedException(
                         "Only an administrator of this Team Collection can share it."
                     );
-                _sharingService.StartSharing(me, RegisteredName);
+                _sharingService.StartSharing(me, RegisteredName, body.invitations);
             }
-            _sharingService.Invite(me, body.invitations);
+            else
+                _sharingService.Invite(me, body.invitations);
             ReportChange(request);
         }
 

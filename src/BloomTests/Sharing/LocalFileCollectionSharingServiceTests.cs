@@ -56,7 +56,7 @@ namespace BloomTests.Sharing
 
         private void StartSharingAsRuth()
         {
-            _service.StartSharing(kAdmin, "Ruth Nakalema");
+            _service.StartSharing(kAdmin, "Ruth Nakalema", new SharingInvitation[0]);
         }
 
         [Test]
@@ -94,8 +94,46 @@ namespace BloomTests.Sharing
         {
             StartSharingAsRuth();
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.StartSharing("someone@example.org", "Someone")
+                _service.StartSharing("someone@example.org", "Someone", new SharingInvitation[0])
             );
+        }
+
+        [Test]
+        public void StartSharing_WithInvitations_SavesThemTogether()
+        {
+            _service.StartSharing(
+                kAdmin,
+                "Ruth Nakalema",
+                new[]
+                {
+                    new SharingInvitation
+                    {
+                        Email = "amina@example.org",
+                        Role = SharingRole.Editor,
+                    },
+                }
+            );
+            Assert.That(
+                MakeService().GetRecord().Members.Select(m => $"{m.Email} {m.Status}"),
+                Is.EqualTo(new[] { $"{kAdmin} Active", "amina@example.org Invited" })
+            );
+        }
+
+        [Test]
+        public void StartSharing_BadInvitation_LeavesCollectionUnshared()
+        {
+            // Inviting yourself is bad: you already have access as the new admin.
+            Assert.Throws<SharingNotAllowedException>(() =>
+                _service.StartSharing(
+                    kAdmin,
+                    "Ruth Nakalema",
+                    new[]
+                    {
+                        new SharingInvitation { Email = kAdmin, Role = SharingRole.Editor },
+                    }
+                )
+            );
+            Assert.That(MakeService().GetRecord(), Is.Null);
         }
 
         [Test]

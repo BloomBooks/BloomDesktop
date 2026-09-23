@@ -65,34 +65,39 @@ namespace Bloom.Sharing
         }
 
         /// <inheritdoc/>
-        public void StartSharing(string adminEmail, string adminName)
+        public void StartSharing(
+            string adminEmail,
+            string adminName,
+            IEnumerable<SharingInvitation> invitations
+        )
         {
             lock (_lock)
             {
                 if (Read() != null)
                     throw new SharingNotAllowedException("This collection is already shared.");
                 var now = _utcNow();
-                Write(
-                    new CollectionSharingRecord
+                var record = new CollectionSharingRecord
+                {
+                    CollectionId = _collectionId,
+                    CollectionName = _collectionName,
+                    CreatedAt = now,
+                    Members = new List<SharingMember>
                     {
-                        CollectionId = _collectionId,
-                        CollectionName = _collectionName,
-                        CreatedAt = now,
-                        Members = new List<SharingMember>
+                        new SharingMember
                         {
-                            new SharingMember
-                            {
-                                Email = adminEmail,
-                                Name = adminName,
-                                Role = SharingRole.Admin,
-                                Status = SharingMemberStatus.Active,
-                                InvitedAt = now,
-                                InvitedBy = adminEmail,
-                                LastSeen = now,
-                            },
+                            Email = adminEmail,
+                            Name = adminName,
+                            Role = SharingRole.Admin,
+                            Status = SharingMemberStatus.Active,
+                            InvitedAt = now,
+                            InvitedBy = adminEmail,
+                            LastSeen = now,
                         },
-                    }
-                );
+                    },
+                };
+                // One write for both, so a bad invitation leaves the collection unshared.
+                AddInvitations(record, adminEmail, invitations.ToList());
+                Write(record);
             }
         }
 
@@ -100,39 +105,40 @@ namespace Bloom.Sharing
         public void Invite(string byEmail, IEnumerable<SharingInvitation> invitations)
         {
             var list = invitations.ToList();
-            Change(
-                byEmail,
-                record =>
-                {
-                    // Check them all before changing anything, so a bad one leaves the record
-                    // as it was rather than half-updated.
-                    for (var i = 0; i < list.Count; i++)
+            Change(byEmail, record => AddInvitations(record, byEmail, list));
+        }
+
+        // Add the invitations to the record, all or none: they are all checked before any is
+        // added, so a bad one leaves the record as it was rather than half-updated.
+        private void AddInvitations(
+            CollectionSharingRecord record,
+            string byEmail,
+            List<SharingInvitation> list
+        )
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                var email = list[i].Email;
+                if (FindMember(record, email) != null)
+                    throw new SharingNotAllowedException($"{email} already has access.");
+                if (list.Skip(i + 1).Any(other => SameEmail(other.Email, email)))
+                    throw new SharingNotAllowedException($"{email} is in the list more than once.");
+            }
+            foreach (var invitation in list)
+            {
+                record.Members.Add(
+                    new SharingMember
                     {
-                        var email = list[i].Email;
-                        if (FindMember(record, email) != null)
-                            throw new SharingNotAllowedException($"{email} already has access.");
-                        if (list.Skip(i + 1).Any(other => SameEmail(other.Email, email)))
-                            throw new SharingNotAllowedException(
-                                $"{email} is in the list more than once."
-                            );
+                        Email = invitation.Email.Trim(),
+                        Role = invitation.Role,
+                        Status = SharingMemberStatus.Invited,
+                        InvitedAt = _utcNow(),
+                        InvitedBy = byEmail,
                     }
-                    foreach (var invitation in list)
-                    {
-                        record.Members.Add(
-                            new SharingMember
-                            {
-                                Email = invitation.Email.Trim(),
-                                Role = invitation.Role,
-                                Status = SharingMemberStatus.Invited,
-                                InvitedAt = _utcNow(),
-                                InvitedBy = byEmail,
-                            }
-                        );
-                        // Inviting someone we were suggesting answers the suggestion.
-                        record.DismissedSuggestions.RemoveAll(e => SameEmail(e, invitation.Email));
-                    }
-                }
-            );
+                );
+                // Inviting someone we were suggesting answers the suggestion.
+                record.DismissedSuggestions.RemoveAll(e => SameEmail(e, invitation.Email));
+            }
         }
 
         /// <inheritdoc/>

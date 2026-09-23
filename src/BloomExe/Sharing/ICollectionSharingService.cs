@@ -17,10 +17,16 @@ namespace Bloom.Sharing
 
         /// <summary>
         /// Share the collection for the first time, with the given person as its only (active)
-        /// admin. Deciding who may do this is the caller's job, since before a collection is
-        /// shared the only authority is the local one (e.g. the old Team Collection's admin list).
+        /// admin, together with the first invitations (which may be none), all or none: if any
+        /// invitation is bad, it throws and the collection stays unshared. Deciding who may do
+        /// this is the caller's job, since before a collection is shared the only authority is
+        /// the local one (e.g. the old Team Collection's admin list).
         /// </summary>
-        void StartSharing(string adminEmail, string adminName);
+        void StartSharing(
+            string adminEmail,
+            string adminName,
+            IEnumerable<SharingInvitation> invitations
+        );
 
         /// <summary>
         /// Invite people (by an admin), all or none: throws, changing nothing, if any of them
