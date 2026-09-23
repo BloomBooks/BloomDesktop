@@ -26,18 +26,9 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Platforms>x64;ARM64</Platforms>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-		<LocalDotImposeSource Condition="'$(LocalDotImposeSource)' == ''">D:\dotImpose\nupkg\local</LocalDotImposeSource>
-		<LocalDotImposeVersion Condition="'$(LocalDotImposeVersion)' == ''">2.6.5-local-dev</LocalDotImposeVersion>
-		<UseLocalDotImpose Condition="'$(UseLocalDotImpose)' == '' and Exists('$(LocalDotImposeSource)')">true</UseLocalDotImpose>
-		<UseLocalDotImpose Condition="'$(UseLocalDotImpose)' == ''">false</UseLocalDotImpose>
-		<DotImposePackageVersion Condition="'$(UseLocalDotImpose)' == 'true'">$(LocalDotImposeVersion)</DotImposePackageVersion>
-		<DotImposePackageVersion Condition="'$(UseLocalDotImpose)' != 'true'">2.6.5-test</DotImposePackageVersion>
 		<!-- NETSDK1206 is expected here: SQLitePCLRaw.lib.e_sqlite3 carries non-Windows RID assets
 		     (e.g., alpine-*), but this project targets Windows only. -->
 		<NoWarn>$(NoWarn);NETSDK1206</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(UseLocalDotImpose)' == 'true'">
-		<RestoreAdditionalProjectSources>$(LocalDotImposeSource);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -59,10 +50,6 @@
 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
 			<_Parameter1>SquirrelAwareVersion</_Parameter1>
 			<_Parameter2>1</_Parameter2>
-		</AssemblyAttribute>
-		<AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
-			<_Parameter1>ExpectedDotImposeVersion</_Parameter1>
-			<_Parameter2>$(DotImposePackageVersion)</_Parameter2>
 		</AssemblyAttribute>
 		<!--
 	  Bloom now explicitly opts into PerMonitorV2 DPI awareness via project configuration.
@@ -288,7 +275,7 @@
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0-beta0028" />
 		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="18.0.0-beta0028" />
 		<PackageReference Include="SIL.WritingSystems" Version="18.0.0-beta0028" />
-		<PackageReference Include="sillsdev.dotImpose" Version="$(DotImposePackageVersion)" />
+		<PackageReference Include="sillsdev.dotImpose" Version="2.6.8" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
