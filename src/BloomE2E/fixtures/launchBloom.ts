@@ -120,7 +120,7 @@ export interface ILaunchBloomOptions {
      * Advanced tab of the collection Settings dialog, which is WinForms and so unreachable, and
      * the saved setting is shared with the developer's own Bloom, so the launch hands them to this
      * instance on its command line instead (--experimental-features, which Bloom accepts only
-     * beside --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
+     * beside --e2e). See ExperimentalFeatures.TokensOfEnabledFeatures.
      */
     experimentalFeatures?: string[];
     /** How long to wait for Bloom to start serving the collection. Default 240 seconds. */
@@ -410,9 +410,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * the same thing, and gets a window. A setting that names a monitor is left alone, because that
  * window IS visible.
  */
-function environmentForBloom(
-    experimentalFeatures: string[] | undefined,
-): NodeJS.ProcessEnv {
+function environmentForBloom(): NodeJS.ProcessEnv {
     // Every Bloom a test launches talks to the sandbox, dev.bloomlibrary.org, never to
     // bloomlibrary.org: a test signs in there with a test account and uploads for real. A Debug
     // Bloom uses the sandbox anyway; a Release Bloom, which is what CI builds, uses bloomlibrary.org
@@ -424,15 +422,6 @@ function environmentForBloom(
     const asked = process.env.BLOOM_AUTOMATION_MONITOR?.trim().toLowerCase();
     if (process.env.PWDEBUG && (asked === "headless" || asked === "0"))
         environment.BLOOM_AUTOMATION_MONITOR = "";
-    // Always set, even for a run that wants no experimental features at all: under --e2e this
-    // variable is the whole answer, so naming the features here is what keeps a run from
-    // inheriting whatever the developer has turned on in the user.config every Bloom of this
-    // version shares. A run that wants none says so with the "none" token, because an empty
-    // environment variable cannot be told from an absent one on Windows. See
-    // ExperimentalFeatures.kE2eNoFeatures.
-    environment.BLOOM_E2E_EXPERIMENTAL_FEATURES = experimentalFeatures?.length
-        ? experimentalFeatures.join(",")
-        : "none";
     return environment;
 }
 
@@ -713,7 +702,7 @@ async function startBloomOn(
     if (experimentalFeatures?.length)
         args.push("--experimental-features", experimentalFeatures.join(","));
     const bloomProcess: ChildProcess = execFile(exe, args, {
-        env: environmentForBloom(experimentalFeatures),
+        env: environmentForBloom(),
     });
     let exitStatus: { code: number | null; signal: string | null } | undefined;
     bloomProcess.stdout?.on("data", (d) => recordOutput(String(d)));
