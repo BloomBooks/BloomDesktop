@@ -353,6 +353,9 @@ it. Nobody has found what. Until they do, the cheap fix is the same as the entry
 page-changing helpers now do.
 (Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
 font-chooser helper.)
+seen again 2026-09-23 on the same developer machine, in a full-suite run and again alone, failing
+at two different `selectPage` calls (spec lines 118 and 185), while the same morning's nightly
+passed it. (Preflight of #8275, which does not touch page selection.)
 
 ## Filling a text box directly leaves part of the old text behind
 
