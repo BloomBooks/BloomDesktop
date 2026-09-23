@@ -1551,8 +1551,8 @@ namespace Bloom.Api
                     "Server could not find the file {0}. LocalPath was {1}{2}{3}",
                     path,
                     localPath,
-                    // Not extraDiagnostics: that only ever has content for a JavaScript-value url,
-                    // and those returned above.
+                    // No GetJavascriptValueDiagnostics here: JavaScript-value urls were reported
+                    // quietly above and never reach this branch.
                     GetBareNameDiagnostics(localPath),
                     Environment.NewLine
                 );
