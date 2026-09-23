@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.SafeXml;
 using NUnit.Framework;
@@ -1542,6 +1543,155 @@ namespace BloomTests.ImageProcessing
                     displayedHeight,
                     Is.GreaterThanOrEqualTo(canvasHeight - 0.01),
                     "Adjusted style should ensure the cropped image still fills the canvas height"
+                );
+            }
+        }
+
+        // Markup modeled on a real book (BL-16907): a cropped cover image whose data-div entry
+        // carries the same crop style plus the data needed to rebuild its canvas element.
+        private static HtmlDom MakeCroppedCoverDom()
+        {
+            return new HtmlDom(
+                @"<html><head></head><body>
+                <div id=""bloomDataDiv"">
+                    <div data-book=""coverImage"" lang=""*"" src=""cover.png""
+                        data-canvas-element-style=""width: 296.823px; left: 177.542px; top: 0px; height: 204.562px;""
+                        data-canvas-imgsizebasedon=""652,204""
+                        style=""width: 296.823px; left: 0px; top: -24.6001px"">cover.png</div>
+                </div>
+                <div class=""bloom-page"" id=""frontCover"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"" data-imgsizebasedon=""652,204"">
+                            <div class=""bloom-canvas-element bloom-backgroundImage"" style=""width: 296.823px; left: 177.542px; top: 0px; height: 204.562px;"">
+                                <div tabindex=""0"" class=""bloom-imageContainer bloom-leadingElement"">
+                                    <img id=""coverImg"" src=""cover.png"" data-book=""coverImage""
+                                         style=""width: 296.823px; left: 0px; top: -24.6001px"" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body></html>"
+            );
+        }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_CoverImage_DataDivStyleMatchesPageAndIsNotCroppedAgain()
+        {
+            // BL-16907: upload crops the cover image file and adjusts the page img style to fit it.
+            // If the data-div entry keeps the old crop style, reopening the book copies that old
+            // style back onto the page img, and publishing then crops the already-cropped file again.
+            using (var folder = new TemporaryFolder("UploadCropCoverDataDiv"))
+            using (var publishFolder = new TemporaryFolder("UploadCropCoverDataDivPublish"))
+            using (var settingsFolder = new TemporaryFolder("UploadCropCoverDataDivSettings"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                // Sanity check: the page and the data-div start out agreeing on the crop.
+                Assert.That(
+                    dataDivEntry.GetAttribute("style"),
+                    Is.EqualTo(img.GetAttribute("style"))
+                );
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", img.GetAttribute("style")),
+                    Is.EqualTo(-24.6001).Within(0.0001)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                var uploadedSrc = img.GetAttribute("src");
+                var uploadedPath = UrlPathString.GetFullyDecodedPath(folder.Path, ref uploadedSrc);
+                Assert.That(
+                    ImageUtils.TryGetImageSize(uploadedPath, out var uploadedSize),
+                    Is.True
+                );
+                Assert.That(
+                    uploadedSize.Height,
+                    Is.LessThan(800),
+                    "Upload should have cropped the file"
+                );
+                var uploadedStyle = img.GetAttribute("style");
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", uploadedStyle),
+                    Is.GreaterThan(-1),
+                    "Upload should have adjusted the page img style to the cropped file"
+                );
+                Assert.That(
+                    dataDivEntry.GetAttribute("style"),
+                    Is.EqualTo(uploadedStyle),
+                    "The data-div entry should get the same adjusted style as the page img"
+                );
+
+                // Reopening the book pushes the data-div values back onto the page.
+                var collectionSettings = new CollectionSettings(
+                    new NewCollectionSettings()
+                    {
+                        PathToSettingsFile = CollectionSettings.GetPathForNewSettings(
+                            settingsFolder.Path,
+                            "test"
+                        ),
+                    }
+                );
+                new BookData(dom, collectionSettings, null).SynchronizeDataItemsThroughoutDOM();
+                img = dom.SelectSingleNode("//img[@data-book='coverImage']");
+                Assert.That(
+                    img.GetAttribute("style"),
+                    Is.EqualTo(uploadedStyle),
+                    "Reopening the book should not restore the old crop style"
+                );
+
+                // Publishing (e.g., the harvester's BloomPUB) must not crop the file again.
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, publishFolder.Path);
+                var publishedSrc = img.GetAttribute("src");
+                var publishedPath = UrlPathString.GetFullyDecodedPath(
+                    publishFolder.Path,
+                    ref publishedSrc
+                );
+                Assert.That(
+                    ImageUtils.TryGetImageSize(publishedPath, out var publishedSize),
+                    Is.True
+                );
+                Assert.That(
+                    publishedSize.Height,
+                    Is.GreaterThanOrEqualTo(uploadedSize.Height - 1),
+                    "Publishing should not crop the already-cropped cover image again"
+                );
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_DefaultMode_CoverImage_RemovesDataDivCropStyle()
+        {
+            using (var folder = new TemporaryFolder("DefaultCropCoverDataDiv"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                // Sanity check
+                Assert.That(dataDivEntry.HasAttribute("style"), Is.True);
+
+                // SUT
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                Assert.That(
+                    dataDivEntry.HasAttribute("style"),
+                    Is.False,
+                    "The data-div entry should lose its crop style along with the page img"
                 );
             }
         }

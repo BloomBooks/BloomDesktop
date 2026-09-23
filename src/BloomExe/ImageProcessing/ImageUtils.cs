@@ -2303,6 +2303,7 @@ namespace Bloom.ImageProcessing
                     fileName,
                     preserveCropStyleForUpload
                 );
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
                 return;
             }
 
@@ -2316,6 +2317,7 @@ namespace Bloom.ImageProcessing
                 preserveCropStyleForUpload,
                 bloomDataDivEntriesByDataBook
             );
+            SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             // Track if we replaced an original file with a new one
             if (needNewName && croppedFileName != src)
@@ -2694,6 +2696,29 @@ namespace Bloom.ImageProcessing
                 dataDivElement.SetAttribute("src", src);
                 dataDivElement.InnerText = src;
             }
+        }
+
+        /// <summary>
+        /// After cropping has changed or removed the style of an img, give its bloomDataDiv entry
+        /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
+        /// crop style gets copied back onto the img, where it crops the already-cropped image
+        /// again (BL-16907).
+        /// </summary>
+        private static void SyncDataDivStyle(
+            SafeXmlElement img,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+                return;
+            if (img.HasAttribute("style"))
+                dataDivElement.SetAttribute("style", img.GetAttribute("style"));
+            else
+                dataDivElement.RemoveAttribute("style");
         }
 
         /// <summary>
