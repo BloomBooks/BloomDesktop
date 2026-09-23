@@ -2703,6 +2703,9 @@ namespace Bloom.ImageProcessing
         /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
         /// crop style gets copied back onto the img, where it crops the already-cropped image
         /// again (BL-16907).
+        /// Not done for an img on a custom layout page: its style fits the custom layout, and
+        /// BookData deliberately never lets that reach the data-div entry, which belongs to the
+        /// standard layout (BL-16357).
         /// </summary>
         private static void SyncDataDivStyle(
             SafeXmlElement img,
@@ -2710,7 +2713,7 @@ namespace Bloom.ImageProcessing
         )
         {
             var dataBook = img.GetAttribute("data-book");
-            if (string.IsNullOrWhiteSpace(dataBook))
+            if (string.IsNullOrWhiteSpace(dataBook) || HtmlDom.IsInCustomLayoutPage(img))
                 return;
 
             if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))

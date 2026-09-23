@@ -1695,5 +1695,38 @@ namespace BloomTests.ImageProcessing
                 );
             }
         }
+
+        [Test]
+        public void ReallyCropImages_UploadMode_CustomLayoutCoverImage_LeavesDataDivStyleAlone()
+        {
+            // The data-div entry belongs to the standard cover layout, so the crop style of an img
+            // on a custom layout page must not be copied into it (BL-16357).
+            using (var folder = new TemporaryFolder("UploadCropCustomCoverDataDiv"))
+            {
+                using (var bitmap = new Bitmap(1001, 800))
+                {
+                    bitmap.Save(Path.Combine(folder.Path, "cover.png"), ImageFormat.Png);
+                }
+                var dom = MakeCroppedCoverDom();
+                dom.SelectSingleNode("//div[@id='frontCover']").AddClass("bloom-customLayout");
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                // Sanity check
+                Assert.That(HtmlDom.IsInCustomLayoutPage(img), Is.True);
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                Assert.That(
+                    img.GetAttribute("style"),
+                    Is.Not.EqualTo(originalDataDivStyle),
+                    "Upload should have adjusted the page img style to the cropped file"
+                );
+                Assert.That(dataDivEntry.GetAttribute("style"), Is.EqualTo(originalDataDivStyle));
+            }
+        }
     }
 }
