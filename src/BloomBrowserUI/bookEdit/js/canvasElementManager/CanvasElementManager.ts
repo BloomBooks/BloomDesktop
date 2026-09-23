@@ -1755,7 +1755,7 @@ export class CanvasElementManager {
     private doAfterNewImageAdjusted: (() => void) | undefined = undefined;
 
     // Align the control frame with the active canvas element.
-    private alignControlFrameWithActiveElement = () => {
+    public alignControlFrameWithActiveElement = () => {
         alignCanvasElementControlFrameWithActiveElement(this.activeElement);
     };
 
