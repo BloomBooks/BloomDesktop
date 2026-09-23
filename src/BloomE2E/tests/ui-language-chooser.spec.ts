@@ -9,6 +9,10 @@
 // dialog's own strings change - the <h1> title (useL10n), the Create New Collection button (a
 // BloomButton LocalizableElement), and the language button's label (C#-localized data) - then
 // opens a collection and verifies the whole workspace comes up in the chosen language too.
+//
+// Expect the dialog to open in front of you and take the keyboard while this runs, whatever
+// BLOOM_AUTOMATION_MONITOR says: dialogs do not yet follow it (AUTOMATION-DEBT.md, "The Choose
+// Collection dialog ignores BLOOM_AUTOMATION_MONITOR").
 
 import { test } from "../fixtures/bloomTest";
 import {
