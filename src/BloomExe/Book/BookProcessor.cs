@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -57,7 +58,7 @@ namespace Bloom.Book
         internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
         internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
 
-        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeeded) was tried this
+        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
         // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
         // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
@@ -97,7 +98,7 @@ namespace Bloom.Book
         /// update and its per-image passes write ("Updating pages...", one line per image), nor a
         /// per-page message: the bar already shows how far along we are, and those lines just fill
         /// the dialog's log (BL-16893). A caller that wants the dialog to say what is happening
-        /// writes that itself before calling (see EnsurePerPageFixupIfNeeded). It may be called on
+        /// writes that itself before calling (see EnsurePerPageFixupIfNeededThen). It may be called on
         /// whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
@@ -323,97 +324,141 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
-        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
-        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
-        /// need it, or when a run already failed for this book this session (so we don't re-prompt
-        /// every time).
-        ///
-        /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
-        /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the
-        /// pages it loads call back into Bloom's API server, so it must not run on the UI thread),
-        /// exactly like the "Update Book" command it shares ProcessBook with.
+        /// The one sentence the progress dialog shows while a book is being brought up to date,
+        /// whether the user asked for it ("Update Book") or Bloom decided it was due. It is all the
+        /// user needs: the bar above it says how far along we are, and what the individual passes
+        /// are called is of no interest to anyone but us (BL-16893).
         /// </summary>
-        public static bool EnsurePerPageFixupIfNeeded(
-            Book book,
-            BloomWebSocketServer webSocketServer
-        )
-        {
-            if (!NeedsPerPageFixup(book))
-                return false;
-            if (s_perPageFixupFailedThisSession.Contains(book.ID))
-                return false;
+        public static string HousekeepingMessage =>
+            LocalizationManager.GetString(
+                "BookProcessor.HousekeepingMessage",
+                "Please wait while Bloom does some housekeeping on your book..."
+            );
 
-            // Reuse the "Update Book" label: to the user this is the same operation, applied for them
-            // automatically rather than on request.
-            var title = LocalizationManager.GetString(
+        /// <summary>
+        /// Names the single EmbeddedSimpleProgressDialog that App.tsx renders at the top level of
+        /// Bloom's UI. Both the ways of bringing a book up to date open that one dialog: it has to
+        /// live above the tabs because the Edit tab empties its own page while the work runs, and
+        /// being there also means its backdrop covers the whole of Bloom.
+        /// </summary>
+        private const string kUpdateBookProgressDialogId = "updateBook";
+
+        /// <summary>
+        /// The props that open that dialog. Shared so that the automatic update and the Collection
+        /// tab's "Update Book" command cannot drift apart: to the user they are the same operation,
+        /// one asked for and one not.
+        /// </summary>
+        public static DynamicJson MakeUpdateBookProgressProps()
+        {
+            var props = new DynamicJson();
+            dynamic props1 = props;
+            props1.which = kUpdateBookProgressDialogId;
+            // Reuse the "Update Book" label for both.
+            props1.title = LocalizationManager.GetString(
                 "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
                 "Update Book"
             );
-            BrowserProgressDialog.DoWorkWithProgressDialog(
-                webSocketServer,
-                () =>
-                {
-                    var dlg = new ReactDialog(
-                        "progressDialogBundle",
-                        new
+            props1.titleColor = "white";
+            props1.titleBackgroundColor = Palette.kBloomBlueHex;
+            props1.message = HousekeepingMessage;
+            return props;
+        }
+
+        /// <summary>
+        /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
+        /// due, behind the top-level progress dialog, and then run <paramref name="doAfter"/>. Called
+        /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and
+        /// after a page-size change (EditingModel.SetLayout).
+        ///
+        /// <paramref name="doAfter"/> always runs, whether or not there was anything to do -- the
+        /// caller has a page to get back to either way. When the pass does run, it runs when the
+        /// dialog closes, which is on one of the API server's threads: a caller that touches the UI
+        /// must marshal for itself (EditingModel does that with RunOffTheApiLock). When there was
+        /// nothing to do it runs immediately, on whatever thread called us.
+        ///
+        /// Nothing here blocks. The heavy work is on the dialog's background worker, because
+        /// ProcessBook drives its own off-screen browser thread and the pages it loads call back
+        /// into Bloom's API server, so it must not run on the UI thread; this is exactly what the
+        /// "Update Book" command it shares ProcessBook with does.
+        /// </summary>
+        public static void EnsurePerPageFixupIfNeededThen(
+            Book book,
+            BloomWebSocketServer webSocketServer,
+            Action doAfter
+        )
+        {
+            // Nothing to do, or a run already failed for this book this session (so we don't
+            // re-prompt every time). Either way the caller still has its page to get back to.
+            if (!NeedsPerPageFixup(book) || s_perPageFixupFailedThisSession.Contains(book.ID))
+            {
+                doAfter();
+                return;
+            }
+
+            // Deliberately not awaited: this returns as soon as the dialog is open, not when the
+            // work is done, so awaiting it would tell us nothing. doAfter is how we learn it finished.
+            //
+            // We do have to watch it fail, though. That method is `async Task` with no await in its
+            // own body, so if opening the dialog throws -- the websocket send -- the exception lands
+            // in the returned task instead of being thrown here, and simply discarding the task would
+            // swallow it. Our callers have already emptied the editor and doAfter is the only thing
+            // that puts a page back, so losing it would leave the user looking at a blank Edit tab
+            // with no dialog and no error: the very thing ReturnToPageAfterFixup exists to avoid.
+            BrowserProgressDialog
+                .DoWorkWithProgressDialogAsync(
+                    webSocketServer,
+                    MakeUpdateBookProgressProps(),
+                    (progress, worker) =>
+                    {
+                        try
                         {
-                            title,
-                            titleColor = "white",
-                            titleBackgroundColor = Palette.kBloomBlueHex,
-                            showReportButton = "if-error",
-                            determinate = true,
-                            linearProgress = true,
-                        },
-                        title
-                    );
-                    // ProgressBox asks for 540px, and BloomDialog adds 24px of padding on
-                    // each side plus its border, so anything narrower than about 590 clips
-                    // the right-hand end of every line of the explanation.
-                    dlg.SetScaledSize(620, 210);
-                    return dlg;
-                },
-                (progress, worker) =>
-                {
-                    // Tell the user why Bloom paused to do this; they did not ask for it.
-                    progress.MessageWithoutLocalizing(
-                        LocalizationManager.GetString(
-                            "BookProcessor.AutoUpdateExplanation",
-                            "Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size."
-                        ),
-                        ProgressKind.Instruction
-                    );
-                    try
+                            ProcessBook(book, progress: new WebProgressAdapter(progress));
+                        }
+                        catch (Exception e)
+                        {
+                            // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
+                            // and make sure the details reach the log; the dialog shows the message to the user.
+                            //
+                            // Pages that were processed before the failure stay updated in the book's
+                            // in-memory DOM on purpose. A page is replaced only after its capture
+                            // succeeded, and each replaced page is a complete, correctly migrated page,
+                            // exactly what visiting it in the Edit tab produces, so a later ordinary save
+                            // persisting some migrated pages alongside unmigrated ones loses nothing: that
+                            // mixture is just the state every book was in before this feature. And since
+                            // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
+                            // true and a later run finishes the rest. (BloomBridge's process-book gets its
+                            // all-or-nothing behavior by reloading its own separate book object; the live
+                            // book has no need of that.)
+                            s_perPageFixupFailedThisSession.Add(book.ID);
+                            SIL.Reporting.Logger.WriteError(
+                                "Automatic page update failed for " + book.NameBestForUserDisplay,
+                                e
+                            );
+                            throw;
+                        }
+                        // A warning or error can reach the dialog as a message, without stopping the run
+                        // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
+                        // this path does that today, but the dialog shows such a message if it comes, and
+                        // returning false here would close the dialog the instant the work finished -- so
+                        // the user would never get to read it. Keep the dialog up instead.
+                        return Task.FromResult(progress.HaveProblemsBeenReported);
+                    },
+                    doWhenDialogCloses: doAfter
+                )
+                .ContinueWith(
+                    t =>
                     {
-                        ProcessBook(book, progress: new WebProgressAdapter(progress));
-                    }
-                    catch (Exception e)
-                    {
-                        // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
-                        // and make sure the details reach the log; the dialog shows the message to the user.
-                        //
-                        // Pages that were processed before the failure stay updated in the book's
-                        // in-memory DOM on purpose. A page is replaced only after its capture
-                        // succeeded, and each replaced page is a complete, correctly migrated page,
-                        // exactly what visiting it in the Edit tab produces, so a later ordinary save
-                        // persisting some migrated pages alongside unmigrated ones loses nothing: that
-                        // mixture is just the state every book was in before this feature. And since
-                        // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
-                        // true and a later run finishes the rest. (BloomBridge's process-book gets its
-                        // all-or-nothing behavior by reloading its own separate book object; the live
-                        // book has no need of that.)
-                        s_perPageFixupFailedThisSession.Add(book.ID);
                         SIL.Reporting.Logger.WriteError(
-                            "Automatic page update failed for " + book.NameBestForUserDisplay,
-                            e
+                            "Could not show the update dialog for " + book.NameBestForUserDisplay,
+                            t.Exception
                         );
-                        throw;
-                    }
-                    return false; // no error: close the dialog automatically
-                }
-            );
-            return true;
+                        // Don't keep trying on a Bloom that cannot show it, and get the user's
+                        // page back rather than leaving the editor empty.
+                        s_perPageFixupFailedThisSession.Add(book.ID);
+                        doAfter();
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
