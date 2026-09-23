@@ -182,8 +182,11 @@ namespace Bloom.web.controllers
             _signInInvitationStillOwed = false;
         }
 
-        // The email of the logged-in user, or empty when not logged in.
-        private string CurrentEmail =>
+        /// <summary>
+        /// The email of the logged-in user, or empty when not logged in. This is the identity
+        /// sharing (SharingApi) uses.
+        /// </summary>
+        internal string CurrentEmail =>
             _e2eLoginOverride ?? (_client.LoggedIn ? Settings.Default.WebUserId : "");
 
         /// <summary>
