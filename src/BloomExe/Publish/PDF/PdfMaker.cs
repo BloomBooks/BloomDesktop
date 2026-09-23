@@ -387,9 +387,7 @@ namespace Bloom.Publish.PDF
                 switch (specs.BooketLayoutMethod)
                 {
                     case PublishModel.BookletLayoutMethod.NoBooklet:
-                        method = new NullLayoutMethod(
-                            GetNullLayoutBleedOffsetMm(specs.PrintWithFullBleed, ShowCropMarks)
-                        );
+                        method = new NullLayoutMethod();
                         break;
                     case PublishModel.BookletLayoutMethod.SideFold:
                         // To keep the GUI simple, we assume that A6 page size for booklets
@@ -446,11 +444,11 @@ namespace Bloom.Publish.PDF
                     );
                 }
 
-                // var toDotImposePath = Path.Combine(
-                //     Path.GetTempPath(),
-                //     $"toDotImpose-{Guid.NewGuid():D}.pdf"
-                // );
-                // RobustFile.Copy(incoming.Path, toDotImposePath, true);
+                var toDotImposePath = Path.Combine(
+                    Path.GetTempPath(),
+                    $"toDotImpose-{Guid.NewGuid():D}.pdf"
+                );
+                RobustFile.Copy(incoming.Path, toDotImposePath, true);
 
                 var pdf = XPdfForm.FromFile(incoming.Path); //REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
                 method.Layout(

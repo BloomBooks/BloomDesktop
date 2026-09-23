@@ -384,13 +384,18 @@ namespace Bloom.Publish
         public bool IsCurrentBookFullBleed =>
             _currentlyLoadedBook != null && _currentlyLoadedBook.FullBleed;
 
+        internal static bool ShouldPrintWithFullBleed(bool bookIsFullBleed, bool userPrefFullBleed)
+        {
+            return bookIsFullBleed && userPrefFullBleed;
+        }
+
         private bool GetPrintingWithFullBleed()
         {
-            // Booklet layouts expect trim-sized source pages; full-bleed source pages can
-            // produce incorrect sizing in the imposed output.
-            return _currentlyLoadedBook.FullBleed
-                && GetBookletLayoutMethod() == BookletLayoutMethod.NoBooklet
-                && _currentlyLoadedBook.UserPrefs.FullBleed;
+            // Keep full-bleed source generation consistent for DotImpose input in all layout modes.
+            return ShouldPrintWithFullBleed(
+                _currentlyLoadedBook.FullBleed,
+                _currentlyLoadedBook.UserPrefs.FullBleed
+            );
         }
 
         private bool LayoutPagesForRightToLeft

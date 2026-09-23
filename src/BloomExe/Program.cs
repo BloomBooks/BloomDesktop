@@ -29,6 +29,7 @@ using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using CommandLine;
+using DotImpose;
 using L10NSharp;
 using L10NSharp.Windows.Forms;
 using Sentry;
@@ -113,6 +114,7 @@ namespace Bloom
             _gotUniqueToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            EnsureExpectedDotImposeRuntimeVersion();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
@@ -731,6 +733,27 @@ namespace Bloom
             using (InitializeAnalytics())
             {
                 return await UploadCommand.Handle(opts);
+            }
+        }
+
+        private static void EnsureExpectedDotImposeRuntimeVersion()
+        {
+            var expectedVersion = Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(attr => attr.Key == "ExpectedDotImposeVersion")
+                ?.Value;
+
+            if (string.IsNullOrWhiteSpace(expectedVersion))
+                return;
+
+            var actualVersion = DotImposeRuntimeInfo.GetInformationalVersion();
+            if (!actualVersion.StartsWith(expectedVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                var path = DotImposeRuntimeInfo.GetAssemblyPath();
+                throw new InvalidOperationException(
+                    $"DotImpose runtime mismatch at startup. Expected '{expectedVersion}', loaded '{actualVersion}' from '{path}'."
+                );
             }
         }
 

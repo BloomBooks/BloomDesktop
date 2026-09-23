@@ -10,6 +10,26 @@ namespace BloomTests.Publish
     [TestFixture]
     public class PublishModelTests
     {
+        [Test]
+        public void ShouldPrintWithFullBleed_BookAndUserEnabled_ReturnsTrue()
+        {
+            Assert.That(PublishModel.ShouldPrintWithFullBleed(true, true), Is.True);
+        }
+
+        [TestCase(false, false)]
+        [TestCase(false, true)]
+        [TestCase(true, false)]
+        public void ShouldPrintWithFullBleed_BookOrUserDisabled_ReturnsFalse(
+            bool bookIsFullBleed,
+            bool userPrefFullBleed
+        )
+        {
+            Assert.That(
+                PublishModel.ShouldPrintWithFullBleed(bookIsFullBleed, userPrefFullBleed),
+                Is.False
+            );
+        }
+
         private const string kDataDivHtml =
             @"<!DOCTYPE html>
 <html>

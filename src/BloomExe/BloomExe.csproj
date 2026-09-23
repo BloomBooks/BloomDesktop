@@ -21,6 +21,15 @@
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 		<Platforms>x64;ARM64</Platforms>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+		<LocalDotImposeSource Condition="'$(LocalDotImposeSource)' == ''">D:\dotImpose\nupkg\local</LocalDotImposeSource>
+		<LocalDotImposeVersion Condition="'$(LocalDotImposeVersion)' == ''">2.6.5-local-dev</LocalDotImposeVersion>
+		<UseLocalDotImpose Condition="'$(UseLocalDotImpose)' == '' and Exists('$(LocalDotImposeSource)')">true</UseLocalDotImpose>
+		<UseLocalDotImpose Condition="'$(UseLocalDotImpose)' == ''">false</UseLocalDotImpose>
+		<DotImposePackageVersion Condition="'$(UseLocalDotImpose)' == 'true'">$(LocalDotImposeVersion)</DotImposePackageVersion>
+		<DotImposePackageVersion Condition="'$(UseLocalDotImpose)' != 'true'">2.6.5-test</DotImposePackageVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(UseLocalDotImpose)' == 'true'">
+		<RestoreAdditionalProjectSources>$(LocalDotImposeSource);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -42,6 +51,10 @@
 		<AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
 			<_Parameter1>SquirrelAwareVersion</_Parameter1>
 			<_Parameter2>1</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+			<_Parameter1>ExpectedDotImposeVersion</_Parameter1>
+			<_Parameter2>$(DotImposePackageVersion)</_Parameter2>
 		</AssemblyAttribute>
 		<!--
       Without explicitly disabling DPI awareness here, the subsequent loading of
@@ -264,7 +277,7 @@
 		<PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="18.0.0-beta0001" />
 		<PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="18.0.0-beta0001" />
 		<PackageReference Include="SIL.WritingSystems" Version="18.0.0-beta0001" />
-		<PackageReference Include="sillsdev.dotImpose" Version="2.6.2" />
+		<PackageReference Include="sillsdev.dotImpose" Version="$(DotImposePackageVersion)" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.2" />
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.2" />
