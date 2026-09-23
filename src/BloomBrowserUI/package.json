@@ -96,6 +96,7 @@
         "lib/ckeditor/ckeditor.js",
         "lib/ckeditor/config.js",
         "lib/tabpane.js",
+        "bookEdit/calendarSetup/calendarTooling.ts",
         "bookEdit/js/bloomQtipUtils.ts",
         "bookEdit/js/jquery.hasAttr.js",
         "bookEdit/js/bloomEditing.ts",
