@@ -1697,6 +1697,38 @@ namespace BloomTests.ImageProcessing
         }
 
         [Test]
+        public void ReallyCropImages_UploadMode_CropFails_LeavesDataDivCropStyle()
+        {
+            // If the file can't be cropped, it is unchanged, so the data-div must keep the author's
+            // crop; reopening the book can then restore it.
+            using (var folder = new TemporaryFolder("UploadCropFailsDataDiv"))
+            {
+                // Deliberately no cover.png in the folder, so the crop fails.
+                var dom = MakeCroppedCoverDom();
+                var img = dom.SelectSingleNode("//img[@id='coverImg']");
+                var dataDivEntry = dom.SelectSingleNode(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+                var originalDataDivStyle = dataDivEntry.GetAttribute("style");
+                // Sanity check
+                Assert.That(
+                    ImageUtils.GetNumberFromPx("top", originalDataDivStyle),
+                    Is.EqualTo(-24.6001).Within(0.0001)
+                );
+
+                // SUT, as BookUpload does it
+                ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path, true, true);
+
+                Assert.That(
+                    img.HasAttribute("style"),
+                    Is.False,
+                    "A failed crop should still remove the page img style, as before"
+                );
+                Assert.That(dataDivEntry.GetAttribute("style"), Is.EqualTo(originalDataDivStyle));
+            }
+        }
+
+        [Test]
         public void ReallyCropImages_UploadMode_CustomLayoutCoverImage_LeavesDataDivStyleAlone()
         {
             // The data-div entry belongs to the standard cover layout, so the crop style of an img

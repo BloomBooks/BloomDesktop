@@ -2317,7 +2317,6 @@ namespace Bloom.ImageProcessing
                 preserveCropStyleForUpload,
                 bloomDataDivEntriesByDataBook
             );
-            SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             // Track if we replaced an original file with a new one
             if (needNewName && croppedFileName != src)
@@ -2578,6 +2577,11 @@ namespace Bloom.ImageProcessing
                 // so nothing can possibly think it needs more cropping
                 img.RemoveAttribute("style");
             }
+
+            // If the crop failed, the file is unchanged, so leave the data-div's crop style alone;
+            // reopening the book can then restore the author's crop.
+            if (croppedImagePath != null)
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             return result;
         }
