@@ -93,6 +93,9 @@ jobs:
     #   hi-IN  Indian digit grouping (1,00,000 rather than 100,000) breaks assumptions that groups
     #          are three digits — but we do not appear to format numbers big enough for it to show.
     matrix-setup:
+        # Linux on purpose: this job only turns the culture list into a JSON matrix with a few lines
+        # of shell, and a Linux runner is up in seconds where a Windows one takes minutes. Nothing
+        # Bloom-related runs here; the tests run on windows-latest below.
         runs-on: ubuntu-latest
         outputs:
             cultures: ${{ steps.build.outputs.cultures }}
@@ -135,11 +138,12 @@ jobs:
     test:
         needs: matrix-setup
         runs-on: windows-latest
-        # Generous, because a culture bug does not always fail fast: PublishHelper gives the browser
-        # 10 seconds to load its visibility document and the epub tests then retry, so a culture that
-        # breaks that path makes the suite crawl rather than stop. Still well under the nightly's
-        # 120, so a wedged run is cut loose in reasonable time.
-        timeout-minutes: 90
+        # The nightly's build-plus-C#-test phase, which is all this job does, takes about 20 minutes
+        # on a runner (6 to build, 13 for the tests). Roughly double that, because a culture bug
+        # does not always fail fast: PublishHelper gives the browser 10 seconds to load its
+        # visibility document and the epub tests then retry, so a culture that breaks that path
+        # makes the suite crawl rather than stop.
+        timeout-minutes: 45
 
         strategy:
             # One culture failing must not cancel the others — they are independent questions, and
@@ -154,9 +158,10 @@ jobs:
             checks: write
 
         env:
-            # VersionNumbers requires a 4-part BUILD_NUMBER; this workflow never publishes, so a
-            # throwaway value that just identifies the run is fine.
-            BUILD_NUMBER: 0.0.${{ github.run_number }}.0
+            # VersionNumbers requires a 4-part BUILD_NUMBER. This workflow never publishes, so the
+            # counter is a throwaway; the fourth part is the git hash, which is what TeamCity puts
+            # there too, so the FullVersion baked into the build names the commit under test.
+            BUILD_NUMBER: 0.0.${{ github.run_number }}.${{ github.sha }}
 
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -249,6 +254,14 @@ jobs:
                     /p:excludedCategories=SkipOnTeamCity
 
             # ----- Report -----
+            # The check run is attached to the commit, but a reader of the run page or a downloaded
+            # artifact should not have to work that out: say what was tested, in the summary.
+            - name: Record what was tested
+              if: ${{ always() }}
+              shell: bash
+              run: |
+                  echo "**${{ matrix.culture }}**: commit \`${{ github.sha }}\` on \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+
             # check_name includes the culture because it must be unique per invocation, or the
             # matrix legs' reports overwrite each other and only the last one survives.
             #
@@ -271,8 +284,9 @@ jobs:
               if: ${{ always() }}
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  # Per-culture name, or the matrix legs collide on upload.
-                  name: culture-sweep-results-${{ matrix.culture }}
+                  # Per-culture name, or the matrix legs collide on upload; the commit, so a downloaded
+                  # file still says what it tested.
+                  name: culture-sweep-results-${{ matrix.culture }}-${{ github.sha }}
                   # Forward slashes: upload-artifact treats the path as a glob, where a backslash is
                   # an escape character even on Windows.
                   path: output/Tests/Release/x64/TestResults.xml
