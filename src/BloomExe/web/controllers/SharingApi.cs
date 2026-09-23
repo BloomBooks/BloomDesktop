@@ -68,6 +68,19 @@ namespace Bloom.web.controllers
                 HandleDismissSuggestions,
                 false
             );
+            // This runs as the collection opens (after AccountApi has restored any saved
+            // sign-in), which is when the cloud backend will note that a member is using it.
+            RecordVisitIfSignedIn();
+        }
+
+        // Note that the signed-in person, if a member, is using the collection now. Done both
+        // when the collection opens and when the Share dialog asks for the state (the user may
+        // have signed in since opening the collection).
+        private void RecordVisitIfSignedIn()
+        {
+            var email = SignedInEmail;
+            if (!string.IsNullOrEmpty(email))
+                _sharingService.RecordVisit(email, RegisteredName);
         }
 
         // The signed-in Bloom Library email, or empty when nobody is signed in.
@@ -105,14 +118,12 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// GET sharing/state: everything the Share dialog shows. Also records that the signed-in
-        /// person (if a member) is using the collection, which the cloud backend will do whenever
-        /// someone opens a shared collection.
+        /// person (if a member) is using the collection; see RecordVisitIfSignedIn.
         /// </summary>
         private void HandleState(ApiRequest request)
         {
             var email = SignedInEmail;
-            if (!string.IsNullOrEmpty(email))
-                _sharingService.RecordVisit(email, RegisteredName);
+            RecordVisitIfSignedIn();
             var record = _sharingService.GetRecord();
             var canManage = CanManage(record);
             request.ReplyWithJson(
@@ -147,15 +158,9 @@ namespace Bloom.web.controllers
             return suggestions;
         }
 
-        private class Invitation
-        {
-            public string email { get; set; }
-            public SharingRole role { get; set; }
-        }
-
         private class InviteBody
         {
-            public List<Invitation> invitations { get; set; }
+            public List<SharingInvitation> invitations { get; set; }
         }
 
         /// <summary>
@@ -174,8 +179,7 @@ namespace Bloom.web.controllers
                     );
                 _sharingService.StartSharing(me, RegisteredName);
             }
-            foreach (var invitation in body.invitations)
-                _sharingService.Invite(me, invitation.email, invitation.role);
+            _sharingService.Invite(me, body.invitations);
             ReportChange(request);
         }
 

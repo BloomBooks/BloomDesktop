@@ -41,7 +41,7 @@ function makeState(overrides: Partial<ISharingState>): ISharingState {
 
 function makeActions() {
     return {
-        invite: vi.fn(() => Promise.resolve()),
+        invite: vi.fn(() => Promise.resolve(true)),
         setRole: vi.fn(),
         remove: vi.fn(),
         dismissSuggestions: vi.fn(),
@@ -336,6 +336,35 @@ describe("ShareDialogContents", () => {
         ]);
     });
 
+    it("does not dismiss the unchecked suggestions if inviting fails", async () => {
+        const actions = makeActions();
+        actions.invite.mockImplementation(() => Promise.resolve(false));
+        render(
+            makeState({
+                suggestions: [
+                    {
+                        email: "sam@example.org",
+                        role: "editor",
+                        lastActivity: new Date(2026, 8, 1).toISOString(),
+                    },
+                    {
+                        email: "amina@example.org",
+                        role: "editor",
+                        lastActivity: new Date(2026, 8, 1).toISOString(),
+                    },
+                ],
+            }),
+            actions,
+        );
+        click(
+            findAll("share-suggestion")[1].querySelector("input"),
+            "Amina's suggestion checkbox",
+        );
+        click(find("share-invite-suggestions"), "the Invite Selected button");
+        expect(actions.invite).toHaveBeenCalledTimes(1);
+        await act(async () => {});
+        expect(actions.dismissSuggestions).not.toHaveBeenCalled();
+    });
     it("does not dismiss anyone when every suggestion is invited", async () => {
         const actions = render(
             makeState({

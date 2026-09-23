@@ -93,6 +93,18 @@ namespace Bloom.Sharing
     }
 
     /// <summary>
+    /// A request to invite one person, as the Share dialog sends it.
+    /// </summary>
+    public class SharingInvitation
+    {
+        [JsonProperty("email")]
+        public string Email;
+
+        [JsonProperty("role")]
+        public SharingRole Role;
+    }
+
+    /// <summary>
     /// Someone who has worked in the current (folder) Team Collection, found in its history,
     /// whom an admin may want to invite to the shared collection.
     /// </summary>

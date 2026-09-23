@@ -22,8 +22,11 @@ namespace Bloom.Sharing
         /// </summary>
         void StartSharing(string adminEmail, string adminName);
 
-        /// <summary>Invite someone (by an admin). Throws if they already have access.</summary>
-        void Invite(string byEmail, string email, SharingRole role);
+        /// <summary>
+        /// Invite people (by an admin), all or none: throws, changing nothing, if any of them
+        /// already has access or appears twice.
+        /// </summary>
+        void Invite(string byEmail, IEnumerable<SharingInvitation> invitations);
 
         /// <summary>Change someone's role (by an admin). The last admin cannot be demoted.</summary>
         void SetRole(string byEmail, string email, SharingRole role);

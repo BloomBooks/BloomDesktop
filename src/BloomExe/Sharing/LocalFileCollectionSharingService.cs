@@ -97,26 +97,40 @@ namespace Bloom.Sharing
         }
 
         /// <inheritdoc/>
-        public void Invite(string byEmail, string email, SharingRole role)
+        public void Invite(string byEmail, IEnumerable<SharingInvitation> invitations)
         {
+            var list = invitations.ToList();
             Change(
                 byEmail,
                 record =>
                 {
-                    if (FindMember(record, email) != null)
-                        throw new SharingNotAllowedException($"{email} already has access.");
-                    record.Members.Add(
-                        new SharingMember
-                        {
-                            Email = email.Trim(),
-                            Role = role,
-                            Status = SharingMemberStatus.Invited,
-                            InvitedAt = _utcNow(),
-                            InvitedBy = byEmail,
-                        }
-                    );
-                    // Inviting someone we were suggesting answers the suggestion.
-                    record.DismissedSuggestions.RemoveAll(e => SameEmail(e, email));
+                    // Check them all before changing anything, so a bad one leaves the record
+                    // as it was rather than half-updated.
+                    for (var i = 0; i < list.Count; i++)
+                    {
+                        var email = list[i].Email;
+                        if (FindMember(record, email) != null)
+                            throw new SharingNotAllowedException($"{email} already has access.");
+                        if (list.Skip(i + 1).Any(other => SameEmail(other.Email, email)))
+                            throw new SharingNotAllowedException(
+                                $"{email} is in the list more than once."
+                            );
+                    }
+                    foreach (var invitation in list)
+                    {
+                        record.Members.Add(
+                            new SharingMember
+                            {
+                                Email = invitation.Email.Trim(),
+                                Role = invitation.Role,
+                                Status = SharingMemberStatus.Invited,
+                                InvitedAt = _utcNow(),
+                                InvitedBy = byEmail,
+                            }
+                        );
+                        // Inviting someone we were suggesting answers the suggestion.
+                        record.DismissedSuggestions.RemoveAll(e => SameEmail(e, invitation.Email));
+                    }
                 }
             );
         }

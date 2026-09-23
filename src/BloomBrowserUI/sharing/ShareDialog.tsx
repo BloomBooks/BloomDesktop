@@ -45,8 +45,9 @@ const kDangerColor = "#d32f2f";
 
 // What the dialog asks the server to do. Separate from the component so tests can supply fakes.
 export interface IShareDialogActions {
-    // Resolves once the server has made the invitations (and so shared the collection).
-    invite: (invitations: IInvitation[]) => Promise<unknown>;
+    // Resolves once the server has answered: true if it made the invitations (and so shared
+    // the collection), false if it failed (the failure has already been reported).
+    invite: (invitations: IInvitation[]) => Promise<boolean>;
     setRole: (email: string, role: SharingRole) => void;
     remove: (email: string) => void;
     dismissSuggestions: (emails: string[]) => void;
@@ -385,10 +386,11 @@ const SuggestionsPanel: React.FunctionComponent<{
             .map((s) => s.email);
         void props.actions
             .invite(checked.map((s) => ({ email: s.email, role: s.role })))
-            .then(() => {
+            .then((invited) => {
                 // Once the invitations are made the collection is certainly shared, so the
-                // ones left unchecked can be remembered as "don't suggest".
-                if (declined.length > 0)
+                // ones left unchecked can be remembered as "don't suggest". If inviting failed,
+                // leave the suggestions alone so the admin can try again.
+                if (invited && declined.length > 0)
                     props.actions.dismissSuggestions(declined);
             });
     };

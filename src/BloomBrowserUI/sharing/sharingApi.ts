@@ -61,9 +61,12 @@ export function useSharingState(): ISharingState | undefined {
 }
 
 // Invite people. If the collection is not shared yet, this shares it, with the signed-in user
-// as its admin.
-export function invite(invitations: IInvitation[]) {
-    return postJson("sharing/invite", { invitations });
+// as its admin. Resolves to whether it worked: postJson reports a failure to the user itself
+// and then resolves with no response rather than rejecting.
+export function invite(invitations: IInvitation[]): Promise<boolean> {
+    return postJson("sharing/invite", { invitations }).then(
+        (response) => !!response,
+    );
 }
 
 export function setRole(email: string, role: SharingRole) {

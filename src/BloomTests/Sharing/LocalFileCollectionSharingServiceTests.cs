@@ -42,6 +42,18 @@ namespace BloomTests.Sharing
             );
         }
 
+        // Invite one person, the way the dialog's invite row does.
+        private void Invite(string byEmail, string email, SharingRole role)
+        {
+            _service.Invite(
+                byEmail,
+                new[]
+                {
+                    new SharingInvitation { Email = email, Role = role },
+                }
+            );
+        }
+
         private void StartSharingAsRuth()
         {
             _service.StartSharing(kAdmin, "Ruth Nakalema");
@@ -90,7 +102,7 @@ namespace BloomTests.Sharing
         public void File_UsesLowercaseRoleAndStatusNames()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
 
             var json = RobustFile.ReadAllText(
                 Path.Combine(_folder.Path, LocalFileCollectionSharingService.kFileName)
@@ -107,7 +119,7 @@ namespace BloomTests.Sharing
             StartSharingAsRuth();
             _now = _now.AddDays(1);
 
-            _service.Invite(kAdmin, " amina@example.org ", SharingRole.Editor);
+            Invite(kAdmin, " amina@example.org ", SharingRole.Editor);
 
             var members = MakeService().GetRecord().Members;
             Assert.That(members.Count, Is.EqualTo(2));
@@ -124,9 +136,9 @@ namespace BloomTests.Sharing
         public void Invite_SomeoneWithAccess_Throws()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.Invite(kAdmin, "AMINA@example.org", SharingRole.Admin)
+                Invite(kAdmin, "AMINA@example.org", SharingRole.Admin)
             );
         }
 
@@ -134,9 +146,9 @@ namespace BloomTests.Sharing
         public void Invite_ByNonAdmin_Throws()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.Invite("amina@example.org", "sam@example.org", SharingRole.Editor)
+                Invite("amina@example.org", "sam@example.org", SharingRole.Editor)
             );
             Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
         }
@@ -145,7 +157,7 @@ namespace BloomTests.Sharing
         public void Invite_NotShared_Throws()
         {
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor)
+                Invite(kAdmin, "amina@example.org", SharingRole.Editor)
             );
         }
 
@@ -156,16 +168,95 @@ namespace BloomTests.Sharing
             _service.DismissSuggestions(kAdmin, new[] { "amina@example.org" });
             Assert.That(_service.GetRecord().DismissedSuggestions, Has.Count.EqualTo(1));
 
-            _service.Invite(kAdmin, "Amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "Amina@example.org", SharingRole.Editor);
 
             Assert.That(_service.GetRecord().DismissedSuggestions, Is.Empty);
+        }
+
+        [Test]
+        public void Invite_Several_AddsThemAll()
+        {
+            StartSharingAsRuth();
+            _service.Invite(
+                kAdmin,
+                new[]
+                {
+                    new SharingInvitation { Email = "sam@example.org", Role = SharingRole.Admin },
+                    new SharingInvitation
+                    {
+                        Email = "amina@example.org",
+                        Role = SharingRole.Editor,
+                    },
+                }
+            );
+            Assert.That(
+                MakeService().GetRecord().Members.Select(m => $"{m.Email} {m.Role}"),
+                Is.EqualTo(
+                    new[] { $"{kAdmin} Admin", "sam@example.org Admin", "amina@example.org Editor" }
+                )
+            );
+        }
+
+        [Test]
+        public void Invite_OneBadInBatch_ChangesNothing()
+        {
+            StartSharingAsRuth();
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
+
+            // Sam is fine, but Amina already has access, so neither should be added.
+            Assert.Throws<SharingNotAllowedException>(() =>
+                _service.Invite(
+                    kAdmin,
+                    new[]
+                    {
+                        new SharingInvitation
+                        {
+                            Email = "sam@example.org",
+                            Role = SharingRole.Editor,
+                        },
+                        new SharingInvitation
+                        {
+                            Email = "amina@example.org",
+                            Role = SharingRole.Editor,
+                        },
+                    }
+                )
+            );
+
+            Assert.That(MakeService().GetRecord().Members.Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Invite_SamePersonTwiceInBatch_Throws()
+        {
+            StartSharingAsRuth();
+            Assert.Throws<SharingNotAllowedException>(() =>
+                _service.Invite(
+                    kAdmin,
+                    new[]
+                    {
+                        new SharingInvitation
+                        {
+                            Email = "sam@example.org",
+                            Role = SharingRole.Editor,
+                        },
+                        new SharingInvitation
+                        {
+                            Email = "SAM@example.org",
+                            Role = SharingRole.Admin,
+                        },
+                    }
+                )
+            );
+            Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(1));
         }
 
         [Test]
         public void SetRole_ChangesRole()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
 
             _service.SetRole(kAdmin, "amina@example.org", SharingRole.Admin);
 
@@ -186,7 +277,7 @@ namespace BloomTests.Sharing
         public void SetRole_AdminMayDemoteThemselvesWhenThereIsAnotherAdmin()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "sam@example.org", SharingRole.Admin);
+            Invite(kAdmin, "sam@example.org", SharingRole.Admin);
 
             _service.SetRole(kAdmin, kAdmin, SharingRole.Editor);
 
@@ -197,7 +288,7 @@ namespace BloomTests.Sharing
         public void Remove_RemovesMember()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
             Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
 
             _service.Remove(kAdmin, "amina@example.org");
@@ -212,7 +303,7 @@ namespace BloomTests.Sharing
         public void Remove_LastAdmin_Throws()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
             Assert.Throws<SharingNotAllowedException>(() => _service.Remove(kAdmin, kAdmin));
             Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
         }
@@ -243,7 +334,7 @@ namespace BloomTests.Sharing
         public void RecordVisit_InvitedMember_BecomesActive()
         {
             StartSharingAsRuth();
-            _service.Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
             Assert.That(
                 _service.GetRecord().Members[1].Status,
                 Is.EqualTo(SharingMemberStatus.Invited)
