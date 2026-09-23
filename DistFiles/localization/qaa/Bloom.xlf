@@ -6058,6 +6058,16 @@
         <target xml:lang="qaa-x-test" state="needs-translation">Previous and New Letters</target>
         <note>ID: ReaderSetup.SelectedLetters</note>
       </trans-unit>
+      <trans-unit id="ReaderSetup.NoSampleTextsYet" translate="no">
+        <source xml:lang="en">No sample texts yet. Add text files to the Sample Texts folder.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">No sample texts yet. Add text files to the Sample Texts folder.</target>
+        <note>ID: ReaderSetup.NoSampleTextsYet</note>
+      </trans-unit>
+      <trans-unit id="ReaderSetup.SeparateWordsWithSpaces" translate="no">
+        <source xml:lang="en">Separate words with spaces.</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Separate words with spaces.</target>
+        <note>ID: ReaderSetup.SeparateWordsWithSpaces</note>
+      </trans-unit>
       <trans-unit id="ReaderSetup.SentenceHeader" sil:dynamic="true">
         <source xml:lang="en">Sentence</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Sentence</target>
