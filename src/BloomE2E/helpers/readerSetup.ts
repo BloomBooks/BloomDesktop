@@ -16,6 +16,8 @@
 //    heading, through aria-label), so nothing here matches on text. Each control carries a
 //    `data-testid` added for this suite.
 
+import * as fs from "node:fs";
+import * as Path from "node:path";
 import { expect, type Page } from "@playwright/test";
 import { apiGetJson, apiPost } from "./api";
 import { waitForEditablePage } from "./bookMaking";
@@ -49,6 +51,9 @@ const LEVELED_SWITCH = '[data-testid="leveled-reader-switch"] input';
 
 /** One row of the stage list down the left of the Decodable Stages tab. */
 const PHASE_ROW = '[data-testid="reader-setup-phase-row"]';
+
+/** One file in the Sample Words tab's listing of the collection's Sample Texts folder. */
+const SAMPLE_TEXT_FILE_ROW = '[data-testid="reader-setup-sample-text-file"]';
 
 /** The dialog's three tabs, in the order it shows them. */
 export type ReaderSetupTab = "letters" | "sampleWords" | "stages";
@@ -228,22 +233,19 @@ export interface ISampleTextFile {
 export async function getSampleTextFiles(
     page: Page,
 ): Promise<ISampleTextFile[]> {
-    return page
-        .locator('[data-testid="reader-setup-sample-text-file"]')
-        .evaluateAll((rows) =>
-            rows.map((row) => {
-                const explanation = row.querySelector("span:last-of-type");
-                const validType =
-                    row.getAttribute("data-valid-type") === "true";
-                return {
-                    name: (row.textContent ?? "").trim(),
-                    validType,
-                    explanation: validType
-                        ? ""
-                        : (explanation?.textContent ?? "").trim(),
-                };
-            }),
-        );
+    return page.locator(SAMPLE_TEXT_FILE_ROW).evaluateAll((rows) =>
+        rows.map((row) => {
+            const explanation = row.querySelector("span:last-of-type");
+            const validType = row.getAttribute("data-valid-type") === "true";
+            return {
+                name: (row.textContent ?? "").trim(),
+                validType,
+                explanation: validType
+                    ? ""
+                    : (explanation?.textContent ?? "").trim(),
+            };
+        }),
+    );
 }
 
 /** True when the Sample Words tab is showing its "no sample texts yet" message. */
@@ -394,11 +396,52 @@ export async function openReaderSetupTab(
     tab: ReaderSetupTab,
 ): Promise<void> {
     const testId = TAB_TEST_ID[tab];
+    // The Sample Words tab asks Bloom for the Sample Texts folder listing as it mounts, and shows
+    // its "no sample texts yet" message until the answer arrives. Wait for that answer, and for
+    // the list to show every file in it, so a caller never mistakes the placeholder for an empty
+    // folder. Start listening before the click, or a quick answer is missed.
+    const listing =
+        tab === "sampleWords"
+            ? page.waitForResponse((response) =>
+                  response.url().includes("readers/ui/sampleTextsList"),
+              )
+            : undefined;
     await page.locator(`[data-testid="${testId}"]`).click();
     await expect(
         page.locator(`[data-testid="${testId}"]`),
         `Clicking the "${tab}" tab did not select it.`,
     ).toHaveAttribute("aria-selected", "true", { timeout: 30000 });
+    if (listing) {
+        const files = (await (await listing).text())
+            .split("\r")
+            .filter((path) => path);
+        await expect
+            .poll(async () => page.locator(SAMPLE_TEXT_FILE_ROW).count(), {
+                timeout: 30000,
+                message: `Bloom reported ${files.length} file(s) in the Sample Texts folder, but the Sample Words tab did not list them all.`,
+            })
+            .toBe(files.length);
+    }
+}
+
+/**
+ * Make the collection's Sample Texts folder hold exactly these files, removing anything else in
+ * it. Every test in a spec file shares one Bloom and one collection (the fixture is
+ * worker-scoped), so a test states the whole folder rather than adding to what the last one
+ * left. An empty map leaves the folder existing but empty.
+ */
+export function setSampleTexts(
+    collectionDir: string,
+    files: { [name: string]: string },
+): void {
+    const folder = Path.join(collectionDir, "Sample Texts");
+    fs.mkdirSync(folder, { recursive: true });
+    for (const existing of fs.readdirSync(folder)) {
+        fs.rmSync(Path.join(folder, existing), { force: true });
+    }
+    for (const [name, contents] of Object.entries(files)) {
+        fs.writeFileSync(Path.join(folder, name), contents);
+    }
 }
 
 /**

@@ -6,8 +6,6 @@
 // reached through the toolbox bundle. That boundary is invisible to the unit tests, and it is
 // where the conversion's real bugs have been. (BL-16607)
 
-import * as fs from "node:fs";
-import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
@@ -20,27 +18,12 @@ import {
     openReaderSetupTab,
     selectStageLetter,
     getSavedReaderSettings,
+    setSampleTexts,
 } from "../helpers/readerSetup";
 
 test.use({
     collectionSpec: { name: "reader-sample-texts", languages: ["en"] },
 });
-
-// Every test in this file shares one Bloom and one collection (the fixture is worker-scoped), so
-// each one states the whole folder contents rather than adding to whatever the last test left.
-function setSampleTexts(
-    collectionDir: string,
-    files: { [name: string]: string },
-): void {
-    const folder = Path.join(collectionDir, "Sample Texts");
-    fs.mkdirSync(folder, { recursive: true });
-    for (const existing of fs.readdirSync(folder)) {
-        fs.rmSync(Path.join(folder, existing), { force: true });
-    }
-    for (const [name, contents] of Object.entries(files)) {
-        fs.writeFileSync(Path.join(folder, name), contents);
-    }
-}
 
 test("builds a book with the Decodable Reader tool turned on", async ({
     page,

@@ -10,7 +10,7 @@
 
 import { expect, test } from "../fixtures/bloomTest";
 import { makeBookFromTemplate } from "../helpers/bookMaking";
-import { toolboxFrame } from "../helpers/toolbox";
+import { getShownTools } from "../helpers/toolbox";
 import {
     cancelReaderSetup,
     closeLeveledReaderSetup,
@@ -64,8 +64,7 @@ test("the legacy Levels dialog and the React Stages dialog each open and close o
 
     // sanity check: the toolbox is still usable after all that
     expect(
-        await toolboxFrame(page)
-            .locator('[data-toolid="decodableReader"]')
-            .count(),
-    ).toBeGreaterThan(0);
+        await getShownTools(page),
+        "The toolbox stopped offering the Decodable Reader tool.",
+    ).toContain("decodableReader");
 });
