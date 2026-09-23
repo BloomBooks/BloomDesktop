@@ -611,6 +611,26 @@ export async function getSavedReaderSettings(
 }
 
 /**
+ * Change the collection's saved reader settings directly. This is SETUP, not a path under test:
+ * it reads the whole settings file, lets the caller edit it, and posts it back, so fields this
+ * suite does not model survive. The toolbox picks the change up, re-reading the sample texts with
+ * the new alphabet, the next time the setup dialog opens.
+ */
+export async function changeSavedReaderSettings(
+    page: Page,
+    change: (settings: IReaderSettings) => void,
+): Promise<void> {
+    const settings = await getSavedReaderSettings(page);
+    change(settings);
+    await apiPost(
+        page,
+        "readers/io/readerToolSettings",
+        JSON.stringify(settings),
+        "application/json",
+    );
+}
+
+/**
  * Replace a setup-dialog text box's contents. The boxes are React-controlled and also commit on
  * blur, so this clears, types, and then blurs, rather than setting the value behind React's
  * back.

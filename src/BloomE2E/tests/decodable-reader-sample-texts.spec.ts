@@ -10,6 +10,7 @@ import { expect, test } from "../fixtures/bloomTest";
 import { makeBookFromTemplate } from "../helpers/bookMaking";
 import {
     cancelReaderSetup,
+    changeSavedReaderSettings,
     enableDecodableReaderTool,
     getMatchingWords,
     getSampleTextFiles,
@@ -19,6 +20,7 @@ import {
     selectStageLetter,
     getSavedReaderSettings,
     setSampleTexts,
+    setTypedSampleWords,
 } from "../helpers/readerSetup";
 
 test.use({
@@ -135,5 +137,77 @@ test("the matching-words preview gains a sample-text word when its letter is tau
     // sanity check: a word needing letters this stage still has not taught stays out
     expect(after).not.toContain("dog");
 
+    await cancelReaderSetup(page);
+});
+
+// Sample words can come from the words typed on the Sample Words tab, from the Sample Texts
+// folder, or from both, and non-ASCII words must survive the trip from a UTF-8 file. "é" is not in
+// this collection's alphabet, so the test adds it and teaches it, with "t", at the first stage.
+// That changes the saved settings for the rest of the file, so this test stays last.
+test("sample words come from typed words, the Sample Texts folder, or both, including non-ASCII words [Test Case ID 444]", async ({
+    page,
+    bloomApp,
+}) => {
+    await changeSavedReaderSettings(page, (settings) => {
+        settings.letters = `${settings.letters} é`;
+        settings.stages[0].letters = `${settings.stages[0].letters} t é`;
+        settings.moreWords = "";
+    });
+    // sanity check: the setup reached the settings file
+    expect(
+        (await getSavedReaderSettings(page)).stages[0].letters.split(" "),
+    ).toContain("é");
+
+    // The Sample Texts folder only.
+    setSampleTexts(bloomApp.collectionDir, { "words.txt": "tré" });
+    await openDecodableStagesSetup(page);
+    await openReaderSetupTab(page, "stages");
+    await expect
+        .poll(async () => (await getMatchingWords(page)).includes("tré"), {
+            timeout: 30000,
+            message:
+                "'tré', the only word in the Sample Texts folder, never reached the preview.",
+        })
+        .toBe(true);
+    await cancelReaderSetup(page);
+
+    // Typed words only.
+    setSampleTexts(bloomApp.collectionDir, {});
+    await openDecodableStagesSetup(page);
+    await openReaderSetupTab(page, "sampleWords");
+    await setTypedSampleWords(page, "été");
+    await openReaderSetupTab(page, "stages");
+    await expect
+        .poll(async () => (await getMatchingWords(page)).includes("tré"), {
+            timeout: 30000,
+            message:
+                "'tré' is still in the preview after the Sample Texts folder was emptied.",
+        })
+        .toBe(false);
+    expect(
+        await getMatchingWords(page),
+        "'été', typed on the Sample Words tab, is not in the preview.",
+    ).toContain("été");
+    await cancelReaderSetup(page);
+
+    // Both together.
+    setSampleTexts(bloomApp.collectionDir, { "words.txt": "tré" });
+    await openDecodableStagesSetup(page);
+    await openReaderSetupTab(page, "sampleWords");
+    await setTypedSampleWords(page, "été");
+    await openReaderSetupTab(page, "stages");
+    await expect
+        .poll(
+            async () => {
+                const words = await getMatchingWords(page);
+                return words.includes("tré") && words.includes("été");
+            },
+            {
+                timeout: 30000,
+                message:
+                    "With words both typed and in the Sample Texts folder, the preview did not show one from each.",
+            },
+        )
+        .toBe(true);
     await cancelReaderSetup(page);
 });
