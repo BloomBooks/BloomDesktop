@@ -6,7 +6,7 @@
  * or from C# via WireUpForWinforms.
  */
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../../utils/reactRender";
 import {
     IBloomDialogEnvironmentParams,
     Mode,
@@ -14,7 +14,7 @@ import {
     useEventLaunchedBloomDialog,
 } from "../BloomDialog/BloomDialogPlumbing";
 import { RegistrationDialog } from "./registrationDialog";
-import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../bookEdit/js/workspaceFrames";
 import { postBoolean } from "../../utils/bloomApi";
 
 export interface IRegistrationDialogProps {
@@ -38,7 +38,7 @@ export const RegistrationDialogLauncher: React.FunctionComponent<
 
     React.useEffect(() => {
         if (props.dialogEnvironment?.mode === Mode.Edit) {
-            // Tell edit tab to disable everything when the dialog is up
+            // Tell C# to lock the workspace tabs while the dialog is up
             postBoolean("editView/setModalState", propsForBloomDialog.open);
         }
     }, [props.dialogEnvironment?.mode, propsForBloomDialog.open]);
@@ -95,7 +95,8 @@ export function showRegistrationDialog(
 export function showRegistrationDialogForEditTab(
     registrationDialogProps: IRegistrationDialogProps = {},
 ) {
-    const modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    const modalContainer =
+        getWorkspaceBundleExports().getModalDialogContainer();
     if (!registrationDialogProps.dialogEnvironment) {
         registrationDialogProps.dialogEnvironment = {
             dialogFrameProvidedExternally: false,
@@ -134,7 +135,7 @@ const doRender = (
     }
 
     try {
-        ReactDOM.render(
+        renderRootSync(
             <RegistrationDialogLauncher {...props} />,
             modalContainer,
         );

@@ -12,7 +12,9 @@ using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -45,6 +47,11 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
+        // During an automation run (--automation, e.g. the Playwright suites) the window must
+        // not steal the user's keyboard focus when it is shown. That holds wherever the window
+        // is: on the developer's desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
         public Shell(
             Func<WorkspaceView> projectViewFactory,
             CollectionSettings collectionSettings,
@@ -64,6 +71,19 @@ namespace Bloom
             _controlKeyEvent = controlKeyEvent;
             _audioRecording = audioRecording;
             InitializeComponent();
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
+            {
+                // Keep the off-screen window out of the task bar, so such a run leaves no trace
+                // on the developer's desktop.
+                //
+                // This has to happen before the window handle exists, which is why it is here
+                // and not in Shell_Load with the rest of the headless placement. Assigning
+                // ShowInTaskbar on a form that is already showing makes Windows Forms recreate
+                // the form's handle, and every child handle with it, including the WebView2
+                // host. The Edit tab survived that with a browser that no longer answered a
+                // jump to another page, so every e2e test that moves between pages hung.
+                ShowInTaskbar = false;
+            }
             Activated += (sender, args) =>
             {
                 // In at least one case (BL-15060) we seem to have gotten activated
@@ -147,6 +167,33 @@ namespace Bloom
         {
             base.OnDeactivate(e);
             _audioRecording.PauseMonitoringAudio(true);
+        }
+
+        /// <summary>
+        /// Keep the main workspace layout in sync when the window moves to a monitor with
+        /// a different DPI, or when monitor scaling changes while Bloom is running.
+        /// </summary>
+        protected override void OnDpiChanged(DpiChangedEventArgs e)
+        {
+            base.OnDpiChanged(e);
+            if (AppIsShuttingDown || Disposing || IsDisposed)
+                return;
+
+            Logger.WriteMinorEvent($"Shell DPI changed from {e.DeviceDpiOld} to {e.DeviceDpiNew}");
+            NotifyDpiChanged();
+        }
+
+        /// <summary>
+        /// Refreshes layout and notifies browser UI listeners that DPI-related state changed.
+        /// </summary>
+        private void NotifyDpiChanged()
+        {
+            if (_workspaceView == null || _workspaceView.Disposing || _workspaceView.IsDisposed)
+                return;
+
+            BloomWebSocketServer.Instance?.SendEvent("recordVideo", "dpiChanged");
+            _workspaceView.PerformLayout();
+            _workspaceView.Invalidate(true);
         }
 
         public bool AppIsShuttingDown => _startedClosingEvent || _finishedClosingEvent;
@@ -249,23 +296,71 @@ namespace Bloom
 
         public void SetWindowText(string bookName)
         {
-            // Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in
-            // release builds, and doesn't add much since we can treat Release builds as the unmarked case.
-            // Note that developer builds now have a special "channel" marking as well to differentiate them
-            // from true Release builds in screen shots.
-            var formattedText = string.Format(
-                "{0} - Bloom {1}",
-                _workspaceView.Text,
-                GetShortVersionInfo()
-            );
-            var channel = ApplicationUpdateSupport.ChannelName;
-            if (channel.ToLowerInvariant() != "release")
-                formattedText = string.Format("{0} {1}", formattedText, channel);
-            if (bookName != null)
+            string formattedText;
+            if (!string.IsNullOrWhiteSpace(Program.StartupLabel))
             {
-                formattedText = string.Format("{0} - {1}", bookName, formattedText);
+                formattedText = string.Format("Bloom {0}", Program.StartupLabel);
             }
+            else
+            {
+                // Let's only mark the window text for Alpha and Beta releases. It looks odd to have that in
+                // release builds, and doesn't add much since we can treat Release builds as the unmarked case.
+                // Note that developer builds now have a special "channel" marking as well to differentiate them
+                // from true Release builds in screen shots.
+                formattedText = string.Format(
+                    "{0} - Bloom {1}",
+                    _workspaceView.Text,
+                    GetShortVersionInfo()
+                );
+                var channel = ApplicationUpdateSupport.ChannelName;
+                if (channel.ToLowerInvariant() != "release")
+                    formattedText = string.Format("{0} {1}", formattedText, channel);
+                if (bookName != null)
+                {
+                    formattedText = string.Format("{0} - {1}", bookName, formattedText);
+                }
+            }
+
+            if (ShouldShowPortSummaryInWindowTitle())
+            {
+                var portSummary = new[]
+                {
+                    GetHttpPortTitlePart(),
+                    GetAutomationPortTitlePart(),
+                    GetVitePortTitlePart(),
+                }.Where(part => !string.IsNullOrEmpty(part));
+                var portSummaryText = string.Join(" ", portSummary);
+                if (!string.IsNullOrEmpty(portSummaryText))
+                {
+                    formattedText = string.Format("{0} - {1}", formattedText, portSummaryText);
+                }
+            }
+
             Text = formattedText;
+        }
+
+        internal static bool ShouldShowPortSummaryInWindowTitle()
+        {
+            return Program.StartupAutomation;
+        }
+
+        private static string GetHttpPortTitlePart()
+        {
+            return BloomServer.portForHttp > 0 ? $"http:{BloomServer.portForHttp}" : null;
+        }
+
+        private static string GetAutomationPortTitlePart()
+        {
+            // Surface the CDP port in the window title so humans and automation can identify the right Bloom instance.
+            var cdpPort = WebView2Browser.RemoteDebuggingPort;
+            return cdpPort.HasValue ? $"automation:{cdpPort.Value}" : null;
+        }
+
+        private static string GetVitePortTitlePart()
+        {
+            return ReactControl.TryGetActiveViteDevPort(out var vitePort)
+                ? $"vite:{vitePort}"
+                : null;
         }
 
         public static string GetShortVersionInfo()
@@ -296,24 +391,9 @@ namespace Bloom
             Debug.WriteLine("Shell Deactivated");
         }
 
-        private void On800x600Click(object sender, EventArgs e)
+        public void ResizeWindow(int width, int height)
         {
-            Size = new Size(800, 600);
-        }
-
-        private void On1024x600Click(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 600);
-        }
-
-        private void On1024x768(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 768);
-        }
-
-        private void On1024x586(object sender, EventArgs e)
-        {
-            Size = new Size(1024, 586);
+            Size = new Size(width, height);
         }
 
         public static void ComeToFront()
@@ -324,7 +404,7 @@ namespace Bloom
                     (Action)(
                         () =>
                         {
-                            shell.ReallyComeToFront();
+                            shell.FinishPuttingShellInFront();
                         }
                     )
                 );
@@ -332,16 +412,30 @@ namespace Bloom
         }
 
         /// <summary>
-        /// we let the Program call this after it closes the splash screen
+        /// we let the Program call this after it closes the splash screen, and after opening a
+        /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
+        ///
+        /// Code review asked whether this still earns its keep, now that BringToFrontNow does the
+        /// raising, and suggested inlining it (BL-16784). We kept it, because coming to the front
+        /// is not all it does: it also sets _finishedLoading, which is what allows the window size
+        /// and location to be saved afterwards. And it has three callers -- ComeToFront just above,
+        /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
+        /// would mean repeating that pairing in each of them.
         /// </summary>
-        public void ReallyComeToFront()
+        public void FinishPuttingShellInFront()
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
-            BringToFront();
-            TopMost = false;
-
+            // During an automation run, grabbing focus would yank the user's keyboard away
+            // from whatever they are doing while tests run, and a window placed off every
+            // monitor cannot come to the front at all: TopMost and taking the foreground on it
+            // would take the foreground away for nothing.
+            if (!Program.StartupAutomation)
+            {
+                // An instant topmost toggle is what we used to do here, and it is why Bloom could
+                // come up behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this
+                // works better.
+                this.BringToFrontNow();
+            }
+            // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
 
@@ -354,7 +448,50 @@ namespace Bloom
             {
                 SuspendLayout();
 
-                if (Settings.Default.WindowSizeAndLocation == null)
+                // Where an automation run puts its window is BLOOM_AUTOMATION_MONITOR's to
+                // decide (see AutomationWindowPlacement). A run that it says nothing about falls
+                // through to the ordinary cases below, window placement and all, so the
+                // developer sees the Bloom they would see without the variable.
+                var placement = AutomationWindowPlacement.GetChoice();
+                if (Program.StartupAutomation)
+                {
+                    // Say in the log which monitor this run chose and what the alternatives were.
+                    // The number in the variable is not the number Windows Settings shows; see
+                    // AutomationWindowPlacement.DescribeChoice.
+                    Logger.WriteEvent(AutomationWindowPlacement.DescribeChoice());
+                }
+                if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                {
+                    // The window goes off every monitor and out of the task bar, so a test can
+                    // run while the developer works. It stays Normal (not minimized) and full
+                    // size, because WebView2 only paints a window that is neither minimized nor
+                    // hidden. See AutomationWindowPlacement.GetBoundsOffEveryMonitor.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                    // ShowInTaskbar is set in the constructor, not here. See the comment there.
+                }
+                else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                {
+                    // Open on the monitor the variable named, not on whichever one the developer
+                    // is working on, and leave the saved window placement alone.
+                    StartPosition = FormStartPosition.Manual;
+                    WindowState = FormWindowState.Normal;
+                    Bounds = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                    // Maximizing keeps the window on the screen that contains its bounds.
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Program.StartupAutomation)
+                {
+                    // An automation run the variable said nothing about: open exactly where a
+                    // Bloom with no saved placement opens, and write nothing. The guard below
+                    // keeps it from touching the developer's saved placement either way, which
+                    // it must not do whatever the variable says: every Bloom of one build shares
+                    // one user.config.
+                    StartPosition = FormStartPosition.WindowsDefaultLocation;
+                    WindowState = FormWindowState.Maximized;
+                }
+                else if (Settings.Default.WindowSizeAndLocation == null)
                 {
                     StartPosition = FormStartPosition.WindowsDefaultLocation;
                     WindowState = FormWindowState.Maximized;
@@ -365,7 +502,11 @@ namespace Bloom
                 // This feature is not yet a normal part of Bloom, since we think just maximizing is more rice-farmer-friendly.
                 // However, we added the ability to remember this stuff at the request of the person making videos, who needs
                 // Bloom to open in the same place / size each time.
-                if (Settings.Default.MaximizeWindow == false)
+                if (Program.StartupAutomation)
+                {
+                    // Placement is settled above; leave the developer's saved placement alone.
+                }
+                else if (Settings.Default.MaximizeWindow == false)
                 {
                     Settings.Default.WindowSizeAndLocation.InitializeForm(this);
                 }
@@ -398,7 +539,6 @@ namespace Bloom
                 if (FileMeddlerManager.IsMeddling)
                 {
                     FileMeddlerManager.Start(_collectionSettings?.FolderPath);
-                    this.meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
                 }
             }
             catch (Exception error)
@@ -423,6 +563,11 @@ namespace Bloom
             if (!_finishedLoading)
                 return;
             if (WindowState != FormWindowState.Normal)
+                return;
+            // An automation run must never write the saved bounds. Where BLOOM_AUTOMATION_MONITOR
+            // put its window is somewhere the developer is not looking, off every monitor or on a
+            // monitor of the run's choosing, and saving that would move their next Bloom there.
+            if (Program.StartupAutomation)
                 return;
 
             Settings.Default.RestoreBounds = new Rectangle(Left, Top, Width, Height);
@@ -454,15 +599,14 @@ namespace Bloom
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void startMeasuringPerformanceToolStripMenuItem_Click(object sender, EventArgs e)
+        public void StartMeasuringPerformance()
         {
             PerformanceMeasurement.Global.StartMeasuring();
             UpdatePerformanceMeasurementStatus();
-            // open in a browser
-            this.showPerformancePageToolStripMenuItem_Click(sender, e);
+            ShowPerformancePage();
         }
 
-        private void showPerformancePageToolStripMenuItem_Click(object sender, EventArgs e)
+        public void ShowPerformancePage()
         {
             ProcessExtra.SafeStartInFront(
                 BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -470,30 +614,61 @@ namespace Bloom
             );
         }
 
-        private void alwaysMeasureToolStripMenuItem_Click(object sender, EventArgs e)
+        public bool GetAlwaysMeasurePerformance() => Settings.Default.AlwaysMeasurePerformance;
+
+        public void SetAlwaysMeasurePerformance(bool value)
         {
-            Settings.Default.AlwaysMeasurePerformance = !Settings.Default.AlwaysMeasurePerformance;
+            Settings.Default.AlwaysMeasurePerformance = value;
+            Settings.Default.Save();
             UpdatePerformanceMeasurementStatus();
         }
 
-        private void meddleWithNewFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        public bool GetIsMeddlingWithNewFiles() => FileMeddlerManager.IsMeddling;
+
+        public void SetIsMeddlingWithNewFiles(bool value)
         {
-            if (FileMeddlerManager.IsMeddling)
+            if (value == FileMeddlerManager.IsMeddling)
             {
-                FileMeddlerManager.Stop();
-                meddleWithNewFilesToolStripMenuItem.Text = "Meddle with New Files";
+                return;
+            }
+
+            if (value)
+            {
+                FileMeddlerManager.Start(_collectionSettings?.FolderPath);
             }
             else
             {
-                FileMeddlerManager.Start(_collectionSettings?.FolderPath);
-                meddleWithNewFilesToolStripMenuItem.Text = "Stop Meddling with New Files";
+                FileMeddlerManager.Stop();
             }
+        }
+
+        /// <summary>
+        /// Records the user's choice between bloomlibrary.org and dev.bloomlibrary.org, then
+        /// restarts Bloom if the choice differs from the web site of this run.  A restart is
+        /// necessary because the upload destination and the login belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// The restart waits for the idle loop, as the change of the user interface language
+        /// does in WorkspaceView.SetUiLanguage.  We are on the user interface thread inside an
+        /// API request that holds the server's lock, and a restart closes the collection, which
+        /// makes more API requests.
+        /// </remarks>
+        public void SetUseDevBloomLibrary(bool useDevSite)
+        {
+            if (!BookUpload.SetUserChoiceOfDevWebSite(useDevSite))
+                return;
+            Application.Idle -= RestartForWebSiteChange;
+            Application.Idle += RestartForWebSiteChange;
+        }
+
+        private void RestartForWebSiteChange(object sender, EventArgs e)
+        {
+            Application.Idle -= RestartForWebSiteChange;
+            Program.RestartBloom(false);
         }
 
         private void UpdatePerformanceMeasurementStatus()
         {
-            alwaysMeasureToolStripMenuItem.Checked = Settings.Default.AlwaysMeasurePerformance;
-
             if (
                 Settings.Default.AlwaysMeasurePerformance
                 && !PerformanceMeasurement.Global.CurrentlyMeasuring
@@ -501,26 +676,6 @@ namespace Bloom
             {
                 PerformanceMeasurement.Global.StartMeasuring();
             }
-
-            this.startMeasuringPerformanceToolStripMenuItem.Enabled = !PerformanceMeasurement
-                .Global
-                .CurrentlyMeasuring;
-            this.showPerformancePageToolStripMenuItem.Enabled = PerformanceMeasurement
-                .Global
-                .CurrentlyMeasuring;
-
-            if (PerformanceMeasurement.Global.CurrentlyMeasuring)
-            {
-                startMeasuringPerformanceToolStripMenuItem.Text = "Currently Measuring Performance";
-            }
-
-            // if we're always measuring, don't offer to start/stop
-            //this.startMeasuringPerformanceToolStripMenuItem.Enabled = !Settings.Default.AlwaysMeasurePerformance;
-        }
-
-        public void ShowContextMenuAt(Point screenPoint)
-        {
-            _contextMenu?.Show(screenPoint);
         }
     }
 }

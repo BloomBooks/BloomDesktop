@@ -221,8 +221,6 @@ namespace BloomTests.Publish.Epub
             );
             MakeImageFiles(book, "DevilsSlide");
             MakeVideoFiles(book, "a0c5c8dd-d84b-4bf6-9f53-c4bb5caf38d0", "importedvideo");
-            // Without a branding, Bloom Enterprise-only features are removed
-            var branding = "Test";
             // May need to try more than once on Linux to make the epub without an exception for failing to complete loading the document.
             MakeEpubWithRetries(
                 kMakeEpubTrials,

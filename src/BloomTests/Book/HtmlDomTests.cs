@@ -77,6 +77,84 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void RemovePageBackgroundColorStyles_RemovesOnlyPageBackgroundColor()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml(
+                @"<html><body>
+                    <div class='bloom-page' style='--page-background-color: #123456; --marginBox-background-color: #abcdef; --pageNumber-color: #111111;'></div>
+                    <div class='bloom-page coverColor' style='--page-background-color: #654321;'></div>
+                </body></html>"
+            );
+
+            HtmlDom.RemovePageBackgroundColorStyles(dom);
+
+            var assertThatDom = AssertThatXmlIn.Dom(dom);
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'bloom-page')][contains(@style,'--marginBox-background-color: #abcdef') and contains(@style,'--pageNumber-color: #111111') and not(contains(@style,'--page-background-color'))]",
+                1
+            );
+            assertThatDom.HasSpecifiedNumberOfMatchesForXpath(
+                "//div[contains(@class,'coverColor') and not(@style)]",
+                1
+            );
+        }
+
+        [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeInCustomLayoutPage_ReturnsTrue()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page bloom-customLayout'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg1'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg1']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.True);
+        }
+
+        [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeWithOnlyCustomLayoutIdAttribute_ReturnsFalse()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page' data-custom-layout-id='customOutsideBackCover'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg1a'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg1a']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
+        }
+
+        [Test]
+        public void DoesNodeGetCopiedToDataDiv_NodeWithoutDataContext_ReturnsFalse()
+        {
+            var dom = new HtmlDom(
+                @"<html><body>
+                    <div class='bloom-page'>
+                        <div class='marginBox'>
+                            <div class='audio-sentence' id='seg2'>text</div>
+                        </div>
+                    </div>
+                </body></html>"
+            );
+
+            var node = dom.RawDom.SelectSingleNode("//div[@id='seg2']");
+
+            Assert.That(HtmlDom.DoesNodeGetCopiedToDataDiv(node), Is.False);
+        }
+
+        [Test]
         public void BaseForRelativePaths_NoHead_NoLongerThrows()
         {
             var dom = new HtmlDom(@"<html></html>");
@@ -233,6 +311,42 @@ namespace BloomTests.Book
             HtmlDom.AppendInlineStyle(element, "; color: red;");
 
             Assert.AreEqual("font-size:12px; color: red;", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_WhenOtherStylesRemain_OnlyRemovesSpecifiedSubfield()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display:block; color: red; font-size: 12px;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("color: red; font-size: 12px", element.GetAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_WhenOnlySpecifiedSubfield_RemovesStyleAttribute()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='display: block;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.IsFalse(element.HasAttribute("style"));
+        }
+
+        [Test]
+        public void RemoveInlineStyleSubfield_IsCaseInsensitive()
+        {
+            var dom = SafeXmlDocument.Create();
+            dom.LoadXml("<div style='DISPLAY:block; COLOR:red;' />");
+            var element = (SafeXmlElement)dom.FirstChild;
+
+            HtmlDom.RemoveInlineStyleSubfield(element, "display");
+
+            Assert.AreEqual("COLOR:red", element.GetAttribute("style"));
         }
 
         [Test]
@@ -441,7 +555,6 @@ namespace BloomTests.Book
         }
 
         [Test]
-        [Ignore("Does not currently work...not sure how to make it right.")]
         public void GetImageElementUrl_ElementIsImgWithPercent2B_ReturnsSrc()
         {
             var element = MakeElement("<img src='test%2bme'/>");
@@ -449,11 +562,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        [Ignore("Does not currently work...not sure how to make it right.")]
         public void GetImageElementUrl_ElementIsImgWithPlus_ReturnsSrc()
         {
             var element = MakeElement("<img src='test+me'/>");
-            Assert.AreEqual("test+me", HtmlDom.GetImageElementUrl(element).UrlEncoded);
+            Assert.AreEqual("test%2bme", HtmlDom.GetImageElementUrl(element).UrlEncoded);
         }
 
         [Test]

@@ -12,7 +12,7 @@ import { useL10n } from "./l10nHooks";
 import { getBloomApiPrefix, postString, useApiString } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 
 export const AboutDialogLauncher: React.FunctionComponent = () => {
     const { showDialog, closeDialog, propsForBloomDialog } =
@@ -212,6 +212,18 @@ export const AboutDialog: React.FunctionComponent<{
                     <br></br>
                     <p>
                         Colin Suggett (
+                        <a
+                            href="https://sil.org"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            SIL Global
+                        </a>
+                        ): Testing
+                    </p>
+                    <br></br>
+                    <p>
+                        Heather Sullivan (
                         <a
                             href="https://sil.org"
                             target="_blank"

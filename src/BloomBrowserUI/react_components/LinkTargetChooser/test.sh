@@ -4,9 +4,6 @@ set -e
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 cd "$script_dir/../component-tester"
 
-# Opt out of manual Playwright specs when running automated component tests.
-export PLAYWRIGHT_INCLUDE_MANUAL=0
-
 component_prefix="../LinkTargetChooser"
 component_arg_added=0
 
@@ -64,4 +61,4 @@ if [ "$component_arg_added" -eq 0 ]; then
 	args+=("$component_prefix")
 fi
 
-yarn test "${args[@]}"
+pnpm test "${args[@]}"

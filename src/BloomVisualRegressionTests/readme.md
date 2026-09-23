@@ -1,32 +1,106 @@
-# How to run this successfully
+# How to run
 
-0. `yarn install`
-1. Open Bloom with `collections/basic/basic.bloomCollection`` (The auto-run currently hits a bunch of errors)
-2. In the terminal, run `yarn test` or `yarn testPatient`
-3. To re-run, save the index.spec.ts.
+0. `pnpm install`
+1. `node ../../build/get-testing-inputs.mjs` (from the repository root: `node build/get-testing-inputs.mjs`).
+   This fetches the test books and reference screenshots; see "Where the test inputs come from"
+   below. It is a fast no-op once you have them, so it is safe to run every time.
+2. Make sure Bloom has been built (the suite launches `output/Debug/x64/Bloom.exe` or one of the
+   other build configurations).
+3. In the terminal, run `pnpm test` (single run) or `pnpm testPatient` (same, with a huge
+   per-test timeout for debugging under a breakpoint).
 
-# Test Failures
+You do **not** need to open Bloom yourself. Each run copies the test collection to a throwaway
+temp folder, launches its own dedicated Bloom on that copy (with `--e2e --automation`), drives it
+over HTTP, and shuts it down and deletes the temp folder afterward. Because it launches with
+`--automation`, it can run alongside a Bloom you already have open. Because it operates on a temp
+copy, a run never modifies the books it renders.
 
-If a test fails, look in the `screenshots/` folder of the book with the failure. You should see a `<book>-<branding>-diff.png`
+# Fonts installed on your machine do not matter
 
-# Brandings
+The reference images are rendered on the CI runner, which has no Andika installed, and the suite
+renders the same way everywhere: text comes from the WOFF2 fonts Bloom itself serves, never from a
+font installed on the machine. That needs no care for the book previews, whose `@font-face` rules
+already point at the served copy. bloom-player is different: it declares Andika as
+`local("Andika")` first and the served copy only as a fallback, so a machine with Andika installed
+used to render every player page with its own copy and differ from the baselines by hundreds of
+pixels per page. The suite now adds its own `@font-face` rules to each player page (see
+`SERVED_FONTS_ONLY_CSS` in `index.spec.ts`), with the served file as the only source, and those
+replace the player's. So a player-page mismatch on your machine is a real difference, and a local
+run can go green whatever fonts you have.
 
-Look in the code to see the list of brandings that will be tested
+# Where the test inputs come from
+
+The books and their reference screenshots are **not in this repository**. They live in
+https://github.com/BloomBooks/bloom-testing-inputs, so that other projects can use the same
+inputs and so that changing a test book does not churn BloomDesktop's history.
+
+`build/testing-inputs.pin` names that repository and the exact commit this branch tests against.
+`node build/get-testing-inputs.mjs` materializes that commit into `output/testing-inputs/`
+(gitignored). Because it is one exact commit, a run is reproducible: the same BloomDesktop commit
+always renders the same books against the same reference images.
+
+- `node build/get-testing-inputs.mjs --check` reports whether `output/testing-inputs/` matches
+  the pin, and exits non-zero if it does not. Useful when a run renders something you did not
+  expect.
+- If the suite cannot find the inputs, it fails immediately and tells you to run
+  `node build/get-testing-inputs.mjs`.
+
+## Using your own checkout of the inputs
+
+Set **`BLOOM_TESTING_INPUTS_DIR`** to the folder that contains `collections/` in your own clone of
+bloom-testing-inputs. The suite then renders (and writes screenshots into) that checkout instead of
+`output/testing-inputs/`. This is how you edit a test book or accept a new baseline.
+
+- bash: `BLOOM_TESTING_INPUTS_DIR=/d/bloom-testing-inputs pnpm test`
+- PowerShell: `$env:BLOOM_TESTING_INPUTS_DIR="D:/bloom-testing-inputs"; pnpm test`
+
+# Test failures
+
+If a test fails, look in the `screenshots/` folder of the book that failed — inside the inputs tree
+(`output/testing-inputs/collections/basic/<book>/screenshots/`, or your `BLOOM_TESTING_INPUTS_DIR`
+checkout) — for `<label>-diff.png` (the differing pixels: blue was darker in the reference, red is
+darker now) next to `<label>-reference.png` (the baseline) and `<label>-current.png` (this run).
+
+# Updating a reference image
+
+A baseline now lives in another repository, so accepting a new render takes two commits:
+
+1. Clone https://github.com/BloomBooks/bloom-testing-inputs and point the suite at it with
+   `BLOOM_TESTING_INPUTS_DIR` (see above).
+2. Re-run the suite. It writes `*-current.png` beside the reference in that checkout. If the new
+   render is correct, replace the `*-reference.png` with the `*-current.png` (or delete the
+   reference and re-run to regenerate it).
+3. Open a pull request in bloom-testing-inputs with the new baselines and merge it.
+4. Put the resulting commit SHA in `build/testing-inputs.pin` in **the same BloomDesktop pull
+   request as whatever change made the render differ**, so the code change and the baseline it
+   requires land together.
+
+The suite always reads and writes screenshots in the source inputs tree, never in the temp copy
+Bloom is driven on, so what you edit in step 2 is a real file you can commit.
+
+# Brandings and themes
+
+See the `brandings` and `themes` arrays in `index.spec.ts` for what is exercised.
 
 # Books
 
-Put books in `collections/basic`
+Books go in `collections/basic` **in the inputs repository**. That repository's `.gitignore` covers
+the files Bloom regenerates on its own (`origami.css`, `branding.css`, `appearance.css`,
+`defaultLangStyles.css`, and so on) — do not commit those; Bloom re-supplies them into each book
+folder, and leaving them untracked lets these tests catch unexpected changes in what the
+distribution copies in. Its `manifest.json` must have an entry for every collection folder; its CI
+enforces that.
 
 # Collections
 
-Some of the code wants to allow more than the one collection, but there isn't code to actually re-launch Bloom with particular collections. It just uses whatever it opens with.
+This suite renders exactly one collection, `collections/basic` (`TESTED_COLLECTION` in
+`index.spec.ts`). There is no mechanism to relaunch Bloom on a different one, and a book that is
+not in the open collection cannot be selected, so books you add to any *other* collection of the
+inputs repository — `page-copy`, say, which belongs to the BloomE2E copy-page test — are ignored
+here rather than turning into tests that can never pass. To vary a book's look, set
+branding/theme in the tests instead.
 
 # TODO
 
--   Currently the test suite can run Bloom, but the first run of the tests fail.
--   Currently the diffs are super low-resolution.
--   Currently something prevents committing bloom html, you have bypass that.
--   It might be nice to have a "server" mode where errors in Bloom.exe do not open error UI, but rather cause tests to fail.
--   Each time Bloom is run, it makes new IDs for pages, leading to file diffs when you go to commit that... shouldn't be there.
--   Could test different XMatters
--   This can't handle multiple collections, but maybe that's fine, since you can set the branding in the tests
+- The diffs are fairly low-resolution.
+- Could test different XMatters.

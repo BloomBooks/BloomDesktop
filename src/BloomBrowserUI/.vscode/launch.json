@@ -9,8 +9,9 @@
             "name": "Debug Vitest Tests",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "yarn",
+            "runtimeExecutable": "pnpm",
             "runtimeArgs": [
+                "exec",
                 "vitest",
                 "--run",
                 "--no-coverage",
@@ -27,8 +28,9 @@
             "name": "Debug Current Vitest Test File",
             "type": "node",
             "request": "launch",
-            "runtimeExecutable": "yarn",
+            "runtimeExecutable": "pnpm",
             "runtimeArgs": [
+                "exec",
                 "vitest",
                 "--run",
                 "--no-coverage",
@@ -41,7 +43,7 @@
             "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
         },
         {
-            // 1. Launch the test runner: `yarn karma start --browsers Chrome`.
+            // 1. Launch the test runner: `pnpm exec karma start --browsers Chrome`.
             // 2. Start this "Debug Unit Tests".
             // 3. You may have to do a browser REFRESH before breakpoints are caught. (Possibly in BOTH of the browsers
             // that the two previous commands launch.)
@@ -57,7 +59,7 @@
 
             // This started causing breakpoints not be hit, at least by version 5.5 (new webpack?)
             // "sourceMapPathOverrides": {
-            //     "webpack://editTabBundle/./*": "${workspaceFolder}/*"
+            //     "webpack://workspaceBundle/./*": "${workspaceFolder}/*"
             // }
 
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
@@ -104,7 +106,7 @@
             "webRoot": "${workspaceFolder}",
             "pathMappings": [
                 {
-                    "url": "webpack://editTabBundle",
+                    "url": "webpack://workspaceBundle",
                     "path": "${workspaceFolder}"
                 }
             ],
@@ -128,7 +130,7 @@
             "userDataDir": "${workspaceFolder}/output/chrome",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
-                "webpack://editTabBundle/./*": "${workspaceFolder}/*"
+                "webpack://workspaceBundle/./*": "${workspaceFolder}/*"
             }
             // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         },

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -26,13 +28,21 @@ namespace Bloom
 {
     public partial class WebView2Browser : Browser
     {
+        public static int? RemoteDebuggingPort =>
+            BloomServer.portForHttp > 0 ? BloomServer.RemoteDebuggingPort : (int?)null;
+
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
+
+        // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
+        // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
+        public override bool IsReadyToNavigate => _readyToNavigate;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
         private CutCommand _cutCommand;
         private bool _inDisposeMethod;
+        private bool _isBuiltInBrowserZoomEnabled = true;
 
         // All our existing code assumes we can just construct a browser. And it seems to work.
         // But in some newer code involving awaits and multiple browsers in unit tests, we
@@ -40,6 +50,38 @@ namespace Bloom
         // constructor to be called in those cases, while still allowing the default constructor
         // to work the old way.
         private WebView2Browser(string dummy) { }
+
+        // When set (via CreateWithInjectedEnvironment), InitWebView uses this already-created environment
+        // instead of making its own. Lets OffScreenBrowser share one environment — one browser process,
+        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely and
+        // without the global shared-environment batch statics.
+        private CoreWebView2Environment _injectedEnvironment;
+
+        /// <summary>
+        /// Create a browser that reuses the given already-created CoreWebView2Environment instead of making its
+        /// own. As with the default constructor, initialization is kicked off unawaited; callers wait on
+        /// <see cref="IsReadyToNavigate"/> before navigating.
+        /// </summary>
+        internal static WebView2Browser CreateWithInjectedEnvironment(
+            CoreWebView2Environment environment
+        )
+        {
+            // The string argument selects the do-nothing private constructor so we can set the injected
+            // environment before InitWebView runs, then initialize exactly as the normal constructor does.
+            var browser = new WebView2Browser("dummy");
+            browser._injectedEnvironment = environment;
+            browser.InitializeComponent();
+            // Kicked off unawaited (like the default constructor); callers wait on IsReadyToNavigate.
+            _ = browser.InitWebView();
+            return browser;
+        }
+
+        /// <summary>
+        /// The CoreWebView2Environment this browser was initialized with, or null if it is not yet ready.
+        /// A caller can capture this from one browser and pass it to CreateWithInjectedEnvironment to make
+        /// further browsers that share the same environment.
+        /// </summary>
+        internal CoreWebView2Environment CoreEnvironment => _webview?.CoreWebView2?.Environment;
 
         /// <summary>
         /// This gives us a way to create a WebView2Browser with the async init properly awaited.
@@ -79,7 +121,7 @@ namespace Bloom
             // something on that thread, it's really easy to deadlock.
             // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
             // we may be able to get to an environment where we don't need to try so hard to avoid async.)
-            InitWebView();
+            _ = InitWebView();
         }
 
         private void SetupEventHandling()
@@ -133,7 +175,7 @@ namespace Bloom
                         RaiseDocumentCompleted(sender2, args2);
                     };
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // enhance: how to show using the winforms error dialog?
                     MessageBox.Show(
@@ -189,6 +231,7 @@ namespace Bloom
 
                 _webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 _webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = _isBuiltInBrowserZoomEnabled;
                 // Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
                 _webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
@@ -200,9 +243,30 @@ namespace Bloom
                 {
                     if (e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
                         e.State = CoreWebView2PermissionState.Allow;
+                    // An e2e run starts from a fresh browser profile, so the first thing the Sign
+                    // Language tool does (ask for the camera) would put up WebView2's permission
+                    // prompt, which no test can dismiss. Refuse, which is what happens on a machine
+                    // with no camera, and which leaves the tool's Import button usable.
+                    else if (
+                        Program.RunningE2eTests
+                        && (
+                            e.PermissionKind == CoreWebView2PermissionKind.Camera
+                            || e.PermissionKind == CoreWebView2PermissionKind.Microphone
+                        )
+                    )
+                        e.State = CoreWebView2PermissionState.Deny;
                 };
                 _readyToNavigate = true;
             };
+        }
+
+        public override void SetBuiltInBrowserZoomEnabled(bool enabled)
+        {
+            _isBuiltInBrowserZoomEnabled = enabled;
+            if (_webview?.CoreWebView2 != null)
+            {
+                _webview.CoreWebView2.Settings.IsZoomControlEnabled = enabled;
+            }
         }
 
         private void ContextMenuRequested(
@@ -245,6 +309,181 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
+        // When set (via BeginSharedEnvironmentBatch), all WebView2 browsers created during the batch
+        // share ONE CoreWebView2Environment — i.e. one browser process, one user-data folder, and one
+        // HTTP cache — instead of each creating its own. The first browser of the batch creates the
+        // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
+        // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
+        // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
+        //
+        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
+        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
+        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
+        // environment. They are NOT a mechanism for concurrent batches.
+        private static bool _useSharedEnvironment;
+        private static CoreWebView2Environment _sharedEnvironment;
+
+        // The one environment every browser of an e2e run shares, so the run has a single browser
+        // process and therefore a single remote-debugging listener. See where it is used in
+        // InitWebView. Like the statics above it is unsynchronized, which is safe for the same
+        // reason: browser construction is marshalled to the UI thread.
+        private static CoreWebView2Environment _environmentForE2eTests;
+
+        public static void BeginSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = true;
+            _sharedEnvironment = null;
+        }
+
+        public static void EndSharedEnvironmentBatch()
+        {
+            AssertSharedEnvironmentStaticsAreUiThreadOnly();
+            _useSharedEnvironment = false;
+            // Drop our reference; the underlying browser process/profile is released once the last
+            // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
+            _sharedEnvironment = null;
+        }
+
+        // The shared-environment statics above have no synchronization; they are safe only because the
+        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
+        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
+        // state. Unit-test/console modes are exempt, as elsewhere in this file.
+        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
+        {
+            Debug.Assert(
+                Program.RunningOnUiThread
+                    || Program.RunningUnitTests
+                    || Program.RunningInConsoleMode,
+                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
+            );
+        }
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindowEx(
+            IntPtr parent,
+            IntPtr childAfter,
+            string className,
+            string windowName
+        );
+
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out NativeRect rect);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr insertAfter,
+            int x,
+            int y,
+            int cx,
+            int cy,
+            uint flags
+        );
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
+        {
+            public int Left,
+                Top,
+                Right,
+                Bottom;
+        }
+
+        private const uint kSwpNoMove = 0x0002;
+        private const uint kSwpNoZOrder = 0x0004;
+        private const uint kSwpNoActivate = 0x0010;
+
+        // Set once we have complained about this workaround failing, so a problem that repeats on every
+        // resize does not fill the log.
+        private bool _reportedHostWindowCorrectionFailure;
+
+        /// <summary>
+        /// Works around a WebView2 bug (BL-16876) that truncates our content whenever the browser is
+        /// hosted in one of the dialogs that LegacyDpiDialogLauncher shows under a SYSTEM_AWARE thread
+        /// DPI context (see that class, and WorkspaceView.OpenLegacySettingsDialog).
+        ///
+        /// WebView2 ties DPI awareness to the msedgewebview2.exe browser process, which inherits the
+        /// awareness of the HWND that hosts it. Bloom's process is PerMonitorV2, so a browser created for
+        /// a System-aware dialog is born with a different awareness than the app. In that state WebView2
+        /// ignores the bounds we gave it: with Bounds=636x446, BoundsMode=UseRawPixels and
+        /// RasterizationScale=1 it still creates its own host window (Chrome_WidgetWin_0) at
+        /// systemDpi/monitorDpi of that size -- 509x357 on a 125% monitor. It sizes the *content* window
+        /// correctly, so the content ends up clipped by its own undersized parent.
+        ///
+        /// We cannot fix this by changing anyone's DPI awareness: making the dialogs PerMonitorV2 changes
+        /// how the WinForms half of them lays out, and forcing PerMonitorV2 around environment or
+        /// controller creation either does nothing or makes the mismatch worse. So we simply put the host
+        /// window back to the size WebView2 was asked for. Input still maps correctly afterwards.
+        ///
+        /// This is a no-op unless the sizes actually disagree, so it costs nothing in the normal case and
+        /// stops doing anything if WebView2 fixes the bug.
+        /// </summary>
+        private void CorrectTruncatedWebView2HostWindow()
+        {
+            // This is a cosmetic workaround for someone else's bug, reaching into window handles that
+            // WebView2 owns and does not document. If any of that ever misbehaves we want a slightly
+            // clipped dialog, not a dead Bloom, so nothing in here is allowed to escape.
+            try
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                var webviewWindow = _webview.Handle;
+                if (!LegacyDpiDialogLauncher.IsWindowLegacyDpiAware(webviewWindow))
+                    return;
+                // The controller's own window is a direct child of the WebView2 control's window.
+                var hostWindow = FindWindowEx(
+                    webviewWindow,
+                    IntPtr.Zero,
+                    "Chrome_WidgetWin_0",
+                    null
+                );
+                if (hostWindow == IntPtr.Zero)
+                    return; // not created yet; a later resize will catch it
+                if (!GetClientRect(webviewWindow, out var want))
+                    return;
+                var wantWidth = want.Right - want.Left;
+                var wantHeight = want.Bottom - want.Top;
+                if (wantWidth <= 0 || wantHeight <= 0)
+                    return;
+                if (!GetClientRect(hostWindow, out var have))
+                    return;
+                if (have.Right - have.Left == wantWidth && have.Bottom - have.Top == wantHeight)
+                    return; // WebView2 got it right; leave it alone
+                // SetWindowPos reports failure by returning false, not by throwing, so without this
+                // check a rejected resize (e.g. WebView2 destroyed the host window between our
+                // finding it and our resizing it) would leave the dialog clipped and say nothing.
+                if (
+                    !SetWindowPos(
+                        hostWindow,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        wantWidth,
+                        wantHeight,
+                        kSwpNoMove | kSwpNoZOrder | kSwpNoActivate
+                    )
+                )
+                {
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                }
+            }
+            catch (Exception e)
+            {
+                // Log once per browser; this runs again on every resize, and a repeating failure would
+                // otherwise bury everything else in the log.
+                if (!_reportedHostWindowCorrectionFailure)
+                {
+                    _reportedHostWindowCorrectionFailure = true;
+                    Logger.WriteMinorEvent(
+                        "Could not correct the WebView2 host window size (BL-16876 workaround); the dialog"
+                            + " may show clipped content: "
+                            + e.Message
+                    );
+                }
+            }
+        }
+
         private async Task InitWebView()
         {
             // based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -268,6 +507,22 @@ namespace Bloom
             // a change in UI language will take effect at this level.
             // See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
             var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
+            // Disables sleeping tabs and keeps rendering active.
+            // These were suggested by AI to prevent problems when the computer sleeps or is idle for a long
+            // time while Bloom is open. Apparently by default WebView2 will put tabs to sleep after a while,
+            // and become suspicious of some URLs when restarting. The hope is that this will help with BL-16363
+            // and similar problems. The AI also suggested --allow-insecure-localhost, but this is not relevant
+            // since we are not using https: to access our server.
+            // Not sleeping potentially allows computation to continue and drain battery, but we don't
+            // expect this to be an important factor for Bloom, as we don't have long-running
+            // animations except for things like playing motion books, which probably want to continue to the end.
+            additionalBrowserArgs += " --disable-renderer-backgrounding";
+            // Chromium only respects the last --disable-features argument, so we collect all features
+            // here and emit a single comma-separated value at the end.
+            var featuresToDisable = new List<string>
+            {
+                "msSleepingTabs", // prevent WebView2 from putting tabs to sleep after idle (BL-16363)
+            };
 
             // WebView2 can fail to initialize if we try to open a new one with different `--accept-lang` arguments.
             // This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
@@ -286,9 +541,27 @@ namespace Bloom
             {
                 additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
             }
-            #region DEBUG
-            additionalBrowserArgs += " --remote-debugging-port=9222 "; // allow external inspector connect
-            #endregion
+            if (AutomationWindowPlacement.IsOffEveryMonitor)
+            {
+                // This run keeps Bloom's window far off-screen (see
+                // AutomationWindowPlacement.GetBoundsOffEveryMonitor), so Windows reports the
+                // window as occluded and Chromium stops rendering it. A screenshot of an
+                // unrendered page comes back blank, so turn that behavior off.
+                featuresToDisable.Add("CalculateNativeWinOcclusion");
+                additionalBrowserArgs += " --disable-backgrounding-occluded-windows";
+            }
+            if (RemoteDebuggingPort.HasValue && !Program.RunningUnitTests)
+            {
+                // Expose a CDP endpoint so Playwright and other automation can attach to the real Bloom WebView2 surface.
+                // NOT in unit tests: nothing attaches to a test-run WebView2, and on a busy CI machine the port
+                // (BloomServer's http port + 2) can already be held by a real Bloom instance running beside the
+                // tests, in which case Chromium's fight over the port breaks WebView2 startup and fails the test
+                // (seen as flaky BookUploadAndDownloadTests upload failures on agents also running Bloom automation).
+                additionalBrowserArgs += $" --remote-debugging-port={RemoteDebuggingPort.Value} "; // allow external inspector connect
+            }
+            if (featuresToDisable.Count > 0)
+                additionalBrowserArgs +=
+                    " --disable-features=" + string.Join(",", featuresToDisable);
 
             var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
@@ -343,26 +616,83 @@ namespace Bloom
             // different instances of WebView2 using the same one, so we decided to make sure it is uniqiue.
             // Enhance: it might be a good thing to try to delete this folder if we find it already exists (on a background thread).
             // For now we'll just keep incrementing until we find an available folder.
-            string dataFolder;
-            do
-            {
-                dataFolder = Path.Combine(
-                    Path.GetTempPath(),
-                    "Bloom WV2-"
-                        + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
-                        + dataFolderCounter++
-                );
-            } while (Directory.Exists(dataFolder));
             // This sets up a handler for the CoreWebView2InitializationCompleted event, which will run before
             // EnsureCoreWebView2Async returns if we're awaiting properly, so we need to set up that handler
-            // before calling EnsureCoreWebView2Async.
+            // before calling EnsureCoreWebView2Async. (It must run even when we reuse a shared environment,
+            // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
+            // is what sets _readyToNavigate.)
             SetupEventHandling();
-            var env = await CoreWebView2Environment.CreateAsync(
-                browserExecutableFolder: AlternativeWebView2Path,
-                userDataFolder: dataFolder,
-                options: op
-            );
+            // Reuse an existing environment (and its browser process + user-data folder + HTTP cache) when we
+            // can, so we don't pay environment creation per browser:
+            //  - _injectedEnvironment: an environment handed to this instance (OffScreenBrowser shares one
+            //    environment across the fresh browser it creates per page — see CreateWithInjectedEnvironment);
+            //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
+            // Otherwise we fall through and create a fresh one.
+            var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
+            // An e2e run attaches a test to ONE of these browser processes over the remote debugging
+            // port, and every environment we create is given that same port number, so only the
+            // process that starts first can listen on it. Which one that is depends on startup
+            // timing, so a test could attach to a browser Bloom is not driving: its scripts appeared
+            // to run (ExecuteScriptAsync reported success against the browser Bloom does drive)
+            // while the document the test was watching never changed. One environment for the whole
+            // run means one browser process, one listener, and every document visible to the test.
+            //
+            // Only for browsers built on the UI thread, which is every browser a test can see. A
+            // CoreWebView2Environment belongs to the thread that created it, so handing this one to
+            // a browser built on a server thread hangs that thread: publishing a BloomPUB, which
+            // makes its browsers on the thread serving the API call, waited forever and the preview
+            // never appeared.
+            if (env == null && Program.RunningE2eTests && Program.RunningOnUiThread)
+                env = _environmentForE2eTests;
+            if (env == null)
+            {
+                string dataFolder;
+                do
+                {
+                    dataFolder = Path.Combine(
+                        Path.GetTempPath(),
+                        "Bloom WV2-"
+                            + (BloomServer.portForHttp == 0 ? 8085 : BloomServer.portForHttp)
+                            + dataFolderCounter++
+                    );
+                } while (Directory.Exists(dataFolder));
+                env = await CoreWebView2Environment.CreateAsync(
+                    browserExecutableFolder: AlternativeWebView2Path,
+                    userDataFolder: dataFolder,
+                    options: op
+                );
+                if (_useSharedEnvironment)
+                    _sharedEnvironment = env;
+                // Only keep it when it actually carries a debugging port. The port lives in the
+                // options, which are fixed when the environment is made, so an environment built
+                // before BloomServer had its port would have none, and every UI-thread browser
+                // after it would inherit that: no browser in the run would ever listen, and the
+                // suite would report a startup timeout rather than a reason. No browser is built
+                // that early today, and this keeps it that way if one ever is.
+                if (
+                    Program.RunningE2eTests
+                    && Program.RunningOnUiThread
+                    && RemoteDebuggingPort.HasValue
+                )
+                    _environmentForE2eTests = env;
+            }
             await _webview.EnsureCoreWebView2Async(env);
+            // WebView2 has now created its host window, which is where it gets the size wrong
+            // (BL-16876), so correct it. In practice this one call is enough: once the host window
+            // has the right size, WebView2's own resizing keeps it that way.
+            CorrectTruncatedWebView2HostWindow();
+            // Re-check after a resize as well, in case initialization finished before the dialog's
+            // final layout and the correction above therefore ran against a stale size. This has to
+            // be POSTED rather than done in the handler: WebView2.OnSizeChanged raises SizeChanged
+            // first and only then applies the new Bounds, so work done inline here would be
+            // overwritten a moment later. By the time the posted call runs, the resize has settled,
+            // and it costs nothing because it is a no-op whenever the sizes already agree.
+            _webview.SizeChanged += (o, e) =>
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                _webview.BeginInvoke((Action)CorrectTruncatedWebView2HostWindow);
+            };
             // Added as a footnote to BL-15466 to prevent popups generated from title
             // attributes being white on black, presumably because of some setting the
             // user has made for Chrome/Edge generally.
@@ -376,11 +706,8 @@ namespace Bloom
             // e.g. (window as any).chrome.webview.postMessage("browser-clicked");
             _webview.WebMessageReceived += (o, e) =>
             {
-                // for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
-                if (e.TryGetWebMessageAsString() == "browser-clicked")
-                {
+                if (IsBrowserClickedMessage(e))
                     RaiseBrowserClick(null, null);
-                }
             };
 
             // Now do the same thing for any iframes. When an iframe is created...
@@ -394,10 +721,8 @@ namespace Bloom
                 // and thus tell us when it regained it.
                 e.Frame.WebMessageReceived += (a, b) =>
                 {
-                    if (b.TryGetWebMessageAsString() == "browser-clicked")
-                    {
+                    if (IsBrowserClickedMessage(b))
                         RaiseBrowserClick(null, null);
-                    }
                 };
             };
 
@@ -450,18 +775,16 @@ namespace Bloom
 
         public override void CopySelection()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"Copy\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"Copy\")");
         }
 
         public override void SelectAll()
         {
-            // I think it's fine that this is async but we aren't waiting, as long as this
-            // is only used for user actions and not by code that would immediately try to
-            // do something.
-            _webview.ExecuteScriptAsync("document.execCommand(\"SelectAll\")");
+            // Fire-and-forget is fine here as long as this is only used for user actions and not
+            // by code that would immediately try to do something with the result.
+            RunJavascriptFireAndForget("document.execCommand(\"SelectAll\")");
         }
 
         public override void SelectBrowser()
@@ -491,7 +814,16 @@ namespace Bloom
 
             // If we are disposed, this will certainly fail. Likely we are shutting down and just
             // trying to navigate to a blank page.
-            if (!_webview.IsDisposed && !_webview.Disposing)
+            // One user reported a crash in this method which indicated that a null reference exception was
+            // thrown on the line with the Navigate method. (BL-16570) I don't know how that could happen.
+            // EnsureBrowserReadyToNavigate() should have prevented it, but it uses a while loop over
+            // Application.DoEvents() which is known to be unsafe.
+            if (
+                !_webview.IsDisposed
+                && !_webview.Disposing
+                && _readyToNavigate
+                && _webview.CoreWebView2 != null
+            )
                 _webview.CoreWebView2.Navigate(newUrl);
         }
 
@@ -645,34 +977,20 @@ namespace Bloom
             RobustFile.WriteAllText(path, html, Encoding.UTF8);
         }
 
-        public override string RunJavascriptWithStringResult_Sync_Dangerous(string script)
-        {
-            Task<string> task = GetStringFromJavascriptAsync(script);
-            // This is dangerous. E.g. it caused this bug: https://issues.bloomlibrary.org/youtrack/issue/BL-12614
-            // Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
-            // It's quite possible for the user to initiate a new command while we are trying to run the
-            // javascript before completing the last thing the user requested.
-            // Note: at one point, I thought making our code async all the way would solve this, but now I'm not so sure.
-            // A click event handler can be async, but it is "void" async (no task to await), so I think it can still
-            // return control to the main message loop before all the async stuff it started has completed.
-            // The reentrancy possibly caused BL-13120 and friends, when we were using this method to get the page content
-            // to save.
-            // We tried using a message filter to suppress messages that might cause reentrancy, but found
-            // that somehow it didn't fully solve the problem, AND things could get stuck in a state where
-            // everything got filtered.
-            while (!task.IsCompleted)
-            {
-                Application.DoEvents();
-                Thread.Sleep(10);
-            }
-
-            return task.Result;
-        }
-
         public override async Task RunJavascriptAsync(string script)
         {
             await _webview.ExecuteScriptAsync(script);
         }
+
+        // The only web message Bloom currently listens for is the plain "browser-clicked"
+        // string our JS posts. WebView2 has no non-throwing "is this a string message?" check
+        // (TryGetWebMessageAsString throws for JSON-object messages), but WebMessageAsJson always
+        // returns the JSON form — a string message arrives as the quoted literal — so we compare
+        // against that instead of catching an exception on every message.
+        private const string BrowserClickedMessageJson = "\"browser-clicked\"";
+
+        private static bool IsBrowserClickedMessage(CoreWebView2WebMessageReceivedEventArgs e) =>
+            e.WebMessageAsJson == BrowserClickedMessageJson;
 
         /// <summary>
         /// Run a javascript script asynchronously.
@@ -681,7 +999,83 @@ namespace Bloom
         /// </summary>
         public override void RunJavascriptFireAndForget(string script)
         {
-            _webview.ExecuteScriptAsync(script);
+            if (_webview == null || _webview.IsDisposed || _webview.Disposing)
+                return;
+
+            // Everything below, including the CoreWebView2 readiness check, must happen on the thread
+            // that created the control, which is usually the UI thread. Reading the CoreWebView2 property
+            // from any other thread can throw "CoreWebView2 can only be accessed from the UI thread": the
+            // WinForms wrapper does a COM QueryInterface on the apartment-bound ICoreWebView2Controller,
+            // which fails E_NOINTERFACE across apartments. Whether it actually throws depends on the
+            // apartment that controller ended up in, so it fails on some machines and not others. That
+            // made the readiness guard checking _webview.CoreWebView2 the crash site (BL-16749: a
+            // .bloomSource import runs on a background thread, and the book rename it does raises
+            // BookRenamedEvent inline, which asks the Edit view to refresh the page list).
+            // Since this method is fire-and-forget by contract - the script has not necessarily run by the
+            // time we return - re-posting the whole call to the correct (UI) thread costs the caller nothing.
+            // Do NOT fold this back into the guard below.
+            if (_webview.IsHandleCreated && _webview.InvokeRequired)
+            {
+                try
+                {
+                    _webview.BeginInvoke((Action)(() => RunJavascriptFireAndForget(script)));
+                }
+                catch (Exception e)
+                    when (e is ObjectDisposedException || e is InvalidOperationException)
+                {
+                    // The control can start disposing between the checks above and this call. That
+                    // is the same expected shutdown race the ContinueWith below logs rather than
+                    // reports, and here we are on a background thread, where letting it escape
+                    // would take Bloom down.
+                    Logger.WriteEvent(
+                        "WebView2Browser.RunJavascriptFireAndForget: could not marshal to the UI thread (expected during shutdown): "
+                            + e.Message
+                    );
+                }
+                return;
+            }
+            // With no handle there is no UI thread to post to, and any CoreWebView2 is not usable
+            // yet, so this is the same "not in a usable state" case the guard below covers.
+            if (!_webview.IsHandleCreated)
+                return;
+
+            // Guard against running when the browser isn't in a usable state. During app startup
+            // (before CoreWebView2 is initialized) or shutdown (while the control is disposing),
+            // ExecuteScriptAsync throws from inside its async state machine. Because nothing here
+            // awaits or otherwise observes the returned Task, that fault used to reach the GC
+            // finalizer thread and get rethrown as an UnobservedTaskException (Sentry
+            // BLOOM-DESKTOP-D07). This mirrors the readiness check in UpdateDisplay().
+            if (_webview.CoreWebView2 == null)
+                return;
+
+            // Even with the guard above there is a tiny race window in which the control can start
+            // disposing between the check and the call, so we still observe the returned Task. On a
+            // fault we just log it: this is an expected startup/shutdown race, not a user-facing
+            // failure, so no MessageBox and no rethrow. Observing the Task is what structurally
+            // eliminates the UnobservedTaskException (BLOOM-DESKTOP-D07).
+            _webview
+                .ExecuteScriptAsync(script)
+                .ContinueWith(
+                    t =>
+                    {
+                        // Read the exception first so it is observed even if logging fails.
+                        var message = t.Exception?.GetBaseException().Message;
+                        try
+                        {
+                            Logger.WriteEvent(
+                                "WebView2Browser.RunJavascriptFireAndForget: ExecuteScriptAsync faulted (expected during startup/shutdown): "
+                                    + message
+                            );
+                        }
+                        catch
+                        {
+                            // Swallow any logging failure: letting it escape would fault this
+                            // continuation's own Task and reintroduce the very
+                            // UnobservedTaskException we are preventing (BLOOM-DESKTOP-D07).
+                        }
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         public override async Task<string> GetStringFromJavascriptAsync(string script)
@@ -729,9 +1123,9 @@ namespace Bloom
 
             // This implementation is specific to our Edit tab. This is currently the only place
             // we show the paste button that uses this command, but we will have to generalize somehow if
-            // that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
-            // I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
-            // result (we only care about the side effects on the document)
+            // that changes. I'm not sure whether the checks for existence of workspaceBundle etc are needed.
+            // I deliberately use the fire-and-forget variant here, because nothing requires the
+            // result (we only care about the side effects on the document).
             _pasteCommand.Implementer = () =>
             {
                 PalasoImage clipboardImage = null;
@@ -745,8 +1139,8 @@ namespace Bloom
 
                 clipboardImage?.Dispose();
 
-                RunJavascriptAsync(
-                    $"editTabBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
+                RunJavascriptFireAndForget(
+                    $"workspaceBundle?.getEditablePageBundleExports()?.pasteClipboard({haveClipboardImage})"
                 );
             };
         }
@@ -769,6 +1163,10 @@ namespace Bloom
 
         bool _currentlyInUpdateButtons = false;
 
+        // This is 'async void' rather than 'async Task' because it overrides the void
+        // IBrowser.UpdateEditButtonsAsync() and is invoked as a fire-and-forget UI update (e.g. from
+        // the edit-buttons timer). That is acceptable here only because the body wraps its awaited
+        // work in a try/catch, so an exception can't escape into the void and crash the process.
         public override async void UpdateEditButtonsAsync()
         {
             if (_currentlyInUpdateButtons)
@@ -821,7 +1219,7 @@ namespace Bloom
             try
             {
                 _currentlyRunningCanUndo = true;
-                return "yes" == await GetStringFromJavascriptAsync("editTabBundle?.canUndo?.()");
+                return "yes" == await GetStringFromJavascriptAsync("workspaceBundle?.canUndo?.()");
             }
             finally
             {

@@ -11,7 +11,7 @@
  */
 import jQuery from "jquery";
 import { EditableDivUtils } from "../../bookEdit/js/editableDivUtils";
-import { isLongPressEvaluating } from "../../bookEdit/toolbox/toolbox";
+import { isLongPressEvaluating } from "../../bookEdit/longPressShared";
 import "./jquery.mousewheel.js";
 
 (function ($, window, undefined) {
@@ -196,6 +196,19 @@ import "./jquery.mousewheel.js";
     }
 
     function onKeyDown(e) {
+        // A keystroke with Ctrl or the Windows/Cmd key held down is a shortcut, not
+        // typing, so it never enters a character for us to offer alternates for.
+        // Without this check, holding a shortcut like Ctrl+Shift+Space (show hidden
+        // characters) popped up alternates for whatever character happened to precede
+        // the caret (BL-16616). Ctrl+Alt is exempt because Windows reports AltGr that
+        // way, and AltGr keystrokes do type characters.
+        // The exemption does mean a real Ctrl+Alt shortcut held down (e.g. Ctrl+Alt+2,
+        // heading 2) can still open the panel, as it always could. We decided to accept
+        // that rather than try to distinguish true AltGr via
+        // e.getModifierState("AltGraph"), which risks breaking long-press for genuine
+        // AltGr typists if some keyboard layout or IME path fails to report it.
+        if ((e.ctrlKey && !e.altKey) || e.metaKey) return;
+
         // See comment for BL-5215 in toolbox.ts
         window.top[isLongPressEvaluating] = true;
 
@@ -363,8 +376,8 @@ import "./jquery.mousewheel.js";
             typeof e.deltaY === "number"
                 ? e.deltaY
                 : typeof e.wheelDelta === "number"
-                ? -e.wheelDelta
-                : 0;
+                  ? -e.wheelDelta
+                  : 0;
 
         if (dy > 0) {
             activateNextLetter();
@@ -600,7 +613,7 @@ import "./jquery.mousewheel.js";
 
         //popup = $('<div id="longpress" class="long-press-popup"><ul />' + this.options.instructions + '</div>');
 
-        popup = window.top.$(
+        popup = $(
             '<div id="longpress" class="long-press-popup"><ul />' +
                 this.options.instructions +
                 "</div>",

@@ -72,6 +72,24 @@ namespace Bloom.Api
         }
 
         /// <summary>
+        /// True if any handler registered by a project context is still registered. Used to check that
+        /// a project that failed to open really did take its handlers with it: if it did not, the next
+        /// project re-registers the same patterns and RegisterEndpointHandler throws. See BL-16678.
+        /// </summary>
+        internal bool HasProjectLevelHandlers
+        {
+            get
+            {
+                lock (_endpointRegistrationsLock)
+                {
+                    return _exactEndpointRegistrations.Keys.Any(key =>
+                        !_applicationLevelRegistrationKeys.Contains(key)
+                    );
+                }
+            }
+        }
+
+        /// <summary>
         /// Clear all handlers that were not marked as application level handlers
         /// </summary>
         public void ClearProjectLevelHandlers()
@@ -302,7 +320,7 @@ namespace Bloom.Api
                 }
                 if (exactCount <= appLevelCount)
                 {
-                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup...
+                    // There is some history (BL-15716) of a request...specifically api/edit/pageControls/cleanup... (now removed in BL-15934)
                     // being sent during shutdown or while restarting, and not being found.
                     // We hope to have made this unlikely or impossible, but just in case,
                     // handle such failures gracefully. We don't launch browsers before registering handlers,
@@ -318,8 +336,11 @@ namespace Bloom.Api
                     info.WriteError(404, $"Server could not process {localPath}");
                     return true; // we sort of handled it.
                 }
-                // otherwise it's a programmer error we want to know about.
-                ReportMissingApiEndpoint(info, localPath);
+                if (ShouldReportMissingApiEndpoint(endpointPath))
+                {
+                    // otherwise it's a programmer error we want to know about.
+                    ReportMissingApiEndpoint(info, localPath);
+                }
                 // If the user continues from there, we need to pretend to have handled
                 // the request. Otherwise the caller will keep trying to handle it in
                 // other ways.
@@ -327,6 +348,16 @@ namespace Bloom.Api
                 return true;
             }
             return false;
+        }
+
+        private static bool ShouldReportMissingApiEndpoint(string endpointPath)
+        {
+            // There are older books out in the wild in which the src for branding images included
+            // this endpoint. We now handle getting branding images differently.
+            // Note that this will eventually result in a 404. That's ok because
+            // the docs in the wild have `onerror="this.style.display='none'"`,
+            // so we don't get the missing image indicator in the preview. See BL-16300.
+            return endpointPath != "branding/image";
         }
 
         private static void ReportMissingApiEndpoint(IRequestInfo info, string localPath)
@@ -351,6 +382,29 @@ namespace Bloom.Api
             string localPathLc
         )
         {
+            // Note this request while it runs, so that a Freeze Doctor report can say what Bloom was
+            // actually doing when it stopped responding. Instrumented HERE rather than at the outer
+            // dispatch because this is where the work — and the waiting on the sync locks in the method below —
+            // actually happens, which is where a hung request sits. The tracker is deliberately incapable
+            // of failing a request; see its class comment.
+            using (var activity = FreezeDoctor.ApiActivityTracker.Begin(localPathLc))
+            {
+                return await ProcessRequestInnerAsync(
+                    endpointRegistration,
+                    info,
+                    localPathLc,
+                    activity
+                );
+            }
+        }
+
+        private async Task<bool> ProcessRequestInnerAsync(
+            BaseEndpointRegistration endpointRegistration,
+            IRequestInfo info,
+            string localPathLc,
+            FreezeDoctor.ApiActivityTracker.ApiActivityScope activity
+        )
+        {
             if (endpointRegistration.RequiresSync)
             {
                 // A single synchronization object won't do, because when processing a request to create a thumbnail or update a preview,
@@ -367,6 +421,12 @@ namespace Bloom.Api
                 // other api requests, so it seems safe to have one lock that prevents working on multiple
                 // thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
                 var syncOn = SyncObj;
+                // Named as well as chosen, purely so a Freeze Doctor report can say WHICH lock a stuck
+                // request is waiting on. Three requests waiting on the lock a fourth is holding is the
+                // signature of an API deadlock, and it is invisible otherwise: the blocked-thread count
+                // does not distinguish the locks, and Windows' wait-chain analysis cannot see a
+                // SemaphoreSlim at all.
+                var syncName = "the main API lock";
                 if (
                     localPathLc.StartsWith(
                         "api/pagetemplatethumbnail",
@@ -376,27 +436,31 @@ namespace Bloom.Api
                     || localPathLc == "api/publish/bloompub/updatepreview"
                     || localPathLc == "api/publish/epub/updatepreview"
                 )
+                {
                     syncOn = ThumbnailsAndPreviewsSyncObj;
+                    syncName = "the thumbnail/preview lock";
+                }
                 else if (localPathLc.StartsWith("api/i18n/"))
+                {
                     syncOn = I18NLock;
+                    syncName = "the i18n lock";
+                }
 
-                // We wrap RegisterThreadBlocking/Unblocked around acquiring the lock.
+                // We report the thread as blocked around ACQUIRING the lock -- not around holding it, since
+                // once we have it we are working rather than waiting.
                 // SemaphoreSlim is used instead of Monitor so we can safely await while the lock is held.
                 // See BL-15586.
                 bool lockAcquired = false;
                 try
                 {
                     // Try to acquire lock
-                    BloomServer._theOneInstance.RegisterThreadBlocking();
-                    try
+                    activity.NoteWaitingForLock(syncName);
+                    using (BloomServer._theOneInstance.ReportThreadBlocking())
                     {
                         syncOn.Wait();
                         lockAcquired = true;
                     }
-                    finally
-                    {
-                        BloomServer._theOneInstance.RegisterThreadUnblocked();
-                    }
+                    activity.NoteHoldingLock(syncName);
 
                     // Lock has been acquired.
                     await ApiRequest.Handle(

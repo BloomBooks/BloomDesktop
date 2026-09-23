@@ -10,10 +10,9 @@ import {
     WrongImagePlaceholderIcon,
 } from "../../../react_components/icons/ImagePlaceholderIcon";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import { SignLanguageIcon } from "../../../react_components/icons/SignLanguageIcon";
 import { GifIcon } from "../../../react_components/icons/GifIcon";
 import { Point } from "../../js/point";
-import { getCanvasElementManager } from "./canvasElementUtils";
+import { getCanvasElementManager } from "./canvasElementPageBridge";
 import { getTarget } from "bloom-player";
 import { doesContainingPageHaveSameSizeMode } from "../games/gameUtilities";
 import { AudioIcon } from "../../../react_components/icons/AudioIcon";
@@ -24,20 +23,10 @@ import {
 import {
     getAllDraggables,
     kDraggableIdAttribute,
-} from "../../js/CanvasElementManager";
+} from "./canvasElementDraggables";
+import { CanvasElementType } from "./canvasElementTypes";
 
-export type CanvasElementType =
-    | "image"
-    | "video"
-    | "sound"
-    | "rectangle"
-    | "speech"
-    | "caption"
-    | "book-link-grid"
-    | "navigation-image-button"
-    | "navigation-image-with-label-button"
-    | "navigation-label-button"
-    | "none";
+export type { CanvasElementType } from "./canvasElementTypes";
 
 const ondragstart = (
     ev: React.DragEvent<HTMLElement> | React.DragEvent<SVGSVGElement>,
@@ -104,14 +93,15 @@ const ondragend = (
         }
     }
 
-    const canvasElement = canvasElementManager.addCanvasElementWithScreenCoords(
-        ev.screenX,
-        ev.screenY,
+    const canvasElement = canvasElementManager.addCanvasElement(
+        ev.clientX,
+        ev.clientY,
         canvasElementType,
         userDefinedStyleName,
         rightTopOffset,
     );
     if (!canvasElement) return;
+    canvasElement.ownerDocument.defaultView?.focus();
     if (extraAction) {
         extraAction(canvasElement);
     }
@@ -318,6 +308,7 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
     makeTarget?: boolean;
     makeMatchingTextBox?: boolean;
     addClasses?: string;
+    children?: React.ReactNode;
     extraAction?: (top: HTMLElement) => void;
     // Objects to drag during play (ones that don't have an opaque background) want a shadow rectangle
     // around them. If it didn't depend on the particular icon, we could just make this depend on
@@ -343,6 +334,10 @@ export const CanvasElementSvgItem: React.FunctionComponent<{
                 ${props.showOuterRectangle ? buttonBorder : ""}
             `}
             draggable={true}
+            // The palette icons are SVGs and localized tooltips, so a test that had to find one by
+            // its picture or its label would break the next time either changed. See
+            // BloomE2E/helpers/canvasElements.ts.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -493,13 +488,13 @@ export const CanvasElementVideoItem: React.FunctionComponent<{
             makeTarget={props.makeTarget}
             showOuterRectangle={props.showOuterRectangle}
         >
-            <SignLanguageIcon
+            <img
                 css={css`
                     width: 100%;
                     height: 100%;
                     cursor: grab;
                 `}
-                color={kBloomBlue}
+                src="/bloom/bookEdit/toolbox/canvas/sign-language-overlay.svg"
             />
         </CanvasElementSvgItem>
     );
@@ -523,6 +518,8 @@ export const CanvasElementItem: React.FunctionComponent<{
             `}
             src={props.src}
             draggable={true}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>
                 ondragend(
@@ -560,6 +557,8 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
         <Span
             l10nKey={props.l10nKey}
             className={props.className}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             draggable={true}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>

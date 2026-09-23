@@ -13,12 +13,12 @@ import { glob } from "glob";
 import react from "@vitejs/plugin-react";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 import * as fs from "fs";
-import less from "less";
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItAttrs from "markdown-it-attrs";
 import { playwright } from "@vitest/browser-playwright";
 import { compilePugFiles } from "./scripts/compilePug.mjs";
+import { compileLessFiles } from "./scripts/compileLess.mjs";
 
 // Custom plugin to compile Pug files to HTML
 // There are a couple of npm packages for pug, but as of October 2025, they are experimental
@@ -38,73 +38,14 @@ function compilePugPlugin(): Plugin {
 
 // Custom plugin to compile LESS files to CSS
 // Similar to pug plugin - compiles standalone LESS files to CSS with sourcemaps
+// Handles both BloomBrowserUI and content LESS files
 // Claude sonnet 4.5 came up with this.
 function compileLessPlugin(): Plugin {
     return {
         name: "compile-less",
         apply: "build",
         async closeBundle() {
-            // Find LESS files in BloomBrowserUI
-            const lessFiles = glob.sync("./**/*.less", {
-                ignore: ["**/node_modules/**"],
-            });
-
-            console.log(`\nCompiling ${lessFiles.length} LESS files...`);
-
-            const outputBase = path.resolve(__dirname, "../../output/browser");
-
-            for (const file of lessFiles) {
-                // Normalize path separators
-                const normalizedFile = file.replace(/\\/g, "/");
-
-                // Convert to output path: "./bookEdit/css/editMode.less" -> "bookEdit/css/editMode.css"
-                const relativePath = normalizedFile
-                    .replace("./", "")
-                    .replace(".less", ".css");
-
-                const outputFile = path.join(outputBase, relativePath);
-                const outputDir = path.dirname(outputFile);
-
-                // Ensure output directory exists
-                if (!fs.existsSync(outputDir)) {
-                    fs.mkdirSync(outputDir, { recursive: true });
-                }
-
-                try {
-                    // Read LESS file
-                    const lessContent = fs.readFileSync(file, "utf8");
-
-                    // Compile LESS to CSS with sourcemap
-                    const result = await less.render(lessContent, {
-                        filename: file,
-                        sourceMap: {
-                            sourceMapFileInline: false,
-                            outputSourceFiles: true,
-                            sourceMapURL: path.basename(outputFile) + ".map",
-                        },
-                    });
-
-                    // Write CSS file with sourcemap reference
-                    let cssOutput = result.css;
-                    if (result.map) {
-                        cssOutput += `\n/*# sourceMappingURL=${path.basename(outputFile)}.map */`;
-                    }
-                    fs.writeFileSync(outputFile, cssOutput);
-
-                    // Write sourcemap if generated
-                    if (result.map) {
-                        const mapFile = outputFile + ".map";
-                        fs.writeFileSync(mapFile, result.map);
-                    }
-
-                    console.log(`  ✓ ${file} → ${relativePath}`);
-                } catch (error) {
-                    console.error(`  ✗ Error compiling ${file}:`, error);
-                    throw error; // Exit build on LESS compilation error
-                }
-            }
-
-            console.log(`LESS compilation complete!\n`);
+            await compileLessFiles();
         },
     };
 }
@@ -146,7 +87,7 @@ function compileMarkdownFile(
 // Custom plugin to compile Markdown files to HTML
 // Handles 4 different types of markdown files with different styling/output
 // Claude sonnet 4.5 came up with this, based on our previous gulpfile handling of markdown.
-function compileMarkdownPlugin(): Plugin {
+function compileMarkdownPlugin(outputBrowserDir: string): Plugin {
     return {
         name: "compile-markdown",
         apply: "build",
@@ -161,7 +102,7 @@ function compileMarkdownPlugin(): Plugin {
             md.use(markdownItContainer, "note");
             md.use(markdownItAttrs);
 
-            const outputBase = path.resolve(__dirname, "../../output/browser");
+            const outputBase = outputBrowserDir;
 
             // 1. Help files: ./help/**/*.md -> output/browser/help/*.htm (flattened)
             const helpFiles = glob.sync("./help/**/*.md");
@@ -245,7 +186,7 @@ function compileMarkdownPlugin(): Plugin {
 // and make an xBundle.js that would REPLACE xBundle-main.js, reducing the number of files and
 // the indirection,but somehow it works out that some of the bundles actually load the root
 // -main.js files of OTHER bundles, so modifying or deleting them is not a good option.
-function postBuildPlugin(): Plugin {
+function postBuildPlugin(outputBrowserDir: string): Plugin {
     interface ManifestEntry {
         file: string;
         isEntry?: boolean;
@@ -258,16 +199,60 @@ function postBuildPlugin(): Plugin {
         name: "post-build",
         apply: "build", // Only run during build, not dev
         async closeBundle() {
-            const outputDir = path.resolve(__dirname, "../../output/browser");
+            const outputDir = outputBrowserDir;
             const manifestPath = path.join(outputDir, ".vite/manifest.json");
 
             try {
+                if (!fs.existsSync(manifestPath)) {
+                    console.warn(
+                        `[post-build] Skipping manifest processing because ${manifestPath} does not exist. ` +
+                            "An earlier build error likely prevented manifest generation.",
+                    );
+                    return;
+                }
+
                 // Read the manifest file
                 const manifestContent = await fs.promises.readFile(
                     manifestPath,
                     "utf-8",
                 );
                 const manifest = JSON.parse(manifestContent);
+
+                const collectTransitiveCss = (
+                    manifestKey: string,
+                    seenKeys: Set<string>,
+                    cssFiles: Set<string>,
+                ) => {
+                    if (seenKeys.has(manifestKey)) {
+                        return;
+                    }
+                    seenKeys.add(manifestKey);
+
+                    const item = manifest[manifestKey] as
+                        | ManifestEntry
+                        | undefined;
+                    if (!item) {
+                        return;
+                    }
+
+                    if (item.css && item.css.length > 0) {
+                        item.css.forEach((cssFile: string) => {
+                            cssFiles.add(cssFile);
+                        });
+                    }
+
+                    if (item.imports && item.imports.length > 0) {
+                        item.imports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+
+                    if (item.dynamicImports && item.dynamicImports.length > 0) {
+                        item.dynamicImports.forEach((importKey: string) => {
+                            collectTransitiveCss(importKey, seenKeys, cssFiles);
+                        });
+                    }
+                };
 
                 console.log("\nProcessing manifest for entry points...");
 
@@ -306,6 +291,19 @@ function postBuildPlugin(): Plugin {
                             dependencies.add("./" + cssFile);
                         });
                     }
+
+                    // Add CSS from transitive imports/chunks as well. Without this,
+                    // CSS imported in shared non-entry modules (for example BloomTabs)
+                    // may be omitted for some generated entry wrappers.
+                    const transitiveCssFiles = new Set<string>();
+                    collectTransitiveCss(
+                        entryKey,
+                        new Set<string>(),
+                        transitiveCssFiles,
+                    );
+                    transitiveCssFiles.forEach((cssFile: string) => {
+                        dependencies.add("./" + cssFile);
+                    });
 
                     // Add dynamic imports/chunks if any
                     if (
@@ -373,9 +371,13 @@ function postBuildPlugin(): Plugin {
                     if (cssDependencies.length > 0) {
                         finalContent += `// Function to load CSS files dynamically\n`;
                         finalContent += `function loadCSS(href) {\n`;
+                        finalContent += `    const absoluteHref = new URL(href, import.meta.url).toString();\n`;
+                        finalContent += `    if (document.querySelector(\`link[rel="stylesheet"][href="\${absoluteHref}"]\`)) {\n`;
+                        finalContent += `        return;\n`;
+                        finalContent += `    }\n`;
                         finalContent += `    const link = document.createElement('link');\n`;
                         finalContent += `    link.rel = 'stylesheet';\n`;
-                        finalContent += `    link.href = href;\n`;
+                        finalContent += `    link.href = absoluteHref;\n`;
                         finalContent += `    document.head.appendChild(link);\n`;
                         finalContent += `}\n\n`;
 
@@ -440,11 +442,18 @@ function reportBuildErrorPlugin(): Plugin {
 // Helper function to inject CSS into DOM
 function createCssInjector() {
     return `
+function stripCssSourceMapComments(cssContent) {
+    return cssContent
+        .split('\\n')
+        .filter((line) => !line.includes('sourceMappingURL='))
+        .join('\\n');
+}
+
 function injectCss(cssContent, source) {
     if (typeof window !== 'undefined' && window.document) {
         const style = document.createElement('style');
         style.setAttribute('data-source', source || 'inline');
-        style.textContent = cssContent;
+        style.textContent = stripCssSourceMapComments(cssContent);
         document.head.appendChild(style);
     }
 }`;
@@ -491,7 +500,7 @@ function transformLessImportsPlugin(): Plugin {
 ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 `;
 
-            transformedCode = `${injectorFunction}\n${immediateInjection}\n${transformedCode}`;
+            transformedCode = `${transformedCode}\n${injectorFunction}\n${immediateInjection}`;
 
             return { code: transformedCode, map: null };
         },
@@ -501,6 +510,39 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
 export default defineConfig(async ({ command }) => {
+    const parsedPort = Number.parseInt(process.env.PORT ?? "", 10);
+    const devServerPort =
+        Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+            ? parsedPort
+            : 5173;
+
+    // LINKED LIBRARIES (set by `go.mjs --with`): alias each bare package import to its local
+    // checkout so edits there flow into this dev server. Format: "name=absPath;name=absPath".
+    // Empty/absent in a normal run, so the libraries resolve from node_modules as usual.
+    const linkedLibs: Record<string, string> = {};
+    for (const pair of (process.env.BLOOM_LINKED_LIBS ?? "")
+        .split(";")
+        .map((p) => p.trim())
+        .filter(Boolean)) {
+        const eq = pair.indexOf("=");
+        if (eq > 0) {
+            linkedLibs[pair.slice(0, eq)] = pair.slice(eq + 1);
+        }
+    }
+
+    // AGENT (ISOLATED) BUILD
+    // When BLOOM_UI_OUTDIR is set (by build/agent-vite.sh|ps1), redirect the whole
+    // build into a private per-terminal tree instead of the shared output/browser, so
+    // an agent can verify the bundle compiles without clobbering a developer's running
+    // Bloom, its Vite dev server, or a `vite build --watch`. This is the front-end twin
+    // of the C# build/agent-dotnet.sh wrapper. In an agent build we also skip the
+    // pug/LESS/markdown/static-copy side-effect plugins (see the plugins array below).
+    const agentOutDir = process.env.BLOOM_UI_OUTDIR;
+    const isAgentBuild = !!agentOutDir;
+    const outputBrowserDir = agentOutDir
+        ? path.resolve(agentOutDir)
+        : path.resolve(__dirname, "../../output/browser");
+
     // ENTRY POINTS CONFIGURATION
     // Define all JavaScript/TypeScript entry points - these are the "root" files that
     // Vite will build into separate bundles. Each entry becomes a standalone .js file
@@ -509,7 +551,6 @@ export default defineConfig(async ({ command }) => {
     const entryPoints: Record<string, string> = {
         // Special bundles that were previously built separately
         editablePageBundle: "./bookEdit/editablePage.ts",
-        editTabBundle: "./bookEdit/editViewFrame.ts",
         spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
 
@@ -523,8 +564,9 @@ export default defineConfig(async ({ command }) => {
         pageControlsBundle:
             "./bookEdit/pageThumbnailList/pageControls/pageControls.tsx",
         accessibilityCheckBundle:
-            "./publish/accessibilityCheck/accessibilityCheckScreen.tsx",
+            "./publish/accessibilityCheck/accessibilityCheckScreen.entry.tsx",
         subscriptionSettingsBundle: "./collection/subscriptionSettingsTab.tsx",
+        advancedSettingsBundle: "./collection/AdvancedSettingsPanel.entry.tsx",
         performanceLogBundle: "./performance/PerformanceLogPage.tsx",
         appBundle: "./app/App.tsx",
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
@@ -544,14 +586,13 @@ export default defineConfig(async ({ command }) => {
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
-        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
-        publishTabPaneBundle: "./publish/PublishTab/PublishTabPane.tsx",
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",
         newCollectionLanguageChooserBundle:
             "./collection/NewCollectionLanguageChooser.tsx",
+        collectionChooserBundle:
+            "./collection/CollectionChooserDialog.entry.tsx",
         registrationDialogBundle:
             "./react_components/registration/registrationDialog.tsx",
-        topBarBundle: "./react_components/TopBar/TopBar.entry.tsx",
     };
 
     // MAIN VITE CONFIGURATION
@@ -561,7 +602,13 @@ export default defineConfig(async ({ command }) => {
         plugins: [
             // React plugin: Enables JSX, Fast Refresh, and React-specific optimizations
             react({
-                reactRefreshHost: `http://localhost:${process.env.PORT || 5173}`,
+                reactRefreshHost: `http://localhost:${devServerPort}`,
+                // jsxImportSource is also set in tsconfig.json; duplicating here ensures
+                // it applies to bloom-image-gallery files (see exclude below).
+                jsxImportSource: "@emotion/react",
+                // Include bloom-image-gallery in the transform pipeline even though it's in
+                // node_modules — its TSX source uses emotion's css prop and needs this plugin.
+                exclude: /node_modules\/(?!bloom-image-gallery)/,
                 babel: {
                     parserOpts: {
                         // This enables decorators like @mobxReact.observer.
@@ -570,18 +617,26 @@ export default defineConfig(async ({ command }) => {
                 },
             }),
             transformLessImportsPlugin(), // Transform LESS imports to inline CSS injection (build only)
-            compilePugPlugin(), // Compile Pug templates to HTML during build
-            compileLessPlugin(), // Compile standalone LESS files to CSS during build
-            compileMarkdownPlugin(), // Compile Markdown files to HTML during build
+            // In an agent build (BLOOM_UI_OUTDIR set) skip these side-effect plugins:
+            // they exist to populate the shared output/browser for a running Bloom, are
+            // irrelevant to a bundle-compile check, and skipping them keeps the isolated
+            // build fast and guarantees it writes ONLY under the private tree.
+            ...(isAgentBuild
+                ? []
+                : [
+                      compilePugPlugin(), // Compile Pug templates to HTML during build
+                      compileLessPlugin(), // Compile standalone LESS files to CSS during build
+                      compileMarkdownPlugin(outputBrowserDir), // Compile Markdown files to HTML during build
+                  ]),
             reportBuildErrorPlugin(),
-            postBuildPlugin(), // Process manifest and create final bundles (build only)
+            postBuildPlugin(outputBrowserDir), // Process manifest and create final bundles (build only)
 
             // STATIC FILE COPYING (BUILD ONLY)
             // vite-plugin-static-copy copies files from source to output directory
             // CRITICAL: These plugins must only run during build, not dev mode
             // In dev mode, scanning 525+ files causes 30+ second delays
             // Conditionally include these plugins only when command === 'build'
-            ...(command === "build"
+            ...(command === "build" && !isAgentBuild
                 ? [
                       // structured: false = flatten directory structure (all files go to dest root)
                       // Copy files that need flattening (structured: false)
@@ -598,6 +653,13 @@ export default defineConfig(async ({ command }) => {
                               {
                                   src: "node_modules/bloom-player/dist/*",
                                   dest: "./bloom-player/dist/",
+                              },
+                              // Copy the AI Image Editor's prebuilt app (dist-app/) so Bloom
+                              // serves it at /bloom/aiImageEditor/. Mirrors the dev-time
+                              // staging in go.mjs/aiImageEditorBuild.mjs.
+                              {
+                                  src: "node_modules/bloom-ai-image-tools/dist-app/*",
+                                  dest: "./aiImageEditor/",
                               },
                           ],
                       }),
@@ -618,6 +680,9 @@ export default defineConfig(async ({ command }) => {
                                       "!**/*.bat",
                                       "!**/node_modules/**/*.*",
                                       "!**/tsconfig.json",
+                                      "!**/test-results/**/*",
+                                      "!**/playwright-report/**/*",
+                                      "!**/.playwright-artifacts-*/**/*",
                                   ],
                                   dest: ".",
                               },
@@ -630,20 +695,48 @@ export default defineConfig(async ({ command }) => {
         // DEV SERVER CONFIGURATION
         // Controls the local development server behavior
         server: {
-            port: 5173, // Default Vite port
+            port: devServerPort,
             strictPort: true, // Fail if port is already in use (don't try other ports)
             hmr: {
                 protocol: "ws",
                 host: "localhost", // The host where your Vite server is running
-                port: 5173, // The port where your Vite server is running
+                port: devServerPort,
+                clientPort: devServerPort,
                 overlay: true,
             },
+            watch: {
+                // When bloom-image-gallery is yarn-linked for local development, its files
+                // live in node_modules but resolve to a real path outside it. Allow HMR
+                // to watch them by exempting that package from the node_modules exclusion.
+                ignored: (watchPath: string) => {
+                    if (watchPath.includes("bloom-image-gallery")) return false;
+                    return /node_modules/.test(watchPath);
+                },
+            },
+        },
+
+        // CSS PREPROCESSING
+        css: {
+            // Compile LESS on the main thread instead of in Vite's worker pool.
+            //
+            // In the pool, the worker blocks on Atomics.wait() while the main thread
+            // resolves each @import for it, and gives up after ~5s if the main thread
+            // looks idle, on the theory that the two have deadlocked. A busy CI machine
+            // makes that guess wrong: the build dies with "[vite:css] [less] timed-out"
+            // naming whichever .less file was in flight, which reads like a fault in that
+            // file and isn't one.
+            //
+            // 0 means "no worker" (Vite treats max <= 0 as disabling the real worker), so
+            // the watchdog does not exist and the error cannot occur. We lose preprocessor
+            // parallelism, which is nearly free here: most of our LESS is compiled by the
+            // compile-less plugin in closeBundle, not through this path.
+            preprocessorMaxWorkers: 0,
         },
 
         // BUILD CONFIGURATION
         // Controls how Vite creates production bundles
         build: {
-            outDir: "../../output/browser", // Where to output built files
+            outDir: outputBrowserDir, // Where to output built files (redirected by BLOOM_UI_OUTDIR for agent builds)
             sourcemap: true, // Generate .map files for debugging production code
             minify: false, // Keep code readable (set to 'esbuild' or 'terser' to minify)
             cssCodeSplit: true, // Generate separate CSS files (loaded dynamically by postBuildPlugin)
@@ -703,7 +796,11 @@ export default defineConfig(async ({ command }) => {
         // MODULE RESOLUTION CONFIGURATION
         // Controls how Vite finds and loads modules
         resolve: {
-            preserveSymlinks: false, // Follow symlinks to actual files
+            // When bloom-image-gallery is yarn-linked for local development, follow the
+            // symlink to its real path so Vite treats it as a first-party source file
+            // rather than a node_modules package. This lets the react plugin transform it
+            // and lets tsconfig.json in that repo supply jsxImportSource for emotion.
+            preserveSymlinks: false,
 
             // DEDUPE: Prevent duplicate copies of these packages in bundles
             // If multiple dependencies use React, only include one copy
@@ -746,6 +843,8 @@ export default defineConfig(async ({ command }) => {
                     "lib/long-press/jquery.longpress.js",
                 ),
                 "App.less": path.resolve(__dirname, "app/App.less"),
+                // Local checkouts of our libraries when launched via `go.sh --with <name>`.
+                ...linkedLibs,
             },
         },
 
@@ -759,7 +858,7 @@ export default defineConfig(async ({ command }) => {
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
-            includeConsoleOutput: true,
+            includeConsoleOutput: false,
             // Uncomment to run only specific test files during development:
             // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
             exclude: [
@@ -768,16 +867,28 @@ export default defineConfig(async ({ command }) => {
                 "**/cypress/**",
                 "**/.{idea,git,cache,output,temp}/**",
                 "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
                 "**/react_components/component-tester/**", // Exclude playwright component tests
                 "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
             ],
             environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
+            teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
+            // Use worker threads instead of child-process forks. Vitest 4.0 changed the
+            // default pool to 'forks', but on Windows the process-creation overhead causes
+            // workers to time out before they start ("Timeout starting forks runner").
+            // The threads pool is lighter-weight and avoids that issue.
+            pool: "threads",
+            // Limit concurrent workers. The heavy transform cost of some test files
+            // (notably PrepareAppStepper.spec.tsx with its deep MUI import chain) saturates
+            // the CPU while workers are starting, causing other workers to miss the
+            // hardcoded 5-second vitest startup timeout. With pool: "threads" the
+            // per-worker startup overhead is negligible, so we can safely use more workers.
+            // 4 workers roughly halves the wall-clock collect time compared to 2.
+            maxWorkers: 4,
+            minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            deps: {
-                inline: ["vitest-canvas-mock"], // Force this dep to be bundled (not externalized)
-            },
             browser: {
                 // This whole block is unused since enabled is false. The settings are our current
                 // best guess for our next attempt to get browser mode working.
@@ -790,9 +901,7 @@ export default defineConfig(async ({ command }) => {
                 ],
             },
             environmentOptions: {
-                jsdom: {
-                    resources: "usable", // Allow jsdom to load external resources
-                },
+                jsdom: {},
             },
         },
 
@@ -803,7 +912,10 @@ export default defineConfig(async ({ command }) => {
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
             ],
-            exclude: ["lib/localizationManager/localizationManager"], // Don't pre-bundle this
+            exclude: [
+                "lib/localizationManager/localizationManager", // Don't pre-bundle this
+                "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
+            ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
             esbuildOptions: {
                 plugins: [],

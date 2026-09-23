@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.MiscUI;
@@ -304,6 +305,110 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Read AllowCheckouts straight out of the repo's copy of the collection settings file,
+        /// which lives inside "Other Collection Files.zip". We deliberately do not go through the
+        /// local copy: that is only refreshed from the repo when the collection is opened, and the
+        /// whole point is to notice a change made while Bloom is running. See BL-16691.
+        /// </summary>
+        public override bool? GetAllowCheckoutsFromRepo()
+        {
+            try
+            {
+                var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                var content = RobustZip.GetZipEntryContent(zipPath, entryName);
+                if (string.IsNullOrWhiteSpace(content))
+                    return null;
+                return CollectionSettings.ReadBoolean(
+                    XElement.Parse(content),
+                    "AllowCheckouts",
+                    true
+                );
+            }
+            catch (Exception e)
+            {
+                // The zip may be part-written, or Dropbox may be midway through syncing it. There
+                // is nothing to do about it now: we'll get another notification when the file
+                // settles, and failing that we read it again at startup. Leaving the setting alone
+                // is the safe outcome either way.
+                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The name of the .bloomCollection entry within the given zip, or null if there isn't one.
+        /// Found by extension rather than by building the name, because the collection may have
+        /// been renamed locally.
+        /// </summary>
+        private static string GetCollectionSettingsEntryName(string zipPath)
+        {
+            using (var zipFile = new ICSharpCode.SharpZipLib.Zip.ZipFile(zipPath))
+            {
+                foreach (ICSharpCode.SharpZipLib.Zip.ZipEntry entry in zipFile)
+                {
+                    if (
+                        entry.IsFile
+                        && entry.Name.EndsWith(
+                            CollectionSettings.kFileExtension,
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                        return entry.Name;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// The repository's copy of the collection settings for a local collection folder, or null if
+        /// this is not a Team Collection or we cannot reach the repository right now.
+        ///
+        /// Static, and taking a plain folder path, because the minimum-version gate has to ask this
+        /// before any TeamCollection object exists -- indeed before Bloom has committed to opening
+        /// the collection at all. Otherwise a member whose repository has just gained a minimum
+        /// version would be judged on their own stale copy and let in for the whole session, since
+        /// the repository is not copied down until later in startup. See BL-16690.
+        /// </summary>
+        internal static string GetRepoCollectionSettingsForCollectionFolder(
+            string localCollectionFolder
+        )
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(localCollectionFolder))
+                    return null;
+                var linkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
+                if (!RobustFile.Exists(linkPath))
+                    return null; // an ordinary collection; nothing to consult
+                var repoFolder = TeamCollectionManager.RepoFolderPathFromLinkPath(linkPath);
+                if (string.IsNullOrWhiteSpace(repoFolder) || !Directory.Exists(repoFolder))
+                    return null; // disconnected, or the shared folder has moved
+                var zipPath = GetRepoProjectFilesZipPath(repoFolder);
+                if (!RobustFile.Exists(zipPath))
+                    return null;
+                var entryName = GetCollectionSettingsEntryName(zipPath);
+                if (entryName == null)
+                    return null;
+                return RobustZip.GetZipEntryContent(zipPath, entryName);
+            }
+            catch (Exception e)
+            {
+                // Offline, a part-written zip, a network share that has gone away: none of that is a
+                // good reason to stop someone opening a collection. The local file still has its say.
+                Logger.WriteError(
+                    "Could not read the Team Collection repo settings while checking the minimum Bloom version",
+                    e
+                );
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Return a list of all the books currently in the repo. (It will not update as changes are made,
         /// either locally or remotely. Beware that conceivably a book in the list might be removed
         /// before you get around to processing it.)
@@ -353,6 +458,34 @@ namespace Bloom.TeamCollection
             }
         }
 
+        /// <summary>
+        /// Returns true if the named book's .bloom file appears to be actively downloading
+        /// (its size grew over a brief observation window). Dropbox downloads files in-place
+        /// without an exclusive write lock, so a partially-downloaded file is readable but
+        /// not a valid zip; comparing sizes lets us distinguish that from permanent corruption.
+        /// If the file hasn't changed recently it is likely stably corrupt, not downloading.
+        /// </summary>
+        protected override bool IsBookDownloading(string bookName)
+        {
+            var bookPath = GetPathToBookFileInRepo(bookName);
+            if (!RobustFile.Exists(bookPath))
+                return false;
+
+            // If the last-write time is more than 10 minutes ago the file is almost certainly
+            // not being actively downloaded (even a very large book on a slow connection should
+            // complete well within that window).
+            var age = DateTime.UtcNow - RobustFile.GetLastWriteTimeUtc(bookPath);
+            if (age.TotalMinutes > 10)
+                return false;
+
+            // The file is recently written — check whether it is actively growing.
+            // This runs in the progress-dialog background worker, so Thread.Sleep is safe.
+            var size1 = new FileInfo(bookPath).Length;
+            System.Threading.Thread.Sleep(500);
+            var size2 = new FileInfo(bookPath).Length;
+            return size2 > size1;
+        }
+
         public string GetBadZipFileMessage(string zipName)
         {
             var zipPath = GetPathToBookFileInRepo(zipName);
@@ -380,6 +513,26 @@ namespace Bloom.TeamCollection
         {
             var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
             RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
+        }
+
+        /// <summary>
+        /// Read the collection settings straight out of the repo's zip of collection files, without
+        /// unpacking anything or disturbing the local copy. Used to notice a minimum Bloom version
+        /// arriving from an administrator while the user has the collection open.
+        /// </summary>
+        protected override string GetRepoCollectionSettingsContent()
+        {
+            var zipPath = GetRepoProjectFilesZipPath(_repoFolderPath);
+            if (!RobustFile.Exists(zipPath))
+                return null;
+            // Find the entry by its extension rather than building the name from the local
+            // collection path: the collection may have been renamed locally, in which case the
+            // name we would build is not the one in the repo. (Shared with BL-16691, which reads
+            // AllowCheckouts out of the same file.)
+            var entryName = GetCollectionSettingsEntryName(zipPath);
+            if (entryName == null)
+                return null;
+            return RobustZip.GetZipEntryContent(zipPath, entryName);
         }
 
         protected override DateTime LastRepoCollectionFileModifyTime
@@ -707,11 +860,12 @@ namespace Bloom.TeamCollection
                     var dirty = false;
                     foreach (var key in repoColorPalettes.Keys)
                     {
+                        localColorPalettes.TryGetValue(key, out var localValues);
                         var mergedValues = MergeColorPaletteValues(
                             repoColorPalettes[key],
-                            localColorPalettes[key]
+                            localValues
                         );
-                        if (mergedValues != localColorPalettes[key])
+                        if (mergedValues != localValues)
                         {
                             localColorPalettes[key] = mergedValues;
                             dirty = true;
@@ -970,7 +1124,14 @@ namespace Bloom.TeamCollection
         /// those are now handled using RenameBookInRepo, so currently we never pass false.</param>
         public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
         {
-            var pathToBookFileInRepo = GetPathToBookFileInRepo(Path.GetFileName(bookFolderPath));
+            var currentBookFolderName = Path.GetFileName(bookFolderPath);
+            var localStatus = GetLocalStatus(currentBookFolderName);
+            var bookFolderNameToDeleteInRepo =
+                localStatus.collectionId == CollectionId
+                && !string.IsNullOrEmpty(localStatus.oldName)
+                    ? localStatus.oldName
+                    : currentBookFolderName;
+            var pathToBookFileInRepo = GetPathToBookFileInRepo(bookFolderNameToDeleteInRepo);
             // The test here is mostly unnecessary, since Delete won't throw if the file doesn't exist
             // (as indeed it might not, even after the test, in a rare race condition with someone else
             // deleting it, or if this is called as part of MoveBookToCollection). It does serve to make sure at least the containing folder exists, which
@@ -979,7 +1140,7 @@ namespace Bloom.TeamCollection
                 RobustFile.Delete(pathToBookFileInRepo);
             if (makeTombstone)
             {
-                var pathForTombstone = GetPathForTombstone(Path.GetFileName(bookFolderPath));
+                var pathForTombstone = GetPathForTombstone(currentBookFolderName);
                 if (pathForTombstone != null)
                 {
                     RobustFile.WriteAllText(
@@ -995,6 +1156,9 @@ namespace Bloom.TeamCollection
             var oldLocalPath = Path.Combine(Path.GetDirectoryName(newBookFolderPath), oldName);
             var pathToOldBookFileInRepo = GetPathToBookFileInRepo(oldLocalPath);
             var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
+            // If the old repo file is already gone, check-in should continue by writing the new one. See BL-16226.
+            if (!RobustFile.Exists(pathToOldBookFileInRepo))
+                return;
             // There is probably some pathological case where pathToNewBookFileInRepo already exists,
             // but I can't think of a decent way to handle it, so just let it fail.
             RobustFile.Move(pathToOldBookFileInRepo, pathToNewBookFileInRepo);
@@ -1314,8 +1478,7 @@ namespace Bloom.TeamCollection
                 )
             )
             {
-                dlg.Width = 560;
-                dlg.Height = 400;
+                dlg.SetScaledSize(560, 400);
                 // This dialog is neater without a title bar. We don't need to be able to
                 // drag it around. There's nothing left to give it one if we don't set a title
                 // and remove the control box.

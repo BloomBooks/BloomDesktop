@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -79,6 +80,7 @@ namespace Bloom.web.controllers
                 }
                 else
                 {
+                    // All we want here is the HTML encoding; a heading is prose, never a url.
                     HeadingHtml = UrlPathString.CreateFromUnencodedString(heading).HtmlXmlEncoded;
                 }
 
@@ -358,6 +360,11 @@ namespace Bloom.web.controllers
             else
             {
                 issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+                // Tell any Freeze Doctor that this problem has already been reported, so it does not file a
+                // second card about the same trouble. Cheap insurance against duplicate reports, since a
+                // user reporting a problem by hand and a Doctor noticing the same problem are exactly the
+                // situation where both would fire.
+                FreezeDoctor.FreezeDoctorSupport.NoteBloomReportedAProblem(issueId);
                 if (includeBook || _additionalPathsToInclude?.Any() == true)
                 {
                     try
@@ -720,20 +727,21 @@ namespace Bloom.web.controllers
                             dlg.ControlBox = true; // Add controls like the X button back to the top bar
                             dlg.Text = ""; // Remove the title from the WinForms top bar
 
-                            dlg.Width = 731;
-                            dlg.Height = height;
+                            var owner = GetParentFormForErrorDialogs();
+                            dlg.SetScaledSize(731, height);
 
                             // ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-                            BloomServer._theOneInstance.RegisterThreadBlocking();
-                            try
+                            using (BloomServer._theOneInstance.ReportThreadBlocking())
                             {
-                                // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-                                dlg.ShowDialog(GetParentFormForErrorDialogs());
-                            }
-                            finally
-                            {
-                                BloomServer._theOneInstance.RegisterThreadUnblocked();
-                                _additionalPathsToInclude = null;
+                                try
+                                {
+                                    // Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
+                                    dlg.ShowDialog(owner);
+                                }
+                                finally
+                                {
+                                    _additionalPathsToInclude = null;
+                                }
                             }
                         }
                     }
@@ -797,6 +805,14 @@ namespace Bloom.web.controllers
                 );
                 return;
             }
+            if (
+                ReportProblemWithoutUiIfNonInteractive(
+                    levelOfProblem,
+                    exception,
+                    string.Join(" ", new[] { shortUserLevelMessage, detailedMessage }).Trim()
+                )
+            )
+                return;
             StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
             lock (_showingProblemReportLock)
@@ -1045,6 +1061,99 @@ namespace Bloom.web.controllers
             );
         }
 
+#if !__MonoCS__
+        /// <summary>
+        /// Renders a window's content directly into an HDC without requiring the window to be the
+        /// frontmost window. The PW_RENDERFULLCONTENT flag also captures layered and DirectX-based
+        /// content such as WebView2. Used only when another process is in the foreground, to avoid
+        /// unnecessary re-rendering (and the risk of re-triggering any paint-related bugs).
+        /// </summary>
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool PrintWindow(IntPtr hwnd, IntPtr hdcBlt, uint nFlags);
+
+        private const uint PW_RENDERFULLCONTENT = 0x00000002;
+
+        /// <summary>Returns the thread and process that created the given window.</summary>
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        /// <summary>
+        /// Returns true if the foreground window belongs to Bloom's own process, meaning Bloom
+        /// is not hidden behind another application and a plain screen-copy will capture it correctly.
+        /// </summary>
+        private static bool IsBloomProcessInForeground()
+        {
+            var fgWindow = ProcessExtra.GetForegroundWindow();
+            if (fgWindow == IntPtr.Zero)
+                return false;
+            GetWindowThreadProcessId(fgWindow, out uint fgProcessId);
+            return fgProcessId == (uint)System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+#else
+        private static bool IsBloomProcessInForeground()
+        {
+            // Enhance: if we do Mono again, maybe we can find a way to implement this test and
+            // CaptureBackgroundScreenshot. For now, we'll just hope
+            // the window we want to capture is visible anyway, if we build for Mono.
+            return true;
+        }
+#endif
+
+        private static void SaveScreenshot(Bitmap screenshot)
+        {
+            _reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
+            SIL.IO.RobustImageIO.SaveImage(
+                screenshot,
+                _reportInfo.ScreenshotTempFile.Path,
+                ImageFormat.Png
+            );
+        }
+
+#if !__MonoCS__
+        private static void CaptureBackgroundScreenshot(Control controlForScreenshotting)
+        {
+            // Another app is in the foreground; CopyFromScreen would capture that app's
+            // window instead of Bloom's. Use PrintWindow to ask Bloom's window to render
+            // itself directly into our bitmap.
+            var form = controlForScreenshotting as Form ?? controlForScreenshotting.FindForm();
+            if (form == null || form.Handle == IntPtr.Zero)
+            {
+                Logger.WriteEvent(
+                    "Bloom was unable to create a screenshot: could not obtain a form handle."
+                );
+                return;
+            }
+
+            using var screenshot = new Bitmap(form.Width, form.Height);
+            using (var g = Graphics.FromImage(screenshot))
+            {
+                var hdc = g.GetHdc();
+                bool printWindowSucceeded;
+                try
+                {
+                    printWindowSucceeded = PrintWindow(form.Handle, hdc, PW_RENDERFULLCONTENT);
+                }
+                finally
+                {
+                    g.ReleaseHdc(hdc);
+                }
+
+                if (!printWindowSucceeded)
+                {
+                    var errorCode = Marshal.GetLastWin32Error();
+                    Logger.WriteEvent(
+                        "Bloom was unable to create a screenshot: PrintWindow failed with Win32 error "
+                            + errorCode
+                            + "."
+                    );
+                    return;
+                }
+            }
+
+            SaveScreenshot(screenshot);
+        }
+#endif
+
         // This lock uses a SemaphoreSlim instead of a Monitor, because a Monitor only works for one thread.
         // Even though the acquisition of the lock and release of the lock can be on the same thread,
         // it doesn't seem safe to assume that this is always the case. So we use a locking mechanism that works across threads.
@@ -1077,15 +1186,24 @@ namespace Bloom.web.controllers
                             {
                                 ResetScreenshotFile();
                             }
-                            else
+                            else if (
+                                IsBloomProcessInForeground()
+                                && !AutomationWindowPlacement.IsOffEveryMonitor
+                            )
                             {
+                                // Bloom is the foreground app: a plain screen copy is cheaper
+                                // and avoids re-triggering any paint-related bugs.
+                                //
+                                // Not when the window is off every monitor, though. Copying from
+                                // those screen coordinates would save whatever the desktop has
+                                // there, which is nothing. Render the window itself instead, the
+                                // way the not-in-front case already does.
+                                var scaledBounds = controlForScreenshotting.Bounds;
 #if !__MonoCS__
-                                var scaledBounds =
+                                scaledBounds =
                                     WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(
                                         controlForScreenshotting
                                     );
-#else
-                                var scaledBounds = controlForScreenshotting.Bounds;
 #endif
                                 var screenshot = new Bitmap(
                                     scaledBounds.Width,
@@ -1120,6 +1238,12 @@ namespace Bloom.web.controllers
                                     ImageFormat.Png
                                 );
                             }
+                            else
+                            {
+#if !__MonoCS__
+                                CaptureBackgroundScreenshot(controlForScreenshotting);
+#endif
+                            }
                         }
                         catch (Exception e)
                         {
@@ -1144,6 +1268,31 @@ namespace Bloom.web.controllers
                 Debug.Fail("This error would be swallowed in release version: " + error.Message);
                 SIL.Reporting.Logger.WriteEvent("**** " + error.Message);
             }
+        }
+
+        /// <summary>
+        /// Report a problem on standard error instead of in a dialog, when there is nobody to
+        /// click the dialog. Callers must already have called LogProblem, and must return without
+        /// showing any UI when this returns true.
+        /// </summary>
+        /// <remarks>
+        /// A modal dialog in a command-line verb or an e2e run blocks forever: the operation
+        /// neither succeeds nor fails, and the caller just waits (BL-16869). NonFatalProblem.Report
+        /// has done this for a while; this is the same guard for the problem-report dialogs.
+        /// </remarks>
+        /// <returns>true if the problem was reported here and the caller should return</returns>
+        internal static bool ReportProblemWithoutUiIfNonInteractive(
+            string levelOfProblem,
+            Exception exception,
+            string message
+        )
+        {
+            if (!Program.RunningNonInteractive)
+                return false;
+            Console.Error.WriteLine($"Problem ({levelOfProblem}): {message}");
+            if (exception != null)
+                Console.Error.WriteLine(exception.ToString());
+            return true;
         }
 
         internal static void LogProblem(
@@ -1459,10 +1608,10 @@ namespace Bloom.web.controllers
 
         private static void AppendTimeZone(StringBuilder bldr)
         {
-            var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now)
-                ? TimeZone.CurrentTimeZone.DaylightName
-                : TimeZone.CurrentTimeZone.StandardName;
-            var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+            var tzName = TimeZoneInfo.Local.IsDaylightSavingTime(DateTime.Now)
+                ? TimeZoneInfo.Local.DaylightName
+                : TimeZoneInfo.Local.StandardName;
+            var tzOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
             var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
             bldr.AppendLine(
                 "User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")"

@@ -90,6 +90,18 @@ namespace Bloom.SubscriptionAndFeatures
         // Where needed, an ID for getting a localized string to describe the feature.
         // Currently needed for features that use DisabledByModifyingDom
         public string L10NId;
+
+        // When set, the feature is only visible if the corresponding experimental token is enabled.
+        public string ExperimentalFeatureToken;
+
+        // A book made from the Playground template gets every feature as if the collection had an
+        // Enterprise subscription, so people can try things out. Set this to false for a feature
+        // that must stay governed by the real subscription even when a Playground book is selected.
+        // Team Collections is one, since it is about the collection, not the book. Publish > Apps
+        // is another: the other publish screens stay usable for a Playground book and just disable
+        // the button that actually publishes it, but an app can include other books from the
+        // collection, so there the whole screen falls back to the real subscription.
+        public bool UnlockedByPlayground = true;
     }
 
     /// <summary>
@@ -144,9 +156,12 @@ namespace Bloom.SubscriptionAndFeatures
         )
         {
             var tier = subscription.Tier;
-            if (book != null && book.IsPlayground && feature.Feature != FeatureName.TeamCollection)
+            if (book != null && book.IsPlayground && feature.UnlockedByPlayground)
                 tier = SubscriptionTier.Enterprise;
             var enabled = (int)tier >= (int)feature.SubscriptionTier;
+            var visible =
+                string.IsNullOrEmpty(feature.ExperimentalFeatureToken)
+                || Bloom.ExperimentalFeatures.IsFeatureEnabled(feature.ExperimentalFeatureToken);
             if (!enabled && forPublishing && book != null)
             {
                 // for enabling certain publishing controls (currently motion book behavior),
@@ -166,7 +181,7 @@ namespace Bloom.SubscriptionAndFeatures
                 FeatureName = feature.Feature,
                 SubscriptionTier = feature.SubscriptionTier,
                 Enabled = enabled,
-                Visible = true, // for now, we have not hooked up the advanced/experimental flags yet.
+                Visible = visible,
             };
         }
 

@@ -29,5 +29,62 @@ export function getPageIframeBody(): HTMLElement | null {
     return page.contentWindow.document.body;
 }
 
+export function getBloomPageElement(): HTMLElement | null {
+    return getPageIframeBody()?.querySelector(
+        ".bloom-page",
+    ) as HTMLElement | null;
+}
+
+// We saw one failure where the page iframe and its body already existed, but the editable
+// .bloom-page element had not been inserted yet when other React code tried to read it.
+// That is only a single observed case, so we do not know how often it happens, but the ordering
+// strongly suggests a race between iframe population and code that assumes the live page DOM is
+// fully ready as soon as the iframe body exists. Use this helper when the caller truly needs the
+// editable page root, rather than treating body readiness as proof that .bloom-page is ready.
+export function whenBloomPageIsReady(
+    onReady: (page: HTMLElement) => void,
+): () => void {
+    let disposed = false;
+    let observer: MutationObserver | undefined;
+
+    const disconnectObserver = () => {
+        observer?.disconnect();
+        observer = undefined;
+    };
+
+    const notifyIfReady = (): boolean => {
+        const page = getBloomPageElement();
+        if (!page || disposed) {
+            return false;
+        }
+
+        disconnectObserver();
+        onReady(page);
+        return true;
+    };
+
+    if (notifyIfReady()) {
+        return () => {
+            disposed = true;
+        };
+    }
+
+    const body = getPageIframeBody();
+    if (body) {
+        observer = new MutationObserver(() => {
+            notifyIfReady();
+        });
+        observer.observe(body, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    return () => {
+        disposed = true;
+        disconnectObserver();
+    };
+}
+
 //if this is ever changed, be sure to also change it in bloomUI.less
 export const animateStyleName: string = "bloom-animationPreview";

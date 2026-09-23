@@ -12,6 +12,8 @@ namespace BloomTests.TeamCollection
     public class ProgressSpy : IWebSocketProgress
     {
         public List<Tuple<string, ProgressKind>> Messages = new List<Tuple<string, ProgressKind>>();
+        public List<int> Percents = new List<int>();
+        public List<string> Stages = new List<string>();
 
         public List<String> Warnings =>
             Messages.Where(m => m.Item2 == ProgressKind.Warning).Select(m => m.Item1).ToList();
@@ -65,6 +67,16 @@ namespace BloomTests.TeamCollection
         )
         {
             MessageWithoutLocalizing(string.Format(message, parameters), kind);
+        }
+
+        public void SendPercent(int percent)
+        {
+            Percents.Add(percent);
+        }
+
+        public void SendStage(string stage)
+        {
+            Stages.Add(stage);
         }
 
         public bool HaveProblemsBeenReported { get; private set; }

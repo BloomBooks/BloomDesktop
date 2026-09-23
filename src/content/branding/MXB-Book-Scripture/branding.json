@@ -22,7 +22,8 @@
         {
             "data-book": "outside-back-cover-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='Made with Bloom.png'/>",
+            "//": "The href in the <a> element below will be replaced at runtime; the QR code is injected at runtime when enabled.",
+            "content": "<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/'><img class='branding' src='made-with-bloom-badge-text.svg'/></a></div>",
             "condition": "always"
         },
         {

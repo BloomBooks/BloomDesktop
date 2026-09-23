@@ -3,8 +3,11 @@ import * as React from "react";
 import BloomButton from "../../bloomButton";
 
 interface TopRightMenuButtonProps {
+    buttonId?: string;
     text: string;
     onClick: () => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
     hasText?: boolean;
@@ -19,10 +22,13 @@ export const TopRightMenuButton: React.FunctionComponent<
 > = (props) => {
     return (
         <BloomButton
+            id={props.buttonId}
             l10nKey=""
             alreadyLocalized={true}
             enabled={true}
             onClick={props.onClick}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             startIcon={props.startIcon}
             endIcon={props.endIcon}
             hasText={props.hasText === undefined ? true : props.hasText}

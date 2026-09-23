@@ -2,10 +2,10 @@ import { css } from "@emotion/react";
 import $ from "jquery";
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderForInstance } from "../../../utils/reactRender";
 import { post } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
-import { getEditablePageBundleExports } from "../../js/bloomFrames";
+import { getEditablePageBundleExports } from "../../js/workspaceFrames";
 import "./imageDescription.less";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Label } from "../../../react_components/l10nComponents";
@@ -16,10 +16,8 @@ import {
     hideImageDescriptions,
     showImageDescriptions,
 } from "./imageDescriptionUtils";
-import {
-    getCanvasElementManager,
-    kBloomCanvasClass,
-} from "../canvas/canvasElementUtils";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 interface IImageDescriptionState {
     enabled: boolean;
     descriptionNotNeeded: boolean;
@@ -169,10 +167,10 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 
     public static setup(root): ImageDescriptionToolControls {
-        return ReactDOM.render(
+        return renderForInstance<ImageDescriptionToolControls>(
             <ImageDescriptionToolControls />,
             root,
-        ) as unknown as ImageDescriptionToolControls;
+        );
     }
 
     public selectImageDescription(bloomCanvas: Element | null): void {
@@ -278,6 +276,16 @@ export function setupImageDescriptions(
     }
 }
 
+function shouldMarkAsCoverImageDescription(container: Element): boolean {
+    const page = container.closest(".bloom-page");
+    return !!(
+        page &&
+        page.classList.contains("bloom-customLayout") &&
+        page.classList.contains("outsideFrontCover") &&
+        container.classList.contains(kBloomCanvasClass)
+    );
+}
+
 // Adds a new bloom-translationGroup
 // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
 // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
@@ -309,12 +317,17 @@ function appendTranslationGroup(innerHtml, container: Element) {
     const newTg = getEditablePageBundleExports()!
         .makeElement(newElementHtml)
         .get(0);
+    const markAsCoverImageDescription =
+        shouldMarkAsCoverImageDescription(container);
 
     for (const editable of Array.from(
         newTg.getElementsByClassName("bloom-editable"),
     )) {
         editable.classList.add("ImageDescriptionEdit-style");
         editable.classList.remove("normal-style");
+        if (markAsCoverImageDescription) {
+            editable.setAttribute("data-book", "coverImageDescription");
+        }
     }
 
     container.appendChild(newTg);

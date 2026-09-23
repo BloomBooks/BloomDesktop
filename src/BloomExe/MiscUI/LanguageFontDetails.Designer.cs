@@ -2,12 +2,12 @@
 {
 	partial class LanguageFontDetails
 	{
-		/// <summary> 
+		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
+		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -22,8 +22,8 @@
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
+		/// <summary>
+		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
@@ -36,9 +36,9 @@
 			this._L10NSharpExtender = new L10NSharp.Windows.Forms.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// _fontCombo
-			// 
+			//
 			this._fontCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._fontCombo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._fontCombo.FormattingEnabled = true;
@@ -49,9 +49,9 @@
 			this._fontCombo.Name = "_fontCombo";
 			this._fontCombo.Size = new System.Drawing.Size(210, 25);
 			this._fontCombo.TabIndex = 0;
-			// 
+			//
 			// _rightToLeftCheck
-			// 
+			//
 			this._rightToLeftCheck.AutoSize = true;
 			this._rightToLeftCheck.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._rightToLeftCheck, null);
@@ -63,9 +63,9 @@
 			this._rightToLeftCheck.TabIndex = 1;
 			this._rightToLeftCheck.Text = "This script is written right to left like Arabic, Hebrew, and Urdu.";
 			this._rightToLeftCheck.UseVisualStyleBackColor = true;
-			// 
+			//
 			// _tallerLinesCheck
-			// 
+			//
 			this._tallerLinesCheck.AutoSize = true;
 			this._tallerLinesCheck.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tallerLinesCheck, null);
@@ -78,9 +78,9 @@
 			this._tallerLinesCheck.Text = "Use special line spacing.";
 			this._tallerLinesCheck.UseVisualStyleBackColor = true;
 			this._tallerLinesCheck.CheckedChanged += new System.EventHandler(this._tallerLinesCheck_CheckedChanged);
-			// 
+			//
 			// _lineSpacingCombo
-			// 
+			//
 			this._lineSpacingCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this._lineSpacingCombo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this._lineSpacingCombo.FormattingEnabled = true;
@@ -92,16 +92,16 @@
 			this._lineSpacingCombo.Name = "_lineSpacingCombo";
 			this._lineSpacingCombo.Size = new System.Drawing.Size(125, 25);
 			this._lineSpacingCombo.TabIndex = 28;
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = null;
-			// 
+			//
 			// LanguageFontDetails
-			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			//
+			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.Controls.Add(this._lineSpacingCombo);
 			this.Controls.Add(this._tallerLinesCheck);
 			this.Controls.Add(this._rightToLeftCheck);

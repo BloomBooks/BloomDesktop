@@ -1,7 +1,7 @@
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 
 export default {
-    title: "Team Collection components",
+    title: "Collection/Team Collection",
 };
 
 export const _TeamCollectionSettingsPanel = () => (

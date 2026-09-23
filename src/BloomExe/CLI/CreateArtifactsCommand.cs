@@ -183,9 +183,6 @@ namespace Bloom.CLI
                 exitCode |= CreateJsonTextsArtifact(jsonTextsOutputPath);
             }
 
-            Control control = new Control();
-            control.CreateControl();
-
             using (var countdownEvent = new CountdownEvent(1))
             {
                 // Create the ePub in the background. (Some of the ePub work needs to happen off the main thread)
@@ -193,12 +190,20 @@ namespace Bloom.CLI
                 {
                     try
                     {
-                        CreateEpubArtifact(parameters, control);
+                        CreateEpubArtifact(parameters);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.ToString());
-                        exitCode = CreateArtifactsExitCode.EpubException;
+                        // |=, not =: these are [Flags] values and every other step here accumulates.
+                        // A plain assignment discarded whatever had already been recorded -- most
+                        // notably BookHtmlNotFound from the bloomdigital step just above -- so the
+                        // harvester was told only "EpubException" and lost the fact that the book's
+                        // HTML was also wrong. That is the combination the harvester actually hits,
+                        // since it always asks for both artifacts. Safe to accumulate from this
+                        // worker: the main thread is blocked on countdownEvent below and does not
+                        // touch exitCode until after we signal.
+                        exitCode |= CreateArtifactsExitCode.EpubException;
                     }
                     countdownEvent.Signal(); // Decrement by one
                 });
@@ -391,8 +396,7 @@ namespace Bloom.CLI
         /// Creates an ePub file at the location specified by parameters
         /// </summary>
         /// <param name="parameters">BookPath and epubOutputPath should be set.</param>
-        /// <param name="control">The epub code needs a control that goes back to the main thread, in order to run some tasks that need to be on the main thread</param>
-        public static void CreateEpubArtifact(CreateArtifactsParameters parameters, Control control)
+        public static void CreateEpubArtifact(CreateArtifactsParameters parameters)
         {
             if (String.IsNullOrEmpty(parameters.EpubOutputPath))
             {
@@ -406,8 +410,6 @@ namespace Bloom.CLI
             BookThumbNailer thumbNailer = s_projectContext.ThumbNailer;
             using (var maker = new EpubMaker(thumbNailer, bookServer))
             {
-                maker.ControlForInvoke = control;
-
                 maker.Book = s_book;
                 // This is the previous default, but probably we should make it configurable, and possibly change the default.
                 // Note that it will end up Fixed if the presence of canvas elements requires it.

@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import * as ReactDOM from "react-dom";
+import { renderRootSync } from "../../utils/reactRender";
 
 import { get, postBoolean, postString } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -54,10 +54,7 @@ export const TopicChooserDialog: React.FunctionComponent<
 
     const dialogTitle = useL10n("Choose Topic", "TopicChooser.Title");
 
-    // Tell edit tab to disable everything when the dialog is up.
-    // (Without this, the page list is not disabled since the modal
-    // div only exists in the book pane. Once the whole edit tab is inside
-    // one browser, this would not be necessary.)
+    // Tell C# to lock the workspace tabs while the dialog is up.
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
 
@@ -69,12 +66,13 @@ export const TopicChooserDialog: React.FunctionComponent<
         setCurrentTopic(newTopicKey === "No Topic" ? undefined : newTopicKey);
     };
 
-    const handleClose = () => {
+    const handleClose = async () => {
         const topicKey = currentTopic ? currentTopic : "<NONE>";
         if (props.dialogEnvironment?.mode === Mode.Edit) {
-            postString("editView/setTopic", topicKey);
+            // setTopic triggers a page reload; nothing done after this post will persist.
+            await postString("editView/setTopic", topicKey);
         } else if (props.dialogEnvironment?.mode === Mode.Publish)
-            postString("libraryPublish/topic", topicKey);
+            await postString("libraryPublish/topic", topicKey);
         closeDialog();
     };
 
@@ -198,7 +196,7 @@ export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
             // Here, topics will be an array with an entry for each known topic. Each topic is an
             // englishKey/translated pair.
             if (topics) {
-                ReactDOM.render(
+                renderRootSync(
                     <TopicChooserDialog
                         currentTopic={currentTopic}
                         availableTopics={topics}
@@ -218,7 +216,7 @@ export function showTopicChooserDialog(mode: Mode = Mode.Edit) {
     }
 }
 
-// It would be simpler to just use getEditTabBundleExports().getModalDialogContainer()
+// It would be simpler to just use getWorkspaceBundleExports().getModalDialogContainer()
 // but we were getting strange interactions between this component and others which use that container.
 // We were also having trouble rendering this component more than once for two different book pages.
 // So we just always use our own, new, unique container.

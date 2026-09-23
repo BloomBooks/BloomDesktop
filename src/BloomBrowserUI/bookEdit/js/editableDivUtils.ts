@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get } from "../../utils/bloomApi";
+import { get, postString } from "../../utils/bloomApi";
 import $ from "jquery";
 
 interface qtipInterface extends JQuery {
@@ -9,6 +9,24 @@ interface qtipInterface extends JQuery {
 // If the current selection is an insertion point in editableDiv (which MUST be a div!), return the index of the selection,
 // as a character offset within the text of editableDiv. If the selection is not in editableDiv, return -1.
 export class EditableDivUtils {
+    public static normalizeBloomLineBreakSpansInElement(root: Element): void {
+        Array.from(root.querySelectorAll("span.bloom-linebreak")).forEach(
+            (span) => {
+                if (span.hasChildNodes()) {
+                    const fragment = document.createDocumentFragment();
+                    while (span.firstChild) {
+                        postString(
+                            "common/logger/writeEvent",
+                            `Found content inside a bloom-linebreak span: ${span.firstChild.textContent}. Moving it out.`,
+                        );
+                        fragment.appendChild(span.firstChild);
+                    }
+                    span.parentNode?.insertBefore(fragment, span);
+                }
+            },
+        );
+    }
+
     public static getElementSelectionIndex(editableDiv: HTMLElement): number {
         const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
@@ -317,7 +335,12 @@ export class EditableDivUtils {
 
     // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
     // Specifically, we want it to remove the zero-width space characters that ckeditor inserts.
-    // See BL-12391.
+    // See BL-12391. Note that getData() only leaves out the filling char ckeditor is actively
+    // tracking. An orphaned one (see removeTrackedCkEditorFillingChar) survives it, and we
+    // deliberately do NOT strip such characters here: Thai, Khmer and Myanmar text uses U+200B
+    // as a real word break, and a blanket strip deleted those from every box on save (BL-16843).
+    // Instead, the code that rewrites a box's html takes the tracked char out first, so it is
+    // never orphaned to begin with.
     // Return the bookmarks for each editable div, so that we can restore the selection after
     // modifying the divs.
     // Changes to this logic may need to be reflected in audioRecording.ts' cleanUpCkEditorHtml.
@@ -418,6 +441,54 @@ export class EditableDivUtils {
         return node.nodeName === "SPAN" && node["id"].startsWith("cke_bm_");
     }
 
+    // CKEditor 4 inserts a "filling char" (U+200B ZERO WIDTH SPACE) at the caret on
+    // WebKit/Blink to keep the cursor navigable near inline-element boundaries and before
+    // <br>. It remembers THE NODE it put the character in (custom data "cke-fillingChar" on
+    // the editable) and later takes the character out of that node again; getData() leaves
+    // it out too. So the character is only a problem when something rewrites the box's
+    // innerHTML from the live DOM: the string carries the U+200B as ordinary text, the node
+    // ckeditor remembers is detached, and the character is "orphaned" - nothing will ever
+    // remove it, it gets saved into the book, and it corrupts reader word matching (the
+    // analyzer treats U+200B as a word split while the highlighter does not). See BL-16490.
+    //
+    // Call this BEFORE any such rewrite, so the character never gets baked into the string.
+    // It takes out only the character ckeditor is tracking, exactly as ckeditor itself would
+    // (a U+200B followed by a plain space becomes an nbsp, so the space is not lost to
+    // whitespace collapsing), and forgets the reference so ckeditor does not write to a
+    // detached node later. An earlier fix for BL-16490 instead stripped every U+200B from
+    // a box's html on save, which also deleted the real word-break characters that Thai,
+    // Khmer and Myanmar text depends on (BL-16843). U+200B outside the tracked node is
+    // deliberately left alone here for the same reason.
+    // Rewrites fed from getData() (doCkEditorCleanup, audioRecording.cleanUpCkEditorHtml)
+    // don't need this, because getData() has already left the tracked character out.
+    public static removeTrackedCkEditorFillingChar(element: HTMLElement): void {
+        const editable = EditableDivUtils.ckEditorEditableOf(element);
+        const trackedNode = editable?.getCustomData("cke-fillingChar")?.$;
+        if (!trackedNode) {
+            return;
+        }
+        editable!.removeCustomData("cke-fillingChar");
+        if (!element.contains(trackedNode)) {
+            return; // already orphaned by some earlier rewrite; nothing left to take out
+        }
+        // The node can hold more than the filling char: text the user typed right after the
+        // caret was placed lands in the same node, and in Khmer, Thai or Myanmar that text can
+        // itself contain U+200B word breaks. ckeditor planted exactly one character, so take out
+        // only the first U+200B and leave any later ones alone. (ckeditor's own removal is less
+        // careful and strips every U+200B in the node; we don't copy that.)
+        // Edit in place with deleteData/replaceData rather than assigning the whole text, so
+        // live ranges (the caret, reader highlights) in the rest of the node keep their places.
+        const text = trackedNode as Text;
+        const i = text.data.indexOf("\u200B");
+        if (i < 0) {
+            return; // ckeditor already took it out (its own removal leaves the node behind)
+        }
+        text.deleteData(i, 1);
+        if (text.data[i] === " ") {
+            text.replaceData(i, 1, "\u00A0");
+        }
+    }
+
     // I don't know why cdEditor's getData() converts paragraphs with only a <br>
     // in them to contain &nbsp; instead. But when it does, we get various issues
     // with extra spaces (which can also cause other toolbox markup issues).
@@ -454,6 +525,244 @@ export class EditableDivUtils {
         });
     }
 
+    // Chromium drops glyphs from a paragraph whose text is split into two (or more) adjacent
+    // text nodes. It shapes the paragraph's text as a single run and then hands out the
+    // resulting glyphs per text node, and when a ligature straddles the boundary - very easy
+    // in SIL fonts such as Andika and Charis, which ligate ff, fl and ffl - the split lands in
+    // the middle of a glyph cluster. The characters are all still there, and the DOM
+    // inspector's text view looks right, but letters the user typed stop being painted, and the
+    // caret stops moving when they arrow through the affected letters, until something
+    // re-renders the paragraph (changing the font, reloading the page). Type "overflow", insert
+    // a second "f" before the "f", pause, then type any other letter: the "fl" vanishes
+    // (BL-16717).
+    //
+    // A great many things split a paragraph's text, and only some of them are ours:
+    //  - a ckeditor bookmark is a hidden span inserted AT the insertion point, so creating one
+    //    splits the text node the user is typing in and removing it again (which is what
+    //    selectBookmarks does) leaves the two halves as separate, adjacent text nodes;
+    //  - ckeditor makes bookmarks of its own for Enter, paste and the style commands, and
+    //    inserts a "filling char" text node next to inline elements (see below);
+    //  - long-press inserts the character it composes as a NEW text node
+    //    (jquery.longpress.js: insertPointRange.insertNode(textNode));
+    //  - Chromium's own editing commands split the node too: backspacing in the middle of a
+    //    word leaves the paragraph in two pieces.
+    // Splitting does not itself paint anything wrong: the damage appears at the NEXT edit,
+    // which for the user is simply the next letter they type. So the rule this enforces is
+    // that a .bloom-editable never sits holding adjacent text nodes, whoever split it - which
+    // means calling this without knowing, or caring, what did.
+    //
+    // The tempting shortcut is to stop the browser forming ligatures in the edit view at all
+    // (font-variant-ligatures: none), which is what code editors do - CodeMirror disables them
+    // in its default stylesheet precisely because of the caret behavior. Do NOT do that here.
+    // Bloom's edit view has to render as nearly as possible like the published book, and
+    // ligatures change the width of a word: text that fitted the page while the user was
+    // editing would break to a different line, and could overflow, in a publication mode.
+    // A rare glitch while typing is the lesser problem, and it is the one this repairs.
+    //
+    // Note that repairing the DOM is not on its own enough to repair the display: see
+    // mergeAdjacentTextNodeRuns().
+    // We deliberately do NOT save and restore the insertion point around this. The DOM spec
+    // requires text-node merging to keep live ranges - including the selection - on the same
+    // characters, and Chromium does: checked in a running Bloom, with the caret both at the
+    // split itself and immediately after a <strong>, it comes out on exactly the character it
+    // went in on. An earlier version here did its own save/restore out of caution, and that
+    // hand-rolled restore was itself the bug - a character offset cannot tell the end of a
+    // bold run from the start of the plain text after it, so the caret could hop back inside
+    // the bold text and the user's next letters would come out bold.
+    // Callers should still avoid making bookmarks at all when nothing is going to rewrite the
+    // box; this is the repair for the splits that do happen anyway.
+    public static mergeAdjacentTextNodes(element: HTMLElement): void {
+        if (!EditableDivUtils.hasAdjacentTextNodes(element)) {
+            return; // nothing to merge; leave the box, and the selection, strictly alone
+        }
+        // Leave ckeditor's filling char alone. That char is a zero-width space in a text node
+        // of its own, which ckeditor inserts at a collapsed selection next to an inline element
+        // so the caret shows, and it remembers THAT NODE
+        // (setCustomData("cke-fillingChar", ...)) to take the char out again later. normalize()
+        // would fold the node into its neighbour, so ckeditor would be left writing to a
+        // detached node and the zero-width space would stay in the text and get saved into the
+        // book - the BL-16490 hazard.
+        // We hand the node down rather than giving up on the whole box, so a filling char in
+        // one paragraph doesn't stop us repairing another: only the runs whose merge would
+        // reach it are skipped, and they come back to us on the next keystroke.
+        EditableDivUtils.mergeAdjacentTextNodeRuns(
+            element,
+            EditableDivUtils.ckEditorFillingCharNodeIn(element),
+        );
+    }
+
+    // Merge each run of adjacent sibling text nodes back into one.
+    //
+    // Merging the DOM back together is only half the repair: Chromium goes on painting the
+    // paragraph's old, glyph-dropped text afterwards. The DOM ends up correct - the inspector
+    // shows one string, and the layout even measures correctly - while the screen still shows
+    // "overfow" for a paragraph reading "overfflow", until something else forces a repaint.
+    //
+    // The obvious cure, rebuilding each run as a brand-new text node (nothing stale is cached
+    // against a node that didn't exist a moment ago), is NOT usable here: replacing a text node
+    // collapses any live Range whose boundaries were inside it, and Bloom's reader-tool and
+    // Talking Book highlights are exactly that - live Ranges over these text nodes, registered
+    // by the markup pass just before we run. Destroying them makes the highlighting silently
+    // disappear from the paragraph the user is typing in (the failure mode
+    // textHighlightManager.hasDeadRanges() exists to detect).
+    //
+    // So: merge with normalize(), which the DOM spec requires to keep live ranges on the same
+    // characters, and then make Chromium re-shape the merged node by making a real change to it
+    // and undoing that change - appending a space at the end and immediately deleting it. See
+    // the comment at that edit for why it has to be done in exactly that way.
+    //
+    // Deliberately NOT done by toggling the element's display: the parent of a bare text node
+    // can be the .bloom-editable itself, and hiding a focused contenteditable blurs it - the
+    // user's next keystrokes would go nowhere - besides leaving a stray style="" attribute
+    // behind in the saved book.
+    private static mergeAdjacentTextNodeRuns(
+        element: HTMLElement,
+        fillingCharNodeToLeaveAlone?: Node,
+    ): void {
+        const doc = element.ownerDocument;
+        // The node each run will collapse into: normalize() appends a run's text onto its
+        // first non-empty node and removes the others, so that is the node that survives, and
+        // the only one whose painting can be stale. Picking it now lets us leave every other
+        // text node in the box completely untouched.
+        // It must be the first NON-EMPTY one: normalize() deletes empty text nodes outright,
+        // so a run headed by one would leave us holding a detached node and poking it would
+        // repaint nothing.
+        const survivorOfEachRun: Text[] = [];
+        const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let runInProgress = false;
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const text = node as Text;
+            const hasTextNodeAfterIt =
+                node.nextSibling?.nodeType === Node.TEXT_NODE;
+            if (!runInProgress && !hasTextNodeAfterIt) {
+                continue; // a lone text node: nothing to merge it with
+            }
+            if (!runInProgress || survivorOfEachRun.length === 0) {
+                // starting a run
+                survivorOfEachRun.push(text);
+            }
+            const survivorIndex = survivorOfEachRun.length - 1;
+            if (survivorOfEachRun[survivorIndex].length === 0 && text.length) {
+                // the run so far was empty nodes; this is the one that will survive
+                survivorOfEachRun[survivorIndex] = text;
+            }
+            runInProgress = hasTextNodeAfterIt;
+        }
+
+        survivorOfEachRun.forEach((survivor) => {
+            // A text node always has a parent element here: we are walking inside element.
+            const parent = survivor.parentElement!;
+            // normalize() is DEEP - it merges every text node under `parent`, not just this
+            // run - so the filling char is out of reach only if it is outside `parent`
+            // altogether. See mergeAdjacentTextNodes() for why we must not touch it.
+            if (
+                fillingCharNodeToLeaveAlone &&
+                parent.contains(fillingCharNodeToLeaveAlone)
+            ) {
+                return;
+            }
+            parent.normalize();
+            if (!survivor.isConnected) {
+                return; // the whole run was empty nodes; normalize() removed them all
+            }
+            // Now make Chromium re-shape this node, by making a real change to it and undoing
+            // that change. Every part of this is load-bearing:
+            // - It has to be a REAL edit. Assigning the same string back (data = data) is the
+            //   obvious thing to try, but it can be optimized away as a no-op, and then nothing
+            //   is re-shaped and the letters stay missing.
+            // - It must not disturb any EXISTING character. Deleting the text and re-inserting
+            //   it, or replacing the whole string in one assignment, would do the job, but per
+            //   the DOM spec an edit at offset N moves every live range boundary beyond N - so
+            //   either of those would drag, or collapse, the highlight ranges that the reader
+            //   tools and Talking Book have registered over this very node, and the caret with
+            //   them. Appending at the end and deleting only what we appended edits at
+            //   offset === length, and no boundary can lie beyond the end, so nothing moves.
+            // - The two edits must both happen here, synchronously. Nothing is painted between
+            //   them, so the space we add is never seen and never saved.
+            // A space is a safe thing to append even when the text already ends in whitespace:
+            // html's whitespace collapsing is a rule about RENDERING, and a text node's data is
+            // an exact string, so "flow " briefly becomes "flow  " and comes back "flow " -
+            // nothing merges. A space is also the most harmless character to be caught holding
+            // if this were ever interrupted between the two calls (it cannot be - deleteData
+            // here can't throw), which a printable character would not be.
+            survivor.insertData(survivor.length, " ");
+            survivor.deleteData(survivor.length - 1, 1);
+        });
+    }
+
+    // Does element contain two text nodes that are siblings, as removing a bookmark - or a
+    // backspace, or long-press - leaves behind? (An empty text node next to another one
+    // counts: merging folds it away.)
+    private static hasAdjacentTextNodes(element: HTMLElement): boolean {
+        const walker = element.ownerDocument.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+        );
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (node.nextSibling?.nodeType === Node.TEXT_NODE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Is ckeditor currently holding a filling char in this box - that is, does it have a
+    // text node it is going to come back and edit? See mergeAdjacentTextNodes(), which must
+    // not merge one away underneath it.
+    // We ask ckeditor rather than searching the text for a zero-width space, which was the
+    // first thing I wrote: some scripts (Thai, Khmer, Myanmar) use U+200B in real text as a
+    // word break, and searching for the character would have quietly turned the repair off
+    // for a whole book in those languages.
+    // Asking is not enough on its own, though: ckeditor keeps the reference as custom data on
+    // the editable DIV, so a rewrite of the box's innerHTML (doCkEditorCleanup, or any rewrite
+    // that didn't call removeTrackedCkEditorFillingChar first) detaches the text node while
+    // leaving the reference behind. That is the BL-16490 "orphaned filling char", and it must
+    // NOT block the repair - nothing is tracking it any more, so nothing will write to it.
+    // Hence the isConnected/contains check: what blocks us is a node ckeditor is tracking that
+    // is still in this box.
+    // If a ckeditor upgrade ever renamed this key, or changed the shape it stores, this would
+    // stop guarding and we would be back to the behavior that shipped in the first fix for
+    // BL-16717, which merged regardless.
+    private static ckEditorFillingCharNodeIn(
+        element: HTMLElement,
+    ): Node | undefined {
+        const trackedNode =
+            EditableDivUtils.ckEditorEditableOf(element)?.getCustomData(
+                "cke-fillingChar",
+            )?.$;
+        return trackedNode && element.contains(trackedNode)
+            ? trackedNode
+            : undefined;
+    }
+
+    // The CKEDITOR.editable of the ckeditor instance on this box, if it has one: the object
+    // ckeditor keeps its filling-char reference on.
+    // (Typed locally rather than through CKEDITOR.editor: our ckeditor.d.ts only declares the
+    // editable(element) setter overloads, not the no-argument getter that actually exists. The
+    // custom-data value is a CKEDITOR.dom.text, whose `$` is the DOM node it wraps.)
+    private static ckEditorEditableOf(element: HTMLElement):
+        | {
+              getCustomData: (key: string) => { $?: Node } | undefined;
+              removeCustomData: (key: string) => unknown;
+          }
+        | undefined {
+        const ckEditorOfThisBox = (
+            element as HTMLElement & {
+                bloomCkEditor?: {
+                    editable: () =>
+                        | {
+                              getCustomData: (
+                                  key: string,
+                              ) => { $?: Node } | undefined;
+                              removeCustomData: (key: string) => unknown;
+                          }
+                        | undefined;
+                };
+            }
+        ).bloomCkEditor;
+        return ckEditorOfThisBox?.editable();
+    }
+
     public static restoreSelectionFromCkEditorBookmarks(
         editableDivs: HTMLDivElement[],
         ckEditorBookmarks: object[],
@@ -481,6 +790,7 @@ export class EditableDivUtils {
                             },
                         );
                     }
+                    EditableDivUtils.mergeAdjacentTextNodes(div);
                 }
             });
         }
@@ -511,13 +821,18 @@ export class EditableDivUtils {
             );
             elemToCheck = parentEditable || elem;
         }
-        // elemToCheck is typically a bloom-editable. Originally, we were just looking to consider
+        // elemToCheck is typically a bloom-editable. Originally, this check was used to consider
         // which languages were hidden. But with drag-activity, there are cases where a containing
-        // text-over-picture element is hidden. That's two levels above the bloom-editable.
-        // Looking up four levels should be enough, and may make this computationally less
-        // expensive than looking all the way up to the document. (I think getComputedStyle is
-        // quite slow.)
-        for (let i = 0; i < 4; i++) {
+        // text-over-picture element is hidden. Checking a small number of ancestors is usually
+        // enough, and less expensive than looking all the way up to the document.
+        // (I think getComputedStyle is quite slow.)
+        return EditableDivUtils.isInDisplayNone(elemToCheck);
+    }
+
+    public static isInDisplayNone(elem: Element, maxLevelsToCheck = 4) {
+        let elemToCheck: Element | null = elem;
+
+        for (let i = 0; i < maxLevelsToCheck; i++) {
             const style = window.getComputedStyle(elemToCheck);
             if (style.display === "none") {
                 return true;

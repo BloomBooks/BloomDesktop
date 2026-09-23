@@ -12,16 +12,16 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
+import { getToolboxBundleExports } from "../bookEdit/js/workspaceFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
-import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
+import { ShowEditViewDialog } from "../bookEdit/workspaceRoot";
 import axios from "axios";
 import { getFeatureStatusAsync } from "../react_components/featureStatus";
 import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
-} from "../bookEdit/toolbox/canvas/canvasElementUtils";
+} from "../bookEdit/toolbox/canvas/canvasElementConstants";
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
@@ -59,7 +59,6 @@ export const getTemplatePageImageSource = (
     pageLabel: string,
     orientation: string,
 ): string => {
-    const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
     // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
 
     const urlPrefix = getBloomApiPrefix();
@@ -70,7 +69,7 @@ export const getTemplatePageImageSource = (
         `${urlPrefix}pageTemplateThumbnail?path=` +
         encodeURIComponent(templateBookFolderUrl) +
         "/template/" +
-        encodeURIComponent(label) +
+        encodeURIComponent(pageLabel) +
         // Previously, we checked for a square size and sent "-square" here.
         // But we don't actually have any square thumbnails we ship,
         // so that caused all the thumbnails to be generated.
@@ -80,7 +79,7 @@ export const getTemplatePageImageSource = (
     );
 };
 
-// To test the AddPage/ChangeLayout dialog in devtools, type 'editTabBundle.showPageChooserDialog(false)' in
+// To test the AddPage/ChangeLayout dialog in devtools, type 'workspaceBundle.showPageChooserDialog(false)' in
 // the Console. Substitute 'true' for the ChangeLayout dialog.
 
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
@@ -125,10 +124,7 @@ export const PageChooserDialog: React.FunctionComponent<
         HTMLDivElement | undefined
     >(undefined);
 
-    // Tell edit tab to disable everything when the dialog is up.
-    // (Without this, the page list is not disabled since the modal
-    // div only exists in the book pane. Once the whole edit tab is inside
-    // one browser, this would not be necessary.)
+    // Tell C# to lock the workspace tabs while the dialog is up.
     useEffect(() => {
         if (open === undefined) return;
 
@@ -324,9 +320,30 @@ export const PageChooserDialog: React.FunctionComponent<
     }, [templateBooks]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
-        return templatePageDiv
-            ? getAttributeStringSafely(templatePageDiv, "data-tool-id")
-            : "";
+        if (templatePageDiv) {
+            const pageToolId = getAttributeStringSafely(
+                templatePageDiv,
+                "data-tool-id",
+            );
+            if (pageToolId) {
+                return pageToolId;
+            }
+            const featureName = getAttributeStringSafely(
+                templatePageDiv,
+                "data-feature",
+            );
+            if (featureName === "canvas") {
+                const canvas =
+                    templatePageDiv.querySelector(kBloomCanvasSelector);
+                const canvasToolId = (canvas as Element)?.getAttribute(
+                    "data-tool-id",
+                );
+                if (canvasToolId) {
+                    return canvasToolId;
+                }
+            }
+        }
+        return "";
     };
 
     // "Safely" from a type-checking point of view. The calling code is responsible
@@ -409,7 +426,7 @@ export const PageChooserDialog: React.FunctionComponent<
             willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
-            selectedPageDiv.getAttribute("data-tool-id") ?? "",
+            getToolId(selectedPageDiv),
             getToolId(selectedPageDiv),
         );
     }
@@ -706,11 +723,7 @@ export const PageChooserDialog: React.FunctionComponent<
                             learnMoreLink={learnMoreLink}
                             requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
-                            dataToolId={
-                                selectedTemplatePageDiv.getAttribute(
-                                    "data-tool-id",
-                                ) ?? ""
-                            }
+                            dataToolId={getToolId(selectedTemplatePageDiv)}
                         />
                     )}
                 </div>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.Code;
 
@@ -78,6 +79,55 @@ namespace Bloom
             // Now we just wrap a System.Uri function (which is more thorough about unescaping escape sequences)
             // and convert it into an extension method
             return Uri.UnescapeDataString(uri);
+        }
+
+        /// <summary>
+        /// Put the form in front of other applications right now. We stay topmost for a moment
+        /// instead of dropping it immediately: when another window is in the process of coming to
+        /// the front as a result of Bloom recently closing its own window, that raise can arrive
+        /// after ours, and an instant toggle loses to it. Clearing TopMost re-asserts our place
+        /// at the top of the ordinary windows anyway, so the late drop wins the race whichever
+        /// order things happened in.  See BL-16690, BL-16784.
+        ///
+        /// Being topmost is not enough by itself. If another application holds the foreground,
+        /// Windows refuses our Activate(), so the window we raised is still not the *active* one,
+        /// and dropping topmost lands us behind that active window again -- measurably: with only
+        /// the topmost toggle, Bloom came up second, right behind Chrome. So we also take the
+        /// foreground for real. See ForceWindowToForeground.
+        ///
+        /// The two halves differ by platform, deliberately: the topmost hold happens on Linux as
+        /// well as Windows, while only taking the foreground is Windows-only. We kept the hold
+        /// cross-platform because the race it wins is not peculiar to Windows, so there was no
+        /// reason to withhold it -- but note that it is unverified on Linux, since we do not
+        /// currently build or test there. Before this, Shell.FinishPuttingShellInFront toggled topmost
+        /// instantly, so Linux did not hold it at all. BL-16784.
+        /// </summary>
+        public static void BringToFrontNow(this Form form)
+        {
+            if (form.IsDisposed)
+                return;
+            form.TopMost = true;
+            form.Activate();
+            ProcessExtra.ForceWindowToForeground(form.Handle);
+            var timer = new Timer { Interval = 1500 };
+            timer.Tick += (s, e) =>
+            {
+                timer.Dispose();
+                if (!form.IsDisposed)
+                    form.TopMost = false;
+            };
+            timer.Start();
+        }
+
+        /// <summary>
+        /// Arrange for the form to put itself in front of other applications when it is first
+        /// shown. A window shown while another application (say, the Windows Explorer window
+        /// Bloom was launched from) holds the foreground opens behind it, and a dialog with no
+        /// owner is then very hard to find. See BL-16690.
+        /// </summary>
+        public static void BringToFrontWhenShown(this Form form)
+        {
+            form.Shown += (sender, args) => form.BringToFrontNow();
         }
 
         public static int ToInt(this bool value)
@@ -221,37 +271,6 @@ namespace Bloom
                 result.Add(item);
             }
             return result;
-        }
-
-        /// <summary>
-        /// A re-implementation of PalasoImage.SaveImageRobustly, but with configurable parameters.
-        /// </summary>
-        /// <remarks>This is here because it's a lower risk way to introduce this change.
-        /// Longer-term, it'd make more sense to modify PalasoImage.SaveImageRobustly to provide this extra capability instead
-        /// </remarks>
-        public static void SaveImageRobustly(
-            this SIL.Windows.Forms.ImageToolbox.PalasoImage image,
-            string fileName,
-            HashSet<Type> exceptionTypesToRetry,
-            int maxRetryAttempts = RetryUtility.kDefaultMaxRetryAttempts,
-            int retryDelay = RetryUtility.kDefaultRetryDelay
-        )
-        {
-            if (exceptionTypesToRetry == null)
-            {
-                exceptionTypesToRetry = new HashSet<Type>
-                {
-                    Type.GetType("System.IO.IOException"),
-                    Type.GetType("System.Runtime.InteropServices.ExternalException"),
-                };
-            }
-
-            RetryUtility.Retry(
-                () => image.Save(fileName),
-                maxRetryAttempts,
-                retryDelay,
-                exceptionTypesToRetry
-            );
         }
     }
 }

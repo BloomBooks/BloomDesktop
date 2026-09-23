@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.Utils;
+using Bloom.Workspace;
 
 namespace Bloom
 {
@@ -28,17 +29,35 @@ namespace Bloom
         }
 
         private readonly List<Action<TPayload>> _subscribers = new List<Action<TPayload>>();
+        private readonly object _subscriberLock = new object();
 
         public void Subscribe(Action<TPayload> action)
         {
-            if (!_subscribers.Contains(action))
+            lock (_subscriberLock)
             {
-                _subscribers.Add(action);
+                if (!_subscribers.Contains(action))
+                {
+                    _subscribers.Add(action);
+                }
+            }
+        }
+
+        public void Unsubscribe(Action<TPayload> action)
+        {
+            lock (_subscriberLock)
+            {
+                _subscribers.Remove(action);
             }
         }
 
         public virtual void Raise(TPayload descriptor)
         {
+            Action<TPayload>[] subscribers;
+            lock (_subscriberLock)
+            {
+                subscribers = _subscribers.ToArray();
+            }
+
             SIL.Reporting.Logger.WriteMinorEvent("Event: " + _nameForLogging);
             using (
                 PerformanceMeasurement.Global?.MeasureMaybe(
@@ -47,7 +66,7 @@ namespace Bloom
                 )
             )
             {
-                foreach (Action<TPayload> subscriber in _subscribers)
+                foreach (Action<TPayload> subscriber in subscribers)
                 {
                     ((Action<TPayload>)subscriber)(descriptor);
                 }
@@ -56,21 +75,47 @@ namespace Bloom
 
         public bool HasSubscribers
         {
-            get { return _subscribers.Count > 0; }
+            get
+            {
+                lock (_subscriberLock)
+                {
+                    return _subscribers.Count > 0;
+                }
+            }
         }
     }
 
     public class TabChangedDetails
     {
-        public Control From;
-        public Control To;
+        public WorkspaceTab? FromTab;
+        public WorkspaceTab? ToTab;
 
-        // Must be executed by the subscriber when it is safe to do so, possibly after returning
-        // from the event handler.
+        // The two ways a subscriber can hand the tab change back to us. Exactly one of them is
+        // used, according to what the subscriber is able to do:
+        //
+        //   nothing to do first        -> CompleteTheChange, before returning
+        //   I must save first          -> CompleteTheChange, once my save has finished
+        //   a save is already running  -> StartTheChangeOver, once that save has finished
+        //
+        // The last case is the one that needs the second action: the subscriber can neither let
+        // the change proceed nor take responsibility for finishing it, because the save it is
+        // waiting on belongs to something else (typically an earlier click on a tab). See BL-16766.
+        //
         // This is a bit of a kludge. It works partly because there is currently only one subscriber,
         // so there is no ambiguity about who should do this, or how we know when all the subscribers
         // are done. If we ever have more than one subscriber, we'll need to do something more sophisticated.
-        public Action PostponedWork;
+
+        // Actually switches the tab: everything WorkspaceView.ChangeTab held back until a
+        // subscriber said it was safe. Call this EXACTLY ONCE — it raises the tab-changed event
+        // and records the new tab as current.
+        public Action CompleteTheChange;
+
+        // Abandons this attempt and asks for the whole tab change to be made afresh later, from the
+        // top of WorkspaceView.ChangeTab. Because it starts over, it re-checks everything, so it is
+        // safe to call whenever the way is clear — including when it turns out to be unnecessary,
+        // in which case it does nothing at all because the tab we wanted is already current.
+        // Null if the raiser has nothing to redo.
+        public Action StartTheChangeOver;
     }
 
     /// <summary>
@@ -83,7 +128,7 @@ namespace Bloom
     }
 
     /// <summary>
-    /// Gives the first control in the tab
+    /// Indicates tab change completion
     /// </summary>
     public class SelectedTabChangedEvent : Event<TabChangedDetails>
     {

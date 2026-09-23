@@ -17,8 +17,10 @@ mixin field-classOnChild(internalClass)
 
 mixin image-largePage
 	- requireZeroArguments('image', arguments);
-	.bloom-canvas(style="opacity: 1; overflow: hidden;")
-		img(src="placeHolder.png", width=attributes.initialImageWidth)
+	.bloom-canvas.bloom-has-canvas-element(style="opacity: 1; overflow: hidden;")
+		.bloom-canvas-element.bloom-backgroundImage(style="width:100%; height:100%;")
+			.bloom-imageContainer
+				img(src="placeHolder.png")
 		block
 
 html

@@ -14,12 +14,23 @@ import {
     kGreyOnDarkColor,
 } from "../../bloomMaterialUITheme";
 import { ScopedCssBaseline } from "@mui/material";
+import { TopBarContextMenu } from "./TopBarContextMenu";
 
 export type WorkspaceTabId = "collection" | "edit" | "publish";
 
-type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
+export type WorkspaceTabState = "active" | "enabled" | "disabled" | "hidden";
 
-type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+export type TabStates = Record<WorkspaceTabId, WorkspaceTabState>;
+
+// What C# (WorkspaceView.GetTabInfo) tells us about workspace navigation.
+export interface IWorkspaceTabInfo {
+    tabStates: TabStates;
+    // True while some operation has made itself modal by locking navigation: a BloomLibrary
+    // upload, a Reading App Builder action, or an Edit-tab modal dialog. Screens with their own
+    // navigation (notably the Publish tab's switcher between publish tools) use this to lock in
+    // step with the main tabs.
+    navigationLocked: boolean;
+}
 
 interface ITabDefinition {
     id: WorkspaceTabId;
@@ -49,31 +60,40 @@ const tabDefinitions: Array<ITabDefinition> = [
     },
 ];
 
-export const TopBar: React.FunctionComponent = () => {
-    const defaultState = React.useMemo(
-        () => ({
-            tabStates: {
-                collection: "active",
-                edit: "hidden",
-                publish: "hidden",
-            } as TabStates,
-        }),
-        [],
+export function getActiveWorkspaceTab(tabStates: TabStates): WorkspaceTabId {
+    return (
+        tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
+        "collection"
     );
+}
 
-    const state = useWatchApiObject<{ tabStates: TabStates }>(
+export const defaultWorkspaceTabState: IWorkspaceTabInfo = {
+    tabStates: {
+        collection: "active",
+        edit: "hidden",
+        publish: "hidden",
+    },
+    navigationLocked: false,
+};
+
+// Subscribes to what C# says about workspace navigation, kept in one place because several
+// screens in different browser controls need the same answer.
+export function useWorkspaceTabInfo(): IWorkspaceTabInfo {
+    return useWatchApiObject<IWorkspaceTabInfo>(
         "workspace/tabs",
-        defaultState,
+        defaultWorkspaceTabState,
         "workspace",
         "tabs",
     );
+}
 
-    const tabStates = state.tabStates ?? defaultState.tabStates;
+export const TopBar: React.FunctionComponent = () => {
+    const state = useWorkspaceTabInfo();
+    const topBarRef = React.useRef<HTMLDivElement>(null);
+
+    const tabStates = state.tabStates ?? defaultWorkspaceTabState.tabStates;
     const activeTab = React.useMemo((): WorkspaceTabId => {
-        return (
-            tabDefinitions.find((t) => tabStates[t.id] === "active")?.id ??
-            "collection"
-        );
+        return getActiveWorkspaceTab(tabStates);
     }, [tabStates]);
 
     const handleSelectTab = React.useCallback(
@@ -100,21 +120,6 @@ export const TopBar: React.FunctionComponent = () => {
         [],
     );
 
-    // Notify c# when user clicks in the top bar so WinForms menus opened from top bar controls
-    // can close when the click is outside those menus.
-    // Temporary: this is only needed while those menus are still WinForms menus.
-    // Remove this bridge when top bar and menus are all running in one browser UI.
-    React.useEffect(() => {
-        const notifyBrowserClicked = () => {
-            (window as any).chrome?.webview?.postMessage("browser-clicked");
-        };
-
-        window.addEventListener("click", notifyBrowserClicked);
-        return () => {
-            window.removeEventListener("click", notifyBrowserClicked);
-        };
-    }, []);
-
     return (
         /* ScopedCssBaseline injects MUI's base styles (it sets html/body to the theme typography,
            normalizes margins, etc.).
@@ -124,16 +129,26 @@ export const TopBar: React.FunctionComponent = () => {
            CssBaseline would apply everywhere. */
         <ScopedCssBaseline>
             <div
+                ref={topBarRef}
+                // How automation recognizes Bloom's shell document among the WebView2's CDP
+                // targets, and the one stable marker on the top bar as a whole. See
+                // src/BloomE2E/fixtures/bloomTest.ts (SHELL_MARKER).
+                data-testid="workspace-top-bar"
                 css={css`
                     background-color: ${getColorForTab(activeTab)};
                     padding-top: 2px;
                     display: flex;
                     align-items: flex-start;
-                    gap: 100px;
                 `}
             >
                 <BloomTabs tabStates={tabStates} selectTab={handleSelectTab} />
+                <div
+                    css={css`
+                        flex: 0 1 100px;
+                    `}
+                />
                 <TopBarControls activeTab={activeTab} />
+                <TopBarContextMenu targetRef={topBarRef} />
             </div>
         </ScopedCssBaseline>
     );
@@ -151,6 +166,10 @@ const Tab: React.FunctionComponent<{
         <li role="presentation">
             <a
                 role="tab"
+                // Automation clicks tabs by this id. The visible label is localized, so matching
+                // on it would confine every test to an English UI -- including the
+                // Pseudo-English i18n-testing locale (BL-16748).
+                data-testid={`workspace-tab-${props.tab.id}`}
                 aria-selected={props.selected ? "true" : "false"}
                 aria-disabled={props.disabled ? "true" : "false"}
                 css={css`
@@ -165,6 +184,7 @@ const Tab: React.FunctionComponent<{
 
                     background-color: #575757;
                     border: solid thin black;
+                    border-bottom-style: none;
                     border-top-left-radius: 4px;
                     border-top-right-radius: 4px;
                     font-weight: normal;
@@ -211,6 +231,7 @@ export const BloomTabs: React.FunctionComponent<{
     return (
         <ul
             role="tablist"
+            data-testid="workspace-tabs"
             css={
                 // style as tabs
                 css`
@@ -220,7 +241,13 @@ export const BloomTabs: React.FunctionComponent<{
                     margin: 0;
                     padding: 0;
                     gap: 1px;
-                    min-width: 300px;
+                    // Bottom-align the tabs to the TopBar so the active tab's bottom edge
+                    // meets the pane below it. The TopBar's background color (based on the active tab)
+                    // is slightly taller than the tabs (its height is driven by the taller right-hand
+                    // controls). With the default top-alignment, that left a sub-pixel strip of the
+                    // TopBar background showing below the active tab, which rounds up to a visible
+                    // ~1px line on high-DPI screens.
+                    align-self: flex-end;
                 `
             }
         >

@@ -28,12 +28,88 @@ namespace Bloom
             Invoke((Action)(() => _fadeOutTimer.Enabled = true));
         }
 
+        // During an automation run (--automation) the splash must not steal the user's
+        // keyboard focus when it is shown. That holds wherever the splash is.
+        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+
         private SplashScreen()
         {
             InitializeComponent();
+            // The splash obeys BLOOM_AUTOMATION_MONITOR exactly as the main window does (see
+            // AutomationWindowPlacement). It is the second window every run opens, so a splash
+            // that ignored the variable would put a window on the developer's desktop however
+            // carefully the main one was placed.
+            var placement = AutomationWindowPlacement.GetChoice();
+            if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+            {
+                // Off every monitor with the main window, and out of the task bar with it. The
+                // splash normally has a task bar entry, and an off-screen window with one is
+                // worse than either: the developer gets a task bar button for a window they
+                // cannot bring into view.
+                StartPosition = FormStartPosition.Manual;
+                var offScreenArea = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                Location = new System.Drawing.Point(offScreenArea.Left, offScreenArea.Top);
+                ShowInTaskbar = false;
+            }
+            else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+            {
+                // Center the splash on the monitor the variable named, rather than on whichever
+                // one the developer is working on.
+                var area = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                StartPosition = FormStartPosition.Manual;
+                Location = new System.Drawing.Point(
+                    area.Left + (area.Width - Width) / 2,
+                    area.Top + (area.Height - Height) / 2
+                );
+            }
             _shortVersionLabel.Text = Shell.GetShortVersionInfo();
             _longVersionInfo.Text = "";
             _feedbackStatusLabel.Visible = !DesktopAnalytics.Analytics.AllowTracking;
+            // Keep the bottom-edge controls correctly placed ourselves; see LayoutBottomControls().
+            SizeChanged += (sender, e) => LayoutBottomControls();
+            LayoutBottomControls();
+        }
+
+        // The dimensions of the form as laid out in the designer; the bottom-control
+        // positions below are expressed as fractions of these.
+        private const double kDesignWidth = 618.0;
+        private const double kDesignHeight = 475.0;
+
+        /// <summary>
+        /// Re-positions the controls that hug the bottom of the splash (the SIL logo in the
+        /// lower-right, and the version/feedback/copyright labels in the lower-left). We do
+        /// this in code rather than relying on Bottom/Right anchoring because, on high-DPI
+        /// systems—especially when the splash is created in one monitor's DPI context and then
+        /// shown on a monitor with a different scale—WinForms mis-rescales bottom/right-anchored
+        /// controls, stranding them up over the Bloom logo (BL-16452). The fractions below
+        /// reproduce the original designer layout exactly when there is no DPI mismatch.
+        /// </summary>
+        private void LayoutBottomControls()
+        {
+            // Bottom-left text labels: left margin and vertical position kept proportional.
+            PlaceTopLeftByFraction(_feedbackStatusLabel, 73, 318);
+            PlaceTopLeftByFraction(_shortVersionLabel, 73, 342);
+            PlaceTopLeftByFraction(_longVersionInfo, 73, 365);
+            PlaceTopLeftByFraction(_copyrightlabel, 73, 388);
+
+            // SIL logo, lower-right: its right edge sat at 544/618 across and its bottom at
+            // 413/475 down in the design.
+            var silLeft =
+                (int)Math.Round(544.0 / kDesignWidth * ClientSize.Width) - pictureBox2.Width;
+            var silTop =
+                (int)Math.Round(413.0 / kDesignHeight * ClientSize.Height) - pictureBox2.Height;
+            pictureBox2.Location = new System.Drawing.Point(silLeft, silTop);
+        }
+
+        /// <summary>
+        /// Sets a control's top-left location to the given designer coordinates expressed as
+        /// fractions of the design size, scaled to the current client size.
+        /// </summary>
+        private void PlaceTopLeftByFraction(Control control, int designX, int designY)
+        {
+            var x = (int)Math.Round(designX / kDesignWidth * ClientSize.Width);
+            var y = (int)Math.Round(designY / kDesignHeight * ClientSize.Height);
+            control.Location = new System.Drawing.Point(x, y);
         }
 
         private void _fadeOutTimer_Tick(object sender, EventArgs e)
@@ -50,14 +126,21 @@ namespace Bloom
 
         private void SplashScreen_Load(object sender, EventArgs e)
         {
-            //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-            TopMost = true;
-            Focus();
+            // During an automation run, grabbing focus would yank the user's keyboard away
+            // from whatever they are doing while tests run, and a splash off every monitor
+            // cannot come to the front at all.
+            if (!Program.StartupAutomation)
+            {
+                //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
+                TopMost = true;
+                Focus();
+            }
             var channel = ApplicationUpdateSupport.ChannelName;
             _channelLabel.Visible = channel.ToLowerInvariant() != "release";
             _channelLabel.Text = channel; // No need to localize this: seen only by testers or special users (BL-4451)
             _copyrightlabel.Text = $"© 2011-{DateTime.Now.Year} SIL Global";
-            BringToFront();
+            if (!Program.StartupAutomation)
+                BringToFront();
         }
 
         private void SplashScreen_Paint(object sender, PaintEventArgs e)

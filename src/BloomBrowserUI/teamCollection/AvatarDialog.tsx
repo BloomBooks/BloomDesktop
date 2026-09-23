@@ -72,7 +72,7 @@ export const AvatarDialog: React.FunctionComponent<{
                     href="https://Gravatar.com"
                     temporarilyDisableI18nWarning={true}
                 >
-                    If you don't see a picture, head on over to [Gravatar.com]
+                    If you don't see an image, head on over to [Gravatar.com]
                     and upload one to go with your email address. You can also
                     update your name & email address in your Bloom registration.
                 </TextWithEmbeddedLink>

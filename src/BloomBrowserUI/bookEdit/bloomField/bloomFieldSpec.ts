@@ -264,6 +264,54 @@ describe("BloomField", () => {
         expect($("div p").length).toBeGreaterThan(0);
     });
 
+    // Content converted from other formats can arrive with a real heading as the first thing
+    // in the box. Prepending an empty paragraph above it would show the reader a blank first
+    // line, and saving the page would make that permanent.
+    it("bloom-editable div starting with a heading does not get a paragraph prepended", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h1>The Heading</h1><p>The body.</p>";
+        // Sanity check on the setup: the heading really is first before we do anything.
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+
+        WireUp();
+
+        expect(editable.firstElementChild!.tagName).toBe("H1");
+        expect(editable.getElementsByTagName("p").length).toBe(1);
+    });
+
+    // A heading is a block, so a box holding nothing else needs no paragraph added. This is
+    // also the case that used to make MoveCursorToEdgeOfField throw, since it looked for a
+    // paragraph and found none.
+    it("bloom-editable div holding only a heading is left alone", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "<h2>Only a heading</h2>";
+
+        WireUp();
+
+        expect(editable.innerHTML).toBe("<h2>Only a heading</h2>");
+    });
+
+    // The other half of the rule: a box with no block element at all still gets a paragraph,
+    // which is what everything from styling to the Talking Book tool assumes.
+    it("bloom-editable div with only bare text still gets a paragraph", () => {
+        const editable = document.getElementById("simple");
+        if (!editable) {
+            throw new Error("Test setup error: expected #simple to exist.");
+        }
+        editable.innerHTML = "loose text";
+        expect(editable.getElementsByTagName("p").length).toBe(0); // sanity check
+
+        WireUp();
+
+        expect(editable.getElementsByTagName("p").length).toBe(1);
+    });
+
     describe("backspacePreventionTests", () => {
         it("backspace prevented at start of paragraph", () => {
             const shouldBeCanceled = true;
@@ -487,6 +535,102 @@ describe("BloomField", () => {
             runLineBreakInsertionTest(paragraphInnerHtml, setCursor);
         });
     });
+
+    describe("ensureCaretNotInsideLineBreakSpan", () => {
+        function callEnsureCaretNotInsideLineBreakSpan() {
+            (BloomField as any).EnsureCaretNotInsideLineBreakSpan();
+        }
+
+        it("moves a collapsed caret from inside bloom-linebreak span to after the span", () => {
+            const editable = document.getElementById("simple");
+            if (!editable) {
+                fail("Test setup error: expected #simple editable element.");
+                return;
+            }
+
+            editable.innerHTML =
+                '<p id="p1">A<span id="lb" class="bloom-linebreak"></span>B</p>';
+            const paragraph = document.getElementById("p1");
+            const lineBreakSpan = document.getElementById("lb");
+            const selection = window.getSelection();
+            if (!paragraph || !lineBreakSpan || !selection) {
+                fail(
+                    "Test setup error: expected paragraph #p1, linebreak span #lb, and a Selection object.",
+                );
+                return;
+            }
+
+            selection.collapse(lineBreakSpan, 0);
+            expect(selection.anchorNode).toBe(lineBreakSpan);
+            callEnsureCaretNotInsideLineBreakSpan();
+
+            expect(selection.isCollapsed).toBe(true);
+            expect(selection.anchorNode).toBe(paragraph);
+            expect(selection.anchorOffset).toBe(2);
+        });
+
+        it("does nothing when caret is not inside bloom-linebreak span", () => {
+            const editable = document.getElementById("simple");
+            if (!editable) {
+                fail("Test setup error: expected #simple editable element.");
+                return;
+            }
+
+            editable.innerHTML =
+                '<p id="p1">A<span id="lb" class="bloom-linebreak"></span>B</p>';
+            const paragraph = document.getElementById("p1");
+            const selection = window.getSelection();
+            if (!paragraph || !selection) {
+                fail(
+                    "Test setup error: expected paragraph #p1 and a Selection object.",
+                );
+                return;
+            }
+
+            selection.collapse(paragraph, 1);
+
+            expect(selection.isCollapsed).toBe(true);
+            expect(selection.anchorNode).toBe(paragraph);
+            expect(selection.anchorOffset).toBe(1);
+
+            callEnsureCaretNotInsideLineBreakSpan();
+
+            expect(selection.isCollapsed).toBe(true);
+            expect(selection.anchorNode).toBe(paragraph);
+            expect(selection.anchorOffset).toBe(1);
+        });
+
+        it("does nothing when selection is not collapsed", () => {
+            const editable = document.getElementById("simple");
+            if (!editable) {
+                fail("Test setup error: expected #simple editable element.");
+                return;
+            }
+
+            editable.innerHTML =
+                '<p id="p1">A<span id="lb" class="bloom-linebreak">x</span>B</p>';
+            const lineBreakSpan = document.getElementById("lb");
+            const selection = window.getSelection();
+            if (!lineBreakSpan || !selection) {
+                fail(
+                    "Test setup error: expected linebreak span #lb and a Selection object.",
+                );
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(lineBreakSpan);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            expect(selection.anchorNode).toBe(lineBreakSpan);
+
+            callEnsureCaretNotInsideLineBreakSpan();
+
+            expect(selection.isCollapsed).toBe(false);
+            expect(selection.anchorNode).toBe(lineBreakSpan);
+        });
+    });
 });
 
 describe("fixPasteData", () => {
@@ -539,5 +683,86 @@ describe("removeUselessSpanMarkup", () => {
                 "<p><span>This <strong>is</strong> a <em>test</em>.</span></p>",
             ),
         ).toBe("<p>This <strong>is</strong> a <em>test</em>.</p>");
+    });
+});
+
+describe("normalizeBloomLineBreakSpans", () => {
+    it("leaves content unchanged when bloom-linebreak text exists but no span element", () => {
+        const input =
+            "<p>before  <!-- bloom-linebreak marker -->  after</p><p>         </p>";
+        const result = BloomField.normalizeBloomLineBreakSpans(input);
+        expect(result).toBe(input);
+    });
+
+    it("keeps bloom-linebreak span empty", () => {
+        const input = "<p>before<span class='bloom-linebreak'></span>after</p>";
+        const result = BloomField.normalizeBloomLineBreakSpans(input);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = result;
+        const lineBreakSpan = wrapper.querySelector("span.bloom-linebreak");
+        expect(lineBreakSpan).toBeTruthy();
+        expect(lineBreakSpan?.innerHTML).toBe("");
+    });
+
+    it("moves accidental text out of bloom-linebreak span", () => {
+        const input = "<p>A<span class='bloom-linebreak'>Bad text</span>B</p>";
+        const result = BloomField.normalizeBloomLineBreakSpans(input);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = result;
+        // Should be "<p>ABad text<span class='bloom-linebreak'></span>B</p>"
+        const lineBreakSpan = wrapper.querySelector("span.bloom-linebreak");
+        expect(lineBreakSpan).toBeTruthy();
+        expect(lineBreakSpan?.innerHTML).toBe("");
+        expect(result.includes("bloom-linebreak'>Bad text")).toBe(false);
+        expect(wrapper.textContent).toBe("ABad textB");
+    });
+
+    it("moves accidental markup out of bloom-linebreak span", () => {
+        const input =
+            "<p>A<span class='bloom-linebreak'><em>Bad</em> text</span>B</p>";
+        const result = BloomField.normalizeBloomLineBreakSpans(input);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = result;
+        // Should be "<p>A<em>Bad</em> text<span class='bloom-linebreak'></span>B</p>"
+        const lineBreakSpan = wrapper.querySelector("span.bloom-linebreak");
+        expect(lineBreakSpan).toBeTruthy();
+        expect(lineBreakSpan?.innerHTML).toBe("");
+        expect(wrapper.querySelector("span.bloom-linebreak em")).toBeNull();
+        expect(wrapper.querySelector("em")?.textContent).toBe("Bad");
+        expect(wrapper.textContent).toBe("ABad textB");
+    });
+
+    it("behaves decently on nested bloom-linebreak spans", () => {
+        const input =
+            "<p>A<span id='outer' class='bloom-linebreak'>outer layer text<span id='inner' class='bloom-linebreak'>nested text</span></span>B</p>";
+        const result = BloomField.normalizeBloomLineBreakSpans(input);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = result;
+
+        const outer = wrapper.querySelector("#outer") as HTMLSpanElement;
+        const inner = wrapper.querySelector("#inner") as HTMLSpanElement;
+
+        expect(outer).toBeTruthy();
+        expect(inner).toBeTruthy();
+        expect(outer.innerHTML).toBe("");
+        expect(inner.innerHTML).toBe("");
+        expect(wrapper.textContent).toBe("Aouter layer textnested textB");
+    });
+
+    it("fixes the BL-15955 case", () => {
+        const bl15955Input =
+            '<p><span class="bloom-linebreak">¡Chi maa da kuu in <span style="text-indent: 20pt; text-wrap-mode: initial;">tee ñe\'nu deen, te dani jna\'a ñadi\'i da, chi vetaya deen ña!</span></span></p>';
+        const result = BloomField.normalizeBloomLineBreakSpans(bl15955Input);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = result;
+        const lineBreakSpan = wrapper.querySelector("span.bloom-linebreak");
+        expect(lineBreakSpan).toBeTruthy();
+        expect(lineBreakSpan?.innerHTML).toBe("");
+        expect(wrapper.textContent).toBe(
+            "¡Chi maa da kuu in tee ñe'nu deen, te dani jna'a ñadi'i da, chi vetaya deen ña!",
+        );
+        expect(lineBreakSpan?.previousSibling?.textContent).toContain(
+            "chi vetaya deen ña!",
+        );
     });
 });

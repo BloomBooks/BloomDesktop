@@ -64,7 +64,7 @@ namespace Bloom.web.controllers
                                 : "/bloom/" + coverImagePath,
                             translatedLabel = LocalizationManager.GetString(
                                 "BookMetadata.metapicture",
-                                "Picture"
+                                "Image"
                             ),
                         },
                         name = new

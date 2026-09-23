@@ -20,50 +20,32 @@ namespace Bloom.web.controllers
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
             apiHandler.RegisterEndpointHandler(
-                "workspace/openOrCreateCollection/",
-                HandleOpenOrCreateCollection,
-                true
-            );
-
-            apiHandler.RegisterEndpointHandler(
                 "workspace/showLegacySettingsDialog",
                 HandleShowLegacySettingsDialog,
                 true
             );
 
+            apiHandler.RegisterEndpointHandler("workspace/helpAction", HandleHelpAction, true);
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openLanguageMenu",
-                HandleOpenLanguageMenu,
+                "workspace/reportProblem",
+                HandleReportProblem,
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/openHelpMenu",
-                HandleOpenHelpMenu,
-                true
-            );
-            apiHandler.RegisterEndpointHandler(
-                "workspace/topRight/uiLanguageLabel",
-                HandleGetUiLanguageLabel,
+                "workspace/checkForUpdates",
+                HandleCheckForUpdates,
                 true
             );
             apiHandler.RegisterEndpointHandler("workspace/topRight/zoom", HandleZoom, true);
 
             apiHandler.RegisterEndpointHandler("workspace/selectTab", HandleSelectTab, true);
             apiHandler.RegisterEndpointHandler("workspace/tabs", HandleTabs, true);
-        }
-
-        private void HandleOpenOrCreateCollection(ApiRequest request)
-        {
-            // This shuts everything down, so it needs to happen after all the request processing
-            // is complete.
-            Application.Idle += OpenCreateCollection;
-            request.PostSucceeded();
-        }
-
-        private void OpenCreateCollection(object sender, EventArgs e)
-        {
-            Application.Idle -= OpenCreateCollection;
-            WorkspaceView.OpenCreateCollection();
+            apiHandler.RegisterEndpointHandler(
+                "toast/performAction",
+                HandlePerformToastAction,
+                false
+            );
+            apiHandler.RegisterEndpointHandler("toast/test", HandleToastTest, false);
         }
 
         private void HandleShowLegacySettingsDialog(ApiRequest request)
@@ -86,20 +68,24 @@ namespace Bloom.web.controllers
             WorkspaceView.OpenLegacySettingsDialog();
         }
 
-        private void HandleGetUiLanguageLabel(ApiRequest request)
+        private void HandleHelpAction(ApiRequest request)
         {
-            request.ReplyWithJson(WorkspaceView.GetCurrentUiLanguageLabel());
-        }
-
-        private void HandleOpenLanguageMenu(ApiRequest request)
-        {
-            WorkspaceView.ShowUiLanguageMenu();
+            dynamic data = request.RequiredPostDynamic();
+            var method = (string)data.method;
+            var argument = (string)data.argument;
+            WorkspaceView.HandleHelpAction(method, argument);
             request.PostSucceeded();
         }
 
-        private void HandleOpenHelpMenu(ApiRequest request)
+        private void HandleReportProblem(ApiRequest request)
         {
-            WorkspaceView.ShowHelpMenu();
+            WorkspaceView.ReportProblem();
+            request.PostSucceeded();
+        }
+
+        private void HandleCheckForUpdates(ApiRequest request)
+        {
+            WorkspaceView.CheckForUpdates();
             request.PostSucceeded();
         }
 
@@ -144,7 +130,145 @@ namespace Bloom.web.controllers
             if (request.HttpMethod != HttpMethods.Get)
                 throw new ArgumentException("workspace/tabs only supports GET");
 
-            request.ReplyWithJson(WorkspaceView.GetTabInfoForClient());
+            request.ReplyWithJson(WorkspaceView.GetTabInfo());
+        }
+
+        private void HandlePerformToastAction(ApiRequest request)
+        {
+            var requestData = request.RequiredPostDynamic();
+            var callbackId = (string)requestData.callbackId;
+            if (!ToastService.PerformAction(callbackId))
+            {
+                request.Failed("Toast action callback was not found.");
+                return;
+            }
+
+            request.PostSucceeded();
+        }
+
+        // Just a debugging/development testing utility
+        private void HandleToastTest(ApiRequest request)
+        {
+            var requestData = request.RequiredPostDynamic();
+            var scenario = (string)requestData.scenario ?? "all";
+
+            switch (scenario)
+            {
+                case "nonfatal/report":
+                    NonFatalProblem.Report(
+                        ModalIf.None,
+                        PassiveIf.All,
+                        "Toast test: nonfatal problem with report",
+                        "Toast test details for nonfatal report path.",
+                        new ApplicationException("Toast test nonfatal report"),
+                        showSendReport: true
+                    );
+                    break;
+                case "nonfatal/details":
+                    NonFatalProblem.Report(
+                        ModalIf.None,
+                        PassiveIf.All,
+                        "Toast test: nonfatal problem with details",
+                        "Toast test details for nonfatal details path.",
+                        new ApplicationException("Toast test nonfatal details"),
+                        showSendReport: false,
+                        showRequestDetails: true
+                    );
+                    break;
+                case "errorReporter/unobtrusive":
+                    Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively(
+                        "Toast test: unobtrusive warning",
+                        "Toast test longer unobtrusive message.",
+                        new ApplicationException("Toast test unobtrusive error")
+                    );
+                    break;
+                case "workspace/teamCollectionClobber":
+                    WorkspaceView?.ShowTeamCollectionClobberToast();
+                    break;
+                case "update/looking":
+                    ApplicationUpdateSupport.DebugShowToastScenario("looking");
+                    break;
+                case "update/upToDate":
+                    ApplicationUpdateSupport.DebugShowToastScenario("upToDate");
+                    break;
+                case "update/foundUpdates":
+                    ApplicationUpdateSupport.DebugShowToastScenario("foundUpdates", () => { });
+                    break;
+                case "update/downloading":
+                    ApplicationUpdateSupport.DebugShowToastScenario("downloading");
+                    break;
+                case "update/downloadedWaitingForRestart":
+                    ApplicationUpdateSupport.DebugShowToastScenario(
+                        "downloadedWaitingForRestart",
+                        () => { }
+                    );
+                    break;
+                case "update/error":
+                    ApplicationUpdateSupport.DebugShowToastScenario("error");
+                    break;
+                case "update/failure":
+                    ApplicationUpdateSupport.DebugShowToastScenario("failure");
+                    break;
+                case "all":
+                    ToastService.ShowToast(
+                        text: "Toast test: notice which is so long that it wraps and wraps",
+                        durationSeconds: 5
+                    );
+                    ToastService.ShowToast(
+                        type: ToastType.Update,
+                        text: "Toast test: update available",
+                        durationSeconds: 8,
+                        action: new ToastAction { Label = "Update", Callback = () => { } }
+                    );
+                    ToastService.ShowToast(
+                        ToastType.Warning,
+                        text: "Toast test: warning",
+                        durationSeconds: 7
+                    );
+                    ToastService.ShowToast(
+                        ToastType.Error,
+                        text: "Toast test: persistent with action having text which is long enough to wrap",
+                        action: new ToastAction { Label = "Dismiss", Callback = () => { } }
+                    );
+                    break;
+                case "notice":
+                    ToastService.ShowToast(text: "Toast test: notice", durationSeconds: 5);
+                    break;
+                case "warning":
+                    ToastService.ShowToast(
+                        ToastType.Warning,
+                        text: "Toast test: warning",
+                        durationSeconds: 7
+                    );
+                    break;
+                case "error":
+                    ToastService.ShowToast(
+                        ToastType.Error,
+                        text: "Toast test: error",
+                        durationSeconds: 10
+                    );
+                    break;
+                case "action":
+                    ToastService.ShowToast(
+                        text: "Toast test: click action button",
+                        durationSeconds: 15,
+                        action: new ToastAction
+                        {
+                            Label = "Run Action",
+                            Callback = () =>
+                                ToastService.ShowToast(
+                                    text: "Toast test action callback executed",
+                                    durationSeconds: 5
+                                ),
+                        }
+                    );
+                    break;
+                default:
+                    request.Failed($"Unknown toast test scenario '{scenario}'");
+                    return;
+            }
+
+            request.PostSucceeded();
         }
     }
 }

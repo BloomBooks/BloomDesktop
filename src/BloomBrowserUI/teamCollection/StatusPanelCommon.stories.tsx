@@ -7,6 +7,7 @@ import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
 import { BloomAvatar } from "../react_components/bloomAvatar";
+import { TeamCollectionIcon } from "./TeamCollectionIcon";
 
 // Try to simulate the environment of the page preview
 const wrapperStyles: React.CSSProperties = {
@@ -61,7 +62,7 @@ const avatar = (lockedByMe: boolean) => (
 const emptyAvatarForProblemState: JSX.Element = undefined as any as JSX.Element;
 
 export default {
-    title: "Team Collection components/StatusPanelCommon",
+    title: "Collection/Team Collection/StatusPanelCommon",
 };
 
 export const Available = () =>
@@ -69,7 +70,7 @@ export const Available = () =>
         <StatusPanelCommon
             title="This book is available for editing"
             subTitle="When you check it out, no one on the team will be able to modify it or see your changes until you check it back in."
-            icon={<img src={"Team Collection.svg"} alt="available" />}
+            icon={<TeamCollectionIcon color="white" />}
             button={getBloomButton(
                 "Check out book",
                 "TeamCollection.Checkout",

@@ -14,7 +14,6 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.Workspace;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using Sentry;
@@ -221,7 +220,7 @@ namespace Bloom.TeamCollection
 
                 UpdateUiForBook();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionRevertOtherCheckout",
                     new Dictionary<string, string>()
                     {
@@ -286,8 +285,11 @@ namespace Bloom.TeamCollection
         /// </remarks>
         private void HandleReportBadZip(ApiRequest request)
         {
-            var fileEncoded = request.Parameters["file"];
-            var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+            // No decoding here: ApiRequest.Parameters comes from RequestInfo.GetQueryParameters(),
+            // i.e. HttpUtility.ParseQueryString, which has already decoded the value once.
+            // Decoding again turned a path that genuinely contains a '%' ("photo%41.bloom") into a
+            // different one ("photoA.bloom"). (BL-16669)
+            var file = request.Parameters["file"];
             request.PostSucceeded(); // this should come before a modal dialog
             NonFatalProblem.Report(
                 ModalIf.All,
@@ -395,7 +397,7 @@ namespace Bloom.TeamCollection
                 // But we may as well handle the situation properly.
                 if (!string.IsNullOrEmpty(joinType))
                 {
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionJoin",
                         new Dictionary<string, string>()
                         {
@@ -534,6 +536,7 @@ namespace Bloom.TeamCollection
                         isNewLocalBook = true,
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                        checkoutsArePaused = !_settings.AllowCheckouts,
                     }
                 );
             }
@@ -586,7 +589,12 @@ namespace Bloom.TeamCollection
 
             // If the request asked for the book by name, we don't have an actual Book object.
             // However, it happens that those requests don't need the checkinMessage.
-            var checkinMessage = book == null ? "" : BookHistory.GetPendingCheckinMessage(book);
+            // Also skip if the book's folder is gone (e.g., between a TC rename and SelectBookAtStartup
+            // running), to avoid a spurious "Problem reading book history" toast.
+            var checkinMessage =
+                book == null || !Directory.Exists(book.FolderPath)
+                    ? ""
+                    : BookHistory.GetPendingCheckinMessage(book);
             return JsonConvert.SerializeObject(
                 new
                 {
@@ -615,6 +623,7 @@ namespace Bloom.TeamCollection
                     isNewLocalBook,
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
+                    checkoutsArePaused = !_settings.AllowCheckouts,
                 }
             );
         }
@@ -683,6 +692,23 @@ namespace Bloom.TeamCollection
                 return;
             }
 
+            // The UI disables the checkout button when checkouts are paused, but it decides that
+            // from a status snapshot it fetched earlier, and not every path back here re-checks it
+            // -- the post issued after the registration dialog, for one, doesn't. This is also the
+            // side that notices an administrator pausing checkouts part way through a session (see
+            // TeamCollection.UpdateAllowCheckoutsFromRepo), so it can know before the browser does.
+            // Either way, refuse here rather than rely on the browser having current status.
+            // See BL-16691.
+            if (!_settings.AllowCheckouts)
+            {
+                // Tell the browser to re-read book status, so the panel redraws itself into the
+                // paused state and explains why the checkout didn't happen. Without this the
+                // person just sees the button stop responding with no reason given.
+                _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+                request.Failed("checkouts are paused for this collection");
+                return;
+            }
+
             try
             {
                 // Could be a problem if there's no current book or it's not in the collection folder.
@@ -692,7 +718,7 @@ namespace Bloom.TeamCollection
                 {
                     UpdateUiForBook();
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckoutBook",
                         new Dictionary<string, string>()
                         {
@@ -959,6 +985,11 @@ namespace Bloom.TeamCollection
 
                     var book = _collectionModel.GetBookFromBookInfo(bookInfo);
                     var message = BookHistory.GetPendingCheckinMessage(book);
+                    // Before recording the check-in, make sure any pending "Created" entry is
+                    // written first. This is a hard requirement: once a book is checked in the
+                    // local copy is locked, so it will be too late to update history. Also,
+                    // we want the 'created' event to be before the first 'checked in' event.
+                    book.RecordPendingCreatedHistoryEvent();
                     BookHistory.AddEvent(book, BookHistoryEventType.CheckIn, message);
                     BookHistory.SetPendingCheckinMessage(book, "");
                     try
@@ -984,7 +1015,7 @@ namespace Bloom.TeamCollection
 
                     reportProgressFraction(0); // hides the progress bar (important if a different book has been selected that is still checked out)
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionCheckinBook",
                         new Dictionary<string, string>()
                         {
@@ -1024,7 +1055,7 @@ namespace Bloom.TeamCollection
 
                     progress.MessageWithoutLocalizing($"{msgFmt}", ProgressKind.Error);
 
-                    Analytics.Track(
+                    BloomAnalytics.Track(
                         "TeamCollectionConflictingEditOrCheckout",
                         new Dictionary<string, string>()
                         {
@@ -1222,7 +1253,7 @@ namespace Bloom.TeamCollection
                 _tcManager.ConnectToTeamCollection(repoFolderParentPath, _settings.CollectionId);
                 _callbackToReopenCollection?.Invoke();
 
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "TeamCollectionCreate",
                     new Dictionary<string, string>()
                     {

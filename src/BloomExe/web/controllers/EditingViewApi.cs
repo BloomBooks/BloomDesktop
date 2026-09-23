@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,6 +15,7 @@ using Bloom.SafeXml;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
+using SIL.Progress;
 using SIL.Windows.Forms.Miscellaneous;
 
 namespace Bloom.web.controllers
@@ -69,7 +71,6 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
-            apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
             apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
             apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
             apiHandler.RegisterEndpointHandler("editView/paste", HandlePaste, true);
@@ -84,8 +85,23 @@ namespace Bloom.web.controllers
                 true
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/topBarDropdownClicked",
-                HandleTopBarDropdownClicked,
+                "editView/topBar/contentLanguageUsage",
+                HandleGetContentLanguageUsage,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/contentLanguageUsageChange",
+                HandleContentLanguageUsageChange,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceData",
+                HandleGetLayoutChoiceData,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/topBar/layoutChoiceChange",
+                HandleLayoutChoiceChange,
                 true
             );
             apiHandler.RegisterEndpointHandler(
@@ -111,9 +127,196 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "editView/showBookSettingsDialog",
-                HandleShowBookSettingsDialog,
+                "editView/setCustomPageLayout",
+                HandleSetCustomPageLayout,
                 true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/getDataBookValue",
+                HandleGetDataBookValue,
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "editView/frameSources",
+                HandleGetFrameSources,
+                true
+            );
+        }
+
+        private void HandleGetFrameSources(ApiRequest request)
+        {
+            if (request.HttpMethod != HttpMethods.Get)
+                throw new ArgumentException("editView/frameSources only supports GET");
+
+            request.ReplyWithJson(View.GetEditFrameSources());
+        }
+
+        private void HandleGetDataBookValue(ApiRequest request)
+        {
+            var lang = request.RequiredParam("lang");
+            var dataBook = request.RequiredParam("dataBook");
+            var multiText = View.Model.CurrentBook.BookData.GetMultiTextVariableOrEmpty(dataBook);
+            var value = multiText.GetExactAlternative(lang) ?? "";
+            var matchingDataDivElement =
+                View.Model.CurrentBook.RawDom.SelectSingleNode(
+                    $"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}' and @lang='{lang}']"
+                ) as SafeXmlElement;
+
+            request.ReplyWithJson(
+                new
+                {
+                    content = value,
+                    id = matchingDataDivElement?.GetAttribute("id"),
+                    dataAudioRecordingMode = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingmode"
+                    ),
+                    dataDuration = matchingDataDivElement?.GetAttribute("data-duration"),
+                    dataAudioRecordingEndTimes = matchingDataDivElement?.GetAttribute(
+                        "data-audiorecordingendtimes"
+                    ),
+                    recordingMd5 = matchingDataDivElement?.GetAttribute("recordingmd5"),
+                    hasAudioSentenceClass = matchingDataDivElement?.HasClass("audio-sentence")
+                        ?? false,
+                    hasBloomPostAudioSplitClass = matchingDataDivElement?.HasClass(
+                        "bloom-postAudioSplit"
+                    ) ?? false,
+                }
+            );
+        }
+
+        /// <summary>
+        /// Save the current state of the page, then put the page into the requested layout
+        /// ("standard" or "custom"), and finally reload the page. Asking for the layout the page is
+        /// already in does nothing: this is a "set", not a "toggle" (BL-16725).
+        /// If we are switching to custom and do not have any saved state for custom mode, we return
+        /// false, and the calling code will generate a new custom page state.
+        /// </summary>
+        private void HandleSetCustomPageLayout(ApiRequest request)
+        {
+            var pageId = request.RequiredPostString("pageId");
+            var layout = request.RequiredPostString("layout");
+            // Fail fast rather than letting a typo mean "standard", which is the branch that
+            // discards the saved custom layout.
+            if (layout != "standard" && layout != "custom")
+                throw new ArgumentException(
+                    $"editView/setCustomPageLayout got an unexpected layout \"{layout}\"; expected \"standard\" or \"custom\"."
+                );
+            var switchingToCustom = layout == "custom";
+            var keepCustomLayoutDataWhenSwitchingToStandard =
+                request.RequiredPostString("keepCustomLayoutDataWhenSwitchingToStandard") == "true";
+            // False only for the revert Bloom performs for itself when a legacy theme cannot
+            // support a custom layout (see setupPageLayoutMenu). Analytics only -- setting the
+            // layout behaves identically either way.
+            var userInitiated = request.RequiredPostString("userInitiated") != "false";
+            var book = View.Model.CurrentBook;
+            var page = book.GetPage(pageId);
+            var pageElt = page.GetDivNodeForThisPage();
+            if (switchingToCustom == pageElt.HasClass("bloom-customLayout"))
+            {
+                // Already in the requested layout, so there is nothing to do (and in particular
+                // nothing to discard).
+                request.ReplyWithText("true");
+                return;
+            }
+            var shouldRemoveCustomLayoutDataWhenSwitchingToStandard =
+                !switchingToCustom && !keepCustomLayoutDataWhenSwitchingToStandard;
+            var customLayoutId = pageElt.GetAttribute("data-custom-layout-id");
+            // The baseline nobody has: how much custom-cover use there is at all, and on
+            // which page. The capability has been subscription-gated across two releases
+            // (BL-15902 added it, BL-15976 put it behind Pro) with no usage data at all,
+            // which is a weak position in any pricing or renewal conversation. "page"
+            // separates the long-standing front-cover case from BL-16648's inside-back-cover
+            // extension. Whether that extension generalised past the one project it was built for
+            // is a question of branding, and needs no property here: every event already carries
+            // "BrandingProjectName" (see AnalyticsApi).
+            //
+            // "layout" is the state being switched TO, which is what actually happened. That is
+            // trustworthy now that this endpoint is a "set" rather than a toggle (BL-16725): the
+            // early return above means asking for the layout the page is already in is not
+            // reported at all, so a "standard" event really is someone leaving a custom layout.
+            //
+            // Placed here deliberately, between the two early returns. Above it, the no-op case
+            // has already been answered. Below it, a switch to custom with no saved state replies
+            // "false" and the front end builds the first custom layout itself -- which is every
+            // bit a switch to custom, and has to be counted as one.
+            if (userInitiated)
+            {
+                BloomAnalytics.Track(
+                    "Cover Layout Changed",
+                    new Dictionary<string, string>
+                    {
+                        { "layout", switchingToCustom ? "custom" : "standard" },
+                        { "page", customLayoutId ?? "" },
+                        { "BookId", book.ID },
+                    }
+                );
+            }
+            if (switchingToCustom)
+            {
+                var customLayoutData = book.BookData.GetVariableOrNull(customLayoutId, "*");
+                if (string.IsNullOrEmpty(customLayoutData.Xml))
+                {
+                    request.ReplyWithText("false");
+                    return;
+                }
+            }
+            else
+            {
+                pageElt.RemoveAttribute("data-tool-id");
+            }
+
+            request.ReplyWithText("true");
+            View.Model.SaveThen(
+                () =>
+                {
+                    if (switchingToCustom)
+                        pageElt.AddClass("bloom-customLayout");
+                    else
+                        pageElt.RemoveClass("bloom-customLayout");
+                    // We must capture these from the saved page before typically replacing that with a different
+                    // page element.
+                    var backgroundAudio = pageElt.GetAttribute(HtmlDom.musicAttrName);
+                    var backgroundAudioVolume = pageElt.GetAttribute(HtmlDom.musicVolumeName);
+                    // Bring everything up to date consistent with the new
+                    // state. Might be enough just do the BookData update.
+                    book.EnsureUpToDateMemory(new NullProgress());
+                    // Toggling between custom and standard layout can replace the xMatter page HTML,
+                    // so reapply branding QR-code HTML adjustments for the current book settings.
+                    // This should not need to regenerate the QR code file.
+                    book.UpdateQrCodeHtmlForCurrentSettings(updateQrCodeFileEvenIfItExists: false);
+
+                    if (
+                        shouldRemoveCustomLayoutDataWhenSwitchingToStandard
+                        && !string.IsNullOrWhiteSpace(customLayoutId)
+                    )
+                    {
+                        book.BookData.RemoveAllFormsAndDataDivChildrenForDataBook(customLayoutId);
+                    }
+
+                    var updatedPageElt = book.GetPage(pageId)?.GetDivNodeForThisPage();
+                    if (updatedPageElt != null)
+                    {
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicAttrName);
+                        else
+                            updatedPageElt.SetAttribute(HtmlDom.musicAttrName, backgroundAudio);
+
+                        if (string.IsNullOrEmpty(backgroundAudioVolume))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                        else
+                            updatedPageElt.SetAttribute(
+                                HtmlDom.musicVolumeName,
+                                backgroundAudioVolume
+                            );
+
+                        // Keep the same invariant we enforce elsewhere.
+                        if (string.IsNullOrEmpty(backgroundAudio))
+                            updatedPageElt.RemoveAttribute(HtmlDom.musicVolumeName);
+                    }
+
+                    return pageId;
+                },
+                () => { }
             );
         }
 
@@ -122,12 +325,6 @@ namespace Bloom.web.controllers
             var pageId = request.GetPostStringOrNull();
             request.PostSucceeded();
             View.Model.SaveThen(() => pageId, () => { });
-        }
-
-        private void HandleShowBookSettingsDialog(ApiRequest request)
-        {
-            request.PostSucceeded();
-            View.SaveAndOpenBookSettingsDialog();
         }
 
         /// <summary>
@@ -218,12 +415,32 @@ namespace Bloom.web.controllers
         private void HandlePasteImage(ApiRequest request)
         {
             dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            View.OnPasteImage(
-                data.imageId,
-                UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                data.imageIsGif
-            );
+            ((DynamicJson)data).TryGetValue("pageBackgroundColor", out string pageBackgroundColor);
+            try
+            {
+                PasteImage(
+                    data.imageId,
+                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
+                    data.imageIsGif,
+                    pageBackgroundColor
+                );
+            }
+            catch (InvalidOperationException e)
+            {
+                request.Failed(System.Net.HttpStatusCode.BadRequest, e.Message);
+                return;
+            }
             request.PostSucceeded();
+        }
+
+        protected virtual void PasteImage(
+            string imageId,
+            UrlPathString priorImageSrc,
+            bool imageIsGif,
+            string pageBackgroundColor
+        )
+        {
+            View.OnPasteImage(imageId, priorImageSrc, imageIsGif, pageBackgroundColor);
         }
 
         // Ctrl-V seems to be only possible to intercept in Javascript.
@@ -250,7 +467,7 @@ namespace Bloom.web.controllers
             }
 
             View.Browser.RunJavascriptAsync(
-                $"editTabBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
+                $"workspaceBundle?.getEditablePageBundleExports()?.topBarButtonClick({data})"
             );
             request.PostSucceeded();
         }
@@ -261,19 +478,34 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        private void HandleTopBarDropdownClicked(ApiRequest request)
+        private void HandleGetContentLanguageUsage(ApiRequest request)
         {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+            request.ReplyWithJson(View.GetContentLanguageUsage());
+        }
+
+        private void HandleContentLanguageUsageChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var languageTag = (string)data.languageTag;
+            var isUsedForContent = Convert.ToBoolean(data.isUsedForContent);
+
             View.Browser.Focus();
-            switch (data.command)
-            {
-                case "contentLanguages":
-                    View.ContentLanguagesDropdownClicked();
-                    break;
-                case "layoutChoices":
-                    View.LayoutChoicesDropdownClicked();
-                    break;
-            }
+            View.HandleContentLanguageUsageChange(languageTag, isUsedForContent);
+            request.PostSucceeded();
+        }
+
+        private void HandleGetLayoutChoiceData(ApiRequest request)
+        {
+            request.ReplyWithJson(View.GetLayoutChoicesMenu());
+        }
+
+        private void HandleLayoutChoiceChange(ApiRequest request)
+        {
+            dynamic data = request.RequiredPostDynamic();
+            var layoutClassName = (string)data.layoutChoiceId;
+
+            View.Browser.Focus();
+            View.HandleLayoutChoicesMenuAction(layoutClassName);
             request.PostSucceeded();
         }
 
@@ -284,21 +516,6 @@ namespace Bloom.web.controllers
                 UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
                 data.imageIsGif
             );
-            request.PostSucceeded();
-        }
-
-        private void HandleChangeImage(ApiRequest request)
-        {
-            dynamic data = DynamicJson.Parse(request.RequiredPostJson());
-            // We don't want to tie up server locks etc. while the dialog displays.
-            MiscUtils.DoOnceOnIdle(() =>
-            {
-                View.OnChangeImage(
-                    data.imageId,
-                    UrlPathString.CreateFromUrlEncodedString(data.imageSrc),
-                    data.imageIsGif
-                );
-            });
             request.PostSucceeded();
         }
 
@@ -332,6 +549,19 @@ namespace Bloom.web.controllers
             model.DuplicatePageManyTimes((int)requestData.numberOfTimes);
         }
 
+        /// <summary>
+        /// Despite the "editView" name, this is NOT reached only from the Edit tab, and the depth
+        /// counter it drives (EditingView.SetModalState) locks navigation for the whole workspace.
+        /// Most dialogs that post here gate it on their mode being Mode.Edit, but the Copyright and
+        /// License dialog does not, and it is reachable from the Publish tab via Publish > Web's
+        /// "Missing Copyright" link. So a dialog opened from Publish can lock and unlock the shared
+        /// navigation flag, which since BL-16654 also greys out the publish-tool switcher.
+        /// We looked at gating this to the Edit tab and decided against it: locking while a modal
+        /// dialog is up is the behavior we want wherever the dialog was opened from, and the gate is
+        /// in the callers rather than here. It is safe today only because that link appears when the
+        /// copyright is missing, which is itself what stops an upload from being in progress — an
+        /// invariant worth knowing about if you change either end.
+        /// </summary>
         public void HandleSetModalState(ApiRequest request)
         {
             lock (request)

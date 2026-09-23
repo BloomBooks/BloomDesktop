@@ -48,6 +48,18 @@
 @Device16x9Landscape-Width: 177.77777778mm;
 @PictureStoryLandscape-Height: 100mm;
 @PictureStoryLandscape-Width: 177.77777778mm;
+// Exact pixel dimensions taken from StoryWeaver's ePUB page-container CSS, so that books
+// converted from StoryWeaver match the layout StoryWeaver declares:
+//   #story_epub .page-container-portrait  { width: 475px; height: 700px }
+//   #story_epub .page-container-landscape { width: 959px; height: 690px }
+// The Ebook2x3 / Ebook7x5 names are only approximate shorthand for these aspect ratios;
+// we did not have a better concise naming scheme for the two non-paper ebook layouts.
+// Deliberately kept in px (not converted to mm) and note that portrait and landscape are
+// intentionally NOT the same aspect ratio.
+@Ebook2x3Portrait-Height: 700px;
+@Ebook2x3Portrait-Width: 475px;
+@Ebook7x5Landscape-Height: 690px;
+@Ebook7x5Landscape-Width: 959px;
 @Size6x9Portrait-Height: 9in;
 @Size6x9Portrait-Width: 6in;
 @Size6x9Landscape-Height: 6in;

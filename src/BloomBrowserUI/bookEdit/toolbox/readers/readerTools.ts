@@ -1,12 +1,10 @@
 /// <reference path="readerToolsModel.ts" />
 /// <reference path="directoryWatcher.ts" />
-/// <reference path="../../../typings/jquery.qtip.d.ts" />
 /// <reference path="../../../typings/jqueryui/jqueryui.d.ts" />
 import $ from "jquery";
 import jQuery from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import { getTheOneReaderToolsModel } from "./readerToolsModel";
-import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import {
     theOneLanguageDataInstance,
     theOneLibSynphony,
@@ -20,21 +18,113 @@ import "../../../lib/jquery.onSafe";
 import axios from "axios";
 import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import * as React from "react";
 import { ReaderToolSwitch } from "./ReaderToolSwitch";
-
-interface textMarkup extends JQueryStatic {
-    cssSentenceTooLong(): JQuery;
-    cssSightWord(): JQuery;
-    cssWordNotFound(): JQuery;
-    cssPossibleWord(): JQuery;
-}
 
 // listen for messages sent to this page
 window.addEventListener("message", processDLRMessage, false);
 
 let readerToolsInitialized: boolean = false;
+let lastReaderToolSettingsContent: string | undefined;
+const maxReaderSettingsLoadAttempts = 5;
+let decodableToggleRenderVersion = 0;
+let leveledToggleRenderVersion = 0;
+let lastDecodableToggleBookKey: string | undefined;
+let lastLeveledToggleBookKey: string | undefined;
+function getReaderToggleRenderKey(
+    isForLeveled: boolean,
+    currentBookKey: string,
+): string {
+    if (isForLeveled) {
+        if (currentBookKey !== lastLeveledToggleBookKey) {
+            lastLeveledToggleBookKey = currentBookKey;
+            leveledToggleRenderVersion++;
+        }
+
+        return `leveled-${leveledToggleRenderVersion}`;
+    }
+
+    if (currentBookKey !== lastDecodableToggleBookKey) {
+        lastDecodableToggleBookKey = currentBookKey;
+        decodableToggleRenderVersion++;
+    }
+
+    return `decodable-${decodableToggleRenderVersion}`;
+}
+
+// I'm not sure how copilot came to add this normalization. It claims that it is
+// useful defensiveness against some uncertainty about whether Axios will return
+// a string or an object.
+function normalizeReaderSettings(rawSettings: unknown): ReaderSettings {
+    if (typeof rawSettings === "string") {
+        return JSON.parse(rawSettings) as ReaderSettings;
+    }
+    return rawSettings as ReaderSettings;
+}
+
+function tryNormalizeReaderSettings(
+    rawSettings: unknown,
+): ReaderSettings | undefined {
+    try {
+        const settings = normalizeReaderSettings(rawSettings);
+        if (!settings) {
+            return undefined;
+        }
+        return settings;
+    } catch {
+        return undefined;
+    }
+}
+
+function loadReaderSettingsWithRetry(
+    attemptsRemaining: number,
+    onLoaded: (settings: ReaderSettings) => void,
+    onFailed: () => void,
+): void {
+    const retryOrFail = () => {
+        if (attemptsRemaining > 1) {
+            window.setTimeout(() => {
+                loadReaderSettingsWithRetry(
+                    attemptsRemaining - 1,
+                    onLoaded,
+                    onFailed,
+                );
+            }, 150);
+            return;
+        }
+
+        onFailed();
+    };
+
+    get(
+        "readers/io/readerToolSettings",
+        (settingsFileContent) => {
+            const normalizedSettings = tryNormalizeReaderSettings(
+                settingsFileContent.data,
+            );
+            // Act on the reply outside the request's promise chain. bloomApi.get() hangs
+            // our error callback on a .catch() *after* this handler, so anything thrown in
+            // here -- a genuine bug in onLoaded, not a failed request -- would otherwise be
+            // caught, retried, and finally reported as a load failure, hiding it. Out here
+            // it fails fast and gets reported, which is what this repo wants. (BL-16732)
+            window.setTimeout(() => {
+                if (normalizedSettings) {
+                    onLoaded(normalizedSettings);
+                    return;
+                }
+
+                retryOrFail();
+            }, 0);
+        },
+        // A request that outright fails has to count as a failed attempt too. Without this
+        // error callback, bloomApi.get() reports the error and never calls anyone back, so
+        // neither onLoaded nor onFailed ever runs -- and every caller waiting on us waits
+        // forever. Callers act on that by doing nothing at all, which is invisible.
+        // (BL-16732)
+        retryOrFail,
+    );
+}
 
 function getSetupDialogWindow(): Window | null {
     return (<HTMLIFrameElement>(
@@ -112,112 +202,21 @@ function processDLRMessage(event: MessageEvent): void {
             getTheOneReaderToolsModel().setMarkupType(parseInt(params[1]));
             return;
 
-        case "Qtips": // request from toolbox to add qtips to marked-up spans
-            // We could make separate messages for these...
-            markDecodableStatus();
-            markLeveledStatus();
-
-            return;
-
         default:
     }
-}
-
-function markDecodableStatus(): void {
-    // q-tips; mark sight words and non-decodable words
-    const sightWord = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord",
-        "Sight Word",
-    );
-    const notDecodable = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.DecodableReaderTool.WordNotDecodable",
-        "This word is not decodable in this stage.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSightWord())
-        .each(function () {
-            this.qtip({ content: sightWord });
-        });
-
-    editableElements
-        .find("span." + (<textMarkup>$).cssWordNotFound())
-        .each(function () {
-            this.qtip({ content: notDecodable });
-        });
-
-    // we're considering dropping this entirely
-    // We are disabling the "Possible Word" feature at this time.
-    //editableElements.find('span.' + $.cssPossibleWord()).each(function() {
-    //    $(this.qtip({ content: 'This word is decodable in this stage, but is not part of the collected list of words.' });
-    //});
-}
-
-function markLeveledStatus(): void {
-    // q-tips; mark sentences that are too long
-    const tooLong = theOneLocalizationManager.getText(
-        "EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong",
-        "This sentence is too long for this level.",
-    );
-    const editableElements = $(".bloom-content1");
-    editableElements
-        .find("span." + (<textMarkup>$).cssSentenceTooLong())
-        .each(function () {
-            $(this).qtip({ content: tooLong });
-        });
 }
 
 export function beginInitializeDecodableReaderTool(): JQueryPromise<void> {
     // load synphony settings and then finish init
     return beginLoadSynphonySettings().then(() => {
-        // use the off/on pattern so the event is not added twice if the tool is closed and then reopened
-        $("#incStage").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().incrementStage();
-        });
-
-        $("#decStage").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().decrementStage();
-        });
-
-        $("#sortAlphabetic").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortAlphabetically();
-        });
-
-        $("#sortLength").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortByLength();
-        });
-
-        $("#sortFrequency").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().sortByFrequency();
-        });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
-
-        $(window).resize(() => {
-            resizeWordList(false);
-        });
-
-        setTimeout(() => {
-            resizeWordList();
-        }, 200);
-        setTimeout(() => {
-            $.divsToColumns("letter");
-        }, 100);
     });
 }
 
 export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
     // load synphony settings
     return beginLoadSynphonySettings().then(() => {
-        $("#incLevel").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().incrementLevel();
-        });
-
-        $("#decLevel").onSafe("click.readerTools", () => {
-            getTheOneReaderToolsModel().decrementLevel();
-        });
-
         getTheOneReaderToolsModel().updateControlContents();
         $("#toolbox").accordion("refresh");
     });
@@ -226,18 +225,68 @@ export function beginInitializeLeveledReaderTool(): JQueryPromise<void> {
 export function beginLoadSynphonySettings(): JQueryPromise<void> {
     // make sure synphony is initialized
     const result = $.Deferred<void>();
+    get("collection/defaultFont", (result) => setDefaultFont(result.data));
     if (readerToolsInitialized) {
-        result.resolve();
+        // If we already initialized the reader tools, we still need to read the current data,
+        // since now that we're using a single browser window for the whole workspace,
+        // we could change books without reloading the window, and there is some dependence
+        // of the data on the current book. So we read it one more time, and do some cleanup
+        // if it is different from what we had before.
+        loadReaderSettingsWithRetry(
+            maxReaderSettingsLoadAttempts,
+            (normalizedSettings) => {
+                const newSettingsContent = JSON.stringify(normalizedSettings);
+                // readerToolsInitialized and lastReaderToolSettingsContent are module state
+                // in whichever frame loaded this module, but the ReaderToolsModel they
+                // describe lives in a holder on the top window which
+                // getTheOneReaderToolsModel() deliberately *replaces* when the frame that
+                // created it is reloaded. So our memory of having loaded the settings can
+                // outlive the model that holds them, and then "the settings are unchanged"
+                // is no reason to skip the work: the model in front of us has never seen
+                // them. Refreshing is what gets them into it. Without this, synphony stays
+                // undefined and every reader-tool feature needing it is silently dead
+                // (e.g. Set Up Levels/Stages) until Bloom is restarted. (BL-16732)
+                const shouldRefresh =
+                    newSettingsContent !== lastReaderToolSettingsContent ||
+                    !getTheOneReaderToolsModel().synphony;
+                if (!shouldRefresh) {
+                    result.resolve();
+                    return;
+                }
+                beginRefreshEverything(normalizedSettings).then(
+                    () => {
+                        lastReaderToolSettingsContent = newSettingsContent;
+                        result.resolve();
+                    },
+                    // Refreshing fetches the sample-texts list, and if that request fails we
+                    // have no settings worth remembering -- but our callers still have to be
+                    // released. A caller left waiting forever is precisely what the user
+                    // experiences as a button that does nothing. (BL-16732)
+                    () => result.resolve(),
+                );
+            },
+            () => {
+                readerToolsInitialized = false;
+                result.resolve();
+            },
+        );
         return result;
     }
     readerToolsInitialized = true;
 
-    get("collection/defaultFont", (result) => setDefaultFont(result.data));
-    get("readers/io/readerToolSettings", (settingsFileContent) => {
-        initializeSynphony(settingsFileContent.data);
-        //console.log("done synphony init");
-        result.resolve();
-    });
+    loadReaderSettingsWithRetry(
+        maxReaderSettingsLoadAttempts,
+        (normalizedSettings) => {
+            lastReaderToolSettingsContent = JSON.stringify(normalizedSettings);
+            initializeSynphony(normalizedSettings);
+            //console.log("done synphony init");
+            result.resolve();
+        },
+        () => {
+            readerToolsInitialized = false;
+            result.resolve();
+        },
+    );
     return result;
 }
 
@@ -248,7 +297,9 @@ export function beginLoadSynphonySettings(): JQueryPromise<void> {
  * @param settingsFileContent The content of the standard JSON) file that stores the Synphony settings for the collection.
  * @global {getTheOneReaderToolsModel()) ReaderToolsModel
  */
-function initializeSynphony(settingsFileContent: string): void {
+function initializeSynphony(
+    settingsFileContent: ReaderSettings | string,
+): void {
     const synphony = new ReadersSynphonyWrapper();
     synphony.loadSettings(settingsFileContent);
     getTheOneReaderToolsModel().setSynphony(synphony);
@@ -447,88 +498,4 @@ export function makeLetterWordList(): void {
     };
 
     $.ajax(<JQueryAjaxSettings>ajaxSettings);
-}
-
-/**
- * We need to check the size of the decodable reader tool pane periodically so we can adjust the height of the word list
- * @global {number} previousHeight
- */
-export function resizeWordList(startTimeout: boolean = true): void {
-    const div: JQuery = $("body").find(
-        'div[data-toolId="decodableReaderTool"]',
-    );
-    if (div.length === 0) return; // if not found, the tool was closed
-
-    const wordList: JQuery = div.find("#wordList");
-    const currentHeight: number = div.height();
-    const currentWidth: number = wordList.width();
-
-    const readerToolsModel = getTheOneReaderToolsModel();
-    if (!readerToolsModel) {
-        // FYI, this prevents setting future timeouts as well.
-        return;
-    }
-
-    // resize the word list if the size of the pane changed
-    if (
-        readerToolsModel.previousHeight !== currentHeight ||
-        readerToolsModel.previousWidth !== currentWidth
-    ) {
-        readerToolsModel.previousHeight = currentHeight;
-        readerToolsModel.previousWidth = currentWidth;
-
-        const top = wordList.parent().position().top;
-
-        const synphony = readerToolsModel.synphony;
-        if (synphony.source) {
-            let ht = currentHeight - top;
-            if (synphony.source.useAllowedWords === 1) {
-                ht -= div.find("#allowed-word-list-truncated").height();
-            } else {
-                ht -= div.find("#make-letter-word-list-div").height();
-            }
-
-            // This entire function is what I would consider a horrible hack.
-            // The whole tool structure needs to be reworked with flexbox.
-            // But instead, the tool will probably be rewritten in React at some point.
-            // So I'm not going to go to any heroic lengths to solve these issues.
-            // For now, just include the height of the toggle so that it doesn't overlap the
-            // absolutely-positioned link at the bottom of the tool.
-            ht -=
-                div
-                    .find("#decodable-reader-tool-toggle-react-container")
-                    .height() || 0;
-
-            // for a reason I haven't discovered, the height calculation is always off by 6 pixels
-            ht += 6;
-
-            if (ht < 50) ht = 50;
-
-            wordList.parent().css("height", Math.floor(ht) + "px");
-        }
-    }
-
-    if (startTimeout)
-        setTimeout(() => {
-            resizeWordList();
-        }, 500);
-}
-
-export function createToggle(isForLeveled: boolean) {
-    ReactDOM.render(
-        React.createElement(ReaderToolSwitch, { isForLeveled }),
-        document.getElementById(
-            `${
-                isForLeveled ? "leveled" : "decodable"
-            }-reader-tool-toggle-react-container`,
-        ),
-    );
-}
-
-export function isToggleOff(isForLeveled: boolean): boolean {
-    const prefix = isForLeveled ? "leveled" : "decodable";
-    const classes = document.getElementById(
-        prefix + "-reader-tool-content",
-    )?.classList;
-    return classes?.contains("turned-off") ?? false;
 }

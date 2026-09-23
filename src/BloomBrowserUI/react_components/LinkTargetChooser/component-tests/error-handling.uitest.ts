@@ -1,11 +1,18 @@
 /**
  * Tests for LinkTargetChooser - Error Handling
  * Covers: Missing book/page detection and error display
- * Run with: yarn test
+ * Run with: pnpm test
  */
 
 import { test, expect } from "../../component-tester/playwrightTest";
 import { setupLinkTargetChooser } from "./test-helpers";
+
+// How long to let the error message appear or clear. It was 1000ms, which was not enough on a
+// loaded machine: two of these tests failed about once per full-suite run and passed when run on
+// their own. These are waits for a state rather than sleeps, so the larger number costs a passing
+// run nothing.
+// John approved this timeout on 2026-09-03, as AGENTS.md asks.
+const kErrorAppearsTimeoutMs = 10000;
 
 test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () => {
     test("Shows error when URL points to missing book", async ({ page }) => {
@@ -17,7 +24,10 @@ test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () =
 
         // Wait for the error message to appear
         const errorMsgElement = await context.errorDisplay.getErrorMessage();
-        await errorMsgElement.waitFor({ state: "visible", timeout: 1000 });
+        await errorMsgElement.waitFor({
+            state: "visible",
+            timeout: kErrorAppearsTimeoutMs,
+        });
 
         // Error message should be visible
         const isErrorVisible = await context.errorDisplay.isVisible();
@@ -42,7 +52,10 @@ test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () =
 
         // Wait for the error message to appear
         const errorMsgElement = await context.errorDisplay.getErrorMessage();
-        await errorMsgElement.waitFor({ state: "visible", timeout: 1000 });
+        await errorMsgElement.waitFor({
+            state: "visible",
+            timeout: kErrorAppearsTimeoutMs,
+        });
 
         // Error message should be visible
         const isErrorVisible = await context.errorDisplay.isVisible();
@@ -114,7 +127,10 @@ test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () =
 
         // Wait for the error message to appear
         const errorMsgElement = await context.errorDisplay.getErrorMessage();
-        await errorMsgElement.waitFor({ state: "visible", timeout: 1000 });
+        await errorMsgElement.waitFor({
+            state: "visible",
+            timeout: kErrorAppearsTimeoutMs,
+        });
 
         // Verify error appears
         let isErrorVisible = await context.errorDisplay.isVisible();
@@ -124,7 +140,10 @@ test.describe("LinkTargetChooser - Error Handling for Missing Books/Pages", () =
         await context.urlEditor.setValue("/book/book1");
 
         // Wait for error to disappear
-        await errorMsgElement.waitFor({ state: "hidden", timeout: 1000 });
+        await errorMsgElement.waitFor({
+            state: "hidden",
+            timeout: kErrorAppearsTimeoutMs,
+        });
         isErrorVisible = await context.errorDisplay.isVisible();
         expect(isErrorVisible).toBe(false);
 

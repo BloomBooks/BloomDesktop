@@ -36,6 +36,40 @@
                 "${workspaceFolder}/Bloom.sln"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "flatten-appbuilder-icons",
+            "type": "process",
+            "command": "node",
+            "args": [
+                "${workspaceFolder}/.claude/skills/rab-icon-grid-processing/flattenAppBuilderIcons.mjs"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "test-rab-icon-choices",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "${workspaceFolder}/src/BloomTests/BloomTests.csproj",
+                "--filter",
+                "GetAvailableIconChoices"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "crop-appbuilder-icon-samples",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.claude/skills/rab-icon-grid-processing/cropAppBuilderIconSamples.ps1"
+            ],
+            "problemMatcher": []
         }
     ]
 }

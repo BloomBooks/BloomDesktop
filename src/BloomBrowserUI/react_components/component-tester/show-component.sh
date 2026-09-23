@@ -16,7 +16,7 @@ COMPONENTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 COMPONENT_FOLDER="$1"
 shift
 
-MANUAL_TEST_RELATIVE_PATH="$COMPONENT_FOLDER/component-tests/show-component.uitest.ts"
+MANUAL_TEST_RELATIVE_PATH="$COMPONENT_FOLDER/component-tests/show-component.manual.ts"
 MANUAL_TEST_FULL_PATH="$COMPONENTS_DIR/$MANUAL_TEST_RELATIVE_PATH"
 
 if [ ! -f "$MANUAL_TEST_FULL_PATH" ]; then
@@ -45,4 +45,4 @@ echo ""
 export BLOOM_COMPONENT_TESTER_SUPPRESS_OPEN=1
 export PLAYWRIGHT_INCLUDE_MANUAL=1
 
-yarn playwright test "../$MANUAL_TEST_RELATIVE_PATH" --headed -g "$TEST_NAME" "$@"
+pnpm exec playwright test "../$MANUAL_TEST_RELATIVE_PATH" --headed -g "$TEST_NAME" "$@"

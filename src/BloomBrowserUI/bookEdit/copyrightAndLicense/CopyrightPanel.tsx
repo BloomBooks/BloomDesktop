@@ -170,7 +170,9 @@ export const CopyrightPanel: React.FunctionComponent<{
                     margin-bottom: 11px !important;
                 `}
             />
-            {isSil && (
+            {/* keeping this for now in case things change, but the restrictions on what can
+            be published as SIL copyrighted material have been removed, so we don't need the message.
+            isSil && (
                 <NoteBox>
                     <div>
                         <Div
@@ -205,7 +207,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                         </div>
                     </div>
                 </NoteBox>
-            )}
+            ) */}
             {props.derivativeInfo?.isBookDerivative && (
                 <React.Fragment>
                     <BloomCheckbox

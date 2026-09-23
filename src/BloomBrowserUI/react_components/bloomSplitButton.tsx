@@ -98,7 +98,7 @@ export const BloomSplitButton: React.FunctionComponent<{
                                     {props.options.map((option, index) => (
                                         <LocalizableMenuItem
                                             key={option.english}
-                                            dontGiveAffordanceForCheckbox={true}
+                                            hasLeadingIconSpace={false}
                                             {...option}
                                             // Override option's onClick here.
                                             // The real one will be called in handleButtonClick.

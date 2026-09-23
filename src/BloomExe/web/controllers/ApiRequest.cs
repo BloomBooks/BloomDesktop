@@ -183,9 +183,10 @@ namespace Bloom.Api
             Failed(HttpStatusCode.ServiceUnavailable, text);
         }
 
+        private int _statusCodeInt = 0; // not a valid HttpStatusCode, but we want to be able to tell if we've set it.
         private string _failedText;
 
-        public bool HasFailed => _failedText != null;
+        public bool HasFailed => _failedText != null || _statusCodeInt != 0;
 
         public void Failed(HttpStatusCode statusCode, string text = null)
         {
@@ -197,23 +198,23 @@ namespace Bloom.Api
             // likely from an outer exception handler and has less useful
             // information, and anyway it's too late to fix it, so just
             // keep what we already recorded.
-            if (_failedText != null)
+            if (HasFailed)
                 return;
             _failedText = text;
             _requestInfo.ResponseContentType = "text/plain";
-            int statusCodeInt = (int)statusCode;
+            _statusCodeInt = (int)statusCode;
             try
             {
                 if (text == null)
                 {
-                    _requestInfo.WriteError(statusCodeInt);
+                    _requestInfo.WriteError(_statusCodeInt);
                 }
                 else
                 {
-                    _requestInfo.WriteError(statusCodeInt, text);
+                    _requestInfo.WriteError(_statusCodeInt, text);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Debug.Fail("could not WriteError to requestInfo (is it disposed?)");
             }
@@ -262,6 +263,7 @@ namespace Bloom.Api
                         if (
                             endpointRegistration.HandleOnUIThread
                             && formForSynchronizing != null
+                            && !formForSynchronizing.IsDisposed
                             && formForSynchronizing.InvokeRequired
                         )
                         {
@@ -298,7 +300,12 @@ namespace Bloom.Api
                     "Bloom could not access {0}.  The file may be open in another program.",
                     info.RawUrl
                 );
-                NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(ModalIf.None, PassiveIf.All, shortMsg, longMsg, e);
+                });
                 request.Failed(shortMsg);
                 return false;
             }
@@ -307,13 +314,14 @@ namespace Bloom.Api
                 //Hard to reproduce, but I got one of these supertooltip disposal errors in a yellow box
                 //while switching between publish tabs (e.g. /bloom/api/publish/bloompub/cleanup).
                 //I don't think these are worth alarming the user about, so let's be sensitive to what channel we're on.
-                NonFatalProblem.Report(
-                    ModalIf.Alpha,
-                    PassiveIf.All,
-                    "Error in " + info.RawUrl,
-                    exception: e
-                );
-                request.Failed("Error in " + info.RawUrl);
+                var shortMesg = "Error in " + info.RawUrl;
+                // Report the error after a delay so the API call can finish.
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(100);
+                    NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, shortMesg, exception: e);
+                });
+                request.Failed(shortMesg);
                 return false;
             }
             return true;
@@ -331,28 +339,44 @@ namespace Bloom.Api
         {
             Exception handlerException = null;
 
-            BloomServer._theOneInstance.RegisterThreadBlocking();
-
-            // This will block until the UI thread is done invoking this.
-            await (Task)
-                formForSynchronizing.Invoke(
-                    new Func<ApiRequest, Task>(
-                        async (req) =>
-                        {
-                            try
-                            {
-                                await endpointRegistration.Handle(req);
-                            }
-                            catch (Exception error)
-                            {
-                                handlerException = error;
-                            }
-                        }
-                    ),
-                    request
-                );
-
-            BloomServer._theOneInstance.RegisterThreadUnblocked();
+            // The scope is what ends the reported block, and it has to be, for two reasons that both used
+            // to bite here (BL-16612). First, the await below can resume on a different thread than the one
+            // that reported the block -- a server worker has no synchronization context, so the
+            // continuation lands on the thread pool -- and the old code decided whether to decrement by
+            // looking at the thread it happened to be running on, so it silently skipped it and left the
+            // count permanently high. Second, disposal covers every exit: previously an exception out of
+            // Invoke other than ObjectDisposedException left the block reported forever.
+            using (BloomServer._theOneInstance.ReportThreadBlocking())
+            {
+                try
+                {
+                    // This will block until the UI thread is done invoking this.
+                    await (Task)
+                        formForSynchronizing.Invoke(
+                            new Func<ApiRequest, Task>(
+                                async (req) =>
+                                {
+                                    try
+                                    {
+                                        await endpointRegistration.Handle(req);
+                                    }
+                                    catch (Exception error)
+                                    {
+                                        handlerException = error;
+                                    }
+                                }
+                            ),
+                            request
+                        );
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The form was disposed between the IsDisposed check and the actual Invoke call.
+                    // This can happen when Bloom reloads after a UI language change. Fail silently.
+                    request.Failed("Shell disposed during API request handling");
+                    return false;
+                }
+            }
 
             if (handlerException != null)
             {
@@ -365,12 +389,20 @@ namespace Bloom.Api
                 );
                 if (request.HttpMethod == HttpMethods.Post)
                 {
-                    var postString = request.GetPostStringOrNull();
-                    if (!string.IsNullOrEmpty(postString))
-                        handlerException.Data.Add("Post String", postString);
-                    var postJson = request.GetPostJsonOrNull();
-                    if (!string.IsNullOrEmpty(postJson))
-                        handlerException.Data.Add("Post JSON", postJson);
+                    var contentType =
+                        request.RequestContentType?.ToLowerInvariant() ?? string.Empty;
+                    if (contentType.Contains("application/json"))
+                    {
+                        var postJson = request.GetPostJsonOrNull();
+                        if (!string.IsNullOrEmpty(postJson))
+                            handlerException.Data.Add("Post JSON", postJson);
+                    }
+                    else
+                    {
+                        var postString = request.GetPostStringOrNull();
+                        if (!string.IsNullOrEmpty(postString))
+                            handlerException.Data.Add("Post String", postString);
+                    }
                 }
                 ExceptionDispatchInfo.Capture(handlerException).Throw();
             }
@@ -379,6 +411,11 @@ namespace Bloom.Api
 
         public string RequestContentType => _requestInfo.RequestContentType;
 
+        /// <remarks>
+        /// Unencoded, because Parameters comes from HttpUtility.ParseQueryString, which has
+        /// already decoded the value once. (Nothing calls this at present; the two handlers that
+        /// used to decode a second time here were fixed for BL-16669.)
+        /// </remarks>
         public UrlPathString RequiredFileNameOrPath(string name)
         {
             if (Parameters.AllKeys.Contains(name))

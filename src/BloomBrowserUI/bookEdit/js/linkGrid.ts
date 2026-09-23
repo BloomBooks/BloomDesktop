@@ -1,16 +1,25 @@
+/// <reference path="./collectionSettings.d.ts" />
+
 import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
-import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
+
+function getLanguage1Tag(): string {
+    const settings = GetSettings() as ICollectionSettings;
+    return settings.languageForNewTextBoxes;
+}
 
 export function setupBookLinkGrids(container: HTMLElement) {
     // Add skeleton to empty grids on initial setup
     const linkGrids = Array.from(
         container.getElementsByClassName("bloom-link-grid"),
     ) as HTMLElement[];
+    const linkLang = getLanguage1Tag();
     for (const linkGrid of linkGrids) {
+        linkGrid.lang = linkLang;
         addSkeletonIfEmpty(linkGrid as HTMLElement);
         // In case anyone wonders why this works here but will not on most canvas elements
         // and their children...we put a rule in basepage.less that puts bloom-link-grid
@@ -47,7 +56,8 @@ export function editLinkGrid(linkGrid: HTMLElement) {
             };
         });
 
-    showBookGridSetupDialog(
+    // Shown from the workspace root so its backdrop covers the page list too.
+    getWorkspaceBundleExports().showBookGridSetupDialog(
         currentLinks,
         // callback if they press OK
         (links: Link[]) => {
@@ -58,6 +68,7 @@ export function editLinkGrid(linkGrid: HTMLElement) {
                 addSkeletonIfEmpty(linkGrid);
             } else {
                 // Add real book buttons
+                linkGrid.lang = getLanguage1Tag();
                 links.forEach((link) => {
                     const button = document.createElement("div");
                     button.className = "bloom-bookButton";

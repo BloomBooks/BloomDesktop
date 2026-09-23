@@ -1,26 +1,19 @@
 using System;
-using System;
-using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics;
-using System.IO;
 using System.IO;
 using System.Linq;
-using System.Linq;
-using System.Net;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Windows.Forms;
 using Amazon.Runtime;
 using Amazon.S3;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Publish;
@@ -29,7 +22,6 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
-using DesktopAnalytics;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -54,6 +46,8 @@ namespace Bloom.WebLibraryIntegration
 
         public const string UploadHashesFilename = ".lastUploadInfo"; // this filename must begin with a period
 
+        public const string kUploadStagingFolder = "BloomUploadStaging";
+
         static string _destination;
 
         public BookUpload(
@@ -71,7 +65,41 @@ namespace Bloom.WebLibraryIntegration
         /// Implicitly use the sandbox as the destination target.  Can be explicitly overridden
         /// on the command line in upload commands.  See <see cref="Destination"/>.
         /// </summary>
+        /// <remarks>
+        /// On a developer, alpha, unstable, or internal beta build, the user can choose the
+        /// destination with the "Use dev.BloomLibrary.org" item of the top bar context menu.
+        /// We store that choice only while it differs from
+        /// <see cref="UseSandboxWithoutUserChoice"/>, so the "BloomSandbox" environment
+        /// variable controls Bloom again as soon as the user agrees with it.
+        /// </remarks>
         internal static bool UseSandboxByDefault
+        {
+            get
+            {
+                // A unit test run must not depend on what the developer chose in the menu.
+                // A build that does not show the menu must not obey a choice that it cannot
+                // change: user settings live in a folder named for the version, so a build
+                // without the menu could otherwise read a choice that another build wrote.
+                if (Program.RunningUnitTests || !UserCanChooseWebSite)
+                    return UseSandboxWithoutUserChoice;
+                switch (Settings.Default.WebSiteDestinationOverride)
+                {
+                    case UploadDestination.Development:
+                        return true;
+                    case UploadDestination.Production:
+                        return false;
+                    default:
+                        return UseSandboxWithoutUserChoice;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The destination that this build uses when the user makes no choice in the
+        /// "Use dev.BloomLibrary.org" menu item: a DEBUG build, or any build that has the
+        /// "BloomSandbox" environment variable set to yes, true, y, or t.
+        /// </summary>
+        internal static bool UseSandboxWithoutUserChoice
         {
             get
             {
@@ -86,6 +114,38 @@ namespace Bloom.WebLibraryIntegration
 #endif
             }
         }
+
+        /// <summary>
+        /// Records the user's choice from the "Use dev.BloomLibrary.org" menu item, and returns
+        /// true if the choice differs from the destination of the current run.  The caller
+        /// restarts Bloom when it does, because <see cref="Destination"/> and the saved login
+        /// belong to one run only.
+        /// </summary>
+        /// <remarks>
+        /// If the choice matches what this build would do on its own, we clear the setting
+        /// instead of storing it.  See the remarks on <see cref="UseSandboxByDefault"/>.
+        /// </remarks>
+        public static bool SetUserChoiceOfDevWebSite(bool useDevSite)
+        {
+            var wasUsingSandbox = UseSandbox;
+            if (useDevSite == UseSandboxWithoutUserChoice)
+                Settings.Default.WebSiteDestinationOverride = "";
+            else
+                Settings.Default.WebSiteDestinationOverride = useDevSite
+                    ? UploadDestination.Development
+                    : UploadDestination.Production;
+            Settings.Default.Save();
+            return useDevSite != wasUsingSandbox;
+        }
+
+        /// <summary>
+        /// True on the builds that let the user choose between bloomlibrary.org and
+        /// dev.bloomlibrary.org: a developer, alpha, or unstable build, and the internal beta
+        /// build.  A public beta build and a release build always use bloomlibrary.org.
+        /// </summary>
+        public static bool UserCanChooseWebSite =>
+            ApplicationUpdateSupport.IsDevOrAlpha
+            || ApplicationUpdateSupport.ChannelName.ToLowerInvariant().Contains("betainternal");
 
         /// <summary>
         /// whereas we can *download* from anywhere regardless of production, debug, or unit test,
@@ -222,8 +282,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             bool isForBulkUpload = false,
-            bool changeUploader = false,
-            Control controlToInvokeOn = null
+            bool changeUploader = false
         )
         {
             var htmlFile = BookStorage.FindBookHtmlInFolder(bookFolder);
@@ -300,12 +359,12 @@ namespace Bloom.WebLibraryIntegration
                     // that they get to the same index at near enough to the same time to matter.
                     using (
                         var stagingDirectoryTempFolder = new TemporaryFolder(
-                            "BloomUploadStaging" + _stagingVariable++
+                            kUploadStagingFolder + _stagingVariable++
                         )
                     )
                     {
                         var stagingDirectory = stagingDirectoryTempFolder.FolderPath;
-                        await SetUpStagingAsync(
+                        SetUpStaging(
                             bookFolder,
                             stagingDirectory,
                             progress,
@@ -317,8 +376,7 @@ namespace Bloom.WebLibraryIntegration
                             metadataLang1Code,
                             metadataLang2Code,
                             collectionSettings?.SettingsFilePath,
-                            isForBulkUpload,
-                            controlToInvokeOn
+                            isForBulkUpload
                         );
 
                         string[] filesToUpload = null;
@@ -382,7 +440,7 @@ namespace Bloom.WebLibraryIntegration
 
                     if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox
                     {
-                        Analytics.Track(
+                        BloomAnalytics.Track(
                             "UploadBook-Success",
                             new Dictionary<string, string>()
                             {
@@ -417,7 +475,7 @@ namespace Bloom.WebLibraryIntegration
                         )
                     );
                     if (IsProductionRun)
-                        Analytics.Track("UploadBook-Failure-SystemTime");
+                        BloomAnalytics.Track("UploadBook-Failure-SystemTime");
                 }
                 else
                 {
@@ -464,7 +522,7 @@ namespace Bloom.WebLibraryIntegration
         private void ReportFailureToAnalytics(BookMetaData metadata, bool isNewBook, Exception e)
         {
             if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this is just a tester pushing to the sandbox
-                Analytics.Track(
+                BloomAnalytics.Track(
                     "UploadBook-Failure",
                     new Dictionary<string, string>()
                     {
@@ -503,7 +561,7 @@ namespace Bloom.WebLibraryIntegration
         }
 
         // Copy the needed files to the staging directory and make any modifications needed before upload.
-        private async Task SetUpStagingAsync(
+        private void SetUpStaging(
             string pathToBloomBookDirectory,
             string stagingDirectory,
             IProgress progress,
@@ -515,8 +573,7 @@ namespace Bloom.WebLibraryIntegration
             string metadataLang1Code,
             string metadataLang2Code,
             string collectionSettingsPath = null,
-            bool isForBulkUpload = false,
-            Control controlToInvokeOn = null
+            bool isForBulkUpload = false
         )
         {
             var filter = new BookFileFilter(pathToBloomBookDirectory)
@@ -545,24 +602,36 @@ namespace Bloom.WebLibraryIntegration
                     metadataLang2Code
                 );
 
-            await PublishHelper.ReportInvalidFontsAsync(
-                stagingDirectory,
-                progress,
-                controlToInvokeOn
-            );
+            PublishHelper.ReportInvalidFonts(stagingDirectory, progress);
 
-            // Really crop images, which allows us to simplify the representation of background images,
-            // so the new structure with the background canvas elements doesn't get uploaded.
-            // We think it's better if Blorg books don't have this structure until we can migrate all pages
-            // to it.
+            // Really crop images, but leave in place the HTML structures that indicates they are cropped.
+            // Really cropping them will typically reduce the space needed, and may also have value in
+            // protecting privacy in case the cropped parts were not meant to be seen. Earlier verions
+            // removed the HTML cropping structure altogether, which was nice for older Bloom versions
+            // that don't understand it, and could help images automatically adjust to changing page
+            // sizes. But all shipping versions of Bloom now understand cropping, and removing the
+            // cropping structure can cause an imperfect filling of the space, particularly letting
+            // one pixel of a cover show along the edge of an image that should fill it. So we decided
+            // to keep the cropping structure, just adjust it to suit an image that is reduce to as near
+            // the right size as we can get.
             // Since this is a temp directory and a book that's already up-to-date, I think it's safe to
             // just load a DOM from the file, modify it, and write it out again, without all the
             // overhead of creating a book object.
             var htmlFile = BookStorage.FindBookHtmlInFolder(stagingDirectory);
             var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
 
-            ImageUtils.ReallyCropImages(xmlDomFromHtmlFile, stagingDirectory, stagingDirectory);
-            PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
+            ImageUtils.ReallyCropImages(
+                xmlDomFromHtmlFile,
+                stagingDirectory,
+                stagingDirectory,
+                true,
+                true
+            );
+            // Don't do this; even the 'really cropped' images may have a pixel or two of cropping
+            // to make sure they cover their container, which otherwise would not be guaranteed
+            // since 'really crop' has to procuce whole numbers of pixels and object-fit:contain
+            // will try to shrink it so one dimension is perfect and the other possibly too small.
+            //PublishHelper.SimplifyBackgroundImages(xmlDomFromHtmlFile); // after really cropping
 
             XmlHtmlConverter.SaveDOMAsHtml5(xmlDomFromHtmlFile, htmlFile);
         }
@@ -884,6 +953,9 @@ namespace Bloom.WebLibraryIntegration
                 PublishHelper.RemoveUnpublishableContent(page);
             PublishHelper.RemoveUnpublishableBookData(copiedBook.RawDom);
             PublishHelper.RemoveUnpublishableBookInfo(copiedBook.BookInfo);
+            // Don't pass forPublication true. Technically this is a copy being
+            // made for publication, but we're publishing it in a form that can
+            // be used for continued editing, so don't want any shortcuts.
             copiedBook.Save();
             copiedBook.UpdateSupportFiles();
             book = copiedBook;
@@ -903,6 +975,12 @@ namespace Bloom.WebLibraryIntegration
             bool changeUploader = false
         )
         {
+            // Slowest exactly where our users are: a book with audio and video over a poor connection
+            // routinely takes many minutes.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "uploading a book to Bloom Library"
+            );
+
             // this (isForPublish:true) is dangerous and the product of much discussion.
             // See "finally" block later to see that we put branding files back
             book.Storage.CleanupUnusedSupportFiles(isForPublish: true);
@@ -995,7 +1073,17 @@ namespace Bloom.WebLibraryIntegration
                         );
                         progress.WriteStatus(pdfMsg);
 
-                        publishModel.MakePDFForUpload(progress);
+                        if (!publishModel.MakePDFForUpload(progress))
+                        {
+                            // A partial PDF may well exist on disk (the failure can happen after the
+                            // file is written, while adding metadata), so we must not fall through to
+                            // the Exists() check and upload it as though all was well. (BL-16869)
+                            progress.WriteError(
+                                "{0} was not uploaded because Bloom could not make its PDF.",
+                                bookFolder
+                            );
+                            return "";
+                        }
                         if (RobustFile.Exists(publishModel.PdfFilePath))
                         {
                             RobustFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);
@@ -1039,8 +1127,7 @@ namespace Bloom.WebLibraryIntegration
                     book.BookData.MetadataLanguage1Tag,
                     book.BookData.MetadataLanguage2Tag,
                     bookParams.IsForBulkUpload,
-                    changeUploader,
-                    publishModel.View
+                    changeUploader
                 );
 
                 Debug.Assert(
@@ -1054,7 +1141,10 @@ namespace Bloom.WebLibraryIntegration
                 var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(bookObjectId);
                 book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb, url);
 
-                BloomWebSocketServer.Instance.SendEvent("booksOnBlorg", "reload");
+                // Instance is only set while a collection is open. An upload that finishes as the
+                // collection is closing has nothing left to tell, and no longer has a disposed
+                // server to tell it to, so say nothing rather than throw.
+                BloomWebSocketServer.Instance?.SendEvent("booksOnBlorg", "reload");
                 return bookObjectId;
             }
             finally

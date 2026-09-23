@@ -27,6 +27,7 @@ namespace Bloom.TeamCollection
         }
 
         public bool DisconnectedBecauseOfSubscriptionTier = false;
+        public bool DisconnectedBecauseOfInitializationFailure = false;
 
         // For Moq
         // Alternatively,  you could make it implement an ITeamCollection interface instead.

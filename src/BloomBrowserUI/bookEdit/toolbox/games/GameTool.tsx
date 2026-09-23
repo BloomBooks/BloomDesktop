@@ -1,6 +1,6 @@
 import { css, ThemeProvider } from "@emotion/react";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot, unmountRoot } from "../../../utils/reactRender";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { kGameToolId } from "../toolIds";
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -26,7 +26,6 @@ import { ToolBox } from "../toolbox";
 import {
     adjustDraggablesForLanguage,
     classSetter,
-    copyContentToTarget,
     getTarget,
     playInitialElements,
     prepareActivity,
@@ -44,24 +43,23 @@ import {
 import {
     getEditablePageBundleExports,
     getToolboxBundleExports,
-} from "../../editViewFrame";
+} from "../../js/workspaceFrames";
 import { MenuItem, Select } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { BubbleSpec } from "comicaljs";
 import { setPlayerUrlPrefixFromWindowLocationHref } from "bloom-player";
 import { renderGamePromptDialog } from "./GamePromptDialog";
+import { kBackgroundImageClass } from "../canvas/canvasElementConstants";
+import { pxToNumber } from "../canvas/canvasElementCssUtils";
 import {
-    CanvasElementManager,
     getAllDraggables,
     isDraggable,
-    kBackgroundImageClass,
     kDraggableIdAttribute,
-} from "../../js/CanvasElementManager";
-import {
-    getCanvasElementManager,
-    kCanvasElementSelector,
-} from "../canvas/canvasElementUtils";
+} from "../canvas/canvasElementDraggables";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
+import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
+import { copyContentToTargetAndCleanup } from "../../js/dragActivityRuntimeUtils";
 import { ThemeChooser } from "./ThemeChooser";
 import { SoundSelect } from "./SoundSelect";
 import GameIntroText, { Instructions } from "./GameIntroText";
@@ -72,8 +70,8 @@ import {
     isPlaceHolderImage,
 } from "../../js/bloomImages";
 import { doesContainingPageHaveSameSizeMode } from "./gameUtilities";
-import { CanvasSnapProvider } from "../../js/CanvasSnapProvider";
-import { CanvasGuideProvider } from "../../js/CanvasGuideProvider";
+import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProvider";
+import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
 import $ from "jquery";
@@ -144,7 +142,7 @@ export const hideGamePromptDialog = (page: HTMLElement) => {
     const dialogRoot =
         page.ownerDocument.getElementsByClassName("bloom-ui-dialog")[0];
     if (dialogRoot) {
-        ReactDOM.unmountComponentAtNode(dialogRoot);
+        unmountRoot(dialogRoot);
         dialogRoot.remove();
     }
 };
@@ -203,10 +201,10 @@ export const adjustTarget = (
     // get height and width of things this way, because sometimes some are not visible
     // (e.g., when creating letters in the drag-letter-to-target game)
     const getHeight = (elt: HTMLElement) => {
-        return CanvasElementManager.pxToNumber(elt.style.height);
+        return pxToNumber(elt.style.height);
     };
     const getWidth = (elt: HTMLElement) => {
-        return CanvasElementManager.pxToNumber(elt.style.width);
+        return pxToNumber(elt.style.width);
     };
     // if the target is not the same size, presumably the draggable size changed, in which case
     // we need to adjust the target, and possibly all other targets and draggables on the page.
@@ -449,7 +447,13 @@ const makeArrowShape = (
     // rectangle that contains the arrow, without this it would not get mouse events.
     arrow.style.pointerEvents = "none";
 
-    const color = "#80808080";
+    // Match the arrow to the target's outline color so the two read as a pair. We read the
+    // target's resolved border color rather than the --game-draggable-target-outline-color
+    // variable directly, so themes that define it via color-mix() still yield a concrete color.
+    const color =
+        target.ownerDocument.defaultView!.getComputedStyle(
+            target,
+        ).borderTopColor;
     const strokeWidth = "3";
     const lines = [line, line2, line3];
     lines.forEach((l) => {
@@ -471,7 +475,10 @@ let snappedToExisting = false;
 // but in the Start tab they can be moved). Saves some initial state so we can do snapping,
 // and sets up the mousemove and mouseup handlers that do the actual dragging and snapping.
 const startDraggingTarget = (e: MouseEvent) => {
-    const canvasElementManager = getCanvasElementManager()!;
+    const canvasElementManager = getCanvasElementManager();
+    if (!canvasElementManager) {
+        return;
+    }
     // get the mouse cursor position at startup:
     const target = e.currentTarget as HTMLElement;
     targetBeingDragged = target;
@@ -685,9 +692,12 @@ const updateTabClass = (tabIndex: number) => {
         // doesn't have a tab, but used in Play when showing the correct answer.
         "drag-activity-solution",
     ];
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
     for (let i = 0; i < classes.length; i++) {
         const className = classes[i];
-        classSetter(page, className, i === tabIndex);
+        classSetter(page, className, isDragActivityPage && i === tabIndex);
     }
 };
 
@@ -840,7 +850,7 @@ const DragActivityControls: React.FunctionComponent<{
         "",
     );
 
-    const canvasElementManager = getCanvasElementManager()!;
+    const canvasElementManager = getCanvasElementManager();
     let currentCanvasElement = canvasElementManager?.getActiveElement();
     // Currently we mainly use this to decide whether to show the delete and duplicate buttons.
     // Maybe those are obsolete now we have the new toolbox?
@@ -928,20 +938,35 @@ const DragActivityControls: React.FunctionComponent<{
             currentCanvasElement &&
             currentDraggableTarget
         ) {
-            draggableToTargetObserver.current = new MutationObserver((_) => {
-                // if it's no longer current, we just haven't removed the observer yet,
-                // don't do it.
+            draggableToTargetObserver.current = new MutationObserver(() => {
+                // Skip if it's no longer current (observer hasn't been removed yet)
                 if (
-                    currentCanvasElement ===
+                    currentCanvasElement !==
                     getCanvasElementManager()?.getActiveElement()
                 ) {
-                    copyContentToTarget(currentCanvasElement);
+                    return;
                 }
+                // copyContentToTarget diffs the result against the current target
+                // innerHTML before making any DOM change, so it's safe to call even
+                // when the mutation doesn't actually affect the copy (e.g. position
+                // changes during a canvas element drag).
+                copyContentToTargetAndCleanup(currentCanvasElement);
             });
             draggableToTargetObserver.current.observe(currentCanvasElement, {
                 childList: true,
                 subtree: true,
-                attributes: true, // e.g., cropping of image
+                // It's not obvious that we need to observe attribute changes, since
+                // copyContentToTargetAndCleanup() mainly copies content. However, it does
+                // pay attention to the size of the container, and uses it to create a cropping
+                // container inside the target in some cases. Especially when moving the
+                // right and bottom crop handles, the attributes of the img don't change at all,
+                // but the size of the cropping container needs to.
+                // There are lots of possible attribute changes on the canvas element
+                // that we don't care about, but rather than making a complex filter,
+                // I decided to just leave it to copyContentToTargetAndCleanup to ignore
+                // irrelevant ones, by means of a test that doesn't replace the content
+                // if the innerHTML of the target isn't actually going to change.
+                attributes: true,
             });
         }
     }, [currentCanvasElement, currentDraggableTarget, props.activeTab]);
@@ -1063,6 +1088,9 @@ const DragActivityControls: React.FunctionComponent<{
         copyBuiltIn: boolean,
     ) => {
         const page = getPage();
+        // The sound attributes hold the plain file name, deliberately NOT URL-encoded (unlike
+        // data-backgroundaudio, which the toolbox does encode). C# reads these straight back as
+        // file names. See the encoding conventions note on UrlPathString.cs.
         const setSoundAttr = (soundAttr: string, newSoundId: string) => {
             if (newSoundId === "default") {
                 page.removeAttribute(soundAttr);
@@ -1093,7 +1121,8 @@ const DragActivityControls: React.FunctionComponent<{
         const page = getPage();
         page.setAttribute("data-same-size", newAllSameSize ? "true" : "false");
         if (newAllSameSize) {
-            let someDraggable = getCanvasElementManager()!.getActiveElement(); // prefer the selected one
+            const canvasElementManager = getCanvasElementManager();
+            let someDraggable = canvasElementManager?.getActiveElement(); // prefer the selected one
             if (!someDraggable || !isDraggable(someDraggable)) {
                 // find something
                 someDraggable = page.querySelector(
@@ -1297,12 +1326,12 @@ const DragActivityControls: React.FunctionComponent<{
                                         color={kBloomBlue}
                                         strokeColor={kBloomBlue}
                                     />
-                                    <CanvasElementRectangleItem />
+                                    <GameTextItem capitalize={true} />
                                     <CanvasElementVideoItem />
                                 </CanvasElementItemRow>
                                 <CanvasElementItemRow>
                                     <CanvasElementGifItem />
-                                    <GameTextItem />
+                                    <CanvasElementRectangleItem />
                                 </CanvasElementItemRow>
                             </CanvasElementItemRegion>
                         )}
@@ -1460,6 +1489,7 @@ const DragActivityControls: React.FunctionComponent<{
 
 const GameTextItem: React.FunctionComponent<{
     addClasses?: string;
+    capitalize?: boolean;
 }> = (props) => {
     // We don't want game text items to autosize, so we add this class to them. (BL-14779)
     let classesToAdd = props.addClasses ?? "";
@@ -1468,7 +1498,10 @@ const GameTextItem: React.FunctionComponent<{
     }
     return (
         <CanvasElementTextItem
-            css={textItemCss("14pt")}
+            css={textItemCss({
+                fontSize: "14pt",
+                capitalize: props.capitalize,
+            })}
             l10nKey="EditTab.Toolbox.DragActivity.Text"
             makeTarget={false}
             addClasses={classesToAdd.trim()}
@@ -1477,11 +1510,16 @@ const GameTextItem: React.FunctionComponent<{
     );
 };
 
-function textItemCss(
-    fontSize: string = "larger",
-    darkBackground: boolean = false,
-    radius: string = "0",
-) {
+function textItemCss(options?: {
+    fontSize?: string;
+    darkBackground?: boolean;
+    radius?: string;
+    capitalize?: boolean;
+}) {
+    const fontSize = options?.fontSize ?? "larger";
+    const darkBackground = options?.darkBackground ?? false;
+    const radius = options?.radius ?? "0";
+    const capitalize = options?.capitalize ?? false;
     return css`
         margin-left: 5px;
         text-align: center; // Center the text horizontally
@@ -1491,10 +1529,15 @@ function textItemCss(
         background-color: ${darkBackground ? kBloomBlue : "white"};
         border-radius: ${radius};
         font-size: ${fontSize};
+        text-transform: ${capitalize ? "uppercase" : "none"};
     `;
 }
 
-const draggableWordCss = textItemCss("20px", true, "5px");
+const draggableWordCss = textItemCss({
+    fontSize: "20px",
+    darkBackground: true,
+    radius: "5px",
+});
 
 const playAudioCss = css`
     margin-top: 10px;
@@ -1720,7 +1763,7 @@ export class GameTool extends ToolboxToolReactAdaptor {
     private renderRoot(): void {
         if (!this.root) return;
         this.pageGeneration++;
-        ReactDOM.render(
+        renderRoot(
             <DragActivityControls
                 activeTab={this.tab}
                 pageGeneration={this.pageGeneration}
@@ -1779,7 +1822,11 @@ export class GameTool extends ToolboxToolReactAdaptor {
         } else {
             this.lastPageId = pageId;
             // useful during development, MAY not need in production.
-            const canvasElementManager = getCanvasElementManager()!;
+            const canvasElementManager = getCanvasElementManager();
+            if (!canvasElementManager) {
+                window.setTimeout(() => this.newPageReady(), 100);
+                return;
+            }
             canvasElementManager.removeDetachedTargets();
             canvasElementManager.adjustCanvasElementOrdering();
 
@@ -1802,7 +1849,13 @@ export function playSound(
     page: HTMLElement,
     soundType?: SoundType,
 ) {
-    let url = "audio/" + newSoundId;
+    // encodeURIComponent because newSoundId is a plain file name, not a URL: the sound
+    // attributes deliberately store the unencoded name (see the encoding conventions note on
+    // UrlPathString.cs), so anything in it that means something in a URL has to be escaped
+    // here, when we build one. Without this, a sound genuinely called "beep%41.mp3" is asked
+    // for as "beepA.mp3" and silently doesn't play. Safe to encode the whole thing because
+    // this is a bare file name -- no '/' of its own to preserve. (BL-16669)
+    let url = "audio/" + encodeURIComponent(newSoundId);
     if (newSoundId === "default") {
         if (soundType === undefined) {
             throw new Error(
@@ -1877,6 +1930,18 @@ export function getActiveDragActivityTab(): number {
     return window.top!["dragActivityPage"] ?? 0;
 }
 
+function removeBloomSelectedFromTargets(page: HTMLElement): void {
+    page.querySelectorAll("[data-target-of] .bloom-selected").forEach((el) => {
+        el.classList.remove("bloom-selected");
+    });
+}
+
+function scheduleRemoveBloomSelectedFromTargets(page: HTMLElement): void {
+    // Some drag-activity runtime operations can copy content asynchronously after
+    // tab setup, so run cleanup again on the next tick.
+    setTimeout(() => removeBloomSelectedFromTargets(page), 0);
+}
+
 // The top-level function to get everything into the right state for the specified tab
 // (Start, Correct, Wrong, Play).
 // Note: the games code is currently pulled into the page bundle, but this function
@@ -1886,7 +1951,6 @@ export function getActiveDragActivityTab(): number {
 // getToolboxBundleExports()?.setActiveDragActivityTab(), which works in any bundle.
 // Even in this file, a calling function could be running in the page bundle.
 export function setActiveDragActivityTab(tab: number) {
-    window.top!["dragActivityPage"] = tab;
     const page = GameTool.getBloomPage();
     const pageFrameExports = getEditablePageBundleExports();
     if (!page || !pageFrameExports) {
@@ -1906,21 +1970,29 @@ export function setActiveDragActivityTab(tab: number) {
         console.error("No parent for page");
         return;
     }
-    updateTabClass(tab);
-    pageFrameExports.renderDragActivityTabControl(tab);
+    const isDragActivityPage = (
+        page.getAttribute("data-activity") ?? ""
+    ).startsWith("drag-");
+    // Non-drag games can still pass through this API during page setup. Force Start mode there
+    // so drag-only positioning logic (for Correct/Wrong/Play) cannot mutate their canvas elements.
+    const effectiveTab = isDragActivityPage ? tab : startTabIndex;
+    window.top!["dragActivityPage"] = effectiveTab;
+
+    updateTabClass(effectiveTab);
+    pageFrameExports.renderDragActivityTabControl(effectiveTab);
     // Update the toolbox.
     /// Review: might it not exist yet? Do we need a timeout if so?
     // I think we're OK, if for no other reason, because both the dragActivityTool code and the
     // code here agree that we start in the Start tab after switching pages.
     const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-    toolbox?.getTheOneGameTool()?.setActiveTab(tab);
+    toolbox?.getTheOneGameTool()?.setActiveTab(effectiveTab);
 
     //Slider: const wrapper = page.getElementsByClassName(
     //     "bloom-activity-slider"
     // )[0] as HTMLElement;
 
     const canvasElementManager = getCanvasElementManager();
-    if (tab === playTabIndex) {
+    if (effectiveTab === playTabIndex) {
         canvasElementManager!.suspendComicEditing("forGamePlayMode");
         // Enhance: perhaps the next/prev page buttons could do something even here?
         // If so, would we want them to work only in TryIt mode, or always?
@@ -1969,18 +2041,26 @@ export function setActiveDragActivityTab(tab: number) {
         canvasElementManager?.checkActiveElementIsVisible();
         //Slider: wrapper?.addEventListener("click", designTimeClickOnSlider);
     }
-    if (tab === correctTabIndex || tab === wrongTabIndex) {
+    if (
+        isDragActivityPage &&
+        (effectiveTab === correctTabIndex || effectiveTab === wrongTabIndex)
+    ) {
         // We can't currently do this for hidden canvas elements, and selecting one of these tabs
         // may cause some previously hidden canvas elements to become visible.
         canvasElementManager?.ensureCanvasElementsIntersectParent(page);
     }
-    if (tab === startTabIndex) {
+    if (effectiveTab === startTabIndex) {
         enableDraggingTargets(page);
         pageFrameExports.showGamePromptDialog(true);
     } else {
         disableDraggingTargets(page);
         hideGamePromptDialog(page);
     }
+
+    // Defensive cleanup: copies of draggables in targets should never carry video
+    // selection state, even if copied by external runtime code paths.
+    removeBloomSelectedFromTargets(page);
+    scheduleRemoveBloomSelectedFromTargets(page);
 }
 
 // Replace the origami control with the Game tab control if the page is a game.
@@ -1993,36 +2073,9 @@ export function setupDragActivityTabControl() {
     if (!isPageBloomGame(page)) {
         return;
     }
-    const tabControl = page.ownerDocument.createElement("div");
-    tabControl.setAttribute("id", kIdForDragActivityTabControl);
-    const abovePageControlContainer = page.ownerDocument.getElementsByClassName(
-        "above-page-control-container",
-    )[0];
-    if (!abovePageControlContainer) {
-        // if it's not already created, keep trying until it is.
-        setTimeout(setupDragActivityTabControl, 200);
-        return;
-    }
-    // We want the Game controls exactly when we don't
-    // want origami, so we use the control container we usually use for origami,
-    // a nice wrapper inside the page (so we can
-    // get the correct page alignment) and have already arranged to delete before saving the page.
-    abovePageControlContainer.appendChild(tabControl);
-    // Seems strange that we need to do this to call a function in the same file,
-    // but currently this code is also pulled into the page bundle, and called from
-    // its initialization code, and it's vital to be consistent about the bundle
-    // from which event handler functions are taken, so they can later be removed.
     getToolboxBundleExports()?.setActiveDragActivityTab(
         getActiveDragActivityTab(),
     );
-}
-
-// dimension is assumed to end with "px" (as we use for positioning and dimensioning canvas elements).
-// Technically it would get a result for other two-character units, but the result might not be
-// what we want, since we use the resulting number assuming it means px.
-function pxToNumber(dimension: string): number {
-    const num = dimension.substring(0, dimension.length - 2); // strip off "px"
-    return parseFloat(num);
 }
 
 export const makeTargetForDraggable = (

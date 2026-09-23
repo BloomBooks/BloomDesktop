@@ -4,12 +4,20 @@ import $ from "jquery";
 import bloomQtipUtils from "./bloomQtipUtils";
 import {
     cleanupImages,
+    getImageTransparencyMode,
+    getOwningPageBackgroundColor,
     HandleImageError,
+    normalizeCoverImageDesignation,
+    buildSrcWithTransparentParam,
+    pageBackgroundNeedsTransparency,
     SetupMetadataButton,
     SetupResizableElement,
     SetupImagesInContainer,
 } from "./bloomImages";
-import { SetupVideoEditing } from "./bloomVideo";
+import {
+    removeTransientVideoTimestampParams,
+    SetupVideoEditing,
+} from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
 import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
@@ -23,35 +31,35 @@ import {
     CanvasElementManager,
     initializeCanvasElementManager,
     theOneCanvasElementManager,
-} from "./CanvasElementManager";
+} from "./canvasElementManager/CanvasElementManager";
+import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import {
-    getCanvasElementManager,
+    canUndoImageOperation,
+    clearImageOperationUndoState,
+    commitPendingImageOperationUndo,
+    prepareUndoForImageOperation,
+    undoImageOperation,
+} from "./ImageUndoManager";
+import {
     kCanvasElementClass,
     kCanvasElementSelector,
-} from "../toolbox/canvas/canvasElementUtils";
-import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
+} from "../toolbox/canvas/canvasElementConstants";
 import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "../../lib/jquery.qtip.js";
 import "../../lib/jquery.qtipSecondary.js";
 import "../../lib/long-press/jquery.longpress.js";
 import {
-    doWhenEditTabBundleLoaded,
+    doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
-} from "./bloomFrames";
+} from "./workspaceFrames";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import {
-    get,
-    postBoolean,
-    postJson,
-    postString,
-    postThatMightNavigate,
-} from "../../utils/bloomApi";
+import { post, postBoolean, postJson, postString } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 
 import { hookupLinkHandler } from "../../utils/linkHandler";
@@ -61,12 +69,21 @@ import {
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
 import { EditableDivUtils } from "./editableDivUtils";
+import {
+    externalCaptureErrorForPendingWork,
+    kExternalCaptureMaxWaitMs,
+} from "./pageContentCapturePolicy";
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
+import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../editViewFrame";
+import { handleUndo } from "../workspaceRoot";
+import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
+import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
+import { resetAbovePageControls } from "./AbovePageControls";
+import { recordFractionOfPageOnImageSlots } from "./imageTargetResolution";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -266,9 +283,19 @@ function AddEditKeyHandlers(container) {
             hideInvisibles(e);
         });
 
+    // Ctrl+Space: "clear formatting" on the current selection. We route this through the CKEditor
+    // instance that currently has focus (rather than the browser's document.execCommand) so that
+    // (a) it uses our removeFormat configuration/filter, which strips exactly the inline formatting
+    // our toolbar produces (bold, italic, underline, superscript, text color) while preserving
+    // Bloom's structural spans, and (b) the edit goes through CKEditor's change/undo machinery so
+    // it is noticed and saved. CKEditor breaks up partially-selected enclosing elements as needed.
     $(document).on("keydown", (e) => {
         if (e.key === " " && e.ctrlKey && !e.shiftKey && !e.altKey) {
-            document.execCommand("removeFormat"); // will remove bold, italics, etc. but not things that use elements, like h1
+            const editor = CKEDITOR.currentInstance;
+            if (editor) {
+                e.preventDefault();
+                editor.execCommand("removeFormat");
+            }
         }
     });
 
@@ -405,6 +432,7 @@ export interface IImageInfo {
     copyright: string;
     creator: string;
     license: string;
+    undoable: string;
 }
 
 export const kMakeNewCanvasElement = "makeNewCanvasElement";
@@ -416,6 +444,9 @@ export function notifyToolOfChangedImage(img?: HTMLImageElement) {
 
 // called by c# so be careful about changing the signature, including names of parameters
 export function changeImage(imageInfo: IImageInfo) {
+    if (imageInfo.undoable !== "true") {
+        clearImageOperationUndoState();
+    }
     if (imageInfo.imageId === kMakeNewCanvasElement) {
         theOneCanvasElementManager.finishPasteImageFromClipboard(imageInfo);
         // like to do this here, but the image overlay isn't always really created yet.
@@ -428,13 +459,49 @@ export function changeImage(imageInfo: IImageInfo) {
             `changeImage: imageOrImageContainerId: "${imageInfo.imageId}" not found`,
         );
     }
+    if (imageInfo.undoable === "true") {
+        prepareUndoForImageOperation(imgOrImageContainer);
+    }
     changeImageInfo(imgOrImageContainer, imageInfo);
     // id is just a temporary expedient to find the right image easily in this method.
     imgOrImageContainer.removeAttribute("id");
     theOneCanvasElementManager.updateCanvasElementForChangedImage(
         imgOrImageContainer,
     );
+    commitPendingImageOperationUndo(imgOrImageContainer);
     notifyToolOfChangedImage();
+}
+
+/**
+ * Apply a new image to a known element reference, without requiring a temporary id attribute.
+ * Use this from JS-initiated flows (e.g. the image gallery dialog) where the caller already
+ * holds a direct reference to the element.
+ */
+export function changeImageByElement(
+    imgOrImageContainer: HTMLElement,
+    imageInfo: Omit<IImageInfo, "imageId">,
+): void {
+    if (imageInfo.undoable !== "true") {
+        clearImageOperationUndoState();
+    }
+    if (imageInfo.undoable === "true") {
+        prepareUndoForImageOperation(imgOrImageContainer);
+    }
+    changeImageInfo(imgOrImageContainer, imageInfo as IImageInfo);
+    theOneCanvasElementManager.updateCanvasElementForChangedImage(
+        imgOrImageContainer,
+    );
+    commitPendingImageOperationUndo(imgOrImageContainer);
+    notifyToolOfChangedImage();
+}
+
+export function imageOperationCanUndo(): boolean {
+    return canUndoImageOperation();
+}
+
+export function imageOperationUndo(): boolean {
+    const didUndo = undoImageOperation();
+    return didUndo;
 }
 
 export function changeImageInfo(
@@ -452,7 +519,13 @@ export function changeImageInfo(
             "bloom-imageLoadError",
         );
         (imgOrImageContainer as HTMLImageElement).onerror = HandleImageError;
-        (imgOrImageContainer as HTMLImageElement).src = imageInfo.src;
+        const bgColor = getOwningPageBackgroundColor(imgOrImageContainer);
+        const mode = getImageTransparencyMode(
+            imgOrImageContainer,
+            pageBackgroundNeedsTransparency(bgColor),
+        );
+        (imgOrImageContainer as HTMLImageElement).src =
+            buildSrcWithTransparentParam(imageInfo.src, mode);
     }
     // else if it has class bloom-imageContainer or bloom-canvas, we need to set the background-image on the container
     else if (
@@ -467,6 +540,15 @@ export function changeImageInfo(
     imgOrImageContainer.setAttribute("data-copyright", imageInfo.copyright);
     imgOrImageContainer.setAttribute("data-creator", imageInfo.creator);
     imgOrImageContainer.setAttribute("data-license", imageInfo.license);
+
+    const page = imgOrImageContainer.closest(
+        ".bloom-page",
+    ) as HTMLElement | null;
+    // In case we're on a custom outside front cover page, keep the coverImage
+    // designation aligned with the current best image choice.
+    if (page) {
+        normalizeCoverImageDesignation(page);
+    }
 }
 
 // This origami checking business is related BL-13120
@@ -512,6 +594,9 @@ export function SetupElements(
             "originalCopyrightAndLicense",
     );
     originalTitleCitations.forEach((titleElement: HTMLElement) => {
+        if (titleElement.innerText.trim())
+            titleElement.classList.remove("missingOriginalTitle");
+        else titleElement.classList.add("missingOriginalTitle");
         titleElement.onclick = () => {
             showRequestStringDialog(
                 titleElement.innerText,
@@ -520,8 +605,8 @@ export function SetupElements(
                 "EditTab.FrontMatter.EditOriginalTitleLabel",
                 "Original Title",
                 (newTitle) => {
-                    titleElement.innerText = newTitle;
-                    if (newTitle) {
+                    titleElement.innerText = newTitle ?? "";
+                    if (titleElement.innerText.trim()) {
                         titleElement.classList.remove("missingOriginalTitle");
                     } else {
                         titleElement.classList.add("missingOriginalTitle");
@@ -540,7 +625,7 @@ export function SetupElements(
             this.innerHTML = this.value;
         });
 
-    doWhenEditTabBundleLoaded((rootFrameExports) => {
+    doWhenWorkspaceBundleLoaded((rootFrameExports) => {
         rootFrameExports.doWhenToolboxLoaded((toolboxFrameExports) => {
             const toolbox = toolboxFrameExports.getTheOneToolbox();
             // toolbox might be undefined in unit testing?
@@ -587,6 +672,7 @@ export function SetupElements(
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable",
             );
+            const originalOrder = contentElements.toArray();
             contentElements.sort((a, b) => {
                 //using negatives so that something with none of these labels ends up with a > score and at the end
                 //reviewSlog
@@ -606,8 +692,17 @@ export function SetupElements(
                 }
                 return 0;
             });
-            //do the actual rearrangement
-            $(this).append(contentElements);
+            //do the actual rearrangement -- but only if something actually needs to move.
+            // append() detaches and re-inserts every element even when the order is already
+            // correct (the normal case for a saved book), and that churn can cost a visible
+            // frame of blank text after a page loads (BL-15300), besides killing the audio
+            // highlight's Ranges and forcing a repair.
+            const orderChanged = contentElements
+                .toArray()
+                .some((el, index) => originalOrder[index] !== el);
+            if (orderChanged) {
+                $(this).append(contentElements);
+            }
         });
 
     //Convert Standard Format Markers in the pasted text to html spans
@@ -620,7 +715,7 @@ export function SetupElements(
             if (!theEvent.clipboardData) return;
 
             const s = theEvent.clipboardData.getData("text/plain");
-            if (s == null || s === "") return;
+            if (s === null || s === "") return;
 
             if ($(this).parent().hasClass("bloom-userCannotModifyStyles")) {
                 e.preventDefault();
@@ -715,48 +810,10 @@ export function SetupElements(
 
     SetupMetadataButton(container);
 
-    //note, the normal way is for the user to click the link on the bubble.
-    //But clicking on the existing topic may be natural too, and this prevents
-    //them from editing it by hand.
-    $(container)
-        .find("div[data-derived='topic']")
-        .click(function () {
-            if ($(this).css("cursor") === "not-allowed") return;
-            showTopicChooserDialog();
-        });
-
     setupBookLinkGrids(container);
 
-    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
-    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
-    const divsThatHaveSourceBubbles: HTMLElement[] = [];
-    const bubbleDivs: any[] = [];
-    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
-        $(container)
-            .find("*.bloom-translationGroup")
-            .not(".bloom-readOnlyInTranslationMode")
-            .each(function () {
-                if ($(this).find("textarea, div").length > 1) {
-                    const bubble =
-                        BloomSourceBubbles.ProduceSourceBubbles(this);
-                    if (bubble.length !== 0) {
-                        divsThatHaveSourceBubbles.push(this);
-                        bubbleDivs.push(bubble);
-                    }
-                }
-            });
-    }
-
-    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
-    // priority, and should not show if we already have a source bubble.
-    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
-    // This would happen with the Book Title, which would have both
-    // when there are source languages to show
-    BloomHintBubbles.addHintBubbles(
-        container,
-        divsThatHaveSourceBubbles,
-        bubbleDivs,
-    );
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
 
     PlaceholderProvider.addPlaceholders(container);
 
@@ -766,12 +823,7 @@ export function SetupElements(
     // For getting focus set reliably, it seems best to do this whole loop inside one delay, rather than
     // have separate delays invoked each time through the loop.
     setTimeout(() => {
-        for (let i = 0; i < bubbleDivs.length; i++) {
-            BloomSourceBubbles.MakeSourceBubblesIntoQtips(
-                divsThatHaveSourceBubbles[i],
-                bubbleDivs[i],
-            );
-        }
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
         BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
         if (theOneCanvasElementManager.isCanvasElementEditingOn) {
             // If we saved the page with an indication that a particular element should be
@@ -783,7 +835,12 @@ export function SetupElements(
                 const currentPageId = document
                     .getElementsByClassName("bloom-page")[0]
                     ?.getAttribute("id");
-                if (currentPageId === (window.top as any).lastPageId) {
+                const topWindow = window.top as
+                    | (Window & {
+                          lastPageId?: string;
+                      })
+                    | null;
+                if (currentPageId === topWindow?.lastPageId) {
                     elementToFocus = Array.from(
                         document.getElementsByClassName(kCanvasElementClass),
                     ).find((e) =>
@@ -791,7 +848,9 @@ export function SetupElements(
                     ) as HTMLElement;
                 } else {
                     // remember this page!
-                    (window.top as any).lastPageId = currentPageId;
+                    if (topWindow) {
+                        topWindow.lastPageId = currentPageId ?? undefined;
+                    }
                 }
             }
             // If we don't have some specific reason to focus on a particular canvas element, we
@@ -935,6 +994,65 @@ export function SetupElements(
     ConstrainContentsOfPageLabel(container);
 }
 
+function prepareSourceAndHintBubbles(container: HTMLElement): {
+    divsThatHaveSourceBubbles: HTMLElement[];
+    bubbleDivs: JQuery[];
+} {
+    // Copy source texts out to their own div, where we can make a bubble with tabs out of them
+    // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
+    const divsThatHaveSourceBubbles: HTMLElement[] = [];
+    const bubbleDivs: JQuery[] = [];
+    if ($(container).find(".bloom-preventSourceBubbles").length === 0) {
+        $(container)
+            .find("*.bloom-translationGroup")
+            .not(".bloom-readOnlyInTranslationMode")
+            .each(function () {
+                if ($(this).find("textarea, div").length > 1) {
+                    const bubble =
+                        BloomSourceBubbles.ProduceSourceBubbles(this);
+                    if (bubble.length !== 0) {
+                        divsThatHaveSourceBubbles.push(this);
+                        bubbleDivs.push(bubble);
+                    }
+                }
+            });
+    }
+
+    //NB: this should be after the ProduceSourceBubbles(), because hint-bubbles are lower
+    // priority, and should not show if we already have a source bubble.
+    // (Eventually we may make the hint part of the source bubble when there is one...Bl-4295.)
+    // This would happen with the Book Title, which would have both
+    // when there are source languages to show
+    BloomHintBubbles.addHintBubbles(
+        container,
+        divsThatHaveSourceBubbles,
+        bubbleDivs,
+    );
+    return { divsThatHaveSourceBubbles, bubbleDivs };
+}
+
+function makeSourceBubblesIntoQtips(
+    bubbleDivs: JQuery[],
+    divsThatHaveSourceBubbles: HTMLElement[],
+) {
+    for (let i = 0; i < bubbleDivs.length; i++) {
+        BloomSourceBubbles.MakeSourceBubblesIntoQtips(
+            divsThatHaveSourceBubbles[i],
+            bubbleDivs[i],
+        );
+    }
+}
+
+export function recomputeSourceBubblesForPage(container: HTMLElement) {
+    const { divsThatHaveSourceBubbles, bubbleDivs } =
+        prepareSourceAndHintBubbles(container);
+    PlaceholderProvider.addPlaceholders(container);
+    setTimeout(() => {
+        makeSourceBubblesIntoQtips(bubbleDivs, divsThatHaveSourceBubbles);
+        BloomSourceBubbles.setupSizeChangedHandling(divsThatHaveSourceBubbles);
+    }, 100);
+}
+
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing
 // "originalTitle" element. It is displayed using CSS :after so we don't have to modify the DOM to
 // make it appear, which would risk having it show up in published books. We insert the CSS dynamically
@@ -971,12 +1089,12 @@ function SetupCustomMissingTitleStylesheet() {
 
 const pageLabelL18nPrefix = "TemplateBooks.PageLabel.";
 
-function ConstrainContentsOfPageLabel(container) {
+function ConstrainContentsOfPageLabel(_container) {
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
-    $(pageLabel).blur((event) => {
+    $(pageLabel).blur((_event) => {
         // characters that cause problem in windows file names (linux is less picky, according to mono source)
         pageLabel.innerText = pageLabel.innerText
             .split(/[\/\\*:?"<>|]/)
@@ -986,7 +1104,7 @@ function ConstrainContentsOfPageLabel(container) {
         // update data-i18n attribute to prevent this change being forgotten on reload; BL-5855
         let localizationAttr = pageLabel.getAttribute("data-i18n");
         if (
-            localizationAttr != null &&
+            localizationAttr !== null &&
             localizationAttr.startsWith(pageLabelL18nPrefix)
         ) {
             localizationAttr = pageLabelL18nPrefix + pageLabel.innerText;
@@ -995,14 +1113,14 @@ function ConstrainContentsOfPageLabel(container) {
     });
 }
 
-function AddXMatterLabelAfterPageLabel(container) {
+function AddXMatterLabelAfterPageLabel(_container) {
     // All this rigamarole so we can localize...
     const pageLabel = <HTMLDivElement>(
         document.getElementsByClassName("pageLabel")[0]
     );
     if (!pageLabel) return;
     let xMatterLabel = window.getComputedStyle(pageLabel, ":before").content;
-    if (xMatterLabel == null) return;
+    if (xMatterLabel === null) return;
     xMatterLabel = xMatterLabel.replace(new RegExp('"', "g"), ""); //No idea why the quotes are still in there at this point.
     if (xMatterLabel === "" || xMatterLabel === "none") return;
     theOneLocalizationManager
@@ -1029,11 +1147,8 @@ function OneTimeSetup() {
     setupOrigami();
     hookupLinkHandler();
     setupDragActivityTabControl();
-}
-
-interface String {
-    endsWith(string): boolean;
-    startsWith(string): boolean;
+    setupPageLayoutMenu();
+    setupTextContextMenu();
 }
 
 function isTextSelected(): boolean {
@@ -1055,7 +1170,7 @@ export function bootstrap() {
 
     document.addEventListener("selectionchange", () => {
         const textSelected = isTextSelected();
-        if (textSelected != reportedTextSelected) {
+        if (textSelected !== reportedTextSelected) {
             postBoolean("editView/isTextSelected", textSelected);
             reportedTextSelected = textSelected;
         }
@@ -1066,7 +1181,7 @@ export function bootstrap() {
     document.addEventListener(
         "mousedown",
         () => {
-            getToolboxBundleExports()?.handleClickOutsideToolbox();
+            getToolboxBundleExports()?.simulateBlurOnPageFrameMouseDown();
         },
         { capture: true },
     );
@@ -1110,45 +1225,74 @@ export function bootstrap() {
 
     // Attach ckeditor to the fields that can have styled editable text.
     // (See comment above on ckeditableSelector for what fields those are.)
+    //
+    // KNOWN DEFECT, not fixed because CKEditor is being retired (the retireCkEditor work): each
+    // CKEDITOR.inline() below returns before its editor is ready, and when the editor does become
+    // ready it writes the snapshot it took here over whatever the element holds by then. So
+    // anything a person types in that window is silently destroyed. Measured on a developer
+    // machine by watching the DOM: a title typed at 942ms after the page loaded was gone at
+    // 1215ms, in the same mutation that added the cke_editable class. Type a title fast enough
+    // after making a book and you lose it; a loaded machine widens the window. Written up in
+    // src/BloomE2E/AUTOMATION-DEBT.md, "A title typed on the cover of a new book can fail to
+    // reach the collection", which also has the e2e suite's workaround. If CKEditor ends up
+    // staying, that entry is the place to start.
     $("div.bloom-page")
         .find(ckeditableSelector)
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
+
+    // CKEditor initialization can replace editable nodes in some environments,
+    // so re-attach longpress handlers after editors are wired up.
+    activateLongPressFor($("div.bloom-page").find(".bloom-editable"));
+
     if ($("div.bloom-page").length === 1) {
         addScrollbarsToPage($("div.bloom-page")[0]);
     }
-    // We want to do this as late in the page setup process as possible because a
-    // mouse zoom event will regenerate the page, and various things we do in the process
-    // of starting up a page don't like it if the page we are loading is already unloading.
-    // We currently suppress errors for pages which are in the process of going away, but better
-    // not to generate them than suppress them if we can help it.
     setupWheelZooming();
 }
+// The minimum time between two zoom requests to the server, in milliseconds.
+// One request per wheel notch could freeze Bloom for minutes (BL-16762): each request
+// runs on the UI thread and calls into the WebView2, while the browser process sends
+// each Ctrl key event to the host synchronously and waits for an answer.
+const kZoomRequestIntervalMs = 150;
+// The wheel notches that we have not sent yet. A positive number zooms in.
+let pendingZoomNotches = 0;
+// Set while we wait out kZoomRequestIntervalMs after a zoom request.
+let zoomRequestTimer: number | undefined;
+
+// Send the notches that came in since the last request, then wait
+// kZoomRequestIntervalMs before we send another. If no notch came in, stop the timer,
+// so that the next notch goes out at once.
+function sendPendingZoom() {
+    const notches = pendingZoomNotches;
+    pendingZoomNotches = 0;
+    if (notches === 0) {
+        zoomRequestTimer = undefined;
+        return;
+    }
+    post("edit/pageControls/zoomBy?notches=" + notches);
+    zoomRequestTimer = window.setTimeout(
+        sendPendingZoom,
+        kZoomRequestIntervalMs,
+    );
+}
+
 // Attach a function to implement zooming on mouse wheel with ctrl.
-// Setting this up should be one of the last things we do when loading the page...
-// see the comment above where it is called.
-// (Unfortunately, this tends to make zooming feel rather sluggish...we could
-// try to optimize that, possibly by trying to keep track of how many wheel events
-// we got and using bigger increments...it should be safe to set up a handler
-// that just counts them, as long as we don't initiate a new page load until we
-// get done loading this one. Or maybe there are some events in page load that
-// we could abort if we already got another zoom event. For now, just trying
-// to stop it crashing.)
 function setupWheelZooming() {
     $("body").on("wheel", (e) => {
         const theEvent = e.originalEvent as WheelEvent;
         if (!theEvent.ctrlKey) return;
-        let command: string = "";
         // Note the direction of the zoom is opposite the direction of the scroll.
         if (theEvent.deltaY < 0) {
-            command = "edit/pageControls/zoomPlus";
+            pendingZoomNotches++;
         } else if (theEvent.deltaY > 0) {
-            command = "edit/pageControls/zoomMinus";
+            pendingZoomNotches--;
         }
-        if (command != "") {
-            // Zooming re-loads the page (because of a text-over-picture issue)
-            postThatMightNavigate(command);
+        // Nothing is in flight, so send this notch now. Only a fast spin accumulates
+        // notches, and then the server gets one big increment instead of many small ones.
+        if (zoomRequestTimer === undefined) {
+            sendPendingZoom();
         }
         // Setting the zoom is all we want to do in this context.
         e.preventDefault();
@@ -1179,12 +1323,24 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         .done((result) => {
             $(toolGroup).find(".cke_button__superscript").attr("title", result);
         });
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.DirectFormatting.RemoveFormat",
+            "Remove Formatting",
+            "",
+        )
+        .done((result) => {
+            $(toolGroup)
+                .find(".cke_button__removeformat")
+                .attr("title", result);
+        });
 }
 
 // This is invoked when we are about to change pages.
 function removeEditingDebris() {
-    // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
-    // pages while the origami toggle in on.
+    resetAbovePageControls();
+    // We are mirroring the Change Layout mode toggle behavior here, in case the user changes
+    // pages while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
     const marginBox = document.getElementsByClassName("marginBox")[0];
     marginBox.classList.remove("origami-layout-mode");
@@ -1192,13 +1348,18 @@ function removeEditingDebris() {
     for (let i = 0; i < textLabels.length; i++) {
         textLabels[i].remove();
     }
+    removeTransientVideoTimestampParams(document.body);
     cleanupNiceScroll(); // don't leave the nicescroll debris around
 }
 
 // Delay notification management for requestPageContent
 const activeDelays: string[] = [];
-const kMaxWaitTimeMs = 2000;
-let requestPageContentTimeout;
+// Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work
+// (image sizing, canvas-element layout, etc.) to finish before capturing anyway. The
+// wait ends as soon as activeDelays empties, so simple pages are unaffected by this value;
+// it only gives slower computers with complex pages more headroom before we give up.
+const kMaxWaitTimeMs = 4000;
+let requestPageContentTimeout: number | null = null;
 
 // Add a delay notification that will prevent requestPageContent from running immediately.
 // The caller must provide a string ID and pass it to removeRequestPageContentDelay when done.
@@ -1208,7 +1369,7 @@ export function addRequestPageContentDelay(id: string): void {
 }
 
 // Remove a delay notification, allowing requestPageContent to proceed if no other delays are active.
-// If this was the last delay, proceed with requesting page content
+// If this was the last delay, proceed with requesting page content.
 export function removeRequestPageContentDelay(id: string): void {
     const index = activeDelays.indexOf(id);
     if (index === -1) {
@@ -1221,7 +1382,7 @@ export function removeRequestPageContentDelay(id: string): void {
     }
     activeDelays.splice(index, 1);
 
-    // If there are no more delays, go on and request page content
+    // If there are no more delays, go on and request page content.
     if (activeDelays.length === 0 && requestPageContentTimeout) {
         requestPageContentInternal();
     }
@@ -1252,14 +1413,16 @@ export async function wrapWithRequestPageContentDelay<T>(
 // When other javascript code is doing something that will change the page DOM asynchronously and will also cause the
 // document to be saved, race conditions are possible. In such cases the delay functions above
 // (preferably wrapWithRequestPageContentDelay) should be used to wrap the asynchronous DOM changes to ensure that this
-//  function does not return the page content for saving until after the changes have been completed.
+// function does not return the page content for saving until after the changes have been completed.
 // The current delay mechanism is not designed to handle multiple concurrent requests.
 export function requestPageContent() {
-    // Check if there are active delay requests
+    // Check if there are active delay requests.
     if (activeDelays.length > 0) {
-        requestPageContentTimeout = setTimeout(() => {
+        requestPageContentTimeout = window.setTimeout(() => {
             console.warn(
-                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(", ")}]. Proceeding anyway.`,
+                `requestPageContent: Maximum wait time (${kMaxWaitTimeMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
             );
             requestPageContentInternal();
         }, kMaxWaitTimeMs);
@@ -1268,23 +1431,47 @@ export function requestPageContent() {
     }
 }
 
+// Run the load-time cleanup and return the page body + user stylesheet combined with the
+// <SPLIT-DATA> delimiter that C# splits on. Shared by the live save path (requestPageContentInternal)
+// and the off-screen capture path (captureContentForExternalProcessing) so the cleanup steps and the
+// delimiter can't drift between them.
+//
+// DESTRUCTIVE READ: this mutates the live DOM as a side effect (removeToolboxMarkup(),
+// removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
+// canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
+// callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
+// uses a fresh disposable browser per page. Don't call this from a context where the page must stay
+// live and editable afterward.
+function extractAndStripPageContentForSave(): string {
+    // Record how much of the page each image slot covers, while the page is still laid out.
+    // That is the only record of it: the saved HTML otherwise says nothing about how big
+    // anything ends up on screen, so without this the AI image editor could not tell what size
+    // an image on any page but the open one ought to be. Never throws out: a missing size hint
+    // must not cost the user their page.
+    try {
+        recordFractionOfPageOnImageSlots(document.body);
+    } catch (e) {
+        console.error("recordFractionOfPageOnImageSlots failed: ", e);
+    }
+
+    // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
+    // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
+    getToolboxBundleExports()?.removeToolboxMarkup();
+    removeEditingDebris();
+    const content = getBodyContentForSavePage();
+    const userStylesheet = userStylesheetContent();
+    // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
+    // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
+    return content + "<SPLIT-DATA>" + userStylesheet;
+}
+
 function requestPageContentInternal() {
-    clearTimeout(requestPageContentTimeout);
+    if (requestPageContentTimeout !== null) {
+        clearTimeout(requestPageContentTimeout);
+    }
     requestPageContentTimeout = null;
     try {
-        // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports().
-        getToolboxBundleExports()?.removeToolboxMarkup();
-        removeEditingDebris(); // Enhance this makes a change when better it would only changed the
-        const content = getBodyContentForSavePage();
-        const userStylesheet = userStylesheetContent();
-        postString(
-            "editView/pageContent",
-            // We tossed up whether to use a JSON object here, but decided that it was simpler to just
-            // combine the two strings with a delimiter that we can split on in C#.
-            // For one thing, HTML requires some escaping to put in a JSON object, which would have
-            // to be done in Javascript, and then undone in C#.
-            content + "<SPLIT-DATA>" + userStylesheet,
-        );
+        postString("editView/pageContent", extractAndStripPageContentForSave());
     } catch (e) {
         postString(
             "editView/pageContent",
@@ -1347,8 +1534,138 @@ export function getBodyContentForSavePage() {
     return result;
 }
 
+// Resize each text canvas element (bloom-canvas-element) to fit its content -- growing or shrinking
+// the box -- matching what the editor does automatically when a page is opened.
+//
+// On page load the editor schedules this same auto-height adjustment for every editable
+// (OverflowChecker.AddOverflowHandlers -> AdjustSizeOrMarkOverflowSoon), but that runs on a 1000ms
+// setTimeout that is NOT registered as a requestPageContent delay, so the off-screen capture's
+// wait-for-delays loop does not wait for it. Off-screen, C# captures as soon as the (image-sizing,
+// etc.) delays clear, which is usually well under a second, so without this we would save the box at
+// its authored height. When that height is too short for how Bloom actually renders the text (e.g. a
+// caption that wraps to two lines), the result is a scrollbar-clipped box that only fixes itself once
+// a human opens the page in the Edit tab (letting the timer fire) and saves. Doing it synchronously
+// here bakes the corrected height into the processed HTML.
+//
+// We call adjustSizeOfContainingCanvasElementToMatchContent directly (rather than the full
+// OverflowChecker.AdjustSizeOrMarkOverflow) so we only resize the box and don't add page-level
+// overflow markup or qtip debris to the captured DOM. Callers run this on the fully settled layout
+// (after the activeDelays wait), so text measurements reflect the final image sizing and fonts.
+function resizeCanvasElementsToFitContent(): void {
+    // Never throws out: this runs inside finish()'s try/catch, and a failure to resize must not
+    // block capturing/saving the page (same contract as the fitImageTextSplits block). If it
+    // threw, the whole page capture would be abandoned -- strictly worse than falling back to the
+    // authored height. So we self-guard and degrade to "capture without the resize" on any error.
+    try {
+        const canvasEditables = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                `${kCanvasElementSelector} .bloom-editable.bloom-visibility-code-on`,
+            ),
+        );
+        for (const editable of canvasEditables) {
+            const [, overflowY] =
+                OverflowChecker.getSelfOverflowAmounts(editable);
+            // Calling this off-screen is DOM-safe. adjustSizeOfContainingCanvasElementToMatchContent
+            // ends by calling adjustTarget()/alignControlFrameWithActiveElement() (CanvasElementManager
+            // ~514-515), which in the live editor can add drag-game target arrows or the selection
+            // frame. Neither happens here: adjustTarget runs only AFTER the bloom-noAutoHeight
+            // early-return, so drag-game text (which is bloom-noAutoHeight) never reaches it, and a
+            // normal canvas box has no drag target to build one for; alignControlFrame no-ops when
+            // there is no active element (there isn't, off-screen). This is the same resize path the
+            // live editor already runs on auto-grow, and capture strips editing debris afterward.
+            theOneCanvasElementManager.adjustSizeOfContainingCanvasElementToMatchContent(
+                editable,
+                overflowY,
+            );
+        }
+    } catch (e) {
+        console.error("resizeCanvasElementsToFitContent failed: ", e);
+    }
+}
+
+// Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
+// external/process-book API). It gathers the same page content that requestPageContent() would save
+// (via the shared extractAndStripPageContentForSave()), but instead of posting it to the editView/pageContent
+// API (which feeds the LIVE EditingModel and would corrupt the live editor's state), it stashes the
+// combined result on window.__bloomExternalPageContent for the C# caller to poll. Like
+// requestPageContent(), it first waits for any in-flight async DOM work (activeDelays) to finish, so
+// browser-based measurements (image sizing, canvas-element layout, etc.) are complete before we capture
+// the page. Unlike the live save, it is a background job with nobody waiting at the keyboard, so it
+// waits longer (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR instead
+// of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
+// elements to fit their content (see
+// resizeCanvasElementsToFitContent), since that auto-height adjustment is otherwise deferred on a
+// timer the wait loop does not track.
+export function captureContentForExternalProcessing(
+    fitImageTextSplits?: boolean,
+): void {
+    window.__bloomExternalPageContent = undefined;
+
+    // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
+    // This handles two-pane image-above-text and image-left-of-text (image in the first pane), plus
+    // top-to-bottom STACKS of three or more panes holding one illustration and text in the rest —
+    // text above / picture / text below and the like.
+    // We do this UP FRONT, before the delay-wait below, for two reasons:
+    //  - It must run on the fully settled, real browser layout (which it now is: bootstrap() and the
+    //    load-time fix-ups have run before C# calls us).
+    //  - Resizing the image pane means the background image must be re-fit to the new pane size. That
+    //    re-fit (adjustBackgroundImageSize) is async and registers a requestPageContent delay, so we
+    //    kick it off here and let the waitForDelaysThenFinish loop below wait for it to settle before
+    //    we capture. Otherwise we'd save the new split with the OLD (wrongly-sized) image, and the
+    //    image would only get corrected later when a user opened the page in the Edit tab.
+    // Never throws out: a failure to fit must not block capturing/saving the page.
+    if (fitImageTextSplits) {
+        try {
+            const changedAny = fitImageOverTextSplits();
+            if (changedAny) {
+                // Re-fit the background image(s) to the resized pane(s), exactly as the editor does
+                // after a programmatic splitter change (double-click "match previous page").
+                theOneCanvasElementManager.adjustAfterOrigamiDoubleClick();
+            }
+        } catch (e) {
+            console.error("fitImageOverTextSplits failed: ", e);
+        }
+    }
+
+    const start = Date.now();
+    const finish = () => {
+        try {
+            resizeCanvasElementsToFitContent();
+            window.__bloomExternalPageContent =
+                extractAndStripPageContentForSave();
+        } catch (e) {
+            window.__bloomExternalPageContent =
+                "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
+        }
+    };
+    const waitForDelaysThenFinish = () => {
+        if (activeDelays.length === 0) {
+            finish();
+            return;
+        }
+        if (Date.now() - start > kExternalCaptureMaxWaitMs) {
+            const error = externalCaptureErrorForPendingWork(activeDelays);
+            if (error) {
+                window.__bloomExternalPageContent = error;
+                return;
+            }
+            console.warn(
+                `captureContentForExternalProcessing: Maximum wait time (${kExternalCaptureMaxWaitMs}ms) exceeded with active delay(s): [${activeDelays.join(
+                    ", ",
+                )}]. Proceeding anyway.`,
+            );
+            finish();
+            return;
+        }
+        setTimeout(waitForDelaysThenFinish, 50);
+    };
+    waitForDelaysThenFinish();
+}
+
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
-// editTabBundle.getEditablePageBundleExports().
+// workspaceBundle.getEditablePageBundleExports().
 export const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         (s) => s.title === "userModifiedStyles",
@@ -1391,7 +1708,7 @@ export function topBarButtonClick(button: { command: string }) {
 // We don't need to await them because nothing is using the result.
 // The buttons that implement clipboard operations are currently only in Edit mode, so
 // this is a reasonable place for this code. If we support them elsewhere, we'll have to
-// find a way to share the code (and call it when not part of the editTabBundle).
+// find a way to share the code (and call it when not part of the workspaceBundle).
 export const copySelection = () => {
     copyImpl();
 };
@@ -1609,11 +1926,38 @@ async function pasteImpl(imageAvailable: boolean) {
 }
 
 export function activateLongPressFor(jQuerySetOfMatchedElements) {
+    const ensureLongPressPluginLoaded = async (): Promise<boolean> => {
+        if (typeof $.fn.longPress === "function") {
+            return true;
+        }
+
+        try {
+            await import("../../lib/long-press/jquery.longpress.js");
+        } catch (e) {
+            console.error("Failed to import longpress plugin:", e);
+            return false;
+        }
+
+        if (typeof $.fn.longPress !== "function") {
+            console.error(
+                "Longpress plugin import completed, but $.fn.longPress is still undefined.",
+            );
+            return false;
+        }
+
+        return true;
+    };
+
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?
     axios
         .get("/bloom/api/keyboarding/useLongpress")
-        .then((response) => {
+        .then(async (response) => {
             if (response.data) {
+                const pluginIsLoaded = await ensureLongPressPluginLoaded();
+                if (!pluginIsLoaded) {
+                    return;
+                }
+
                 theOneLocalizationManager
                     .asyncGetText(
                         "BookEditor.CharacterMap.Instructions",
@@ -1654,6 +1998,22 @@ export function attachToCkEditor(element) {
     if (!element) {
         return;
     }
+
+    // Cover-title investigation (src/BloomE2E/AUTOMATION-DEBT.md): an editor wipes the box when it
+    // becomes ready, so a title typed before that is lost. Waiting for the first editor did not
+    // stop the nightly losing titles, and the open question is whether a SECOND attach is landing
+    // on a box somebody has already typed in. These two lines answer that: every attach on a title
+    // box is announced, with what the box holds going in and what it holds once the editor is
+    // ready. Playwright keeps the page's console in its trace, so a failed run carries the answer.
+    // Remove with the rest of this investigation.
+    const isBookTitleBox =
+        !!element.getAttribute &&
+        element.getAttribute("data-book") === "bookTitle";
+    const titleBoxText = () => (element.innerText || "").trim();
+    if (isBookTitleBox)
+        console.warn(
+            `[cover-title] attaching an editor; box holds "${titleBoxText()}"`,
+        );
 
     // For any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup),
     // we never want to show the toolbar.  We do want to allow pasting and other editing tasks. (BL-14947)
@@ -1733,11 +2093,58 @@ export function attachToCkEditor(element) {
         updateCkEditorButtonStatus(editor);
     });
 
+    // Ctrl+Z and Ctrl+Y (and Ctrl+Shift+Z) are handled by ckeditor's own undo plugin, which
+    // runs them as the "undo" and "redo" commands. Undo writes a whole saved snapshot over the
+    // editable, so the active tool's markup no longer matches the text and, worse, the tools'
+    // ::highlight() Ranges are left pointing at text nodes that no longer exist. Tell the
+    // toolbox, which knows how to put both right. See updateMarkupAfterUndoOrRedo().
+    ckedit.on("afterCommandExec", (evt) => {
+        const commandName = evt.data.name;
+        if (commandName === "undo" || commandName === "redo") {
+            getToolboxBundleExports()?.updateMarkupAfterUndoOrRedo();
+        }
+    });
+
     // hide the toolbar when ckeditor starts
     ckedit.on("instanceReady", (evt) => {
         const editor = evt["editor"];
         const bar = $("body").find("." + editor.id);
         bar.hide();
+
+        // Cover-title investigation: see the note at the top of this function.
+        if (isBookTitleBox)
+            console.warn(
+                `[cover-title] editor ready; box now holds "${titleBoxText()}"`,
+            );
+
+        // Protect Bloom's structural spans from the removeFormat ("clear formatting") command.
+        // The only spans the format toolbar itself produces are bare <span style="color:..."> (and
+        // similar bare style spans such as small caps), which carry neither a class nor an id, so we
+        // let those be removed. Any span that has a class or id is one Bloom created for its own
+        // purposes (audio segments like audio-sentence/bloom-highlightSegment, bloom-linebreak from
+        // Shift+Enter, etc.), and clearing formatting must leave those intact.
+        // Tradeoff: we keep EVERY class/id span, so if formatting were carried directly on such a
+        // span (e.g. an imported <span class="x" style="font-weight:bold">), this command would not
+        // strip it. That case is rare and mostly can't arise here: the toolbar never puts formatting
+        // on a class/id span (bold -> <strong>, color -> a bare <span style="color">), formatting
+        // nested INSIDE a protected span is still cleared because the command descends into
+        // children, and pasted spans have their class/id and most styles removed by
+        // config.pasteFilter. We accept that edge in exchange for guaranteeing the structural spans
+        // survive; this feature is about user convenience, not repairing malformed markup.
+        // Note: addRemoveFormatFilter is added to the editor prototype by the removeformat plugin,
+        // whose script loads asynchronously. We register the filter here, in instanceReady, rather
+        // than right after CKEDITOR.inline() because at that earlier point the plugin may not have
+        // loaded yet, so the method would be undefined and the call would throw (aborting the rest
+        // of attachToCkEditor, including the color-button setup below).
+        editor.addRemoveFormatFilter((element) => {
+            if (
+                element.is("span") &&
+                (element.hasAttribute("class") || element.hasAttribute("id"))
+            ) {
+                return false; // keep it
+            }
+            return true;
+        });
     });
 
     if (CKEDITOR.config.colorButton_colors) {
@@ -1768,7 +2175,7 @@ export function attachToCkEditor(element) {
                 .done((translation) => {
                     CKEDITOR.config.labelForDefaultColor = translation;
                 });
-        } catch (error) {
+        } catch {
             // swallow... it's not worth crashing over if something went bad in there.
         }
     }

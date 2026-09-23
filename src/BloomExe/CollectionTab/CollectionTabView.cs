@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,20 +12,41 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Reporting;
 
 namespace Bloom.CollectionTab
 {
-    public partial class CollectionTabView : UserControl, IBloomTabArea
+    public class CollectionTabView : IBloomTabArea, IDisposable
     {
         private readonly CollectionModel _model;
         private WorkspaceTabSelection _tabSelection;
         private BookSelection _bookSelection;
         private BloomWebSocketServer _webSocketServer;
         private TeamCollectionManager _tcManager;
-        private bool _bookChangesPending = false; // bookchanged event while tab not visible
+        private SelectedTabChangedEvent _selectedTabChangedEvent;
+        private LocalizationChangedEvent _localizationChangedEvent;
+        private bool _isDisposed;
+
+        // If we get a book changed event while this tab is not visible (we can only get it for the selected book),
+        // this variable keeps track of the book for which we got it, so we can be quite sure to update
+        // our data about that book in various ways when we are the active tab again.
+        private Book.Book _bookForPendingChanges = null;
+        private Book.Book _bookForPendingLabelUpdate = null; // book needing label update when UI ready
+
+        // This is normally (via code in BookSelectionChanged) the same as BookSelection.CurrentSelection.
+        // We distinguish it so as to unambiguously identify the (at most) one book which currently
+        // has HandleBookContentsChanged() attached to its BookChanged event. This lets us reliably
+        // remove that handler when the selection changes or this is disposed.
+        private Book.Book _bookSubscribedForContentsChanged;
+
+        internal WorkspaceView WorkspaceView { get; set; }
 
         public delegate CollectionTabView Factory(); //autofac uses this
+
+        // Event handler delegates stored for unsubscription in Dispose
+        private EventHandler _tcStatusChangedHandler;
+        private EventHandler<BookSelectionChangedEventArgs> _bookSelectionChangedHandler;
 
         public CollectionTabView(
             CollectionModel model,
@@ -42,6 +64,8 @@ namespace Bloom.CollectionTab
             _bookSelection = bookSelection;
             _webSocketServer = webSocketServer;
             _tcManager = tcManager;
+            _selectedTabChangedEvent = selectedTabChangedEvent;
+            _localizationChangedEvent = localizationChangedEvent;
 
             // Commented out because of BL-12890, while we think about that.
             //bookRefreshEvent.Subscribe(book => {
@@ -52,77 +76,87 @@ namespace Bloom.CollectionTab
 
             BookCollection.CollectionCreated += OnBookCollectionCreated;
 
-            InitializeComponent();
-            _reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
-            BackColor = _reactControl.BackColor = Palette.GeneralBackground;
+            _localizationChangedEvent.Subscribe(OnLocalizationChanged);
 
             //TODO splitContainer1.SplitterDistance = _collectionListView.PreferredWidth;
 
-            selectedTabChangedEvent.Subscribe(c =>
-            {
-                if (c.To == this)
-                {
-                    Logger.WriteEvent("Entered Collections Tab");
-                    if (_bookChangesPending && _bookSelection.CurrentSelection != null)
-                        UpdateForBookChanges(_bookSelection.CurrentSelection);
-                }
-            });
+            _selectedTabChangedEvent.Subscribe(OnSelectedTabChanged);
+
             SetTeamCollectionStatus(tcManager);
-            TeamCollectionManager.TeamCollectionStatusChanged += (sender, args) =>
+            _tcStatusChangedHandler = (sender, args) =>
             {
-                if (IsHandleCreated && !IsDisposed)
+                if (WorkspaceView != null && !_isDisposed)
                 {
                     SafeInvoke.InvokeIfPossible(
                         "update TC status",
-                        this,
+                        WorkspaceView,
                         false,
                         () => SetTeamCollectionStatus(tcManager)
                     );
                 }
             };
+            TeamCollectionManager.TeamCollectionStatusChanged += _tcStatusChangedHandler;
 
-            // We don't want this control initializing until team collections sync (if any) is done.
-            // That could change, but for now we're not trying to handle async changes arriving from
-            // the TC to the local collection, and as part of that, the collection tab doesn't expect
-            // the local collection to change because of TC stuff once it starts loading.
-            Controls.Remove(_reactControl);
-            bookSelection.SelectionChanged += (sender, e) =>
+            _bookSelectionChangedHandler = (sender, e) =>
                 BookSelectionChanged(bookSelection.CurrentSelection);
+            bookSelection.SelectionChanged += _bookSelectionChangedHandler;
         }
 
-        private bool _minimized;
-
-        protected override void OnSizeChanged(EventArgs e)
+        private void OnLocalizationChanged(object unused)
         {
-            base.OnSizeChanged(e);
-            // To correct a weird SplitPane behavior in CollectionsTabPane, we need
-            // a notification when our window changes state from minimized to something else.
-            bool minimized = ParentForm?.WindowState == FormWindowState.Minimized;
-            if (!minimized && _minimized)
-            {
-                _webSocketServer.SendEvent("window", "restored");
-            }
+            _webSocketServer.SendEvent("collection", "reload");
+        }
 
-            _minimized = minimized;
+        private void OnSelectedTabChanged(object obj)
+        {
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+            {
+                Logger.WriteEvent("Entered Collections Tab");
+                if (_bookForPendingChanges != null)
+                    UpdateForBookChanges(_bookForPendingChanges);
+            }
         }
 
         private void BookSelectionChanged(Book.Book book)
         {
+            DetachBookContentsChangedHandler();
+
             if (book == null)
                 return;
             if (book.IsSaveable)
                 _model.UpdateThumbnailAsync(book);
-            book.ContentsChanged += (sender, args) =>
+
+            _bookSubscribedForContentsChanged = book;
+            book.ContentsChanged += HandleBookContentsChanged;
+        }
+
+        private void HandleBookContentsChanged(object sender, EventArgs args)
+        {
+            var book = sender as Book.Book;
+            if (book == null)
             {
-                if (_tabSelection.ActiveTab == WorkspaceTab.collection)
-                {
-                    UpdateForBookChanges(book);
-                }
-                else
-                {
-                    _bookChangesPending = true;
-                }
-            };
+                return;
+            }
+
+            if (_tabSelection.ActiveTab == WorkspaceTab.collection)
+            {
+                UpdateForBookChanges(book);
+            }
+            else
+            {
+                _bookForPendingChanges = book;
+            }
+        }
+
+        private void DetachBookContentsChangedHandler()
+        {
+            if (_bookSubscribedForContentsChanged == null)
+            {
+                return;
+            }
+
+            _bookSubscribedForContentsChanged.ContentsChanged -= HandleBookContentsChanged;
+            _bookSubscribedForContentsChanged = null;
         }
 
         /// <summary>
@@ -142,11 +176,40 @@ namespace Bloom.CollectionTab
 
         private void UpdateForBookChanges(Book.Book book)
         {
+            if (book.BookData.GetVariableOrNull("bookTitle", book.Language1Tag) == null)
+            {
+                var saveNeeded = false;
+                if (!string.IsNullOrEmpty(book.BookInfo.Title))
+                {
+                    saveNeeded = true;
+                }
+                book.BookInfo.Title = "";
+                if (!String.IsNullOrEmpty(book.BookInfo.AllTitles))
+                {
+                    var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                        book.BookInfo.AllTitles
+                    );
+                    if (titleDict != null && titleDict.ContainsKey(book.Language1Tag))
+                    {
+                        titleDict.Remove(book.Language1Tag);
+                        saveNeeded = true;
+                        book.BookInfo.AllTitles = JsonConvert.SerializeObject(titleDict);
+                    }
+                }
+                book.BookInfo.ThumbnailLabel = book.BookInfo.GetBestDisplayTitle(
+                    book.CollectionSettings,
+                    book
+                );
+                if (saveNeeded)
+                    book.BookInfo.Save(); // if we don't save here, the old title stays in the meta.json file.
+            }
             _model.UpdateThumbnailAsync(book);
-            _model.UpdateLabelOfBookInEditableCollection(book);
+            // Queue the label update to be sent when the collection pane signals it's ready.
+            _bookForPendingLabelUpdate = book;
+
             // This message causes the preview to update.
             _webSocketServer.SendEvent("bookContent", "reload");
-            _bookChangesPending = false;
+            _bookForPendingChanges = null;
         }
 
         private void OnBookCollectionCreated(object collection, EventArgs args)
@@ -156,7 +219,7 @@ namespace Bloom.CollectionTab
             {
                 c.FolderContentChanged += (sender, eventArgs) =>
                 {
-                    if (IsDisposed)
+                    if (_isDisposed)
                     {
                         Debug.Fail(
                             "FolderContentChanged handler invoked from a CollectionTabView that has already been disposed. Did the collection have cleanup such as StopWatchingDirectory() occur?"
@@ -233,24 +296,24 @@ namespace Bloom.CollectionTab
 
         public void ReadyToShowCollections()
         {
-            Invoke(
-                (Action)(
-                    () =>
-                    {
-                        // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
-                        // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
-                        // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
-                        // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
-                        // I don't fully understand that. In that view, it was done after we created the collection buttons.
-                        // My current inclination is that it's not a view responsibility at all.
-                        // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
-                        // duplicated it here.
-                        // Doing it at this point seems to work fine.
-                        CheckForDuplicatesAndRepair();
-                        Controls.Add(_reactControl);
-                    }
-                )
-            );
+            void work()
+            {
+                // I'm not sure this is the best place to do this. The old LibraryListView had a comment:
+                // "If we repair duplicates and there is a reason to toast (e.g. locked meta.json file),
+                // The ongoing UI activity focuses Bloom over top of the toast after a brief flash.
+                // For that reason, we add a new stage for tasks that need to happen after the UI is updated."
+                // I don't fully understand that. In that view, it was done after we created the collection buttons.
+                // My current inclination is that it's not a view responsibility at all.
+                // However, until we get rid of the old collection tab, it's tricky to move it, so I've just
+                // duplicated it here.
+                // Doing it at this point seems to work fine.
+                CheckForDuplicatesAndRepair();
+            }
+
+            if (WorkspaceView != null && WorkspaceView.InvokeRequired)
+                WorkspaceView.Invoke((Action)work);
+            else
+                work();
         }
 
         private void CheckForDuplicatesAndRepair()
@@ -330,12 +393,55 @@ namespace Bloom.CollectionTab
             );
         }
 
-        // Temporary bridge while workspace menus are still WinForms menus.
-        // Remove when menus and tabs run in one browser UI.
-        internal event EventHandler BrowserClick
+        /// <summary>
+        /// Called by the frontend when the collection pane has finished loading
+        /// and is ready to receive book label updates.  This will realphabetize
+        /// a renamed book.
+        /// </summary>
+        internal void ProcessPendingBookLabelUpdate()
         {
-            add { _reactControl.OnBrowserClick += value; }
-            remove { _reactControl.OnBrowserClick -= value; }
+            if (_bookForPendingLabelUpdate != null)
+            {
+                _model.UpdateLabelOfBookInEditableCollection(_bookForPendingLabelUpdate);
+                _bookForPendingLabelUpdate = null;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+            DetachBookContentsChangedHandler();
+            BookCollection.CollectionCreated -= OnBookCollectionCreated;
+            _localizationChangedEvent.Unsubscribe(OnLocalizationChanged);
+            _selectedTabChangedEvent.Unsubscribe(OnSelectedTabChanged);
+
+            // Unsubscribe from standard C# events
+            if (_tcStatusChangedHandler != null)
+            {
+                TeamCollectionManager.TeamCollectionStatusChanged -= _tcStatusChangedHandler;
+            }
+
+            if (_bookSelectionChangedHandler != null && _bookSelection != null)
+            {
+                _bookSelection.SelectionChanged -= _bookSelectionChangedHandler;
+            }
+
+            try
+            {
+                var collections =
+                    _model?.GetBookCollections(true) ?? Enumerable.Empty<BookCollection>();
+                foreach (var collection in collections)
+                    collection?.StopWatchingDirectory();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Caught exception in CollectionTabView.Dispose(): {0}", e);
+                if (!Program.RunningInConsoleMode)
+                    throw;
+            }
         }
     }
 }

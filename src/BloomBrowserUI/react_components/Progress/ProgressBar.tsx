@@ -5,8 +5,13 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 
 export const ProgressBar: React.FunctionComponent<{
     percentage: number;
+    animateWhileInProgress?: boolean;
 }> = (props) => {
     const widthRule = `width: ${props.percentage}%;`;
+    const showAnimatedSheen =
+        props.animateWhileInProgress &&
+        props.percentage > 0 &&
+        props.percentage < 100;
     return (
         <span
             role="progressbar"
@@ -37,8 +42,39 @@ export const ProgressBar: React.FunctionComponent<{
                     top: -1px;
                     left: 0;
                     bottom: 0;
+                    overflow: hidden;
                 `}
-            />
+            >
+                {showAnimatedSheen && (
+                    <span
+                        css={css`
+                            position: absolute;
+                            inset: 0;
+                            background: linear-gradient(
+                                90deg,
+                                rgba(255, 255, 255, 0) 0%,
+                                rgba(255, 255, 255, 0.18) 35%,
+                                rgba(255, 255, 255, 0.7) 50%,
+                                rgba(255, 255, 255, 0.18) 65%,
+                                rgba(255, 255, 255, 0) 100%
+                            );
+                            transform: translateX(-100%);
+                            animation: progress-bar-sheen 1.4s ease-in-out
+                                infinite;
+
+                            @keyframes progress-bar-sheen {
+                                from {
+                                    transform: translateX(-100%);
+                                }
+
+                                to {
+                                    transform: translateX(100%);
+                                }
+                            }
+                        `}
+                    />
+                )}
+            </span>
         </span>
     );
 };

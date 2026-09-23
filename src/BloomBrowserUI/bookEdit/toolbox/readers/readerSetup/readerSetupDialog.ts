@@ -10,8 +10,9 @@
 /// <reference path="../readerToolsModel.ts" />
 
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
+import { beginLoadSynphonySettings } from "../readerTools";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import { getEditTabBundleExports } from "../../../js/bloomFrames";
+import { getWorkspaceBundleExports } from "../../../js/workspaceFrames";
 import { get, postBoolean } from "../../../../utils/bloomApi";
 import $ from "jquery";
 
@@ -43,6 +44,24 @@ function settingsFrameWindow() {
 let setupDialogElement: JQuery;
 
 export function showSetupDialog(showWhat) {
+    // The dialog is useless without the collection's reader settings: as soon as its
+    // iframe loads, initializeReaderSetupDialog() posts them in, and the dialog uses
+    // them to pick the tab to show and to fill it in. The tool that owns this button
+    // normally loads them when it is activated, but we have no guarantee that has
+    // happened (or has survived) by the time the button is clicked, and if it hasn't,
+    // clicking the button appears to do nothing at all. So make sure they are loaded
+    // before we show anything. This is cheap when they already are. (BL-16732)
+    //
+    // The setTimeout builds the dialog outside the promise chain: a jQuery promise turns
+    // anything thrown in a .then() callback into a rejection nobody is listening for, so a
+    // failure in here would be swallowed and once again show up as a button that does
+    // nothing. Outside the chain, it reaches our usual error reporting.
+    beginLoadSynphonySettings().always(() =>
+        window.setTimeout(() => beginShowSetupDialog(showWhat), 0),
+    );
+}
+
+function beginShowSetupDialog(showWhat) {
     //var toolbox = window;
     theOneLocalizationManager.loadStrings(
         getSettingsDialogLocalizedStrings(),
@@ -109,7 +128,7 @@ export function showSetupDialog(showWhat) {
                 // The showDialog function is a device to get the dialog element and its JQuery wrapper created in the frame
                 // where it is displayed. The main dialog() function doesn't work quite right (can't drag or resize it), and other functions
                 // like dialog("close") don't do anything, if the wrapper is created in the toolbox frame.
-                setupDialogElement = getEditTabBundleExports().showDialog(
+                setupDialogElement = getWorkspaceBundleExports().showDialog(
                     result.data
                         ? getSettingsForbidden(title, result.data)
                         : getDialogHtml(title),
@@ -176,14 +195,19 @@ function getSettingsDialogLocalizedStrings() {
  * Used by the settings_frame to initialize the setup dialog
  */
 export function initializeReaderSetupDialog() {
+    // Note that synphony itself is undefined until the settings load, so we have to check
+    // it before reaching for source; otherwise the intended error below is pre-empted by a
+    // bare "cannot read properties of undefined" that says nothing about what went wrong.
+    // (BL-16732)
+    const synphony = getTheOneReaderToolsModel().synphony;
     if (
-        typeof getTheOneReaderToolsModel().synphony.source === "undefined" ||
-        getTheOneReaderToolsModel().synphony.source === null
+        !synphony ||
+        synphony.source === undefined ||
+        synphony.source === null
     ) {
         throw new Error("ReaderToolsModel was not loaded with settings");
     }
-    const sourceMsg =
-        "Data\n" + JSON.stringify(getTheOneReaderToolsModel().synphony.source);
+    const sourceMsg = "Data\n" + JSON.stringify(synphony.source);
     const fontMsg = "Font\n" + getTheOneReaderToolsModel().fontName;
     const window = settingsFrameWindow();
     if (window) {

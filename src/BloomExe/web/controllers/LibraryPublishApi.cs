@@ -11,7 +11,6 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using SIL.Progress;
-using SIL.Reporting;
 
 namespace Bloom.web.controllers
 {
@@ -28,7 +27,6 @@ namespace Bloom.web.controllers
 
         private const string kWebSocketEventId_uploadSuccessful = "uploadSuccessful"; // must match what is in LibraryPublishSteps.tsx
         private const string kWebSocketEventId_uploadCanceled = "uploadCanceled"; // must match what is in LibraryPublishSteps.tsx
-        private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
         private PublishView _publishView;
         private PublishModel _publishModel;
@@ -53,16 +51,6 @@ namespace Bloom.web.controllers
             _webSocketProgress = progress.WithL10NPrefix("PublishTab.Upload.");
             _webSocketProgress.LogAllMessages = true;
             _progress = new WebProgressAdapter(_webSocketProgress);
-
-            ExternalApi.LoginSuccessful += (sender, args) =>
-            {
-                Logger.WriteEvent("External login successful. Sending message to js-land.");
-                _webSocketServer.SendString(
-                    kWebSocketContext,
-                    kWebSocketEventId_loginSuccessful,
-                    Model?.WebUserId
-                );
-            };
         }
 
         private string CurrentSignLanguageName
@@ -131,13 +119,6 @@ namespace Bloom.web.controllers
                 HandleUploadAfterChangingBookId,
                 true
             );
-            apiHandler.RegisterEndpointHandler(
-                "libraryPublish/checkForLoggedInUser",
-                HandleCheckForLoggedInUser,
-                true
-            );
-            apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
-            apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
             apiHandler.RegisterEndpointHandler(
                 "libraryPublish/agreementsAccepted",
                 HandleAgreementsAccepted,
@@ -219,8 +200,31 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
+        /// <summary>
+        /// Uploading to bloomlibrary.org itself is refused while Bloom is running e2e tests (the
+        /// --e2e flag); an automated run may upload only to the sandbox, dev.bloomlibrary.org. A
+        /// test signs in there for real, with a test account, by posting the account's session token
+        /// to external/login, the route the website uses; and a test's Bloom keeps its login in a
+        /// settings folder of its own (see BloomSettingsProvider), so it is never the developer's
+        /// account that uploads. Production stays closed all the same, so that no automated click
+        /// can ever publish a book where the public would see it, whatever account is signed in.
+        /// The refusal goes to the progress box, which is where this screen shows upload trouble.
+        /// </summary>
+        private bool RefuseUploadWhileRunningE2eTests()
+        {
+            if (!Program.RunningE2eTests || BookUpload.UseSandbox)
+                return false;
+            _webSocketProgress.MessageWithoutLocalizing(
+                "Uploading to bloomlibrary.org is disabled while Bloom is running e2e tests (--e2e); an automated run may upload only to dev.bloomlibrary.org.",
+                ProgressKind.Error
+            );
+            return true;
+        }
+
         private async Task UploadBookAsync()
         {
+            if (RefuseUploadWhileRunningE2eTests())
+                return;
             _webSocketProgress.Message("Common.Starting", "Starting...");
             SetParentControlsState(false); // Disable UI
 
@@ -348,14 +352,16 @@ namespace Bloom.web.controllers
 
         private WorkspaceView GetWorkspaceView()
         {
-            var parent = _publishView.Parent;
-            while (parent != null && !(parent is WorkspaceView))
-                parent = parent.Parent;
-            return (WorkspaceView)parent;
+            return _publishView.WorkspaceView;
         }
 
         private void HandleUploadCollection(ApiRequest request)
         {
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!ValidateBookshelfBeforeBulkUpload())
             {
                 request.PostSucceeded();
@@ -368,6 +374,11 @@ namespace Bloom.web.controllers
 
         private void HandleUploadFolderOfCollections(ApiRequest request)
         {
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!ValidateBookshelfBeforeBulkUpload())
             {
                 request.PostSucceeded();
@@ -458,6 +469,13 @@ namespace Bloom.web.controllers
 
         private async Task HandleUploadAfterChangingBookId(ApiRequest request)
         {
+            // Before ChangeBookInstanceId, not after: refusing later would still have given the
+            // book a new identity it never needed.
+            if (RefuseUploadWhileRunningE2eTests())
+            {
+                request.PostSucceeded();
+                return;
+            }
             if (!Model.ChangeBookInstanceId(_progress))
             {
                 request.Failed("Can't fix ID because in TC");
@@ -468,36 +486,6 @@ namespace Bloom.web.controllers
             // attempt an overwrite.
             _existingBookObjectIdOrNull = null;
             await HandleUpload(request);
-        }
-
-        private void HandleCheckForLoggedInUser(ApiRequest request)
-        {
-            // Why not just reply with the WebUserId instead?
-            // Because we already have this event hooked up for the user-initiated log in process.
-            // So it simplifies the client to just reuse this web socket event.
-            if (Model.LoggedIn)
-            {
-                Logger.WriteEvent("User already logged in. Sending message to js-land.");
-                _webSocketServer.SendString(
-                    kWebSocketContext,
-                    kWebSocketEventId_loginSuccessful,
-                    Model?.WebUserId
-                );
-            }
-            request.PostSucceeded();
-        }
-
-        private void HandleLogin(ApiRequest request)
-        {
-            Model.LogIn();
-            Logger.WriteEvent("User attempting to login to bloomlibrary.org.");
-            request.PostSucceeded();
-        }
-
-        private void HandleLogout(ApiRequest request)
-        {
-            Model.LogOut();
-            request.PostSucceeded();
         }
 
         private void HandleAgreementsAccepted(ApiRequest request)

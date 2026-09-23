@@ -20,10 +20,10 @@ const menuBoxStyles: React.CSSProperties = {
 };
 
 export default {
-    title: "Team Collection components/Menu component",
+    title: "Misc",
 };
 
-export const SimpleMenuTest = () => (
+export const SimpleMenuStory = () => (
     <div style={menuBoxStyles}>
         <SimpleMenu
             text="..."
@@ -34,6 +34,6 @@ export const SimpleMenuTest = () => (
     </div>
 );
 
-SimpleMenuTest.story = {
-    name: "SimpleMenu test",
+SimpleMenuStory.story = {
+    name: "SimpleMenu",
 };

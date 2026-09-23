@@ -1,5 +1,6 @@
 import XRegExp from "xregexp";
-import AudioRecording, { kAnyRecordingApiUrl } from "./audioRecording";
+import { getChecksum } from "./talkingBookChecksum";
+import { kAnyRecordingApiUrl } from "./audioUtils";
 import { RecordingMode } from "./recordingMode";
 import axios, { AxiosResponse } from "axios";
 
@@ -143,7 +144,7 @@ export default class Recordable {
     public setChecksum(): void {
         const sentences = this.getAudioSentences();
         sentences.forEach((sentence) => {
-            const md5 = AudioRecording.getChecksum(sentence.innerText);
+            const md5 = getChecksum(sentence.innerText);
             sentence.setAttribute("recordingmd5", md5);
         });
     }
@@ -169,7 +170,7 @@ export default class Recordable {
         if (this.isMissingRecordingChecksum(sentence)) {
             // We only want to update ones that have a recording associated with them.
             if (await Recordable.isSentenceRecordedAsync(sentence)) {
-                const md5 = AudioRecording.getChecksum(sentence.innerText);
+                const md5 = getChecksum(sentence.innerText);
                 sentence.setAttribute("recordingmd5", md5);
             }
         }
@@ -270,7 +271,7 @@ export default class Recordable {
         }
 
         const previousChecksum = sentence.getAttribute("recordingmd5");
-        const currentChecksum = AudioRecording.getChecksum(sentence.innerText);
+        const currentChecksum = getChecksum(sentence.innerText);
         return previousChecksum !== currentChecksum;
     }
 }

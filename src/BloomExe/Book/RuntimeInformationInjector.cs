@@ -247,8 +247,8 @@ namespace Bloom.Book
             );
             AddTranslationToDictionaryUsingEnglishAsKey(
                 d,
-                "EditTab.FrontMatter.TopicPrompt",
-                "Click to choose topic"
+                "EditTab.FrontMatter.TopicPrompt2",
+                "Choose topic"
             );
             AddTranslationToDictionaryUsingEnglishAsKey(
                 d,

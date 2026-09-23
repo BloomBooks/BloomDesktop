@@ -7,6 +7,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -42,9 +43,20 @@ namespace Bloom.Collection
             get { return _pendingBookshelf; }
         }
 
+        internal bool PendingAutomaticallyUpdate;
+        internal bool ShowAutomaticallyUpdateOption = true;
+
+        internal bool PendingShowExperimentalBookSources;
+        internal bool ShowExperimentalBookSourcesOption = false;
+
+        internal bool PendingAllowTeamCollection;
+        internal bool AllowTeamCollectionOptionEnabled = false;
+
         // "Internal" so CollectionSettingsApi can update these.
         internal readonly string[] PendingFontSelections = new[] { "", "", "" };
         internal string PendingNumberingStyle { get; set; }
+        internal bool PendingShowQrCode;
+        internal string PendingBadgeQrCodeCaption;
         internal string PendingXmatter { get; set; }
         internal string PendingAdministrators { get; set; }
 
@@ -87,6 +99,8 @@ namespace Bloom.Collection
                 ? _collectionSettings.AllLanguages[2].FontName
                 : "";
             PendingNumberingStyle = _collectionSettings.PageNumberStyle;
+            PendingShowQrCode = _collectionSettings.ShowBlorgLanguageQrCode;
+            PendingBadgeQrCodeCaption = _collectionSettings.BadgeQrCodeLabelLocalized;
             PendingXmatter = _collectionSettings.XMatterPackName;
             PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
             CollectionSettingsApi.DialogBeingEdited = this;
@@ -97,10 +111,10 @@ namespace Bloom.Collection
             _currentCollectionIsTeamCollection =
                 tcManager.CurrentCollectionEvenIfDisconnected != null;
 
-            _showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(
+            PendingShowExperimentalBookSources = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kExperimentalSourceBooks
             );
-            _allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(
+            PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
             );
 
@@ -118,20 +132,14 @@ namespace Bloom.Collection
                 _tab.Controls.Remove(this._teamCollectionTab);
             }
             // Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
-            _allowTeamCollection.Enabled = !(
-                _allowTeamCollection.Checked
-                && tcManager.CurrentCollectionEvenIfDisconnected != null
+            AllowTeamCollectionOptionEnabled = !(
+                PendingAllowTeamCollection && tcManager.CurrentCollectionEvenIfDisconnected != null
             );
 
-            // AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
-            // Also, we are stranding pre-windows 10 people at 5.4.
-            if (
-                SIL.PlatformUtilities.Platform.IsWindows
-                && Environment.OSVersion.Version.Major >= 10
-            )
-                _automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+            if (AutoUpdateSupportedOnThisPlatform)
+                PendingAutomaticallyUpdate = Settings.Default.AutoUpdate;
             else
-                _automaticallyUpdate.Hide();
+                ShowAutomaticallyUpdateOption = false;
 
             // Without this, PendingDefaultBookshelf stays null unless the user changes it.
             // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
@@ -161,6 +169,19 @@ namespace Bloom.Collection
             else
             {
                 _bloomCollectionName.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
+        /// Also, we are stranding pre-windows 10 people at 5.4.
+        /// </summary>
+        internal static bool AutoUpdateSupportedOnThisPlatform
+        {
+            get
+            {
+                return SIL.PlatformUtilities.Platform.IsWindows
+                    && Environment.OSVersion.Version.Major >= 10;
             }
         }
 
@@ -251,7 +272,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage1.Tag = args.LanguageTag;
-                PendingLanguage1.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage1.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
@@ -266,7 +289,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage2.Tag = args.LanguageTag;
-                PendingLanguage2.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage2.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
@@ -281,7 +306,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingLanguage3.Tag = args.LanguageTag;
-                PendingLanguage3.SetName(args.DesiredName, args.DesiredName != args.DefaultName);
+                if (args.IsRtl.HasValue)
+                    PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
+                PendingLanguage3.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
@@ -306,8 +333,9 @@ namespace Bloom.Collection
             void onLanguageChange(LanguageChangeEventArgs args)
             {
                 PendingSignLanguage.Tag = args.LanguageTag;
-                var slIsCustom = args.DefaultName != args.DesiredName;
-                PendingSignLanguage.SetName(args.DesiredName, slIsCustom);
+                // Unlike Language1-3 above, args.IsRtl is deliberately ignored: a sign language
+                // has no text direction.
+                PendingSignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
             ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
@@ -350,10 +378,9 @@ namespace Bloom.Collection
                 )
             )
             {
-                dlg.Width = 1000;
-                dlg.Height = 580;
-
-                dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
+                var owner = Shell.GetShellOrOtherOpenForm();
+                dlg.SetScaledSize(1000, 580);
+                dlg.ShowDialog(owner);
             }
         }
 
@@ -382,7 +409,8 @@ namespace Bloom.Collection
             CollectionSettingsApi.DialogBeingEdited = null;
 
             Settings.Default.AutoUpdate =
-                _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
+                PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
+            Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
 
@@ -391,6 +419,15 @@ namespace Bloom.Collection
             _collectionSettings.District = _districtText.Text.Trim();
 
             _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
+            _collectionSettings.ShowBlorgLanguageQrCode = PendingShowQrCode;
+            if (PendingBadgeQrCodeCaption != _collectionSettings.BadgeQrCodeLabelLocalized)
+            {
+                // Update the BadgeQrCodeLabel value only if the user has actually changed it.
+                // The default value displayed for BadgeQrCodeLabel is based on the current UI language,
+                // so if the user changes the UI language and then opens the Collection Settings dialog,
+                // we don't want to have the default BadgeQrCodeLabel frozen to the original UI language.
+                _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeCaption;
+            }
 
             if (_pendingSubscription != null)
             {
@@ -725,22 +762,18 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
         private void UpdateExperimentalBookSources()
         {
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kExperimentalSourceBooks,
-                _showExperimentalBookSources.Checked
+                PendingShowExperimentalBookSources
             );
         }
 
         public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
             var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
                 frm.LanguageName = pendingLanguage.Name;
@@ -748,7 +781,7 @@ namespace Bloom.Collection
                 frm.LanguageLineSpacing = pendingLanguage.LineHeight;
                 frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
                 frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
-                frm.ShowDialog();
+                frm.ShowDialog(this);
 
                 // get the changes
 
@@ -779,17 +812,19 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeThatRequiresRestart();
-        }
-
         private void UpdateTeamCollectionAllowed()
         {
+            var wasTeamCollectionsEnabled = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTeamCollections
+            );
+
             ExperimentalFeatures.SetValue(
                 ExperimentalFeatures.kTeamCollections,
-                _allowTeamCollection.Checked
+                PendingAllowTeamCollection
             );
+
+            if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
+                ChangeThatRequiresRestart();
         }
     }
 }

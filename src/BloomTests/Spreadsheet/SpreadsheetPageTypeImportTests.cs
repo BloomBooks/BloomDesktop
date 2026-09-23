@@ -31,6 +31,7 @@ namespace BloomTests.Spreadsheet
         private List<SafeXmlElement> _contentPages;
 
         private List<string> _warnings;
+        private TemporaryFolder _testFolder;
         private TemporaryFolder _bookFolder;
         private TemporaryFolder _ssFolder;
 
@@ -51,7 +52,8 @@ namespace BloomTests.Spreadsheet
             _imagesFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
                 "src/BloomTests/ImageProcessing/images"
             );
-            _ssFolder = new TemporaryFolder("SpreadsheetPageTypeImportTests_ss");
+            _testFolder = SpreadsheetTestFolders.MakeFolderFor(this);
+            _ssFolder = new TemporaryFolder(_testFolder, "ss");
             var whereToPutImages = Path.Combine(_ssFolder.FolderPath, "images");
             Directory.CreateDirectory(whereToPutImages);
             var whereToPutVideo = Path.Combine(_ssFolder.FolderPath, "video");
@@ -211,10 +213,12 @@ namespace BloomTests.Spreadsheet
                 "This is fake video 7"
             );
             contentRow7.SetCell(columnForVideo, "video/video7.mp4");
-            contentRow7.SetCell(columnForPageType, "Basic Text & Picture");
+            contentRow7.SetCell(columnForPageType, "Basic Text & Image");
 
             // Test row8 interacts with the third page in the template. That page has the right slots
             // (text and picture), but it's the wrong type, so we will instead insert a page.
+            // The spreadsheet intentionally uses the old legacy page type label here to prove that
+            // import maps it to the current Image in Middle template.
             pageText.Append(SpreadsheetImageAndTextImportTests.PageWithImageAndText(2, 5, 5));
             var contentRow8 = new ContentRow(ss);
             contentRow8.AddCell(InternalSpreadsheet.PageContentRowLabel);
@@ -226,7 +230,7 @@ namespace BloomTests.Spreadsheet
             );
             contentRow8.SetCell(columnForPageType, "Picture in Middle");
 
-            // We have room for another block of text in that Picture in Middle page.
+            // We have room for another block of text in that Image in Middle page.
             // But row9, though it only has text, specifies a text-only page, so we will insert one.
             var contentRow9 = new ContentRow(ss);
             contentRow9.AddCell(InternalSpreadsheet.PageContentRowLabel);
@@ -256,9 +260,9 @@ namespace BloomTests.Spreadsheet
             var contentRow14 = CreateTextRow(ss, columnForEn, "Yes");
             contentRow14.SetCell(columnForAttributeData, "../class=correct-answer");
 
-            // This is purposely an error case. The row specifes "Just a Picture" but only has text.
+            // This is purposely an error case. The row specifes "Just an Image" but only has text.
             var contentRow15 = CreateTextRow(ss, columnForEn, "this is block 1 on page 14");
-            contentRow15.SetCell(columnForPageType, "Just a Picture");
+            contentRow15.SetCell(columnForPageType, "Just an Image");
 
             // This will require us to import a quiz page. That should pull the appropriate style sheet
             // into our list.
@@ -288,7 +292,7 @@ namespace BloomTests.Spreadsheet
             );
             _dom = new HtmlDom(xml, true);
 
-            _bookFolder = new TemporaryFolder("SpreadsheetPageTypeImportTests");
+            _bookFolder = new TemporaryFolder(_testFolder, "Book");
 
             _progressSpy = new ProgressSpy();
 
@@ -313,8 +317,8 @@ namespace BloomTests.Spreadsheet
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            _bookFolder?.Dispose();
-            _ssFolder?.Dispose();
+            // This also removes the folders nested inside it.
+            _testFolder?.Dispose();
         }
 
         [TestCase(0, "1", "lady24b.png")]
@@ -330,7 +334,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas') and @data-test-id='ic{tag}']/img[@src='{src ?? fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas') and @data-test-id='ic{tag}']//img[@src='{src ?? fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -344,7 +348,7 @@ namespace BloomTests.Spreadsheet
             AssertThatXmlIn
                 .Element(_contentPages[n])
                 .HasSpecifiedNumberOfMatchesForXpath(
-                    $".//div[contains(@class, 'bloom-canvas')]/img[@src='{fileName}']",
+                    $".//div[contains(@class, 'bloom-canvas')]//img[@src='{fileName}']",
                     1
                 );
             Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
@@ -490,6 +494,19 @@ namespace BloomTests.Spreadsheet
         }
 
         [Test]
+        public void LegacyPictureInMiddlePageType_IsMappedToImageInMiddleOnImport()
+        {
+            var assertThat = AssertThatXmlIn.Element(_contentPages[8]);
+            assertThat.HasSpecifiedNumberOfMatchesForXpath(
+                ".//div[@data-i18n='TemplateBooks.PageLabel.Image in Middle']",
+                1
+            );
+            assertThat.HasNoMatchForXpath(
+                ".//div[@data-i18n='TemplateBooks.PageLabel.Basic Text &amp; Image']"
+            );
+        }
+
+        [Test]
         public void QuizClasses()
         {
             var assertThat = AssertThatXmlIn.Element(_contentPages[11]);
@@ -534,7 +551,7 @@ namespace BloomTests.Spreadsheet
             Assert.That(
                 _warnings,
                 Does.Contain(
-                    "Row 17 requested page type 'Just a Picture' but contains no data suitable for that page type."
+                    "Row 17 requested page type 'Just an Image' but contains no data suitable for that page type."
                 )
             );
         }

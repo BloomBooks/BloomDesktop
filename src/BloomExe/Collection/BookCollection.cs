@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
+using Bloom.Utils;
 using Bloom.WebLibraryIntegration;
 using SIL.IO;
 using SIL.Reporting;
@@ -24,7 +25,11 @@ namespace Bloom.Collection
             SourceCollection,
         }
 
-        public delegate BookCollection Factory(string path, CollectionType collectionType); //autofac uses this
+        public delegate BookCollection Factory(
+            string path,
+            CollectionType collectionType,
+            CollectionSettings collectionSettings = null
+        ); //autofac uses this
 
         public EventHandler CollectionChanged;
 
@@ -36,6 +41,8 @@ namespace Bloom.Collection
         private Timer _folderChangeDebounceTimer;
         private static HashSet<string> _changingFolders = new HashSet<string>();
         private BloomWebSocketServer _webSocketServer;
+
+        private CollectionSettings _collectionSettings;
 
         public static event EventHandler CollectionCreated;
 
@@ -53,6 +60,7 @@ namespace Bloom.Collection
             CollectionType collectionType,
             BookSelection bookSelection,
             TeamCollectionManager tcm = null,
+            CollectionSettings collectionSettings = null,
             BloomWebSocketServer webSocketServer = null
         )
         {
@@ -60,6 +68,7 @@ namespace Bloom.Collection
             _bookSelection = bookSelection;
             _tcManager = tcm;
             _webSocketServer = webSocketServer;
+            _collectionSettings = collectionSettings;
 
             Type = collectionType;
 
@@ -234,16 +243,35 @@ namespace Bloom.Collection
         }
 
         /// <summary>
+        /// Clears the cached book list so the next call to GetBookInfos will rescan the folder.
+        /// Also fires CollectionChanged to notify subscribers (e.g., the React UI) to refresh.
+        /// Call this after external changes to the collection folder (e.g., after TC sync renames a folder).
+        /// </summary>
+        public void InvalidateBookList()
+        {
+            lock (_bookInfoLock)
+            {
+                _bookInfos = null;
+            }
+            CollectionChanged?.Invoke(this, null);
+        }
+
+        /// <summary>
         /// Handles side effects of deleting a book (also used when remotely deleted)
         /// </summary>
         /// <param name="bookInfo"></param>
         public void HandleBookDeletedFromCollection(string folderPath)
         {
-            var infoToDelete = _bookInfos.FirstOrDefault(b => b.FolderPath == folderPath);
-            //Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
-            if (infoToDelete != null) // for paranoia. We shouldn't be trying to delete a book that isn't there.
-                _bookInfos.Remove(infoToDelete);
-
+            lock (_bookInfoLock)
+            {
+                var normalizedFolderPath = BookStorage.GetNormalizedPathForOS(folderPath);
+                var infoToDelete = _bookInfos.FirstOrDefault(b =>
+                    BookStorage.GetNormalizedPathForOS(b.FolderPath) == normalizedFolderPath
+                );
+                //Debug.Assert(_bookInfos.Contains(bookInfo)); this will occur if we delete a book from the BloomLibrary section
+                if (infoToDelete != null) // for paranoia. We shouldn't be trying to delete a book that isn't there.
+                    _bookInfos.Remove(infoToDelete);
+            }
             if (CollectionChanged != null)
                 CollectionChanged.Invoke(this, null);
         }
@@ -265,6 +293,19 @@ namespace Bloom.Collection
 
         private object _bookInfoLock = new object();
 
+        /// <summary>
+        /// True if this folder is one named xMatter, such as templates/xMatter, which holds
+        /// front/back matter packs rather than books.
+        /// </summary>
+        private static bool IsXMatterFolder(string folderPath)
+        {
+            return string.Equals(
+                Path.GetFileName(folderPath.TrimEnd('\\', '/')),
+                "xMatter",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
         // Needs to be thread-safe
         public virtual IEnumerable<Book.BookInfo> GetBookInfos()
         {
@@ -276,10 +317,14 @@ namespace Bloom.Collection
                     try
                     {
                         _bookInfos = new List<Book.BookInfo>();
-                        var bookFolders = ProjectContext
-                            .SafeGetDirectories(_path)
-                            .Select(dir => new DirectoryInfo(dir))
-                            .ToArray();
+                        // templates/xMatter is scanned like any other source collection, but what
+                        // it holds are front/back matter packs, not books, so it contributes none.
+                        var bookFolders = IsXMatterFolder(_path)
+                            ? new DirectoryInfo[0]
+                            : ProjectContext
+                                .SafeGetDirectories(_path)
+                                .Select(dir => new DirectoryInfo(dir))
+                                .ToArray();
 
                         //var orderedBookFolders = bookFolders.OrderBy(f => f.Name);
                         var orderedBookFolders = bookFolders.OrderBy(
@@ -290,10 +335,12 @@ namespace Bloom.Collection
                         {
                             if (Path.GetFileName(folder.FullName).StartsWith(".")) //as in ".hg"
                                 continue;
-                            // Don't want things in the templates/xmatter folder
-                            // (even SIL-Cameroon-Mothballed, which no longer has xmatter in its filename)
-                            // so filter on the whole path.
-                            if (folder.FullName.ToLowerInvariant().Contains("xmatter"))
+                            // Don't want a child folder named xMatter either (even
+                            // SIL-Cameroon-Mothballed, which no longer has xmatter in its filename).
+                            // Compare whole folder names, not substrings of the whole path: a
+                            // checkout, a user folder, a collection, or a book with "xmatter"
+                            // somewhere in its name must not lose its books.
+                            if (IsXMatterFolder(folder.FullName))
                                 continue;
                             // Note: this used to be .bloom-ignore. We believe that is no longer used.
                             // It was changed because files starting with dot are normally invisible,
@@ -319,34 +366,44 @@ namespace Bloom.Collection
                     }
                 }
 
-                return _bookInfos;
+                _bookInfos = _bookInfos.Where(b => Directory.Exists(b.FolderPath)).ToList();
+
+                // Return a snapshot so callers can enumerate without holding the lock,
+                // preventing "Collection was modified" exceptions from concurrent updates.
+                return _bookInfos.ToList();
             }
         }
 
         public void UpdateBookInfo(BookInfo info)
         {
-            var oldIndex = _bookInfos.FindIndex(i => i.Id == info.Id);
-            IComparer<string> comp = new NaturalSortComparer<string>();
-            var newKey = Path.GetFileName(info.FolderPath);
-            if (oldIndex >= 0)
+            lock (_bookInfoLock)
             {
-                // optimize: very often the new one will belong at the same index,
-                // if that's the case we could just replace.
-                _bookInfos.RemoveAt(oldIndex);
-            }
+                var oldIndex = _bookInfos.FindIndex(i => i.Id == info.Id);
+                IComparer<string> comp = new NaturalSortComparer<string>();
+                var newKey = Path.GetFileName(info.FolderPath);
+                if (oldIndex >= 0)
+                {
+                    // optimize: very often the new one will belong at the same index,
+                    // if that's the case we could just replace.
+                    _bookInfos.RemoveAt(oldIndex);
+                }
 
-            int newIndex = _bookInfos.FindIndex(x =>
-                comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
-            );
-            if (newIndex < 0)
-                newIndex = _bookInfos.Count;
-            _bookInfos.Insert(newIndex, info);
+                int newIndex = _bookInfos.FindIndex(x =>
+                    comp.Compare(newKey, Path.GetFileName(x.FolderPath)) <= 0
+                );
+                if (newIndex < 0)
+                    newIndex = _bookInfos.Count;
+                _bookInfos.Insert(newIndex, info);
+            }
             NotifyCollectionChanged();
         }
 
         public void AddBookInfo(BookInfo bookInfo)
         {
-            _bookInfos.Add(bookInfo);
+            lock (_bookInfoLock)
+            {
+                _bookInfos.Add(bookInfo);
+            }
             NotifyCollectionChanged();
         }
 
@@ -356,22 +413,25 @@ namespace Bloom.Collection
         /// <param name="bookInfo"></param>
         public void InsertBookInfo(BookInfo bookInfo)
         {
-            IComparer<string> comparer = new NaturalSortComparer<string>();
-            for (int i = 0; i < _bookInfos.Count; i++)
+            lock (_bookInfoLock)
             {
-                var compare = comparer.Compare(_bookInfos[i].FolderPath, bookInfo.FolderPath);
-                if (compare == 0)
+                IComparer<string> comparer = new NaturalSortComparer<string>();
+                for (int i = 0; i < _bookInfos.Count; i++)
                 {
-                    _bookInfos[i] = bookInfo; // Replace
-                    return;
+                    var compare = comparer.Compare(_bookInfos[i].FolderPath, bookInfo.FolderPath);
+                    if (compare == 0)
+                    {
+                        _bookInfos[i] = bookInfo; // Replace
+                        return;
+                    }
+                    if (compare > 0)
+                    {
+                        _bookInfos.Insert(i, bookInfo);
+                        return;
+                    }
                 }
-                if (compare > 0)
-                {
-                    _bookInfos.Insert(i, bookInfo);
-                    return;
-                }
+                _bookInfos.Add(bookInfo);
             }
-            _bookInfos.Add(bookInfo);
         }
 
         private bool BackupFileExists(string folderPath)
@@ -382,6 +442,8 @@ namespace Bloom.Collection
 
         private void AddBookInfo(string folderPath)
         {
+            if (!Directory.Exists(folderPath))
+                return;
             try
             {
                 //this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
@@ -405,18 +467,47 @@ namespace Bloom.Collection
                 // Mar 2025: I think this is no longer a problem, because the BookInfo constructor fully loads
                 // AppearanceSettings. Not sure, so I'm leaving this code here, but I've made another exception,
                 // because it's bad to use the selection BookInfo if it has the wrong SaveContext.
-                var bookInfo =
+                var reusableSelectionInfo =
                     (
                         folderPath == _bookSelection.CurrentSelection?.FolderPath
                         && _bookSelection.CurrentSelection.BookInfo.SaveContext == sc
                     )
                         ? _bookSelection.CurrentSelection.BookInfo
-                        : new BookInfo(folderPath, editable, sc);
-
+                        : null;
+                // If an external tool (e.g. BloomBridge via external/update-book +
+                // process-book) has overwritten this folder on disk with a *different* book — one whose
+                // bookInstanceId no longer matches the selected book we have in memory — then reusing the
+                // selection's BookInfo would keep the stale id and hide the new book's identity from the
+                // collection. The on-disk id is what callers look the book up by, so a rescan that still
+                // reports the old id makes the new book unfindable (this is what made external/process-book
+                // fail with "could not find a book with id ..." on a re-import). Only reuse the selection's
+                // BookInfo when its id still matches what's on disk; otherwise read fresh. (A missing/unreadable
+                // meta.json leaves the id as-is, preserving the previous reuse behavior.)
+                // NOTE: BookMetaData.FromFolder is not a pure read — on a corrupt-but-recoverable meta.json
+                // it can restore from backup (delete/move) and can throw (IOException / FileException). Both
+                // are intentionally handled by the catch below, which degrades to an ErrorBookInfo just as a
+                // throwing `new BookInfo(...)` would, so don't "optimize" this assuming it only reads.
+                if (
+                    reusableSelectionInfo != null
+                    && (BookMetaData.FromFolder(folderPath)?.Id ?? reusableSelectionInfo.Id)
+                        != reusableSelectionInfo.Id
+                )
+                {
+                    reusableSelectionInfo = null;
+                }
+                var bookInfo = reusableSelectionInfo ?? new BookInfo(folderPath, editable, sc);
+                bookInfo.ThumbnailLabel = bookInfo.GetBestDisplayTitle(
+                    _collectionSettings,
+                    _bookSelection.CurrentSelection
+                );
                 _bookInfos.Add(bookInfo);
             }
             catch (Exception e)
             {
+                // A folder may disappear while rescanning (for example, immediately after delete).
+                // In that case, do not create an ErrorBookInfo placeholder entry.
+                if (!Directory.Exists(folderPath))
+                    return;
                 if (e.InnerException != null)
                 {
                     e = e.InnerException;
@@ -500,7 +591,10 @@ namespace Bloom.Collection
         {
             if (_watcherIsDisabled)
                 return;
-            _bookInfos = null; // Possibly obsolete; next request will update it.
+            lock (_bookInfoLock)
+            {
+                _bookInfos = null; // Possibly obsolete; next request will update it.
+            }
             DebounceFolderChanged(fileSystemEventArgs.FullPath);
         }
 

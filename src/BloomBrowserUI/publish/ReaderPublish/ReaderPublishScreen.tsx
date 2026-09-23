@@ -261,25 +261,13 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 >
                     Publish tab tasks overview
                 </HelpLink>
-                <div className="icon-link-row get-bloom-reader">
-                    <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
-                        <img
-                            css={css`
-                                height: 1.5em;
-                                margin-right: 10px;
-                            `}
-                            src="/bloom/images/Google_Play_symbol_2016.svg"
-                        />
-                    </a>
-                    <Link
-                        id="getBloomReaderLink"
-                        href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps"
-                        l10nKey="PublishTab.Android.GetBloomReader"
-                        l10nComment="Link to find Bloom Reader on Google Play Store"
-                    >
-                        Get Bloom Reader App
-                    </Link>
-                </div>
+                <Link
+                    href="https://bloomlibrary.org/bloom-reader"
+                    l10nKey="PublishTab.Android.GetBloomReader"
+                    l10nComment="Link to a page on bloomlibrary.org about Bloom Reader"
+                >
+                    Get Bloom Reader App
+                </Link>
             </HelpGroup>
         </SettingsPanel>
     );

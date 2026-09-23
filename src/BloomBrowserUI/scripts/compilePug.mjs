@@ -1,8 +1,8 @@
 /* eslint-env node */
 /* global console, process */
-import path from "path";
-import { pathToFileURL, fileURLToPath } from "url";
-import fs from "fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import * as fs from "node:fs";
 import { glob } from "glob";
 import pug from "pug";
 
@@ -17,12 +17,65 @@ function resolvePaths(options = {}) {
     const outputBase =
         options.outputBase ??
         path.resolve(browserUIRoot, "../../output/browser");
+    const repoRoot =
+        options.repoRoot ?? path.resolve(browserUIRoot, "..", "..");
+    const metadataPath =
+        options.metadataPath ?? path.join(outputBase, ".pug-watch-state.json");
 
-    return { browserUIRoot, contentRoot, outputBase };
+    return { browserUIRoot, contentRoot, outputBase, repoRoot, metadataPath };
+}
+
+function getMTime(filePath) {
+    try {
+        return fs.statSync(filePath).mtimeMs;
+    } catch {
+        return 0;
+    }
+}
+
+function needsRebuild(sourceFile, dependencyFiles, outputFile) {
+    if (!fs.existsSync(outputFile)) {
+        return true;
+    }
+
+    const outputTime = getMTime(outputFile);
+    const timesToCheck = [sourceFile, ...(dependencyFiles ?? [])];
+    for (const dep of timesToCheck) {
+        const depTime = getMTime(dep);
+        if (!depTime || depTime > outputTime) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function readJson(filePath) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    } catch {
+        return null;
+    }
+}
+
+function writeJsonAtomic(filePath, data) {
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+    const tmpPath = `${filePath}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2));
+    fs.renameSync(tmpPath, filePath);
 }
 
 export async function compilePugFiles(options = {}) {
-    const { browserUIRoot, contentRoot, outputBase } = resolvePaths(options);
+    const { browserUIRoot, contentRoot, outputBase, repoRoot, metadataPath } =
+        resolvePaths(options);
+    const {
+        logSummary = false,
+        logWhenNoChanges = false,
+        logFiles = false,
+    } = options;
 
     const browserUIPugFiles = glob.sync("**/*.pug", {
         cwd: browserUIRoot,
@@ -38,42 +91,106 @@ export async function compilePugFiles(options = {}) {
         absolute: true,
     });
 
-    const allPugFiles = [...browserUIPugFiles, ...contentPugFiles];
+    const allPugFiles = [
+        ...browserUIPugFiles.map((file) => ({ file, baseRoot: browserUIRoot })),
+        ...contentPugFiles.map((file) => ({ file, baseRoot: contentRoot })),
+    ];
 
-    console.log(
-        `\nCompiling ${allPugFiles.length} Pug files (${browserUIPugFiles.length} from BloomBrowserUI, ${contentPugFiles.length} from content)...`,
-    );
+    const metadataVersion = 1;
+    const existingMetadata = readJson(metadataPath);
+    const cachedEntries =
+        existingMetadata?.version === metadataVersion
+            ? (existingMetadata.entries ?? {})
+            : {};
+    const nextEntries = {};
 
-    for (const file of allPugFiles) {
-        const isContentFile = file.startsWith(contentRoot + path.sep);
-        const baseRoot = isContentFile ? contentRoot : browserUIRoot;
+    let compiled = 0;
+    let skipped = 0;
+
+    for (const { file, baseRoot } of allPugFiles) {
         const relativePath = path
             .relative(baseRoot, file)
             .replace(/\\/g, "/")
             .replace(/\.pug$/i, ".html");
 
         const outputFile = path.join(outputBase, relativePath);
-        const outputDir = path.dirname(outputFile);
+        const entryId = path.relative(repoRoot, file).replace(/\\/g, "/");
 
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
+        const cachedDependencies = (cachedEntries[entryId] ?? []).map((dep) =>
+            path.resolve(repoRoot, dep),
+        );
+
+        if (!needsRebuild(file, cachedDependencies, outputFile)) {
+            nextEntries[entryId] = cachedEntries[entryId] ?? [];
+            skipped++;
+            continue;
         }
 
-        const html = pug.renderFile(file, {
+        const compiledTemplate = pug.compileFile(file, {
             basedir: baseRoot,
             pretty: true,
         });
 
+        const dependencies = Array.from(
+            new Set(
+                (compiledTemplate.dependencies ?? []).map((dep) =>
+                    path.resolve(dep),
+                ),
+            ),
+        );
+
+        nextEntries[entryId] = dependencies.map((dep) =>
+            path.relative(repoRoot, dep).replace(/\\/g, "/"),
+        );
+
+        if (!needsRebuild(file, dependencies, outputFile)) {
+            skipped++;
+            continue;
+        }
+
+        const outputDir = path.dirname(outputFile);
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
+        const html = compiledTemplate({});
+
         fs.writeFileSync(outputFile, html);
-        const displayPath = path.relative(browserUIRoot, file);
-        console.log(`  ✓ ${displayPath} → ${relativePath}`);
+        if (logFiles) {
+            const displayPath = path.relative(browserUIRoot, file);
+            console.log(`  ✓ ${displayPath} → ${relativePath}`);
+        }
+        compiled++;
     }
 
-    console.log("Pug compilation complete!\n");
+    writeJsonAtomic(metadataPath, {
+        version: metadataVersion,
+        entries: nextEntries,
+    });
+
+    const total = allPugFiles.length;
+    if (logSummary && (logWhenNoChanges || compiled > 0)) {
+        console.log(
+            `Pug: ${compiled} compiled, ${skipped} up-to-date (${total} total)\n`,
+        );
+    }
+
+    return { compiled, skipped, total };
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-    compilePugFiles().catch((err) => {
+const invokedDirectly =
+    typeof process !== "undefined" &&
+    typeof process.argv?.[1] === "string" &&
+    path.basename(process.argv[1]) === "compilePug.mjs";
+
+if (invokedDirectly) {
+    const args = process.argv.slice(2);
+    const verbose = args.includes("--verbose");
+    compilePugFiles({
+        logSummary: verbose,
+        logWhenNoChanges: verbose,
+        logFiles: verbose,
+    }).catch((err) => {
         console.error("Failed to compile Pug files:", err);
         process.exitCode = 1;
     });

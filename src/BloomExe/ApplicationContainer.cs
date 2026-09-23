@@ -41,6 +41,12 @@ namespace Bloom
 
             if (Settings.Default.MruProjects == null)
             {
+                // Deliberately not saved: every CLI verb constructs an ApplicationContainer too
+                // (see the RunningInConsoleMode test below), so saving here would let `bloom
+                // upload`, `hydrate` and friends rewrite the user's settings file on any machine
+                // whose profile has no MRU list yet - a harvester or service account, say - which
+                // is the very thing BL-16660 is about. Nothing needs it: the list is registered
+                // with the container either way, and the GUI saves it when it adds a path.
                 Settings.Default.MruProjects = new MostRecentPathsList();
             }
             builder.RegisterInstance(Settings.Default.MruProjects).SingleInstance();
@@ -70,12 +76,38 @@ namespace Bloom
                 // containers, which is what we want for all the application singletons.
                 .SingleInstance()
                 .Where(t =>
-                    new[] { typeof(CommonApi), typeof(NewCollectionWizardApi) }.Contains(t)
+                    new[]
+                    {
+                        typeof(CommonApi),
+                        typeof(NewCollectionWizardApi),
+                        typeof(CollectionChooserApi),
+                        typeof(I18NApi),
+                        typeof(ProgressDialogApi),
+                        typeof(ServiceKeysApi),
+                    }.Contains(t)
                 );
 
             _container = builder.Build();
 
-            Application.ApplicationExit += OnApplicationExit;
+            // Only listen for the application exiting when there IS an application in the GUI sense.
+            // A command-line verb never calls Application.Run, so the only WinForms message loop in the
+            // process belongs to some worker -- currently the dedicated thread of the off-screen browser
+            // PublishHelper uses for page checks, created and disposed once per batch. When that loop
+            // ends, WinForms decides the application is exiting and raises ApplicationExit, mid-run. Acting
+            // on that disposed this container, the parent scope of the still-in-use ProjectContext, so the
+            // next artifact step died with ObjectDisposedException (BL-16668). Not subscribing is safe
+            // because in that flow the container's lifetime is already bounded by the `using` blocks in the
+            // CLI command handlers, and the process exits as soon as those unwind.
+            //
+            // One knock-on worth knowing: OnApplicationExit is the only caller of
+            // Program.FinishLocalizationHarvesting(), so a command-line verb no longer runs it. That is
+            // #if DEBUG code which does nothing unless LocalizationManager.IgnoreExistingEnglishTranslationFiles
+            // is set, so release CLI runs are unaffected -- but a DEBUG localization-harvesting run driven
+            // through a CLI verb would no longer merge the English translation files. If we ever want that,
+            // call it from the CLI path explicitly rather than by leaning on a shutdown event that is not
+            // really telling us the application is shutting down.
+            if (!Program.RunningInConsoleMode)
+                Application.ApplicationExit += OnApplicationExit;
 
             // Register the API Handlers that are global to the application (not dependent on knowing a particular project).
             // Note: it is is a work in progress to transfer more API handlers from ProjectContext to here.
@@ -87,19 +119,34 @@ namespace Bloom
             var server = _container.Resolve<BloomServer>();
             _container.Resolve<CommonApi>().RegisterWithApiHandler(server.ApiHandler);
             _container.Resolve<NewCollectionWizardApi>().RegisterWithApiHandler(server.ApiHandler);
+            _container.Resolve<CollectionChooserApi>().RegisterWithApiHandler(server.ApiHandler);
+            _container.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
+            // A progress dialog has to be possible before any collection is open: the "this
+            // collection needs a newer Bloom" dialog upgrades Bloom right there, and the dialog it
+            // shows while doing so talks over these endpoints. This belongs here rather than in
+            // ProjectContext (where it used to be) because all of ProgressDialogApi's handlers are
+            // static and know nothing about a project -- and because it can only be registered
+            // ONCE: RegisterEndpointHandler does a Dictionary.Add, which throws on a duplicate
+            // key, and application-level registrations are deliberately not cleared between
+            // collections, so a second registration would never go away.
+            _container
+                .Resolve<ProgressDialogApi>()
+                .RegisterWithApiHandler(server.ApiHandler);
+            // The user's service API keys belong to the Windows user, not to a collection, so
+            // these endpoints live here rather than in ProjectContext.
+            _container.Resolve<ServiceKeysApi>().RegisterWithApiHandler(server.ApiHandler);
             server.ApiHandler.RecordApplicationLevelHandlers();
         }
 
+        /// <summary>
+        /// The application is really shutting down, so tear the container down. Only ever subscribed
+        /// when Bloom is running as a GUI application -- see the constructor for why.
+        /// </summary>
         private void OnApplicationExit(object sender, EventArgs e)
         {
             Application.ApplicationExit -= OnApplicationExit;
             Program.FinishLocalizationHarvesting();
             Dispose();
-        }
-
-        public OpenAndCreateCollectionDialog OpenAndCreateCollectionDialog()
-        {
-            return _container.Resolve<OpenAndCreateCollectionDialog>();
         }
 
         public HtmlThumbNailer HtmlThumbnailer => _container.Resolve<HtmlThumbNailer>();

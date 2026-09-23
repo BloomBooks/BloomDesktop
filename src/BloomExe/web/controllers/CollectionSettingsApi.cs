@@ -6,9 +6,11 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -58,6 +60,28 @@ namespace Bloom.web.controllers
                     }
                     else if (request.HttpMethod == HttpMethods.Post)
                     {
+                        request.PostSucceeded();
+                    }
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "advancedProgramSettings",
+                request =>
+                {
+                    if (request.HttpMethod == HttpMethods.Get)
+                    {
+                        request.ReplyWithJson(
+                            JsonConvert.SerializeObject(GetAdvancedSettingsData())
+                        );
+                    }
+                    else
+                    {
+                        var dialog = DialogBeingEdited;
+                        if (dialog != null)
+                        {
+                            StoreAdvancedSettingsData(request, dialog);
+                        }
                         request.PostSucceeded();
                     }
                 },
@@ -116,6 +140,7 @@ namespace Bloom.web.controllers
                             LanguageTag = data.LanguageTag,
                             DesiredName = data.DesiredName,
                             DefaultName = data.DefaultName,
+                            IsRtl = data.IsRtl,
                             Country = data.Country,
                         }
                     );
@@ -195,9 +220,86 @@ namespace Bloom.web.controllers
                     }
                     else
                     {
+#if DEBUG
+                        // DEV-ONLY (Debug builds): force the collection's branding to an arbitrary
+                        // key at runtime so tooling can survey every branding's rendered pages
+                        // without restarting Bloom or minting real subscription codes. This reuses
+                        // the already-registered handler so it takes effect via hot-reload with no
+                        // restart. NOT shipped behavior (Release still throws). See BL-16370.
+                        // POST body: either a bare branding descriptor (e.g. "Default"), or JSON
+                        // {"branding":..,"layout":..,"xmatter":..} where any field may be omitted
+                        // (null/absent = leave that axis unchanged). Used by the branding-report
+                        // survey tool to walk branding × layout × xmatter for one book.
+                        // This handler is registered handleOnUiThread:true, so the book work runs
+                        // on the UI thread (safe). We update the in-memory selected book in place
+                        // because the whole-book preview renders CurrentSelection directly.
+                        string branding = null,
+                            layout = null,
+                            xmatter = null;
+                        try
+                        {
+                            // Read and parse inside the try as well: a malformed body is exactly
+                            // the sort of one-cell failure the catch below is meant to absorb.
+                            var body = request.RequiredPostString();
+                            if (body.TrimStart().StartsWith("{"))
+                            {
+                                var o = Newtonsoft.Json.Linq.JObject.Parse(body);
+                                branding = (string)o["branding"];
+                                layout = (string)o["layout"];
+                                xmatter = (string)o["xmatter"];
+                            }
+                            else
+                            {
+                                branding = body;
+                            }
+                            if (!string.IsNullOrEmpty(branding))
+                                _collectionSettings.Subscription =
+                                    SubscriptionAndFeatures.Subscription.ForUnitTestWithOverrideTierOrDescriptor(
+                                        SubscriptionAndFeatures.SubscriptionTier.Enterprise,
+                                        branding
+                                    );
+                            if (!string.IsNullOrEmpty(xmatter))
+                                _collectionSettings.XMatterPackName = xmatter;
+                            var book = _bookSelection?.CurrentSelection;
+                            if (book != null)
+                            {
+                                if (!string.IsNullOrEmpty(layout))
+                                    book.SetLayout(
+                                        new Layout
+                                        {
+                                            SizeAndOrientation = SizeAndOrientation.FromString(
+                                                layout
+                                            ),
+                                        }
+                                    );
+                                book.BringBookUpToDate(new SIL.Progress.NullProgress());
+                            }
+                            request.PostSucceeded();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Don't let one cell's failure take down Bloom or wedge the run;
+                            // report it (type + message) so the survey/control tool can log and
+                            // move on. NOTE: request.Failed() puts this text in the HTTP status
+                            // reason phrase (response.statusText), NOT the body.
+                            request.Failed(
+                                "set-state (branding='"
+                                    + branding
+                                    + "', layout='"
+                                    + layout
+                                    + "', xmatter='"
+                                    + xmatter
+                                    + "') failed: "
+                                    + ex.GetType().Name
+                                    + ": "
+                                    + ex.Message
+                            );
+                        }
+#else
                         throw new NotImplementedException(
                             "We don't expect to be setting the branding key, ever. It flows from the subscription code."
                         );
+#endif
                     }
                 },
                 true
@@ -272,6 +374,85 @@ namespace Bloom.web.controllers
             );
         }
 
+        private object GetAdvancedSettingsData()
+        {
+            var dialog = DialogBeingEdited;
+            var isAutoUpdateSupported =
+                dialog?.ShowAutomaticallyUpdateOption
+                ?? CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform;
+            return new
+            {
+                values = new
+                {
+                    autoUpdate = dialog?.PendingAutomaticallyUpdate
+                        ?? (isAutoUpdateSupported && Settings.Default.AutoUpdate),
+                    showExperimentalBookSources = dialog?.PendingShowExperimentalBookSources
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kExperimentalSourceBooks
+                        ),
+                    allowTeamCollection = dialog?.PendingAllowTeamCollection
+                        ?? ExperimentalFeatures.IsFeatureEnabled(
+                            ExperimentalFeatures.kTeamCollections
+                        ),
+                    showQrCode = dialog?.PendingShowQrCode
+                        ?? _collectionSettings.ShowBlorgLanguageQrCode,
+                    qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
+                        ?? _collectionSettings.BadgeQrCodeLabelLocalized,
+                },
+                showAutoUpdate = isAutoUpdateSupported,
+                showExperimentalBookSourcesOption = dialog?.ShowExperimentalBookSourcesOption
+                    ?? false,
+                allowTeamCollectionEnabled = dialog?.AllowTeamCollectionOptionEnabled ?? true,
+            };
+        }
+
+        private void StoreAdvancedSettingsData(ApiRequest request, CollectionSettingsDialog dialog)
+        {
+            var data = JObject.Parse(request.RequiredPostJson());
+
+            var autoUpdateToken = data["autoUpdate"];
+            if (autoUpdateToken != null)
+                dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
+
+            var showExperimentalBookSourcesToken = data["showExperimentalBookSources"];
+            if (showExperimentalBookSourcesToken != null)
+                dialog.PendingShowExperimentalBookSources =
+                    showExperimentalBookSourcesToken.Value<bool>();
+
+            var allowTeamCollectionToken = data["allowTeamCollection"];
+            if (allowTeamCollectionToken != null)
+            {
+                var allowTeamCollection = allowTeamCollectionToken.Value<bool>();
+                var previousValue = dialog.PendingAllowTeamCollection;
+                dialog.PendingAllowTeamCollection = allowTeamCollection;
+                if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var showQrCodeToken = data["showQrCode"];
+            if (showQrCodeToken != null)
+            {
+                var showQrCode = showQrCodeToken.Value<bool>();
+                var previousValue = dialog.PendingShowQrCode;
+                dialog.PendingShowQrCode = showQrCode;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (showQrCode != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+            var qrcodeCaptionToken = data["qrcodeCaption"];
+            if (qrcodeCaptionToken != null)
+            {
+                var qrcodeCaption = qrcodeCaptionToken.Value<string>();
+                var previousValue = dialog.PendingBadgeQrCodeCaption;
+                dialog.PendingBadgeQrCodeCaption = qrcodeCaption;
+                // We don't really need a change as drastic as a restart, but I don't expect
+                // this to change often and somehow the badge needs to get updated.
+                if (qrcodeCaption != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+        }
+
         private void ResetBookshelf()
         {
             if (DialogBeingEdited != null)
@@ -308,29 +489,53 @@ namespace Bloom.web.controllers
                     _collectionSettings.Language1Tag
                 );
             }
-            var jsonString =
-                $"{{\"languageName\":\"{languageName}\",\"languageCode\":\"{langTag}\"}}";
-            request.ReplyWithJson(jsonString);
+            request.ReplyWithJson(MakeLanguageDataJson(languageName, langTag));
         }
 
-        // Used by BookSettingsDialog
+        /// <summary>
+        /// Builds the JSON that the languageData endpoint returns. A display name is arbitrary
+        /// user text: it can perfectly well contain a double quote or a backslash (BL-16209), so
+        /// it has to be serialized rather than pasted into a hand-built JSON string. Getting that
+        /// wrong produced invalid JSON, which made the whole collection tab fail to render.
+        /// The callers of this endpoint treat languageName as a string (the books-on-Blorg
+        /// progress bar compares it with ""), so keep coercing a null name to empty the way the old hand-built string
+        /// did rather than sending a JSON null.
+        /// </summary>
+        internal static string MakeLanguageDataJson(string languageName, string languageTag)
+        {
+            return JsonConvert.SerializeObject(
+                new { languageName = languageName ?? "", languageCode = languageTag ?? "" }
+            );
+        }
+
+        // Used by BookSettingsDialog and others
         private void HandleGetLanguageNames(ApiRequest request)
         {
             var x = new ExpandoObject() as IDictionary<string, object>;
             // The values set here should correspond to the declaration of ILanguageNameValues
             // in BookSettingsDialog.tsx.
             x["language1Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Name;
+            x["language1Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language1.Tag;
             x["language2Name"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Name;
+            x["language2Tag"] = _bookSelection.CurrentSelection.CollectionSettings.Language2.Tag;
             if (
                 !String.IsNullOrEmpty(
                     _bookSelection.CurrentSelection.CollectionSettings.Language3?.Name
                 )
             )
+            {
                 x["language3Name"] = _bookSelection
                     .CurrentSelection
                     .CollectionSettings
                     .Language3
                     .Name;
+                x["language3Tag"] = _bookSelection
+                    .CurrentSelection
+                    .CollectionSettings
+                    .Language3
+                    .Tag;
+            }
+
             request.ReplyWithJson(JsonConvert.SerializeObject(x));
         }
 

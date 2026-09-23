@@ -137,7 +137,10 @@ namespace Bloom.MiscUI
             bool showCancelButton = false, // true will add a cancel button, but the caller is still responsible for handling the clicks (either here in C# via checking worker.CancellationPending or on the Javascript/React side)
             Action doWhenMainActionFalse = null,
             Action doWhenDialogCloses = null,
-            string titleIcon = null
+            string titleIcon = null,
+            // true shows a linear percent-done bar (fed by IWebSocketProgress.SendPercent) instead of
+            // the indeterminate spinner. Only ask for it if doWhat actually sends percentages.
+            bool determinate = false
         )
         {
             // Should correspond with IEmbeddedProgressDialogConfig in ProgressDialog.tsx
@@ -155,6 +158,8 @@ namespace Bloom.MiscUI
             props1.titleBackgroundColor = Palette.kBloomBlueHex;
             props1.showReportButton = "if-error";
             props1.showCancelButton = showCancelButton;
+            props1.determinate = determinate;
+            props1.linearProgress = determinate;
             await DoWorkWithProgressDialogAsync(
                 socketServer,
                 props,
@@ -266,6 +271,7 @@ namespace Bloom.MiscUI
             _doWhenProgressDialogCloses?.Invoke();
 
             _progress = null;
+            _doWhenProgressDialogCloses = null;
 
             ProgressDialogApi.SetCancelHandler(null);
             request.PostSucceeded();

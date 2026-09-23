@@ -35,10 +35,13 @@ Page-number visibility comes from appearance.json, not from this theme file. */
     --fullBleed-textBoxInset-bottom: 3mm;
 }
 
-/* The section below controls the page number and the white circle around it.  */
-.Device16x9Landscape.numberedPage {
+[class*="Ebook"].numberedPage,
+[class*="Device"].numberedPage {
+    --pageNumber-background-color: transparent;
+    --pageNumber-outline-color: white;
     --pageNumber-extra-height: 0mm !important; /* we put the page number on top of the image so we don't need a margin boost */
 }
+.Ebook2x3Portrait.numberedPage,
 .Device16x9Portrait.numberedPage {
     /* this rule will apply more generally than we'd prefer, but the common situation we're improving here
     is picture on top, text on the bottom, we need to make room for the page number */
@@ -66,6 +69,7 @@ Landscape layouts have additional overrides below for picture-side placement. */
             (var(--full-bleed-excess-width, 0mm) / 2)
     );
 }
+.bloom-fullBleed .Ebook7x5Landscape.numberedPage,
 .bloom-fullBleed .Device16x9Landscape.numberedPage {
     /* On full-bleed pages we want the page number positioned based on the ideal place where
        the page should be trimmed, not the actual edge of the page.  Only the left (or right)
@@ -75,17 +79,20 @@ Landscape layouts have additional overrides below for picture-side placement. */
         var(--full-bleed-excess-width) / 2
     );
 }
+.Ebook7x5Landscape.numberedPage::after,
 .Device16x9Landscape.numberedPage::after {
     --pageNumber-bottom: 0mm;
+
     --pageNumber-top: unset;
     --pageNumber-font-size: 11pt;
-
     border-radius: 50%;
-    --pageNumber-background-color: #ffffff;
-    --pageNumber-background-width: 33px;
+    --pageNumber-background-color: white;
+    --pageNumber-background-width: 33px; /* TODO; we tried --pageNumber-left-margin and it did nothing */
     --pageNumber-always-left-margin: var(--pageNumber-side-left-inset);
     --pageNumber-right-margin: deliberately-invalid; /* prevents right being set at all. unset does not work. Prevent centering for this layout */
 }
+.bloom-fullBleed
+    .Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight::after,
 .bloom-fullBleed
     .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     /* Adjust the page number position for full bleed pages (BL-15611) */
@@ -94,6 +101,7 @@ Landscape layouts have additional overrides below for picture-side placement. */
             (var(--full-bleed-excess-width, 0mm) / 2)
     );
 }
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight::after,
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight::after {
     --pageNumber-right-margin: var(--pageNumber-side-right-inset);
     --pageNumber-left-margin: deliberately-invalid; /* prevents left being set at all. unset does not work. Prevent centering for this layout */
@@ -104,7 +112,28 @@ Landscape layouts have additional overrides below for picture-side placement. */
 .numberedPage:where(:not(.bloom-interactive-page)) {
     --topLevel-text-padding: 0.5em;
 }
-.numberedPage:not(.bloom-interactive-page) {
-    /* Keep the format button clear of the page-number badge in lower-left text layouts. */
+.numberedPage:not(.bloom-interactive-page):not(.Ebook2x3Portrait):not(
+        .Device16x9Portrait
+    ) {
+    /* how far the format button moves to clear this theme's page number when the user's
+       Page Numbers setting forces the number to the bottom left; editMode.less applies
+       it in that situation whatever the rules below decide (BL-14901).
+       Not on Ebook2x3Portrait/Device16x9Portrait: this theme reserves 12mm below the text box
+       for the page number on those (--pageNumber-extra-height above), so there the number sits
+       below the text box wherever it is placed horizontally, and the button need not move */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
+}
+.numberedPage:not(.bloom-interactive-page):not(.Ebook2x3Portrait):not(
+        .Device16x9Portrait
+    ) {
+    /* Keep the format button clear of the page-number badge in lower-left text layouts.
+       Not on Ebook2x3Portrait/Device16x9Portrait: there this theme leaves the page number centered
+       (the default for these page sizes), so there is nothing to dodge (BL-14901) */
     --formatButton-pageNumber-dodge: 20px;
+}
+.Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,
+.Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight {
+    /* On these pages the page number moves to the right side (rule above),
+       so the format button has nothing to dodge (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
 }

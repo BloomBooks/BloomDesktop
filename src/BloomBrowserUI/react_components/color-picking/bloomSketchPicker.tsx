@@ -9,8 +9,9 @@ interface IBloomSketchPickerProps {
     noAlphaSlider?: boolean;
 
     onChange: (color: ColorResult) => void;
+    onChangeComplete?: (color: ColorResult) => void;
 
-    // Needed for tooltip on Alpha slider
+    // Needed for the Alpha slider percentage display.
     currentOpacity: number;
 }
 
@@ -18,8 +19,7 @@ interface IBloomSketchPickerProps {
 const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = (
     props,
 ) => {
-    const transparencyString =
-        ((1 - props.currentOpacity) * 100).toFixed(0) + "%";
+    const opacityString = (props.currentOpacity * 100).toFixed(0) + "%";
 
     const commonComponentCss = "position: relative;";
 
@@ -57,13 +57,35 @@ const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = (
             {!props.noAlphaSlider && (
                 <div
                     css={css`
-                        ${commonComponentCss}
-                        height: 14px;
                         margin-top: 6px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
                     `}
-                    title={transparencyString}
                 >
-                    <Alpha {...props} pointer={CustomSliderCursor} />
+                    <div
+                        className="alpha-slider-track"
+                        css={css`
+                            ${commonComponentCss}
+                            height: 14px;
+                            flex: 1 1 auto;
+                        `}
+                    >
+                        <Alpha {...props} pointer={CustomSliderCursor} />
+                    </div>
+                    <span
+                        className="alpha-slider-percentage"
+                        css={css`
+                            width: 34px;
+                            flex: 0 0 34px;
+                            text-align: right;
+                            font-size: 12px;
+                            line-height: 1;
+                            color: #000;
+                        `}
+                    >
+                        {opacityString}
+                    </span>
                 </div>
             )}
         </div>

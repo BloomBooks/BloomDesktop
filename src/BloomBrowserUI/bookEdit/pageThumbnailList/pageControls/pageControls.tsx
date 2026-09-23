@@ -1,8 +1,9 @@
-import { get, post } from "../../../utils/bloomApi";
+import { get, postThatMightNavigate } from "../../../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { renderRoot } from "../../../utils/reactRender";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
+import { confirmRemovePage } from "../confirmRemovePage";
 import "./pageControls.less";
 import "errorHandler";
 
@@ -10,9 +11,9 @@ import "errorHandler";
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,
 // this bundle is one of two loaded by pageThumbnailList.pug. It is NOT the last
 // bundle loaded. As a result, anything exported in this file will NOT be
-// accessible through editTabBundle, because this bundle's editTabBundle is
+// accessible through workspaceBundle, because this bundle's workspaceBundle is
 // replaced by the pageControlsBundle one. We do need something from that
-// editTabBundle, so if we one day need something exported from this, we will
+// workspaceBundle, so if we one day need something exported from this, we will
 // have to either combine the two into a single bundle, or use a technique
 // hinted at in webpack.config.js to give each bundle a different root name
 // for its exports.
@@ -69,9 +70,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 
     public componentCleanup() {
-        post("edit/pageControls/cleanup", (result) => {
-            WebSocketManager.closeSocket(kPageControlsContext);
-        });
+        WebSocketManager.closeSocket(kPageControlsContext);
     }
 
     public updateStateForEvent(s: string): void {
@@ -113,6 +112,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
+                        data-testid="duplicate-page-button"
                         clickApiEndpoint="edit/pageControls/duplicatePage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"
@@ -126,8 +126,13 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
                         enabled={this.state.canDeleteState}
-                        clickApiEndpoint="edit/pageControls/deletePage"
-                        mightNavigate={true}
+                        onClick={() =>
+                            confirmRemovePage(() =>
+                                postThatMightNavigate(
+                                    "edit/pageControls/deletePage",
+                                ),
+                            )
+                        }
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePageDisabled.svg"
                         hasText={false}
@@ -140,4 +145,4 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
     }
 }
 
-ReactDOM.render(<PageControls />, document.getElementById("PageControls"));
+renderRoot(<PageControls />, document.getElementById("PageControls"));

@@ -27,8 +27,9 @@ public enum State
 /// </summary>
 public class EditingStateMachine
 {
-    private Func<string> _postSaveAction; // returns pageId
+    private Func<string> _doBeforeSaveToDisk; // returns pageId
     private Action _failureAction;
+    private Action _doAfterSaveToDisk;
     private State _currentState;
     private string _pageId;
     private string _pageIdWeFailedToSave;
@@ -39,6 +40,16 @@ public class EditingStateMachine
     private Action<string, string> _updateBookWithPageContents; // args are (pageId, pageContentData)
     private Action _saveBook;
     private bool _saveActionHandlesSaveBook;
+
+    // When set, the in-flight save (we are in SavePending, waiting for the browser to return the
+    // page content) will be discarded on completion rather than merged into the DOM and written to
+    // disk. See DiscardInFlightSave.
+    private bool _discardInFlightSave;
+
+    // Work that arrived while a save was in flight and could not be done then. It runs once that
+    // save has completed and we are back in a state that allows transitions.
+    // See DeferUntilSaveCompletes.
+    private Action _workToDoAfterInFlightSave;
     private Action _hidePage;
 
     private Action<bool> _enableStateTransitions; // arg is (enabled)
@@ -51,8 +62,10 @@ public class EditingStateMachine
     /// <param name="updateBookWithPageContents">Called with page ID and pageContentData to update the main DOM with current page content</param>
     /// <param name="saveBook">Called to save the current state of the DOM to disk.</param>
     /// <param name="hidePage">Called to make the transition to NoPage (when edit tab is hidden).</param>
-    /// <param name="enableStateTransitions">Called to enable or disabled UI actions that would result in new state transitions.
-    /// These are not allowed when we are in state SavePending or SavedAndStripped.</param>
+    /// <param name="enableStateTransitions">Called to ask the UI to stop offering actions that would result in new state
+    /// transitions, because they are not valid in SavePending or SavedAndStripped. It is only a request, and does not
+    /// take effect soon enough to stop a click already on its way (see WorkspaceView.SetTabsEnabled and BL-16766), so
+    /// every transition must still refuse or defer an invalid request when one arrives.</param>
     public EditingStateMachine(
         Action<string> navigate,
         Action<string> requestPageSave,
@@ -129,6 +142,12 @@ public class EditingStateMachine
     /// from the browser.
     /// </summary>
     public bool SavePending => _currentState == State.SavePending;
+
+    /// <summary>
+    /// True if a page is loaded and being edited, so that a save (and anything that starts with
+    /// one, such as duplicating or deleting the page) will be acted on rather than ignored.
+    /// </summary>
+    public bool Editing => _currentState == State.Editing;
 
     /// <summary>
     /// Called to initiate navigation to a new page (or the same one again).
@@ -217,13 +236,19 @@ public class EditingStateMachine
 
     private void DoPostSaveAction(
         string pageContentData,
-        Func<string> postSaveAction,
-        Action failureAction = null
+        Func<string> doBeforeSaveToDisk,
+        Action failureAction = null,
+        Action doAfterSaveToDisk = null
     )
     {
+        // If an external process overwrote the book on disk while this save was in flight, we are
+        // intentionally discarding the gathered page content (see DiscardInFlightSave): don't merge
+        // it into the DOM and don't write it to disk below, or we'd clobber what that process wrote.
+        var discard = _discardInFlightSave;
+        _discardInFlightSave = false;
         try
         {
-            if (pageContentData != null)
+            if (pageContentData != null && !discard)
             {
                 if (pageContentData.StartsWith("ERROR:"))
                     throw new ApplicationException(pageContentData); // This is caught immediately below. We want that error handling for this case.
@@ -232,7 +257,7 @@ public class EditingStateMachine
             }
             else
             {
-                // We're in the no page state, and there's nothing to save.
+                // We're in the no page state (or discarding), and there's nothing to save.
             }
         }
         catch (Exception e)
@@ -260,42 +285,58 @@ public class EditingStateMachine
         string pageId = _pageId;
         try
         {
-            pageId = postSaveAction();
+            pageId = doBeforeSaveToDisk();
         }
         catch (Exception)
         {
+            // The caller's failure action is how it recovers from work that did not get done;
+            // it is needed just as much when the post-save action is what threw as when saving
+            // the page content did. Without this, an exception here left the caller believing
+            // its work was still in progress forever -- which is what made Bloom impossible to
+            // close in BL-16776.
+            failureAction?.Invoke();
             // We must not get stuck in the SavedAndStripped state, so we'll navigate to the page
             // we were on before the save.
             ToNavigating(pageId);
             throw;
         }
 
-        if (_saveActionHandlesSaveBook)
+        try
         {
-            _saveActionHandlesSaveBook = false;
+            if (_saveActionHandlesSaveBook)
+            {
+                _saveActionHandlesSaveBook = false;
+            }
+            else if (!discard)
+            {
+                _saveBook();
+                doAfterSaveToDisk?.Invoke();
+            }
         }
-        else
+        // I'm not sure what should happen if we get an exception in _saveBook,
+        // but we definitely don't want to get stuck in the SavedAndStripped state,
+        // so for now we'll do whatever we were planning to do if it succeeded.
+        finally
         {
-            _saveBook();
+            if (pageId != null)
+                ToNavigating(pageId);
+            else
+                ToNoPage();
         }
-
-        if (pageId != null)
-            ToNavigating(pageId);
-        else
-            ToNoPage();
     }
 
     /// <summary>
-    /// Start saving the current page. When get the page content and update the main HTML DOM with it,
-    /// the postSaveAction will be called. Then, unless saveActionHandlesSaveBook is passed as true,
-    /// we will call saveBook, typically saving the changes to disk. Finally, we navigate to the page
-    /// whose ID is returned by postSaveAction. (This is convenient, and also ensures that we don't leave
-    /// a page in the stripped state.)
+    /// Start saving the current page. When we get the page content and update the main HTML DOM with it,
+    /// doBeforeSaveToDisk will be called. Then, unless saveActionHandlesSaveBook is passed as true,
+    /// we will call saveBook, saving the changes to disk. If doAfterSaveToDisk is provided, it is called
+    /// after the disk save. Finally, we navigate to the page whose ID is returned by doBeforeSaveToDisk.
+    /// (This is convenient, and also ensures that we don't leave a page in the stripped state.)
     /// </summary>
     public bool ToSavePending(
-        Func<string> postSaveAction,
+        Func<string> doBeforeSaveToDisk,
         bool saveActionHandlesSaveBook = false,
-        Action failureAction = null
+        Action failureAction = null,
+        Action doAfterSaveToDisk = null
     )
     {
         try
@@ -304,12 +345,13 @@ public class EditingStateMachine
             {
                 case State.NoPage:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
-                    DoPostSaveAction(null, postSaveAction, failureAction);
+                    DoPostSaveAction(null, doBeforeSaveToDisk, failureAction, doAfterSaveToDisk);
                     return true;
                 case State.Editing:
                     _saveActionHandlesSaveBook = saveActionHandlesSaveBook;
-                    _postSaveAction = postSaveAction;
+                    _doBeforeSaveToDisk = doBeforeSaveToDisk;
                     _failureAction = failureAction;
+                    _doAfterSaveToDisk = doAfterSaveToDisk;
                     LogTransition("savePending", null);
                     _currentState = State.SavePending;
                     _requestPageSave(_pageId);
@@ -333,22 +375,88 @@ public class EditingStateMachine
     }
 
     /// <summary>
+    /// If a save is in flight (we are in SavePending, having asked the browser for the current page's
+    /// content but not yet received it), arrange for that save's completion to throw the content away
+    /// rather than merging it into the book DOM or writing it to disk. Used when an external process
+    /// has overwritten the book on disk and we are intentionally discarding the user's unsaved edits
+    /// (see EditingModel.ReloadCurrentBookDiscardingEdits). Without this, the in-flight save would
+    /// finish after we reload and clobber the external process's content on disk.
+    /// Returns true if a save was actually in flight (so the discard will take effect).
+    /// </summary>
+    public bool DiscardInFlightSave()
+    {
+        if (_currentState != State.SavePending)
+            return false;
+        _discardInFlightSave = true;
+        return true;
+    }
+
+    /// <summary>
+    /// For a caller that could not start a save (ToSavePending returned false) because one is
+    /// already in flight, and whose work is not safe to do until that save has finished. If a save
+    /// really is in flight, <paramref name="work"/> is remembered and run when the save completes,
+    /// and this returns true — the caller must then do nothing else. Otherwise it returns false and
+    /// the caller must get on with its own work.
+    ///
+    /// Leaving the Edit tab is the case this exists for (BL-16766): the user clicked another tab
+    /// twice in quick succession, and the second click found the first click's save still waiting
+    /// on the browser for the page content. Pressing on with the tab change then reached
+    /// ToNoPage() while still in SavePending, which throws, and left the workspace half switched
+    /// between the two tabs.
+    ///
+    /// Only one piece of deferred work is kept: a later request supersedes an earlier one, since it
+    /// is the more recent thing the user asked for.
+    /// </summary>
+    public bool DeferUntilSaveCompletes(Action work)
+    {
+        // No save to wait for, or nothing to do: the caller must handle it itself.
+        if (_currentState != State.SavePending || work == null)
+            return false;
+        _workToDoAfterInFlightSave = work;
+        return true;
+    }
+
+    /// <summary>
     /// Source: API call providing content of current page will request this after saving and before executing pending action
     /// (e.g. changing pages)
     /// </summary>
     public bool ToSavedAndStripped(string pageContentData)
+    {
+        // This is the only way out of SavePending, so it is where anything that had to wait for the
+        // in-flight save gets its turn (see DeferUntilSaveCompletes). It runs after the whole save,
+        // including the post-save action, so that we are in a state that allows transitions again;
+        // and in a finally, because a save that fails must not swallow a pending tab change.
+        try
+        {
+            return ToSavedAndStrippedFromSavePending(pageContentData);
+        }
+        finally
+        {
+            var deferredWork = _workToDoAfterInFlightSave;
+            _workToDoAfterInFlightSave = null;
+            deferredWork?.Invoke();
+        }
+    }
+
+    private bool ToSavedAndStrippedFromSavePending(string pageContentData)
     {
         try
         {
             switch (_currentState)
             {
                 case State.SavePending:
-                    Guard.AgainstNull(_postSaveAction, "postSaveAction");
+                    Guard.AgainstNull(_doBeforeSaveToDisk, "doBeforeSaveToDisk");
                     LogTransition("saved and stripped", null);
                     _currentState = State.SavedAndStripped;
-                    DoPostSaveAction(pageContentData, _postSaveAction, _failureAction);
-                    _postSaveAction = null;
+                    DoPostSaveAction(
+                        pageContentData,
+                        _doBeforeSaveToDisk,
+                        _failureAction,
+                        _doAfterSaveToDisk
+                    );
+                    _doBeforeSaveToDisk = null;
                     _failureAction = null;
+                    _doAfterSaveToDisk = null;
                     return true;
                 case State.NoPage:
                 case State.Navigating:
@@ -380,7 +488,7 @@ public class EditingStateMachine
             {
                 case State.Editing:
                     Guard.AssertThat(
-                        _postSaveAction == null,
+                        _doBeforeSaveToDisk == null,
                         "stored postSaveAction should be null, we're going to use the parameter instead."
                     );
                     Guard.AgainstNull(postSaveAction, "postSaveAction");
