@@ -105,22 +105,106 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
+            // The page list sends the current page's content with the click when it can. It is
+            // absent when there is no page to collect from, or collecting threw; then the snapshot
+            // the browser last volunteered is used (see PageListController.OnPageSelectedChanged).
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
 
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
+            // Note this only measures getting the change under way; with the content in hand that
+            // is now most of the work, but the new page still has to be built and displayed.
+            using (
+                PerformanceMeasurement.Global?.Measure(
+                    label,
+                    requestData.IsDefined("detail") ? requestData.detail : ""
+                )
+            )
             {
-                //using (PerformanceMeasurement.Global.Measure(label, requestData.detail ?? ""))
-                //{
                 IPage page = PageFromId(pageId);
-                //}
 
                 if (page != null)
-                    PageList.PageClicked(page);
+                {
+                    // A context-menu command runs on the UI thread a moment after its request was
+                    // answered (see HandleContextMenuItemClickedRequest), so a click that arrives
+                    // in that moment must queue behind it, or it would change pages first and the
+                    // command would find the editor mid-navigation and be declined. When nothing is
+                    // pending, the click runs right here, as it always has.
+                    if (DeferredWorkIsPending)
+                        RunOnUiThreadAfterDeferredWork(() =>
+                            PageList.PageClicked(page, pageContent)
+                        );
+                    else
+                        PageList.PageClicked(page, pageContent);
+                }
             }
 
             request.PostSucceeded();
+        }
+
+        // Work handed to the UI thread in the order it arrived, each item running only after the
+        // previous one has finished. A context-menu command joins this chain with a delay (see
+        // HandleContextMenuItemClickedRequest for why); a page click or move that arrives while
+        // such a command is still pending joins it without one, so that the two happen in the order
+        // the user made them, and never in the middle of the command's dialog. Guarded by
+        // _deferredWorkLock; the handlers run on the UI thread but the chain's continuations do not.
+        private Task _deferredWork = Task.CompletedTask;
+        private readonly object _deferredWorkLock = new object();
+
+        private bool DeferredWorkIsPending
+        {
+            get
+            {
+                lock (_deferredWorkLock)
+                    return !_deferredWork.IsCompleted;
+            }
+        }
+
+        /// <summary>
+        /// Queue action to run on the UI thread after everything already queued this way has
+        /// FINISHED, waiting delayMs first if asked. Finished, not merely posted: two of the
+        /// context-menu commands open a modal dialog, which pumps the UI thread, so an item posted
+        /// as soon as the command was posted would run while that dialog was up -- and a page click
+        /// or move that changed the selection then would make the dialog act on the wrong page.
+        /// Each item therefore posts to the UI thread only once the previous item's action has
+        /// returned. The waiting happens on a thread-pool continuation, so it never blocks the UI
+        /// thread the dialog is pumping.
+        /// </summary>
+        private void RunOnUiThreadAfterDeferredWork(Action action, int delayMs = 0)
+        {
+            lock (_deferredWorkLock)
+            {
+                _deferredWork = _deferredWork
+                    .ContinueWith(async _ =>
+                    {
+                        if (delayMs > 0)
+                            await Task.Delay(delayMs);
+                        var form = Shell.GetShellOrOtherOpenForm();
+                        if (form == null || form.IsDisposed)
+                            return;
+                        var finished = new TaskCompletionSource<bool>();
+                        form.BeginInvoke(
+                            (Action)(
+                                () =>
+                                {
+                                    try
+                                    {
+                                        action();
+                                    }
+                                    finally
+                                    {
+                                        finished.TrySetResult(true);
+                                    }
+                                }
+                            )
+                        );
+                        await finished.Task;
+                    })
+                    .Unwrap();
+            }
         }
 
         private void HandleContextMenuItemEnabled(ApiRequest request)
@@ -139,42 +223,52 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
+            // See HandlePageClickedRequest.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
             IPage page = PageFromId(pageId);
 
             if (page != null)
             {
-                // Execute the command asynchronously after a short delay
-                // The discard operator _ indicates we're intentionally not awaiting this
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(100); // 100ms delay to let the UI respond
-
-                    // Execute on the UI thread using the form's synchronization context
-                    var form = Shell.GetShellOrOtherOpenForm();
-                    if (form != null && !form.IsDisposed)
+                // The command must not run inline: "Duplicate Many Times" and "Choose Different
+                // Layout" open MODAL dialogs whose content this same server has to serve, and this
+                // handler holds the API sync lock until it returns. Running them here would
+                // deadlock.
+                //
+                // The short delay before queueing is deliberate, and is the easy thing to remove by
+                // mistake. Returning from this handler is not enough on its own: the server thread
+                // releases the sync lock a moment AFTER we return, while the UI thread is already
+                // free to pump whatever we queued -- so a dialog could ask for its content while
+                // the lock is still held. The delay makes that ordering certain rather than merely
+                // likely.
+                //
+                // The cost is a small window in which typing would miss the page snapshot that
+                // came with this request. That is a trade made knowingly: a lost keystroke is
+                // recoverable, a hung Bloom is not.
+                //
+                // Because this request is answered before the command runs, a page click can
+                // arrive in between; HandlePageClickedRequest queues such a click behind us.
+                RunOnUiThreadAfterDeferredWork(
+                    () =>
                     {
-                        form.BeginInvoke(
-                            new Action(() =>
-                            {
-                                try
-                                {
-                                    PageList.ExecuteContextMenuCommand(page, commandId);
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Log the error.  Should we notify the user as well?
-                                    Logger.WriteEvent(
-                                        $"Error executing content menu command for {commandId} on page {pageId}"
-                                    );
-                                    Logger.WriteError(ex);
-                                }
-                            })
-                        );
-                    }
-                });
+                        try
+                        {
+                            PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error.  Should we notify the user as well?
+                            Logger.WriteEvent(
+                                $"Error executing content menu command for {commandId} on page {pageId}"
+                            );
+                            Logger.WriteError(ex);
+                        }
+                    },
+                    delayMs: 100
+                );
             }
 
-            // Return success immediately without waiting for the command to execute
             request.PostSucceeded();
         }
 
@@ -184,7 +278,17 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            PageList.PageMoved(movedPage, newIndex);
+            // See HandlePageClickedRequest, including for why a move that arrives while a
+            // context-menu command is still on its way to the UI thread queues behind it.
+            string pageContent = requestData.IsDefined("pageContent")
+                ? requestData.pageContent
+                : null;
+            if (DeferredWorkIsPending)
+                RunOnUiThreadAfterDeferredWork(() =>
+                    PageList.PageMoved(movedPage, newIndex, pageContent)
+                );
+            else
+                PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();
         }
 
