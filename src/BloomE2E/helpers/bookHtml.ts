@@ -75,6 +75,25 @@ export interface IBookContents {
     userModifiedStyles: string;
 }
 
+/**
+ * The editing-only markup the table library and Bloom put on a table while it is being edited.
+ * None of it should survive a save; `IPageContents.editingArtifacts` lists the ones a saved page
+ * still carries, and `getTableEditingMarkup` in tables.ts the ones the page being edited carries.
+ */
+export const kTableEditingMarkupSelectors = [
+    "[data-table-attached]",
+    ".cell--selected",
+    ".table--selected",
+    ".bloom-current-table",
+    ".bloom-pointer-near",
+    "[data-table-overlay]",
+    ".bloom-sel-overlay",
+    "[data-btable-anchor-name]",
+    "[data-ui-active-row-index]",
+    ".bloom-pulse-fill",
+    ".bloom-pulse-border",
+];
+
 /** The path of a book folder's own .htm file, which Bloom names after the folder. */
 export function bookHtmlPath(bookFolder: string): string {
     return Path.join(bookFolder, `${Path.basename(bookFolder)}.htm`);
@@ -89,126 +108,124 @@ export async function readBook(
     bookFolder: string,
 ): Promise<IBookContents> {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
-    return page.evaluate((source) => {
-        const document = new DOMParser().parseFromString(source, "text/html");
-        const styleElement = document.querySelector(
-            'style[title="userModifiedStyles"]',
-        );
-        // The editing-only markup the table library and Bloom put on a table while it is being
-        // edited. None of it should survive a save.
-        const artifactSelectors = [
-            "[data-table-attached]",
-            ".cell--selected",
-            ".table--selected",
-            ".bloom-current-table",
-            ".bloom-pointer-near",
-            "[data-table-overlay]",
-            ".bloom-sel-overlay",
-            "[data-btable-anchor-name]",
-            "[data-ui-active-row-index]",
-            ".bloom-pulse-fill",
-            ".bloom-pulse-border",
-        ];
-        const describeTables = (pageDiv: Element) =>
-            [...pageDiv.querySelectorAll(".bloom-table")].map((tableDiv) => {
-                // The table's OWN cells: a nested table's cells belong to that table, and are
-                // described by its own entry in this list.
-                const cells = [
-                    ...tableDiv.querySelectorAll(":scope > .bloom-cell"),
-                ];
-                const sizes = (name: string) =>
-                    tableDiv.getAttribute(name) ?? "";
-                const countOf = (name: string) => {
-                    const value = sizes(name);
-                    return value === "" ? 0 : value.split(",").length;
-                };
-                const inOwnCells = (selector: string) =>
-                    cells.flatMap((cellDiv) => [
-                        ...cellDiv.querySelectorAll(selector),
-                    ]);
-                let depth = 0;
-                for (
-                    let ancestor = tableDiv.parentElement;
-                    ancestor;
-                    ancestor = ancestor.parentElement
-                )
-                    if (ancestor.classList.contains("bloom-table")) depth++;
-                return {
-                    depth,
-                    rows: countOf("data-row-heights"),
-                    columns: countOf("data-column-widths"),
-                    columnWidths: sizes("data-column-widths"),
-                    rowHeights: sizes("data-row-heights"),
-                    cellContentTypes: cells.map(
-                        (cellDiv) =>
-                            cellDiv.getAttribute("data-content-type") ?? "",
-                    ),
-                    imageSources: inOwnCells("img").map(
-                        (img) => img.getAttribute("src") ?? "",
-                    ),
-                    videoSources: inOwnCells("video source").map(
-                        (source) => source.getAttribute("src") ?? "",
-                    ),
-                    mergedAwayCellCount: cells.filter((cellDiv) =>
-                        cellDiv.classList.contains("bloom-skip"),
-                    ).length,
-                };
-            });
-        const pages = [
-            ...document.querySelectorAll("div.bloom-page.numberedPage"),
-        ].map((pageDiv) => ({
-            id: pageDiv.id,
-            lineage: pageDiv.getAttribute("data-pagelineage") ?? "",
-            styleClasses: [
-                ...new Set(
-                    [...pageDiv.querySelectorAll(".bloom-editable")].flatMap(
-                        (editable) =>
+    return page.evaluate(
+        ({ source, artifactSelectors }) => {
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const styleElement = document.querySelector(
+                'style[title="userModifiedStyles"]',
+            );
+            const describeTables = (pageDiv: Element) =>
+                [...pageDiv.querySelectorAll(".bloom-table")].map(
+                    (tableDiv) => {
+                        // The table's OWN cells: a nested table's cells belong to that table, and are
+                        // described by its own entry in this list.
+                        const cells = [
+                            ...tableDiv.querySelectorAll(
+                                ":scope > .bloom-cell",
+                            ),
+                        ];
+                        const sizes = (name: string) =>
+                            tableDiv.getAttribute(name) ?? "";
+                        const countOf = (name: string) => {
+                            const value = sizes(name);
+                            return value === "" ? 0 : value.split(",").length;
+                        };
+                        const inOwnCells = (selector: string) =>
+                            cells.flatMap((cellDiv) => [
+                                ...cellDiv.querySelectorAll(selector),
+                            ]);
+                        let depth = 0;
+                        for (
+                            let ancestor = tableDiv.parentElement;
+                            ancestor;
+                            ancestor = ancestor.parentElement
+                        )
+                            if (ancestor.classList.contains("bloom-table"))
+                                depth++;
+                        return {
+                            depth,
+                            rows: countOf("data-row-heights"),
+                            columns: countOf("data-column-widths"),
+                            columnWidths: sizes("data-column-widths"),
+                            rowHeights: sizes("data-row-heights"),
+                            cellContentTypes: cells.map(
+                                (cellDiv) =>
+                                    cellDiv.getAttribute("data-content-type") ??
+                                    "",
+                            ),
+                            imageSources: inOwnCells("img").map(
+                                (img) => img.getAttribute("src") ?? "",
+                            ),
+                            videoSources: inOwnCells("video source").map(
+                                (source) => source.getAttribute("src") ?? "",
+                            ),
+                            mergedAwayCellCount: cells.filter((cellDiv) =>
+                                cellDiv.classList.contains("bloom-skip"),
+                            ).length,
+                        };
+                    },
+                );
+            const pages = [
+                ...document.querySelectorAll("div.bloom-page.numberedPage"),
+            ].map((pageDiv) => ({
+                id: pageDiv.id,
+                lineage: pageDiv.getAttribute("data-pagelineage") ?? "",
+                styleClasses: [
+                    ...new Set(
+                        [
+                            ...pageDiv.querySelectorAll(".bloom-editable"),
+                        ].flatMap((editable) =>
                             [...editable.classList].filter((c) =>
                                 c.endsWith("-style"),
                             ),
+                        ),
                     ),
+                ].sort(),
+                imageSources: [...pageDiv.querySelectorAll("img")].map(
+                    (img) => img.getAttribute("src") ?? "",
                 ),
-            ].sort(),
-            imageSources: [...pageDiv.querySelectorAll("img")].map(
-                (img) => img.getAttribute("src") ?? "",
-            ),
-            audioSentenceIds: [
-                ...pageDiv.querySelectorAll(".audio-sentence"),
-            ].map((span) => span.id),
-            videoSources: [...pageDiv.querySelectorAll("video source")].map(
-                (source) => source.getAttribute("src") ?? "",
-            ),
-            layout: [...pageDiv.querySelectorAll(".split-pane")].map(
-                (split) => {
-                    const orientation = split.classList.contains(
-                        "horizontal-percent",
-                    )
-                        ? "horizontal"
-                        : "vertical";
-                    // The inline style is where origami records the split percentage.
-                    const sizeOf = (position: string) =>
-                        split
-                            .querySelector(
-                                `:scope > .split-pane-component.position-${position}`,
-                            )
-                            ?.getAttribute("style") ?? "";
-                    const [first, second] =
-                        orientation === "horizontal"
-                            ? ["top", "bottom"]
-                            : ["left", "right"];
-                    return `${orientation} ${sizeOf(first)} | ${sizeOf(second)}`;
-                },
-            ),
-            tables: describeTables(pageDiv),
-            editingArtifacts: artifactSelectors.filter(
-                (selector) => pageDiv.querySelector(selector) !== null,
-            ),
-        }));
-        return {
-            pages,
-            userModifiedStyles: styleElement?.textContent ?? "",
-        };
-    }, html);
+                audioSentenceIds: [
+                    ...pageDiv.querySelectorAll(".audio-sentence"),
+                ].map((span) => span.id),
+                videoSources: [...pageDiv.querySelectorAll("video source")].map(
+                    (source) => source.getAttribute("src") ?? "",
+                ),
+                layout: [...pageDiv.querySelectorAll(".split-pane")].map(
+                    (split) => {
+                        const orientation = split.classList.contains(
+                            "horizontal-percent",
+                        )
+                            ? "horizontal"
+                            : "vertical";
+                        // The inline style is where origami records the split percentage.
+                        const sizeOf = (position: string) =>
+                            split
+                                .querySelector(
+                                    `:scope > .split-pane-component.position-${position}`,
+                                )
+                                ?.getAttribute("style") ?? "";
+                        const [first, second] =
+                            orientation === "horizontal"
+                                ? ["top", "bottom"]
+                                : ["left", "right"];
+                        return `${orientation} ${sizeOf(first)} | ${sizeOf(second)}`;
+                    },
+                ),
+                tables: describeTables(pageDiv),
+                editingArtifacts: artifactSelectors.filter(
+                    (selector) => pageDiv.querySelector(selector) !== null,
+                ),
+            }));
+            return {
+                pages,
+                userModifiedStyles: styleElement?.textContent ?? "",
+            };
+        },
+        { source: html, artifactSelectors: kTableEditingMarkupSelectors },
+    );
 }
 
 /**

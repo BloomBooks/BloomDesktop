@@ -134,6 +134,22 @@ export async function getSectionTypesOffered(
 }
 
 /**
+ * The index of the first section that is offering its list of types, which is the first section
+ * with nothing in it yet. Requires Change Layout mode. Fails with the number of sections when
+ * every one of them already holds something.
+ */
+export async function findEmptySection(page: Page): Promise<number> {
+    const count = await sections(page).count();
+    for (let index = 0; index < count; index++)
+        if ((await getSectionTypesOffered(page, index)).length > 0)
+            return index;
+    throw new Error(
+        `None of the page's ${count} sections is empty: none offers a list of types. ` +
+            `Is the page in Change Layout mode?`,
+    );
+}
+
+/**
  * What the Table entry of a section's type chooser looks like. The entry has three possible
  * states, and they mean different things (see createTableSelector in origami.ts): missing
  * altogether when the "Tables" experiment is off, dimmed and badged when the experiment is on but

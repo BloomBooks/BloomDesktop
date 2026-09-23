@@ -25,6 +25,7 @@
 // asserts a pixel size as a number a test compares with a constant.
 
 import { expect, type Frame, type Locator, type Page } from "@playwright/test";
+import { kTableEditingMarkupSelectors } from "./bookHtml";
 import { editablePageFrame } from "./bookMaking";
 import { getCanvasRect } from "./canvasElements";
 import {
@@ -37,6 +38,7 @@ import {
     sameEdge,
 } from "./geometry";
 import { realClick } from "./realClick";
+import { undo } from "./workspace";
 
 /** What a cell holds, as the table records it in `data-content-type`. */
 export type CellContentType = "text" | "image" | "video" | "table";
@@ -1659,5 +1661,52 @@ export async function expectPictureInsideCell(
         rects.cell!,
         "the picture",
         `the cell at row ${row}, column ${column}`,
+    );
+}
+
+/**
+ * Add a row below the first one from the table's row menu, check the table gained it, then undo
+ * and check the table is back to the rows it had. This is how a test shows that a table is still
+ * wired to the table library after something rebuilt the page around it (leaving the page and
+ * coming back, or leaving Change Layout mode): a table Bloom has not re-attached shows no menu.
+ *
+ * Through the row menu rather than the bottom "+" button, because the canvas element's toolbar
+ * can cover that button on a table on a canvas page. `why` finishes the failure message, e.g.
+ * "after leaving the page and coming back".
+ */
+export async function addRowFromMenuThenUndo(
+    page: Page,
+    why: string,
+    tableIndex = 0,
+): Promise<void> {
+    const rowsBefore = (await getTableShape(page, tableIndex)).rows;
+    await clickCell(page, 0, 0, tableIndex);
+    await openTableMenu(page, "row", 0, tableIndex);
+    await clickTableMenuCommand(page, "Add Row Below");
+    await expect
+        .poll(async () => (await getTableShape(page, tableIndex)).rows, {
+            message: `The row menu's Add Row Below should have added a row ${why}.`,
+        })
+        .toBe(rowsBefore + 1);
+    await undo(page);
+    await expect
+        .poll(async () => (await getTableShape(page, tableIndex)).rows, {
+            message: `Undo should have taken away the row that was added ${why}.`,
+        })
+        .toBe(rowsBefore);
+}
+
+/**
+ * Which of the table editing markup's selectors (kTableEditingMarkupSelectors in bookHtml.ts)
+ * match something in the page being edited right now, chrome in the page's body included. A test
+ * reads this before a save, to show that the markup the save must strip was really there.
+ */
+export async function getTableEditingMarkup(page: Page): Promise<string[]> {
+    return editablePageFrame(page).evaluate(
+        (selectors) =>
+            selectors.filter(
+                (selector) => document.querySelector(selector) !== null,
+            ),
+        kTableEditingMarkupSelectors,
     );
 }

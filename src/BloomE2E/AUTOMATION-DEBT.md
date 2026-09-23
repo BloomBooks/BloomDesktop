@@ -109,6 +109,11 @@ investigated 2026-09-16, which splits this entry in two:
   `e2e/*` hooks remain the route. The exact exception text has not been captured yet; the
   `winformsUia.ps1` `tree -Window Error` command is how to read it before the box is dismissed.
 
+seen again 2026-09-23 (Test Case ID 826, `tables-core.spec.ts` and `tables-extended.spec.ts`): the
+card's setup ticks "Tables" under Experimental Features on the Settings dialog's Advanced tab. The
+tests turn the experiment on with `--experimental-features` instead, so that checkbox is exercised
+only by a person.
+
 ## Native OS dialogs hang automation
 
 File pickers and video capture open native windows that Playwright cannot see or dismiss; a
@@ -639,6 +644,20 @@ with the automation layer; the tests should not need the rebuild at all. It is r
 because until it is settled, any table test that puts a picture in a cell has that rebuild in
 the middle of it.
 (Found 2026-09-04, writing the table suites.)
+
+## Bloom cannot be asked to quit, so nothing is saved at close in a test
+
+The fixture ends every Bloom it launches, and `bloomApp.restart`, by killing the process tree
+(`killProcessTree` in `fixtures/launchBloom.ts`). A killed Bloom saves nothing, so no test can
+cover what Bloom writes when a person closes it: for tables, that closing Bloom with a cell still
+selected saves none of the table's editing markup. The tests cover the same save by leaving the
+page with a cell selected ("saves a Change Layout table left with a cell selected, ..." in
+`tables-extended.spec.ts`), which goes through the same cleanup but not through the close.
+
+Fix direction: an `E2eTestingApi` hook that closes the main window the way its close box does,
+and a fixture method that calls it and waits for the process to exit before falling back to a
+kill.
+(Found 2026-09-23, Test Case ID 826.)
 
 ## Nothing in the markup marks the boundary between two rows or columns
 

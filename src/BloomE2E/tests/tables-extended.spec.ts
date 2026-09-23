@@ -23,6 +23,7 @@ import { readBook, waitForBookWithPageCount } from "../helpers/bookHtml";
 import {
     addPage,
     getContentPages,
+    getPages,
     goToPage,
     makeBookFromTemplate,
     reloadPageBeingEdited,
@@ -40,11 +41,16 @@ import {
 } from "../helpers/canvasElements";
 import { selectBook } from "../helpers/collection";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
-import { expectNoOverlap, expectSameRect } from "../helpers/geometry";
+import {
+    expectNoOverlap,
+    expectSameRect,
+    kEdgeTolerance,
+} from "../helpers/geometry";
 import { chooseImageFile } from "../helpers/images";
 import { pressKey, pressKeyIn } from "../helpers/keys";
 import {
     chooseSectionType,
+    findEmptySection,
     getSectionTypesOffered,
     setChangeLayoutMode,
     splitSection,
@@ -57,6 +63,7 @@ import {
     waitForPageCount,
 } from "../helpers/pageThumbnails";
 import {
+    addRowFromMenuThenUndo,
     cell,
     cellTextBox,
     cellVideoBox,
@@ -71,6 +78,7 @@ import {
     getCellParagraphCount,
     getCellText,
     getTableCount,
+    getTableEditingMarkup,
     getTableShape,
     closeAnyMenu,
     measureChrome,
@@ -82,6 +90,7 @@ import {
     typeInCellKeyByKey,
     waitForNestedTableAttached,
     waitForTableAttached,
+    type ITableMeasurement,
 } from "../helpers/tables";
 import {
     chooseVideoFile,
@@ -90,6 +99,7 @@ import {
 } from "../helpers/videos";
 import {
     canUndo,
+    clickUndoButton,
     getZoom,
     setZoom,
     switchTab,
@@ -121,14 +131,28 @@ const TOO_MUCH_TEXT =
     "This sentence is far longer than the cell it is typed into, and it goes on, and on, " +
     "and on, so that there can be no doubt that it does not fit in the space available.";
 
+// Text that wraps onto a few lines in a narrow cell, but not so many that the row reaches the
+// bottom of its section.
+const A_FEW_LINES_OF_TEXT = "Apples, pears and plums grow on trees.";
+
+// How tall a row of `measurement` is drawn, read from its first cell.
+function rowHeight(measurement: ITableMeasurement, row: number): number {
+    const first = measurement.cells.find(
+        (c) => c.row === row && c.column === 0,
+    );
+    if (!first) throw new Error(`The table has no row ${row}.`);
+    return first.rect.height;
+}
+
 // The pages and the book folder, all set by the first test.
 let sectionPage: IBookPage;
 let canvasPage: IBookPage;
 let bookFolder: string;
 
-// Test Case ID to be assigned later.
+// Tests tagged [Test Case ID 826] automate Notion test case 826, "Tables on a canvas page
+// and in Change Layout"; the others have no card yet.
 test.describe("more ways to use a table", () => {
-    test("makes a table out of a page section, through Change Layout", async ({
+    test("makes a table out of a page section, through Change Layout [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -176,7 +200,7 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    test("keeps the table when its section is split in two", async ({
+    test("keeps the table when its section is split in two [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -223,7 +247,207 @@ test.describe("more ways to use a table", () => {
         await expectCellsTile(page);
     });
 
-    test("adds a table to a canvas page", async ({ page, step }) => {
+    // A table made through Change Layout keeps the table library's own row sizing, rows that hug
+    // their text, where a table on a canvas page has rows that share out the height of its box
+    // (AttachNewTable and AttachNewTableThatFillsItsSpace in tableEditing.ts). So typing more than
+    // fits makes this table's row taller, which is the opposite of what the canvas-page test
+    // "marks text that does not fit a cell, without growing the table" expects of its table.
+    // The table itself keeps the height of its section: the rows grow into the room the section
+    // leaves below them, so it is the row that is measured here, not the table.
+    test("grows a row to fit what is typed, in a Change Layout table [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
+        const before = await measureTable(page);
+        await step("Type more into a cell than one line can hold", async () => {
+            expect(
+                await getCellText(page, 0, 1, "en"),
+                "Sanity check: the cell should start empty, so its row starts one line tall.",
+            ).toBe("");
+            await typeInCell(page, 0, 1, "en", A_FEW_LINES_OF_TEXT);
+        });
+
+        await step(
+            "Check the first row grew and the second did not",
+            async () => {
+                await expect
+                    .poll(async () => rowHeight(await measureTable(page), 0), {
+                        message:
+                            `The first row of a Change Layout table should grow to fit the text ` +
+                            `typed into it; it was ${Math.round(rowHeight(before, 0))}px tall.`,
+                    })
+                    .toBeGreaterThan(rowHeight(before, 0) + kEdgeTolerance);
+                const after = await measureTable(page);
+                expect(
+                    Math.abs(rowHeight(after, 1) - rowHeight(before, 1)),
+                    `The second row should have kept its height of ` +
+                        `${Math.round(rowHeight(before, 1))}px, but it is now ` +
+                        `${Math.round(rowHeight(after, 1))}px.`,
+                ).toBeLessThanOrEqual(kEdgeTolerance);
+                await expectCellsTile(page);
+            },
+        );
+
+        await step(
+            "Empty the cell, and check the row shrinks back",
+            async () => {
+                // So that the tests after this one find the table as the split left it.
+                await typeInCell(page, 0, 1, "en", "");
+                await expect
+                    .poll(
+                        async () =>
+                            Math.abs(
+                                rowHeight(await measureTable(page), 0) -
+                                    rowHeight(before, 0),
+                            ),
+                        {
+                            message:
+                                `Emptying the cell should have given the first row back its ` +
+                                `old height of ${Math.round(rowHeight(before, 0))}px.`,
+                        },
+                    )
+                    .toBeLessThanOrEqual(kEdgeTolerance);
+            },
+        );
+    });
+
+    // tables-core.spec.ts leaves a canvas-page table and checks what was saved; this is the same
+    // check for a table that is a section of the page, left with one of its cells selected. The
+    // selection is the state that puts the most editing markup on the table (the selected cell's
+    // class, the table's, the library's overlays), and all of it has to be stripped before the save.
+    test("saves a Change Layout table left with a cell selected, and edits it again on return [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
+        const saved = await step(
+            "Select a cell, then leave the page so that Bloom saves it",
+            async () => {
+                await clickCell(page, 1, 0);
+                // Sanity check, so that "nothing reached the book" below cannot pass for want of
+                // anything to strip.
+                expect(
+                    await getTableEditingMarkup(page),
+                    "Clicking a cell should have marked it selected in the page being edited.",
+                ).toContain(".cell--selected");
+                const pages = await getPages(page);
+                const cover = pages.find((p) => !p.isContentPage)!;
+                await goToPage(page, cover.id);
+                const book = await waitForBookWithPageCount(
+                    page,
+                    bookFolder,
+                    pages.filter((p) => p.isContentPage).length,
+                );
+                return book.pages.find((p) => p.id === sectionPage.id);
+            },
+        );
+        if (!saved) throw new Error("The book was never read back.");
+
+        await step("Check the table was saved as it stood", async () => {
+            expect(
+                saved.tables.map((t) => ({ rows: t.rows, columns: t.columns })),
+                "The saved page should hold its one table, two rows by two columns.",
+            ).toEqual([{ rows: 2, columns: 2 }]);
+            expect(
+                saved.tables[0].cellContentTypes,
+                "Every cell of the saved table should still hold text.",
+            ).toEqual(["text", "text", "text", "text"]);
+        });
+
+        await step("Check no editing markup reached the book", async () => {
+            expect(
+                saved.editingArtifacts,
+                "Leaving the page with a cell selected should save none of the table's " +
+                    "editing markup.",
+            ).toEqual([]);
+        });
+
+        await step("Come back and check the table takes commands", async () => {
+            await goToPage(page, sectionPage.id);
+            await waitForTableAttached(page);
+            expect(
+                await getCellText(page, 0, 0, "en"),
+                "The table should still hold what was typed in it.",
+            ).toBe("Origami");
+            await addRowFromMenuThenUndo(
+                page,
+                "to a Change Layout table after leaving its page and coming back",
+            );
+        });
+    });
+
+    // Change Layout keeps its own undo history of the page's layout (addUndoPoint in origami.ts),
+    // and choosing Table for a section is one step of it. Bloom's Undo asks the table library
+    // first (handleUndo in workspaceRoot.ts), so this checks that the layout step is the one
+    // undone.
+    test("undoes choosing Table for a section, in Change Layout [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
+        const emptySection = await step(
+            "Choose Table for the page's empty section",
+            async () => {
+                await setChangeLayoutMode(page, true);
+                expect(
+                    await getTableCount(page),
+                    "Sanity check: the page should start with its one table.",
+                ).toBe(1);
+                // The split in "keeps the table when its section is split in two" left one
+                // section with nothing in it.
+                const index = await findEmptySection(page);
+                await chooseSectionType(page, "table", index);
+                await expect
+                    .poll(async () => getTableCount(page), {
+                        message:
+                            "Choosing Table for the empty section should have made a second " +
+                            "table.",
+                    })
+                    .toBe(2);
+                return index;
+            },
+        );
+
+        await step("Click Undo in the toolbar", async () => {
+            // The toolbar button rather than Ctrl+Z, which is a WinForms accelerator a test's key
+            // press never reaches (see clickUndoButton).
+            await clickUndoButton(page);
+            await expect
+                .poll(async () => getTableCount(page), {
+                    message:
+                        "Undo should have taken away the table that choosing Table made, and " +
+                        "only that one.",
+                })
+                .toBe(1);
+            expect(
+                await getSectionTypesOffered(page, emptySection),
+                "After the undo, the section should be empty again and offer Table once more.",
+            ).toContain("table");
+        });
+
+        await step(
+            "Leave Change Layout mode, and check the first table still works",
+            async () => {
+                await setChangeLayoutMode(page, false);
+                await waitForTableAttached(page);
+                expect(
+                    await getTableCount(page),
+                    "Leaving Change Layout mode should have kept the one table.",
+                ).toBe(1);
+                expect(
+                    await getCellText(page, 0, 0, "en"),
+                    "The table that was there before should still hold its text.",
+                ).toBe("Origami");
+                await addRowFromMenuThenUndo(
+                    page,
+                    "to the remaining table after the new one was undone",
+                );
+            },
+        );
+    });
+
+    test("adds a table to a canvas page [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
         await step("Add a Canvas page", async () => {
             const before = (await getContentPages(page)).map((p) => p.id);
             await addPage(page, "Canvas");
@@ -245,7 +469,7 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    test("marks text that does not fit a cell, without growing the table", async ({
+    test("marks text that does not fit a cell, without growing the table [Test Case ID 826]", async ({
         page,
         step,
     }) => {
