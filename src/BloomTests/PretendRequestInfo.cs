@@ -69,7 +69,7 @@ namespace BloomTests
         public string LocalPathWithoutQuery { get; set; }
 
         public string RequestContentType { get; }
-        public string ResponseContentType { private get; set; }
+        public string ResponseContentType { get; set; }
 
         /// <summary>
         /// wrap so that it is easily consumed by our standard xml unit test stuff, which can't handled fragments

@@ -146,6 +146,39 @@ namespace BloomTests.web
             }
         }
 
+        /// <summary>
+        /// A front end we host (e.g. the AI image editor's PDF.js worker) may load a separate .mjs
+        /// file with a dynamic import(). Chromium refuses to run a module script whose MIME type
+        /// is not JavaScript, so a .mjs served as application/octet-stream fails with "Failed to
+        /// fetch dynamically imported module" (BL-16899). WebAssembly.instantiateStreaming is just
+        /// as strict about a .wasm file being application/wasm.
+        /// </summary>
+        [TestCase(".mjs", "text/javascript")]
+        [TestCase(".wasm", "application/wasm")]
+        public void CanGetBrowserStrictFile_ServesItWithTheRequiredContentType(
+            string extension,
+            string expectedContentType
+        )
+        {
+            using (var server = CreateBloomServer())
+            using (var file = TempFile.WithExtension(extension))
+            {
+                RobustFile.WriteAllText(file.Path, "pretend content");
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + file.Path
+                );
+
+                server.MakeReply(transaction);
+
+                Assert.That(
+                    transaction.ReplyImagePath,
+                    Does.EndWith(extension),
+                    $"the server should have served the {extension} file itself"
+                );
+                Assert.That(transaction.ResponseContentType, Is.EqualTo(expectedContentType));
+            }
+        }
+
         [Test]
         public void CanOpenConsecutivePorts_ReturnsFalseWhenAnyPortInRangeIsBlocked()
         {
