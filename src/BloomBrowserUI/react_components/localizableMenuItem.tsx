@@ -440,6 +440,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                     justify-content: space-between !important; // move sub-menu arrow to right
                 `}
                 key={props.l10nId}
+                // As on LocalizableMenuItem, the localization id doubles as the test id, so a
+                // test can hover the row to open its submenu without matching on English.
+                data-testid={props.l10nId}
                 label={
                     props.icon ? (
                         // This is a nuisance. We should just be able to pass on props.icon.
