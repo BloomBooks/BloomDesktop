@@ -326,14 +326,24 @@ async function findShellPage(
  * IChooserBloomApp.reattachToChooser). Polls the way findShellPage does: the target exists, as
  * about:blank, before Bloom navigates it, and React mounts the dialog later still.
  */
-async function findChooserPage(browser: Browser): Promise<Page> {
+async function findChooserPage(
+    browser: Browser,
+    httpPort: number,
+): Promise<Page> {
     const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
     let lastUrls: string[] = [];
     while (Date.now() < deadline) {
         const pages = browser
             .contexts()
             .flatMap((context) => context.pages())
-            .filter((page) => !page.url().startsWith("devtools://"));
+            .filter((page) => !page.url().startsWith("devtools://"))
+            // Keep only this Bloom's own documents, as findShellPage does: another Bloom's
+            // dialog can carry the same title bar.
+            .filter(
+                (page) =>
+                    !page.url().startsWith("http") ||
+                    page.url().includes(`:${httpPort}/`),
+            );
         lastUrls = pages.map((page) => page.url());
         for (const page of pages) {
             const found = await page
@@ -399,9 +409,8 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                     launched = await launchBloomIntoChooser(collectionSpec);
                     const app: IChooserBloomApp = {
                         mode: "chooser",
-                        page: await reconnectAndFind(
-                            launched.cdpPort,
-                            findChooserPage,
+                        page: await reconnectAndFind(launched.cdpPort, (b) =>
+                            findChooserPage(b, launched!.httpPort),
                         ),
                         httpPort: launched.httpPort,
                         cdpPort: launched.cdpPort,
@@ -411,7 +420,7 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                         reattachToChooser: async () => {
                             app.page = await reconnectAndFind(
                                 launched!.cdpPort,
-                                findChooserPage,
+                                (b) => findChooserPage(b, launched!.httpPort),
                             );
                             return app.page;
                         },

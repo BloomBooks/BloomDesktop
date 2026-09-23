@@ -161,6 +161,17 @@ export async function getUiLanguageMenuEntries(page: Page): Promise<string[]> {
 }
 
 /**
+ * The open menu's entry for one language, matched on its whole label: a substring match would
+ * also find "Pseudo-English (i18n test)" when looking for "English".
+ */
+function languageMenuItem(menu: Locator, menuText: string): Locator {
+    const escaped = menuText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return menu.locator("li[role='menuitem']").filter({
+        hasText: new RegExp(`^\\s*${escaped}\\s*$`),
+    });
+}
+
+/**
  * Change Bloom's UI language the way a user does: open the language menu and click the language.
  * Bloom then reopens the whole project, so this waits out the reload, re-finds the shell page
  * (bloomApp.page from here on), and returns once Bloom reports the new language and the
@@ -176,9 +187,7 @@ export async function chooseUiLanguage(
         languageTag,
     );
     const menu = await openUiLanguageMenu(page);
-    const item = menu.locator("li[role='menuitem']").filter({
-        hasText: menuText,
-    });
+    const item = languageMenuItem(menu, menuText);
     await expect(
         item,
         `expected exactly one menu item matching "${menuText}"`,
@@ -305,6 +314,9 @@ export async function setUiStateViaApi(
         const pageClosed = bloomApp.page.waitForEvent("close", {
             timeout: 60000,
         });
+        // Pre-handled so a failed POST below, which leaves this never awaited, cannot surface
+        // later as an unhandled rejection charged to some other test.
+        pageClosed.catch(() => undefined);
         await apiPost(
             bloomApp.page,
             "workspace/uiLanguageAction",
@@ -407,9 +419,7 @@ export async function chooseUiLanguageInChooser(
         languageTag,
     );
     const menu = await openUiLanguageMenu(page);
-    const item = menu.locator("li[role='menuitem']").filter({
-        hasText: menuText,
-    });
+    const item = languageMenuItem(menu, menuText);
     await expect(
         item,
         `expected exactly one menu item matching "${menuText}"`,
