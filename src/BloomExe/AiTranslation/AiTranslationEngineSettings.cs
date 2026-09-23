@@ -5,6 +5,15 @@ namespace Bloom.AiTranslation
     /// ("deepl", "google", or "alpha2"). A CollectionSettings always has exactly one of these for
     /// each known provider id; see CollectionSettings.EnsureAiTranslationEngines().
     /// </summary>
+    /// <remarks>
+    /// KNOWN ISSUE, deferred on purpose: the provider credentials below (ApiKey,
+    /// ServiceAccountEmail, PrivateKey) are persisted in plain text in the collection settings
+    /// file. The AI image editor has the same problem (it stores an OpenRouter key the same way),
+    /// and it is scheduled to land one Bloom version before this feature. We want to solve secret
+    /// storage there first, then adopt that same approach here before this feature ships. So do
+    /// NOT invent a separate encryption scheme for these fields now -- update this to match the
+    /// image editor's solution when it exists.
+    /// </remarks>
     public class AiTranslationEngineSettings
     {
         /// <summary>

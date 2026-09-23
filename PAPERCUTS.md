@@ -19,29 +19,6 @@ House rules:
 
 ---
 
-## 2026-07-15 — Orphaned `node.exe` dev stacks pile up until `go.sh` can't launch
-- **Cut:** Each `go.sh` spawns a dev stack (`dev.mjs` → vite + ~7 `onchange`/`watchLess`
-  watchers + `watchBloomExe`). On Windows, closing a terminal or Ctrl-C doesn't reliably tear
-  down that child tree, so stacks orphan across worktrees/sessions and `node.exe` accumulates
-  (saw ~40 live: 3 worktrees + a dead-parent chrome-devtools-mcp daemon). Under that load
-  `go.mjs`'s Vite health gate times out — it needs **2 consecutive sub-3s** `/@vite/client`
-  responses, and Vite binds **IPv6-only (`[::1]`, 127.0.0.1 refused)** on this machine, so
-  there's zero margin — and every launch fails with "Vite … never became reachable," i.e. it
-  "piles up until none work." `go.mjs`'s startup sweep only reaps *this* worktree's stale
-  procs, and the chrome-devtools-mcp daemon has a **watchdog that respawns it after kill**
-  (self-healing zombie).
-- **Idea:** Add a zombie-reaper keyed on *liveness of the controller*, not worktree path: a
-  vite/watcher subtree with no living `go.mjs`/`watchBloomExe` ancestor (or a proc whose
-  parent is dead) is a zombie → auto-kill. Run it on `go.sh` startup across **all** Bloom
-  worktree stacks (safe because it never touches subtrees with a live controller), and/or ship
-  a standalone `pnpm reap`. Separately harden the health probe so a slow-but-listening Vite
-  passes: bind Vite on 127.0.0.1 too, accept a single success, and scale the timeout with
-  detected load. For chrome-devtools-mcp, kill the watchdog first (else it resurrects the
-  daemon) — memory note already says prefer the CLI over the MCP.
-- **Context:** BL-16549AiSourceBubbles; repeated `./go.sh` failures. See `go.mjs`
-  `waitForViteClient` / `startDevServerOnPort` and `processTree.mjs`
-  `sweepStaleWorktreeNodeProcesses`.
-
 - Running `dotnet test` (or any BloomExe build) while a `./go.sh` / `dotnet watch`
   Bloom is live fails at the copy-to-output step: the running process locks both
   `output/Debug/AnyCPU/Bloom.exe` (native apphost) and, once hot-reload deltas have

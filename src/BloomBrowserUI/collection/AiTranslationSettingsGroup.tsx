@@ -1103,6 +1103,16 @@ export const useAiTranslationSettingsGroup = (props: {
             setSupportedLanguagesMessage(data?.message ?? "");
             lastSupportedLanguagesConfigKeyRef.current = languageConfigKey;
             setLanguageOptionsVersion((value) => value + 1);
+        } catch (error) {
+            // Don't fail silently with an empty dropdown: tell the user the list couldn't be
+            // loaded. We intentionally leave lastSupportedLanguagesConfigKeyRef unchanged so
+            // reopening the dropdown retries the fetch rather than treating this failure as the
+            // cached answer for the current configuration.
+            setSupportedLanguagesMessage(
+                `Could not load the list of supported languages. ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
+            );
         } finally {
             setIsLoadingSupportedLanguages(false);
         }
@@ -1198,6 +1208,14 @@ export const useAiTranslationSettingsGroup = (props: {
             setAlpha2SourceLanguagesMessage(data?.message ?? "");
             lastAlpha2SourceLanguagesConfigKeyRef.current = configKey;
             setAlpha2SourceLanguageOptionsVersion((value) => value + 1);
+        } catch (error) {
+            // Surface the failure instead of silently showing an empty list; leave the cached
+            // config key unchanged so reopening the dropdown retries rather than caching the error.
+            setAlpha2SourceLanguagesMessage(
+                `Could not load the list of source languages. ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
+            );
         } finally {
             setIsLoadingAlpha2SourceLanguages(false);
         }

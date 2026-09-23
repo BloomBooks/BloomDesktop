@@ -661,8 +661,6 @@ namespace Bloom.web.controllers
 
         private void StoreAdvancedSettingsData(JObject data, CollectionSettingsDialog dialog)
         {
-            var aiTranslationConfigurationChanged = false;
-
             var autoUpdateToken = data["autoUpdate"];
             if (autoUpdateToken != null)
                 dialog.PendingAutomaticallyUpdate = autoUpdateToken.Value<bool>();
@@ -714,7 +712,6 @@ namespace Bloom.web.controllers
                         dialog.PendingAiTranslationTargetLanguageTag = targetLanguageTag;
                         foreach (var engineToInvalidate in dialog.PendingAiTranslationEngines)
                             InvalidateEngineValidation(engineToInvalidate);
-                        aiTranslationConfigurationChanged = true;
                     }
                 }
 
@@ -770,16 +767,18 @@ namespace Bloom.web.controllers
                         if (engineChanged)
                         {
                             InvalidateEngineValidation(engine);
-                            aiTranslationConfigurationChanged = true;
                         }
                     }
                 }
             }
 
-            if (aiTranslationConfigurationChanged)
-            {
-                dialog.ChangeThatRequiresRestart();
-            }
+            // AI-translation settings changes intentionally do NOT require a restart. The dialog's
+            // OK handler (CollectionSettingsDialog._okButton_Click) copies the pending target
+            // language and engines straight into the live CollectionSettings, and
+            // AiTranslationBookUpdater reads those live from CollectionSettings each time a book
+            // becomes visible (EditingModel.OnBecomeVisible). So a changed key/engine/target simply
+            // takes effect the next time a book is opened -- no reload needed. (This matches how the
+            // allowAiSourceBubbles toggle above already behaves.)
 
             var showQrCodeToken = data["showQrCode"];
             if (showQrCodeToken != null)

@@ -61,7 +61,6 @@ export function getLanguageData(
 export const LanguageChooserDialog: React.FunctionComponent<{
     initialLanguageTag?: string;
     initialCustomName?: string;
-    onOk?: (languageData: ILanguageData) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = (props) => {
     const { showDialog, closeDialog, propsForBloomDialog } =
@@ -109,12 +108,10 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     );
 
     function onOk(languageSelection: IOrthography, languageTag: string) {
-        const languageData = getLanguageData(languageTag, languageSelection);
-        if (props.onOk) {
-            props.onOk(languageData);
-        } else {
-            postData("settings/changeLanguage", languageData);
-        }
+        postData(
+            "settings/changeLanguage",
+            getLanguageData(languageTag, languageSelection),
+        );
         closeDialog();
     }
 
@@ -128,12 +125,8 @@ export const LanguageChooserDialog: React.FunctionComponent<{
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            fullScreen={true}
-            disableDragging={true}
             css={css`
                 padding: 0;
-                height: 100%;
-                width: 100%;
             `}
         >
             <AppBar
@@ -159,27 +152,15 @@ export const LanguageChooserDialog: React.FunctionComponent<{
                     Choose Language
                 </H1>
             </AppBar>
-            <div
-                css={css`
-                    flex: 1 1 auto;
-                    min-height: 0;
-                    overflow: hidden;
-                    display: flex;
-                    flex-direction: column;
-                `}
-            >
-                <LanguageChooser
-                    uiLanguage={uiLanguage}
-                    searchResultModifier={defaultSearchResultModifier}
-                    initialSearchString={
-                        props.initialLanguageTag?.split("-")[0]
-                    }
-                    initialSelectionLanguageTag={props.initialLanguageTag}
-                    initialCustomDisplayName={props.initialCustomName}
-                    onSelectionChange={onSelectionChange}
-                    actionButtons={dialogActionButtons}
-                />
-            </div>
+            <LanguageChooser
+                uiLanguage={uiLanguage}
+                searchResultModifier={defaultSearchResultModifier}
+                initialSearchString={props.initialLanguageTag?.split("-")[0]}
+                initialSelectionLanguageTag={props.initialLanguageTag}
+                initialCustomDisplayName={props.initialCustomName}
+                onSelectionChange={onSelectionChange}
+                actionButtons={dialogActionButtons}
+            />
         </BloomDialog>
     );
 };
@@ -193,14 +174,12 @@ let show: () => void = () => {
 export function showLanguageChooserDialog(
     initialLanguageTag?: string,
     initialCustomName?: string,
-    onOk?: (languageData: ILanguageData) => void,
 ) {
     try {
         renderRootSync(
             <LanguageChooserDialog
                 initialLanguageTag={initialLanguageTag}
                 initialCustomName={initialCustomName}
-                onOk={onOk}
             />,
             getModalContainer(),
         );
