@@ -70,6 +70,10 @@ export interface INestedMenuItemProps extends IBaseLocalizableMenuItemProps {
     icon?: ReactNode;
     truncateMainLabel?: boolean;
     children?: ReactNode;
+    // Whether the menu this row is in is open. Defaults to true. A menu that stays mounted while
+    // shut (keepMounted) must pass its open state, or a submenu that was open when the menu shut
+    // stays drawn until the pointer moves.
+    parentMenuOpen?: boolean;
 }
 
 export interface ILocalizableMenuItemProps
@@ -417,8 +421,9 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
         : css``;
     return (
         // Can't find any doc on parentMenuOpen. Examples set it to the same value
-        // as the open prop of the parent menu. But it seems to work fine just set
-        // to true. (If omitted, however, the child menu does not appear when the
+        // as the open prop of the parent menu. True works for a menu that unmounts
+        // when it shuts; a keepMounted menu passes its open state (see the prop).
+        // (If omitted, however, the child menu does not appear when the
         // parent is hovered over.)
         <Fragment>
             <NestedMenuItem
@@ -471,7 +476,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<
                         </Fragment>
                     )
                 }
-                parentMenuOpen={true}
+                parentMenuOpen={props.parentMenuOpen ?? true}
                 //icon={props.icon}
             >
                 {props.children}
