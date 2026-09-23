@@ -25,6 +25,7 @@ import { showToolbox, toolboxFrame } from "./toolbox";
  */
 export type PaletteItem =
     | "table"
+    | "calendar"
     | "image"
     | "video"
     | "speech"
@@ -436,6 +437,23 @@ export async function getCanvasElementMenuItems(
                     !item.hasAttribute("data-subscription-gated"),
             })),
         );
+}
+
+/**
+ * The labels of the rows of the selected canvas element's "..." menu, top to bottom, as a person
+ * reads them. For the rows whose label is not a UI string but a value of the element, such as the
+ * month and the year of a calendar grid ("January", "2027"), which carry no localization id for
+ * getCanvasElementMenuItems to report. Opens the menu first if it is shut.
+ */
+export async function getCanvasElementMenuLabels(
+    page: Page,
+): Promise<string[]> {
+    await openCanvasElementMenu(page);
+    return (
+        await editablePageFrame(page)
+            .locator(`${MENU} li[role="menuitem"]`)
+            .allInnerTexts()
+    ).map((label) => label.trim());
 }
 
 /**

@@ -234,6 +234,14 @@ of master's own tests against a day-old bundle, looking exactly like a regressio
 the fixture does not start a dev server of its own, so a developer still chooses between a rebuild
 and `BLOOM_E2E_VITE_PORT`.
 (Found 2026-09-01 while fixing the top-bar test ids.)
+seen again 2026-09-23 (Test Case ID 818, `wall-calendar.spec.ts`): the worktree was switched to another branch
+while `./init.sh` was building the front end, so `output/browser` ended up half from each branch:
+the toolbox bundle had the new calendar code, the page and workspace bundles did not. Every output
+file was newer than every source file, so `assertBuildIsNotStale` passed it, and the first test
+failed on a dialog that the old bundle does not have. Comparing file times cannot see which sources
+a build read. Fix direction: have the build write a stamp into `output/browser` naming the git
+commit and a hash of the uncommitted changes it built from, and have the fixture compare that with
+the working tree.
 
 ## The Edit tab's page thumbnail menu has no stable test ids, so tests match on localized text
 
@@ -992,3 +1000,20 @@ Fix direction: export the shell resolution from the fixture (or expose it as
 page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
 back a usable page, and the switch becomes testable.
 (Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)
+
+## The Bloom log kept with a failed test can be some other Bloom's
+
+When a test fails, the fixture attaches `%TEMP%\SIL\Bloom\Log.txt` as `bloom-log`
+(`BLOOM_LOG_PATH` in `fixtures/bloomTest.ts`). Every Bloom on the machine writes that one file, the
+developer's own and an installed release included, and each one that starts overwrites it. On a
+machine where people or agents run other Blooms, the log kept with a failure can therefore describe
+a Bloom that had nothing to do with the test: on 2026-09-23 a `wall-calendar.spec.ts` failure kept
+the launch of the installed `%LOCALAPPDATA%\Bloom\current\Bloom.dll`, started while the test ran,
+and nothing from the Bloom under test. The attachment is then worse than none, because it reads
+like evidence.
+
+Fix direction: give the Bloom a test launches a log of its own (a command-line option or an `--e2e`
+rule that puts the log beside `userSettingsDir`), and attach that file. Until then, check the
+"App Launched with" line of an attached log names `output\Debug` and the run's temp collection
+before trusting it.
+(Found 2026-09-23, writing wall-calendar.spec.ts for BL-16777.)

@@ -1024,11 +1024,29 @@ export async function getCellMenuContentTypes(
             `Right-clicking the cell at row ${row}, column ${column} did not open the Cell menu. ` +
                 `Menus that did open: ${describeMenus(menus)}.`,
         );
+    return getOpenCellMenuContentTypes(page);
+}
+
+/**
+ * The content types the Cell menu that is open just now offers, however it was opened: by a
+ * right-click in the cell, or by the "..." button below a small text box in it
+ * (helpers/calendar.ts).
+ */
+export async function getOpenCellMenuContentTypes(
+    page: Page,
+): Promise<string[]> {
     return editablePageFrame(page)
         .locator('[data-btable-menu="cell"] [data-ct-id]')
         .evaluateAll((buttons) =>
             buttons.map((b) => b.getAttribute("data-ct-id") ?? ""),
         );
+}
+
+/** The Cell menu that is open just now, for a picture of it. */
+export function openCellMenu(page: Page): Locator {
+    return editablePageFrame(page)
+        .locator('[data-btable-menu="cell"]:visible')
+        .first();
 }
 
 /**

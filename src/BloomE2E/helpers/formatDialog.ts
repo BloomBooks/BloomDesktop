@@ -191,6 +191,11 @@ export async function openFormatDialog(page: Page): Promise<void> {
     ).toBeVisible({ timeout: 30000 });
 }
 
+/** The Format dialog, for a picture of it. */
+export function formatDialogPanel(page: Page): Locator {
+    return editablePageFrame(page).locator(DIALOG);
+}
+
 /** True while the Format dialog is open. */
 export async function isFormatDialogOpen(page: Page): Promise<boolean> {
     return editablePageFrame(page).locator(DIALOG).isVisible();

@@ -153,6 +153,11 @@ export async function getPublishDestinationsOffered(
         );
 }
 
+/** The Publish tab's list of destinations, for a picture of it. */
+export function publishDestinationList(page: Page): Locator {
+    return page.locator(".react-tabs__tab-list").first();
+}
+
 /**
  * True while the Publish tab is showing the notice that says the book uses a feature the
  * collection's subscription tier does not include. Found by its test id, because every word of it
