@@ -340,10 +340,7 @@ namespace Bloom.Book
             // record it as done, or the first "Edit with AI" or page-size change would stop to run the pass
             // behind a dialog on a book minutes old (BL-16905). Other sources carry their own record
             // (our Sample Shells ship with it), or have really been edited, so we leave them alone.
-            if (
-                usingTemplate
-                && sourceFolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory)
-            )
+            if (usingTemplate && IsFactoryTemplateFolder(sourceFolderPath))
             {
                 BookProcessor.StampPerPageFixupDone(
                     storage.Dom,
@@ -365,6 +362,21 @@ namespace Bloom.Book
             //REVIEW this actually undoes the setting of the initial files name:
             //      storage.UpdateBookFileAndFolderName(_librarySettings);
             return storage.FolderPath;
+        }
+
+        /// <summary>
+        /// True if <paramref name="folderPath"/> is one of our factory templates, i.e. a folder directly
+        /// inside BloomFileLocator.FactoryTemplateBookDirectory. (A plain prefix test would also accept a
+        /// sibling such as "template books backup".)
+        /// </summary>
+        private static bool IsFactoryTemplateFolder(string folderPath)
+        {
+            var parent = Path.GetDirectoryName(
+                Path.GetFullPath(folderPath).TrimEnd(Path.DirectorySeparatorChar)
+            );
+            var factory = Path.GetFullPath(BloomFileLocator.FactoryTemplateBookDirectory)
+                .TrimEnd(Path.DirectorySeparatorChar);
+            return string.Equals(parent, factory, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
