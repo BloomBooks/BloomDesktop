@@ -52,8 +52,20 @@ namespace Bloom.Spreadsheet
             _webSocketServer.LaunchDialog("SpreadsheetExportDialog", messageBundle);
         }
 
+        /// <summary>
+        /// Under --e2e only: the path of the .xlsx the last export wrote, or null if no export has
+        /// finished since the last one started. Under --e2e the export does not open the finished
+        /// file (see the resultCallback below), so this is the only way a test can find out where
+        /// the file went. E2eTestingApi serves it as e2e/lastExportedSpreadsheet.
+        /// </summary>
+        public static string LastExportedSpreadsheetPathForE2eTests;
+
         private void ExportToSpreadsheet(ApiRequest request)
         {
+            // Clear it before the export starts, so that a test polling for the path cannot read
+            // the answer an earlier export left there.
+            LastExportedSpreadsheetPathForE2eTests = null;
+
             var book = _bookSelection.CurrentSelection;
             var bookPath = book.GetPathHtmlFile();
             try
@@ -78,7 +90,15 @@ namespace Bloom.Spreadsheet
                     outputFolder,
                     outputFilePath =>
                     {
-                        if (outputFilePath != null)
+                        if (outputFilePath == null)
+                            return;
+                        // Do not hand the file to whatever the machine opens .xlsx files with when
+                        // a test did the export: nothing in the test can close the Excel window
+                        // that would appear, and it would land on the developer's screen. The test
+                        // reads the path instead, through e2e/lastExportedSpreadsheet.
+                        if (Program.RunningE2eTests)
+                            LastExportedSpreadsheetPathForE2eTests = outputFilePath;
+                        else
                             ProcessExtra.SafeStartInFront(outputFilePath);
                     }
                 );
@@ -195,6 +215,12 @@ namespace Bloom.Spreadsheet
         private void SetSpreadsheetFolder(Book.Book book, string folder)
         {
             book.UserPrefs.SpreadsheetFolder = folder;
+            // Not under --e2e: Settings.Default is machine-wide and shared with the developer's own
+            // Bloom, and a test's temp folder has no business becoming the folder their next export
+            // offers. The book's own UserPrefs above stay, because they live in the temp collection
+            // and die with it. (Same reasoning as FileIOApi.SelectFileUsingDialog and FilePathMemory.)
+            if (Program.RunningE2eTests)
+                return;
             // We go up a level since the input folder is specific to this book, while the parent of that
             // is a likely place to do future exports and imports of books that have not previously
             // been imported or exported.

@@ -96,6 +96,22 @@ House rules:
   book may need selecting) instead of the generic not-found message.
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
 
+## 2026-09-06 — The e2e suite can hijack and then kill the developer's own Bloom
+
+- **Cut:** Running `pnpm exec playwright test` while a Bloom from the same worktree is running
+  ended that Bloom, its `dotnet watch`, the go.sh launcher and the Vite dev server. Bloom hands a
+  collection off to an already-running instance of itself (the case `launchBloom.ts:666` allows
+  for), so the developer's Bloom became the one serving the test collection, discovery matched it,
+  and `stopBloom` killed its whole process tree. Nothing warns about this: `launchBloom.ts` says
+  it "ALWAYS launches its own Bloom", and the README's only note about a running Bloom is about
+  port 5173.
+- **Idea:** Refuse to start when a Bloom from this repo root is already running (the
+  `bloom-automation` skill's `bloomProcessStatus.mjs` already detects it), or make discovery
+  refuse a serving pid that is not a descendant of the pid we spawned. At the least, say it in
+  README.md and in `launchBloom.ts`.
+- **Context:** branch inline-images, while running the whole suite for the inline-image toolbar
+  tests.
+
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
 - **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
@@ -126,6 +142,14 @@ House rules:
   `Bloom.dll`, is older than its source, and names the newer file (`assertBuildIsNotStale` in
   `src/BloomE2E/fixtures/launchBloom.ts`). The stale build still has to be rebuilt by hand, or
   bypassed with `BLOOM_E2E_VITE_PORT`, but it can no longer fail a test in silence.
+- **Seen again 2026-09-07:** the `BLOOM_E2E_VITE_PORT` escape covers only the front end. A C#
+  edit makes `Bloom.dll` stale, and `build/agent-dotnet.sh` cannot clear it: it builds into a
+  private per-terminal tree by design, while `assertBuildIsNotStale` reads
+  `output\Debug\AnyCPU\Bloom.dll`. So the only way through is a plain
+  `dotnet build src/BloomExe/BloomExe.csproj`, which needs the developer's Bloom stopped first
+  (MSB3027) -- the one thing AGENTS.md otherwise arranges for agents never to have to do. Cost
+  here: 16 failed tests and a full suite run. Worth saying in the fixture's error text, which
+  names the file but not how to rebuild it.
 
 ## 2026-09-03 — The e2e fixture launches a stale Bloom.exe when output/Debug/x64 is older than AnyCPU
 

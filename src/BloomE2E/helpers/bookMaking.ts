@@ -338,6 +338,19 @@ export function editablePageFrame(page: Page): Frame {
  * any command that begins with saving it (add a page, duplicate, delete, jump elsewhere). The page
  * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
  * hook that reports its editing state.
+ *
+ * And the third: the frame's own element in Bloom's window. Every other check here asks the
+ * document INSIDE the frame, and that document can be fully laid out while the frame it sits in
+ * has no box yet -- switching back to the Edit tab rebuilds the view around it. Measuring an
+ * element through a frame with no box gets nothing back, however well laid out the element is
+ * inside it, so a helper measuring an inline image fails in a test whose subject is somewhere
+ * else entirely, reporting an element that the page itself says has a perfectly good rectangle.
+ *
+ * And the fourth: Bloom reports itself as editing before the page's own script has decided which
+ * language boxes to show. Until it has, every box on the page is hidden, so anything in one --
+ * an inline image, say -- is in the DOM with no box on the screen at all, and a helper that
+ * measures it fails in a test whose subject is somewhere else entirely. So where the page has
+ * text boxes, wait for one of them to be showing.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -366,6 +379,47 @@ export async function waitForEditablePage(
                 "Bloom never finished loading the page in the Edit tab (its editing state never became Editing).",
         })
         .toBe("true");
+    await expect
+        .poll(
+            async () => {
+                const box = await page
+                    .locator("iframe#page")
+                    .boundingBox()
+                    .catch(() => null);
+                return box ? Math.min(box.width, box.height) : 0;
+            },
+            {
+                timeout: timeoutMs,
+                message:
+                    "The Edit tab's page frame never got a box of its own in Bloom's window, so " +
+                    "nothing inside it can be measured.",
+            },
+        )
+        .toBeGreaterThan(0);
+    // bloom-visibility-code-on is what the page's own script puts on the boxes it has decided to
+    // show (updateLanguageVisibility); the CSS hides every box without it.
+    const groupCount = await editablePageFrame(page)
+        .locator(".bloom-page .bloom-translationGroup")
+        .count()
+        .catch(() => 0);
+    if (groupCount === 0) return;
+    await expect
+        .poll(
+            async () =>
+                await editablePageFrame(page)
+                    .locator(
+                        ".bloom-page .bloom-editable.bloom-visibility-code-on",
+                    )
+                    .count()
+                    .catch(() => 0),
+            {
+                timeout: timeoutMs,
+                message:
+                    "The page's script never decided which language boxes to show, so every box " +
+                    "on the page is still hidden.",
+            },
+        )
+        .toBeGreaterThan(0);
 }
 
 /** One page of the selected book, as e2e/pages reports it. */

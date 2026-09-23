@@ -159,12 +159,16 @@ export async function canUndo(page: Page): Promise<boolean> {
  * changes lands asynchronously, so wait for the state you expect (a text, a count, a class)
  * rather than reading the page straight after this.
  *
- * Ctrl+Z in the Edit tab is a WinForms accelerator: the key press never reaches the browser, so a
- * test cannot send it. What the shell does when the key is pressed is call the front end's
- * `workspaceBundle.handleUndo()`, which is exactly what this calls. So this is the production undo
- * path with only the key press missing, and it covers CKEditor undo and the canvas element
- * manager's undo alike, because handleUndo is the code that chooses between them.
- * (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven".)
+ * This is the top-bar Undo BUTTON's path, and only that. The button posts
+ * editView/topBarButtonClick, which EditingViewApi hands back to bloomEditing.topBarButtonClick,
+ * which calls `workspaceBundle.handleUndo()` -- exactly what this calls. handleUndo is the code
+ * that chooses between CKEditor's undo, the canvas element manager's, the toolbox's and the
+ * inline-image stack's, so this covers all of them.
+ *
+ * It is NOT what Ctrl+Z does. Nothing in the shell claims that key, so it arrives in the page and
+ * ckeditor's undo plugin runs it (measured in tests/inline-images-undo-keyboard.spec.ts). A
+ * feature with its own undo stack has to be asked both questions: press the key with
+ * pressKey(page, "Control+z") for one, call this for the other.
  */
 export async function undo(page: Page): Promise<void> {
     if (!(await canUndo(page)))

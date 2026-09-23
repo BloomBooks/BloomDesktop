@@ -177,6 +177,31 @@ namespace Bloom.web.controllers
                 HandleSetNextFileToChoose,
                 false // does not need the UI thread
             );
+
+            // GET replies with the path of the .xlsx the last spreadsheet export wrote, or an
+            // empty string while no export has finished since the last one started. Exporting
+            // normally ends by opening the file in the machine's spreadsheet program, which a test
+            // cannot close and must not leave on the developer's screen, so under --e2e the export
+            // records the path here instead of opening it (SpreadsheetApi.ExportToSpreadsheet).
+            // That makes the path the test's completion signal as well: the export runs in the
+            // background behind a progress dialog, and a test polls this to know it has finished.
+            // Read-only; safe off the UI thread.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "lastExportedSpreadsheet",
+                HandleGetLastExportedSpreadsheet,
+                false // does not need the UI thread
+            );
+        }
+
+        /// <summary>
+        /// GET e2e/lastExportedSpreadsheet: where the last export put its file (see the
+        /// registration above), or an empty string if none has finished.
+        /// </summary>
+        private void HandleGetLastExportedSpreadsheet(ApiRequest request)
+        {
+            request.ReplyWithText(
+                Spreadsheet.SpreadsheetApi.LastExportedSpreadsheetPathForE2eTests ?? ""
+            );
         }
 
         /// <summary>
