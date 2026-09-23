@@ -2,8 +2,8 @@
 // calendar tooling does everything the old WinForms setup wizard used to do, and the things
 // it never did.
 //
-// This suite starts with nothing: a throwaway copy of the test collection, a Bloom of its own,
-// and no calendar book. It then does what a user does — make the book, answer the setup
+// This suite starts with nothing: a new, empty collection, a Bloom of its own (launched by
+// src/BloomE2E/fixtures/launchBloom.ts), and no calendar book. It then does what a user does — make the book, answer the setup
 // dialog, walk through months, type names — and checks the book and the collection's
 // configuration.txt after each step. The one thing it cannot do through Bloom's HTTP API is
 // answer the dialog, which lives in Bloom's own window, so it attaches to that window over
@@ -15,11 +15,9 @@ import * as fs from "fs";
 import * as Path from "path";
 import fetch from "node-fetch";
 import {
-    cleanupTempCollections,
-    IBloomInstance,
-    launchDedicatedBloom,
-    stopBloom,
-} from "./bloomInstance";
+    launchBloom,
+    type ILaunchedBloom,
+} from "../BloomE2E/fixtures/launchBloom";
 
 /** The template book we make calendars from. It ships with Bloom, in a factory collection. */
 const kWallCalendarFolderName = "Wall Calendar";
@@ -30,29 +28,34 @@ const kYear = 2027;
 /** The first day of the week we choose, which is not the Sunday the dialog offers by default. */
 const kFirstDayOfWeek = 1; // Monday
 
-const kCollectionName = "basic";
+const kCollectionName = "calendar";
 
 /** Haitian Creole: a real language, and one the Wall Calendar template does not seed. */
 const kVernacularCode = "hat";
-const kVernacularName = "Haitian Creole";
 
-let bloom: IBloomInstance;
+/** The factory template the reopen test makes a second, non-calendar book from. */
+const kBasicBookFolderName = "Basic Book";
+
+let bloom: ILaunchedBloom;
 let browser: Browser;
 // Bloom's own window: the workspace, the page list, and the edit page iframe.
 let appPage: Page;
 
 describe("the Wall Calendar tooling", () => {
     beforeAll(async () => {
-        bloom = await launchDedicatedBloom({
-            tempFolderPrefix: "bloom-calendar-",
-            collectionName: kCollectionName,
+        bloom = await launchBloom({
             // The calendar book is made from a template that ships with Bloom, so all this
-            // collection has to be is a real, empty-ish collection to make it in.
-            populate: (dest) => {
-                fs.cpSync(Path.join(process.cwd(), "collections"), dest, {
-                    recursive: true,
-                });
-                useAVernacularLanguage(dest);
+            // collection has to be is a real, empty collection to make it in.
+            //
+            // Its own language is one the calendar template does not seed. The template seeds
+            // every month and weekday name in English, French, Spanish, Indonesian and
+            // Portuguese. In an English collection the English seed IS the slot the user types
+            // in, so no name is ever empty and there is nothing for the tooling to fill in. The
+            // people this feature is for are writing a calendar in a language that has no
+            // seed, so that is what this suite works in.
+            collectionSpec: {
+                name: kCollectionName,
+                languages: [kVernacularCode, "en"],
             },
         });
         await waitForCollection();
@@ -61,8 +64,7 @@ describe("the Wall Calendar tooling", () => {
 
     afterAll(async () => {
         await browser?.close();
-        stopBloom();
-        cleanupTempCollections();
+        await bloom?.stop();
     });
 
     test("sets a new calendar book up and fills its months in as they are opened", async () => {
@@ -204,7 +206,7 @@ describe("the Wall Calendar tooling", () => {
 /**
  * Attach to Bloom's own window over CDP.
  *
- * Two gotchas, pulling in opposite directions (see .github/skills/bloom-automation/SKILL.md):
+ * Two gotchas, pulling in opposite directions (see .claude/skills/run-bloom/reference.md):
  * Node resolves "localhost" to IPv6 first but the WebView2 debugging port answers only on
  * IPv4, so we ask 127.0.0.1 and rewrite the websocket address it hands back; and Bloom's HTTP
  * server rejects a Host header of 127.0.0.1, which is why every API call below is made from
@@ -217,7 +219,7 @@ async function attachToBloomWindow(): Promise<Page> {
     ).toBeTruthy();
     // Bloom says it is ready as soon as its server is listening, which is before the first
     // WebView2 exists, and the debugging port is Chromium's, not Bloom's. So wait for it.
-    const version = await waitForCdpEndpoint(bloom.cdpPort!);
+    const version = await waitForCdpEndpoint(bloom.cdpPort);
     browser = await chromium.connectOverCDP(
         version.webSocketDebuggerUrl.replace("localhost", "127.0.0.1"),
     );
@@ -286,7 +288,7 @@ async function waitForCollection(): Promise<void> {
     while (Date.now() < deadline) {
         try {
             const r = await fetch(
-                `${bloom.origin}/bloom/api/e2e/isCollectionReady`,
+                `http://localhost:${bloom.httpPort}/bloom/api/e2e/isCollectionReady`,
             );
             if (r.ok && (await r.text()).includes("true")) return;
         } catch (e) {
@@ -390,38 +392,6 @@ async function getEditFrame(waitMs = 120000): Promise<Frame> {
     throw new Error(
         `The edit page iframe never showed a .bloom-page. Bloom's window has these frames:\n  ${describeFrames()}`,
     );
-}
-
-/**
- * Make the throwaway collection's own language one the calendar template does not seed.
- *
- * The shared test collection is in English, and the template seeds every month and weekday
- * name in English, French, Spanish, Indonesian and Portuguese. In an English collection the
- * English seed IS the slot the user types in, so no name is ever empty and there is nothing
- * for the tooling to fill in. The people this feature is for are writing a calendar in a
- * language that has no seed, so that is what this suite works in.
- */
-function useAVernacularLanguage(tempCollectionsRoot: string): void {
-    const file = Path.join(
-        tempCollectionsRoot,
-        kCollectionName,
-        `${kCollectionName}.bloomCollection`,
-    );
-    const original = fs.readFileSync(file, "utf8");
-    const changed = original
-        .replace(
-            /<Language1Iso639Code>[^<]*<\/Language1Iso639Code>/,
-            `<Language1Iso639Code>${kVernacularCode}</Language1Iso639Code>`,
-        )
-        .replace(
-            /<Language1Name>[^<]*<\/Language1Name>/,
-            `<Language1Name>${kVernacularName}</Language1Name>`,
-        );
-    expect(
-        changed,
-        "the test collection should name a first language for us to change",
-    ).not.toBe(original);
-    fs.writeFileSync(file, changed);
 }
 
 /** What frames Bloom's window has just now, for a failure message. */
@@ -696,9 +666,6 @@ async function answerSetupDialog(
  */
 async function reopenTheCalendarBook(): Promise<void> {
     const calendarBook = await findMostRecentCalendarBookInTheCollection();
-    const otherBook = await findAnyOtherBookInTheCollection(
-        calendarBook.folderPath,
-    );
     // The human order, one step fully done before the next: leave the Edit tab, change the
     // selection from the Collections tab, then enter the Edit tab. Changing the selection
     // while the Edit tab is open on another book leaves the edit view showing a book the
@@ -707,10 +674,19 @@ async function reopenTheCalendarBook(): Promise<void> {
     // the Edit tab also saves the open page, and the tab change completes only after that
     // save, so waiting for the Collections tab is what makes the selection change safe.
     await selectTabAndWait("collection");
+    // The collection holds only calendar books, so move off this one by making a Basic Book,
+    // the way the Collections tab's "Make a book using this template" does. Bloom opens the
+    // new book in the Edit tab.
+    const basicBook = await findBook(kBasicBookFolderName);
+    expect(
+        basicBook,
+        `The ${kBasicBookFolderName} template is not in any of this Bloom's collections`,
+    ).toBeTruthy();
     await apiPost(
-        `collections/selected-book?path=${encodeURIComponent(otherBook.folderPath)}`,
+        `collections/selected-book?path=${encodeURIComponent(basicBook!.folderPath)}` +
+            `&collection-id=${encodeURIComponent(basicBook!.collectionId)}`,
     );
-    await selectTabAndWait("edit");
+    await apiPost("app/makeFromSelectedBook");
     await getEditFrame(180000);
     await selectTabAndWait("collection");
     await apiPost(
@@ -765,18 +741,6 @@ async function findMostRecentCalendarBookInTheCollection(): Promise<{
     return calendars[calendars.length - 1];
 }
 
-async function findAnyOtherBookInTheCollection(
-    notThisFolderPath: string,
-): Promise<{ folderPath: string }> {
-    const books = await getEditableCollectionBooks();
-    const other = books.find((b) => b.folderPath !== notThisFolderPath);
-    expect(
-        other,
-        "the test collection needs a second book so we can close the calendar one",
-    ).toBeTruthy();
-    return other!;
-}
-
 // --- The collection's configuration.txt ------------------------------------------------
 
 interface IConfiguredCalendarSettings {
@@ -786,11 +750,7 @@ interface IConfiguredCalendarSettings {
 }
 
 function configurationFilePath(): string {
-    return Path.join(
-        bloom.tempCollectionsRoot,
-        kCollectionName,
-        "configuration.txt",
-    );
+    return Path.join(bloom.collectionDir, "configuration.txt");
 }
 
 function readCalendarSettings(): IConfiguredCalendarSettings {

@@ -45,9 +45,12 @@ class NoopResizeObserver {
 
 // CKEditor is loaded into the real editing page by a script tag, and
 // attachToCkEditor is what makes a bloom-editable a live editor. All this
-// stand-in has to do is let that call run to the end without a browser.
+// stand-in has to do is let that call run to the end without a browser. It
+// reports no element as already having an editor, so attachToCkEditor always
+// goes on to attach one.
 (globalThis as unknown as { CKEDITOR: unknown }).CKEDITOR = {
     config: { colorButton_colors: "FFFFFF,FF0000" },
+    dom: { element: { get: () => ({ getEditor: () => undefined }) } },
     inline: () => ({
         id: "stubEditor",
         config: {},

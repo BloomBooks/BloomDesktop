@@ -22,8 +22,9 @@ copy, a run never modifies the books it renders.
     screenshots; it makes a calendar book from the template, answers the setup dialog in Bloom's
     own window over CDP, and checks the month grids and the collection's `configuration.txt`.
     Run it on its own with `pnpm testCalendar` (`pnpm testScreenshots` for the other one).
--   `bloomInstance.ts` — the launching, finding and shutting down of a Bloom of our own, shared
-    by both suites. Add a new suite by calling `launchDedicatedBloom` from its `beforeAll`.
+
+`calendar.spec.ts` launches its Bloom through `src/BloomE2E/fixtures/launchBloom.ts`, on a new
+collection of its own; `index.spec.ts` still has its own launcher.
 
 The suites run one file at a time (`fileParallelism: false`), because each launches its own
 Bloom.
@@ -32,12 +33,12 @@ Bloom.
 
 The Bloom these suites launch reads its user interface from `output/browser`, which is only as
 new as the last full `pnpm build`. To test TypeScript you are still working on, start a Vite dev
-server and name its port in `BLOOM_VITE_PORT`; the launcher then passes `--vite-port` to Bloom
-and the run uses your working tree.
+server and name its port in `BLOOM_E2E_VITE_PORT`; the launcher then passes `--vite-port` to
+Bloom and the run uses your working tree. Only `calendar.spec.ts` honours it.
 
 -   bash: `pnpm -C ../BloomBrowserUI dev --port=5199` in one terminal, then
-    `BLOOM_VITE_PORT=5199 pnpm testCalendar` in another.
--   PowerShell: `$env:BLOOM_VITE_PORT=5199; pnpm testCalendar`.
+    `BLOOM_E2E_VITE_PORT=5199 pnpm testCalendar` in another.
+-   PowerShell: `$env:BLOOM_E2E_VITE_PORT=5199; pnpm testCalendar`.
 
 Expect it to be slow: the dev server serves unbundled modules, and making a book from the
 24-page Wall Calendar template has been seen to take over a minute on a busy machine. CI builds

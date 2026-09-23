@@ -475,8 +475,8 @@ jobs:
               shell: bash
               run: pnpm run testScreenshots --reporter=default --reporter=junit --outputFile=../../output/Tests/visual-regression-junit.xml
 
-            # calendar.spec.ts lives in the same folder and reuses its Bloom-launching helper, but
-            # it compares no screenshots: it makes a Wall Calendar book and checks what the
+            # calendar.spec.ts lives in the same folder but launches its Bloom through
+            # src/BloomE2E/fixtures/launchBloom.ts, and it compares no screenshots: it makes a Wall Calendar book and checks what the
             # front-end calendar tooling does to it. Its own step, gated on the SETUP step rather
             # than on the screenshot run, so the two report separately and a screenshot failure
             # (or the intermittent hang above) does not hide a calendar failure.
