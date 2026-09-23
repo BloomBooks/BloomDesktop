@@ -10,6 +10,7 @@ import TextField from "@mui/material/TextField";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import CheckIcon from "@mui/icons-material/Check";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
     BloomDialog,
@@ -138,11 +139,12 @@ export const ShareDialogContents: React.FunctionComponent<{
                       lastSeen: props.now.toISOString(),
                   },
               ];
-    const adminCount = members.filter((m) => m.role === "admin").length;
 
     return (
         <>
-            <DialogTitle title={title} preventCloseButton={true} />
+            <DialogTitle title={title} preventCloseButton={true}>
+                <LearnAboutSharingLink />
+            </DialogTitle>
             <DialogMiddle
                 css={css`
                     display: flex;
@@ -192,9 +194,6 @@ export const ShareDialogContents: React.FunctionComponent<{
                                     props.state.signedInEmail,
                                 )}
                                 canManage={props.state.canManage}
-                                isLastAdmin={
-                                    member.role === "admin" && adminCount === 1
-                                }
                                 uiLanguage={props.uiLanguage}
                                 now={props.now}
                                 actions={props.actions}
@@ -207,6 +206,45 @@ export const ShareDialogContents: React.FunctionComponent<{
                 <DialogCloseButton onClick={props.onClose} default={true} />
             </DialogBottomButtons>
         </>
+    );
+};
+
+// Where "Learn about sharing" goes. For now, the Team Collections introduction.
+const kLearnAboutSharingUrl =
+    "https://docs.bloomlibrary.org/team-collections-intro/";
+
+// Top right of the title bar. BloomDialog routes clicks on http links to the system browser.
+const LearnAboutSharingLink: React.FunctionComponent = () => {
+    const label = useL10n(
+        "Learn about sharing",
+        "Sharing.ShareDialog.LearnAboutSharing",
+    );
+    return (
+        <a
+            href={kLearnAboutSharingUrl}
+            data-testid="share-learn-link"
+            css={css`
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                color: ${kBloomBlue};
+                text-decoration: none;
+                white-space: nowrap;
+                cursor: pointer;
+                // DialogTitle makes everything in it 16px bold.
+                && {
+                    font-size: 14px;
+                    font-weight: normal;
+                }
+                && * {
+                    font-weight: normal;
+                }
+            `}
+        >
+            <HelpOutlineIcon fontSize="small" />
+            <span>{label}</span>
+        </a>
     );
 };
 
@@ -543,7 +581,6 @@ const MemberRow: React.FunctionComponent<{
     member: ISharingMember;
     isYou: boolean;
     canManage: boolean;
-    isLastAdmin: boolean;
     uiLanguage: string;
     now: Date;
     actions: IShareDialogActions;
@@ -566,6 +603,10 @@ const MemberRow: React.FunctionComponent<{
         "Sharing.ShareDialog.InvitedWhen",
         undefined,
         when,
+    );
+    const ownRoleTip = useL10n(
+        "You can't change your own role. Another admin can do that for you.",
+        "Sharing.ShareDialog.OwnRole",
     );
     return (
         <div
@@ -605,12 +646,14 @@ const MemberRow: React.FunctionComponent<{
                     flex-shrink: 0;
                 `}
             >
-                {props.canManage ? (
+                {/* Nobody changes their own role or removes themselves, so an admin can only
+                    step down once another admin has taken over. That also means a collection
+                    can never be left without an admin. */}
+                {props.canManage && !props.isYou ? (
                     <RoleMenu
                         data-testid="share-member-role"
                         role={props.member.role}
                         enabled={true}
-                        isLastAdmin={props.isLastAdmin}
                         onChoose={(role) => {
                             if (role !== props.member.role)
                                 props.actions.setRole(props.member.email, role);
@@ -620,7 +663,16 @@ const MemberRow: React.FunctionComponent<{
                         }
                     />
                 ) : (
-                    <RoleName role={props.member.role} />
+                    <span
+                        data-testid="share-member-fixed-role"
+                        title={
+                            props.canManage && props.isYou
+                                ? ownRoleTip
+                                : undefined
+                        }
+                    >
+                        <RoleName role={props.member.role} />
+                    </span>
                 )}
                 <span
                     data-testid="share-member-when"
@@ -638,13 +690,12 @@ const MemberRow: React.FunctionComponent<{
 };
 
 // A role, shown as a button that opens a menu of the roles (each with what it allows), plus
-// optionally a Remove item. The last admin can be neither demoted nor removed.
+// optionally a Remove item.
 const RoleMenu: React.FunctionComponent<{
     role: SharingRole;
     enabled: boolean;
     // The invite row's version has a box around it, to look like a field.
     boxed?: boolean;
-    isLastAdmin?: boolean;
     onChoose: (role: SharingRole) => void;
     onRemove?: () => void;
     "data-testid"?: string;
@@ -662,17 +713,11 @@ const RoleMenu: React.FunctionComponent<{
         "Remove from collection",
         "Sharing.ShareDialog.RemoveFromCollection",
     );
-    const lastAdminTip = useL10n(
-        "A shared collection must always have at least one admin.",
-        "Sharing.ShareDialog.LastAdmin",
-    );
     const close = () => setAnchor(undefined);
     const roleItem = (role: SharingRole, description: string) => {
-        const disabled = role === "editor" && !!props.isLastAdmin;
         return (
             <MenuItem
                 data-testid={`share-role-option-${role}`}
-                disabled={disabled}
                 selected={props.role === role}
                 onClick={() => {
                     close();
@@ -754,7 +799,6 @@ const RoleMenu: React.FunctionComponent<{
                 {props.onRemove && (
                     <MenuItem
                         data-testid="share-remove-member"
-                        disabled={props.isLastAdmin}
                         onClick={() => {
                             close();
                             props.onRemove?.();
@@ -766,20 +810,6 @@ const RoleMenu: React.FunctionComponent<{
                     >
                         {removeLabel}
                     </MenuItem>
-                )}
-                {props.isLastAdmin && (
-                    // Disabled menu items can't show tooltips, so explain here why this
-                    // person can't be made an editor or removed.
-                    <div
-                        data-testid="share-last-admin-note"
-                        css={css`
-                            padding: 4px 16px 8px 44px;
-                            font-size: 0.85em;
-                            color: ${kSecondaryTextColor};
-                        `}
-                    >
-                        {lastAdminTip}
-                    </div>
                 )}
             </Menu>
         </>

@@ -2650,10 +2650,15 @@
         <note>ID: Sharing.ShareDialog.RemoveFromCollection</note>
         <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Menu item that takes away a person's access to the collection.</note>
       </trans-unit>
-      <trans-unit id="Sharing.ShareDialog.LastAdmin" translate="no">
-        <source xml:lang="en">A shared collection must always have at least one admin.</source>
-        <note>ID: Sharing.ShareDialog.LastAdmin</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Explains why the only administrator cannot be made an editor or removed.</note>
+      <trans-unit id="Sharing.ShareDialog.OwnRole" translate="no">
+        <source xml:lang="en">You can't change your own role. Another admin can do that for you.</source>
+        <note>ID: Sharing.ShareDialog.OwnRole</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Tooltip on an administrator's own role in the list of people, explaining why it can't be changed there.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.LearnAboutSharing" translate="no">
+        <source xml:lang="en">Learn about sharing</source>
+        <note>ID: Sharing.ShareDialog.LearnAboutSharing</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Link at the top right of the dialog that opens a help page in the web browser.</note>
       </trans-unit>
       <trans-unit id="Sharing.Role.Admin" translate="no">
         <source xml:lang="en">Admin</source>

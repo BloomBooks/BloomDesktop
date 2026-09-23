@@ -34,10 +34,10 @@ namespace Bloom.Sharing
         /// </summary>
         void Invite(string byEmail, IEnumerable<SharingInvitation> invitations);
 
-        /// <summary>Change someone's role (by an admin). The last admin cannot be demoted.</summary>
+        /// <summary>Change someone else's role (by an admin); nobody may change their own.</summary>
         void SetRole(string byEmail, string email, SharingRole role);
 
-        /// <summary>Take away someone's access (by an admin). The last admin cannot be removed.</summary>
+        /// <summary>Take away someone else's access (by an admin); nobody may remove themselves.</summary>
         void Remove(string byEmail, string email);
 
         /// <summary>

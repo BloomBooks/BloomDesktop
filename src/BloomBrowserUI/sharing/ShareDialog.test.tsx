@@ -259,26 +259,7 @@ describe("ShareDialogContents", () => {
         expect(actions.setRole).not.toHaveBeenCalled();
     });
 
-    it("will not let the last admin be demoted or removed", () => {
-        render(
-            makeState({
-                members: [
-                    member(ruth, "admin"),
-                    member("amina@example.org", "editor"),
-                ],
-            }),
-        );
-        openRoleMenuFor(ruth);
-        expect(
-            find("share-role-option-editor")?.getAttribute("aria-disabled"),
-        ).toBe("true");
-        expect(find("share-remove-member")?.getAttribute("aria-disabled")).toBe(
-            "true",
-        );
-        expect(find("share-last-admin-note")).not.toBeNull();
-    });
-
-    it("lets an admin demote themselves when there is another admin", () => {
+    it("never lets an admin change their own role, even with another admin", () => {
         const actions = render(
             makeState({
                 members: [
@@ -287,12 +268,29 @@ describe("ShareDialogContents", () => {
                 ],
             }),
         );
-        openRoleMenuFor(ruth);
-        expect(find("share-last-admin-note")).toBeNull();
+        const ownRow = document.body.querySelector<HTMLElement>(
+            `[data-testid="share-member"][data-email="${ruth}"]`,
+        );
+        if (!ownRow) fail("No row for the signed-in admin.");
+        expect(find("share-member-role", ownRow)).toBeNull();
+        const fixedRole = find("share-member-fixed-role", ownRow);
+        expect(fixedRole?.getAttribute("title")).toBeTruthy();
+
+        // The other admin can still be changed, which is how someone steps down.
+        openRoleMenuFor("sam@example.org");
         click(find("share-role-option-editor"), "the Editor option");
-        expect(actions.setRole).toHaveBeenCalledWith(ruth, "editor");
+        expect(actions.setRole).toHaveBeenCalledWith(
+            "sam@example.org",
+            "editor",
+        );
     });
 
+    it("links to the sharing help page", () => {
+        render(makeState({}));
+        expect(find("share-learn-link")?.getAttribute("href")).toBe(
+            "https://docs.bloomlibrary.org/team-collections-intro/",
+        );
+    });
     it("shows a non-admin the list without any way to change it", () => {
         render(
             makeState({

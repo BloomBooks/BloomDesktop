@@ -302,24 +302,25 @@ namespace BloomTests.Sharing
         }
 
         [Test]
-        public void SetRole_DemotingLastAdmin_Throws()
+        public void SetRole_OwnRole_Throws_EvenWhenThereIsAnotherAdmin()
         {
             StartSharingAsRuth();
+            Invite(kAdmin, "sam@example.org", SharingRole.Admin);
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.SetRole(kAdmin, kAdmin, SharingRole.Editor)
+                _service.SetRole(kAdmin, " RUTH@example.org", SharingRole.Editor)
             );
             Assert.That(_service.GetRecord().Members[0].Role, Is.EqualTo(SharingRole.Admin));
         }
 
         [Test]
-        public void SetRole_AdminMayDemoteThemselvesWhenThereIsAnotherAdmin()
+        public void SetRole_AnotherAdminMayChangeYourRole()
         {
             StartSharingAsRuth();
             Invite(kAdmin, "sam@example.org", SharingRole.Admin);
 
-            _service.SetRole(kAdmin, kAdmin, SharingRole.Editor);
+            _service.SetRole("sam@example.org", kAdmin, SharingRole.Editor);
 
-            Assert.That(_service.GetRecord().Members[0].Role, Is.EqualTo(SharingRole.Editor));
+            Assert.That(MakeService().GetRecord().Members[0].Role, Is.EqualTo(SharingRole.Editor));
         }
 
         [Test]
@@ -338,10 +339,10 @@ namespace BloomTests.Sharing
         }
 
         [Test]
-        public void Remove_LastAdmin_Throws()
+        public void Remove_Yourself_Throws_EvenWhenThereIsAnotherAdmin()
         {
             StartSharingAsRuth();
-            Invite(kAdmin, "amina@example.org", SharingRole.Editor);
+            Invite(kAdmin, "sam@example.org", SharingRole.Admin);
             Assert.Throws<SharingNotAllowedException>(() => _service.Remove(kAdmin, kAdmin));
             Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
         }

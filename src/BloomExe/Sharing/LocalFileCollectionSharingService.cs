@@ -9,7 +9,7 @@ namespace Bloom.Sharing
 {
     /// <summary>
     /// Thrown when someone tries a sharing change the rules don't allow (a non-admin managing
-    /// sharing, removing the last admin, inviting someone twice...). The UI is meant to prevent
+    /// sharing, changing their own role, inviting someone twice...). The UI is meant to prevent
     /// all of these, so reaching one is a bug.
     /// </summary>
     public class SharingNotAllowedException : ApplicationException
@@ -148,10 +148,8 @@ namespace Bloom.Sharing
                 byEmail,
                 record =>
                 {
-                    var member = RequireMember(record, email);
-                    if (role != SharingRole.Admin)
-                        RequireAnotherAdmin(record, member);
-                    member.Role = role;
+                    RequireSomeoneElse(byEmail, email);
+                    RequireMember(record, email).Role = role;
                 }
             );
         }
@@ -163,9 +161,8 @@ namespace Bloom.Sharing
                 byEmail,
                 record =>
                 {
-                    var member = RequireMember(record, email);
-                    RequireAnotherAdmin(record, member);
-                    record.Members.Remove(member);
+                    RequireSomeoneElse(byEmail, email);
+                    record.Members.Remove(RequireMember(record, email));
                 }
             );
         }
@@ -226,19 +223,15 @@ namespace Bloom.Sharing
                 ?? throw new SharingNotAllowedException($"{email} is not a member.");
         }
 
-        // A collection must always have an admin, so the member about to stop being one (by
-        // demotion or removal) must not be the only one.
-        private static void RequireAnotherAdmin(
-            CollectionSharingRecord record,
-            SharingMember member
-        )
+        // Nobody may change their own role or remove themselves; another admin has to. So an
+        // admin can only step down once someone else has taken over as admin, which also means
+        // a shared collection always has an admin (only an admin can change anything, and the
+        // one doing it stays one).
+        private static void RequireSomeoneElse(string byEmail, string email)
         {
-            if (
-                member.Role == SharingRole.Admin
-                && record.Members.Count(m => m.Role == SharingRole.Admin) == 1
-            )
+            if (SameEmail(byEmail, email))
                 throw new SharingNotAllowedException(
-                    "A shared collection must always have at least one admin."
+                    "You can't change your own role or remove yourself."
                 );
         }
 
