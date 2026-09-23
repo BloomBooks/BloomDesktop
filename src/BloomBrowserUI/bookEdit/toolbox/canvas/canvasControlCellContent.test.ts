@@ -72,12 +72,18 @@ const getBackgroundImageElement = (cell: HTMLElement): HTMLElement => {
     return element;
 };
 
-const makeContext = (canvasElement: HTMLElement): IControlContext =>
+// `tablesMayBeRestructured` is the Pro-and-Tables-experiment rule; most tests here are
+// about a table the user may restructure, so that is the default.
+const makeContext = (
+    canvasElement: HTMLElement,
+    tablesMayBeRestructured = true,
+): IControlContext =>
     ({
         canvasElement,
         page: null,
         elementType: "image",
         tableCell: getTableCellOfCellContent(canvasElement),
+        tablesMayBeRestructured,
     }) as unknown as IControlContext;
 
 beforeEach(() => {
@@ -196,6 +202,37 @@ describe("getControlConfiguration", () => {
             imageCanvasElementControls.toolbar,
         );
     });
+
+    // A table the user may not restructure (below Pro, or the Tables experiment off)
+    // offers no Cell menu on a right-click, so the "..." button must not reach it either.
+    test.each([
+        ["a plain table", false],
+        ["a calendar grid", true],
+    ])(
+        "a picture in %s whose tables are frozen gets the image section and no Cell menu or items",
+        (_description, inCalendarGrid) => {
+            const cell = makePictureCell(true, inCalendarGrid);
+            // Sanity: the same cell in a table that may be restructured does get the
+            // cell's menu, one way or the other.
+            const allowed = getControlConfiguration(
+                makeContext(getBackgroundImageElement(cell), true),
+            );
+            expect(
+                !!allowed.opensTableCellMenu ||
+                    !!allowed.includesTableCellMenuItems,
+            ).toBe(true);
+
+            const frozen = getControlConfiguration(
+                makeContext(getBackgroundImageElement(cell), false),
+            );
+
+            expect(frozen.opensTableCellMenu).toBeFalsy();
+            expect(frozen.includesTableCellMenuItems).toBeFalsy();
+            expect(frozen.menuSections).toEqual(["image"]);
+            expect(frozen.availabilityRules.becomeBackground).toBe("exclude");
+            expect(frozen.toolbar).toEqual(imageCanvasElementControls.toolbar);
+        },
+    );
 
     test("a text cell in a calendar grid keeps the library's menu", () => {
         const cell = makePictureCell(true, true);

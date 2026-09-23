@@ -339,21 +339,31 @@ export const noneCanvasElementControls: ICanvasElementControlConfiguration = {
  * includesTableCellMenuItems), and one menu carries both. The section brings
  * becomeBackground, which a cell's picture must not do: it is already the background
  * image of the cell's own bloom-canvas.
+ *
+ * Neither applies when `tablesMayBeRestructured` is false, the rule a right-click on a
+ * cell obeys too (see installHostHooks in tableEditing.ts): the Cell menu is where
+ * content type, merge and split live, so a frozen table offers neither the library's
+ * menu nor its items. The picture keeps Bloom's image section, since replacing a
+ * cell's picture is still allowed there.
  */
 export const cellContentControls = (
     controlsForItsOwnType: ICanvasElementControlConfiguration,
     tableCell: HTMLElement,
+    tablesMayBeRestructured: boolean,
 ): ICanvasElementControlConfiguration => {
+    const imageSectionOnly: ICanvasElementControlConfiguration = {
+        ...controlsForItsOwnType,
+        menuSections: ["image"],
+        availabilityRules: {
+            ...controlsForItsOwnType.availabilityRules,
+            becomeBackground: "exclude",
+        },
+    };
+    if (!tablesMayBeRestructured) {
+        return imageSectionOnly;
+    }
     if (bloomBuildsMenuForCell(tableCell)) {
-        return {
-            ...controlsForItsOwnType,
-            menuSections: ["image"],
-            includesTableCellMenuItems: true,
-            availabilityRules: {
-                ...controlsForItsOwnType.availabilityRules,
-                becomeBackground: "exclude",
-            },
-        };
+        return { ...imageSectionOnly, includesTableCellMenuItems: true };
     }
     return {
         ...controlsForItsOwnType,

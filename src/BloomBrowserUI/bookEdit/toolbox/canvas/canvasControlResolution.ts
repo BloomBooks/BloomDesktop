@@ -234,7 +234,11 @@ export const getControlConfiguration = (
         canvasElementControlRegistry[ctx.elementType] ??
         canvasElementControlRegistry.none;
     if (ctx.tableCell) {
-        return cellContentControls(controlsForItsOwnType, ctx.tableCell);
+        return cellContentControls(
+            controlsForItsOwnType,
+            ctx.tableCell,
+            ctx.tablesMayBeRestructured,
+        );
     }
     return controlsForItsOwnType;
 };
