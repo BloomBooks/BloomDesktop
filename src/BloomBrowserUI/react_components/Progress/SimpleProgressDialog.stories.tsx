@@ -85,31 +85,3 @@ export const WithAnError = () => {
 };
 
 WithAnError.story = { name: "With an error" };
-
-// As it appears inside the WinForms window the automatic update puts it in: no material dialog
-// frame, so it fills whatever space the window gives it.
-export const InAWinFormsWindow = () => {
-    const [isOpen, setIsOpen] = React.useState(true);
-    React.useEffect(() => countUp(), []);
-    return (
-        <div
-            // The size BookProcessor.EnsurePerPageFixupIfNeeded asks for.
-            style={{ width: "620px", height: "180px" }}
-        >
-            <SimpleProgressDialog
-                title="Update Book"
-                titleColor="white"
-                titleBackgroundColor={kBloomBlue}
-                message={kHousekeepingMessage}
-                open={isOpen}
-                onClose={() => setIsOpen(false)}
-                dialogEnvironment={{
-                    dialogFrameProvidedExternally: true,
-                    initiallyOpen: true,
-                }}
-            />
-        </div>
-    );
-};
-
-InAWinFormsWindow.story = { name: "In a WinForms window" };

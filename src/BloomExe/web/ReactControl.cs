@@ -314,10 +314,6 @@ namespace Bloom.web
                 { "problemReportBundle", "/problemDialog/ProblemDialog.entry.tsx" },
                 { "progressDialogBundle", "/react_components/Progress/ProgressDialog.entry.tsx" },
                 {
-                    "simpleProgressDialogBundle",
-                    "/react_components/Progress/SimpleProgressDialog.entry.tsx"
-                },
-                {
                     "registrationDialogBundle",
                     "/react_components/registration/registrationDialog.entry.tsx"
                 },

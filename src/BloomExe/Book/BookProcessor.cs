@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
@@ -334,102 +335,71 @@ namespace Bloom.Book
                 "Please wait while Bloom does some housekeeping on your book..."
             );
 
-        // The size of the automatic update's dialog in the ordinary case: the bar, and the one
-        // sentence under it. And the height it grows to if a problem is reported, which has to fit
-        // the message and the buttons that come with it as well.
-        private const int kNormalDialogWidth = 620;
-        private const int kNormalDialogHeight = 180;
-        private const int kProblemDialogHeight = 300;
+        /// <summary>
+        /// Names the single EmbeddedSimpleProgressDialog that App.tsx renders at the top level of
+        /// Bloom's UI. Both the ways of bringing a book up to date open that one dialog: it has to
+        /// live above the tabs because the Edit tab empties its own page while the work runs, and
+        /// being there also means its backdrop covers the whole of Bloom.
+        /// </summary>
+        private const string kUpdateBookProgressDialogId = "updateBook";
 
         /// <summary>
-        /// Make a dialog created at the normal size tall enough for a warning or error message and
-        /// the Close and Report buttons that come with it. Needed because the automatic update's
-        /// dialog is a WinForms form, which is sized in C# and cannot grow to fit its HTML content,
-        /// and we would rather not leave that room standing empty for the whole of a run that goes
-        /// well.
+        /// The props that open that dialog. Shared so that the automatic update and the Collection
+        /// tab's "Update Book" command cannot drift apart: to the user they are the same operation,
+        /// one asked for and one not.
         /// </summary>
-        private static void GrowDialogForProblem(ReactDialog dialog)
+        public static DynamicJson MakeUpdateBookProgressProps()
         {
-            if (dialog == null || dialog.IsDisposed)
-                return;
-            try
-            {
-                // We are on the dialog's background worker, so the resize has to go to the UI thread.
-                dialog.Invoke(
-                    (Action)(
-                        () =>
-                            dialog.Height = (int)
-                                Math.Round(kProblemDialogHeight * dialog.DeviceDpi / 96.0)
-                    )
-                );
-            }
-            catch (Exception e)
-            {
-                // One caller is a catch block about to rethrow the real failure. Losing that to
-                // "Invoke cannot be called before the window handle is created" would tell the user
-                // (and the problem report) nothing about what actually broke, so a dialog we could
-                // not resize is something we simply live with.
-                SIL.Reporting.Logger.WriteMinorEvent(
-                    "Could not resize the update dialog for its problem message: " + e.Message
-                );
-            }
+            var props = new DynamicJson();
+            dynamic props1 = props;
+            props1.which = kUpdateBookProgressDialogId;
+            // Reuse the "Update Book" label for both.
+            props1.title = LocalizationManager.GetString(
+                "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+                "Update Book"
+            );
+            props1.titleColor = "white";
+            props1.titleBackgroundColor = Palette.kBloomBlueHex;
+            props1.message = HousekeepingMessage;
+            return props;
         }
 
         /// <summary>
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind a modal progress dialog, and return true if it actually ran. Called when the AI
-        /// image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and after a
-        /// page-size change (EditingModel.SetLayout). No-op (returns false) when the book does not
-        /// need it, or when a run already failed for this book this session (so we don't re-prompt
-        /// every time).
+        /// due, behind the top-level progress dialog, and then run <paramref name="doAfter"/>. Called
+        /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and
+        /// after a page-size change (EditingModel.SetLayout).
         ///
-        /// Must be called on the UI thread: it shows a modal dialog. The heavy work runs on the
-        /// dialog's background worker (ProcessBook drives its own off-screen browser thread and the
-        /// pages it loads call back into Bloom's API server, so it must not run on the UI thread),
-        /// exactly like the "Update Book" command it shares ProcessBook with.
+        /// <paramref name="doAfter"/> always runs, whether or not there was anything to do -- the
+        /// caller has a page to get back to either way. When the pass does run, it runs when the
+        /// dialog closes, which is on one of the API server's threads: a caller that touches the UI
+        /// must marshal for itself (EditingModel does that with RunOffTheApiLock). When there was
+        /// nothing to do it runs immediately, on whatever thread called us.
+        ///
+        /// Nothing here blocks. The heavy work is on the dialog's background worker, because
+        /// ProcessBook drives its own off-screen browser thread and the pages it loads call back
+        /// into Bloom's API server, so it must not run on the UI thread; this is exactly what the
+        /// "Update Book" command it shares ProcessBook with does.
         /// </summary>
-        public static bool EnsurePerPageFixupIfNeeded(
+        public static void EnsurePerPageFixupIfNeededThen(
             Book book,
-            BloomWebSocketServer webSocketServer
+            BloomWebSocketServer webSocketServer,
+            Action doAfter
         )
         {
-            if (!NeedsPerPageFixup(book))
-                return false;
-            if (s_perPageFixupFailedThisSession.Contains(book.ID))
-                return false;
+            // Nothing to do, or a run already failed for this book this session (so we don't
+            // re-prompt every time). Either way the caller still has its page to get back to.
+            if (!NeedsPerPageFixup(book) || s_perPageFixupFailedThisSession.Contains(book.ID))
+            {
+                doAfter();
+                return;
+            }
 
-            // Reuse the "Update Book" label: to the user this is the same operation, applied for them
-            // automatically rather than on request.
-            var title = LocalizationManager.GetString(
-                "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-                "Update Book"
-            );
-            // The dialog needs to grow if something goes wrong: the error message and the Close and
-            // Report buttons need somewhere to go, and a WinForms form cannot size itself to its
-            // HTML content. Held here so the catch below can reach it.
-            ReactDialog dialog = null;
-            BrowserProgressDialog.DoWorkWithProgressDialog(
+            // Deliberately not awaited: this returns as soon as the dialog is open, not when the
+            // work is done, so awaiting it would tell us nothing. doAfter is how we learn it finished.
+            var _ = BrowserProgressDialog.DoWorkWithProgressDialogAsync(
                 webSocketServer,
-                () =>
-                {
-                    dialog = new ReactDialog(
-                        "simpleProgressDialogBundle",
-                        new
-                        {
-                            title,
-                            titleColor = "white",
-                            titleBackgroundColor = Palette.kBloomBlueHex,
-                            message = HousekeepingMessage,
-                        },
-                        title
-                    );
-                    // Just big enough for the bar and the sentence under it: wide enough that a
-                    // translation of the sentence gets two lines before it needs a third, and no
-                    // taller than those two lines, since empty space below them is all the user
-                    // would see for as long as the dialog is up.
-                    dialog.SetScaledSize(kNormalDialogWidth, kNormalDialogHeight);
-                    return dialog;
-                },
+                MakeUpdateBookProgressProps(),
                 (progress, worker) =>
                 {
                     try
@@ -456,26 +426,17 @@ namespace Bloom.Book
                             "Automatic page update failed for " + book.NameBestForUserDisplay,
                             e
                         );
-                        // Make room for the error message and the buttons that are about to appear.
-                        // BrowserProgressDialog turns this exception into both of them.
-                        GrowDialogForProblem(dialog);
                         throw;
                     }
-                    // A warning or error can also reach the dialog as a message, without stopping
-                    // the run (HaveProblemsBeenReported covers Warning, Error and Fatal alike).
-                    // Nothing on this path does that today, but the dialog shows such a message if
-                    // it comes, and returning false here would close the dialog the instant the
-                    // work finished -- so the user would never get to read it. Keep the dialog up
-                    // instead, with room for the message and the Close button that comes with it.
-                    if (progress.HaveProblemsBeenReported)
-                    {
-                        GrowDialogForProblem(dialog);
-                        return true; // wait for the user to close it
-                    }
-                    return false; // nothing to report: close the dialog automatically
-                }
+                    // A warning or error can reach the dialog as a message, without stopping the run
+                    // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
+                    // this path does that today, but the dialog shows such a message if it comes, and
+                    // returning false here would close the dialog the instant the work finished -- so
+                    // the user would never get to read it. Keep the dialog up instead.
+                    return Task.FromResult(progress.HaveProblemsBeenReported);
+                },
+                doWhenDialogCloses: doAfter
             );
-            return true;
         }
 
         // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what

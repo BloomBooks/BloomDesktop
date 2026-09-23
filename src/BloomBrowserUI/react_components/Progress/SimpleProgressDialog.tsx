@@ -24,7 +24,6 @@ import {
     DialogTitle,
 } from "../BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../BloomDialog/commonDialogComponents";
-import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
@@ -40,6 +39,10 @@ import { useMountEffect } from "../../utils/useMountEffect";
 // ProgressBox, and the switches for hiding the log, shrinking the box and reserving space for
 // buttons had already accumulated to the point where "the small quiet one" was easier to read
 // as its own file than as yet another branch through that one. See BL-16893.
+
+// Names the single instance of EmbeddedSimpleProgressDialog that App.tsx renders. C# opens it
+// by this name (BookProcessor.kUpdateBookProgressDialogId); keep the two in step.
+export const kUpdateBookProgressDialogId = "updateBook";
 
 export interface ISimpleProgressDialogProps {
     title: string;
@@ -295,36 +298,9 @@ export const SimpleProgressDialog: React.FunctionComponent<
     );
 };
 
-// Same as ISimpleProgressDialogProps, except that dialogEnvironment is required and the dialog
-// manages its own open state.
-type IWinFormsSimpleProgressDialogProps = Omit<
-    ISimpleProgressDialogProps &
-        Required<Pick<ISimpleProgressDialogProps, "dialogEnvironment">>,
-    "open" | "onClose"
->;
-
-/**
- * For use with WireUpForWinforms, which sets initiallyOpen to true: the whole content of a
- * C# ReactDialog (see BookProcessor.EnsurePerPageFixupIfNeeded).
- */
-export const WinFormsSimpleProgressDialog: React.FunctionComponent<
-    IWinFormsSimpleProgressDialogProps
-> = (props) => {
-    const [isOpen, setIsOpen] = useState(props.dialogEnvironment.initiallyOpen);
-    return (
-        <SimpleProgressDialog
-            {...props}
-            open={isOpen}
-            onClose={() => {
-                setIsOpen(false);
-            }}
-        />
-    );
-};
-
 /**
  * The websocket payload that EmbeddedSimpleProgressDialog is expecting. Should stay in sync with
- * the props C# sends to open it (see CollectionModel.BringBookUpToDateAsync).
+ * the props C# sends to open it (BookProcessor.MakeUpdateBookProgressProps).
  */
 interface IEmbeddedSimpleProgressDialogConfig {
     which: string; // must match props.id to open
@@ -380,5 +356,3 @@ export const EmbeddedSimpleProgressDialog: React.FunctionComponent<{
         />
     );
 };
-
-WireUpForWinforms(WinFormsSimpleProgressDialog);

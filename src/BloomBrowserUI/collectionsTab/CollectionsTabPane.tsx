@@ -22,7 +22,6 @@ import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
-import { EmbeddedSimpleProgressDialog } from "../react_components/Progress/SimpleProgressDialog";
 import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
@@ -753,8 +752,6 @@ export const CollectionsTabPane: React.FunctionComponent = () => {
             <AboutDialogLauncher />
             <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
-            {/* Update Book: just the bar and one sentence, no log. See CollectionModel.BringBookUpToDateAsync. */}
-            <EmbeddedSimpleProgressDialog id="collectionTabUpdateBook" />
             <MakeReaderTemplateBloomPackDialog />
             <ExternalBusyOverlay />
             <CollectionChooserDialog
