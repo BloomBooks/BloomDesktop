@@ -238,6 +238,27 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_LanguageAttributesOnBodyAreLowerCase()
+        {
+            SetDom(@"<div class='bloom-page numberedPage customPage A5Portrait'></div>");
+            // What Bloom wrote before: upper-case names, which our DOM treats as different attributes.
+            _bookDom.Body.SetAttribute("data-L1", "old");
+            _bookDom.Body.SetAttribute("data-L2", "old");
+            var book = CreateBook();
+            Assert.That(book.RawDom.Body.GetAttribute("data-L1"), Is.EqualTo("old"), "test setup");
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var body = book.RawDom.Body;
+            Assert.That(body.GetAttribute("data-l1"), Is.EqualTo(_collectionSettings.Language1Tag));
+            // data-l2 is the book's second content language, which is empty for a one-language book.
+            Assert.That(body.HasAttribute("data-l2"), Is.True, "data-l2 should be written");
+            Assert.That(body.HasAttribute("data-L1"), Is.False, "the old data-L1 should be gone");
+            Assert.That(body.HasAttribute("data-L2"), Is.False, "the old data-L2 should be gone");
+            Assert.That(body.HasAttribute("data-L3"), Is.False, "Bloom should not write data-L3");
+        }
+
+        [Test]
         public void BringBookUpToDate_DataCkeTempRemoved()
         {
             // Some books got corrupted with CKE temp data, possibly before we prevented this happening when
