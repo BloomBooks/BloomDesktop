@@ -207,6 +207,56 @@ the branch rather than the version in that path.
   Only the orphaned session json (no `Exit` block) recorded that the run ended badly. If the Doctor
   is meant to be usable in dev, go.mjs/init.sh need to build and place it and the setting needs a dev default.
 
+## 2026-08-24 — The book folder's own basePage.css can be older than the one you just built
+
+- **Cut:** Bloom serves `basePage.css` for the edit page out of the *book* folder, and the copy
+  there (`<collection>/<book>/basePage.css`) was 71330 bytes with no bloom-table rules at all,
+  byte-for-byte the size of `D:/bloom/output/browser/bookLayout/basePage.css` from Aug 8, while
+  this worktree's freshly built copy was 74244 bytes and had them. The symptom does not look like
+  a CSS problem: the table loses `display: grid`, so every cell becomes a full-width block, cells
+  report a height of 1px, and Bloom's picture-fitting code writes nonsense geometry from those
+  sizes. Rebuilding the worktree's `basePage.css` changes nothing, because nothing re-copies it.
+- **Idea:** When a table (or anything else whose CSS lives in `basePage.css`) is not laid out as
+  expected, fetch the stylesheet the page actually loaded and grep it, rather than reading the
+  built file: `link[rel=stylesheet]` in the page iframe points at the book folder. Copying
+  `output/browser/bookLayout/basePage.css` over the book's copy fixes it immediately. Worth
+  finding out what decides not to re-copy it, and whether a book last opened by another checkout's
+  Bloom keeps that checkout's support files.
+- **Context:** `Add-Tables`, verifying table picture cells in the running Bloom. Cost about an
+  hour of chasing a layout bug that was a stale stylesheet.
+
+## 2026-08-24 — A changed bloom-table.css never reaches basePage.css
+
+- **Cut:** `basePage.less` pulls the library's structural styles in with
+  `@import (inline) ".../node_modules/bloom-table/dist/bloom-table.css"`, but `build:less-inner`
+  (watchLessManager.js) decides whether to recompile by comparing the mtimes of the imports LESS
+  reports, and that inline CSS is not among them. So after the library changes its CSS the built
+  `output/browser/bookLayout/basePage.css` stays stale and the running Bloom lays tables out by
+  the old rules, with nothing saying so.
+- **Idea:** Have the manager count an inline-imported file among an entry's dependencies (the
+  regex in `scanLessImports` already matches `@import (inline) "..."`; it is `resolveLessImport`
+  plus the post-compile `result.imports` list that drop it). Meanwhile: delete
+  `output/browser/bookLayout/basePage.css` and run `pnpm --dir src/content run build:less-inner`,
+  which rebuilds when the output is missing.
+- **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
+  `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
+
+## 2026-08-20 — Rebuilding a pnpm-linked front-end dependency needs a whole new go.sh session
+
+- **Cut:** `bloom-table` is linked from a sibling repo, and after `vp pack` there the running
+  Bloom kept executing the old code. The launcher's `/restart` does not help: it restarts
+  Bloom.exe, but the Vite dev server from the first `go.sh` survives and keeps serving the
+  module it transformed at startup (`/@id/bloom-table` was 1462507 bytes stale against a 1462511
+  byte file on disk). Killing that one node process to force a fresh server killed the launcher
+  with it, so the control API vanished and the developer's Bloom went down.
+- **Idea:** Either have `go.sh` watch the dist of linked deps and restart Vite, or give the
+  launcher a documented "restart Vite too" action. Meanwhile the skill note that says "restart
+  Bloom" should say "stop the session and run `./go.sh` again", because a `/restart` reads as
+  enough and is not. `curl http://localhost:<vitePort>/@id/<dep>` and grep for your change is the
+  cheap way to tell whether the server is stale.
+- **Context:** `Add-Tables` branch, removing the table toolbox and taking the latest bloom-table.
+  Cost about twenty minutes plus an unplanned relaunch of the developer's Bloom.
+
 ## 2026-08-10 — check-csharp-ApplicationExit.sh greps whole files, not the diff
 
 - **Cut:** The pre-commit check greps each *staged file* for `Application.Exit`, so touching a
@@ -319,3 +369,48 @@ content-copy steps the tests need.
   matches `packageManager` output, or document the exact pnpm invocation the team uses so
   installs are format-stable. Until then, hash bumps need a manual lock edit.
 - **Context:** BL image-chooser integration PR (BloomDesktop #8059); local pnpm 11.5.2.
+
+## A rebuilt bloom-table never reaches the running Bloom until the dev server restarts
+
+**2026-08-20, Add-Tables.** `vite.config.mts` deliberately puts `bloom-table` in
+`optimizeDeps.exclude` with a comment saying that pre-bundling would cache a stale copy, and
+that excluding it "makes Vite serve the dist live, so a `vp pack` in the sibling repo shows up".
+It does not show up. The page loads it as `/@fs/D:/bloom-table/dist/bloom-table.mjs?t=<stamp>`,
+and Vite keeps serving the transform it cached under that exact URL: the file is outside the
+project root, so nothing watches it, so the stamp never changes and the cache is never
+invalidated. A page reload, a cache-disabled reload, deleting `node_modules/.vite/deps`, and
+`launcherControl.mjs --restart` all leave the old library in place.
+
+The cost is a wrong diagnosis, not just lost time: the new code is served correctly for the
+Bloom-side file and only the library is stale, so the console fills with
+`TypeError: dragToResize.beginResizeAtPoint is not a function` from a line that plainly calls a
+method the built `.d.mts` and `.mjs` both contain. It reads as a build or export problem in the
+library.
+
+What worked: `launcherControl.mjs --shutdown` then `--ensure-running --wait-ready`, i.e. a fresh
+Vite. Note the ports change, so re-read `output/bloom-launcher.json`, and Bloom comes back on the
+collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
+
+**Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
+`build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.
+**Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
+the branch rather than the version in that path.
+
+**Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
+
+## Two agents running e2e suites at once fail each other's launches, and it looks like a fixture bug
+
+**2026-09-05, Add-Tables.** Two worktrees running Playwright suites on this machine each made the
+other's `Bloom.exe` slow to start, past the fixture's two-minute readiness limit, twice in five
+runs. The message is `Bloom did not open the collection within 120s` followed by the list of
+instances the fixture can see, and the collection it says it wanted is right there in that list,
+because the diagnostic look happens a second after the last poll gave up. So it reads as a
+discovery bug, and half an hour goes into the innocent code. Neither run is told the other exists.
+
+Raised the limit to four minutes in `src/BloomE2E/fixtures/launchBloom.ts` and wrote it up in
+`src/BloomE2E/AUTOMATION-DEBT.md`.
+
+**Idea:** a machine-wide lock, or refuse to start while a Bloom launched by another e2e run is up,
+and say so. Agents in two worktrees is now the normal case, not the odd one.
+
+**Context:** gating `tables-gating.spec.ts` through three consecutive clean runs.

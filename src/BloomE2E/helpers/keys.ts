@@ -5,10 +5,10 @@
 // them. That is fine when the subject is the text; it is useless when the subject is the key.
 //
 // Canvas pages need the difference. The canvas element manager handles Delete, the arrow keys and
-// Ctrl+C/Ctrl+V for whatever element is selected, and a text box can sit inside such an element.
-// So the question "does Backspace in an empty text box delete the whole element?" is a question
-// about who gets the keydown, and only a real key press asks it. (AUTOMATION-DEBT.md: "Typing in a
-// text box raises no key events".)
+// Ctrl+C/Ctrl+V for whatever element is selected, and a text box can sit inside such an element, as
+// every cell of a table does. So the question "does Backspace in an empty box delete the whole
+// element?" is a question about who gets the keydown, and only a real key press asks it.
+// (AUTOMATION-DEBT.md: "Typing in a text box raises no key events".)
 //
 // Every press goes through Playwright's keyboard, which sends the same CDP raw key events the
 // browser would build from a physical key. What it cannot do is send a key that Bloom's WinForms
