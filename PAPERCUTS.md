@@ -96,6 +96,26 @@ House rules:
   book may need selecting) instead of the generic not-found message.
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
 
+## 2026-09-10 — `vitest run` finishes every test and then never exits
+
+In a fresh worktree (`pnpm install` run today, vitest 4.0.8), `pnpm exec vitest run` prints all
+its ✓ lines and then hangs forever instead of printing the summary and exiting. Nothing has
+failed — the tests are done — but there is no summary line, no exit code, and no way to tell
+"still running" from "wedged". `--no-file-parallelism` (which AGENTS.md recommends for the older
+worker-pool hang) and `--pool=forks` both hang the same way.
+
+It reads exactly like a hung test, so the reflex is to go hunting for the file that hangs. There
+isn't one: run any single directory and its files all pass, then that run hangs too. Something
+keeps the event loop alive after teardown.
+
+**Workaround:** run a directory at a time under `timeout`, and read the results out of the ✓
+lines rather than the summary — e.g.
+`timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`. Note that
+`timeout` does not kill the pnpm child, so a loop over directories has to be watched.
+
+**Context:** preflight on BL-16859. Whole front-end suite green this way (~350 tests), but it
+took an hour of wall-clock to establish.
+
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
 - **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
