@@ -134,26 +134,59 @@ export async function findBooksUploadedBy(
 }
 
 /**
- * The HTML of a book as it was uploaded, read from the sandbox's S3 bucket. Bloom uploads the book
- * folder under the record's baseUrl and names the .htm after the folder, so this reads
- * `<baseUrl><folder>.htm`. The bucket is public-read; that is how the website shows books.
+ * One file of a book as it was uploaded, read from the sandbox's S3 bucket, where Bloom uploads the
+ * book folder under the record's baseUrl. `fileName` is a name inside that folder, or a function of
+ * the folder's name (the .htm is named after the folder). The bucket is public-read; that is how
+ * the website shows books.
  */
-export async function fetchUploadedBookHtml(
+async function fetchUploadedBookFile(
     book: IBookOnServer,
+    fileName: string | ((folderName: string) => string),
+    describe: string,
 ): Promise<string> {
     // Bloom writes baseUrl with HttpUtility.UrlEncode, which puts spaces as "+", so undo that
     // before the general decoding turns the %2f slashes (and any %2b plus) back into themselves.
     const folderPath = decodeURIComponent(book.baseUrl.replace(/\+/g, " "));
     const folderName = folderPath.split("/").filter(Boolean).pop()!;
+    const name = typeof fileName === "string" ? fileName : fileName(folderName);
     // The URL constructor re-encodes the spaces and the rest of the path for the request.
-    const url =
-        new URL(folderPath).href + encodeURIComponent(folderName) + ".htm";
+    const url = new URL(folderPath).href + encodeURIComponent(name);
     const response = await fetch(url);
     if (!response.ok)
         throw new Error(
-            `S3 answered ${response.status} for the uploaded HTML of "${book.title}" at ${url}`,
+            `S3 answered ${response.status} for the uploaded ${describe} of "${book.title}" at ${url}`,
         );
     return response.text();
+}
+
+/** The HTML of a book as it was uploaded: `<baseUrl><folder>.htm`. */
+export async function fetchUploadedBookHtml(
+    book: IBookOnServer,
+): Promise<string> {
+    return fetchUploadedBookFile(book, (folder) => `${folder}.htm`, "HTML");
+}
+
+/**
+ * The bookshelves the uploaded copy of this book names, by url key: the "bookshelf:" tags of the
+ * meta.json Bloom uploaded with it. Bloom writes the collection's bookshelf into those tags just
+ * before uploading (BookUpload.UploadBookAsync), so this is exactly what Bloom sent.
+ *
+ * A test checks this rather than the record's own tags (IBookOnServer.bookshelves) because the
+ * sandbox's harvester can overwrite the record after an upload: it processes each upload in the
+ * background and, when it finishes, writes the whole record back from the copy it read when it
+ * started, so a re-upload that lands mid-harvest loses its new tags there (seen 2026-09-24). What
+ * Bloom uploaded is unaffected, and it is Bloom's behavior a test here is about.
+ */
+export async function getBookshelvesOfUploadedBook(
+    book: IBookOnServer,
+): Promise<string[]> {
+    const meta = JSON.parse(
+        await fetchUploadedBookFile(book, "meta.json", "meta.json"),
+    ) as { tags?: string[] };
+    const bookshelfPrefix = "bookshelf:";
+    return (meta.tags ?? [])
+        .filter((tag) => tag.startsWith(bookshelfPrefix))
+        .map((tag) => tag.substring(bookshelfPrefix.length));
 }
 
 /**

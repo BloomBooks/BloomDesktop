@@ -53,6 +53,7 @@ import {
 import {
     deleteAllBooksUploadedBy,
     findBooksUploadedBy,
+    getBookshelvesOfUploadedBook,
     getXmatterPackOfBookOnServer,
     type IBloomLibraryLogin,
 } from "../helpers/bloomLibraryServer";
@@ -141,10 +142,16 @@ async function restartReadyToUpload(
 
 /**
  * Check the four books on the sandbox, which is the card's "on Blorg, the books are on the bookshelf
- * you set and carry the collection's xmatter": all four are there under the test account, each on
- * this bookshelf, and each uploaded with this front/back matter pack. (The record's branding is not
- * checked: the server fills that field in some time after the upload finishes, so a check right
- * after the tally is flaky.)
+ * you set and carry the collection's xmatter": all four are there under the test account, each
+ * uploaded for this bookshelf alone, and each with this front/back matter pack.
+ *
+ * The bookshelf and the pack are both read from what Bloom uploaded (the book's meta.json and its
+ * HTML), not from the book's record on the server. The record is not Bloom's alone: the sandbox's
+ * harvester rewrites it after each upload from the copy it read when it started, so a re-upload that
+ * lands while the previous version is being harvested loses its new bookshelf there, and which book
+ * that happens to depends on the harvester's timing (seen 2026-09-24; the same thing is why the
+ * record could list the old shelf and the new one together). The record's branding is not checked
+ * either, for the same reason: the server fills it in some time after the upload finishes.
  */
 async function expectBooksOnServer(
     account: IBloomLibraryLogin,
@@ -157,15 +164,12 @@ async function expectBooksOnServer(
         `dev.bloomlibrary.org should list the four uploaded books for ${TEST_ACCOUNT_EMAIL}.`,
     ).toEqual([...BOOK_TITLES].sort());
     for (const book of onServer) {
-        // "On", not "only on": after the move below, the sandbox still lists the first shelf as
-        // well (seen 2026-09-04). Bloom sends only the current shelf's tag, dropping any earlier
-        // bookshelf tag (BookUpload.UploadBookAsync), so it is the server that keeps the old
-        // one when a re-upload lands. Whether that is meant is an open question for the library
-        // team; this checks what the card asks for, that the books sit on the new shelf.
+        // Exactly this shelf: Bloom sends only the collection's current bookshelf tag, dropping
+        // any earlier one (BookUpload.UploadBookAsync).
         expect(
-            book.bookshelves,
-            `${book.title} should be on the ${bookshelf} bookshelf.`,
-        ).toContain(bookshelf);
+            await getBookshelvesOfUploadedBook(book),
+            `${book.title} should have been uploaded for the ${bookshelf} bookshelf, and no other.`,
+        ).toEqual([bookshelf]);
         expect(
             await getXmatterPackOfBookOnServer(book),
             `${book.title} should have been uploaded with the collection's ${xmatterPack} front/back matter.`,
