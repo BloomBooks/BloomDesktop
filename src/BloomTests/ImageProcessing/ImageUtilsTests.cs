@@ -2244,4 +2244,340 @@ namespace BloomTests.ImageProcessing
             }
         }
     }
+
+    /// <summary>
+    /// ReallyCropImages on pictures whose img carries the picture's own rotation and mirror in
+    /// its inline transform. Each test uses a 40x20 PNG with four coloured quadrants, shown at
+    /// its natural size, so an img px is an image pixel and the expected colours can be worked
+    /// out by hand.
+    /// </summary>
+    [TestFixture]
+    public class ReallyCropImagesTransformTests
+    {
+        internal static readonly Color kTopLeft = Color.FromArgb(255, 255, 0, 0);
+        internal static readonly Color kTopRight = Color.FromArgb(255, 0, 255, 0);
+        internal static readonly Color kBottomLeft = Color.FromArgb(255, 0, 0, 255);
+        internal static readonly Color kBottomRight = Color.FromArgb(255, 255, 255, 0);
+
+        /// <summary>
+        /// Write an image of 40x20 units, each unit <paramref name="pixelsPerUnit"/> pixels square,
+        /// whose four quadrants are red (top left), green (top right), blue (bottom left) and
+        /// yellow (bottom right). PNG unless <paramref name="format"/> says otherwise.
+        /// </summary>
+        internal static void MakeQuadrantImage(
+            string path,
+            ImageFormat format = null,
+            int pixelsPerUnit = 1
+        )
+        {
+            var width = 40 * pixelsPerUnit;
+            var height = 20 * pixelsPerUnit;
+            using (var bitmap = new Bitmap(width, height))
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        Color color;
+                        if (y < height / 2)
+                            color = x < width / 2 ? kTopLeft : kTopRight;
+                        else
+                            color = x < width / 2 ? kBottomLeft : kBottomRight;
+                        bitmap.SetPixel(x, y, color);
+                    }
+                }
+                bitmap.Save(path, format ?? ImageFormat.Png);
+            }
+        }
+
+        /// <summary>
+        /// Make the quadrant image in a folder, put one img showing it in a canvas element with
+        /// the given styles, run ReallyCropImages, and return the img and the bytes of the file
+        /// it ends up pointing at.
+        /// </summary>
+        private static SafeXmlElement RunOnOneImage(
+            TemporaryFolder folder,
+            string canvasElementStyle,
+            string imgStyle,
+            out byte[] outputBytes,
+            string fileName = "quadrants.png",
+            ImageFormat format = null,
+            int pixelsPerUnit = 1
+        )
+        {
+            MakeQuadrantImage(Path.Combine(folder.Path, fileName), format, pixelsPerUnit);
+            var dom = new HtmlDom(
+                @"<html><head></head><body>
+                <div class=""bloom-page"">
+                    <div class=""marginBox"">
+                        <div class=""bloom-canvas"">"
+                    + ReallyCropImagesTests.MakeImageCanvasElement(
+                        "picture",
+                        fileName,
+                        canvasElementStyle,
+                        imgStyle
+                    )
+                    + @"</div>
+                    </div>
+                </div>
+            </body></html>"
+            );
+            Assert.That(
+                ImageUtils.GetPictureTransform(imgStyle).IsIdentity,
+                Is.EqualTo(!imgStyle.Contains("transform")),
+                "sanity check: the test's img style parses as the test intends"
+            );
+
+            ImageUtils.ReallyCropImages(dom.RawDom, folder.Path, folder.Path);
+
+            var img = dom.SelectSingleNode("//img[@id='picture']");
+            outputBytes = RobustFile.ReadAllBytes(
+                Path.Combine(folder.Path, img.GetAttribute("src"))
+            );
+            return img;
+        }
+
+        /// <summary>
+        /// Check the output's size and the colour at the centre of each of its four quadrants.
+        /// Each colour channel may differ from the expected one by up to
+        /// <paramref name="tolerance"/>, which a JPEG needs.
+        /// </summary>
+        internal static void AssertQuadrants(
+            byte[] imageBytes,
+            int width,
+            int height,
+            Color topLeft,
+            Color topRight,
+            Color bottomLeft,
+            Color bottomRight,
+            int tolerance = 0
+        )
+        {
+            using (var stream = new MemoryStream(imageBytes))
+            using (var bitmap = new Bitmap(stream))
+            {
+                Assert.That(bitmap.Width, Is.EqualTo(width), "output width");
+                Assert.That(bitmap.Height, Is.EqualTo(height), "output height");
+                AssertColor(bitmap.GetPixel(width / 4, height / 4), topLeft, tolerance, "top left");
+                AssertColor(
+                    bitmap.GetPixel(width * 3 / 4, height / 4),
+                    topRight,
+                    tolerance,
+                    "top right"
+                );
+                AssertColor(
+                    bitmap.GetPixel(width / 4, height * 3 / 4),
+                    bottomLeft,
+                    tolerance,
+                    "bottom left"
+                );
+                AssertColor(
+                    bitmap.GetPixel(width * 3 / 4, height * 3 / 4),
+                    bottomRight,
+                    tolerance,
+                    "bottom right"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Check that each colour channel of <paramref name="actual"/> is within
+        /// <paramref name="tolerance"/> of <paramref name="expected"/>.
+        /// </summary>
+        private static void AssertColor(Color actual, Color expected, int tolerance, string where)
+        {
+            var message = $"{where}: expected {expected}, got {actual}";
+            Assert.That(actual.R, Is.EqualTo(expected.R).Within(tolerance), message);
+            Assert.That(actual.G, Is.EqualTo(expected.G).Within(tolerance), message);
+            Assert.That(actual.B, Is.EqualTo(expected.B).Within(tolerance), message);
+        }
+
+        [TestCase("transform: rotate(90deg) scale(-1, 1);", 1, true, false)]
+        [TestCase("width: 40px; left: 0px; transform: rotate(270deg);", 3, false, false)]
+        [TestCase("transform: scale(-1);", 0, true, true)]
+        [TestCase("transform: rotate(-90deg) scale(1, -1)", 3, false, true)]
+        [TestCase("width: 40px; left: 0px; top: 0px;", 0, false, false)]
+        public void GetPictureTransform_ReadsRotationAndMirrors(
+            string style,
+            int quarterRotations,
+            bool flipX,
+            bool flipY
+        )
+        {
+            var transform = ImageUtils.GetPictureTransform(style);
+            Assert.That(transform.QuarterRotations, Is.EqualTo(quarterRotations));
+            Assert.That(transform.FlipX, Is.EqualTo(flipX));
+            Assert.That(transform.FlipY, Is.EqualTo(flipY));
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90Uncropped_RotatesPixelsAndRemovesTransform()
+        {
+            using (var folder = new TemporaryFolder("Rotate90Uncropped"))
+            {
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 40px; left: 0px; top: 0px; width: 20px;",
+                    "transform: rotate(90deg)",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                // Rotated clockwise, the left column (red over blue) becomes the top row
+                // (blue, red), and the right column the bottom row (yellow, green).
+                AssertQuadrants(bytes, 20, 40, kBottomLeft, kTopLeft, kBottomRight, kTopRight);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90CroppedOffCentre_CropsShownRectangle()
+        {
+            using (var folder = new TemporaryFolder("Rotate90Cropped"))
+            {
+                // The box is 40x20 with its centre at (10, 10). Rotated, it shows a 20x40
+                // rectangle at left 0, top -10, and the 20x30 element shows its lower 30 rows.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 30px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px; transform: rotate(90deg);",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                // Rows 10 to 40 of the rotated image: its quarter-way row is rotated row 17,
+                // still in the top half (blue, red); its three-quarter row is in the bottom half.
+                AssertQuadrants(bytes, 20, 30, kBottomLeft, kTopLeft, kBottomRight, kTopRight);
+                using (var stream = new MemoryStream(bytes))
+                using (var bitmap = new Bitmap(stream))
+                {
+                    // A crop taken from the unrotated box would begin at rotated row 0, leaving
+                    // output row 12 in the top half.
+                    Assert.That(
+                        bitmap.GetPixel(5, 12).ToArgb(),
+                        Is.EqualTo(kBottomRight.ToArgb()),
+                        "output row 12 is rotated row 22, in the bottom half"
+                    );
+                }
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate90CroppedOffCentreJpeg_CropsShownRectangle()
+        {
+            using (var folder = new TemporaryFolder("Rotate90CroppedJpeg"))
+            {
+                // The rotate 90 cropped test at eight times the size, so the quadrants are
+                // several JPEG blocks across: a 320x160 box whose rotated 160x320 rectangle
+                // shows its lower 240 rows in the 160x240 element.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 240px; left: 0px; top: 0px; width: 160px;",
+                    "width: 320px; left: -80px; top: 0px; transform: rotate(90deg);",
+                    out var bytes,
+                    "quadrants.jpg",
+                    ImageFormat.Jpeg,
+                    8
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(
+                    bytes,
+                    160,
+                    240,
+                    kBottomLeft,
+                    kTopLeft,
+                    kBottomRight,
+                    kTopRight,
+                    40
+                );
+                using (var stream = new MemoryStream(bytes))
+                using (var bitmap = new Bitmap(stream))
+                {
+                    // Output row 100 is rotated row 180, in the bottom half. A crop taken from
+                    // the unrotated box would begin at rotated row 0, leaving it in the top half.
+                    var pixel = bitmap.GetPixel(40, 100);
+                    Assert.That(pixel.R, Is.GreaterThan(200), $"yellow expected, got {pixel}");
+                    Assert.That(pixel.G, Is.GreaterThan(200), $"yellow expected, got {pixel}");
+                    Assert.That(pixel.B, Is.LessThan(60), $"yellow expected, got {pixel}");
+                }
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_MirrorOnly_MirrorsPixelsAndRemovesTransform()
+        {
+            using (var folder = new TemporaryFolder("MirrorOnly"))
+            {
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 40px;",
+                    "transform: scale(-1, 1)",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 40, 20, kTopRight, kTopLeft, kBottomRight, kBottomLeft);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_Rotate270AndMirrorCropped_MirrorsThenRotatesThenCrops()
+        {
+            using (var folder = new TemporaryFolder("Rotate270MirrorCropped"))
+            {
+                // Mirrored first and then rotated 270 degrees clockwise, the picture is its own
+                // transpose: red top left, blue top right, green bottom left, yellow bottom right.
+                // The crop is the same as in the rotate 90 test: the lower 30 of 40 rows.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 30px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px; transform: rotate(270deg) scale(-1, 1);",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 20, 30, kTopLeft, kBottomLeft, kTopRight, kBottomRight);
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_NoTransformUncropped_LeavesFileAndStyleAlone()
+        {
+            using (var folder = new TemporaryFolder("NoTransformUncropped"))
+            {
+                MakeQuadrantImage(Path.Combine(folder.Path, "original.png"));
+                var originalBytes = RobustFile.ReadAllBytes(
+                    Path.Combine(folder.Path, "original.png")
+                );
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 40px;",
+                    "left: 0px; top: 0px;",
+                    out var bytes
+                );
+
+                Assert.That(img.GetAttribute("src"), Is.EqualTo("quadrants.png"));
+                Assert.That(img.GetAttribute("style"), Is.EqualTo("left: 0px; top: 0px;"));
+                Assert.That(bytes, Is.EqualTo(originalBytes));
+            }
+        }
+
+        [Test]
+        public void ReallyCropImages_NoTransformCropped_CropsUnrotatedBox()
+        {
+            using (var folder = new TemporaryFolder("NoTransformCropped"))
+            {
+                // The element shows columns 10 to 30 and rows 0 to 20 of the picture.
+                var img = RunOnOneImage(
+                    folder,
+                    "height: 20px; left: 0px; top: 0px; width: 20px;",
+                    "width: 40px; left: -10px; top: 0px;",
+                    out var bytes
+                );
+
+                Assert.That(img.HasAttribute("style"), Is.False);
+                AssertQuadrants(bytes, 20, 20, kTopLeft, kTopRight, kBottomLeft, kBottomRight);
+            }
+        }
+    }
 }
