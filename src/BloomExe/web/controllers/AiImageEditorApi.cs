@@ -1504,7 +1504,12 @@ namespace Bloom.web.controllers
             // any real work, cheapest question first. Most images are not cropped at all, and
             // this one reads only the DOM; everything past it opens the image file, which costs
             // a GraphicsMagick subprocess per slot.
-            if (!ImageUtils.HasCropStyles(element))
+            // A rotated or mirrored picture is always rendered, upright, because the page shows
+            // it that way and committing a replacement removes the transform.
+            var isTransformed = !ImageUtils
+                .GetPictureTransform(element.GetAttribute("style"))
+                .IsIdentity;
+            if (!isTransformed && !ImageUtils.HasCropStyles(element))
                 return null;
 
             // Bloom writes width/left/top when it merely FITS a background image to its canvas
@@ -1518,7 +1523,7 @@ namespace Bloom.web.controllers
                 return null;
             if (!ImageUtils.TryGetImageSize(sourcePath, out var imageSize))
                 return null;
-            if (!ImageUtils.CropHidesPartOfImage(element, imageSize))
+            if (!isTransformed && !ImageUtils.CropHidesPartOfImage(element, imageSize))
                 return null;
 
             var croppedViewFolder = Path.Combine(
@@ -1573,7 +1578,7 @@ namespace Bloom.web.controllers
         /// rectangle that means nothing for it (BL-16868).
         ///
         /// This is what updateCanvasElementForChangedImage (CanvasElementManager.ts) does for
-        /// the currently-open page: clear width/height/left/top, then re-fit. An off-page slot
+        /// the currently-open page: clear width/height/left/top and the picture's transform, then re-fit. An off-page slot
         /// has no live browser to do it, and nothing re-fits it when the page is next opened
         /// (setupBackgroundImageAttributes returns early once the element has a data-bubble).
         ///
@@ -1601,7 +1606,9 @@ namespace Bloom.web.controllers
             if (element.Name != "img")
                 return;
 
-            HtmlDom.RemoveStyleProperties(element, "width", "height", "left", "top");
+            // The picture's rotation and mirror belong to the replaced picture too; the editor was
+            // handed it upright.
+            HtmlDom.RemoveStyleProperties(element, "width", "height", "left", "top", "transform");
 
             if (!element.HasClass(kCoverFitClass))
                 return;

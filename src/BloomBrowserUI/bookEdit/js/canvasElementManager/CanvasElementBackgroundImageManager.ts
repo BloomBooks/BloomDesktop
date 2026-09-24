@@ -19,6 +19,7 @@ import {
     kHasCanvasElementClass,
 } from "../../toolbox/canvas/canvasElementConstants";
 import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
+import { getImageContentTransform } from "../imageContentTransform";
 
 export interface BackgroundImageManagerState {
     bgImageLoadListeners: WeakMap<HTMLImageElement, (event: Event) => void>;
@@ -520,7 +521,21 @@ function adjustBackgroundImageSizeToFit(
     if (fitCoverMode) {
         // In case it is NOT already cropped, its size will be 100%, so we must capture
         // this before we change the parent.
-        const oldImgWidth = pxToNumber(img.style.width) || img.clientWidth;
+        const oldBoxWidth = pxToNumber(img.style.width) || img.clientWidth;
+        // This is the height it would be if not cropped.
+        const oldBoxHeight =
+            (oldBoxWidth * img.naturalHeight) / img.naturalWidth;
+        const oldBoxLeft = pxToNumber(img.style.left) || 0;
+        const oldBoxTop = pxToNumber(img.style.top) || 0; // negative
+        // The arithmetic below is about the rectangle the element shows. For a picture that
+        // Rotate Right has rotated 90 or 270 degrees, that is the img box with its two
+        // dimensions swapped, about the same centre; see getShownContentRectangle.
+        const isQuarterRotation =
+            getImageContentTransform(img).quarterRotations % 2 === 1;
+        const oldImgWidth = isQuarterRotation ? oldBoxHeight : oldBoxWidth;
+        const oldImgHeight = isQuarterRotation ? oldBoxWidth : oldBoxHeight;
+        const oldImgLeft = oldBoxLeft + oldBoxWidth / 2 - oldImgWidth / 2;
+        const oldImgTop = oldBoxTop + oldBoxHeight / 2 - oldImgHeight / 2;
         // make the canvas element fill the container
         bgCanvasElement.style.width = bloomCanvasWidth + "px";
         bgCanvasElement.style.height = bloomCanvasHeight + "px";
@@ -528,20 +543,17 @@ function adjustBackgroundImageSizeToFit(
         bgCanvasElement.style.top = "0px";
         //
         matchWidthOfContainer = !matchWidthOfContainer;
-        // This is the height it would be if not cropped.
-        const oldImgHeight =
-            (oldImgWidth * img.naturalHeight) / img.naturalWidth;
-        const oldImgLeft = pxToNumber(img.style.left) || 0;
-        const oldImgTop = pxToNumber(img.style.top) || 0; // negative
+        let scale: number;
+        let newImgLeft: number;
+        let newImgTop: number;
         // crop the image (or adjust its cropping) to fill the container
         if (matchWidthOfContainer) {
             // image is taller than a perfect fit, so it will fill the width and be cropped
             // (more than before) in height.
             const ceScale = bgCanvasElement.clientWidth / oldCeWidth;
             const minScale = bgCanvasElement.clientWidth / oldImgWidth;
-            const scale = Math.max(ceScale, minScale);
-            img.style.width = oldImgWidth * scale + "px";
-            img.style.left = oldImgLeft * scale + "px"; //same fraction cropped in width
+            scale = Math.max(ceScale, minScale);
+            newImgLeft = oldImgLeft * scale; //same fraction cropped in width
             const previouslyHiddenAtTop = -oldImgTop * scale;
             const previouslyHiddenAtBottom =
                 (oldImgHeight + oldImgTop - oldCeHeight) * scale;
@@ -552,17 +564,15 @@ function adjustBackgroundImageSizeToFit(
                 bloomCanvasHeight -
                 previouslyHiddenAtTop -
                 previouslyHiddenAtBottom;
-            img.style.top =
-                Math.min(-previouslyHiddenAtTop - excessHeight / 2, 0) + "px";
+            newImgTop = Math.min(-previouslyHiddenAtTop - excessHeight / 2, 0);
         } else {
             // image is wider than a perfect fit, so it will fill the height and be cropped
             // (more than before) in width.
             const ceScale = bgCanvasElement.clientHeight / oldCeHeight;
             // we must scale it up enough to fill the height of the container.
             const minScale = bgCanvasElement.clientHeight / oldImgHeight;
-            const scale = Math.max(ceScale, minScale);
-            img.style.width = oldImgWidth * scale + "px";
-            img.style.top = oldImgTop * scale + "px"; //same fraction cropped in height
+            scale = Math.max(ceScale, minScale);
+            newImgTop = oldImgTop * scale; //same fraction cropped in height
             const previouslyHiddenAtLeft = -oldImgLeft * scale;
             const previouslyHiddenAtRight =
                 (oldImgWidth + oldImgLeft - oldCeWidth) * scale;
@@ -571,9 +581,16 @@ function adjustBackgroundImageSizeToFit(
                 bloomCanvasWidth -
                 previouslyHiddenAtLeft -
                 previouslyHiddenAtRight;
-            img.style.left =
-                Math.min(-previouslyHiddenAtLeft - excessWidth / 2, 0) + "px";
+            newImgLeft = Math.min(-previouslyHiddenAtLeft - excessWidth / 2, 0);
         }
+        // Back from the rectangle the element shows to the img box, which is what we write.
+        const newBoxWidth = oldBoxWidth * scale;
+        const newBoxHeight = oldBoxHeight * scale;
+        img.style.width = newBoxWidth + "px";
+        img.style.left =
+            newImgLeft + (oldImgWidth * scale) / 2 - newBoxWidth / 2 + "px";
+        img.style.top =
+            newImgTop + (oldImgHeight * scale) / 2 - newBoxHeight / 2 + "px";
     } else {
         if (matchWidthOfContainer) {
             // size of image is width-limited: image is wider than a perfect fit,

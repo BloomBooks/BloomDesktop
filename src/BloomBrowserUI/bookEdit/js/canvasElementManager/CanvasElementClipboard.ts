@@ -227,6 +227,13 @@ export class CanvasElementClipboard {
         imageInfo: IImageInfo,
     ): void {
         changeImageInfo(img, imageInfo);
+        // As in updateCanvasElementForChangedImage(), the new picture starts upright and
+        // uncropped: the old picture's rotation, mirror and crop do not carry over to it.
+        img.style.width = "";
+        img.style.height = "";
+        img.style.left = "";
+        img.style.top = "";
+        img.style.transform = "";
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.host.adjustBackgroundImageSize(
                 bloomCanvas,

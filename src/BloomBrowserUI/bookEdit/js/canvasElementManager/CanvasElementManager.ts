@@ -89,6 +89,18 @@ import {
 import { CanvasElementPointerInteractions } from "./CanvasElementPointerInteractions";
 import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
 import {
+    canRotateCanvasElement,
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
+import {
+    clearImageContentTransform,
+    flipImageContent,
+    FlipAxis,
+    getImageContentTransform,
+    rotateImageContentRight90Degrees,
+} from "../imageContentTransform";
+import {
     adjustCanvasElementOrdering,
     adjustDraggableTarget,
     removeDetachedTargets,
@@ -107,6 +119,7 @@ import {
     IImageCropInfo,
     initializeImageUndoManager,
     prepareUndoForImageOperation,
+    pushUndoForImageTransform,
 } from "../ImageUndoManager";
 
 const kComicalGeneratedClass: string = "comical-generated";
@@ -168,6 +181,8 @@ export class CanvasElementManager {
                     | undefined,
             updateCanvasElementForChangedImage:
                 this.updateCanvasElementForChangedImage.bind(this),
+            updateCanvasElementAfterTransformChange:
+                this.adjustStuffRelatedToImage.bind(this),
             getActiveElement: this.getActiveElement.bind(this),
             setActiveElement: this.setActiveElement.bind(this),
             removeDetachedTargets: this.removeDetachedTargets.bind(this),
@@ -1337,7 +1352,71 @@ export class CanvasElementManager {
             startSideControlDrag:
                 this.handleDragInteractions.startSideControlDrag,
             startMoveCrop: this.handleDragInteractions.startMoveCrop,
+            startRotateDrag: this.handleDragInteractions.startRotateDrag,
         });
+    }
+
+    // Rotate the active canvas element 90 degrees clockwise. Used by the Rotate Right
+    // menu command, for everything except a background image; see rotateActiveImageRight90Degrees.
+    public rotateActiveElementRight90Degrees(): void {
+        if (
+            !this.activeElement ||
+            !canRotateCanvasElement(this.activeElement)
+        ) {
+            return;
+        }
+        setCanvasElementRotation(
+            this.activeElement,
+            getCanvasElementRotation(this.activeElement) + 90,
+        );
+        this.adjustTarget(this.activeElement);
+        this.alignControlFrameWithActiveElement();
+    }
+
+    // Rotate whatever the Rotate Right command applies to for the active element: the
+    // element itself where that is possible, otherwise the picture inside it. A background
+    // image fills its bloom-canvas and cannot be rotated as a box, so for it we rotate the
+    // picture inside the box and reshape the box to match, which gives what an author wants
+    // for a photograph that arrived on its side: the picture upright, and any crop kept.
+    // Answers whether anything was rotated.
+    public rotateActiveImageRight90Degrees(): boolean {
+        if (!this.activeElement) {
+            return false;
+        }
+        // An empty picture slot has nothing to rotate, whether as a box or as a picture.
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
+            return false;
+        }
+        // A navigation button cannot be rotated, and neither can the picture inside it.
+        if (this.activeElement.classList.contains(kBloomButtonClass)) {
+            return false;
+        }
+        if (canRotateCanvasElement(this.activeElement)) {
+            pushUndoForImageTransform(this.activeElement);
+            this.rotateActiveElementRight90Degrees();
+            return true;
+        }
+        pushUndoForImageTransform(this.activeElement);
+        rotateImageContentRight90Degrees(img);
+        this.adjustStuffRelatedToImage(this.activeElement, img);
+        return true;
+    }
+
+    // Mirror the picture in the active canvas element about the axis the user sees. This is
+    // always done to the picture rather than to the box, because mirroring a box would move
+    // it without changing how it looks.
+    public flipActiveImage(axis: FlipAxis): void {
+        if (!this.activeElement) {
+            return;
+        }
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img) {
+            return;
+        }
+        pushUndoForImageTransform(this.activeElement);
+        flipImageContent(img, axis);
+        this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 
     private minWidth = 30; // @MinTextBoxWidth in canvasTool.less
@@ -1364,6 +1443,25 @@ export class CanvasElementManager {
         this.alignControlFrameWithActiveElement();
         this.adjustTarget(this.activeElement);
         notifyToolOfChangedImage(img);
+    }
+
+    // The Reset Image command: put the picture back the way it arrived. That means the crop
+    // goes, and so do the 90-degree rotations and the mirrors that Rotate right and Flip apply to
+    // the picture. The rotation of a canvas element box is left alone, because it belongs to
+    // the box, like its size and its position; the rotate handle and Undo are the way back
+    // from that.
+    //
+    // This command deliberately puts nothing on the undo stack, as the older reset-crop
+    // command did not either: a reset is itself a way back, so an undo of it would be a way
+    // back from a way back. Rotate right and Flip do record undo, because each of them is a
+    // step forward.
+    public resetImage(): void {
+        if (!this.activeElement) return;
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img) return;
+        clearImageContentTransform(img);
+        this.resetCropping();
+        this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 
     public resetCropping(adjustContainer = true) {
@@ -1409,6 +1507,9 @@ export class CanvasElementManager {
         const currentImgWidth = imgStyleWidth
             ? CanvasElementManager.pxToNumber(imgStyleWidth)
             : img.clientWidth;
+        if (getImageContentTransform(img).quarterRotations % 2 === 1) {
+            return this.getExpandedRotatedImageDimensions(img, bloomCanvas);
+        }
         // using <= here because client values are whole pixels and rounding easily
         // produces a spurious 1px difference.
         const canvasElementFillsCanvas =
@@ -1464,6 +1565,49 @@ export class CanvasElementManager {
             }
         }
         return null;
+    }
+
+    // The same as getExpandedImageDimensions, for a picture that has been rotated 90
+    // degrees. The picture's layout box lies across the page, so the box's width has to cover the
+    // page's height and the box's height has to cover the page's width, and both offsets have
+    // to move, because the box rotates about its own centre.
+    private getExpandedRotatedImageDimensions(
+        img: HTMLImageElement,
+        bloomCanvas: HTMLElement,
+    ): {
+        imgWidth: number;
+        imgTop?: number;
+        imgLeft?: number;
+    } | null {
+        const pageWidth = bloomCanvas.clientWidth;
+        const pageHeight = bloomCanvas.clientHeight;
+        const imgWidth = Math.max(
+            pageHeight,
+            (pageWidth * img.naturalWidth) / img.naturalHeight,
+        );
+        const imgHeight = (imgWidth * img.naturalHeight) / img.naturalWidth;
+        const imgLeft = (pageWidth - imgWidth) / 2;
+        const imgTop = (pageHeight - imgHeight) / 2;
+        const currentWidth = img.style.width
+            ? CanvasElementManager.pxToNumber(img.style.width)
+            : img.clientWidth;
+        const alreadyDone =
+            Math.abs(currentWidth - imgWidth) < 1 &&
+            Math.abs(
+                CanvasElementManager.pxToNumber(img.style.left) - imgLeft,
+            ) < 1 &&
+            Math.abs(CanvasElementManager.pxToNumber(img.style.top) - imgTop) <
+                1 &&
+            Math.abs(
+                bloomCanvas.clientHeight - this.activeElement!.clientHeight,
+            ) <= 1 &&
+            Math.abs(
+                bloomCanvas.clientWidth - this.activeElement!.clientWidth,
+            ) <= 1;
+        if (alreadyDone) {
+            return null;
+        }
+        return { imgWidth, imgLeft, imgTop };
     }
 
     // If the background canvas element doesn't fill the container, we can expand the image to make it so.
@@ -1715,9 +1859,14 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
+    // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
+    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
+    // back the transform the restored picture had. The rotation of the canvas element box
+    // belongs to the box and is left alone.
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
+        imageTransform = "",
     ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
@@ -1733,6 +1882,9 @@ export class CanvasElementManager {
         img.style.height = "";
         img.style.left = "";
         img.style.top = "";
+        // With the transform gone, the size code below sees no rotation and fits a background
+        // element to the new picture's natural shape.
+        img.style.transform = imageTransform;
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
@@ -2142,17 +2294,25 @@ export class CanvasElementManager {
             // and it probably isn't necessary.
             if (canvasElement.closest(".bloom-describedImage")) return;
 
-            // Careful. For older books, left and top might be percentages.
-            const canvasElementRect = canvasElement.getBoundingClientRect();
-            const parentRect = parentContainer.getBoundingClientRect();
-
+            // Read the element's own laid-out position, which is what
+            // adjustCanvasElementLocation compares against and writes back. Careful: for
+            // older books, left and top might be percentages, which offsetLeft and offsetTop
+            // resolve to pixels for us.
+            //
+            // A rotated element is why this cannot use the on-screen rectangle.
+            // getBoundingClientRect reports the upright box around the rotated element, and
+            // the corner of that box is not the corner of the element's own box: for a
+            // 90-degree rotation the two differ by half the difference of the element's width and
+            // height. Reading the position from it therefore moved a rotated element on every
+            // page load, up the page and to the right for a wide element, and down and to the
+            // left for a tall one, a little further each time (BL-16741).
             this.adjustCanvasElementLocation(
                 canvasElement,
                 parentContainer,
                 new Point(
-                    canvasElementRect.left - parentRect.left,
-                    canvasElementRect.top - parentRect.top,
-                    PointScaling.Scaled,
+                    canvasElement.offsetLeft,
+                    canvasElement.offsetTop,
+                    PointScaling.Unscaled,
                     "ensureCanvasElementsIntersectParent",
                 ),
             );

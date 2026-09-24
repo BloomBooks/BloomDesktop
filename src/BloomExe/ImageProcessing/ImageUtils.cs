@@ -2162,6 +2162,10 @@ namespace Bloom.ImageProcessing
             internal int JpegQuality; // 0 means use input jpeg's quality
             internal string ProfilesToStrip; // null means don't strip any profiles
             internal Rectangle cropRectangle;
+
+            // Applied before any crop, so the crop rectangle is in the coordinates of the
+            // mirrored and rotated image. Default (all zero/false) leaves the pixels alone.
+            internal PictureTransform Transform;
         }
 
         public static bool TryGetImageSize(string path, out Size size)
@@ -2234,6 +2238,38 @@ namespace Bloom.ImageProcessing
             return result;
         }
 
+        /// <summary>
+        /// Mirror and rotate the image as <paramref name="transform"/> says, then crop the result
+        /// to <paramref name="cropRectangle"/> (in the coordinates of the mirrored and rotated
+        /// image; Rectangle.Empty means no crop). The output needs no transform to look as the
+        /// original did with the transform applied.
+        /// </summary>
+        public static ExecutionResult TransformAndCropImage(
+            string sourcePath,
+            string destPath,
+            PictureTransform transform,
+            Rectangle cropRectangle
+        )
+        {
+            var options = new GraphicsMagickOptions
+            {
+                Size = new Size(0, 0), // preserve current size (no scaling)
+                MakeOpaque = false,
+                JpegQuality = 0, // same as input
+                ProfilesToStrip = null,
+                cropRectangle = cropRectangle,
+                Transform = transform,
+            };
+            var result = RunGraphicsMagick(sourcePath, destPath, options);
+            if (result.ExitCode != 0)
+            {
+                LogGraphicsMagickFailure(result);
+                return result;
+            }
+            CopyCoreMetadata(sourcePath, destPath);
+            return result;
+        }
+
         private static ExecutionResult RunGraphicsMagick(
             string sourcePath,
             string destPath,
@@ -2252,6 +2288,20 @@ namespace Bloom.ImageProcessing
                             argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
                             if (options.MakeOpaque)
                                 argsBldr.Append(" -background white -extent 0x0 +matte");
+                            // GraphicsMagick applies these in the order given, which is the order
+                            // CSS applies `rotate(...) scale(...)`: mirror first, then rotate.
+                            if (options.Transform.FlipX)
+                                argsBldr.Append(" -flop");
+                            if (options.Transform.FlipY)
+                                argsBldr.Append(" -flip");
+                            if (options.Transform.QuarterRotations != 0)
+                                argsBldr.AppendFormat(
+                                    " -rotate {0}",
+                                    options.Transform.QuarterRotations * 90
+                                );
+                            // Rotation can leave a page offset that -crop would measure from.
+                            if (!options.Transform.IsIdentity)
+                                argsBldr.Append(" +repage");
                             if (options.cropRectangle != Rectangle.Empty)
                             {
                                 argsBldr.AppendFormat(
@@ -2261,6 +2311,11 @@ namespace Bloom.ImageProcessing
                                     options.cropRectangle.X,
                                     options.cropRectangle.Y
                                 );
+                                // The crop leaves its offset in the page geometry, which PNG then
+                                // stores. Output that must need no transform must carry no offset
+                                // either. Untransformed crops keep their existing output.
+                                if (!options.Transform.IsIdentity)
+                                    argsBldr.Append(" +repage");
                             }
 
                             // http://www.graphicsmagick.org/GraphicsMagick.html#details-profile states:
@@ -2910,7 +2965,8 @@ namespace Bloom.ImageProcessing
                 if (string.IsNullOrWhiteSpace(src) || IsPlaceholderImageFilename(src))
                     continue;
                 var style = img.GetAttribute("style");
-                if (!SignifiesCropping(style))
+                // A mirrored or rotated picture gets a new file just as a cropped one does.
+                if (!SignifiesCropping(style) && GetPictureTransform(style).IsIdentity)
                 {
                     uncroppedSrcNames.Add(src);
                 }
@@ -2929,7 +2985,8 @@ namespace Bloom.ImageProcessing
                 var imgContainer = img.ParentNode as SafeXmlElement;
                 var canvasElement = imgContainer?.ParentNode as SafeXmlElement;
                 var canvasElementStyle = canvasElement?.GetAttribute("style");
-                if (!SignifiesCropping(style) || canvasElementStyle == null)
+                var isTransformed = !GetPictureTransform(style).IsIdentity;
+                if (!isTransformed && (!SignifiesCropping(style) || canvasElementStyle == null))
                 {
                     if (alsoTrimMetadataForUncroppedImages)
                         TrimTheMetadata(
@@ -2955,7 +3012,9 @@ namespace Bloom.ImageProcessing
                         img,
                         src,
                         style,
-                        canvasElementStyle,
+                        // A mirrored or rotated picture outside a canvas element has no crop,
+                        // but its pixels still need mirroring and rotating.
+                        canvasElementStyle ?? "",
                         bloomDataDivEntriesByDataBook
                     );
                 }
@@ -3354,13 +3413,13 @@ namespace Bloom.ImageProcessing
             var left = (cropMetadata.CanvasElementWidth - scaledWidth) / 2;
             var top = (cropMetadata.CanvasElementHeight - scaledHeight) / 2;
 
+            // The image file already has any mirror and rotation applied to its pixels.
+            var currentStyle = img.GetAttribute("style");
+            if (!GetPictureTransform(currentStyle).IsIdentity)
+                currentStyle = RemoveTransformFromStyle(currentStyle);
             // It's particularly important that we keep a width, because that's what
             // our CSS looks for to suppress the old object-fit:contain rule.
-            var updatedStyle = ReplaceOrAppendPxStyle(
-                img.GetAttribute("style"),
-                "width",
-                scaledWidth
-            );
+            var updatedStyle = ReplaceOrAppendPxStyle(currentStyle, "width", scaledWidth);
             updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "left", left);
             updatedStyle = ReplaceOrAppendPxStyle(updatedStyle, "top", top);
             img.SetAttribute("style", updatedStyle);
@@ -3472,7 +3531,10 @@ namespace Bloom.ImageProcessing
         /// If the specified img is cropped, and we can find and successfully crop the
         /// appropriate image file, make a new file containing the cropped image in imageDestFolder
         /// and return the path to it.
-        /// If anything prevents doing this successfully, including that the image is not cropped, return null.
+        /// If the img's style has a picture rotation or mirror, the new
+        /// file is mirrored and rotated as well, cropped to what the element shows, and it is made even
+        /// when the img is not cropped.
+        /// If anything prevents doing this successfully, including that there is nothing to do, return null.
         /// </summary>
         /// <param name="img">An img element, which might need cropping if we find it in the right context.</param>
         /// <param name="imageSourceFolder">The folder where image files live; can be combined with the src
@@ -3487,7 +3549,8 @@ namespace Bloom.ImageProcessing
         )
         {
             var cropMetadata = TryGetCropMetadata(img);
-            if (cropMetadata == null)
+            var transform = GetPictureTransform(img.GetAttribute("style"));
+            if (cropMetadata == null && transform.IsIdentity)
                 return null;
 
             var src = img.GetAttribute("src");
@@ -3503,13 +3566,30 @@ namespace Bloom.ImageProcessing
                 return null; // can't crop the image if we can't get its size.
             }
 
-            var cropRectangle = ComputeCropRectangle(cropMetadata, size);
             var ext = Path.GetExtension(srcPath).ToLowerInvariant();
             var tempPath = Path.ChangeExtension(
                 Path.Combine(imageDestFolder, Guid.NewGuid().ToString()),
                 ext
             );
-            var result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            ExecutionResult result;
+            if (transform.IsIdentity)
+            {
+                var cropRectangle = ComputeCropRectangle(cropMetadata, size);
+                result = ImageUtils.CropImage(srcPath, tempPath, cropRectangle);
+            }
+            else
+            {
+                var cropRectangle =
+                    cropMetadata == null
+                        ? Rectangle.Empty
+                        : ComputeShownCropRectangle(cropMetadata, size, transform);
+                result = ImageUtils.TransformAndCropImage(
+                    srcPath,
+                    tempPath,
+                    transform,
+                    cropRectangle
+                );
+            }
             if (result.ExitCode == 0)
                 return tempPath;
             return null;
@@ -3561,6 +3641,25 @@ namespace Bloom.ImageProcessing
                 || rectangle.Top > tolerance
                 || rectangle.Right < imageSize.Width - tolerance
                 || rectangle.Bottom < imageSize.Height - tolerance;
+        }
+
+        /// <summary>
+        /// A picture's own rotation and mirror, as its img's inline transform expresses them.
+        /// The mirrors apply first, along the picture's own axes, and then the rotation.
+        /// </summary>
+        public struct PictureTransform
+        {
+            /// <summary>Number of 90-degree clockwise rotations, 0 to 3.</summary>
+            public int QuarterRotations;
+
+            /// <summary>Mirrored left to right (negative x scale).</summary>
+            public bool FlipX;
+
+            /// <summary>Mirrored top to bottom (negative y scale).</summary>
+            public bool FlipY;
+
+            /// <summary>True if the transform leaves the picture as it is.</summary>
+            public bool IsIdentity => QuarterRotations == 0 && !FlipX && !FlipY;
         }
 
         /// <summary>
@@ -3638,6 +3737,97 @@ namespace Bloom.ImageProcessing
                 Convert.ToInt32(selWidth),
                 Convert.ToInt32(selHeight)
             );
+        }
+
+        /// <summary>
+        /// Compute the crop rectangle for a mirrored or rotated picture, in the pixel coordinates
+        /// of the image after the mirror and rotation are applied to it. This is the arithmetic of
+        /// getShownContentRectangle in CanvasElementHandleDragInteractions.ts: the img's box (its
+        /// left, top and width, with the height that follows from the image's own shape) rotates
+        /// about its centre, so the element shows a rectangle the size of the box with its two
+        /// dimensions swapped for 90 and 270 degrees, centred where the box's centre is. A mirror
+        /// does not move that rectangle.
+        /// </summary>
+        private static Rectangle ComputeShownCropRectangle(
+            CropMetadata cropMetadata,
+            Size imageSize,
+            PictureTransform transform
+        )
+        {
+            var scale = cropMetadata.ImgWidth / imageSize.Width;
+            var boxWidth = cropMetadata.ImgWidth;
+            var boxHeight = boxWidth * imageSize.Height / imageSize.Width;
+            var isQuarterRotation = transform.QuarterRotations % 2 == 1;
+            var shownWidth = isQuarterRotation ? boxHeight : boxWidth;
+            var shownHeight = isQuarterRotation ? boxWidth : boxHeight;
+            var shownLeft = cropMetadata.ImgLeft + boxWidth / 2 - shownWidth / 2;
+            var shownTop = cropMetadata.ImgTop + boxHeight / 2 - shownHeight / 2;
+
+            return new Rectangle(
+                Convert.ToInt32(-shownLeft / scale),
+                Convert.ToInt32(-shownTop / scale),
+                Convert.ToInt32(cropMetadata.CanvasElementWidth / scale),
+                Convert.ToInt32(cropMetadata.CanvasElementHeight / scale)
+            );
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex kTransformPattern =
+            new System.Text.RegularExpressions.Regex(@"(?:^|;)\s*transform\s*:\s*([^;]*)");
+        private static readonly System.Text.RegularExpressions.Regex kRotatePattern =
+            new System.Text.RegularExpressions.Regex(@"rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)");
+        private static readonly System.Text.RegularExpressions.Regex kScalePattern =
+            new System.Text.RegularExpressions.Regex(
+                @"scale\(\s*(-?[0-9]*\.?[0-9]+)\s*(?:,\s*(-?[0-9]*\.?[0-9]+)\s*)?\)"
+            );
+
+        /// <summary>
+        /// Read the picture's own rotation and mirror from an img's inline style, in the grammar
+        /// that getImageContentTransform in imageContentTransform.ts reads:
+        /// `transform: rotate(Ndeg) scale(sx, sy)`, the rotation rounded to a multiple of 90
+        /// degrees and each mirror given by the sign of its scale factor.
+        /// </summary>
+        internal static PictureTransform GetPictureTransform(string imgStyle)
+        {
+            var result = new PictureTransform();
+            if (string.IsNullOrEmpty(imgStyle))
+                return result;
+            var transformMatch = kTransformPattern.Match(imgStyle);
+            if (!transformMatch.Success)
+                return result;
+            var transform = transformMatch.Groups[1].Value;
+            var rotateMatch = kRotatePattern.Match(transform);
+            if (rotateMatch.Success)
+            {
+                var degrees = double.Parse(
+                    rotateMatch.Groups[1].Value,
+                    CultureInfo.InvariantCulture
+                );
+                result.QuarterRotations = (((int)Math.Round(degrees / 90) % 4) + 4) % 4;
+            }
+            var scaleMatch = kScalePattern.Match(transform);
+            if (scaleMatch.Success)
+            {
+                var sx = double.Parse(scaleMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+                // A one-argument scale() scales both axes by the same amount.
+                var sy = scaleMatch.Groups[2].Success
+                    ? double.Parse(scaleMatch.Groups[2].Value, CultureInfo.InvariantCulture)
+                    : sx;
+                result.FlipX = sx < 0;
+                result.FlipY = sy < 0;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Remove the transform declaration from an inline style, leaving the rest as it was.
+        /// </summary>
+        private static string RemoveTransformFromStyle(string style)
+        {
+            var parts = style
+                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .Where(p => p.Length > 0 && !kTransformPattern.IsMatch(p));
+            return string.Join("; ", parts) + ";";
         }
 
         internal static double GetNumberFromPx(string label, string input)

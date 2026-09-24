@@ -148,7 +148,9 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
-  request. Never open a CDP session in a test; add the capture here.
+  request. Never open a CDP session in a test; add the capture here. `saveScreenshotIfAsked` saves a
+  picture of some elements for a manual test card when `BLOOM_E2E_SCREENSHOT_DIR` names a folder,
+  and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
   answer the front end asks for before it shows a tier-gated control; and
@@ -162,8 +164,18 @@ real bug in the code under test; read the message and fix it rather than working
   Language tool), which is the route a person takes.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
-  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`. The palette drag is
-  dispatched rather than pressed, for a reason the file and AUTOMATION-DEBT.md give.
+  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
+  and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
+  `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
+  the picture commands on the menu (`rotateSelectedImageRight90Degrees`,
+  `flipSelectedImage`, `resetSelectedImage`); and the rotation knob
+  and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
+  `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
+  file and AUTOMATION-DEBT.md give.
+- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+  which says how a picture is rotated and mirrored on screen, box and picture together, with
+  `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
+  the inline styles that lay out a picture and its box.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
