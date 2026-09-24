@@ -20,6 +20,7 @@ import {
 } from "./canvasElementRotation";
 import { pushUndoForCanvasElementRotation } from "../ImageUndoManager";
 import { getImageContentTransform } from "../imageContentTransform";
+import { EditableDivUtils } from "../editableDivUtils";
 
 export interface ICanvasElementHandleDragInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -167,6 +168,23 @@ export function clampCropPosition(
     };
 }
 
+// Turn a movement of the pointer, in screen pixels, into the same movement in the unscaled,
+// un-rotated coordinates of a canvas element's own style (left, top, width, height). The edit
+// zoom scales the whole page, so one screen pixel is 1 / pageScale of a style pixel; the
+// element's rotation turns the screen axes into its own.
+export function screenDeltaToElementDelta(
+    screenDeltaX: number,
+    screenDeltaY: number,
+    rotationDegrees: number,
+    pageScale: number,
+): { x: number; y: number } {
+    return unrotateVector(
+        screenDeltaX / pageScale,
+        screenDeltaY / pageScale,
+        rotationDegrees,
+    );
+}
+
 export class CanvasElementHandleDragInteractions {
     private host: ICanvasElementHandleDragInteractionsHost;
     private snapProvider: CanvasSnapProvider;
@@ -233,16 +251,18 @@ export class CanvasElementHandleDragInteractions {
 
     // Convert a movement of the mouse, which is measured on the screen, into the element's
     // own un-rotated coordinates. All the resize and crop arithmetic below works in those
-    // coordinates, so without this a rotated element grows along the wrong axis.
+    // coordinates, so without this a rotated element grows along the wrong axis, and at any
+    // edit zoom other than 100% the dragged edge runs ahead of or behind the pointer.
     private getUnrotatedDelta(
         activeElement: HTMLElement,
         screenDeltaX: number,
         screenDeltaY: number,
     ): { x: number; y: number } {
-        return unrotateVector(
+        return screenDeltaToElementDelta(
             screenDeltaX,
             screenDeltaY,
             getCanvasElementRotation(activeElement),
+            EditableDivUtils.getPageScale(activeElement),
         );
     }
 
