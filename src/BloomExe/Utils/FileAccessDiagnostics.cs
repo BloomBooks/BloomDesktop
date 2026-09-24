@@ -482,6 +482,12 @@ namespace Bloom.Utils
         /// </summary>
         public static bool FileIsPresent(string path, out string description)
         {
+            if (!Platform.IsWindows)
+            {
+                var exists = RobustFile.Exists(path);
+                description = exists.ToString();
+                return exists;
+            }
             try
             {
                 // One direct call: RobustFile would retry "not found" for seconds.
