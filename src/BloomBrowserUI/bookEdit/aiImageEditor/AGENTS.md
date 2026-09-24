@@ -62,6 +62,27 @@ The one Bloom event here is `Change Picture` with source `ai-editor`, one per pi
 reached the book. It is Bloom's event about the book, shared with the other ways a picture gets
 in, and only Bloom knows whether a swap on the page being edited landed.
 
+## Localization
+
+The editor's own strings are translated by Bloom, not by the editor. On startup the iframe POSTs
+its whole string table (every id with its English) to Bloom's general-purpose
+**`i18n/loadStrings`**, the same endpoint the image gallery uses, and shows what comes back.
+
+The editor asks only for ids Bloom actually has. Its `lib/untranslated.ts` lists every string we
+have not made localizable, and `ALL_IMAGE_EDITOR_STRINGS` leaves those out, so they stay hardcoded
+English in the editor. That is what a string not yet chosen for translation looks like: absent from
+the table, rather than present and unanswered.
+
+The check on that is `loadStrings` itself. On Developer and Alpha channels it reports any id it
+cannot find, as a toast plus a `CopyToDistributionXlf_` entry in the local xlf. So a toast when the
+editor starts means an editor build added a string without either a `<trans-unit>` in
+`DistFiles/localization/en` or an entry in `lib/untranslated.ts`. Nothing breaks meanwhile: an
+unanswered id comes back as the English the editor sent.
+
+The ids are `AiImageEditor.*`, except where the editor reuses a string Bloom already has
+(`Common.Close`, `EditTab.PasteButton`, and so on). Nothing here decides them: they live in the
+editor repo.
+
 ## Tests
 
 - `*.test.ts` are Vitest and run in the normal suite. `aiImageEditorOverlay.test.ts` needs no page DOM
