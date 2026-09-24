@@ -353,6 +353,9 @@ it. Nobody has found what. Until they do, the cheap fix is the same as the entry
 page-changing helpers now do.
 (Seen while preflighting #8351, which cannot reach any of this — its whole diff is one
 font-chooser helper.)
+seen again 2026-09-23 on the same developer machine, in a full-suite run and again alone, failing
+at two different `selectPage` calls (spec lines 118 and 185), while the same morning's nightly
+passed it. (Preflight of #8275, which does not touch page selection.)
 
 ## Filling a text box directly leaves part of the old text behind
 
@@ -847,22 +850,20 @@ collected is a wasted one.
 
 ---
 
-## Changing the UI language reopens the project, invalidating the test's page
+## The Choose Collection dialog ignores BLOOM_AUTOMATION_MONITOR and takes the keyboard
 
-Choosing a language in the top bar's UI language menu makes Bloom reopen the collection
-(`WorkspaceView.SetUiLanguage` calls `ReopenCurrentProject`, because many surfaces only pick up
-a new language when they are rebuilt). That replaces the shell document, so the `page` a test is
-holding goes dead — the same thing `bloomApp.restart()` warns about, but with no equivalent way
-to get the new page: `findShellPage` is private to the fixture, and nothing re-resolves the shell
-after a reopen that the test did not initiate.
+Under `--automation` the main window and the splash screen open where `BLOOM_AUTOMATION_MONITOR`
+says and never take the foreground (see `AutomationWindowPlacement`). The Choose Collection
+dialog, and every other `ReactDialog`, does neither: it opens centred on whichever monitor the
+mouse is on, and brings itself to the front. So while `ui-language-chooser.spec.ts` runs, its
+dialog appears in front of whatever the developer is doing and takes their keyboard for about a
+minute, and under `headless` it is still visible.
 
-The cost today is that `pseudo-english-ui-language.spec.ts` covers only the *offer* — that the
-pseudo-locale is listed, named right, and sorted last — and not the switch itself, which is the
-more interesting half: that choosing it really does pseudolocalize the UI, and that choosing
-English again puts it back. The same limit will bite any future test of a real UI language.
-
-Fix direction: export the shell resolution from the fixture (or expose it as
-`bloomApp.waitForNewShell()`), so a helper that knowingly triggers a reopen can return the new
-page the way `restart()` does. Then `setUiLanguage(page, name)` can drive the real menu and hand
-back a usable page, and the switch becomes testable.
-(Found 2026-09-17, while adding the Pseudo-English test for BL-16748.)
+It is not simply a matter of giving dialogs the main window's rule: `./go.sh` passes
+`--automation` to every developer Bloom too, so dialogs in a hand-testing session would then open
+without the keyboard. The open question is what should tell "a machine is driving this Bloom,
+do not disturb the person" apart from `--automation`, which also carries the multi-instance
+bypass and the launcher's `BLOOM_AUTOMATION_READY` handshake; and whether CI runs, where nobody
+is competing for the screen, should keep normal focus so focus-dependent behavior stays covered.
+Under discussion among the developers.
+(Found 2026-09-23, while preflighting #8275.)

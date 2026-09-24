@@ -59,6 +59,39 @@ async function request(
     endpoint: string,
     options: { method: string; body?: string; contentType?: string },
 ): Promise<IApiResponse> {
+    // Bloom reloads the shell document when it switches workspace tabs (and rebuilds it
+    // entirely for things like a UI language change), so a call that is in flight at that
+    // moment dies - as "Execution context was destroyed" when the evaluate loses the race, or
+    // as the fetch's own "TypeError: Failed to fetch" when the navigation aborts the request.
+    // Both are transients of the reload, so GETs retry briefly (a genuinely dead server also
+    // reads "Failed to fetch"; the deadline keeps that from hiding long). POSTs never retry
+    // here: the server may have processed the request before the reload killed the reply, and
+    // repeating a non-idempotent action would, say, make a second book - a call site that
+    // knowingly races a reload tolerates the lost reply itself and confirms the effect
+    // instead (see makeBookFromTemplate). A CLOSED page stays closed - not retried.
+    const deadline = Date.now() + 15000;
+    for (;;) {
+        try {
+            return await attemptRequest(page, endpoint, options);
+        } catch (error) {
+            if (
+                options.method !== "GET" ||
+                !/Execution context was destroyed|Failed to fetch/i.test(
+                    String(error),
+                ) ||
+                Date.now() > deadline
+            )
+                throw error;
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+    }
+}
+
+async function attemptRequest(
+    page: Page,
+    endpoint: string,
+    options: { method: string; body?: string; contentType?: string },
+): Promise<IApiResponse> {
     const result = await page.evaluate(
         async (call) => {
             const response = await fetch(`/bloom/api/${call.endpoint}`, {
