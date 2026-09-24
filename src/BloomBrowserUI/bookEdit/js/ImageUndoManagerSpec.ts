@@ -449,4 +449,34 @@ describe("ImageUndoManager rotation handle drag", () => {
             "The empty box is the same as before the typing, so the rotation is next",
         ).toBe(true);
     });
+
+    it("a link, a line break or a word break added after a rotation is undone first", () => {
+        const textBox = makeTextCanvasElement();
+        const editable = textBox.getElementsByClassName(
+            "bloom-editable",
+        )[0] as HTMLElement;
+        const original =
+            '<p><a href="https://example.org/a">some</a> words</p>';
+        editable.innerHTML = original;
+        setCanvasElementRotation(textBox, 45);
+        manager.pushUndoForCanvasElementRotation(textBox, 0);
+        activeElement = textBox;
+        expect(manager.canUndoImageOperation()).toBe(true);
+
+        // Each of these leaves the same letters in the same order, so only the markup shows it.
+        for (const edited of [
+            '<p><a href="https://example.org/b">some</a> words</p>',
+            '<p><a href="https://example.org/a">some</a> <br>words</p>',
+            '<p><a href="https://example.org/a">some</a> ​words</p>',
+        ]) {
+            editable.innerHTML = edited;
+            expect(
+                manager.canUndoImageOperation(),
+                `Undo must take back this edit before the rotation: ${edited}`,
+            ).toBe(false);
+        }
+
+        editable.innerHTML = original;
+        expect(manager.canUndoImageOperation()).toBe(true);
+    });
 });

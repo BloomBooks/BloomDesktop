@@ -417,37 +417,33 @@ export function prepareUndoForImageOperation(
     getImageUndoManager().prepareUndoForImageOperation(imageOrContainer);
 }
 
-// The text in the element's text boxes together with its formatting, such as bold, so that typing
-// and formatting both change it. It leaves out what the text editor adds and takes away without
-// the user seeing any difference: the boxes' own attributes, which change on focus, a <br> that
-// holds an empty paragraph open (its undo gives back <p></p> for <p><br></p>), its bookmark
-// markers, and zero-width spaces.
+// The markup inside the element's text boxes, so that typing, formatting, links and line breaks
+// all change it. It leaves out only what the text editor adds and takes away with no difference
+// the user can see: the boxes' own attributes, which change on focus, its bookmark markers, and
+// the <br> it puts at the end of a paragraph to hold it open (its undo gives back <p></p> for
+// <p><br></p>).
 function textBoxContents(canvasElement: HTMLElement): string {
     return Array.from(canvasElement.getElementsByClassName("bloom-editable"))
-        .map((editable) => textAndFormatting(editable.childNodes))
+        .map((editable) => {
+            const copy = editable.cloneNode(true) as HTMLElement;
+            copy.querySelectorAll("[data-cke-bookmark]").forEach((e) =>
+                e.remove(),
+            );
+            copy.querySelectorAll("br").forEach((br) => {
+                if (isLastInItsParent(br)) br.remove();
+            });
+            return copy.innerHTML;
+        })
         .join("\n");
 }
 
-function textAndFormatting(nodes: NodeListOf<ChildNode>): string {
-    let result = "";
-    nodes.forEach((node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            result += (node.textContent ?? "")
-                .replace(/​/g, "")
-                .replace(/ /g, " ");
-            return;
-        }
-        if (node.nodeType !== Node.ELEMENT_NODE) return;
-        const element = node as Element;
-        if (
-            element.tagName === "BR" ||
-            element.hasAttribute("data-cke-bookmark")
-        )
-            return;
-        const style = element.getAttribute("style");
-        result += `<${element.tagName}${style ? " " + style : ""}>${textAndFormatting(element.childNodes)}</>`;
-    });
-    return result;
+// True when nothing but empty text follows the node inside its parent.
+function isLastInItsParent(node: Node): boolean {
+    for (let next = node.nextSibling; next; next = next.nextSibling) {
+        if (next.nodeType !== Node.TEXT_NODE || next.textContent !== "")
+            return false;
+    }
+    return true;
 }
 
 export function pushUndoForImageTransform(canvasElement: HTMLElement): void {
