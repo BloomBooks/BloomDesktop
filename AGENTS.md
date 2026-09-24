@@ -48,6 +48,15 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
 
+## Don't assume the machine is running in English
+
+Many users' machines use a comma decimal separator or Turkish casing (where `"IMG".ToLower()` is
+`"ımg"`). **Parse and format machine data invariantly** — CSS measurements, version numbers, tool
+output, anything going into a file or a log — with `CultureInfo.InvariantCulture`,
+`FormattableString.Invariant`, `ToUpperInvariant`, or `StringComparison.OrdinalIgnoreCase`. Use the
+current culture only for numbers and dates shown to the user. Tests must not assume English either;
+see `src/BloomTests/AGENTS.md`.
+
 ## Building and testing while a Bloom is running
 
 - **C#:** build and test through `build/agent-dotnet.sh` (PowerShell: `.ps1`), never bare

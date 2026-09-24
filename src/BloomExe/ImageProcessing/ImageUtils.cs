@@ -3072,6 +3072,7 @@ namespace Bloom.ImageProcessing
                     fileName,
                     preserveCropStyleForUpload
                 );
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
                 return;
             }
 
@@ -3083,7 +3084,8 @@ namespace Bloom.ImageProcessing
                 imageDestFolder,
                 needNewName,
                 preserveCropStyleForUpload,
-                bloomDataDivEntriesByDataBook
+                bloomDataDivEntriesByDataBook,
+                out var cropSucceeded
             );
 
             // Track if we replaced an original file with a new one
@@ -3091,7 +3093,10 @@ namespace Bloom.ImageProcessing
             {
                 replacedOriginals.Add(src);
             }
-            cropped[key] = croppedFileName;
+            // Don't let a duplicate treat a failed crop as done; that would take the duplicate
+            // path, which syncs the data-div as if the file had been cropped.
+            if (cropSucceeded)
+                cropped[key] = croppedFileName;
         }
 
         private static void UpdateCropStyleForAlreadyCroppedImage(
@@ -3299,11 +3304,13 @@ namespace Bloom.ImageProcessing
             string imageDestFolder,
             bool useNewName,
             bool preserveCropStyleForUpload,
-            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook,
+            out bool cropSucceeded
         )
         {
             var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            cropSucceeded = croppedImagePath != null;
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
             // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
@@ -3351,11 +3358,20 @@ namespace Bloom.ImageProcessing
             {
                 UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
             }
+            else if (!cropSucceeded && preserveCropStyleForUpload)
+            {
+                // The file is unchanged, so the crop style is still right; keeping it is the only
+                // way the uploaded book shows this image cropped at all.
+            }
             else
             {
                 // so nothing can possibly think it needs more cropping
                 img.RemoveAttribute("style");
             }
+
+            // If the crop failed, the file is unchanged, so leave the data-div's crop style alone.
+            if (cropSucceeded)
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             return result;
         }
@@ -3474,6 +3490,41 @@ namespace Bloom.ImageProcessing
                 dataDivElement.SetAttribute("src", src);
                 dataDivElement.InnerText = src;
             }
+        }
+
+        /// <summary>
+        /// After cropping has changed or removed the style of an img, give its bloomDataDiv entry
+        /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
+        /// crop style gets copied back onto the img, where it crops the already-cropped image
+        /// again (BL-16907).
+        /// An img on a custom layout page is different: its style fits the custom layout, while the
+        /// data-div entry describes the standard layout's crop of the original file, in a canvas
+        /// element sized for the original file's shape (BL-16357). Neither applies to the cropped
+        /// file, so the entry loses them. If the book goes back to the standard layout, BookData
+        /// then copies only the src onto the template's plain img, and the picture shows whole;
+        /// the editor lays it out afresh, as for a newly chosen picture.
+        /// </summary>
+        private static void SyncDataDivStyle(
+            SafeXmlElement img,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+                return;
+            if (HtmlDom.IsInCustomLayoutPage(img))
+            {
+                dataDivElement.RemoveAttribute("style");
+                foreach (var name in HtmlDom.BackgroundImgTupleNames)
+                    dataDivElement.RemoveAttribute(name);
+            }
+            else if (img.HasAttribute("style"))
+                dataDivElement.SetAttribute("style", img.GetAttribute("style"));
+            else
+                dataDivElement.RemoveAttribute("style");
         }
 
         /// <summary>

@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Collection version="0.2">
   <Language1Iso639Code>en</Language1Iso639Code>
-  <Language2Iso639Code>tpi</Language2Iso639Code>
+  <Language2Iso639Code>en</Language2Iso639Code>
   <Language3Iso639Code></Language3Iso639Code>
   <Language1Name>English</Language1Name>
-  <XMatterPack>Factory</XMatterPack>
+  <SignLanguageIso639Code></SignLanguageIso639Code>
+  <XMatterPack>Traditional</XMatterPack>
   <Country></Country>
   <Province></Province>
   <District></District>

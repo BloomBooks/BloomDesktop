@@ -199,12 +199,4 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     public id() {
         return "talkingBook";
     }
-
-    public hasRestoredSettings: boolean;
-
-    // Some things were impossible to do i18n on via the jade/pug
-    // This gives us a hook to finish up the more difficult spots
-    public finishToolLocalization(paneDOM: HTMLElement) {
-        // So far unneeded in talkingBook
-    }
 }
