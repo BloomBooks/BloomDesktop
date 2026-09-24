@@ -746,6 +746,7 @@ namespace Bloom.CollectionTab
                 BookProcessor.MakeUpdateBookProgressProps(),
                 (progress, worker) =>
                 {
+                    BookProcessor.AlsoLogProgressMessages(progress);
                     try
                     {
                         // Since the user explicitly told us to do this again, we will, even if we
