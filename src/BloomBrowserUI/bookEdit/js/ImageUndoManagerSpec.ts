@@ -145,6 +145,58 @@ describe("ImageUndoManager crop preservation", () => {
     });
 });
 
+describe("ImageUndoManager offers a picture change only for the selected picture", () => {
+    let manager: ImageUndoManager;
+    let active: HTMLElement | undefined;
+    let elementA: HTMLElement;
+    let elementB: HTMLElement;
+
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        const page = document.createElement("div");
+        page.className = "bloom-page";
+        page.setAttribute("data-page-id", "test-page-1");
+        document.body.appendChild(page);
+        const makeElement = (src: string) => {
+            const element = document.createElement("div");
+            element.className = "bloom-canvas-element";
+            element.innerHTML = `<div class="bloom-imageContainer"><img src="${src}" /></div>`;
+            page.appendChild(element);
+            return element;
+        };
+        elementA = makeElement("a.png");
+        elementB = makeElement("b.png");
+        active = undefined;
+        manager = new ImageUndoManager({
+            getCurrentPage: () =>
+                document.querySelector<HTMLElement>(".bloom-page") || undefined,
+            updateCanvasElementForChangedImage: vi.fn(),
+            getActiveElement: () => active,
+            setActiveElement: vi.fn(),
+            removeDetachedTargets: vi.fn(),
+            updateCanvasElementClass: vi.fn(),
+        } as unknown as ImageUndoManagerHost);
+    });
+
+    it("offers the undo of picture B's change only while B is selected", () => {
+        const containerB = elementB.getElementsByClassName(
+            "bloom-imageContainer",
+        )[0] as HTMLElement;
+        manager.prepareUndoForImageOperation(containerB);
+        manager.commitPendingImageOperationUndo(containerB);
+
+        active = elementB;
+        expect(manager.canUndoImageOperation()).toBe(true);
+        active = elementA;
+        expect(
+            manager.canUndoImageOperation(),
+            "Undo with picture A selected must not change picture B",
+        ).toBe(false);
+        active = undefined;
+        expect(manager.canUndoImageOperation()).toBe(false);
+    });
+});
+
 describe("ImageUndoManager rotate and flip", () => {
     let manager: ImageUndoManager;
     let updateAfterTransform: (

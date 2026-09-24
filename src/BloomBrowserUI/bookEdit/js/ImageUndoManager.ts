@@ -199,6 +199,16 @@ export class ImageUndoManager {
                 !!activeElement && activeElement === topOfStack.canvasElement
             );
         }
+        if (topOfStack?.kind === "restoreImage") {
+            // Undo puts back the picture of the element the record belongs to, so it is
+            // offered only while that element is selected; otherwise Undo with picture A
+            // selected would change picture B.
+            return (
+                !!activeElement &&
+                (activeElement.contains(topOfStack.element) ||
+                    topOfStack.element.contains(activeElement))
+            );
+        }
         let onImageContainer = false;
         if (activeElement) {
             onImageContainer =
