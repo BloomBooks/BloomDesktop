@@ -1605,10 +1605,10 @@
         <note>ID: ImageLibrary.ThisPage</note>
         <note>Short link text used in setup instructions (e.g., as in "go to this page"). Should be lowercase as it appears mid-sentence.</note>
       </trans-unit>
-      <trans-unit id="BookProcessor.AutoUpdateExplanation" translate="no">
-        <source xml:lang="en">Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size.</source>
-        <note>ID: BookProcessor.AutoUpdateExplanation</note>
-        <note>Shown at the top of a progress dialog that appears automatically when Bloom must bring a book's pages up to date: when the AI image editor is launched on a book that has not been through that process, or after the page size has been changed. "Bloom" is the product name and must not be translated.</note>
+      <trans-unit id="BookProcessor.HousekeepingMessage">
+        <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
+        <note>ID: BookProcessor.HousekeepingMessage</note>
+        <note>The entire message of the "Update Book" progress dialog, shown under a percent-done bar. The user sees it both when they choose Update Book from the Collections tab and when Bloom decides on its own that a book's pages must be brought up to date (when the AI image editor is launched, or after the page size has been changed). "Bloom" is the product name and must not be translated.</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.AppTitle">
         <source xml:lang="en">Bloom AI Image Tools</source>
