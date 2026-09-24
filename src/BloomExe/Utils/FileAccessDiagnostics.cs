@@ -73,6 +73,19 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// True if the attributes say the file's content is not on this computer, so that opening or
+        /// reading it would make the sync program download it.
+        /// </summary>
+        public static bool ContentIsNotOnDisk(FileAttributes attributes)
+        {
+            const int notOnDiskFlags =
+                kFileAttributeRecallOnOpen
+                | kFileAttributeRecallOnDataAccess
+                | (int)FileAttributes.Offline;
+            return ((int)attributes & notOnDiskFlags) != 0;
+        }
+
+        /// <summary>
         /// Return "provider (root folder)" for the innermost sync root that contains path, or null.
         /// Each root is a pair of provider name and root folder.
         /// </summary>
@@ -482,7 +495,7 @@ namespace Bloom.Utils
                     );
                     // Opening a cloud placeholder that is not on disk makes the sync program
                     // download it, which could hold up the user for a long time.
-                    if (fileAttributes.HasValue && AttributesSuggestCloudFile(fileAttributes.Value))
+                    if (fileAttributes.HasValue && ContentIsNotOnDisk(fileAttributes.Value))
                         bldr.AppendLine(
                             "opening the file read-only: skipped (cloud placeholder; opening it could start a download)"
                         );
