@@ -11,6 +11,9 @@ export interface BookTeamCollectionStatus {
     where: string;
     currentUser: string;
     isChangedRemotely: boolean;
+    /** Cloud collections only: whether THIS copy of the collection holds the checkout (its
+     * book folder's `.checkout` record has the server's current checkout GUID). */
+    checkedOutInThisCopy?: boolean;
 }
 
 export const bookStatus = async (

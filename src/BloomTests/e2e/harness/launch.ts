@@ -44,20 +44,76 @@ export const releaseExePath = path.join(
     "Bloom.exe",
 );
 
+// BLOOM_E2E_AGENT_BUILD=1 builds through build/agent-dotnet.ps1 instead of a plain
+// `dotnet build`. Use it on a developer machine, where AGENTS.md requires that wrapper for every
+// C# build: it builds into a private output/agent/<key>/bin tree, so it never fights a running
+// Bloom for locked files. That wrapper builds no Bloom.exe apphost, so in this mode instances
+// run as `dotnet Bloom.dll` (same Release code, hosted by dotnet.exe).
+const useAgentBuild = process.env.BLOOM_E2E_AGENT_BUILD === "1";
+// The wrapper keys its output tree on CLAUDE_CODE_SESSION_ID when set; a fixed key keeps the
+// harness's Release build apart from any interactive session's Debug builds.
+const agentBuildKey = "e2e-release";
+const agentBloomDllPath = path.join(
+    repoRoot,
+    "output",
+    "agent",
+    agentBuildKey,
+    "bin",
+    "Bloom.dll",
+);
+
+/** The program and leading arguments that start one Bloom instance (see useAgentBuild). */
+const bloomCommand = (): { file: string; leadingArgs: string[] } =>
+    useAgentBuild
+        ? { file: "dotnet", leadingArgs: [agentBloomDllPath] }
+        : { file: releaseExePath, leadingArgs: [] };
+
+/** The built Bloom this harness launches (Bloom.exe, or Bloom.dll under BLOOM_E2E_AGENT_BUILD). */
+const builtBloomPath = (): string =>
+    useAgentBuild ? agentBloomDllPath : releaseExePath;
+
 /** Builds BloomExe.csproj in Release config exactly once. Call this a single time per test
  * session (e.g. Playwright globalSetup) — never per-scenario, and never concurrently with a
  * running instance (rule #2 above). */
 export const buildBloomOnce = async (): Promise<void> => {
     await assertNoForeignBloomRunning();
-    await execFileAsync("dotnet", ["build", bloomExeCsproj, "-c", "Release"], {
-        cwd: repoRoot,
-        timeout: 300_000,
-        windowsHide: true,
-        maxBuffer: 64 * 1024 * 1024,
-    });
-    if (!fs.existsSync(releaseExePath)) {
+    if (useAgentBuild) {
+        await execFileAsync(
+            "powershell",
+            [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                path.join(repoRoot, "build", "agent-dotnet.ps1"),
+                "build",
+                bloomExeCsproj,
+                "-c",
+                "Release",
+            ],
+            {
+                cwd: repoRoot,
+                timeout: 600_000,
+                windowsHide: true,
+                maxBuffer: 64 * 1024 * 1024,
+                env: { ...process.env, CLAUDE_CODE_SESSION_ID: agentBuildKey },
+            },
+        );
+    } else {
+        await execFileAsync(
+            "dotnet",
+            ["build", bloomExeCsproj, "-c", "Release"],
+            {
+                cwd: repoRoot,
+                timeout: 300_000,
+                windowsHide: true,
+                maxBuffer: 64 * 1024 * 1024,
+            },
+        );
+    }
+    if (!fs.existsSync(builtBloomPath())) {
         throw new Error(
-            `Build reported success but ${releaseExePath} does not exist. Something is wrong with the build output path.`,
+            `Build reported success but ${builtBloomPath()} does not exist. Something is wrong with the build output path.`,
         );
     }
     await ensureExperimentalFeatureEnabled();
@@ -216,9 +272,9 @@ export interface LaunchOptions {
 export const launchBloom = async (
     options: LaunchOptions,
 ): Promise<LaunchedBloom> => {
-    if (!fs.existsSync(releaseExePath)) {
+    if (!fs.existsSync(builtBloomPath())) {
         throw new Error(
-            `${releaseExePath} does not exist. Call buildBloomOnce() before launching any instance.`,
+            `${builtBloomPath()} does not exist. Call buildBloomOnce() before launching any instance.`,
         );
     }
 
@@ -229,9 +285,16 @@ export const launchBloom = async (
     );
     const logStream = fs.createWriteStream(logPath, { flags: "w" });
 
+    const command = bloomCommand();
     const child: ChildProcess = spawn(
-        releaseExePath,
-        ["--automation", "--label", options.label, options.collectionFilePath],
+        command.file,
+        [
+            ...command.leadingArgs,
+            "--automation",
+            "--label",
+            options.label,
+            options.collectionFilePath,
+        ],
         {
             cwd: repoRoot,
             env: { ...process.env, ...cloudTcEnv(options.user) },

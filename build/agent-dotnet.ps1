@@ -28,5 +28,8 @@ $scratch = Join-Path $repoRoot "output/agent/$key"
 Write-Host "[agent-dotnet] isolated build dir: $scratch"
 
 $env:BLOOM_AGENT_BUILD_DIR = $scratch
-& dotnet @args "-p:OutDir=$scratch/bin/" "-p:UseAppHost=false"
+# OutDir must be a global -p: (see Directory.Build.props). Apphost suppression has to vary
+# per project -- WebView2PdfMaker's apphost is the BloomPdfMaker.exe Bloom shells out to --
+# so it lives in Directory.Build.props, which a global property would override.
+& dotnet @args "-p:OutDir=$scratch/bin/"
 exit $LASTEXITCODE

@@ -14,7 +14,9 @@
 #   under output/agent/<key>/, so you can build and run unit tests while a Bloom keeps
 #   running and while other terminals do their own builds. See Directory.Build.props
 #   for the mechanism (obj is redirected there via BLOOM_AGENT_BUILD_DIR; bin/OutDir
-#   and UseAppHost are the global -p: values this script appends).
+#   is the global -p: value this script appends; apphost suppression is per project, in
+#   Directory.Build.props, because WebView2PdfMaker's apphost is the BloomPdfMaker.exe
+#   Bloom shells out to).
 #
 # Usage (exactly like dotnet, just build/test through this script):
 #   build/agent-dotnet.sh test src/BloomTests/BloomTests.csproj --filter "FullyQualifiedName~UrlPathStringTests"
@@ -44,5 +46,4 @@ fi
 echo "[agent-dotnet] isolated build dir: $SCRATCH" >&2
 
 BLOOM_AGENT_BUILD_DIR="$SCRATCH" exec dotnet "$@" \
-    -p:OutDir="$SCRATCH/bin/" \
-    -p:UseAppHost=false
+    -p:OutDir="$SCRATCH/bin/"

@@ -174,15 +174,23 @@ export const resetLeakedWebView2Profiles = async (): Promise<void> => {
     await Promise.all(
         entries
             .filter((name) => name.startsWith(webView2TempFolderGlobPrefix))
-            .map((name) =>
-                fs
-                    .rm(path.join(tempDir, name), {
-                        recursive: true,
-                        force: true,
-                    })
-                    .catch(() => {}),
-            ),
+            .map((name) => removeProfileIfUnused(path.join(tempDir, name))),
     );
+};
+
+/** Deletes one WebView2 profile folder, but only if no process has it open. %TEMP% is shared
+ * with every Bloom on the machine, including a developer's own Bloom from another worktree that
+ * may be running while the harness does; deleting a live profile's files out from under it would
+ * break that Bloom. Windows refuses to rename a folder while any file inside it is open, so a
+ * successful rename proves the folder is unused (and takes it out of Bloom's name search). */
+const removeProfileIfUnused = async (folder: string): Promise<void> => {
+    const claimed = `${folder}.e2e-deleting`;
+    try {
+        await fs.rename(folder, claimed);
+    } catch {
+        return; // in use by a running Bloom: leave it alone
+    }
+    await fs.rm(claimed, { recursive: true, force: true }).catch(() => {});
 };
 
 /** Full per-scenario reset: DB + bucket + local scratch folders. Call this in `test.beforeEach`
