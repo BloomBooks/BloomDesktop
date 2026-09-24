@@ -202,7 +202,13 @@ export const SimpleProgressDialog: React.FunctionComponent<
                 backgroundColor={titleBackground}
                 color={titleColor}
             />
-            <DialogMiddle>
+            <DialogMiddle
+                css={css`
+                    // BloomDialog leaves only 10px under its content, which for a dialog whose
+                    // content is one sentence puts the text hard against the bottom edge.
+                    padding-bottom: 14px;
+                `}
+            >
                 <div
                     css={css`
                         display: flex;
