@@ -426,4 +426,27 @@ describe("ImageUndoManager rotation handle drag", () => {
         editable.innerHTML = "some words";
         expect(manager.canUndoImageOperation()).toBe(true);
     });
+
+    it("the rotation is offered again when the text editor's undo gives back the same text in slightly different markup", () => {
+        const textBox = makeTextCanvasElement();
+        const editable = textBox.getElementsByClassName(
+            "bloom-editable",
+        )[0] as HTMLElement;
+        // An empty box, as a fresh Text Block is.
+        editable.innerHTML = "<p><br></p>";
+        setCanvasElementRotation(textBox, 45);
+        manager.pushUndoForCanvasElementRotation(textBox, 0);
+        activeElement = textBox;
+
+        editable.innerHTML = "<p>xyz</p>";
+        expect(manager.canUndoImageOperation()).toBe(false);
+
+        // What the text editor's undo gives back after the typing: the same empty paragraph,
+        // without the <br> that held it open.
+        editable.innerHTML = "<p></p>";
+        expect(
+            manager.canUndoImageOperation(),
+            "The empty box is the same as before the typing, so the rotation is next",
+        ).toBe(true);
+    });
 });

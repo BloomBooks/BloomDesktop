@@ -58,7 +58,8 @@ import {
     mirroredAboutOwnAxis,
     type IPictureRotation,
 } from "../helpers/images";
-import { moveCaretToEnd, typeWithKeys } from "../helpers/keys";
+import { typeWithKeys } from "../helpers/keys";
+import { realClick } from "../helpers/realClick";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
 import { undo } from "../helpers/workspace";
 
@@ -763,12 +764,17 @@ test.describe("rotating and flipping pictures", () => {
         // Left at about 30 degrees by the test that leaves the page and comes back.
         expect(Math.abs(angle - 30)).toBeLessThan(1.5);
         // A fresh rotation, so that it is the newest step before the typing.
+        // A drag of the knob lands within a degree or two of what was asked for.
         const rotated = await dragRotateHandle(page, 20, { withCtrl: true });
-        expect(Math.abs(rotated - 50)).toBeLessThan(1.5);
+        expect(Math.abs(rotated - angle - 20)).toBeLessThan(2.5);
 
         const editable = box.locator(".bloom-editable:visible").first();
         const textBefore = (await editable.textContent()) ?? "";
-        await moveCaretToEnd(editable);
+        // A real press at the middle of the rotated box, as a person clicks. Bloom's drawing
+        // layer lies over the text, and Bloom itself passes the click through to it, so
+        // Playwright's own click, which checks what is on top, refuses.
+        await realClick(editable);
+        await page.keyboard.press("Control+End");
         await typeWithKeys(page, "xyz");
         await expect
             .poll(async () => editable.textContent())

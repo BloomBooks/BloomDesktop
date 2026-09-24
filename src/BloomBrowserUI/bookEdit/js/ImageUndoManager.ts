@@ -417,12 +417,37 @@ export function prepareUndoForImageOperation(
     getImageUndoManager().prepareUndoForImageOperation(imageOrContainer);
 }
 
-// The markup inside the element's text boxes, which changes with typing and with formatting such
-// as bold. It leaves out the text boxes' own attributes, which the editor changes on focus.
+// The text in the element's text boxes together with its formatting, such as bold, so that typing
+// and formatting both change it. It leaves out what the text editor adds and takes away without
+// the user seeing any difference: the boxes' own attributes, which change on focus, a <br> that
+// holds an empty paragraph open (its undo gives back <p></p> for <p><br></p>), its bookmark
+// markers, and zero-width spaces.
 function textBoxContents(canvasElement: HTMLElement): string {
     return Array.from(canvasElement.getElementsByClassName("bloom-editable"))
-        .map((editable) => editable.innerHTML)
+        .map((editable) => textAndFormatting(editable.childNodes))
         .join("\n");
+}
+
+function textAndFormatting(nodes: NodeListOf<ChildNode>): string {
+    let result = "";
+    nodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            result += (node.textContent ?? "")
+                .replace(/​/g, "")
+                .replace(/ /g, " ");
+            return;
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        const element = node as Element;
+        if (
+            element.tagName === "BR" ||
+            element.hasAttribute("data-cke-bookmark")
+        )
+            return;
+        const style = element.getAttribute("style");
+        result += `<${element.tagName}${style ? " " + style : ""}>${textAndFormatting(element.childNodes)}</>`;
+    });
+    return result;
 }
 
 export function pushUndoForImageTransform(canvasElement: HTMLElement): void {
