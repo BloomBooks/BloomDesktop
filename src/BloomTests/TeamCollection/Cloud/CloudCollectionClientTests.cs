@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Bloom.TeamCollection.Cloud;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
 
@@ -240,6 +241,8 @@ namespace BloomTests.TeamCollection.Cloud
         [TestCase("NameConflict", CloudErrorCode.NameConflict)]
         [TestCase("MissingOrBadUploads", CloudErrorCode.MissingOrBadUploads)]
         [TestCase("VersionConflict", CloudErrorCode.VersionConflict)]
+        [TestCase("CheckoutElsewhere", CloudErrorCode.CheckoutElsewhere)]
+        [TestCase("InvalidManifest", CloudErrorCode.InvalidManifest)]
         public void CallEdgeFunction_TypedErrorCodes_MapToExpectedCloudErrorCode(
             string serverCode,
             CloudErrorCode expected
@@ -265,6 +268,126 @@ namespace BloomTests.TeamCollection.Cloud
 
             Assert.That(ex.Code, Is.EqualTo(expected));
             Assert.That(ex.Details, Is.Not.Null);
+        }
+
+        [Test]
+        public void CheckinStart_InvalidManifest_MessageComesFromDetail()
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req =>
+                FakeResponses.Make(
+                    HttpStatusCode.BadRequest,
+                    "{\"error\":\"InvalidManifest\",\"detail\":\"duplicate path after NFC normalization\",\"paths\":[\"a.png\"]}"
+                );
+
+            var ex = Assert.Throws<CloudCollectionClientException>(() =>
+                client.CheckinStart("c", "b", "i", "n", null, "cs", "6.5", new JArray(), null)
+            );
+
+            Assert.That(ex.Code, Is.EqualTo(CloudErrorCode.InvalidManifest));
+            Assert.That(ex.Message, Is.EqualTo("duplicate path after NFC normalization"));
+        }
+
+        [Test]
+        public void CheckinFinish_LockHeldByOtherWithNullHolder_MapsToLockHeldByOther()
+        {
+            // v1.8: finish re-checks the lock; `holder` is null when the lock was released.
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req =>
+                FakeResponses.Make(
+                    HttpStatusCode.Conflict,
+                    "{\"error\":\"LockHeldByOther\",\"holder\":null}"
+                );
+
+            var ex = Assert.Throws<CloudCollectionClientException>(() =>
+                client.CheckinFinish("tx-1")
+            );
+
+            Assert.That(ex.Code, Is.EqualTo(CloudErrorCode.LockHeldByOther));
+            Assert.That(ex.Details["holder"].Type, Is.EqualTo(JTokenType.Null));
+        }
+
+        // ------------------------------------------------------------------
+        // v1.9 checkout GUID parameters
+        // ------------------------------------------------------------------
+
+        private static JObject SentBody(FakeRestExecutor executor) =>
+            JObject.Parse(
+                (string)
+                    executor
+                        .RequestsSeen[executor.RequestsSeen.Count - 1]
+                        .Parameters.Find(p => p.Type == ParameterType.RequestBody)
+                        .Value
+            );
+
+        private static IEnumerable<string> SentKeys(FakeRestExecutor executor)
+        {
+            foreach (var property in SentBody(executor).Properties())
+                yield return property.Name;
+        }
+
+        [Test]
+        public void CheckoutBook_SendsBookAndMachineOnly()
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "{\"success\":true}");
+
+            client.CheckoutBook("book-1", "MyMachine");
+
+            Assert.That(executor.RequestsSeen[0].Resource, Is.EqualTo("rest/v1/rpc/checkout_book"));
+            Assert.That(SentKeys(executor), Is.EquivalentTo(new[] { "p_book_id", "p_machine" }));
+        }
+
+        [Test]
+        public void CheckoutBookTakeover_SendsGuid()
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "{\"success\":true}");
+
+            client.CheckoutBookTakeover("book-1", "the-guid", "MyMachine");
+
+            var body = SentBody(executor);
+            Assert.That(
+                SentKeys(executor),
+                Is.EquivalentTo(new[] { "p_book_id", "p_checkout_guid", "p_machine" })
+            );
+            Assert.That((string)body["p_checkout_guid"], Is.EqualTo("the-guid"));
+        }
+
+        [TestCase("unlock_book")]
+        [TestCase("delete_book")]
+        public void UnlockAndDelete_SendGuid(string rpcName)
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "{}");
+
+            if (rpcName == "unlock_book")
+                client.UnlockBook("book-1", "the-guid");
+            else
+                client.DeleteBook("book-1", "the-guid");
+
+            Assert.That(executor.RequestsSeen[0].Resource, Is.EqualTo("rest/v1/rpc/" + rpcName));
+            Assert.That(
+                SentKeys(executor),
+                Is.EquivalentTo(new[] { "p_book_id", "p_checkout_guid" })
+            );
+            Assert.That((string)SentBody(executor)["p_checkout_guid"], Is.EqualTo("the-guid"));
+        }
+
+        [Test]
+        public void CheckinStart_SendsCheckoutGuid()
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req =>
+                FakeResponses.Make(HttpStatusCode.OK, "{\"transactionId\":\"tx\"}");
+
+            client.CheckinStart("c", "b", "i", "name", "v1", "cs", "6.5", new JArray(), "the-guid");
+
+            Assert.That(
+                executor.RequestsSeen[0].Resource,
+                Is.EqualTo("functions/v1/checkin-start")
+            );
+            Assert.That((string)SentBody(executor)["checkoutGuid"], Is.EqualTo("the-guid"));
         }
 
         [Test]

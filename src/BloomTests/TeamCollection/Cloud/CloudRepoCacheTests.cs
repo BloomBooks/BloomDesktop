@@ -418,7 +418,8 @@ namespace BloomTests.TeamCollection.Cloud
                 keptCheckedOut: false,
                 lockedByUserId: null,
                 lockedByMachine: null,
-                lockedByEmail: null
+                lockedByEmail: null,
+                checkoutGuidHash: null
             );
 
             var book = cache.TryGetBook("new-book-id");
@@ -450,7 +451,8 @@ namespace BloomTests.TeamCollection.Cloud
                 // LockedBy holds the raw auth user id (not an email) — see CloudCachedBook.LockedBy.
                 lockedByUserId: "user-0001",
                 lockedByMachine: "MyMachine",
-                lockedByEmail: "me@example.com"
+                lockedByEmail: "me@example.com",
+                checkoutGuidHash: "hash-of-my-guid"
             );
 
             var book = cache.TryGetBook("book-1");
@@ -458,6 +460,94 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(book.LockedByMachine, Is.EqualTo("MyMachine"));
             // Display email is kept consistent with the (current-user) lock owner.
             Assert.That(book.LockedByEmail, Is.EqualTo("me@example.com"));
+            Assert.That(book.CheckoutGuidHash, Is.EqualTo("hash-of-my-guid"));
+        }
+
+        // ------------------------------------------------------------------
+        // CheckoutGuidHash (CONTRACTS.md v1.9)
+        // ------------------------------------------------------------------
+
+        [TestCase("checkoutGuidHash")]
+        [TestCase("checkout_guid_hash")]
+        public void ApplyServerRow_ReadsCheckoutGuidHash(string fieldName)
+        {
+            var cache = new CloudRepoCache(_collectionFolderPath);
+            var row = MakeBookRow("book-1", lockedBy: "user-1");
+            row[fieldName] = "abc123";
+
+            cache.ApplyFullSnapshot(new JObject { ["books"] = new JArray(row) });
+
+            Assert.That(cache.TryGetBook("book-1").CheckoutGuidHash, Is.EqualTo("abc123"));
+        }
+
+        [Test]
+        public void CheckoutGuidHash_RoundTripsThroughSaveAndLoad()
+        {
+            var cache = new CloudRepoCache(_collectionFolderPath);
+            var row = MakeBookRow("book-1", lockedBy: "user-1");
+            row["checkoutGuidHash"] = "abc123";
+            cache.ApplyFullSnapshot(new JObject { ["books"] = new JArray(row) });
+            Assert.That(
+                cache.TryGetBook("book-1").CheckoutGuidHash,
+                Is.EqualTo("abc123"),
+                "sanity check"
+            );
+
+            cache.Save();
+            var reloaded = CloudRepoCache.LoadOrCreate(_collectionFolderPath);
+
+            Assert.That(reloaded.TryGetBook("book-1").CheckoutGuidHash, Is.EqualTo("abc123"));
+        }
+
+        [Test]
+        public void RecordCheckoutResult_NewGuid_StoresItsHash_AndUnlockClearsIt()
+        {
+            var cache = new CloudRepoCache(_collectionFolderPath);
+            cache.ApplyFullSnapshot(new JObject { ["books"] = new JArray(MakeBookRow("book-1")) });
+            var guid = "3f2c0e8a-1111-4222-8333-444455556666";
+
+            cache.RecordCheckoutResult(
+                "book-1",
+                new JObject
+                {
+                    ["success"] = true,
+                    ["checkoutGuid"] = guid,
+                    ["locked_by"] = "me-user-id",
+                    ["locked_by_machine"] = "MyMachine",
+                    ["locked_at"] = DateTime.UtcNow,
+                },
+                currentUserId: "me-user-id",
+                currentUserEmail: "me@example.com"
+            );
+            Assert.That(
+                cache.TryGetBook("book-1").CheckoutGuidHash,
+                Is.EqualTo(CloudCheckoutFile.HashGuid(guid))
+            );
+
+            cache.RecordUnlock("book-1");
+            Assert.That(cache.TryGetBook("book-1").CheckoutGuidHash, Is.Null);
+        }
+
+        [Test]
+        public void RecordCheckoutResult_LockedByMe_KeepsLockAndHash()
+        {
+            // checkout_book from a copy without the GUID, while this account holds the lock in
+            // another copy: no rotation, so the cached hash (the other copy's) must survive.
+            var cache = new CloudRepoCache(_collectionFolderPath);
+            var row = MakeBookRow("book-1", lockedBy: "me-user-id");
+            row["checkoutGuidHash"] = "other-copys-hash";
+            cache.ApplyFullSnapshot(new JObject { ["books"] = new JArray(row) });
+
+            cache.RecordCheckoutResult(
+                "book-1",
+                new JObject { ["success"] = false, ["locked_by_me"] = true },
+                currentUserId: "me-user-id",
+                currentUserEmail: "me@example.com"
+            );
+
+            var book = cache.TryGetBook("book-1");
+            Assert.That(book.LockedBy, Is.EqualTo("me-user-id"));
+            Assert.That(book.CheckoutGuidHash, Is.EqualTo("other-copys-hash"));
         }
 
         // ------------------------------------------------------------------

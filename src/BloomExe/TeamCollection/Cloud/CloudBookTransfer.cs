@@ -216,13 +216,18 @@ namespace Bloom.TeamCollection.Cloud
                     },
                     relativePath =>
                     {
-                        var localFilePath = ToLocalPath(bookFolderPath, relativePath);
+                        // relativePath is NFC (the server returns changedPaths NFC, and the S3
+                        // key must use exactly that); the file on disk may be spelled otherwise
+                        // (e.g. NFD), so open the local spelling the manifest recorded.
+                        BookVersionManifestEntry localEntry = null;
+                        localManifest?.Entries.TryGetValue(relativePath, out localEntry);
+                        var localFilePath = ToLocalPath(
+                            bookFolderPath,
+                            localEntry?.LocalRelativePath ?? relativePath
+                        );
                         string sha256;
                         long size;
-                        if (
-                            localManifest != null
-                            && localManifest.Entries.TryGetValue(relativePath, out var localEntry)
-                        )
+                        if (localEntry != null)
                         {
                             // The caller already hashed this exact on-disk content (see the doc
                             // comment) — don't hash it a second time.

@@ -75,6 +75,54 @@ namespace BloomTests.TeamCollection.Cloud
             Assert.That(BookVersionManifest.NormalizePath(nfc), Is.EqualTo(nfc));
         }
 
+        [Test]
+        public void FromLocalFolder_NfdFileName_KeyIsNfc_LocalRelativePathKeepsDiskSpelling()
+        {
+            WriteMinimalBook();
+            var nfdName = "café.png"; // "café" with a combining acute accent (NFD)
+            var nfcName = "café.png";
+            RobustFile.WriteAllText(Path.Combine(_bookFolderPath, nfdName), "image bytes");
+            Assert.That(
+                Directory.GetFiles(_bookFolderPath).Select(Path.GetFileName),
+                Does.Contain(nfdName),
+                "sanity check: the file system kept the decomposed spelling"
+            );
+
+            var manifest = BookVersionManifest.FromLocalFolder(_bookFolderPath);
+
+            Assert.That(manifest.Entries.Keys, Does.Contain(nfcName));
+            Assert.That(manifest.Entries.Keys, Does.Not.Contain(nfdName));
+            Assert.That(manifest.Entries[nfcName].LocalRelativePath, Is.EqualTo(nfdName));
+        }
+
+        // ------------------------------------------------------------------
+        // The cloud checkout record is never part of a version
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void FromLocalFolder_ExcludesCheckoutRecord()
+        {
+            WriteMinimalBook();
+            new CloudCheckoutFile
+            {
+                CheckoutGuid = Guid.NewGuid().ToString(),
+                BookId = "book-1",
+                CollectionId = "collection-1",
+                UserEmail = "me@example.com",
+                CheckedOutAtUtc = DateTime.UtcNow,
+            }.Write(_bookFolderPath);
+            Assert.That(
+                File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)),
+                Is.True,
+                "sanity check"
+            );
+
+            var manifest = BookVersionManifest.FromLocalFolder(_bookFolderPath);
+
+            Assert.That(manifest.Entries.Keys, Does.Contain(BookName + ".htm"), "sanity check");
+            Assert.That(manifest.Entries.Keys, Does.Not.Contain(CloudCheckoutFile.FileName));
+        }
+
         // ------------------------------------------------------------------
         // JSON round-trip
         // ------------------------------------------------------------------

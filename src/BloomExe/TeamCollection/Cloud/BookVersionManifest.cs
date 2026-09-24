@@ -37,6 +37,15 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         public string S3VersionId { get; set; }
 
+        /// <summary>
+        /// For an entry built from a local folder (<see cref="BookVersionManifest.FromLocalFolder"/>),
+        /// the file's path relative to that folder exactly as spelled ON DISK, which may differ
+        /// from the entry's NFC-normalized key (e.g. a decomposed/NFD file name, as macOS tools
+        /// produce). Uploads must open this spelling; the S3 key uses the NFC one. Null for
+        /// server-side manifests. Never serialized.
+        /// </summary>
+        public string LocalRelativePath { get; set; }
+
         public BookVersionManifestEntry() { }
 
         public BookVersionManifestEntry(string sha256, long size, string s3VersionId = null)
@@ -149,6 +158,10 @@ namespace Bloom.TeamCollection.Cloud
                 WantVideo = true,
                 WantMusic = true,
             };
+            // The cloud checkout record is per-copy state, never part of a version (the filter
+            // would not pass it anyway, having no whitelisted extension; this makes that a
+            // guarantee rather than a coincidence).
+            filter.AlwaysReject(CloudCheckoutFile.FileName);
             var prefixLength = bookFolderPath.Length + 1;
             foreach (var fullPath in BookFileFilter.GetAllFilePaths(bookFolderPath))
             {
@@ -157,7 +170,10 @@ namespace Bloom.TeamCollection.Cloud
                     continue;
                 var normalizedPath = NormalizePath(relativePath);
                 var (sha256, size) = ComputeFileHash(fullPath);
-                entries[normalizedPath] = new BookVersionManifestEntry(sha256, size);
+                entries[normalizedPath] = new BookVersionManifestEntry(sha256, size)
+                {
+                    LocalRelativePath = relativePath,
+                };
             }
             return new BookVersionManifest(entries);
         }

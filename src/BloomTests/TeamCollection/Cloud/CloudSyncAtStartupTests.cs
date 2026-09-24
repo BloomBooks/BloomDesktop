@@ -31,6 +31,7 @@ namespace BloomTests.TeamCollection.Cloud
     {
         private const string kCollectionId = "11111111-1111-1111-1111-111111111111";
         private const string kBookId = "book-id-1";
+        private const string kOwnCheckoutGuid = "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b";
         private CloudTestHarness _harness;
         private TemporaryFolder _collectionFolder;
         private Mock<ITeamCollectionManager> _mockTcManager;
@@ -314,12 +315,16 @@ namespace BloomTests.TeamCollection.Cloud
                         ["current_checksum"] = "cs1",
                         // StubCloudAuthProvider signs every session in as user id "user-1", which
                         // ResolveLockedByForDisplay maps back to the signed-in email -- so this
-                        // row reads as "checked out by the current user on this machine".
+                        // row reads as "checked out by the current user" (and, with the test's .checkout record, "in this copy").
                         ["locked_by"] = lockedByCurrentUserHere ? "user-1" : null,
                         ["locked_by_machine"] = lockedByCurrentUserHere
                             ? TeamCollectionManager.CurrentMachine
                             : null,
                         ["locked_at"] = lockedByCurrentUserHere ? "2026-07-15T00:00:00Z" : null,
+                        // "Here" = in this copy: the test writes the matching .checkout record.
+                        ["checkoutGuidHash"] = lockedByCurrentUserHere
+                            ? CloudCheckoutFile.HashGuid(kOwnCheckoutGuid)
+                            : null,
                         ["deleted_at"] = null,
                     }
                 ),
@@ -441,7 +446,7 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         // Regression for the guard on the bug B fix (15 Jul 2026 review): the local-rename-mid-
-        // checkin edge. When the CURRENT USER has the book checked out ON THIS MACHINE and renamed
+        // checkin edge. When the CURRENT USER has the book checked out IN THIS COPY and renamed
         // it locally (not yet checked in), the repo intentionally still shows the OLD name -- the
         // rename-from-remote pass must NOT "correct" the local folder back to the repo name, which
         // would clobber the checked-out work. Cloud checkouts never stamp the LOCAL status
@@ -466,8 +471,16 @@ namespace BloomTests.TeamCollection.Cloud
             // Synchronous queue: if anything wrongly routes the repo's old-name book to the
             // background download path, it happens inline where the asserts below can see it.
             collection.TestOnly_MakeAutoApplyQueueSynchronous();
-            // The repo shows the OLD name, checked out to the current user on this machine --
+            // The repo shows the OLD name, checked out to the current user in this copy --
             // exactly the state after "check out, retitle, restart Bloom before checking in".
+            new CloudCheckoutFile
+            {
+                CheckoutGuid = kOwnCheckoutGuid,
+                BookId = kBookId,
+                CollectionId = kCollectionId,
+                UserEmail = "test@somewhere.org",
+                CheckedOutAtUtc = DateTime.UtcNow,
+            }.Write(folderPath);
             ScriptSingleBookServer(
                 "My old book",
                 instanceId,

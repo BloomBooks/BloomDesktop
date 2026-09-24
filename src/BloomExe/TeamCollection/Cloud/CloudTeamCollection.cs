@@ -296,7 +296,7 @@ namespace Bloom.TeamCollection.Cloud
                 .Count(b =>
                     !b.DeletedAt.HasValue
                     && b.CurrentVersionSeq.HasValue
-                    && !IsCheckedOutHereBy(StatusFromCachedBook(b, _collectionId))
+                    && !IsCheckedOutHereBy(StatusFromCachedBook(b, _collectionId, b.Name))
                     && (b.LocalVersionSeq ?? -1) < b.CurrentVersionSeq.Value
                 );
         }
@@ -495,6 +495,11 @@ namespace Bloom.TeamCollection.Cloud
             return id == null ? null : _cache.TryGetBook(id);
         }
 
+        /// <summary>Test-only: a Send with exactly the given new status (PutBook derives it from
+        /// the repo status, which makes some check-in shapes awkward to set up).</summary>
+        internal void PutBookInRepoForTests(string sourceBookFolderPath, BookStatus newStatus) =>
+            PutBookInRepo(sourceBookFolderPath, newStatus);
+
         /// <summary>Test-only: exposes <see cref="ResolveBookId"/>'s identity-first semantics.</summary>
         internal string ResolveBookIdForTests(string bookFolderName) =>
             ResolveBookId(bookFolderName);
@@ -666,10 +671,22 @@ namespace Bloom.TeamCollection.Cloud
             PrioritizeBackgroundDownload(bookName);
         }
 
-        private BookStatus StatusFromCachedBook(CloudCachedBook book, string collectionId)
+        /// <summary>
+        /// The BookStatus a cached server row stands for, as seen from the local book folder
+        /// <paramref name="localFolderName"/> (usually the book's name; a locally-renamed
+        /// checked-out book's folder differs from its repo name). Sets
+        /// <see cref="BookStatus.checkedOutInThisCopy"/>, which is what makes "checked out here"
+        /// mean "checked out in this copy of the collection" for a cloud book.
+        /// </summary>
+        private BookStatus StatusFromCachedBook(
+            CloudCachedBook book,
+            string collectionId,
+            string localFolderName
+        )
         {
             return new BookStatus
             {
+                checkedOutInThisCopy = IsCheckedOutInThisCopy(book, localFolderName),
                 checksum = book.CurrentChecksum,
                 lockedBy = ResolveLockedByForDisplay(book),
                 // The server book row has no first/last-name split, only a whole display name
@@ -735,7 +752,7 @@ namespace Bloom.TeamCollection.Cloud
                 status = null;
                 return true;
             }
-            status = StatusFromCachedBook(cachedBook, CollectionId).ToJson();
+            status = StatusFromCachedBook(cachedBook, CollectionId, bookFolderName).ToJson();
             return true;
         }
 
@@ -851,120 +868,155 @@ namespace Bloom.TeamCollection.Cloud
         /// "conditional UPDATE"). The RPC always returns 200 with `{success, locked_by,
         /// locked_by_machine, locked_at}` -- present whether or not `success` is true, so we can
         /// write-through the winner's identity into the cache even on a failed attempt (that's
-        /// exactly what lets AttemptLock's caller show "checked out by X" immediately).</summary>
+        /// exactly what lets AttemptLock's caller show "checked out by X" immediately).
+        /// v1.9: a successful checkout returns the checkout GUID, which is saved in the book
+        /// folder's `.checkout` record -- that is what makes this copy the one the book is checked
+        /// out in. `locked_by_me` (the caller already holds it, in another copy) is a refusal:
+        /// there is no "check out here instead"; the book stays read-only in this copy.</summary>
         protected override bool TryLockInRepo(string bookName, BookStatus newStatus)
         {
             var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to lock server-side yet.
 
-            var result = _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine, SeatId);
+            var result = _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine);
+            var success = (bool?)result["success"] ?? false;
+            if (success)
+            {
+                var guid =
+                    (string)result["checkoutGuid"]
+                    ?? throw new ApplicationException(
+                        $"The Team Collection server checked out \"{bookName}\" but did not return its checkout GUID."
+                    );
+                var bookFolderPath = Path.Combine(_localCollectionFolder, bookName);
+                try
+                {
+                    WriteCheckoutFile(bookFolderPath, bookId, guid);
+                }
+                catch (Exception)
+                {
+                    // Without the record no copy could ever use this checkout; give it back
+                    // rather than leave the book locked to nobody's copy.
+                    _client.UnlockBook(bookId, guid);
+                    throw;
+                }
+            }
             _cache.RecordCheckoutResult(bookId, result, _auth.CurrentUserId, _auth.CurrentEmail);
             _cache.Save();
-            return (bool?)result["success"] ?? false;
+            return success;
         }
 
-        /// <summary>Single RPC unlock/force-unlock, per CONTRACTS.md's unlock_book/force_unlock.</summary>
+        /// <summary>Single RPC unlock/force-unlock, per CONTRACTS.md's unlock_book/force_unlock.
+        /// An ordinary unlock presents this copy's checkout GUID and then removes the `.checkout`
+        /// record. A forced unlock (administrator only) needs no GUID and never depends on this
+        /// copy having one: it leaves any local record alone, and the copy that held the checkout
+        /// (possibly this one) finds its record obsolete at its next poll or open and cancels it
+        /// there (see <see cref="ReconcileCheckoutFiles"/>), preserving any edits.</summary>
         protected override void UnlockInRepo(string bookName, bool force)
         {
             var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return;
+            var bookFolderPath = Path.Combine(_localCollectionFolder, bookName);
             if (force)
                 _client.ForceUnlock(bookId);
             else
-                _client.UnlockBook(bookId);
+            {
+                _client.UnlockBook(bookId, CloudCheckoutFile.ReadGuid(bookFolderPath));
+                CloudCheckoutFile.Delete(bookFolderPath);
+            }
             _cache.RecordUnlock(bookId);
             _cache.Save();
         }
 
-        // ------------------------------------------------------------------
-        // Account-switch takeover (batch item 9)
-        // ------------------------------------------------------------------
-
-        /// <summary>
-        /// The stable id of THIS local copy of the collection (its "seat", bug #0 — John's
-        /// ruling, 11 Jul 2026: editing/takeover of a checkout is only legitimate in the local
-        /// copy where the book is checked out; two copies on one machine are two seats). A hash
-        /// of the folder path rather than the path itself so the server rows never carry local
-        /// paths (privacy).
-        /// </summary>
-        internal string SeatId => _seatId ?? (_seatId = ComputeSeatId(LocalCollectionFolder));
-        private string _seatId;
-
-        /// <summary>First 16 hex digits of SHA256 of the normalized (full, lowercased,
-        /// no-trailing-separator) local collection folder path.</summary>
-        internal static string ComputeSeatId(string localCollectionFolder)
+        /// <summary>Saves the `.checkout` record for a checkout this copy was just given.</summary>
+        private void WriteCheckoutFile(string bookFolderPath, string bookId, string checkoutGuid)
         {
-            var normalized = Path.GetFullPath(localCollectionFolder)
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                .ToLowerInvariant();
-            using (var sha = System.Security.Cryptography.SHA256.Create())
+            new CloudCheckoutFile
             {
-                var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(normalized));
-                var builder = new StringBuilder(16);
-                for (var i = 0; i < 8; i++)
-                    builder.Append(hash[i].ToString("x2"));
-                return builder.ToString();
-            }
+                CheckoutGuid = checkoutGuid,
+                BookId = bookId,
+                CollectionId = _collectionId,
+                UserEmail = _auth.CurrentEmail,
+                CheckedOutAtUtc = DateTime.UtcNow,
+            }.Write(bookFolderPath);
         }
 
+        // ------------------------------------------------------------------
+        // "Here" means "in this copy": the checkout GUID, and account-switch takeover
+        // ------------------------------------------------------------------
+
         /// <summary>
-        /// True when the repo lock's recorded seat is THIS local copy of the collection.
-        /// <paramref name="allowUnknownSeat"/> grandfathers locks with no recorded seat (taken
-        /// before the 20260711000003 migration, or via checkin_start_tx's take-if-free path,
-        /// which records no seat): the CURRENT USER's own such locks must keep working, but a
-        /// different account must never treat an unknown-seat lock as takeover-eligible
-        /// (fail-safe, mirroring the server-side takeover gate).
+        /// True when the book is checked out (by anyone) IN THIS COPY of the collection: the
+        /// server row is locked, and <paramref name="localFolderName"/>'s `.checkout` record holds
+        /// the GUID whose hash the server reports (CONTRACTS.md v1.9). The machine is irrelevant:
+        /// the record travels with the book folder, so a collection folder that was moved,
+        /// renamed, or copied to another computer keeps its checkout, while any other copy
+        /// (including a duplicate whose twin already checked in or out again) does not.
         /// </summary>
-        private bool IsLockSeatHere(string bookName, bool allowUnknownSeat)
+        private bool IsCheckedOutInThisCopy(CloudCachedBook book, string localFolderName)
         {
-            var seat = ResolveCachedBook(bookName)?.LockedSeat;
-            if (seat == null)
-                return allowUnknownSeat;
-            return seat == SeatId;
+            if (string.IsNullOrEmpty(book.LockedBy) || string.IsNullOrEmpty(localFolderName))
+                return false;
+            return CloudCheckoutFile.MatchesServerHash(
+                Path.Combine(_localCollectionFolder, localFolderName),
+                book.CheckoutGuidHash
+            );
         }
 
         /// <summary>
-        /// A book locked to a DIFFERENT account is still editable here (see IsEditableHere) as
-        /// long as that lock is recorded for THIS machine AND THIS local copy of the collection
-        /// (the "seat") -- John's decisions: local machine access is unrestricted (item 9), but
-        /// only where the book is actually checked out; a second copy of the collection on the
-        /// same machine risks conflicting changes and stays a genuine conflict (bug #0). The
-        /// same seat gate applies to the current user's OWN lock seen from another copy, except
-        /// that a lock with no recorded seat (pre-seat checkout) is grandfathered for its owner.
+        /// Whether the book in local folder <paramref name="bookFolderName"/> is checked out in
+        /// this copy of the collection (by any account), or null when the repo knows no such
+        /// book (a new local-only book, or one never committed). See the private overload.
+        /// </summary>
+        public bool? IsCheckedOutInThisCopy(string bookFolderName)
+        {
+            EnsureCacheHydrated();
+            var book = ResolveCachedBook(bookFolderName);
+            if (book == null || !book.CurrentVersionSeq.HasValue)
+                return null;
+            return IsCheckedOutInThisCopy(book, bookFolderName);
+        }
+
+        /// <summary>
+        /// Editable here = checked out in THIS copy, by any account (John's decisions: local
+        /// access is unrestricted -- batch item 9 -- but only where the book is actually checked
+        /// out). A book another account checked out in this copy is therefore editable, and its
+        /// server lock moves to the current account through <see cref="TryTakeOverLock"/> the
+        /// first time that matters. The current user's own checkout seen from any OTHER copy is
+        /// not editable, and nothing here offers to move it ("check out here instead" was
+        /// deliberately left out); going back to the copy that has it, or an administrator's
+        /// force-unlock, is the way out.
         /// </summary>
         protected internal override bool IsEditableHere(string bookName, BookStatus status)
         {
             if (status.lockedBy == FakeUserIndicatingNewBook)
                 return true; // a new local-only book is always editable
-            if (
-                !status.IsCheckedOut()
-                || status.lockedWhere != TeamCollectionManager.CurrentMachine
-            )
-                return false;
-            var isOwnLock = status.lockedBy == CurrentUserIdentity;
-            return IsLockSeatHere(bookName, allowUnknownSeat: isOwnLock);
+            if (!status.checkedOutInThisCopy.HasValue)
+                return base.IsEditableHere(bookName, status); // not a repo-cache status
+            return status.IsCheckedOut() && status.checkedOutInThisCopy.Value;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// A lock held by a DIFFERENT account can be taken over only from the copy it is checked
+        /// out in (the one with the current GUID), which is also the only copy able to prove it
+        /// to the server. Machine no longer matters.
+        /// </summary>
         protected internal override bool CanTakeOverLockOnThisMachine(
             string bookName,
             BookStatus repoStatus
         ) =>
-            !string.IsNullOrEmpty(repoStatus.lockedBy)
-            && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine
-            // Bug #0: takeover is only legitimate within the same local copy ("seat"); an
-            // unknown seat never qualifies, matching checkout_book_takeover's own gate.
-            && IsLockSeatHere(bookName, allowUnknownSeat: false);
+            repoStatus.IsCheckedOut()
+            && repoStatus.lockedBy != CurrentUserIdentity
+            && repoStatus.checkedOutInThisCopy == true;
 
         /// <summary>
-        /// Calls the tc.checkout_book_takeover RPC (CONTRACTS.md v1.4/v1.5) to atomically
-        /// reassign the book's server lock to the current user; the server only permits this
-        /// when the existing lock is recorded for THIS machine and THIS seat (local collection
-        /// copy). Purely additive server-side: checkin_start_tx itself is untouched, so calling
-        /// this before check-in is what lets its existing "LockHeldByOther" gate pass cleanly
-        /// for an account-switched checkin.
+        /// Calls the tc.checkout_book_takeover RPC (CONTRACTS.md v1.9) to atomically reassign the
+        /// book's server lock to the current account, presenting this copy's checkout GUID (the
+        /// server's only test). The GUID does not change; the `.checkout` record is re-stamped
+        /// with the new account. Purely additive server-side: checkin_start_tx itself is
+        /// untouched, so calling this before check-in is what lets its "LockHeldByOther" gate
+        /// pass cleanly for an account-switched check-in.
         /// </summary>
         protected internal override bool TryTakeOverLock(string bookName)
         {
@@ -972,14 +1024,25 @@ namespace Bloom.TeamCollection.Cloud
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to take over.
 
+            var bookFolderPath = Path.Combine(_localCollectionFolder, bookName);
+            var record = CloudCheckoutFile.Read(bookFolderPath);
+            if (record == null)
+                return false; // only the copy holding the GUID can take the lock over
             var result = _client.CheckoutBookTakeover(
                 bookId,
-                TeamCollectionManager.CurrentMachine,
-                SeatId
+                record.CheckoutGuid,
+                TeamCollectionManager.CurrentMachine
             );
+            var success = (bool?)result["success"] ?? false;
+            if (success)
+            {
+                // Same checkout, same GUID; only the account holding it changed.
+                record.UserEmail = _auth.CurrentEmail;
+                record.Write(bookFolderPath);
+            }
             _cache.RecordCheckoutResult(bookId, result, _auth.CurrentUserId, _auth.CurrentEmail);
             _cache.Save();
-            return (bool?)result["success"] ?? false;
+            return success;
         }
 
         // ------------------------------------------------------------------
@@ -997,7 +1060,7 @@ namespace Bloom.TeamCollection.Cloud
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
 
             // Account-switch takeover (batch item 9): if the repo still shows this book locked
-            // to a DIFFERENT account but for THIS machine, take the server lock over BEFORE
+            // to a DIFFERENT account but checked out in THIS copy, take the server lock over BEFORE
             // checking in, so checkin_start_tx's existing (unmodified) "LockHeldByOther" gate
             // sees OUR lock. This is the primary place the takeover actually happens in
             // practice: there is no per-keystroke "book was just edited" hook anywhere in this
@@ -1060,6 +1123,10 @@ namespace Bloom.TeamCollection.Cloud
                 )
             );
 
+            // This copy's checkout GUID (null for a new book, or when this copy has none -- then
+            // the server either takes a free lock for us or refuses with CheckoutElsewhere /
+            // LockHeldByOther).
+            var checkoutGuid = CloudCheckoutFile.ReadGuid(sourceBookFolderPath);
             var proposedName = GetBookNameWithoutSuffix(bookFolderName);
             JObject startResult = null;
             CloudCollectionClientException lastNameConflict = null;
@@ -1075,7 +1142,8 @@ namespace Bloom.TeamCollection.Cloud
                         cachedBook?.CurrentVersionId,
                         newStatus.checksum,
                         Application.ProductVersion,
-                        filesJson
+                        filesJson,
+                        checkoutGuid
                     );
                     lastNameConflict = null;
                     break;
@@ -1083,10 +1151,29 @@ namespace Bloom.TeamCollection.Cloud
                 catch (CloudCollectionClientException e)
                     when (e.Code == CloudErrorCode.NameConflict)
                 {
+                    // Since v1.8 this also comes back when an EXISTING book is renamed (locally,
+                    // while checked out) to a name another live book already has. Either way the
+                    // "name2" resolution applies (the existing FolderTeamCollection convention for
+                    // same-name collisions): the server commits the suffixed name for this book's
+                    // row, and the next sync's rename-from-remote pass brings the local folder
+                    // name into line, exactly as for a new book.
                     lastNameConflict = e;
-                    // "name2" resolution, per the task brief and existing FolderTeamCollection
-                    // convention for same-name collisions.
                     proposedName = GetBookNameWithoutSuffix(bookFolderName) + (suffix + 1);
+                    Logger.WriteEvent(
+                        $"CloudTeamCollection: checkin-start reported a name conflict for \"{bookFolderName}\"; retrying as \"{proposedName}\"."
+                    );
+                }
+                catch (CloudCollectionClientException e) when (IsCheckinRefusal(e.Code))
+                {
+                    throw MakeCheckinRefusedException(sourceBookFolderPath, e);
+                }
+                catch (CloudCollectionClientException e)
+                    when (e.Code == CloudErrorCode.InvalidManifest)
+                {
+                    throw new ApplicationException(
+                        $"The Team Collection server would not accept the list of files in \"{bookFolderName}\": {e.Message}",
+                        e
+                    );
                 }
             }
             if (startResult == null)
@@ -1094,6 +1181,16 @@ namespace Bloom.TeamCollection.Cloud
                     ?? new ApplicationException(
                         $"Could not check in \"{bookFolderName}\": the cloud Team Collection did not return a transaction."
                     );
+
+            // checkin-start issues a new GUID when it takes a free lock for us or creates a new
+            // book. The server now holds the lock under it whether or not this transaction goes
+            // on to commit, so record it right away.
+            var issuedGuid = (string)startResult["checkoutGuid"];
+            if (issuedGuid != null)
+            {
+                checkoutGuid = issuedGuid;
+                WriteCheckoutFile(sourceBookFolderPath, bookId, checkoutGuid);
+            }
 
             var transactionId = (string)startResult["transactionId"];
             var location = ParseS3Location(startResult);
@@ -1140,6 +1237,12 @@ namespace Bloom.TeamCollection.Cloud
                     bookId = TryGetBookIdByInstanceId(bookInstanceId);
                 }
 
+                // The checkout (and its GUID) ends with the check-in unless it was kept.
+                if (!keepCheckedOut)
+                    CloudCheckoutFile.Delete(sourceBookFolderPath);
+                else if (issuedGuid != null && bookId != null)
+                    WriteCheckoutFile(sourceBookFolderPath, bookId, checkoutGuid); // now with the book id
+
                 if (bookId != null)
                 {
                     _cache.RecordCheckinFinish(
@@ -1155,7 +1258,10 @@ namespace Bloom.TeamCollection.Cloud
                         // NOT the email CurrentUserIdentity returns — see CloudCachedBook.LockedBy.
                         keepCheckedOut ? _auth.CurrentUserId : null,
                         keepCheckedOut ? TeamCollectionManager.CurrentMachine : null,
-                        keepCheckedOut ? _auth.CurrentEmail : null
+                        keepCheckedOut ? _auth.CurrentEmail : null,
+                        keepCheckedOut && checkoutGuid != null
+                            ? CloudCheckoutFile.HashGuid(checkoutGuid)
+                            : null
                     );
                     // We just successfully uploaded this exact version, so the local folder IS this
                     // version now (task 06's "localVersionSeq").
@@ -1164,7 +1270,7 @@ namespace Bloom.TeamCollection.Cloud
                     RefreshIndexFromCache();
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 try
                 {
@@ -1174,8 +1280,76 @@ namespace Bloom.TeamCollection.Cloud
                 {
                     NonFatalProblem.ReportSentryOnly(abortException);
                 }
+                // v1.8/v1.9: checkin-finish re-checks the lock, the checkout GUID and the base
+                // version. Those refusals are final for this transaction (retrying cannot
+                // succeed); the caller must preserve the local work and Receive instead.
+                if (
+                    e is CloudCollectionClientException clientException
+                    && IsCheckinRefusal(clientException.Code)
+                )
+                    throw MakeCheckinRefusedException(sourceBookFolderPath, clientException);
                 throw;
             }
+        }
+
+        /// <summary>The check-in outcomes that mean "the repo will not take this content from
+        /// this copy" (as opposed to transient failures worth retrying).</summary>
+        private static bool IsCheckinRefusal(CloudErrorCode code) =>
+            code == CloudErrorCode.LockHeldByOther
+            || code == CloudErrorCode.CheckoutElsewhere
+            || code == CloudErrorCode.BaseVersionSuperseded;
+
+        /// <summary>
+        /// Builds the user-facing <see cref="CloudCheckinRefusedException"/> for a refused
+        /// check-in, and removes this copy's `.checkout` record when the refusal means this copy
+        /// no longer holds the checkout (LockHeldByOther, CheckoutElsewhere). A
+        /// BaseVersionSuperseded refusal leaves the checkout alone: it is still ours, the local
+        /// content is merely based on an out-of-date version.
+        /// </summary>
+        private CloudCheckinRefusedException MakeCheckinRefusedException(
+            string sourceBookFolderPath,
+            CloudCollectionClientException e
+        )
+        {
+            var bookName = Path.GetFileName(sourceBookFolderPath);
+            string reason;
+            switch (e.Code)
+            {
+                case CloudErrorCode.CheckoutElsewhere:
+                    CloudCheckoutFile.Delete(sourceBookFolderPath);
+                    reason =
+                        $"Bloom could not check in \"{bookName}\" from here, because it is checked out to you in another copy of this collection.";
+                    break;
+                case CloudErrorCode.LockHeldByOther:
+                    CloudCheckoutFile.Delete(sourceBookFolderPath);
+                    var holder = DescribeLockHolder(e.Details?["holder"]);
+                    reason =
+                        holder == null
+                            ? $"Bloom could not check in \"{bookName}\", because it is no longer checked out to you (for example, an administrator may have unlocked it)."
+                            : $"Bloom could not check in \"{bookName}\", because it is now checked out to {holder}.";
+                    break;
+                default: // BaseVersionSuperseded
+                    reason =
+                        $"Bloom could not check in \"{bookName}\", because someone checked in a newer version of it since you checked it out.";
+                    break;
+            }
+            return new CloudCheckinRefusedException(e.Code, reason, e);
+        }
+
+        /// <summary>Best-effort human-readable form of a LockHeldByOther `holder` (null when the
+        /// lock was released, e.g. force-unlocked).</summary>
+        private static string DescribeLockHolder(JToken holder)
+        {
+            if (holder is JObject holderObject)
+                return (string)(
+                    holderObject["name"]
+                    ?? holderObject["locked_by_name"]
+                    ?? holderObject["email"]
+                    ?? holderObject["locked_by_email"]
+                );
+            if (holder is JValue holderValue && holderValue.Type == JTokenType.String)
+                return (string)holderValue;
+            return null;
         }
 
         /// <summary>
@@ -1208,7 +1382,13 @@ namespace Bloom.TeamCollection.Cloud
                 // a non-colliding "<name>[.N].bloomSource" path.
                 var destPath = AvailablePath(bookFolderName, lostAndFoundDir, ".bloomSource");
                 var zip = new Bloom.Utils.BloomZipFile(destPath);
-                zip.AddDirectory(sourceBookFolderPath, sourceBookFolderPath.Length + 1, null, null);
+                // Never the checkout record: restoring the copy must not resurrect a checkout.
+                zip.AddDirectory(
+                    sourceBookFolderPath,
+                    sourceBookFolderPath.Length + 1,
+                    new[] { CloudCheckoutFile.FileName },
+                    null
+                );
                 zip.Save();
 
                 var bookId = ResolveBookId(bookFolderName);
@@ -1310,6 +1490,13 @@ namespace Bloom.TeamCollection.Cloud
                         Directory.CreateDirectory(Path.GetDirectoryName(seededFile));
                         RobustFile.Copy(sourceFile, seededFile);
                     }
+                    // The checkout record is never part of a version, but receiving a book must
+                    // not end its checkout (e.g. Forget Changes receives first and then unlocks,
+                    // which needs the GUID). Code that means to end the checkout deletes the
+                    // record itself before receiving.
+                    var checkoutFile = CloudCheckoutFile.GetPath(finalPath);
+                    if (RobustFile.Exists(checkoutFile))
+                        RobustFile.Copy(checkoutFile, CloudCheckoutFile.GetPath(stagingPath));
                 }
 
                 _transfer.DownloadFiles(
@@ -1580,7 +1767,8 @@ namespace Bloom.TeamCollection.Cloud
             var bookId = ResolveBookId(bookFolderName);
             if (bookId == null)
                 return; // never made it to the repo; nothing to delete there.
-            _client.DeleteBook(bookId);
+            _client.DeleteBook(bookId, CloudCheckoutFile.ReadGuid(bookFolderPath));
+            CloudCheckoutFile.Delete(bookFolderPath);
             HydrateFromServer();
         }
 
@@ -1859,6 +2047,144 @@ namespace Bloom.TeamCollection.Cloud
         }
 
         // ------------------------------------------------------------------
+        // Obsolete `.checkout` records (CONTRACTS.md v1.9)
+        // ------------------------------------------------------------------
+
+        // Folder names of books whose obsolete checkout could not be cancelled yet because the
+        // book might be open for editing (see ReconcileCheckoutFiles); retried on every poll.
+        private readonly HashSet<string> _deferredObsoleteCheckouts = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase
+        );
+        private readonly object _reconcileGate = new object();
+
+        /// <summary>
+        /// Collection open: cancel obsolete checkouts before SyncAtStartup's shared passes look at
+        /// any book (they would otherwise see a book this copy no longer holds as checked out
+        /// here, or as a conflict).
+        /// </summary>
+        protected override bool PrepareLocalBooksForSyncAtStartup(
+            Bloom.web.IWebSocketProgress progress
+        )
+        {
+            EnsureCacheHydrated();
+            return ReconcileCheckoutFiles(null, progress, deferIfPossiblyBeingEdited: false);
+        }
+
+        /// <summary>
+        /// Finds book folders whose `.checkout` record is obsolete and cancels those checkouts in
+        /// this copy. A record is obsolete when the server row (as last hydrated or polled) is
+        /// unlocked, or its checkoutGuidHash is not the hash of the record's GUID: someone checked
+        /// the book in or out from another copy (e.g. the other half of a duplicated collection
+        /// folder), an administrator force-unlocked it, or another account now holds it (every
+        /// way the lock can change hands issues a new GUID, except an account-switch takeover,
+        /// which only the copy holding the GUID can do). Cancelling means: if the local book
+        /// changed since the last sync, save it to Lost and Found (WorkPreservedLocally incident,
+        /// sub-case "ObsoleteCheckout"); remove the record; receive the repo version.
+        ///
+        /// Runs only right after the cache was refreshed from the server (collection open, and
+        /// each poll that touched books), so while disconnected a record is trusted as it stands.
+        /// A book the user might be editing (it is the selected book) is not received under
+        /// them: it already reads as not checked out here, so it has become read-only; its
+        /// cancellation is retried on every later poll -- a change of selection triggers one --
+        /// and at the next open.
+        /// </summary>
+        /// <param name="onlyBookIds">When not null, look only at these server book ids (plus
+        /// any previously deferred books).</param>
+        /// <param name="progress">Startup progress to report to, or null (polling).</param>
+        /// <returns>true if any local work was saved to Lost and Found.</returns>
+        internal bool ReconcileCheckoutFiles(
+            ICollection<string> onlyBookIds,
+            Bloom.web.IWebSocketProgress progress,
+            bool deferIfPossiblyBeingEdited
+        )
+        {
+            var preservedAny = false;
+            lock (_reconcileGate)
+            {
+                foreach (var folderPath in Directory.EnumerateDirectories(_localCollectionFolder))
+                {
+                    // A missing or unreadable record means this copy has no checkout to cancel.
+                    if (CloudCheckoutFile.Read(folderPath) == null)
+                        continue;
+                    var folderName = Path.GetFileName(folderPath);
+                    var book = ResolveCachedBook(folderName);
+                    // Nothing to compare against or receive for a book the repo doesn't know, has
+                    // never committed, or has deleted (remote deletes have their own handling).
+                    if (book == null || !book.CurrentVersionSeq.HasValue || book.DeletedAt.HasValue)
+                        continue;
+                    if (
+                        onlyBookIds != null
+                        && !onlyBookIds.Contains(book.Id)
+                        && !_deferredObsoleteCheckouts.Contains(folderName)
+                    )
+                        continue;
+                    if (IsCheckedOutInThisCopy(book, folderName))
+                    {
+                        _deferredObsoleteCheckouts.Remove(folderName);
+                        continue;
+                    }
+                    if (deferIfPossiblyBeingEdited && IsPossiblyBeingEdited(folderPath))
+                    {
+                        _deferredObsoleteCheckouts.Add(folderName);
+                        continue;
+                    }
+                    _deferredObsoleteCheckouts.Remove(folderName);
+                    preservedAny |= CancelObsoleteCheckout(folderName, progress);
+                }
+            }
+            return preservedAny;
+        }
+
+        /// <summary>The Edit tab only ever edits the selected book, so any other book is
+        /// certainly not being edited.</summary>
+        private bool IsPossiblyBeingEdited(string bookFolderPath) =>
+            string.Equals(
+                _tcManager?.BookSelection?.CurrentSelection?.FolderPath,
+                bookFolderPath,
+                StringComparison.OrdinalIgnoreCase
+            );
+
+        /// <summary>
+        /// The "cancel" half of <see cref="ReconcileCheckoutFiles"/> for one book: preserve local
+        /// changes (if any) in Lost and Found, remove the `.checkout` record, receive the repo
+        /// version. Returns true if local work was preserved.
+        /// </summary>
+        private bool CancelObsoleteCheckout(
+            string bookFolderName,
+            Bloom.web.IWebSocketProgress progress
+        )
+        {
+            var bookFolderPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            var preserved = IsLocalCopyModifiedSinceLastSync(bookFolderName);
+            if (preserved)
+                SaveLocalCopyForRecovery(bookFolderPath, bookFolderName, "ObsoleteCheckout");
+            CloudCheckoutFile.Delete(bookFolderPath);
+            var message =
+                $"\"{bookFolderName}\" is no longer checked out in this copy of the collection (it was checked in or out from somewhere else, or unlocked by an administrator), so Bloom has switched it to the Team Collection's version.";
+            Logger.WriteEvent("CloudTeamCollection: " + message);
+            progress?.MessageWithoutLocalizing(
+                message,
+                preserved ? Bloom.web.ProgressKind.Warning : Bloom.web.ProgressKind.Progress
+            );
+            var error = CopyBookFromRepoToLocal(bookFolderName);
+            if (error != null)
+            {
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: receiving \"{bookFolderName}\" after cancelling its obsolete checkout failed: {error}"
+                );
+                progress?.MessageWithoutLocalizing(error, Bloom.web.ProgressKind.Error);
+            }
+            if (progress == null)
+            {
+                // Polling: refresh the book's status display, and its preview if it is showing.
+                UpdateBookStatus(bookFolderName, true);
+                if (IsPossiblyBeingEdited(bookFolderPath))
+                    _tcManager?.SendBookContentReload();
+            }
+            return preserved;
+        }
+
+        // ------------------------------------------------------------------
         // Monitoring (polling; see CloudCollectionMonitor)
         // ------------------------------------------------------------------
 
@@ -1912,13 +2238,31 @@ namespace Bloom.TeamCollection.Cloud
                 ? _cache.GetAllBooks().ToDictionary(b => b.Id)
                 : null;
 
-            if (_cache.ApplyDelta(changes))
+            var cacheChanged = _cache.ApplyDelta(changes);
+            if (cacheChanged)
             {
                 _cache.Save();
                 RefreshIndexFromCache();
-                if (hasBookRows)
-                    RaiseBookEventsForPolledChanges(previousBooksById);
             }
+
+            // v1.9: a poll that touched a book may have made this copy's checkout of it obsolete
+            // (checked in or out from another copy, force-unlocked...). Cancel those before
+            // raising the change events, so their handlers see the book as it now is here. Books
+            // deferred earlier because they might have been open for editing are retried on
+            // every poll, idle or not (a selection change triggers one).
+            var touchedBookIds = hasBookRows
+                ? new HashSet<string>(
+                    ((JArray)changes["books"]).OfType<JObject>().Select(row => (string)row["id"])
+                )
+                : new HashSet<string>();
+            bool anyDeferred;
+            lock (_reconcileGate)
+                anyDeferred = _deferredObsoleteCheckouts.Count > 0;
+            if (touchedBookIds.Count > 0 || anyDeferred)
+                ReconcileCheckoutFiles(touchedBookIds, null, deferIfPossiblyBeingEdited: true);
+
+            if (cacheChanged && hasBookRows)
+                RaiseBookEventsForPolledChanges(previousBooksById);
 
             if (changes["groups"] is JArray groupsArray && groupsArray.Count > 0)
                 RaiseRepoCollectionFilesChanged();
@@ -1961,9 +2305,13 @@ namespace Bloom.TeamCollection.Cloud
                     RaiseDeleteRepoBookFile(bookFileName);
                     continue;
                 }
+                // CheckoutGuidHash too: a new checkout of the book by the SAME account (from
+                // another copy) changes only the GUID, yet it changes whether the book is checked
+                // out HERE.
                 if (
                     book.CurrentVersionSeq != previous.CurrentVersionSeq
                     || book.LockedBy != previous.LockedBy
+                    || book.CheckoutGuidHash != previous.CheckoutGuidHash
                     || book.Name != previous.Name
                 )
                 {

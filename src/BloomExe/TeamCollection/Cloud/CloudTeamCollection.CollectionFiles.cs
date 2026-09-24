@@ -91,9 +91,11 @@ namespace Bloom.TeamCollection.Cloud
             // Hand the hashes we just computed (for the start call's files json) to the transfer
             // so it doesn't hash every file a second time.
             var localGroupHashes = new Dictionary<string, BookVersionManifestEntry>();
+            // Keyed by the NFC path (the S3 key the server expects), but remembering the on-disk
+            // spelling, which is what the upload must open (v1.8: paths are NFC server-side).
             foreach (var f in files)
                 localGroupHashes[BookVersionManifest.NormalizePath(f.path)] =
-                    new BookVersionManifestEntry(f.sha256, f.size);
+                    new BookVersionManifestEntry(f.sha256, f.size) { LocalRelativePath = f.path };
             _transfer.UploadChangedFiles(
                 location,
                 sourceFolder,

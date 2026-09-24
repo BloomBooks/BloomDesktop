@@ -181,12 +181,10 @@ namespace Bloom.TeamCollection
                 return false;
             }
 
-            if (
-                repoStatus.lockedBy == CurrentUserIdentity
-                && repoStatus.lockedWhere == TeamCollectionManager.CurrentMachine
-            )
+            if (IsCheckedOutHereBy(repoStatus))
             {
-                // normal case, repo still shows it checked out here.
+                // normal case, repo still shows it checked out here (on this machine for a
+                // folder TC; in this copy of the collection for a cloud one).
                 return true;
             }
 
@@ -552,13 +550,12 @@ namespace Bloom.TeamCollection
         /// must NOT be loosened. The default here is the same strict check. CloudTeamCollection
         /// overrides it for the account-switch scenario (batch item 9,
         /// Design/CloudTeamCollections/orchestration/DOGFOOD-BATCH-1.md): a book left checked out
-        /// HERE (this machine) by a DIFFERENT signed-in team member is still editable by the
+        /// HERE (in this copy of the collection) by a DIFFERENT signed-in team member is still editable by the
         /// current member -- John's decision: "local machine access is unrestricted; only
         /// shared-data operations are gated by the CURRENT logon's server permissions." The
         /// server-side lock itself only actually moves to the current user lazily, the first time
         /// we need to push a change (see CanTakeOverLockOnThisMachine/TryTakeOverLock).
-        /// The bookName parameter lets the cloud override consult per-book state its BookStatus
-        /// doesn't carry (the lock's "seat" — which local copy of the collection holds it; bug #0).
+        /// The bookName parameter lets an override consult per-book state beyond the BookStatus.
         /// </summary>
         protected internal virtual bool IsEditableHere(string bookName, BookStatus status) =>
             IsCheckedOutHereBy(status);
@@ -567,9 +564,9 @@ namespace Bloom.TeamCollection
         /// Virtual seam: true if <paramref name="repoStatus"/> represents a lock this backend is
         /// willing to atomically hand over to the current user instead of treating it as a
         /// conflict. The base (folder) implementation never allows this. CloudTeamCollection
-        /// overrides it to allow same-machine, same-seat, different-account takeover (batch
-        /// item 9 + bug #0) -- never across machines or across local collection copies, which
-        /// remain genuine conflicts. Used by both
+        /// overrides it to allow different-account takeover in the copy of the collection the book
+        /// is checked out in (batch item 9 + bug #0; the copy holding the checkout GUID) -- never
+        /// from any other copy, which remains a genuine conflict. Used by both
         /// <see cref="OkToCheckIn"/> (so an account-switched check-in isn't blocked) and
         /// <see cref="AttemptLock"/> (so an explicit "check out" click on such a book performs
         /// the handover instead of silently failing).
@@ -1751,17 +1748,26 @@ namespace Bloom.TeamCollection
         /// </summary>
         public void PreserveLocalCopyIfModifiedSinceLastSync(string bookFolderName)
         {
+            if (IsLocalCopyModifiedSinceLastSync(bookFolderName))
+                PreserveLocalCopyForRecoveryBeforeOverwrite(bookFolderName);
+        }
+
+        /// <summary>
+        /// The test behind <see cref="PreserveLocalCopyIfModifiedSinceLastSync"/>: true if the
+        /// local folder exists, can be checksummed, and its content differs from the checksum
+        /// the local status recorded at the last sync (a missing/empty recorded checksum counts as
+        /// "modified": a local folder the sync never recorded is exactly the kind of content we
+        /// must not silently discard).
+        /// </summary>
+        protected bool IsLocalCopyModifiedSinceLastSync(string bookFolderName)
+        {
             var bookPath = Path.Combine(_localCollectionFolder, bookFolderName);
             if (!Directory.Exists(bookPath))
-                return; // nothing local to preserve
+                return false; // nothing local to preserve
             var currentChecksum = MakeChecksum(bookPath);
             if (string.IsNullOrEmpty(currentChecksum))
-                return; // can't checksum it (e.g. no .htm); nothing meaningful to preserve
-            // A missing/empty recorded checksum counts as "modified": a local folder the sync
-            // never recorded is exactly the kind of content we must not silently discard.
-            if (currentChecksum == GetLocalStatus(bookFolderName).checksum)
-                return; // unchanged since last sync; overwriting loses nothing
-            PreserveLocalCopyForRecoveryBeforeOverwrite(bookFolderName);
+                return false; // can't checksum it (e.g. no .htm); nothing meaningful to preserve
+            return currentChecksum != GetLocalStatus(bookFolderName).checksum;
         }
 
         /// <summary>
@@ -2062,6 +2068,9 @@ namespace Bloom.TeamCollection
                 collectionFolder ?? _localCollectionFolder
             );
             var statusToWrite = status.WithCollectionId(collectionId ?? CollectionId);
+            // Computed afresh on every repo status read (cloud); a persisted copy would go stale
+            // the moment the checkout moved, so it never goes into the local status file.
+            statusToWrite.checkedOutInThisCopy = null;
             RobustFile.WriteAllText(statusFilePath, statusToWrite.ToJson(), Encoding.UTF8);
         }
 
@@ -2080,6 +2089,9 @@ namespace Bloom.TeamCollection
             );
             AddIfExists(paths, Path.Combine(folderPath, "log.txt"));
             AddIfExists(paths, Path.Combine(folderPath, "impersonate.txt"));
+            // A cloud checkout belongs to this one book folder; a duplicate, publication or
+            // BloomPack carrying it would look like a second copy of the checkout.
+            AddIfExists(paths, Cloud.CloudCheckoutFile.GetPath(folderPath));
         }
 
         static void AddIfExists(List<string> paths, string path)
@@ -2265,6 +2277,10 @@ namespace Bloom.TeamCollection
             _syncIsRunning = true;
 
             var hasProblems = false; //set true if we get any problems
+
+            // Let the backend settle anything the shared passes below must not see in a stale
+            // state (cloud: cancel checkouts this copy no longer holds).
+            hasProblems |= PrepareLocalBooksForSyncAtStartup(progress);
 
             var unreadableBooks = new List<string>();
             var repoBooksByIdMap = GetRepoBooksByIdMap(unreadableBooks);
@@ -2940,6 +2956,18 @@ namespace Bloom.TeamCollection
             _syncIsRunning = false;
             return hasProblems;
         }
+
+        /// <summary>
+        /// Hook run at the very start of <see cref="SyncAtStartup"/>, before any of its shared
+        /// passes read book status. The base (folder) implementation does nothing. The cloud
+        /// backend uses it to cancel checkouts whose `.checkout` record is obsolete (see
+        /// CloudTeamCollection.ReconcileCheckoutFiles), so the passes below see those books as
+        /// the ordinary checked-in books they now are.
+        /// </summary>
+        /// <returns>true if something was reported that should keep the progress dialog open
+        /// (e.g. local work was saved to Lost and Found)</returns>
+        protected virtual bool PrepareLocalBooksForSyncAtStartup(IWebSocketProgress progress) =>
+            false;
 
         protected string GetBookId(string bookFolderName)
         {

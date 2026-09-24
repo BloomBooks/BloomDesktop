@@ -23,6 +23,14 @@ namespace Bloom.TeamCollection.Cloud
         MissingOrBadUploads,
         VersionConflict,
         TransactionExpired,
+
+        /// <summary>v1.9: the caller holds the book's lock, but in ANOTHER copy of the
+        /// collection (the presented checkout GUID is missing or not the current one).</summary>
+        CheckoutElsewhere,
+
+        /// <summary>v1.8: checkin-start/collection-files-start refused the proposed file list
+        /// (a bad or duplicate path after NFC normalization, or a malformed entry).</summary>
+        InvalidManifest,
     }
 
     /// <summary>
@@ -46,6 +54,28 @@ namespace Bloom.TeamCollection.Cloud
         {
             Code = code;
             Details = details;
+        }
+    }
+
+    /// <summary>
+    /// Thrown by CloudTeamCollection's check-in when the server refuses it for good
+    /// (LockHeldByOther, CheckoutElsewhere or BaseVersionSuperseded, from checkin-start or
+    /// checkin-finish): the transaction has been aborted, retrying cannot succeed, and the caller
+    /// should preserve the local work (Lost and Found) and Receive the repo version. The
+    /// <see cref="Exception.Message"/> is a complete, user-facing explanation.
+    /// </summary>
+    public class CloudCheckinRefusedException : ApplicationException
+    {
+        public CloudErrorCode Code { get; }
+
+        public CloudCheckinRefusedException(
+            CloudErrorCode code,
+            string message,
+            Exception innerException
+        )
+            : base(message, innerException)
+        {
+            Code = code;
         }
     }
 
@@ -226,48 +256,52 @@ namespace Bloom.TeamCollection.Cloud
                 new { p_collection_id = collectionId, p_group_key = groupKey }
             );
 
-        /// <summary>Conditional lock; result includes the winning holder's identity on failure.
-        /// v1.5 (20260711000003): also records which local copy of the collection ("seat") took
-        /// the lock — see CloudTeamCollection.SeatId.</summary>
-        public JObject CheckoutBook(string bookId, string machine, string seat) =>
-            (JObject)CallRpc(
-                "checkout_book",
-                new
-                {
-                    p_book_id = bookId,
-                    p_machine = machine,
-                    p_seat = seat,
-                }
-            );
+        /// <summary>Conditional lock (CONTRACTS.md v1.9): succeeds only if the book is unlocked,
+        /// returning `{success: true, checkoutGuid, locked_by, locked_by_machine, locked_at}`; the
+        /// GUID goes only to this caller, who keeps it in the book folder's `.checkout` record.
+        /// Already locked by the caller (necessarily in another copy, or this copy would not be
+        /// asking) → `{success: false, locked_by_me: true}` with NO new GUID; locked by someone
+        /// else → `success: false` plus the holder's identity. <paramref name="machine"/> is for
+        /// display only.</summary>
+        public JObject CheckoutBook(string bookId, string machine) =>
+            (JObject)CallRpc("checkout_book", new { p_book_id = bookId, p_machine = machine });
 
-        /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md v1.4/v1.5): atomically
+        /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md v1.9): atomically
         /// reassigns a book's lock from a DIFFERENT account to the caller, but ONLY when the
-        /// existing lock is recorded for the SAME machine AND the SAME seat (local collection
-        /// copy — bug #0, John's ruling: two local copies on one computer are two seats). Returns
-        /// the same {success, locked_by, locked_by_machine, locked_seat, locked_at} shape as
-        /// checkout_book, so callers can reuse CloudRepoCache.RecordCheckoutResult unchanged.</summary>
-        public JObject CheckoutBookTakeover(string bookId, string machine, string seat) =>
+        /// caller presents the current checkout GUID (i.e. it is working in the copy of the
+        /// collection the book is checked out in). Does not issue a new GUID. Returns the same
+        /// {success, locked_by, locked_by_machine, locked_at} shape as checkout_book, so callers
+        /// can reuse CloudRepoCache.RecordCheckoutResult.</summary>
+        public JObject CheckoutBookTakeover(string bookId, string checkoutGuid, string machine) =>
             (JObject)CallRpc(
                 "checkout_book_takeover",
                 new
                 {
                     p_book_id = bookId,
+                    p_checkout_guid = checkoutGuid,
                     p_machine = machine,
-                    p_seat = seat,
                 }
             );
 
-        /// <summary>Releases the caller's own lock (undo checkout; no content change).</summary>
-        public JObject UnlockBook(string bookId) =>
-            (JObject)CallRpc("unlock_book", new { p_book_id = bookId });
+        /// <summary>Releases the caller's own lock (undo checkout; no content change). v1.9: the
+        /// caller must present the current checkout GUID (else CheckoutElsewhere).</summary>
+        public JObject UnlockBook(string bookId, string checkoutGuid) =>
+            (JObject)CallRpc(
+                "unlock_book",
+                new { p_book_id = bookId, p_checkout_guid = checkoutGuid }
+            );
 
         /// <summary>Admin-only forced unlock; audited server-side, emits a ForcedUnlock event.</summary>
         public JObject ForceUnlock(string bookId) =>
             (JObject)CallRpc("force_unlock", new { p_book_id = bookId });
 
-        /// <summary>Requires the caller holds the lock; sets deleted_at and emits a Deleted event.</summary>
-        public JObject DeleteBook(string bookId) =>
-            (JObject)CallRpc("delete_book", new { p_book_id = bookId });
+        /// <summary>Requires the caller holds the lock; sets deleted_at and emits a Deleted event.
+        /// v1.9: the caller must present the current checkout GUID (else CheckoutElsewhere).</summary>
+        public JObject DeleteBook(string bookId, string checkoutGuid) =>
+            (JObject)CallRpc(
+                "delete_book",
+                new { p_book_id = bookId, p_checkout_guid = checkoutGuid }
+            );
 
         // NOTE: wrappers for the tc.undelete_book and tc.rename_check RPCs used to live here but
         // were removed as dead code -- no client flow calls them (renames travel through
@@ -404,9 +438,12 @@ namespace Bloom.TeamCollection.Cloud
         /// Opens (or refreshes, if called again with the same open transaction) a check-in
         /// transaction. <paramref name="bookId"/> null means "first Send of a new book".
         /// <paramref name="files"/> is the diff (added/changed paths only) as
-        /// [{path,sha256,size}]. Throws <see cref="CloudCollectionClientException"/> with
-        /// LockHeldByOther/BaseVersionSuperseded/NameConflict/ClientOutOfDate on the documented
-        /// 409/426s.
+        /// [{path,sha256,size}]. <paramref name="checkoutGuid"/> is this copy's checkout GUID
+        /// (null when it has none, e.g. a new book or a take-if-free check-in); when the server
+        /// issues a new one (taking a free lock, or a new book) the response carries it as
+        /// `checkoutGuid`. Throws <see cref="CloudCollectionClientException"/> with
+        /// InvalidManifest (400), LockHeldByOther/CheckoutElsewhere/BaseVersionSuperseded/
+        /// NameConflict (409) or ClientOutOfDate (426).
         /// </summary>
         public JObject CheckinStart(
             string collectionId,
@@ -416,7 +453,8 @@ namespace Bloom.TeamCollection.Cloud
             string baseVersionId,
             string checksum,
             string clientVersion,
-            JArray files
+            JArray files,
+            string checkoutGuid
         ) =>
             (JObject)CallEdgeFunction(
                 "checkin-start",
@@ -430,6 +468,7 @@ namespace Bloom.TeamCollection.Cloud
                     checksum,
                     clientVersion,
                     files,
+                    checkoutGuid,
                 }
             );
 
@@ -615,6 +654,20 @@ namespace Bloom.TeamCollection.Cloud
                     return new CloudCollectionClientException(
                         CloudErrorCode.ClientOutOfDate,
                         message,
+                        body
+                    );
+                case "CheckoutElsewhere":
+                    return new CloudCollectionClientException(
+                        CloudErrorCode.CheckoutElsewhere,
+                        message,
+                        body
+                    );
+                case "InvalidManifest":
+                    // The envelope carries its explanation in `detail` (+ `entries`/`paths`),
+                    // not `message`; prefer it over the raw JSON body.
+                    return new CloudCollectionClientException(
+                        CloudErrorCode.InvalidManifest,
+                        (string)body["message"] ?? (string)body["detail"] ?? message,
                         body
                     );
             }

@@ -249,6 +249,65 @@ namespace BloomTests.TeamCollection.Cloud
             );
         }
 
+        [Test]
+        public void UploadChangedFiles_NfdLocalFileName_OpensTheDiskSpelling_UploadsToTheNfcKey()
+        {
+            // v1.8: the server NFC-normalizes paths and returns changedPaths NFC; a file whose
+            // name is decomposed (NFD) on disk must still be found and uploaded -- to the NFC key.
+            var nfdName = "café.png";
+            var nfcName = "café.png";
+            var localPath = WriteBookFile(nfdName, "decomposed-name bytes");
+            Assert.That(
+                File.Exists(Path.Combine(_bookFolderPath, nfcName)),
+                Is.False,
+                "sanity check: only the NFD spelling exists on disk, so opening the NFC path would fail"
+            );
+            var (sha256, size) = BookVersionManifest.ComputeFileHash(localPath);
+            var localManifest = new BookVersionManifest(
+                new Dictionary<string, BookVersionManifestEntry>
+                {
+                    [nfcName] = new BookVersionManifestEntry(sha256, size)
+                    {
+                        LocalRelativePath = nfdName,
+                    },
+                }
+            );
+            var capturedKeys = new List<string>();
+            var capturedContent = new List<string>();
+            _s3Mock
+                .Setup(s =>
+                    s.PutObjectAsync(It.IsAny<PutObjectRequest>(), It.IsAny<CancellationToken>())
+                )
+                .Callback<PutObjectRequest, CancellationToken>(
+                    (req, ct) =>
+                    {
+                        capturedKeys.Add(req.Key);
+                        capturedContent.Add(new StreamReader(req.InputStream).ReadToEnd());
+                    }
+                )
+                .ReturnsAsync(
+                    new PutObjectResponse { HttpStatusCode = HttpStatusCode.OK, VersionId = "v" }
+                );
+
+            var result = _transfer.UploadChangedFiles(
+                _location,
+                _bookFolderPath,
+                new[] { nfcName },
+                null,
+                localManifest,
+                2,
+                null,
+                CancellationToken.None
+            );
+
+            Assert.That(result.UploadedPaths, Has.Member(nfcName));
+            Assert.That(
+                capturedKeys,
+                Is.EqualTo(new[] { "tc/collection-1/books/instance-1/" + nfcName })
+            );
+            Assert.That(capturedContent, Is.EqualTo(new[] { "decomposed-name bytes" }));
+        }
+
         // ------------------------------------------------------------------
         // Upload: checksum-mismatch / transient-failure retry
         // ------------------------------------------------------------------

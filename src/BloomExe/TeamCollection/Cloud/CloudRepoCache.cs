@@ -82,11 +82,13 @@ namespace Bloom.TeamCollection.Cloud
         public string LockedBy;
         public string LockedByMachine;
 
-        /// <summary>Which local copy of the collection ("seat", 20260711000003: a stable hash of
-        /// the local collection folder path) holds the lock. Null = unknown (legacy lock, or one
-        /// acquired via checkin_start_tx's take-if-free path); a null seat can never be taken
-        /// over (fail-safe) — see CloudTeamCollection.SeatId and bug #0 in the batch doc.</summary>
-        public string LockedSeat;
+        /// <summary>CONTRACTS.md v1.9: lowercase hex SHA-256 of the current checkout GUID
+        /// (tc.books.checkout_guid_hash, reported as checkoutGuidHash); null when unlocked. The
+        /// copy of the collection whose book folder holds the matching GUID (its `.checkout`
+        /// record, see <see cref="CloudCheckoutFile"/>) is the one the book is checked out in.
+        /// Written from the server row, and by this client's own checkout / check-in
+        /// write-throughs when it is handed a new GUID.</summary>
+        public string CheckoutGuidHash;
         public DateTime? LockedAt;
         public DateTime? DeletedAt;
         public DateTime? CreatedAt;
@@ -139,7 +141,7 @@ namespace Bloom.TeamCollection.Cloud
                 CurrentChecksum = CurrentChecksum,
                 LockedBy = LockedBy,
                 LockedByMachine = LockedByMachine,
-                LockedSeat = LockedSeat,
+                CheckoutGuidHash = CheckoutGuidHash,
                 LockedAt = LockedAt,
                 DeletedAt = DeletedAt,
                 CreatedAt = CreatedAt,
@@ -163,8 +165,9 @@ namespace Bloom.TeamCollection.Cloud
             CurrentChecksum = (string)row["current_checksum"];
             LockedBy = (string)row["locked_by"];
             LockedByMachine = (string)row["locked_by_machine"];
-            // Present since the 20260711000003 migration; older rows leave it null (= unknown seat).
-            LockedSeat = (string)row["locked_seat"];
+            // v1.9. The contract names it checkoutGuidHash; the other row fields are snake_case
+            // column names, so the column spelling is accepted too.
+            CheckoutGuidHash = (string)(row["checkoutGuidHash"] ?? row["checkout_guid_hash"]);
             LockedAt = (DateTime?)row["locked_at"];
             DeletedAt = (DateTime?)row["deleted_at"];
             if (row["created_at"] != null)
@@ -188,7 +191,7 @@ namespace Bloom.TeamCollection.Cloud
                 ["currentChecksum"] = CurrentChecksum,
                 ["lockedBy"] = LockedBy,
                 ["lockedByMachine"] = LockedByMachine,
-                ["lockedSeat"] = LockedSeat,
+                ["checkoutGuidHash"] = CheckoutGuidHash,
                 ["lockedAt"] = LockedAt,
                 ["deletedAt"] = DeletedAt,
                 ["createdAt"] = CreatedAt,
@@ -210,7 +213,7 @@ namespace Bloom.TeamCollection.Cloud
                 CurrentChecksum = (string)json["currentChecksum"],
                 LockedBy = (string)json["lockedBy"],
                 LockedByMachine = (string)json["lockedByMachine"],
-                LockedSeat = (string)json["lockedSeat"],
+                CheckoutGuidHash = (string)json["checkoutGuidHash"],
                 LockedAt = (DateTime?)json["lockedAt"],
                 DeletedAt = (DateTime?)json["deletedAt"],
                 CreatedAt = (DateTime?)json["createdAt"],
@@ -475,10 +478,21 @@ namespace Bloom.TeamCollection.Cloud
             {
                 var book = GetOrAddLocked(bookId);
                 var previousLockedBy = book.LockedBy;
-                book.LockedBy = (string)checkoutResult["locked_by"];
+                var lockedByMe = (bool?)checkoutResult["locked_by_me"] ?? false;
+                book.LockedBy =
+                    (string)checkoutResult["locked_by"] ?? (lockedByMe ? currentUserId : null);
                 book.LockedByMachine = (string)checkoutResult["locked_by_machine"];
-                book.LockedSeat = (string)checkoutResult["locked_seat"];
                 book.LockedAt = (DateTime?)checkoutResult["locked_at"];
+                // Only a successful checkout_book hands out a (new) GUID. A takeover keeps the
+                // existing one, and "locked_by_me" means the lock (and its GUID) is unchanged,
+                // so both leave the hash alone; any other outcome is someone else's lock, whose
+                // hash we don't know until the next poll.
+                var newGuid = (string)checkoutResult["checkoutGuid"];
+                var success = (bool?)checkoutResult["success"] ?? false;
+                if (newGuid != null)
+                    book.CheckoutGuidHash = CloudCheckoutFile.HashGuid(newGuid);
+                else if (!success && !lockedByMe)
+                    book.CheckoutGuidHash = null;
                 SyncLockDisplayFieldsLocked(
                     book,
                     previousLockedBy,
@@ -498,7 +512,7 @@ namespace Bloom.TeamCollection.Cloud
                 {
                     book.LockedBy = null;
                     book.LockedByMachine = null;
-                    book.LockedSeat = null;
+                    book.CheckoutGuidHash = null;
                     book.LockedAt = null;
                     book.LockedByEmail = null;
                     book.LockedByDisplayName = null;
@@ -510,7 +524,11 @@ namespace Bloom.TeamCollection.Cloud
         /// Write-through for a successful checkin-finish (CONTRACTS.md: `{versionId, seq}`), plus the
         /// manifest the client just committed (it already has this in hand — it built it to drive the
         /// upload). Adds the book if this was its first-ever commit (the checkin-start `bookId:null`
-        /// path) — <paramref name="instanceId"/> and <paramref name="name"/> are only needed then.
+        /// path) — <paramref name="instanceId"/> is only needed then. <paramref name="name"/> is the
+        /// name the check-in committed (checkin-start's proposedName, which also carries a rename
+        /// or a NameConflict-retry suffix). <paramref name="checkoutGuidHash"/> is the hash of the
+        /// GUID this copy holds for the lock, recorded only when <paramref name="keptCheckedOut"/>
+        /// (otherwise the lock and its GUID are gone).
         /// </summary>
         public void RecordCheckinFinish(
             string bookId,
@@ -523,7 +541,8 @@ namespace Bloom.TeamCollection.Cloud
             bool keptCheckedOut,
             string lockedByUserId,
             string lockedByMachine,
-            string lockedByEmail
+            string lockedByEmail,
+            string checkoutGuidHash
         )
         {
             lock (_gate)
@@ -532,8 +551,7 @@ namespace Bloom.TeamCollection.Cloud
                 var previousLockedBy = book.LockedBy;
                 if (book.InstanceId == null)
                     book.InstanceId = instanceId;
-                if (book.Name == null)
-                    book.Name = name;
+                book.Name = name;
                 book.CurrentVersionId = versionId;
                 book.CurrentVersionSeq = versionSeq;
                 book.CurrentChecksum = checksum;
@@ -545,12 +563,13 @@ namespace Bloom.TeamCollection.Cloud
                     // book-state-change event when the next poll refreshes LockedBy from the server.
                     book.LockedBy = lockedByUserId;
                     book.LockedByMachine = lockedByMachine;
+                    book.CheckoutGuidHash = checkoutGuidHash;
                 }
                 else
                 {
                     book.LockedBy = null;
                     book.LockedByMachine = null;
-                    book.LockedSeat = null;
+                    book.CheckoutGuidHash = null;
                     book.LockedAt = null;
                 }
                 // keptCheckedOut always retains the current user's own lock, so lockedByUserId is

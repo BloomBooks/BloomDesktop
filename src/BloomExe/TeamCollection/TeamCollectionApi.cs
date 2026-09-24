@@ -947,6 +947,14 @@ namespace Bloom.TeamCollection
                 var localVersionSeq = cloudCollection.GetLocalVersionSeq(bookFolderName);
                 json["repoVersionSeq"] = repoVersionSeq;
                 json["localVersionSeq"] = localVersionSeq;
+                // CONTRACTS.md v1.9: in a cloud TC "checked out here" means "in this copy of the
+                // collection" (the book folder holds the current checkout GUID), not "on this
+                // machine"; the status panel uses this instead of comparing where/currentMachine.
+                // Omitted for a book the repo doesn't know (a new local book), which keeps the
+                // panel's old rule.
+                var checkedOutInThisCopy = cloudCollection.IsCheckedOutInThisCopy(bookFolderName);
+                if (checkedOutInThisCopy.HasValue)
+                    json["checkedOutInThisCopy"] = checkedOutInThisCopy.Value;
                 if (cloudCollection.IsDisconnected && !localVersionSeq.HasValue)
                 {
                     // Non-localized, matching the precedent of this same method's pre-existing
@@ -1345,19 +1353,6 @@ namespace Bloom.TeamCollection
                 else
                 {
                     // We can't check in! The system has broken down...perhaps conflicting checkouts while offline.
-                    // Save our version in Lost-and-Found
-                    _tcManager.CurrentCollection.PutBook(
-                        bookInfo.FolderPath,
-                        false,
-                        true,
-                        reportProgressFraction
-                    );
-                    reportProgressFraction(0); // cleans up panel for next time
-                    // overwrite it with the current repo version.
-                    _tcManager.CurrentCollection.CopyBookFromRepoToLocal(
-                        bookName,
-                        dialogOnError: true
-                    );
                     var msgFmt = LocalizationManager.GetString(
                         "TeamCollection.ConflictingEditOrCheckout",
                         "Someone else has edited the book {0} or checked it out even though it was being editing here! Local changes have been saved to Lost and Found"
@@ -1366,27 +1361,35 @@ namespace Bloom.TeamCollection
                         msgFmt,
                         Path.GetFileNameWithoutExtension(bookInfo.FolderPath)
                     );
-
-                    progress.MessageWithoutLocalizing($"{msgFmt}", ProgressKind.Error);
-
-                    Analytics.Track(
-                        "TeamCollectionConflictingEditOrCheckout",
-                        new Dictionary<string, string>()
-                        {
-                            { "CollectionId", _settings?.CollectionId },
-                            { "CollectionName", _settings?.CollectionName },
-                            { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
-                            { "User", CurrentUser },
-                            { "BookId", bookInfo.Id },
-                            { "BookName", bookInfo.Title },
-                        }
+                    SaveToLostAndFoundAndReceive(
+                        bookInfo,
+                        bookName,
+                        reportProgressFraction,
+                        progress,
+                        msg
                     );
-                    BookHistory.AddEvent(bookInfo, BookHistoryEventType.SyncProblem, msg);
-                    BloomMessageBox.ShowInfo(msg);
                 }
 
                 UpdateUiForBook();
 
+                Application.Idle += OnIdleConnectionCheck;
+            }
+            catch (Cloud.CloudCheckinRefusedException refused)
+            {
+                // The cloud server refused the check-in for good (the book was checked out
+                // elsewhere, or changed, since this copy's checkout began; CONTRACTS.md v1.8/v1.9).
+                // Retrying can't help, so treat it like the conflict branch above: keep the local
+                // work in Lost and Found and bring this copy up to date with the repo.
+                var bookName = Path.GetFileName(bookInfo.FolderPath);
+                SaveToLostAndFoundAndReceive(
+                    bookInfo,
+                    bookName,
+                    reportProgressFraction,
+                    progress,
+                    refused.Message
+                        + " Your changes have been saved to Lost and Found, and you now have the Team Collection's version."
+                );
+                UpdateUiForBook();
                 Application.Idle += OnIdleConnectionCheck;
             }
             catch (Exception e)
@@ -1420,6 +1423,48 @@ namespace Bloom.TeamCollection
                 );
                 request.Failed("checkin failed");
             }
+        }
+
+        /// <summary>
+        /// The recovery for a check-in that can't happen: save the local version of the book in
+        /// Lost and Found, overwrite it with the repo version, and tell the user
+        /// (<paramref name="message"/>) by progress, book history and a message box.
+        /// </summary>
+        private void SaveToLostAndFoundAndReceive(
+            BookInfo bookInfo,
+            string bookName,
+            Action<float> reportProgressFraction,
+            IWebSocketProgress progress,
+            string message
+        )
+        {
+            // Save our version in Lost-and-Found
+            _tcManager.CurrentCollection.PutBook(
+                bookInfo.FolderPath,
+                false,
+                true,
+                reportProgressFraction
+            );
+            reportProgressFraction(0); // cleans up panel for next time
+            // overwrite it with the current repo version.
+            _tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName, dialogOnError: true);
+
+            progress?.MessageWithoutLocalizing(message, ProgressKind.Error);
+
+            Analytics.Track(
+                "TeamCollectionConflictingEditOrCheckout",
+                new Dictionary<string, string>()
+                {
+                    { "CollectionId", _settings?.CollectionId },
+                    { "CollectionName", _settings?.CollectionName },
+                    { "Backend", _tcManager?.CurrentCollection?.GetBackendType() },
+                    { "User", CurrentUser },
+                    { "BookId", bookInfo.Id },
+                    { "BookName", bookInfo.Title },
+                }
+            );
+            BookHistory.AddEvent(bookInfo, BookHistoryEventType.SyncProblem, message);
+            BloomMessageBox.ShowInfo(message);
         }
 
         private void OnIdleConnectionCheck(object sender, EventArgs e)

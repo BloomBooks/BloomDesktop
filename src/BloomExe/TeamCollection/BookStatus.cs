@@ -20,6 +20,17 @@ namespace Bloom.TeamCollection
         public string collectionId; // used only locally, distinguishes which collection stored the book.
         public bool hasInvalidRepoData; // currently this is true if we detect that a repo file exists but is not readable as a zip
 
+        /// <summary>
+        /// Cloud Team Collections only: whether the book is checked out in THIS copy of the
+        /// collection (its folder's `.checkout` record holds the checkout GUID the server
+        /// currently reports), regardless of machine. Null for folder Team Collections, whose
+        /// "checked out here" keeps meaning "on this machine". Computed fresh from the repo
+        /// cache for every status read; never persisted in the local status file (see
+        /// TeamCollection.WriteLocalStatus).
+        /// </summary>
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public bool? checkedOutInThisCopy;
+
         public string ToJson()
         {
             return JsonConvert.SerializeObject(this);
@@ -85,6 +96,9 @@ namespace Bloom.TeamCollection
             result.lockedBy = lockedBy;
             result.lockedByFirstName = firstName;
             result.lockedBySurname = surname;
+            // Whatever copy the previous lock was in says nothing about this new one, which (if
+            // any) is being taken here and now.
+            result.checkedOutInThisCopy = null;
             if (!result.IsCheckedOut())
             {
                 result.lockedWhen = result.lockedWhere = null;
@@ -106,7 +120,9 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
-        /// Master definition of what it means to be checked out and able to edit.
+        /// Master definition of what it means to be checked out and able to edit: checked out by
+        /// <paramref name="whoBy"/>, and "here" -- in this copy of the collection when
+        /// <see cref="checkedOutInThisCopy"/> is known (cloud), otherwise on this machine.
         /// </summary>
         /// <param name="whoBy"></param>
         /// <returns></returns>
@@ -114,6 +130,8 @@ namespace Bloom.TeamCollection
         {
             if (lockedBy == TeamCollection.FakeUserIndicatingNewBook)
                 return true; // a new local book is always "checked out here"
+            if (checkedOutInThisCopy.HasValue)
+                return lockedBy == whoBy && checkedOutInThisCopy.Value;
             return lockedBy == whoBy && lockedWhere == TeamCollectionManager.CurrentMachine;
         }
 

@@ -174,6 +174,31 @@ namespace BloomTests.TeamCollection
                 ["deleted_at"] = null,
             };
 
+        private const string kCheckoutGuid = "1f2e3d4c-5b6a-4978-8a9b-0c1d2e3f4a5b";
+
+        /// <summary>Makes <paramref name="book"/>'s row carry the hash of kCheckoutGuid and gives
+        /// it a local folder (bound by instance id) whose `.checkout` record holds that GUID -- i.e.
+        /// the book is checked out in this copy of the collection (CONTRACTS.md v1.9).</summary>
+        private JObject BookCheckedOutInThisCopy(JObject book)
+        {
+            book["checkoutGuidHash"] = CloudCheckoutFile.HashGuid(kCheckoutGuid);
+            var folder = _collectionFolder.Combine((string)book["name"]);
+            System.IO.Directory.CreateDirectory(folder);
+            System.IO.File.WriteAllText(
+                System.IO.Path.Combine(folder, "meta.json"),
+                $"{{\"bookInstanceId\":\"{(string)book["instance_id"]}\"}}"
+            );
+            new CloudCheckoutFile
+            {
+                CheckoutGuid = kCheckoutGuid,
+                BookId = (string)book["id"],
+                CollectionId = kCollectionId,
+                UserEmail = "test@somewhere.org",
+                CheckedOutAtUtc = System.DateTime.UtcNow,
+            }.Write(folder);
+            return book;
+        }
+
         [Test]
         public void Capabilities_NoCollection_AllFalse()
         {
@@ -225,14 +250,16 @@ namespace BloomTests.TeamCollection
                 // receive the latest checked-in version, and the badge must not switch off without
                 // the update ever being received just because someone else took the book out.
                 Book("book-2", "Book Two", currentVersionSeq: 1, lockedBy: "someone-else"),
-                // Checked out HERE (this user + this machine) -> excluded, matching what
-                // ReceiveAllUpdates would skip (receiving would clobber local edits).
-                Book(
-                    "book-3",
-                    "Book Three",
-                    currentVersionSeq: 5,
-                    lockedBy: "test@somewhere.org",
-                    lockedByMachine: TeamCollectionManager.CurrentMachine
+                // Checked out HERE (this user, in this copy: see WriteCheckoutRecord) -> excluded,
+                // matching what ReceiveAllUpdates would skip (receiving would clobber local edits).
+                BookCheckedOutInThisCopy(
+                    Book(
+                        "book-3",
+                        "Book Three",
+                        currentVersionSeq: 5,
+                        lockedBy: "test@somewhere.org",
+                        lockedByMachine: TeamCollectionManager.CurrentMachine
+                    )
                 )
             );
 
@@ -290,6 +317,48 @@ namespace BloomTests.TeamCollection
             );
             // Pre-existing fields must survive untouched.
             Assert.That((bool)json["isUserAdmin"], Is.True);
+        }
+
+        [Test]
+        public void AddCloudBookStatusFields_ReportsWhetherCheckedOutInThisCopy()
+        {
+            HydrateWith(
+                BookCheckedOutInThisCopy(
+                    Book(
+                        "book-1",
+                        "Here Book",
+                        currentVersionSeq: 1,
+                        lockedBy: "test@somewhere.org"
+                    )
+                ),
+                // Locked to the same user, but this copy has no record for it: another copy.
+                Book(
+                    "book-2",
+                    "Elsewhere Book",
+                    currentVersionSeq: 1,
+                    lockedBy: "test@somewhere.org",
+                    lockedByMachine: TeamCollectionManager.CurrentMachine
+                )
+            );
+            const string original = "{\"who\":null}";
+
+            var here = JObject.Parse(_api.AddCloudBookStatusFields(original, "Here Book"));
+            var elsewhere = JObject.Parse(
+                _api.AddCloudBookStatusFields(original, "Elsewhere Book")
+            );
+            var unknown = JObject.Parse(_api.AddCloudBookStatusFields(original, "Local Only Book"));
+
+            Assert.That((bool)here["checkedOutInThisCopy"], Is.True);
+            Assert.That(
+                (bool)elsewhere["checkedOutInThisCopy"],
+                Is.False,
+                "same user, same machine, but not this copy"
+            );
+            Assert.That(
+                unknown["checkedOutInThisCopy"],
+                Is.Null,
+                "omitted for a book the repo doesn't know, so the panel keeps its old rule"
+            );
         }
 
         // Regression for the first two-instance smoke test (7 Jul 2026): the base status JSON's
