@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -10,33 +11,35 @@ namespace BloomTests
     /// [SetUpFixture], but NUnit re-establishes each test's culture from its own execution context,
     /// so a future NUnit could quietly undo that switch and the weekly culture-sweep workflow would
     /// go green while testing nothing. These tests fail if BLOOM_TEST_CULTURE is set but did not
-    /// reach the code under test; with the variable unset they are ignored.
+    /// reach the code under test. With the variable unset there is nothing to check, so no test
+    /// cases exist at all: nothing is reported as passed, failed or ignored.
     /// </summary>
     [TestFixture]
     public class TestCultureTests
     {
-        private static CultureInfo RequestedCultureOrIgnore()
+        /// <summary>
+        /// The requested culture's name as the single test case, or no test cases at all when
+        /// BLOOM_TEST_CULTURE is unset.
+        /// </summary>
+        private static IEnumerable<string> RequestedCulture()
         {
             var name = Environment.GetEnvironmentVariable(TestCulture.kEnvironmentVariable);
-            if (string.IsNullOrWhiteSpace(name))
-                Assert.Ignore($"{TestCulture.kEnvironmentVariable} is not set; nothing to check.");
-            return CultureInfo.GetCultureInfo(name.Trim());
+            if (!string.IsNullOrWhiteSpace(name))
+                yield return CultureInfo.GetCultureInfo(name.Trim()).Name;
         }
 
-        [Test]
-        public void CurrentCulture_InsideATest_IsTheRequestedCulture()
+        [TestCaseSource(nameof(RequestedCulture))]
+        public void CurrentCulture_InsideATest_IsTheRequestedCulture(string requested)
         {
-            var requested = RequestedCultureOrIgnore();
-            Assert.That(CultureInfo.CurrentCulture.Name, Is.EqualTo(requested.Name));
+            Assert.That(CultureInfo.CurrentCulture.Name, Is.EqualTo(requested));
         }
 
-        [Test]
-        public async Task CurrentCulture_OnAWorkerThread_IsTheRequestedCulture()
+        [TestCaseSource(nameof(RequestedCulture))]
+        public async Task CurrentCulture_OnAWorkerThread_IsTheRequestedCulture(string requested)
         {
-            var requested = RequestedCultureOrIgnore();
             // Production code under test often does its work on the thread pool.
             var onWorker = await Task.Run(() => CultureInfo.CurrentCulture.Name);
-            Assert.That(onWorker, Is.EqualTo(requested.Name));
+            Assert.That(onWorker, Is.EqualTo(requested));
         }
     }
 }
