@@ -1858,7 +1858,7 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
-            // The "AI Image Editor Closed" and "Change Picture" events are reported by
+            // The "Change Picture" events are reported by
             // aiImageEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
             // has open we only STAGE the replacement and hand it back; whether it actually landed
             // is something only the browser learns, so counting a staged slot as applied here
