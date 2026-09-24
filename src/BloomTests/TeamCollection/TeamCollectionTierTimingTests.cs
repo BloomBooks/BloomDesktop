@@ -27,7 +27,7 @@ namespace BloomTests.TeamCollection
     [TestFixture]
     public class TeamCollectionTierTimingTests
     {
-        private const string kSufficientCode = "Fake-LC-006273-1463"; // parses to LocalCommunity tier
+        private const string kSufficientCode = "Fake-LC-009926-1483"; // parses to LocalCommunity tier
         private TemporaryFolder _localCollection;
         private string _collectionSettingsPath;
         private TeamCollectionManager _tcManager;

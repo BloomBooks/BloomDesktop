@@ -100,7 +100,7 @@ type BookRow = {
 
 const bookRow = async (collectionId: string, bookName: string) => {
     const rows = await queryDb<BookRow>(
-        "select id, locked_by, checkout_guid_hash, current_version_seq, current_version_id, book_instance_id from tc.books where collection_id = $1 and name = $2",
+        "select id, locked_by, checkout_guid_hash, current_version_seq, current_version_id, instance_id as book_instance_id from tc.books where collection_id = $1 and name = $2",
         [collectionId, bookName],
     );
     expect(rows, `exactly one tc.books row for ${bookName}`).toHaveLength(1);

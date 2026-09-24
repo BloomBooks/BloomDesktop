@@ -117,12 +117,12 @@ export const createScratchCollection = async (
         // fast enough gets disconnected with "Team Collections require a Bloom subscription tier
         // of at least 'LocalCommunity'" (observed once in ~40 launches; broke every subsequent
         // teamCollection/* call in that instance with empty-body 503s). The same test code the
-        // unit suite uses ("Fake-LC-006273-1463", SubscriptionTests.cs) encodes an expiry of
-        // ~Sep 2026 -- when it expires, SubscriptionTests will start failing too and both must
+        // unit suite uses ("Fake-LC-009926-1483", SubscriptionTests.cs) encodes an expiry of
+        // Sep 2036 -- when it expires, SubscriptionTests will start failing too and both must
         // be updated together.
         .replace(
             /<SubscriptionCode\s*\/>|<SubscriptionCode>[^<]*<\/SubscriptionCode>/,
-            "<SubscriptionCode>Fake-LC-006273-1463</SubscriptionCode>",
+            "<SubscriptionCode>Fake-LC-009926-1483</SubscriptionCode>",
         );
     const collectionFilePath = path.join(
         collectionFolder,

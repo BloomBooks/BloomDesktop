@@ -27,6 +27,7 @@
 // books (distinct bookInstanceId) with the identical display name directly on each side's local
 // folder instead.
 import { test, expect } from "@playwright/test";
+import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { resetStack } from "../harness/reset";
 import { setUpAliceAndBobOnSharedCollection } from "../harness/twoInstanceSetup";
@@ -175,28 +176,35 @@ test.describe("E2E-9 new-book lifecycle", () => {
                 "{}",
             ).catch(() => undefined);
 
-            // Poll the DB directly with a held-open connection (a fresh connect()/end() per
-            // query, as harness/db.ts's queryDb does, is tens of ms of overhead on its own --
-            // enough to blow straight through the narrow window between checkin_start_tx's
-            // row-insert and checkin_finish_tx's version-commit on a fast local stack) for the
-            // checkin-start row, then kill Alice as fast as possible afterward.
-            let sawRow: { current_version_id: string | null } | undefined;
+            // Kill Alice as soon as her Send has recorded the checkout GUID that checkin-start
+            // issued for the new book (`<book>/.checkout`, written right after checkin-start
+            // answers and before any upload). CONTRACTS v1.9: resuming one's own never-committed
+            // new book needs that GUID (pgTAP 04 case 13b), so a kill that lands BEFORE the
+            // client has it (between checkin_start_tx's commit and its response reaching Bloom)
+            // leaves a book that cannot be resumed until its transaction expires (48h) -- a
+            // known contract gap, not what this scenario is about. Poll the file tightly: the
+            // window from here to checkin_finish_tx's commit is a handful of small uploads to
+            // local MinIO.
+            const checkoutRecord = path.join(
+                aliceScratch.collectionFolder,
+                newBookFolder,
+                ".checkout",
+            );
+            let sawRecord = false;
             const deadline = Date.now() + 10_000;
-            while (!sawRow && Date.now() < deadline) {
-                const result = await dbClient.query(
-                    "select current_version_id from tc.books where instance_id = $1",
-                    [bookInstanceId],
+            while (!sawRecord && Date.now() < deadline) {
+                sawRecord = await fs.stat(checkoutRecord).then(
+                    () => true,
+                    () => false,
                 );
-                if (result.rows.length > 0) {
-                    sawRow = result.rows[0];
-                } else {
-                    await new Promise((resolve) => setTimeout(resolve, 5));
+                if (!sawRecord) {
+                    await new Promise((resolve) => setTimeout(resolve, 2));
                 }
             }
-            if (!sawRow) {
+            if (!sawRecord) {
                 throw new Error(
-                    "checkin_start_tx's tc.books row for the new book never appeared within 10s " +
-                        "-- cannot exercise the kill-mid-Send race.",
+                    "the new book's .checkout record (written once checkin-start answers) never " +
+                        "appeared within 10s -- cannot exercise the kill-mid-Send race.",
                 );
             }
             // A direct `process.kill()` (a synchronous OS call from right here in this process,
@@ -209,8 +217,18 @@ test.describe("E2E-9 new-book lifecycle", () => {
             // `alice.kill()`'s slower path had finished "interrupting" it.
             process.kill(alice.processId);
 
+            // Held-open connection: this read races nothing now, but a fresh connect per query
+            // (harness/db.ts's queryDb) is needlessly slow here.
+            const afterKill = await dbClient.query(
+                "select current_version_id from tc.books where instance_id = $1",
+                [bookInstanceId],
+            );
             expect(
-                sawRow.current_version_id,
+                afterKill.rows,
+                "checkin_start_tx's tc.books row for the new book",
+            ).toHaveLength(1);
+            expect(
+                afterKill.rows[0].current_version_id,
                 "the Send completed (current_version_id was already set) before the kill could " +
                     "land -- this run did not actually exercise a mid-Send interruption; re-run " +
                     "or tighten the poll interval",
