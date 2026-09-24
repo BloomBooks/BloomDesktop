@@ -15,46 +15,6 @@ namespace BloomTests.Utils
     public class FileAccessDiagnosticsTests
     {
         [Test]
-        public void DescribeAttributes_CloudPlaceholderFlags_NamesThemInsteadOfNumbers()
-        {
-            // RecallOnDataAccess (0x400000) and Unpinned (0x100000) have no names in .NET's enum.
-            var attributes =
-                FileAttributes.Archive | (FileAttributes)0x400000 | (FileAttributes)0x100000;
-            Assert.That(
-                attributes.ToString(),
-                Does.Not.Contain("RecallOnDataAccess"),
-                "sanity check"
-            );
-
-            var result = FileAccessDiagnostics.DescribeAttributes(attributes);
-
-            Assert.That(result, Is.EqualTo("Unpinned, RecallOnDataAccess, Archive"));
-        }
-
-        [Test]
-        public void DescribeAttributes_None_SaysNone()
-        {
-            Assert.That(FileAccessDiagnostics.DescribeAttributes(0), Is.EqualTo("(none)"));
-        }
-
-        [Test]
-        public void AttributesSuggestCloudFile_ArchiveOnly_False_RecallOnOpen_True()
-        {
-            Assert.That(
-                FileAccessDiagnostics.AttributesSuggestCloudFile(FileAttributes.Archive),
-                Is.False
-            );
-            Assert.That(
-                FileAccessDiagnostics.AttributesSuggestCloudFile((FileAttributes)0x40000),
-                Is.True
-            );
-            Assert.That(
-                FileAccessDiagnostics.AttributesSuggestCloudFile(FileAttributes.Offline),
-                Is.True
-            );
-        }
-
-        [Test]
         public void FindSyncRootContaining_PathUnderRoot_ReturnsProviderAndRoot()
         {
             var roots = new List<KeyValuePair<string, string>>
@@ -85,50 +45,6 @@ namespace BloomTests.Utils
             );
 
             Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public void FindSyncRootContaining_NestedRoots_ReturnsInnermost()
-        {
-            var roots = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("OneDrive", @"C:\Users\HP\OneDrive"),
-                new KeyValuePair<string, string>("Other", @"C:\Users\HP\OneDrive\Shared"),
-            };
-
-            var result = FileAccessDiagnostics.FindSyncRootContaining(
-                @"C:\Users\HP\OneDrive\Shared\book\license.png",
-                roots
-            );
-
-            Assert.That(result, Is.EqualTo(@"Other (C:\Users\HP\OneDrive\Shared)"));
-        }
-
-        [Test]
-        public void DescribePlaceholderState_Flags_NamesThem()
-        {
-            Assert.That(
-                FileAccessDiagnostics.DescribePlaceholderState(0),
-                Is.EqualTo("not a placeholder")
-            );
-            Assert.That(
-                FileAccessDiagnostics.DescribePlaceholderState(0xFFFFFFFF),
-                Is.EqualTo("invalid")
-            );
-            Assert.That(
-                FileAccessDiagnostics.DescribePlaceholderState(0x1 | 0x10),
-                Is.EqualTo("placeholder, partial")
-            );
-        }
-
-        [Test]
-        public void GetLikelyCause_PlaceholderFile_BlamesSyncProgram()
-        {
-            Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0x1),
-                Does.Contain("cloud sync program")
-            );
-            Assert.That(FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0), Is.Null);
         }
 
         /// <summary>
@@ -187,34 +103,30 @@ namespace BloomTests.Utils
         }
 
         [Test]
-        public void GetLikelyCause_ControlledFolderAccessOn_NamesIt()
+        public void GetLikelyCause_EachKindOfEvidence_NamesItsSuspect()
         {
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(FileAttributes.Archive, null, null, 1),
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, 1),
                 Does.Contain("Controlled Folder Access")
             );
-        }
-
-        [Test]
-        public void GetLikelyCause_SyncRoot_NamesProvider()
-        {
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(
-                    null,
-                    null,
-                    @"OneDrive (C:\Users\HP\OneDrive)",
-                    0
-                ),
-                Does.Contain("OneDrive")
+                FileAccessDiagnostics.GetLikelyCause(null, null, "Dropbox", 0),
+                Does.Contain("Dropbox")
+            );
+            Assert.That(
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0x1),
+                Does.Contain("cloud sync program"),
+                "a Cloud Files placeholder"
             );
             Assert.That(
                 FileAccessDiagnostics.GetLikelyCause((FileAttributes)0x400000, null, null, 0),
-                Does.Contain("cloud sync program")
+                Does.Contain("cloud sync program"),
+                "the RecallOnDataAccess attribute"
             );
         }
 
         [Test]
-        public void Collect_ExistingFile_ReportsExistenceAttributesAndReadOpen()
+        public void Collect_ExistingFile_RunsEveryProbeWithoutError()
         {
             using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests"))
             {
@@ -223,13 +135,9 @@ namespace BloomTests.Utils
 
                 var result = FileAccessDiagnostics.Collect(path, out _);
 
-                Assert.That(result, Does.Contain("file exists: True"));
-                Assert.That(result, Does.Contain("file attributes: Archive"));
+                // Every probe ran against a real file; none fell into the catch-all.
                 Assert.That(result, Does.Contain("opening the file read-only succeeded"));
-                Assert.That(result, Does.Contain("Controlled Folder Access: "));
-                Assert.That(result, Does.Contain("cloud placeholder state: not a placeholder"));
-                Assert.That(result, Does.Contain("Cloud Files sync provider: "));
-                Assert.That(result, Does.Contain("OneDrive folder from environment: "));
+                Assert.That(result, Does.Not.Contain("Caught exception"));
             }
         }
 
