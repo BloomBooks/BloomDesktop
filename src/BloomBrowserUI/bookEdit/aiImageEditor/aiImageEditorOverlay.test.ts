@@ -92,7 +92,11 @@ const openAgainstABookWithOneImage = (
         );
     };
 
-    return { closeButton, iframe, postFromEditor };
+    // What the AI Image Editor does when Bloom's close box asks it to close: report, then cancel.
+    const answerCloseRequest = () =>
+        postFromEditor({ channel: "bloom-ai-image-tools", type: "cancel" });
+
+    return { closeButton, iframe, postFromEditor, answerCloseRequest };
 };
 
 // Answers the AI Image Editor's `ready` and returns the `init` the overlay posts back into its
@@ -283,7 +287,8 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
     });
 
     test("a partial failure keeps the overlay up, still without saving", () => {
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+        const { closeButton, postFromEditor, answerCloseRequest } =
+            openAgainstABookWithOneImage();
 
         commitAndReplyFromHost(postFromEditor, false);
 
@@ -294,6 +299,7 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
         expect(postThatMightNavigate).not.toHaveBeenCalled();
 
         closeButton.click();
+        answerCloseRequest();
         expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(postThatMightNavigate).not.toHaveBeenCalled();
     });
@@ -450,15 +456,63 @@ describe("aiImageEditorOverlay: analytics", () => {
     });
 
     test("Bloom sends no event of its own when the session ends", () => {
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+        const { closeButton, postFromEditor, answerCloseRequest } =
+            openAgainstABookWithOneImage();
         forward(postFromEditor, "AI Image Editor Open", {});
         // Sanity: forwarding works, so the silence below means something.
         expect(trackEvent).toHaveBeenCalledTimes(1);
 
         closeButton.click();
+        answerCloseRequest();
 
         expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
         expect(trackEvent).toHaveBeenCalledTimes(1);
+    });
+
+    test("the close box asks the AI Image Editor to close, so it can report the session's end", () => {
+        const { closeButton, iframe, postFromEditor } =
+            openAgainstABookWithOneImage();
+        const postToEditor = vi.spyOn(iframe.contentWindow!, "postMessage");
+
+        closeButton.click();
+
+        expect(postToEditor).toHaveBeenCalledWith(
+            { channel: "bloom-ai-image-tools", type: "request-close" },
+            expect.any(String),
+        );
+        // Still up, so the AI Image Editor's Close event can reach Bloom and be forwarded.
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
+        forward(postFromEditor, "AI Image Editor Close", {
+            picturesCommitted: 0,
+        });
+        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Close", {
+            picturesCommitted: 0,
+        });
+
+        postFromEditor({ channel: "bloom-ai-image-tools", type: "cancel" });
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
+    });
+
+    test("the close box still closes the overlay if the AI Image Editor never answers", () => {
+        vi.useFakeTimers();
+        try {
+            const { closeButton } = openAgainstABookWithOneImage();
+
+            closeButton.click();
+            // Sanity: nothing has closed it yet.
+            expect(
+                document.getElementById("ai-image-editor-overlay"),
+            ).not.toBeNull();
+
+            vi.runAllTimers();
+            expect(
+                document.getElementById("ai-image-editor-overlay"),
+            ).toBeNull();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     test("a commit answered after the AI Image Editor was reopened leaves the new overlay alone", () => {

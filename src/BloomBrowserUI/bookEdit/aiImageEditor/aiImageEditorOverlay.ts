@@ -48,6 +48,10 @@ import {
     isCurrentPageSwap,
 } from "./aiImageEditorShared";
 
+// How long the close box waits for the AI Image Editor to answer "request-close" before closing
+// the overlay without it.
+const kCloseFallbackMs = 2000;
+
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
 // it reloads, and a commit with nothing to do on that page must not be failed for that.
@@ -282,7 +286,21 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             cursor: "pointer",
             opacity: "0.6",
         });
-        closeBtn.onclick = cleanup;
+        // The close box asks the AI Image Editor to close rather than removing it: it reports the
+        // end of the session to analytics and then sends "cancel", which is what closes the
+        // overlay. Removing the iframe at once would lose that report. If no "cancel" arrives
+        // (the AI Image Editor is hung, or never loaded), close anyway after a short wait.
+        closeBtn.onclick = () => {
+            try {
+                iframe.contentWindow?.postMessage(
+                    { channel: "bloom-ai-image-tools", type: "request-close" },
+                    iframeUrl.origin,
+                );
+            } catch (e) {
+                console.warn(`[AI Image Editor] could not request close: ${e}`);
+            }
+            hostWindow.setTimeout(cleanup, kCloseFallbackMs);
+        };
         overlay.appendChild(closeBtn);
 
         const iframe = hostDocument.createElement("iframe");
