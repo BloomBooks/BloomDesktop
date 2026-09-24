@@ -404,453 +404,63 @@ describe("aiImageEditorOverlay: the live page is NOT saved after a commit", () =
 });
 
 describe("aiImageEditorOverlay: analytics", () => {
-    // One "AI Image Editor Session" event per session, sent when the session settles. A
-    // picturesApplied of zero is what makes it the abandoned case: nothing reached the book. It
-    // must be zero when a session ends without committing, and must NOT be zero when the session
-    // ended because the work was accepted.
-    const closedEvents = () =>
-        trackEvent.mock.calls.filter(
-            (call) => call[0] === "AI Image Editor Session",
-        );
-    const abandonedEvents = () =>
-        closedEvents().filter(
-            (call) =>
-                (call[1] as { picturesApplied: number }).picturesApplied === 0,
-        );
-
-    test("closing without committing reports a cancel", () => {
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+    // Bloom forwards the AI Image Editor's events exactly as sent and has none of its own for a
+    // session; see this folder's AGENTS.md.
+    const forward = (
+        postFromEditor: (data: unknown) => void,
+        event: string,
+        properties: Record<string, string | number | boolean>,
+    ) =>
         postFromEditor({
             channel: "bloom-ai-image-tools",
             type: "analytics",
-            payload: {
-                event: "AI Editor Generate",
-                properties: { model: "some-model", result: "success" },
-            },
+            payload: { event, properties },
         });
 
-        // Sanity: the AI Image Editor's own event was passed through, under our name for it.
-        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Generate", {
+    test("an event is forwarded with its name and properties unchanged", () => {
+        const { postFromEditor } = openAgainstABookWithOneImage();
+        const properties = {
             model: "some-model",
-            result: "success",
-            aiEditorSessionId: expect.any(String),
-        });
-        expect(abandonedEvents()).toHaveLength(0);
+            costUSD: 0.0733,
+            spentCredits: true,
+            aiImageEditorSessionId: "abc",
+        };
 
-        closeButton.click();
+        forward(postFromEditor, "AI Image Editor Generate", properties);
 
-        expect(abandonedEvents()).toHaveLength(1);
-        // Bloom doesn't count generations: that would mean knowing the AI Image Editor's event
-        // names. The session id is what links them to this row instead.
-        expect(abandonedEvents()[0][1]).not.toHaveProperty(
-            "generatedThisSession",
+        expect(trackEvent).toHaveBeenCalledTimes(1);
+        expect(trackEvent).toHaveBeenCalledWith(
+            "AI Image Editor Generate",
+            properties,
         );
     });
 
     test("an event name Bloom has never heard of is forwarded, not dropped", () => {
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        // "toString" because it's the name most likely to trip up a lookup; with no lookup, it
-        // should come through like any other.
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "analytics",
-            payload: {
-                event: "toString",
-                properties: { somethingNew: 1 },
-            },
-        });
-
-        // No "AI Editor " prefix to rewrite, so it is recorded under the name it arrived with.
-        expect(trackEvent).toHaveBeenCalledWith("toString", {
-            somethingNew: 1,
-            aiEditorSessionId: expect.any(String),
-        });
-
-        // The session must still be alive: closing still reports the cancel.
-        closeButton.click();
-        expect(abandonedEvents()).toHaveLength(1);
-    });
-
-    test("a newer event from the AI Image Editor is forwarded", () => {
-        // "AI Editor Accept" is one of the events the old allow-list dropped.
+        // "toString" because it's the name most likely to trip up a lookup.
         const { postFromEditor } = openAgainstABookWithOneImage();
 
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "analytics",
-            payload: {
-                event: "AI Editor Accept",
-                properties: { tool: "change-style", isFinalTool: true },
-            },
-        });
+        forward(postFromEditor, "toString", { somethingNew: 1 });
+        forward(postFromEditor, "AI Editor Generate", {});
 
-        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Accept", {
-            tool: "change-style",
-            isFinalTool: true,
-            aiEditorSessionId: expect.any(String),
-        });
+        expect(trackEvent.mock.calls).toEqual([
+            ["toString", { somethingNew: 1 }],
+            // No renaming: the AI Image Editor chooses the name that reaches Segment.
+            ["AI Editor Generate", {}],
+        ]);
     });
 
-    test("only the AI Editor prefix is rewritten, and only at the start", () => {
-        // The rewrite only touches a leading "AI Editor ", not the phrase elsewhere in a name.
-        const { postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "analytics",
-            payload: { event: "Something AI Editor Related", properties: {} },
-        });
-
-        expect(trackEvent).toHaveBeenCalledWith("Something AI Editor Related", {
-            aiEditorSessionId: expect.any(String),
-        });
-    });
-
-    test("forwarded events and Bloom's closing event share one session id", () => {
-        // The same id on both is what lets a session's generations be matched to its outcome.
+    test("Bloom sends no event of its own when the session ends", () => {
         const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "analytics",
-            payload: { event: "AI Editor Generate", properties: {} },
-        });
-
-        const forwarded = trackEvent.mock.calls.find(
-            (call) => call[0] === "AI Image Editor Generate",
-        );
-        if (!forwarded)
-            throw new Error(
-                "setup: the generate event was not forwarded, so there is nothing to join",
-            );
-        const sessionId = (forwarded[1] as { aiEditorSessionId: string })
-            .aiEditorSessionId;
-        // Sanity: a real id. An empty string would "match" below and prove nothing.
-        expect(sessionId).toBeTruthy();
+        forward(postFromEditor, "AI Image Editor Open", {});
+        // Sanity: forwarding works, so the silence below means something.
+        expect(trackEvent).toHaveBeenCalledTimes(1);
 
         closeButton.click();
 
-        expect(abandonedEvents()).toHaveLength(1);
-        expect(abandonedEvents()[0][1]).toMatchObject({
-            aiEditorSessionId: sessionId,
-        });
+        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
+        expect(trackEvent).toHaveBeenCalledTimes(1);
     });
 
-    test("the closing summary says how long the session lasted", () => {
-        // Stub performance.now rather than using fake timers, which would also replace setTimeout.
-        const nowSpy = vi.spyOn(performance, "now").mockReturnValue(1_000_000);
-        try {
-            const { closeButton } = openAgainstABookWithOneImage();
-            // Sanity: nothing has been reported yet, so the value below comes from the close.
-            expect(closedEvents()).toHaveLength(0);
-
-            nowSpy.mockReturnValue(1_090_000);
-            closeButton.click();
-
-            expect(closedEvents()).toHaveLength(1);
-            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 90 });
-        } finally {
-            nowSpy.mockRestore();
-        }
-    });
-
-    test("a commit settling after the close does not stretch the duration", () => {
-        // The event waits for an in-flight commit, but the duration should stop at the close.
-        const nowSpy = vi.spyOn(performance, "now").mockReturnValue(1_000_000);
-        try {
-            const { closeButton, postFromEditor } =
-                openAgainstABookWithOneImage();
-
-            postFromEditor({
-                channel: "bloom-ai-image-tools",
-                type: "commit",
-                requestId: "req1",
-                payload: {
-                    replacements: [
-                        { incomingId: `${kPageId}:0`, resultId: "result1" },
-                    ],
-                },
-            });
-
-            // 30 seconds in, the user closes; the commit is still outstanding.
-            nowSpy.mockReturnValue(1_030_000);
-            closeButton.click();
-            // Sanity: nothing reported yet, so the value below is not from the click.
-            expect(closedEvents()).toHaveLength(0);
-
-            // C# answers 20 seconds after the overlay was already gone.
-            nowSpy.mockReturnValue(1_050_000);
-            const onSuccess = postJson.mock.calls[0][2] as (r: {
-                data: unknown;
-            }) => void;
-            onSuccess({ data: { ok: true, appliedCount: 0, results: [] } });
-
-            expect(closedEvents()).toHaveLength(1);
-            expect(closedEvents()[0][1]).toMatchObject({ durationSeconds: 30 });
-        } finally {
-            nowSpy.mockRestore();
-        }
-    });
-
-    test("a second trip through the AI Image Editor is a separate session", () => {
-        const first = openAgainstABookWithOneImage();
-        first.closeButton.click();
-        expect(abandonedEvents()).toHaveLength(1);
-
-        // The helper insists the launch is the only post it has seen.
-        post.mockClear();
-        const second = openAgainstABookWithOneImage();
-        second.closeButton.click();
-
-        expect(abandonedEvents()).toHaveLength(2);
-        const idOf = (index: number) =>
-            (abandonedEvents()[index][1] as { aiEditorSessionId: string })
-                .aiEditorSessionId;
-        expect(idOf(1)).not.toBe(idOf(0));
-    });
-
-    test("the properties of an event are passed on as the AI Image Editor sent them", () => {
-        // Deliberately not filtered: we control both ends of this channel. If a property ever must
-        // not be forwarded, it is stopped in the AI Image Editor or removed by name here -- not
-        // by an allow-list that only guards us against ourselves.
-        const { postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "analytics",
-            payload: {
-                event: "AI Editor Generate",
-                properties: {
-                    model: "some-model",
-                    costUSD: 0.0733,
-                    spentCredits: true,
-                },
-            },
-        });
-
-        expect(trackEvent).toHaveBeenCalledWith("AI Image Editor Generate", {
-            model: "some-model",
-            costUSD: 0.0733,
-            spentCredits: true,
-            aiEditorSessionId: expect.any(String),
-        });
-    });
-
-    test("closing while a commit is in flight does not report a cancel as well", () => {
-        // The overlay goes away the moment the user clicks the close box, but the pictures may be
-        // saved a moment later. Reporting a cancel here would count one session as both thrown
-        // away and committed, inflating the number the cancel event exists to provide.
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "commit",
-            requestId: "req1",
-            payload: {
-                replacements: [
-                    { incomingId: `${kPageId}:0`, resultId: "result1" },
-                ],
-            },
-        });
-        expect(postJson).toHaveBeenCalledTimes(1);
-
-        closeButton.click();
-        // Sanity: nothing reported yet -- the outcome is still unknown.
-        expect(abandonedEvents()).toHaveLength(0);
-
-        const onSuccess = postJson.mock.calls[0][2] as (r: {
-            data: unknown;
-        }) => void;
-        onSuccess({
-            data: {
-                ok: true,
-                appliedCount: 1,
-                results: [
-                    {
-                        incomingId: `${kPageId}:0`,
-                        ok: true,
-                        isCurrentPage: true,
-                        oldSrc: kImageFile,
-                        newSrc: "ai-image1.png",
-                    },
-                ],
-            },
-        });
-
-        expect(abandonedEvents()).toHaveLength(0);
-        // And the commit was still counted. Answering an AI Image Editor that has gone away
-        // used to throw from inside postMessage, which skipped everything after it in the
-        // finally block -- including this count, losing the user's pictures from the totals.
-        expect(closedEvents()).toHaveLength(1);
-        // The swap on the page being edited is NOT saved here; the normal page save keeps it,
-        // which is what leaves the picture undoable (BL-16744).
-        expect(postThatMightNavigate).not.toHaveBeenCalled();
-    });
-
-    test("closing while a commit is in flight DOES report a cancel if the commit then fails", () => {
-        // The other half: the session really did end with nothing kept, so it must still be
-        // counted -- just later, once the answer is known.
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "commit",
-            requestId: "req1",
-            payload: {
-                replacements: [
-                    { incomingId: `${kPageId}:0`, resultId: "result1" },
-                ],
-            },
-        });
-        closeButton.click();
-        expect(abandonedEvents()).toHaveLength(0);
-
-        const onError = postJson.mock.calls[0][3] as () => void;
-        onError();
-
-        expect(abandonedEvents()).toHaveLength(1);
-    });
-
-    test("two overlapping commits: closing is not a cancel while either is outstanding", () => {
-        // The AI Image Editor is free to send a second commit before the first is answered. With
-        // a flag rather than a count, the first reply cleared it while the second was still in the
-        // air, so
-        // closing then reported the session as thrown away with a commit still running.
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 0,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        const sendCommit = (requestId: string, slot: string) =>
-            postFromEditor({
-                channel: "bloom-ai-image-tools",
-                type: "commit",
-                requestId,
-                payload: {
-                    replacements: [
-                        { incomingId: slot, resultId: "r" + requestId },
-                    ],
-                },
-            });
-
-        sendCommit("req1", "page2:0");
-        sendCommit("req2", "page3:0");
-        expect(postJson).toHaveBeenCalledTimes(2);
-
-        // The FIRST one comes back, failing, while the second is still outstanding.
-        (postJson.mock.calls[0][3] as () => void)();
-
-        closeButton.click();
-        expect(abandonedEvents()).toHaveLength(0);
-
-        // Once the second is answered too -- also with nothing applied -- the cancel is due.
-        (postJson.mock.calls[1][3] as () => void)();
-        expect(abandonedEvents()).toHaveLength(1);
-    });
-
-    test("a reply path that throws does not report the session twice", () => {
-        // postJson chains .then(success).catch(error), so a throw inside the success callback runs
-        // the error callback for the SAME request -- which is why both are exercised here. Two
-        // things must survive that. The outstanding-commit count must not be decremented by both,
-        // or it would sit at -1 and "no commit outstanding" would never be true again. And the
-        // session must not be reported a second time by the error path.
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 0,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "commit",
-            requestId: "req1",
-            payload: {
-                replacements: [{ incomingId: "page2:0", resultId: "r1" }],
-            },
-        });
-        // Closed with the commit still in flight, so the reply is what will report -- which is
-        // what puts the send inside the success callback, where it can throw.
-        closeButton.click();
-        expect(closedEvents()).toHaveLength(0);
-
-        trackEvent.mockImplementationOnce(() => {
-            throw new Error("analytics blew up");
-        });
-        const onSuccess = postJson.mock.calls[0][2] as (r: {
-            data: unknown;
-        }) => void;
-        expect(() =>
-            onSuccess({
-                data: {
-                    ok: false,
-                    results: [
-                        {
-                            incomingId: "page2:0",
-                            ok: false,
-                            isCurrentPage: false,
-                        },
-                    ],
-                },
-            }),
-        ).toThrow();
-        // ...so the error callback runs for the same request, as postJson would do.
-        (postJson.mock.calls[0][3] as () => void)();
-
-        // Attempted exactly once: the throw was on the way out of the send, not before it.
-        expect(abandonedEvents()).toHaveLength(1);
-    });
-
-    test("of two overlapping commits, one failing and one succeeding is not also a cancel", () => {
-        // The other ordering from the test above, and the one that was wrong: the user closes with
-        // both commits outstanding, the FIRST comes back a failure, and the second then succeeds.
-        // Reporting the cancel when the failure arrived would put one session in both the cancel
-        // and the commit figures.
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 0,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        const sendCommit = (requestId: string, slot: string) =>
-            postFromEditor({
-                channel: "bloom-ai-image-tools",
-                type: "commit",
-                requestId,
-                payload: {
-                    replacements: [
-                        { incomingId: slot, resultId: "r" + requestId },
-                    ],
-                },
-            });
-
-        sendCommit("req1", "page2:0");
-        sendCommit("req2", "page3:0");
-        closeButton.click();
-
-        // The first fails...
-        (postJson.mock.calls[0][3] as () => void)();
-        expect(abandonedEvents()).toHaveLength(0);
-
-        // ...and the second puts its picture in the book.
-        const onSuccess = postJson.mock.calls[1][2] as (r: {
-            data: unknown;
-        }) => void;
-        onSuccess({
-            data: {
-                ok: true,
-                results: [
-                    { incomingId: "page3:0", ok: true, isCurrentPage: false },
-                ],
-            },
-        });
-
-        // Sanity: the session really was reported as putting a picture in the book.
-        expect(closedEvents()).toHaveLength(1);
-        expect(closedEvents()[0][1]).toMatchObject({ picturesApplied: 1 });
-        expect(abandonedEvents()).toHaveLength(0);
-    });
     test("a commit answered after the AI Image Editor was reopened leaves the new overlay alone", () => {
         // The old session's success path calls its own cleanup, which tears down "the" overlay by
         // id and deletes the cleanup hook on the window -- both of which belong to the NEW session
@@ -904,46 +514,13 @@ describe("aiImageEditorOverlay: analytics", () => {
                 .__bloomAiImageEditorCleanup,
         ).toBeTypeOf("function");
     });
-    test("a cancel is reported at most once", () => {
-        const { closeButton } = openAgainstABookWithOneImage();
-
-        closeButton.click();
-        expect(abandonedEvents()).toHaveLength(1);
-
-        // The close box is gone with the overlay, but the cleanup hook survives on the window
-        // for a relaunch to call; calling it again must not report a second cancel.
-        (
-            window as Window & { __bloomAiImageEditorCleanup?: () => void }
-        ).__bloomAiImageEditorCleanup?.();
-
-        expect(abandonedEvents()).toHaveLength(1);
-    });
-    test("a successful commit is not reported as a cancel", () => {
-        const { postFromEditor } = openAgainstABookWithOneImage();
-
-        commitAndReplyFromHost(postFromEditor, true);
-
-        // Sanity: the commit really did close the overlay, so this is not just a session
-        // that never ended.
-        expect(document.getElementById("ai-image-editor-overlay")).toBeNull();
-        expect(abandonedEvents()).toHaveLength(0);
-    });
 });
 
-// "AI Image Editor Session" and the per-picture "Change Picture" events are reported from the
-// overlay rather than from C#, because C# cannot know whether a picture on the page being edited
-// actually got swapped in -- it only stages those. These tests are what makes that worth having:
-// they pin that a swap the page frame failed to make is NOT counted as a picture that reached the
-// book.
-//
-// The counts arrive when the SESSION settles, not when a commit is answered, so a test whose
-// commit leaves the overlay up has to close it before there is anything to assert on.
-describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
-    const closedEvents = () =>
-        trackEvent.mock.calls.filter(
-            (call) => call[0] === "AI Image Editor Session",
-        );
-
+// The per-picture "Change Picture" events are reported from the overlay rather than from C#,
+// because C# cannot know whether a picture on the page being edited actually got swapped in -- it
+// only stages those. These tests pin that a swap the page frame failed to make is NOT counted as a
+// picture that reached the book.
+describe("aiImageEditorOverlay: counting the pictures a commit put into the book", () => {
     // Sends a commit for the given replacements and answers it with C#'s reply.
     const commitAndReply = (
         postFromEditor: (data: unknown) => void,
@@ -975,14 +552,12 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
         newSrc: `ai-image${ordinal}.png`,
     });
 
-    test("a picture the page frame could not swap in is not counted as applied", () => {
-        // The case the move exists for. C# staged this replacement and would have called it
-        // applied; the live page is where it actually failed.
+    test("a picture the page frame could not swap in is not counted", () => {
         applyAiImageEditorReplacements.mockReturnValue({
             applied: 0,
             expected: 1,
         });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
+        const { postFromEditor } = openAgainstABookWithOneImage();
 
         commitAndReply(
             postFromEditor,
@@ -990,20 +565,14 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
             [currentPageResult(0)],
         );
 
-        // The commit failed on the live page, so the overlay stays up and the session is not over.
-        expect(closedEvents()).toHaveLength(0);
-        closeButton.click();
-
-        expect(closedEvents()).toHaveLength(1);
-        expect(closedEvents()[0][1]).toMatchObject({
-            picturesChosen: 1,
-            picturesApplied: 0,
-        });
-        // And no picture is added to the where-do-pictures-come-from breakdown.
+        // Sanity: the reply was handled; a failed commit leaves the overlay up.
+        expect(
+            document.getElementById("ai-image-editor-overlay"),
+        ).not.toBeNull();
         expect(trackChangePicture).not.toHaveBeenCalled();
     });
 
-    test("applied adds up C#'s off-page successes and what the page frame landed", () => {
+    test("C#'s off-page successes and what the page frame landed are both counted", () => {
         applyAiImageEditorReplacements.mockReturnValue({
             applied: 1,
             expected: 1,
@@ -1026,49 +595,14 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
             ],
         );
 
-        expect(closedEvents()[0][1]).toMatchObject({
-            picturesChosen: 3,
-            picturesApplied: 2,
-        });
         // One per picture that reached the book, in the same vocabulary as the other routes.
         expect(trackChangePicture).toHaveBeenCalledTimes(2);
         expect(trackChangePicture).toHaveBeenCalledWith("ai-editor");
     });
 
-    test("generated and reused come from what the AI Image Editor sent", () => {
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 1,
-            expected: 1,
-        });
-        const { postFromEditor } = openAgainstABookWithOneImage();
-
-        commitAndReply(
-            postFromEditor,
-            [
-                // A newly generated image: the AI Image Editor gives it a result id.
-                { incomingId: `${kPageId}:0`, resultId: "result1" },
-                // One the user reused from an image already in the book.
-                {
-                    incomingId: "page2:0",
-                    sourceUrl: "http://host/book/existing.png",
-                },
-            ],
-            [
-                currentPageResult(0),
-                { incomingId: "page2:0", ok: true, isCurrentPage: false },
-            ],
-        );
-
-        expect(closedEvents()[0][1]).toMatchObject({
-            chosenNew: 1,
-            chosenReused: 1,
-        });
-    });
-
-    test("a commit is reported at most once, even if the reply path also errors", () => {
+    test("a commit is counted at most once, even if the reply path also errors", () => {
         // postJson chains .then(success).catch(error), so anything escaping the success callback
-        // runs the error callback too -- which reports as well. One commit must not be counted
-        // twice, nor its pictures added twice to the picture-source breakdown.
+        // runs the error callback too.
         applyAiImageEditorReplacements.mockReturnValue({
             applied: 1,
             expected: 1,
@@ -1080,83 +614,12 @@ describe("aiImageEditorOverlay: reporting what a commit achieved", () => {
             [{ incomingId: `${kPageId}:0`, resultId: "result1" }],
             [currentPageResult(0)],
         );
-        expect(closedEvents()).toHaveLength(1);
         expect(trackChangePicture).toHaveBeenCalledTimes(1);
 
-        // Now the error callback runs as well, as it would if anything threw on the way out.
         const onError = postJson.mock.calls[0][3] as () => void;
         onError();
 
-        expect(closedEvents()).toHaveLength(1);
         expect(trackChangePicture).toHaveBeenCalledTimes(1);
-    });
-    test("a session that got some pictures into the book is not also counted as thrown away", () => {
-        // A commit can succeed for one picture and fail for another. The overlay stays open, and
-        // the user closes it -- but their AI work was not thrown away, so an appliedCount of zero
-        // here would file a session that did save a picture as one that discarded everything.
-        applyAiImageEditorReplacements.mockReturnValue({
-            applied: 0,
-            expected: 1,
-        });
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        commitAndReply(
-            postFromEditor,
-            [
-                { incomingId: `${kPageId}:0`, resultId: "result1" },
-                { incomingId: "page2:0", resultId: "result2" },
-            ],
-            [
-                // The page frame could not swap this one in...
-                currentPageResult(0),
-                // ...but C# applied and saved this one itself.
-                { incomingId: "page2:0", ok: true, isCurrentPage: false },
-            ],
-        );
-        // Sanity: the overlay is still up, so nothing has been reported yet.
-        expect(
-            document.getElementById("ai-image-editor-overlay"),
-        ).not.toBeNull();
-        expect(closedEvents()).toHaveLength(0);
-
-        closeButton.click();
-
-        // One event, and it says a picture landed -- not a session that threw everything away.
-        expect(closedEvents()).toHaveLength(1);
-        expect(closedEvents()[0][1]).toMatchObject({
-            picturesChosen: 2,
-            picturesApplied: 1,
-        });
-    });
-    test("a commit whose request fails reports that nothing landed", () => {
-        const { closeButton, postFromEditor } = openAgainstABookWithOneImage();
-
-        postFromEditor({
-            channel: "bloom-ai-image-tools",
-            type: "commit",
-            requestId: "req1",
-            payload: {
-                replacements: [
-                    { incomingId: `${kPageId}:0`, resultId: "result1" },
-                ],
-            },
-        });
-        // Sanity: nothing reported until the request is answered one way or the other.
-        expect(closedEvents()).toHaveLength(0);
-
-        const onError = postJson.mock.calls[0][3] as () => void;
-        onError();
-        // The request failed, so the AI Image Editor is still up; the session ends when the user
-        // closes it.
-        closeButton.click();
-
-        // The attempt survives as a picturesChosen with nothing applied, which is the
-        // BL-16702 shape: a commit that reached nobody.
-        expect(closedEvents()[0][1]).toMatchObject({
-            picturesChosen: 1,
-            picturesApplied: 0,
-        });
-        expect(trackChangePicture).not.toHaveBeenCalled();
     });
 });
 

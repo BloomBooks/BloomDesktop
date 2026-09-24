@@ -45,38 +45,22 @@ is *not* enough on its own: a save can also reload the whole workspace root, so 
 page to come back before opening the overlay. `AiImageEditorApi.HandleSaveThenLaunch` explains
 that in full.
 
-## Analytics: the AI Image Editor owns its own vocabulary
+## Analytics: Bloom forwards the AI Image Editor's events and knows nothing about them
 
-The AI Image Editor names its own analytics events and chooses their properties. Bloom forwards
-them (`case "analytics"` in `aiImageEditorOverlay.ts`), changing only the name prefix from
-`AI Editor ` to `AI Image Editor `. What each event means is documented in
-`lib/analyticsEvents.ts` in BloomBooks/bloom-ai-image-tools.
+The AI Image Editor names its own analytics events and chooses their properties, including the
+session id that groups one visit's events and the session length. Bloom forwards each one to
+Segment exactly as sent (`case "analytics"` in `aiImageEditorOverlay.ts`). What each event means
+is documented in `lib/analyticsEvents.ts` in BloomBooks/bloom-ai-image-tools.
 
-**Don't add a list of allowed event names or properties.** Both ends are ours, so a list only
-protects us from ourselves, and it fails badly: an unlisted event is silently dropped, which looks
-exactly like nobody using the feature. A stray event name in Segment, by contrast, is easy to spot
-and fix. The same goes for any library Bloom hosts.
+**Don't add a list of allowed event names or properties, rename events, add properties, or send
+events of Bloom's own about the session.** Any of those means Bloom knowing the AI Image Editor's
+vocabulary, and a list fails badly: an unlisted event is silently dropped, which looks exactly
+like nobody using the feature. If a number is missing, have the AI Image Editor send it, or
+compute it in the analytics pipeline. The same goes for any library Bloom hosts.
 
-Bloom adds one property on the way through: `aiEditorSessionId`, a new id for each launch, so the
-events from one visit can be grouped together. Don't use `launchData.sessionToken` for this; it is
-a capability token and must not go to Segment.
-
-Bloom also sends one event of its own per session, `AI Image Editor Session` (from `reportClosed`),
-because only Bloom knows what actually reached the book and how long the overlay was open. Its
-counts come from the C# commit replies, not from the AI Image Editor's events.
-
-Its counts are `picturesChosen` (what the user picked for the book), `picturesApplied` (how many of
-those got there, the same meaning as `appliedCount` in the commit reply), and `chosenNew` /
-`chosenReused` (a breakdown of `picturesChosen`, not of `picturesApplied`).
-
-**Don't count the AI Image Editor's events in Bloom** (for example, how many generations a session
-had). That means knowing its event names. Group its events by `aiEditorSessionId` instead. If a
-single number is ever needed, have the AI Image Editor send it over the bridge, or compute it in
-the analytics pipeline.
-
-When the `bloom-ai-image-tools` pin moves off `dist-v0.2.5` (which sends only
-`AI Editor Generate`), go to `dist-v0.2.10` or later: `dist-v0.2.9` sends an `AI Editor Close`
-event that would now be forwarded alongside Bloom's own.
+The one Bloom event here is `Change Picture` with source `ai-editor`, one per picture that
+reached the book. It is Bloom's event about the book, shared with the other ways a picture gets
+in, and only Bloom knows whether a swap on the page being edited landed.
 
 ## Tests
 

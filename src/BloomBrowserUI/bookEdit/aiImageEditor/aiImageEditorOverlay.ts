@@ -48,15 +48,6 @@ import {
     isCurrentPageSwap,
 } from "./aiImageEditorShared";
 
-// Bloom forwards every analytics event the AI Image Editor sends, with its properties unchanged.
-// There is deliberately no list of allowed names; see this folder's AGENTS.md.
-//
-// The only change is to the name: "AI Editor ..." becomes "AI Image Editor ...", so it can't be
-// confused with a future AI tool for text or video.
-function bloomsNameForEditorEvent(event: string): string {
-    return event.replace(/^AI Editor /, "AI Image Editor ");
-}
-
 // Hand the commit's current-page swaps to the page frame, which owns the live page. Only call
 // this when there is such a swap (see isCurrentPageSwap): the frame is briefly unreachable while
 // it reloads, and a commit with nothing to do on that page must not be failed for that.
@@ -239,91 +230,13 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
 
         hostWindow.__bloomAiImageEditorCleanup?.();
 
-        // ----- Analytics for this AI Image Editor session (BL-16716, BL-16901) -----
-        // The AI Image Editor reports each generation over the bridge (the "analytics" message
-        // below), and we pass it straight on without counting it; counting would mean knowing its
-        // event names. To see how much AI work a session threw away, group its events by
-        // aiEditorSessionId.
-        //
-        // ONE event per session, "AI Image Editor Session", sent when the session settles. It says
-        // what the session achieved, and a picturesApplied of zero IS the cancel -- which is why
-        // there is no separate cancel event to keep in step with this one.
-        //
-        // "Settles" means the overlay has gone AND no commit is still outstanding, which is why
-        // the counts below accumulate rather than being reported as each reply arrives. Reporting
-        // per reply would be wrong in both directions: a session with two commits, one that fails
-        // and one that succeeds, would be recorded by whichever answered first -- so a session
-        // whose pictures did land could be filed as one that threw everything away. Waiting costs
-        // us a session that is never closed at all (Bloom quit with the overlay still up), which
-        // is the rarer and less misleading loss.
-
-        // Added to every event from this session, so they can be grouped in Segment; nothing else
-        // identifies one visit to the AI Image Editor. Not launchData.sessionToken: that is a
-        // capability token for the commit endpoint and must not be sent to Segment.
-        const analyticsSessionId = crypto.randomUUID();
-        // For the session length. Bloom measures it because it owns the overlay; the iframe can't.
-        // performance.now, not Date.now, so a change to the computer's clock can't skew it.
-        const sessionStartedAtMs = performance.now();
-
-        // What every commit in this session added up to. chosenNew and chosenReused are a
-        // breakdown of picturesChosen, not of picturesApplied (see noteCommitResult).
-        let picturesChosen = 0;
-        let picturesApplied = 0;
-        let chosenNew = 0;
-        let chosenReused = 0;
-        let closedReported = false;
-        // How many commits we have sent and not yet had an answer to. Reporting the session while
-        // any is outstanding must not happen: the pictures may be moments from being saved. A count
-        // rather than a flag, because the AI Image Editor is free to send a second commit before the
-        // first is answered, and the first reply would then clear a flag while the second was still
-        // in the air.
-        let commitsInFlight = 0;
         // Set by cleanup. Asking the DOM whether the overlay is still there would not do: a
         // relaunch tears this session down and immediately puts up a new overlay with the same id.
         let sessionEnded = false;
-        // When the overlay closed. The event itself can be sent later, if a commit is still in
-        // flight, and that wait shouldn't count as time spent in the AI Image Editor.
-        let sessionEndedAtMs = 0;
-
-        // Report how this session turned out. Safe -- and expected -- to call from anywhere that
-        // might have settled the last thing we were waiting for: it does nothing until both
-        // conditions hold, and nothing ever again once it has reported.
-        //
-        // Both conditions are tested HERE rather than at the call sites, because every caller
-        // needs them and one of them is easy to get wrong: a reply arriving for commit A must not
-        // report while commit B is still in the air. Each reply decrements the count before calling
-        // us, so whichever settles last is the one that reports.
-        const reportClosed = () => {
-            if (closedReported || !sessionEnded || commitsInFlight > 0) return;
-            closedReported = true;
-            // Did anything actually reach the book? picturesChosen above picturesApplied is
-            // exactly the class of bug BL-16702 was: a commit that silently did nothing. New versus
-            // reused says whether people are paying for new pictures or re-using ones they already
-            // have.
-            //
-            // These counts all come from what C# reported for each commit, so none of them depends
-            // on the AI Image Editor's event names.
-            trackEvent("AI Image Editor Session", {
-                aiEditorSessionId: analyticsSessionId,
-                picturesChosen,
-                picturesApplied,
-                chosenNew,
-                chosenReused,
-                durationSeconds: Math.round(
-                    (sessionEndedAtMs - sessionStartedAtMs) / 1000,
-                ),
-                historyItemsAtLaunch: (launchData.history ?? []).length,
-            });
-        };
 
         const cleanup = () => {
-            // Every way of ending the session without committing lands here: the AI Image
+            // Every way of ending the session lands here: a successful commit, the AI Image
             // Editor's own Cancel button, our close box, and a relaunch superseding this session.
-            //
-            // Except one: closing while a commit is still in flight. The overlay goes away
-            // immediately, but the pictures may well be saved a moment later, so this is not yet
-            // the moment to say what the session achieved. reportClosed declines while a commit is
-            // outstanding; the last reply to arrive is what reports.
             //
             // Idempotent, and it has to be: a commit sent by THIS session can be answered after the
             // user has closed it and opened the AI Image Editor again, and its success path calls
@@ -334,8 +247,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             // reply made it easier to reach.)
             if (sessionEnded) return;
             sessionEnded = true;
-            sessionEndedAtMs = performance.now();
-            reportClosed();
             hostWindow.removeEventListener("message", handleMessage);
             hostDocument.getElementById("ai-image-editor-overlay")?.remove();
             delete hostWindow.__bloomAiImageEditorCleanup;
@@ -408,10 +319,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                           //    someone thought to name, and would silently drop any this
                           //    type had not caught up with.
                           //
-                          // This side itself reads only resultId and sourceUrl, to say
-                          // how many pictures were generated rather than reused (see
-                          // noteCommitResult).
-                          //
                           // "credits" below means the picture's ATTRIBUTION -- copyright
                           // notice, creator, license. It has nothing to do with the
                           // OpenRouter credits that costUSD and spentCredits report, in
@@ -482,8 +389,8 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         // to close the overlay while a commit is in flight, which detaches this
                         // iframe.
                         // Telling a window that no longer exists must not throw, because the work
-                        // that follows this call still has to happen -- saving the page the swaps
-                        // landed on, and deciding whether the session ended with nothing kept.
+                        // that follows this call still has to happen -- counting the pictures that
+                        // landed, and closing the overlay.
                         // (Browsers null contentWindow on a detached frame, so the optional chain
                         // usually covers it; jsdom leaves it non-null and throws from inside
                         // postMessage, and that is a difference we should not be relying on.)
@@ -511,7 +418,7 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         break;
                     }
 
-                    // Reported from here rather than from C# (AiImageEditorApi.HandleCommit, which
+                    // "Change Picture" is reported from here rather than from C# (AiImageEditorApi.HandleCommit, which
                     // has the matching comment) because this is the only side that ever learns
                     // whether the pictures on the page being edited really got swapped in. C# can
                     // only stage those and hand them back, so counting a staged one as applied
@@ -521,22 +428,14 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     //
                     // offPageApplied comes from C#, which did those itself and knows;
                     // currentPageApplied is what the page frame says it managed.
-                    // Both of these exist because postJson chains .then(success).catch(error): if
+                    //
+                    // commitCounted exists because postJson chains .then(success).catch(error): if
                     // anything escapes the success callback, the error callback runs for the SAME
-                    // request, and everything either of them does would otherwise happen twice.
-                    // Counting twice would put one commit's pictures into the session totals and
-                    // into the picture-source breakdown twice over; decrementing twice would leave
-                    // commitsInFlight at -1, after which "no commit outstanding" is never true
-                    // again and the session could never be reported at all.
+                    // request, and whatever either of them does would otherwise happen twice.
                     let commitCounted = false;
-                    let commitSettled = false;
-                    const noteCommitSettled = () => {
-                        if (commitSettled) return;
-                        commitSettled = true;
-                        commitsInFlight--;
-                    };
-                    // Add what this commit achieved to the session totals. It does not send
-                    // anything: reportClosed sends one event for the whole session (see there).
+                    // Count each picture that reached the book the same way a pasted or
+                    // chooser-chosen one is counted, so the source breakdown covers every route
+                    // a picture can enter a book by. One per picture, as those routes do.
                     const noteCommitResult = (
                         offPageApplied: number,
                         currentPageApplied: number,
@@ -544,32 +443,11 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                         if (commitCounted) return;
                         commitCounted = true;
                         const applied = offPageApplied + currentPageApplied;
-                        picturesChosen += replacements.length;
-                        picturesApplied += applied;
-                        // Deliberately counted over every replacement the AI Image Editor sent,
-                        // not only the ones that landed -- so chosenNew and chosenReused are NOT
-                        // comparable with picturesApplied, and do not sum to it when a swap fails.
-                        // They answer a different question: what the user chose, and therefore what
-                        // they paid OpenRouter for, which is true whether or not the picture then
-                        // made it into the book. picturesChosen and picturesApplied are the pair
-                        // that says what landed.
-                        chosenNew += replacements.filter(
-                            (r) => !!r?.resultId,
-                        ).length;
-                        chosenReused += replacements.filter(
-                            (r) => !r?.resultId && !!r?.sourceUrl,
-                        ).length;
-                        // Count each picture that reached the book the same way a pasted or
-                        // chooser-chosen one is counted, so the source breakdown covers every route
-                        // a picture can enter a book by. One per picture, as those routes do, and
-                        // reported as it happens rather than at session end because these are
-                        // per-picture facts and nothing about them is still pending.
                         for (let i = 0; i < applied; i++) {
                             trackChangePicture("ai-editor");
                         }
                     };
 
-                    commitsInFlight++;
                     postJson(
                         "aiImageEditor/commit?session=" +
                             encodeURIComponent(launchData.sessionToken),
@@ -643,7 +521,6 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 // for the slots that landed, which the page frame handles
                                 // by remembering the elements it already swapped (see
                                 // applyAiImageEditorReplacements).
-                                noteCommitSettled();
                                 // Now, and only now, is the applied count a fact. Counted from
                                 // C#'s own results for the other pages, plus what the page frame
                                 // reported for this one (0 if we never got that far).
@@ -656,28 +533,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                                 if (finalOk) {
                                     cleanup();
                                 }
-                                // Unconditionally, and after cleanup rather than instead of it.
-                                // cleanup() reports when IT is what ends the session, but it
-                                // short-circuits when the session has already ended -- which is
-                                // exactly the case where this reply is the last thing anyone was
-                                // waiting for, so leaving the report to cleanup would lose a
-                                // session whose pictures did land. A partial failure, meanwhile,
-                                // leaves the overlay up, and this correctly does nothing until the
-                                // user closes it.
-                                reportClosed();
                             }
                         },
                         () => {
-                            noteCommitSettled();
-                            // The request failed, so we know nothing landed as far as anyone can
-                            // tell -- which is also what the AI Image Editor is about to tell the
-                            // user. Counting the attempt matters more than the small chance that C#
-                            // did the work and only the reply went missing: a commit that reaches
-                            // nobody is the failure this event was added to make visible, and it
-                            // shows up as picturesChosen without picturesApplied.
-                            noteCommitResult(0, 0);
                             ackEditor(false, "Failed to apply replacements.");
-                            reportClosed();
                         },
                     );
                     break;
@@ -687,15 +546,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     // whatever host it is running in. C# adds BookId; branding is already on every
                     // event as "BrandingProjectName" (see AnalyticsApi).
                     //
-                    // Everything it sends is forwarded under Bloom's name for it (see
-                    // bloomsNameForEditorEvent), with our session id added.
+                    // Forwarded exactly as sent; see this folder's AGENTS.md.
                     const event = data.payload?.event;
                     if (!event) break;
-                    const ourNameForIt = bloomsNameForEditorEvent(event);
-                    trackEvent(ourNameForIt, {
-                        ...data.payload?.properties,
-                        aiEditorSessionId: analyticsSessionId,
-                    });
+                    trackEvent(event, data.payload?.properties);
                     break;
                 }
                 case "log":
