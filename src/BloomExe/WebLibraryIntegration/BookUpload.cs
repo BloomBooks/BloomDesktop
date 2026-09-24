@@ -44,6 +44,14 @@ namespace Bloom.WebLibraryIntegration
         private string _s3PrefixToUploadTo = "";
         public IProgress Progress;
 
+        /// <summary>
+        /// Where the files of the book this object last uploaded went, as a baseUrl (the same form
+        /// the book's record holds), or null before any upload has finished. The bulk uploader logs
+        /// it, because each upload goes to a new place and the record can later point elsewhere:
+        /// the harvester can write an older record back over it (BL-16921).
+        /// </summary>
+        public string LastUploadBaseUrl { get; private set; }
+
         public const string UploadHashesFilename = ".lastUploadInfo"; // this filename must begin with a period
 
         public const string kUploadStagingFolder = "BloomUploadStaging";
@@ -340,6 +348,7 @@ namespace Bloom.WebLibraryIntegration
                 RobustFile.Delete(file);
 
             string bookObjectId = "";
+            LastUploadBaseUrl = null;
             bool isNewBook = existingBookObjectIdOrNull == null;
             try
             {
@@ -436,6 +445,7 @@ namespace Bloom.WebLibraryIntegration
                         );
 
                         bookObjectId = transactionId;
+                        LastUploadBaseUrl = metadata.BaseUrl;
                     }
 
                     if (IsProductionRun) // don't make it seem like there are more uploads than there really are if this is just a tester pushing to the sandbox

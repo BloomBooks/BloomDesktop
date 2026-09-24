@@ -134,19 +134,21 @@ export async function findBooksUploadedBy(
 }
 
 /**
- * One file of a book as it was uploaded, read from the sandbox's S3 bucket, where Bloom uploads the
- * book folder under the record's baseUrl. `fileName` is a name inside that folder, or a function of
- * the folder's name (the .htm is named after the folder). The bucket is public-read; that is how
- * the website shows books.
+ * One file of a book as it was uploaded, read from the sandbox's S3 bucket. `baseUrl` is the folder
+ * the upload wrote, in the form Bloom writes it (BloomS3Client.GetBaseUrl): take it from the
+ * bulk-upload log (IBulkUploadResult.uploadedBaseUrls), not from the book's record, which can point
+ * at an older upload's folder once the harvester has written a stale record back (BL-16921).
+ * `fileName` is a name inside that folder, or a function of the folder's name (the .htm is named
+ * after the folder). The bucket is public-read; that is how the website shows books.
  */
 async function fetchUploadedBookFile(
-    book: IBookOnServer,
+    baseUrl: string,
     fileName: string | ((folderName: string) => string),
     describe: string,
 ): Promise<string> {
     // Bloom writes baseUrl with HttpUtility.UrlEncode, which puts spaces as "+", so undo that
     // before the general decoding turns the %2f slashes (and any %2b plus) back into themselves.
-    const folderPath = decodeURIComponent(book.baseUrl.replace(/\+/g, " "));
+    const folderPath = decodeURIComponent(baseUrl.replace(/\+/g, " "));
     const folderName = folderPath.split("/").filter(Boolean).pop()!;
     const name = typeof fileName === "string" ? fileName : fileName(folderName);
     // The URL constructor re-encodes the spaces and the rest of the path for the request.
@@ -154,34 +156,32 @@ async function fetchUploadedBookFile(
     const response = await fetch(url);
     if (!response.ok)
         throw new Error(
-            `S3 answered ${response.status} for the uploaded ${describe} of "${book.title}" at ${url}`,
+            `S3 answered ${response.status} for the uploaded ${describe} of "${folderName}" at ${url}`,
         );
     return response.text();
 }
 
 /** The HTML of a book as it was uploaded: `<baseUrl><folder>.htm`. */
-export async function fetchUploadedBookHtml(
-    book: IBookOnServer,
-): Promise<string> {
-    return fetchUploadedBookFile(book, (folder) => `${folder}.htm`, "HTML");
+export async function fetchUploadedBookHtml(baseUrl: string): Promise<string> {
+    return fetchUploadedBookFile(baseUrl, (folder) => `${folder}.htm`, "HTML");
 }
 
 /**
- * The bookshelves the uploaded copy of this book names, by url key: the "bookshelf:" tags of the
+ * The bookshelves the uploaded copy of a book names, by url key: the "bookshelf:" tags of the
  * meta.json Bloom uploaded with it. Bloom writes the collection's bookshelf into those tags just
  * before uploading (BookUpload.UploadBookAsync), so this is exactly what Bloom sent.
  *
  * A test checks this rather than the record's own tags (IBookOnServer.bookshelves) because the
  * sandbox's harvester can overwrite the record after an upload: it processes each upload in the
  * background and, when it finishes, writes the whole record back from the copy it read when it
- * started, so a re-upload that lands mid-harvest loses its new tags there (seen 2026-09-24). What
- * Bloom uploaded is unaffected, and it is Bloom's behavior a test here is about.
+ * started, so a re-upload that lands mid-harvest loses its new tags there (BL-16921). What Bloom
+ * uploaded is unaffected, and it is Bloom's behavior a test here is about.
  */
 export async function getBookshelvesOfUploadedBook(
-    book: IBookOnServer,
+    baseUrl: string,
 ): Promise<string[]> {
     const meta = JSON.parse(
-        await fetchUploadedBookFile(book, "meta.json", "meta.json"),
+        await fetchUploadedBookFile(baseUrl, "meta.json", "meta.json"),
     ) as { tags?: string[] };
     const bookshelfPrefix = "bookshelf:";
     return (meta.tags ?? [])
@@ -190,13 +190,13 @@ export async function getBookshelvesOfUploadedBook(
 }
 
 /**
- * The front/back matter pack the uploaded copy of this book carries (see xmatterPackInBookHtml):
- * how a test sees that an upload sent the book with the collection's current pack.
+ * The front/back matter pack the uploaded copy of a book carries (see xmatterPackInBookHtml): how
+ * a test sees that an upload sent the book with the collection's current pack.
  */
-export async function getXmatterPackOfBookOnServer(
-    book: IBookOnServer,
+export async function getXmatterPackOfUploadedBook(
+    baseUrl: string,
 ): Promise<string> {
-    return xmatterPackInBookHtml(await fetchUploadedBookHtml(book));
+    return xmatterPackInBookHtml(await fetchUploadedBookHtml(baseUrl));
 }
 
 /**
