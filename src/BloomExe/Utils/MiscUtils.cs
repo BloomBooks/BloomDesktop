@@ -168,7 +168,11 @@ namespace Bloom.Utils
                     var instances = searcher.Get();
                     foreach (var instance in instances)
                     {
-                        collector.Add(instance.GetText(TextFormat.Mof));
+                        var mof = instance.GetText(TextFormat.Mof);
+                        if (instance["productState"] is uint productState)
+                            mof +=
+                                $"({instance["displayName"]}: {FileAccessDiagnostics.DescribeAntivirusProductState((int)productState)}){Environment.NewLine}";
+                        collector.Add(mof);
                     }
                 }
                 catch (Exception error)
@@ -213,10 +217,24 @@ namespace Bloom.Utils
             string firstLine = null
         )
         {
+            return GetExtendedFileCopyErrorInformation(path, out _, firstLine);
+        }
+
+        /// <summary>
+        /// As above, and also return a sentence naming the likely cause when the evidence points at
+        /// one (see FileAccessDiagnostics.GetLikelyCause), else null. Callers may add that sentence
+        /// to the message the user sees.
+        /// </summary>
+        public static string GetExtendedFileCopyErrorInformation(
+            string path,
+            out string likelyCause,
+            string firstLine = null
+        )
+        {
             var bldr = new StringBuilder();
             if (!String.IsNullOrEmpty(firstLine))
                 bldr.AppendLine(firstLine);
-            if (RobustFile.Exists(path))
+            if (FileAccessDiagnostics.FileIsPresent(path))
             {
                 bldr.AppendLine(
                     $"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445."
@@ -229,6 +247,7 @@ namespace Bloom.Utils
                 bldr.AppendLine($"The file ({path}) does not exist!?");
                 bldr.AppendLine($"The following specific information may be helpful.");
             }
+            bldr.Append(FileAccessDiagnostics.Collect(path, out likelyCause));
             bldr.Append(InstalledAntivirusPrograms());
             return bldr.ToString();
         }
