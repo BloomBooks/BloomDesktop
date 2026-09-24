@@ -194,7 +194,7 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
     });
 });
 
-describe("CanvasElementManager.rotateActiveImageRight", () => {
+describe("CanvasElementManager.rotateActiveImageRight90Degrees", () => {
     it("rotates nothing in an empty picture slot, even one whose box can rotate", () => {
         document.body.innerHTML = `
             <div class="bloom-canvas">
@@ -207,15 +207,19 @@ describe("CanvasElementManager.rotateActiveImageRight", () => {
         ) as HTMLElement;
         const manager = {
             activeElement: element,
-            rotateActiveElementRight: vi.fn(),
+            rotateActiveElementRight90Degrees: vi.fn(),
             adjustStuffRelatedToImage: vi.fn(),
         };
 
         const rotated =
-            CanvasElementManager.prototype.rotateActiveImageRight.call(manager);
+            CanvasElementManager.prototype.rotateActiveImageRight90Degrees.call(
+                manager,
+            );
 
         expect(rotated).toBe(false);
-        expect(manager.rotateActiveElementRight).not.toHaveBeenCalled();
+        expect(
+            manager.rotateActiveElementRight90Degrees,
+        ).not.toHaveBeenCalled();
         expect(element.style.transform).toBe("");
     });
 });

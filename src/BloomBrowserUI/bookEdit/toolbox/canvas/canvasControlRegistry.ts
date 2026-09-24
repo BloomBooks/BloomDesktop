@@ -582,7 +582,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
         englishLabel: "Rotate right",
         icon: RotateRightIcon,
         action: () => {
-            getCanvasElementManager()?.rotateActiveImageRight();
+            getCanvasElementManager()?.rotateActiveImageRight90Degrees();
         },
     },
     // "Flip" — mirror the picture. This always applies to the picture rather than to the

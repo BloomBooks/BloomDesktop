@@ -42,7 +42,7 @@ import {
     openCanvasElementMenu,
     openCanvasElementSubmenu,
     resetSelectedImage,
-    rotateSelectedImageRight,
+    rotateSelectedImageRight90Degrees,
     selectCanvasElement,
 } from "../helpers/canvasElements";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
@@ -253,7 +253,7 @@ test.describe("rotating and flipping pictures", () => {
         const picture = await selectCanvasElement(page, overlayPicture);
         const placement = await getCanvasElementPlacement(picture);
 
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getCanvasElementRotation(picture))
             .toBe(90);
@@ -266,15 +266,15 @@ test.describe("rotating and flipping pictures", () => {
             .toEqual(placement);
         await saveScreenshotIfAsked([canvas(page)], "07-overlay-rotated-90");
 
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page, picture))
             .toEqual(ROTATED_180);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page, picture))
             .toEqual(ROTATED_270);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getCanvasElementRotation(picture))
             .toBe(0);
@@ -344,7 +344,7 @@ test.describe("rotating and flipping pictures", () => {
             await getPictureRotation(page, picture),
             "The Flip test should have left the overlay picture upright and unmirrored.",
         ).toEqual(kUprightPicture);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await flipSelectedImage(page, "horizontal");
         const rotatedAndMirrored = mirroredOnScreen(ROTATED_90, "horizontal");
         await expect
@@ -485,7 +485,7 @@ test.describe("rotating and flipping pictures", () => {
         expect(before.width / before.height).toBeCloseTo(2, 1);
         await saveScreenshotIfAsked([canvas(page)], "21-background-before");
 
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(ROTATED_90);
@@ -497,15 +497,15 @@ test.describe("rotating and flipping pictures", () => {
         expect(rotated.width / rotated.height).toBeCloseTo(0.5, 1);
         await saveScreenshotIfAsked([canvas(page)], "22-background-rotated-90");
 
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(ROTATED_180);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(ROTATED_270);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(kUprightPicture);
@@ -540,7 +540,7 @@ test.describe("rotating and flipping pictures", () => {
             .toBe(true);
         await saveScreenshotIfAsked([canvas(page)], "24-cropped-background");
 
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(ROTATED_90);
@@ -569,7 +569,7 @@ test.describe("rotating and flipping pictures", () => {
         await expect
             .poll(async () => (await getImagePlacement(page)).cropped)
             .toBe(true);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await expect
             .poll(async () => getPictureRotation(page))
             .toEqual(ROTATED_90);
@@ -598,7 +598,7 @@ test.describe("rotating and flipping pictures", () => {
             await getPictureRotation(page),
             "The Reset image test should have left the background picture upright.",
         ).toEqual(kUprightPicture);
-        await rotateSelectedImageRight(page);
+        await rotateSelectedImageRight90Degrees(page);
         await flipSelectedImage(page, "horizontal");
         await expect
             .poll(async () => getPictureRotation(page))

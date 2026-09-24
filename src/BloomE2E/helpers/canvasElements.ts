@@ -545,7 +545,9 @@ export async function getCanvasElementMenuGroups(
  * menu. What rotates is Bloom's business: an overlay picture rotates as a whole box, while the page's
  * background picture rotates inside its box and the box changes shape.
  */
-export async function rotateSelectedImageRight(page: Page): Promise<void> {
+export async function rotateSelectedImageRight90Degrees(
+    page: Page,
+): Promise<void> {
     await clickCanvasElementMenuItem(page, "EditTab.Image.RotateRight");
 }
 

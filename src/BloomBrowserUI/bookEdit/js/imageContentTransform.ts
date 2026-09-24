@@ -349,7 +349,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
 // Rotate the picture 90 degrees clockwise inside the page's picture area, keeping any crop the
 // author made. See setRotatedBackgroundLayout for how, and computeRotatedBackgroundLayout for why
 // the picture's own canvas element changes shape as well.
-export function rotateImageContentRight(img: HTMLImageElement): void {
+export function rotateImageContentRight90Degrees(img: HTMLImageElement): void {
     const state = getImageContentTransform(img);
     // Measure and move first: clientWidth reports the layout box, which a transform does not
     // change, so the old transform can stay in place while we measure.

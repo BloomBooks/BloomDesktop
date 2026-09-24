@@ -68,7 +68,7 @@ export function setCanvasElementRotation(
 export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
     // The background image fills its bloom-canvas and cannot be moved or resized, so rotating
     // the box makes no sense. The Rotate Right command rotates the picture inside the box
-    // instead; see rotateImageContentRight in imageContentTransform.ts.
+    // instead; see rotateImageContentRight90Degrees in imageContentTransform.ts.
     if (canvasElement.classList.contains(kBackgroundImageClass)) {
         return false;
     }

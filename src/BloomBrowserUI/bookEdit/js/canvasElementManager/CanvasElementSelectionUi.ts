@@ -23,11 +23,10 @@ import {
     getHandleCursorForRotation,
 } from "./canvasElementRotation";
 
-// The picture in the rotate knob: the Material UI "Refresh" icon, which shows a circling
-// arrow. We build the SVG here rather than rendering a React icon component, because the
-// control frame is plain DOM that this file creates and removes by hand. The path is the one
-// in @mui/icons-material/Refresh.
-const kRefreshIconPath =
+// The rotate icon in the rotate knob: a circling arrow. We build the SVG here rather than
+// rendering a React icon component, because the control frame is plain DOM that this file
+// creates and removes by hand. (The path is copied from @mui/icons-material/Refresh.)
+const kRotateIconPath =
     "M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 " +
     "6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 " +
     "3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z";
@@ -40,7 +39,7 @@ function makeRotateHandleIcon(
     const svg = doc.createElementNS(kSvgNamespace, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
     const path = doc.createElementNS(kSvgNamespace, "path");
-    path.setAttribute("d", kRefreshIconPath);
+    path.setAttribute("d", kRotateIconPath);
     svg.appendChild(path);
     return svg;
 }

@@ -98,7 +98,7 @@ import {
     flipImageContent,
     FlipAxis,
     getImageContentTransform,
-    rotateImageContentRight,
+    rotateImageContentRight90Degrees,
 } from "../imageContentTransform";
 import {
     adjustCanvasElementOrdering,
@@ -1357,8 +1357,8 @@ export class CanvasElementManager {
     }
 
     // Rotate the active canvas element 90 degrees clockwise. Used by the Rotate Right
-    // menu command, for everything except a background image; see rotateActiveImageRight.
-    public rotateActiveElementRight(): void {
+    // menu command, for everything except a background image; see rotateActiveImageRight90Degrees.
+    public rotateActiveElementRight90Degrees(): void {
         if (
             !this.activeElement ||
             !canRotateCanvasElement(this.activeElement)
@@ -1379,7 +1379,7 @@ export class CanvasElementManager {
     // picture inside the box and reshape the box to match, which gives what an author wants
     // for a photograph that arrived on its side: the picture upright, and any crop kept.
     // Answers whether anything was rotated.
-    public rotateActiveImageRight(): boolean {
+    public rotateActiveImageRight90Degrees(): boolean {
         if (!this.activeElement) {
             return false;
         }
@@ -1390,11 +1390,11 @@ export class CanvasElementManager {
         }
         if (canRotateCanvasElement(this.activeElement)) {
             pushUndoForImageTransform(this.activeElement);
-            this.rotateActiveElementRight();
+            this.rotateActiveElementRight90Degrees();
             return true;
         }
         pushUndoForImageTransform(this.activeElement);
-        rotateImageContentRight(img);
+        rotateImageContentRight90Degrees(img);
         this.adjustStuffRelatedToImage(this.activeElement, img);
         return true;
     }

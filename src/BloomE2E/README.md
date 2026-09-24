@@ -167,7 +167,7 @@ real bug in the code under test; read the message and fix it rather than working
   `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
   and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
   `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
-  the picture commands on the menu (`rotateSelectedImageRight`,
+  the picture commands on the menu (`rotateSelectedImageRight90Degrees`,
   `flipSelectedImage`, `setSelectedImageTransparency`, `resetSelectedImage`); and the rotation knob
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
