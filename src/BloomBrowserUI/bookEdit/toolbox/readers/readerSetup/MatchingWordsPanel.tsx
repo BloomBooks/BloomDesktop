@@ -64,6 +64,7 @@ export const MatchingWordsPanel: React.FunctionComponent<{
                 {props.matchingWords.map((word) => (
                     <Chip
                         key={word}
+                        data-testid="reader-setup-matching-word"
                         label={word}
                         css={css`
                             height: auto;
