@@ -6,3 +6,6 @@ bookEdit/iconfont
 bookEdit/html/font-awesome
 *.md
 ThemaData.json
+
+# pnpm owns the lockfile's format; leave it exactly as pnpm writes it.
+pnpm-lock.yaml
