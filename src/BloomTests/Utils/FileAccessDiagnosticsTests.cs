@@ -95,37 +95,100 @@ namespace BloomTests.Utils
                     FileAttributes.Archive,
                     FileAttributes.Directory,
                     null,
-                    0
+                    false
                 ),
                 Is.Null
             );
-            Assert.That(FileAccessDiagnostics.GetLikelyCause(null, null, null, null), Is.Null);
-            // Audit mode does not block anything.
-            Assert.That(FileAccessDiagnostics.GetLikelyCause(null, null, null, 2), Is.Null);
+            Assert.That(FileAccessDiagnostics.GetLikelyCause(null, null, null, false), Is.Null);
+            Assert.That(
+                FileAccessDiagnostics.GetLikelyCause(FileAttributes.Offline, null, null, false),
+                Is.Null,
+                "Offline alone is no evidence of a sync program"
+            );
+        }
+
+        [Test]
+        public void ControlledFolderAccessCoversFile_NeedsOnAndProtectedFolderAndNotAllowed()
+        {
+            var protectedFolders = new[]
+            {
+                new KeyValuePair<string, string>("MyDocuments", @"C:\Users\HP\Documents"),
+            };
+            var inDocuments = @"C:\Users\HP\Documents\Bloom\book\license.png";
+            var elsewhere = @"D:\Bloom\book\license.png";
+            Assert.That(
+                FileAccessDiagnostics.ControlledFolderAccessCoversFile(
+                    1,
+                    inDocuments,
+                    protectedFolders,
+                    false
+                ),
+                Is.True
+            );
+            Assert.That(
+                FileAccessDiagnostics.ControlledFolderAccessCoversFile(
+                    1,
+                    elsewhere,
+                    protectedFolders,
+                    false
+                ),
+                Is.False,
+                "outside every protected folder"
+            );
+            Assert.That(
+                FileAccessDiagnostics.ControlledFolderAccessCoversFile(
+                    1,
+                    inDocuments,
+                    protectedFolders,
+                    true
+                ),
+                Is.False,
+                "Bloom is an allowed app"
+            );
+            Assert.That(
+                FileAccessDiagnostics.ControlledFolderAccessCoversFile(
+                    2,
+                    inDocuments,
+                    protectedFolders,
+                    false
+                ),
+                Is.False,
+                "audit mode does not block anything"
+            );
+            Assert.That(
+                FileAccessDiagnostics.ControlledFolderAccessCoversFile(
+                    null,
+                    inDocuments,
+                    protectedFolders,
+                    false
+                ),
+                Is.False,
+                "setting could not be read"
+            );
         }
 
         [Test]
         public void GetLikelyCause_EachKindOfEvidence_NamesItsSuspect()
         {
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(null, null, null, 1),
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, true),
                 Does.Contain("Controlled Folder Access")
             );
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, null, true),
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, false, null, true),
                 Does.Contain("Avast's Ransomware Shield")
             );
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(null, null, "Dropbox", 0),
+                FileAccessDiagnostics.GetLikelyCause(null, null, "Dropbox", false),
                 Does.Contain("Dropbox")
             );
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0x1),
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, false, 0x1),
                 Does.Contain("cloud sync program"),
                 "a Cloud Files placeholder"
             );
             Assert.That(
-                FileAccessDiagnostics.GetLikelyCause((FileAttributes)0x400000, null, null, 0),
+                FileAccessDiagnostics.GetLikelyCause((FileAttributes)0x400000, null, null, false),
                 Does.Contain("cloud sync program"),
                 "the RecallOnDataAccess attribute"
             );

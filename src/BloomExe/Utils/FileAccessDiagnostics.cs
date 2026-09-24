@@ -59,7 +59,9 @@ namespace Bloom.Utils
 
         /// <summary>
         /// True if the attributes mark the item as managed by a cloud sync provider (a placeholder
-        /// that may be downloaded on demand, or one the user pinned or unpinned).
+        /// that may be downloaded on demand, or one the user pinned or unpinned). Offline is not
+        /// counted: it only says the data is not immediately available, which other storage
+        /// systems also report, so by itself it is no evidence of a sync program.
         /// </summary>
         public static bool AttributesSuggestCloudFile(FileAttributes attributes)
         {
@@ -67,8 +69,7 @@ namespace Bloom.Utils
                 kFileAttributeRecallOnOpen
                 | kFileAttributePinned
                 | kFileAttributeUnpinned
-                | kFileAttributeRecallOnDataAccess
-                | (int)FileAttributes.Offline;
+                | kFileAttributeRecallOnDataAccess;
             return ((int)attributes & cloudFlags) != 0;
         }
 
@@ -291,6 +292,91 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// The folders Controlled Folder Access protects: the Windows defaults (the user's and the
+        /// public Documents, Pictures, Videos, Music and Desktop, and the user's Favorites) plus any
+        /// added locally or by group policy. Each entry is a pair of a label and the folder, as
+        /// FindSyncRootContaining expects. Never throws; folders that can't be read are left out.
+        /// </summary>
+        public static List<KeyValuePair<string, string>> GetControlledFolderAccessProtectedFolders()
+        {
+            var result = new List<KeyValuePair<string, string>>();
+            if (!Platform.IsWindows)
+                return result;
+            foreach (
+                var folder in new[]
+                {
+                    Environment.SpecialFolder.MyDocuments,
+                    Environment.SpecialFolder.MyPictures,
+                    Environment.SpecialFolder.MyVideos,
+                    Environment.SpecialFolder.MyMusic,
+                    Environment.SpecialFolder.Desktop,
+                    Environment.SpecialFolder.Favorites,
+                    Environment.SpecialFolder.CommonDocuments,
+                    Environment.SpecialFolder.CommonPictures,
+                    Environment.SpecialFolder.CommonVideos,
+                    Environment.SpecialFolder.CommonMusic,
+                    Environment.SpecialFolder.CommonDesktopDirectory,
+                }
+            )
+            {
+                try
+                {
+                    var path = Environment.GetFolderPath(folder);
+                    if (!string.IsNullOrEmpty(path))
+                        result.Add(new KeyValuePair<string, string>(folder.ToString(), path));
+                }
+                catch (Exception) { }
+            }
+            foreach (var keyPath in new[] { kCfaKeyPath, kCfaPolicyKeyPath })
+            {
+                foreach (var path in ReadHklmValueNames(keyPath + @"\ProtectedFolders"))
+                    result.Add(new KeyValuePair<string, string>("added protected folder", path));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// True if the running program is on Controlled Folder Access's list of allowed apps, locally
+        /// or by group policy. Never throws.
+        /// </summary>
+        public static bool IsAllowedByControlledFolderAccess()
+        {
+            if (!Platform.IsWindows)
+                return false;
+            try
+            {
+                var exePath = Environment.ProcessPath;
+                if (string.IsNullOrEmpty(exePath))
+                    return false;
+                return new[] { kCfaKeyPath, kCfaPolicyKeyPath }
+                    .SelectMany(keyPath => ReadHklmValueNames(keyPath + @"\AllowedApplications"))
+                    .Any(allowed =>
+                        string.Equals(allowed, exePath, StringComparison.OrdinalIgnoreCase)
+                    );
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static string[] ReadHklmValueNames(string keyPath)
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(keyPath))
+                {
+                    if (key != null)
+                        return key.GetValueNames()
+                            .Select(Environment.ExpandEnvironmentVariables)
+                            .ToArray();
+                }
+            }
+            catch (Exception) { }
+            return new string[0];
+        }
+
+        /// <summary>
         /// The EnableControlledFolderAccess setting of Windows Defender: the group policy value if one
         /// is set, else the local one; null if neither can be read. Never throws.
         /// </summary>
@@ -394,6 +480,23 @@ namespace Bloom.Utils
         }
 
         /// <summary>
+        /// True if Controlled Folder Access, with the given EnableControlledFolderAccess setting, would
+        /// block this program from changing path: it is fully on, path is in one of protectedFolders,
+        /// and the program is not on its list of allowed apps.
+        /// </summary>
+        public static bool ControlledFolderAccessCoversFile(
+            int? setting,
+            string path,
+            IEnumerable<KeyValuePair<string, string>> protectedFolders,
+            bool programIsAllowed
+        )
+        {
+            return setting == 1
+                && !programIsAllowed
+                && FindSyncRootContaining(path, protectedFolders) != null;
+        }
+
+        /// <summary>
         /// A sentence naming the likely cause of a failure to write path, or null when the evidence
         /// points at nothing in particular. We only name a suspect we have evidence for.
         /// </summary>
@@ -401,12 +504,12 @@ namespace Bloom.Utils
             FileAttributes? fileAttributes,
             FileAttributes? folderAttributes,
             string syncRoot,
-            int? controlledFolderAccess,
+            bool controlledFolderAccessCoversFile,
             uint? placeholderState = null,
             bool avastActiveAndUnderDocuments = false
         )
         {
-            if (controlledFolderAccess == 1)
+            if (controlledFolderAccessCoversFile)
                 return "Windows Security's Controlled Folder Access is turned on; it may be blocking Bloom from changing files in this folder.";
             // Every BL-3227-style report we have (BL-16507, BL-16915, BL-16919) had Avast's real-time
             // protection on and the book under Documents, which Avast's Ransomware Shield protects.
@@ -530,6 +633,15 @@ namespace Bloom.Utils
                 syncRoot = syncRoot ?? environmentSyncRoot;
                 var cfa = ReadControlledFolderAccessSetting();
                 bldr.AppendLine($"Controlled Folder Access: {DescribeControlledFolderAccess(cfa)}");
+                var protectedFolders = GetControlledFolderAccessProtectedFolders();
+                var protectingFolder = FindSyncRootContaining(path, protectedFolders);
+                bldr.AppendLine(
+                    $"folder protected by Controlled Folder Access: {protectingFolder ?? "none containing this file"}"
+                );
+                var bloomAllowedByCfa = IsAllowedByControlledFolderAccess();
+                bldr.AppendLine(
+                    $"Bloom on Controlled Folder Access's allowed apps: {bloomAllowedByCfa}"
+                );
                 var activeAntivirus = GetActiveAntivirusNames();
                 bldr.AppendLine(
                     $"antivirus with real-time protection on: {(activeAntivirus.Count == 0 ? "none found" : string.Join(", ", activeAntivirus))}"
@@ -549,7 +661,12 @@ namespace Bloom.Utils
                     fileAttributes,
                     folderAttributes,
                     syncRoot,
-                    cfa,
+                    ControlledFolderAccessCoversFile(
+                        cfa,
+                        path,
+                        protectedFolders,
+                        bloomAllowedByCfa
+                    ),
                     placeholderState,
                     avastActive && underDocuments
                 );
