@@ -152,4 +152,70 @@ describe("CanvasElementManager.updateCanvasElementForChangedImage", () => {
         expect(img.getAttribute("src")).toBe("old.png");
         expect(img.style.transform).toBe("rotate(90deg) scale(-1, 1)");
     });
+
+    it("puts a background element back in the old picture's shape before it is fitted on undo", () => {
+        const { element, img } = makeRotatedAndMirroredPicture();
+        element.classList.add("bloom-backgroundImage");
+        element.style.transform = "";
+        // The shape Rotate Right gave the old picture: portrait, centred in the picture area.
+        element.style.width = "150px";
+        element.style.height = "300px";
+        element.style.left = "125px";
+        element.style.top = "0px";
+        img.style.width = "300px";
+        const undoManager = new ImageUndoManager({
+            getCurrentPage: () =>
+                document.querySelector<HTMLElement>(".bloom-page") ?? undefined,
+            updateCanvasElementForChangedImage: updateForChangedImage,
+            getActiveElement: () => undefined,
+        } as unknown as ImageUndoManagerHost);
+        undoManager.prepareUndoForImageOperation(img);
+        img.setAttribute("src", "new.png");
+        updateForChangedImage(img);
+        // What fitting the landscape replacement does to the element.
+        element.style.width = "400px";
+        element.style.height = "200px";
+        element.style.left = "0px";
+        element.style.top = "50px";
+        undoManager.commitPendingImageOperationUndo(img);
+        let geometryWhenFitted: string[] | undefined;
+        manager.adjustBackgroundImageSize.mockImplementationOnce(() => {
+            geometryWhenFitted = [
+                element.style.width,
+                element.style.height,
+                element.style.left,
+                element.style.top,
+            ];
+        });
+
+        expect(undoManager.undoImageOperation()).toBe(true);
+
+        expect(geometryWhenFitted).toEqual(["150px", "300px", "125px", "0px"]);
+    });
+});
+
+describe("CanvasElementManager.rotateActiveImageRight", () => {
+    it("rotates nothing in an empty picture slot, even one whose box can rotate", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element">
+                    <div class="bloom-imageContainer"><img src="placeHolder.png"></div>
+                </div>
+            </div>`;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        const manager = {
+            activeElement: element,
+            rotateActiveElementRight: vi.fn(),
+            adjustStuffRelatedToImage: vi.fn(),
+        };
+
+        const rotated =
+            CanvasElementManager.prototype.rotateActiveImageRight.call(manager);
+
+        expect(rotated).toBe(false);
+        expect(manager.rotateActiveElementRight).not.toHaveBeenCalled();
+        expect(element.style.transform).toBe("");
+    });
 });

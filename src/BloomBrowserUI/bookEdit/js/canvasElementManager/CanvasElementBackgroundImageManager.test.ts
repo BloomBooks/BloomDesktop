@@ -102,11 +102,14 @@ vi.mock("./CanvasElementContextControls", () => ({
 }));
 
 // jsdom has no layout; give the bloom-canvas a size so the fit arithmetic is real numbers.
+// A test that changes the size of the page's picture area sets bloomCanvasSize.
+const bloomCanvasSize = vi.hoisted(() => ({ width: 400, height: 300 }));
 vi.mock("../../../utils/elementUtils", () => ({
-    getExactClientSize: () => ({ width: 400, height: 300 }),
+    getExactClientSize: () => ({ ...bloomCanvasSize }),
 }));
 
 import {
+    adjustBackgroundImageSize,
     BackgroundImageManagerState,
     handleResizeAdjustments,
     repairInterruptedBackgroundConversion,
@@ -315,5 +318,128 @@ describe("repairInterruptedBackgroundConversion (BL-16870)", () => {
         ).toBe(false);
         expect(bloomCanvas.innerHTML).toBe(before);
         expect(directImgChildren(bloomCanvas)).toHaveLength(1);
+    });
+});
+
+describe("adjustBackgroundImageSize on a background that fills the page", () => {
+    afterEach(() => {
+        bloomCanvasSize.width = 400;
+        bloomCanvasSize.height = 300;
+        document.body.innerHTML = "";
+    });
+
+    // A background element that fills a picture area 400 by 300, holding a picture with the
+    // given natural size, transform, and img box. jsdom does no layout, so the element reports
+    // the size written on it.
+    function makeFilledBackground(
+        naturalWidth: number,
+        naturalHeight: number,
+        transform: string,
+        boxWidth: number,
+        boxLeft: number,
+        boxTop: number,
+    ): {
+        bloomCanvas: HTMLElement;
+        element: HTMLElement;
+        img: HTMLImageElement;
+    } {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element bloom-backgroundImage" style="width: 400px; height: 300px; left: 0px; top: 0px">
+                    <div class="bloom-imageContainer">
+                        <img class="bloom-imageObjectFit-cover" src="picture.png">
+                    </div>
+                </div>
+            </div>`;
+        const bloomCanvas = document.querySelector(
+            ".bloom-canvas",
+        ) as HTMLElement;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        const img = document.querySelector("img") as HTMLImageElement;
+        img.style.width = `${boxWidth}px`;
+        img.style.left = `${boxLeft}px`;
+        img.style.top = `${boxTop}px`;
+        img.style.transform = transform;
+        Object.defineProperty(element, "clientWidth", {
+            get: () => parseFloat(element.style.width),
+        });
+        Object.defineProperty(element, "clientHeight", {
+            get: () => parseFloat(element.style.height),
+        });
+        Object.defineProperty(img, "naturalWidth", { value: naturalWidth });
+        Object.defineProperty(img, "naturalHeight", { value: naturalHeight });
+        return { bloomCanvas, element, img };
+    }
+
+    // The rectangle the element shows: the img box, with its two dimensions swapped when the
+    // picture is rotated 90 degrees, about the same centre.
+    function shownRectangle(
+        img: HTMLImageElement,
+        rotated: boolean,
+    ): { left: number; top: number; width: number } {
+        const boxWidth = parseFloat(img.style.width);
+        const boxHeight = (boxWidth * img.naturalHeight) / img.naturalWidth;
+        const width = rotated ? boxHeight : boxWidth;
+        const height = rotated ? boxWidth : boxHeight;
+        return {
+            left: parseFloat(img.style.left) + boxWidth / 2 - width / 2,
+            top: parseFloat(img.style.top) + boxHeight / 2 - height / 2,
+            width,
+        };
+    }
+
+    test("a picture rotated 90 degrees keeps the framing it would have had if it had arrived rotated", async () => {
+        // Both show a landscape picture 600 by 300 whose left edge is at the page's left edge,
+        // with 200 hidden at the right. The first arrived that shape; the second is a portrait
+        // picture 100 by 200 that Rotate Right has rotated, whose box is 300 by 600.
+        const state: BackgroundImageManagerState = {
+            bgImageLoadListeners: new WeakMap(),
+        };
+        const upright = makeFilledBackground(200, 100, "", 600, 0, 0);
+        // Sanity check: the shown rectangle is what the comment says.
+        expect(shownRectangle(upright.img, false)).toEqual({
+            left: 0,
+            top: 0,
+            width: 600,
+        });
+        // Origami makes the picture area twice as tall.
+        bloomCanvasSize.height = 600;
+        await adjustBackgroundImageSize(
+            state,
+            upright.bloomCanvas,
+            upright.element,
+            false,
+            () => undefined,
+            () => {},
+        );
+        const expected = shownRectangle(upright.img, false);
+
+        bloomCanvasSize.height = 300;
+        const rotated = makeFilledBackground(
+            100,
+            200,
+            "rotate(90deg)",
+            300,
+            150,
+            -150,
+        );
+        expect(shownRectangle(rotated.img, true)).toEqual({
+            left: 0,
+            top: 0,
+            width: 600,
+        });
+        bloomCanvasSize.height = 600;
+        await adjustBackgroundImageSize(
+            state,
+            rotated.bloomCanvas,
+            rotated.element,
+            false,
+            () => undefined,
+            () => {},
+        );
+
+        expect(shownRectangle(rotated.img, true)).toEqual(expected);
     });
 });

@@ -8,6 +8,7 @@ import {
     getCanvasElementRotation,
     setCanvasElementRotation,
 } from "./canvasElementManager/canvasElementRotation";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
 export interface IImageCropInfo {
     width: string;
@@ -33,6 +34,11 @@ type ImageOperationUndoItem =
           cropInfo: IImageCropInfo;
           // The img's inline transform: the rotation and mirror of the picture being replaced.
           imageTransform: string;
+          // The size and place of the canvas element that holds the picture. A page
+          // background element takes the shape of its picture, crop and rotation, and the
+          // size code keeps a cropped picture's element shape, so Undo has to put this back
+          // before it runs. Undefined when the picture is in no canvas element.
+          elementGeometry: IElementGeometry | undefined;
       }
     // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
     // its metadata, so the things to put back are the rotation of the canvas element box, the
@@ -92,6 +98,9 @@ export class ImageUndoManager {
             cropInfo: this.getCurrentImageCropInfo(imageOrContainer),
             imageTransform:
                 this.getImageElement(imageOrContainer)?.style.transform ?? "",
+            elementGeometry: this.getElementGeometry(
+                this.getCanvasElement(imageOrContainer),
+            ),
         };
     }
 
@@ -140,12 +149,7 @@ export class ImageUndoManager {
                 left: img?.style.left ?? "",
                 top: img?.style.top ?? "",
             },
-            elementGeometry: {
-                width: canvasElement.style.width,
-                height: canvasElement.style.height,
-                left: canvasElement.style.left,
-                top: canvasElement.style.top,
-            },
+            elementGeometry: this.getElementGeometry(canvasElement),
         });
     }
 
@@ -216,6 +220,13 @@ export class ImageUndoManager {
         switch (undoItem.kind) {
             case "restoreImage": {
                 changeImageInfo(undoItem.element, undoItem.imageInfo);
+                const canvasElement = this.getCanvasElement(undoItem.element);
+                if (canvasElement && undoItem.elementGeometry) {
+                    this.setElementGeometry(
+                        canvasElement,
+                        undoItem.elementGeometry,
+                    );
+                }
                 this.host.updateCanvasElementForChangedImage(
                     undoItem.element,
                     undoItem.cropInfo,
@@ -243,13 +254,10 @@ export class ImageUndoManager {
                     undoItem.img.style.left = undoItem.cropInfo.left;
                     undoItem.img.style.top = undoItem.cropInfo.top;
                 }
-                undoItem.canvasElement.style.width =
-                    undoItem.elementGeometry.width;
-                undoItem.canvasElement.style.height =
-                    undoItem.elementGeometry.height;
-                undoItem.canvasElement.style.left =
-                    undoItem.elementGeometry.left;
-                undoItem.canvasElement.style.top = undoItem.elementGeometry.top;
+                this.setElementGeometry(
+                    undoItem.canvasElement,
+                    undoItem.elementGeometry,
+                );
                 // This also tells the tool panel about the change.
                 this.host.updateCanvasElementAfterTransformChange(
                     undoItem.canvasElement,
@@ -316,6 +324,47 @@ export class ImageUndoManager {
             left: imageOrContainer.style.left || image?.style.left || "",
             top: imageOrContainer.style.top || image?.style.top || "",
         };
+    }
+
+    // The canvas element that holds this img or image container, if there is one.
+    private getCanvasElement(
+        imageOrContainer: HTMLElement,
+    ): HTMLElement | undefined {
+        return (
+            (imageOrContainer.closest(
+                kCanvasElementSelector,
+            ) as HTMLElement | null) ?? undefined
+        );
+    }
+
+    // The inline size and place of a canvas element, as written. Undefined for no element.
+    private getElementGeometry(canvasElement: HTMLElement): IElementGeometry;
+    private getElementGeometry(
+        canvasElement: HTMLElement | undefined,
+    ): IElementGeometry | undefined;
+    private getElementGeometry(
+        canvasElement: HTMLElement | undefined,
+    ): IElementGeometry | undefined {
+        if (!canvasElement) {
+            return undefined;
+        }
+        return {
+            width: canvasElement.style.width,
+            height: canvasElement.style.height,
+            left: canvasElement.style.left,
+            top: canvasElement.style.top,
+        };
+    }
+
+    // Write back a size and place that getElementGeometry recorded.
+    private setElementGeometry(
+        canvasElement: HTMLElement,
+        geometry: IElementGeometry,
+    ): void {
+        canvasElement.style.width = geometry.width;
+        canvasElement.style.height = geometry.height;
+        canvasElement.style.left = geometry.left;
+        canvasElement.style.top = geometry.top;
     }
 
     private getImageElement(

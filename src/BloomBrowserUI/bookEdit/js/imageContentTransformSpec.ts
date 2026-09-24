@@ -512,6 +512,81 @@ describe("computeRotatedBackgroundLayout", () => {
     });
 });
 
+describe("flipImageContent on a cropped picture", () => {
+    // A picture 600 by 400 drawn at full size in an element 300 by 200, moved 100 to the left
+    // and 50 up. The element shows picture columns 100 to 400: 100 are hidden at the left and
+    // 200 at the right, so the crop is not centred.
+    function makeOffCentreCrop(
+        elementWidth = 300,
+        elementHeight = 200,
+    ): HTMLImageElement {
+        const img = makeBackgroundImage(
+            1000,
+            1000,
+            elementWidth,
+            elementHeight,
+            600,
+            400,
+            false,
+        );
+        img.style.width = "600px";
+        img.style.left = "-100px";
+        img.style.top = "-50px";
+        return img;
+    }
+
+    it("moves the box so that the same part of the picture shows, mirrored", () => {
+        const img = makeOffCentreCrop();
+        // Sanity check: the box is not centred on the element, so mirroring about its own
+        // centre alone would bring another part of the picture into view.
+        expect(-100 + 600 / 2).not.toBe(300 / 2);
+
+        flipImageContent(img, "horizontal");
+
+        // Now 200 are hidden at the left and 100 at the right.
+        expect(img.style.left).toBe("-200px");
+        expect(img.style.top).toBe("-50px");
+        expect(getImageContentTransform(img).flipX).toBe(true);
+    });
+
+    it("puts the box back when the same mirror is used twice", () => {
+        const img = makeOffCentreCrop();
+        flipImageContent(img, "vertical");
+        // 50 hidden at the top and 150 at the bottom become 150 and 50.
+        expect(img.style.top).toBe("-150px");
+
+        flipImageContent(img, "vertical");
+
+        expect(img.style.top).toBe("-50px");
+        expect(img.style.left).toBe("-100px");
+    });
+
+    it("mirrors the rectangle the element shows when the picture is rotated 90 degrees", () => {
+        // Rotated, the box 600 by 400 shows a rectangle 400 by 600 about the same centre, here
+        // from 0 to 400 across an element 300 wide and from -150 to 450 down one 400 tall.
+        const img = makeOffCentreCrop(300, 400);
+        img.style.transform = "rotate(90deg)";
+
+        flipImageContent(img, "horizontal");
+        // 0 hidden at the left and 100 at the right become 100 and 0.
+        expect(img.style.left).toBe("-200px");
+        expect(img.style.top).toBe("-50px");
+
+        flipImageContent(img, "vertical");
+        // 150 hidden at the top and 50 at the bottom become 50 and 150.
+        expect(img.style.top).toBe("50px");
+    });
+
+    it("mirrors up and down in the element when the box is rotated 90 degrees and the user asks for left and right", () => {
+        const img = makeOffCentreCrop();
+
+        flipImageContent(img, "horizontal", 90);
+
+        expect(img.style.left).toBe("-100px");
+        expect(img.style.top).toBe("-150px");
+    });
+});
+
 describe("flipImageContent", () => {
     it("mirrors the x axis of an upright picture from side to side", () => {
         const img = makeImage();
@@ -598,8 +673,9 @@ describe("flipImageContent", () => {
         expect(getImageContentTransform(other).flipX).toBe(true);
     });
 
-    it("keeps the crop, because a mirror does not change the shape of the box", () => {
-        const img = makeImage();
+    it("keeps a centred crop, because a mirror does not change the shape of the box", () => {
+        // The box, 300 wide at -20, is centred on its element, which is 260 wide.
+        const img = makeBackgroundImage(1000, 1000, 260, 200, 300, 200, false);
         img.style.width = "300px";
         img.style.left = "-20px";
 

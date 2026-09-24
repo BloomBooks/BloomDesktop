@@ -1384,14 +1384,15 @@ export class CanvasElementManager {
         if (!this.activeElement) {
             return false;
         }
+        // An empty picture slot has nothing to rotate, whether as a box or as a picture.
+        const img = getImageFromCanvasElement(this.activeElement);
+        if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
+            return false;
+        }
         if (canRotateCanvasElement(this.activeElement)) {
             pushUndoForImageTransform(this.activeElement);
             this.rotateActiveElementRight();
             return true;
-        }
-        const img = getImageFromCanvasElement(this.activeElement);
-        if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
-            return false;
         }
         pushUndoForImageTransform(this.activeElement);
         rotateImageContentRight(img);
