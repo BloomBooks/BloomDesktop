@@ -1388,6 +1388,10 @@ export class CanvasElementManager {
         if (!img || isPlaceHolderImage(img.getAttribute("src"))) {
             return false;
         }
+        // A navigation button cannot be rotated, and neither can the picture inside it.
+        if (this.activeElement.classList.contains(kBloomButtonClass)) {
+            return false;
+        }
         if (canRotateCanvasElement(this.activeElement)) {
             pushUndoForImageTransform(this.activeElement);
             this.rotateActiveElementRight90Degrees();

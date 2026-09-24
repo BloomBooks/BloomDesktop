@@ -17,7 +17,10 @@
 // shape, so we do not offer rotation for those elements. Nor do we offer it for a video. See
 // canRotateCanvasElement.
 import { Bubble } from "comicaljs";
-import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
+import {
+    kBackgroundImageClass,
+    kBloomButtonClass,
+} from "../../toolbox/canvas/canvasElementConstants";
 import { kVideoContainerClass } from "../videoUtils";
 
 // Marks a rotated canvas element. The angle itself is in the inline transform; this class
@@ -76,6 +79,10 @@ export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
     // takes the pointer. A video's play, pause and replay buttons would then never show on
     // hover or receive a click.
     if (canvasElement.getElementsByClassName(kVideoContainerClass).length > 0) {
+        return false;
+    }
+    // Navigation buttons are not rotated, in any way; see also rotateActiveImageRight90Degrees.
+    if (canvasElement.classList.contains(kBloomButtonClass)) {
         return false;
     }
     // comicaljs draws these shapes axis-aligned; see the note at the top of this file.

@@ -222,4 +222,34 @@ describe("CanvasElementManager.rotateActiveImageRight90Degrees", () => {
         ).not.toHaveBeenCalled();
         expect(element.style.transform).toBe("");
     });
+
+    it("rotates nothing on a navigation button, neither the button nor its picture", () => {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <div class="bloom-canvas-element bloom-canvas-button">
+                    <div class="bloom-imageContainer"><img src="picture.png"></div>
+                </div>
+            </div>`;
+        const element = document.querySelector(
+            ".bloom-canvas-element",
+        ) as HTMLElement;
+        const img = element.querySelector("img") as HTMLImageElement;
+        const manager = {
+            activeElement: element,
+            rotateActiveElementRight90Degrees: vi.fn(),
+            adjustStuffRelatedToImage: vi.fn(),
+        };
+
+        const rotated =
+            CanvasElementManager.prototype.rotateActiveImageRight90Degrees.call(
+                manager,
+            );
+
+        expect(rotated).toBe(false);
+        expect(
+            manager.rotateActiveElementRight90Degrees,
+        ).not.toHaveBeenCalled();
+        expect(element.style.transform).toBe("");
+        expect(img.style.transform).toBe("");
+    });
 });

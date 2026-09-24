@@ -36,7 +36,8 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
         enabled: (ctx) => ctx.isCropped || ctx.isImageContentTransformed,
     },
     rotateRight: {
-        visible: (ctx) => ctx.hasImage,
+        // Navigation buttons are not rotated.
+        visible: (ctx) => ctx.hasImage && !ctx.isNavigationButton,
         enabled: (ctx) => ctx.hasRealImage && ctx.canModifyImage,
     },
     flipImage: {

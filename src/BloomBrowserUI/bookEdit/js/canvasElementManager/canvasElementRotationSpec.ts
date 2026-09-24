@@ -174,6 +174,12 @@ describe("canRotateCanvasElement", () => {
         expect(canRotateCanvasElement(element)).toBe(false);
     });
 
+    it("refuses a navigation button", () => {
+        const element = makeCanvasElement();
+        element.classList.add("bloom-canvas-button");
+        expect(canRotateCanvasElement(element)).toBe(false);
+    });
+
     it("allows an element whose bubble style is none", () => {
         const element = makeCanvasElement();
         element.setAttribute("data-test-bubble-style", "none");
