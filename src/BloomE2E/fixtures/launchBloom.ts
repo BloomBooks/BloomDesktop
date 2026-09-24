@@ -11,7 +11,9 @@
 //     Each run copies the collection to a temp folder and Bloom operates on the copy.
 //  3. Discovery matches on the OPEN COLLECTION FOLDER, not on a port. Bloom takes the next free
 //     port block, and a developer's own Bloom may already hold 8089, so the folder is the only
-//     reliable way to tell our instance from theirs.
+//     reliable way to tell our instance from theirs. A Bloom launched with no collection (at the
+//     Choose Collection dialog) is matched on its user-settings folder instead (point 4), which is
+//     just as unique to one launch.
 //  4. Every Bloom we launch keeps its user settings (user.config: UI language, page zoom, the Bloom
 //     Library login, and the rest of Settings.Default) in a folder of its own inside the temp
 //     folder, passed as --user-settings-folder. Every Bloom of one build otherwise shares one
@@ -537,6 +539,28 @@ async function findBloomServingCollection(
 }
 
 /**
+ * Find the Bloom that has NO collection open and keeps its user settings in `wantFolder`: the one
+ * we launched into the Choose Collection dialog. The settings folder is unique to one launch (it
+ * lives in that launch's temp folder), so unlike a port or an exe path it cannot match a
+ * developer's own Bloom, even one from the same build sitting at its own chooser.
+ */
+async function findBloomAtChooserUsingSettings(
+    wantFolder: string,
+): Promise<{ httpPort: number; info: IInstanceInfo } | undefined> {
+    for (const httpPort of CANDIDATE_PORTS) {
+        const info = await readInstanceInfo(httpPort);
+        if (
+            info &&
+            !info.editableCollectionFolder &&
+            info.userSettingsFolder &&
+            samePath(info.userSettingsFolder, wantFolder)
+        )
+            return { httpPort, info };
+    }
+    return undefined;
+}
+
+/**
  * Copy one source collection into `destination`. The screenshots/ folders are left out: they are
  * visual-regression baselines, read and written in the source tree, and copying them would only
  * slow the run down.
@@ -692,12 +716,16 @@ function isPid(pid: number | undefined): pid is number {
  * Spawn Bloom.exe on an existing collection folder and wait until it is serving that folder.
  * Both the first launch and restart() go through here, so the two cannot drift apart.
  *
+ * With collectionDir undefined, Bloom is started with no collection named, and this waits until
+ * that Bloom is serving with no collection open: at the Choose Collection dialog, provided the
+ * settings folder has no collection for it to reopen (see launchBloomIntoChooser).
+ *
  * Throws with Bloom's own captured output when the launch fails, so a broken run says WHY instead
  * of just timing out. Cleaning up the temp folder is the caller's job: this function does not
  * know whether the folder is worth keeping.
  */
 async function startBloomOn(
-    collectionDir: string,
+    collectionDir: string | undefined,
     userSettingsDir: string,
     readyTimeoutMs: number,
     experimentalFeatures?: string[],
@@ -725,7 +753,11 @@ async function startBloomOn(
     // --e2e: skip the DEBUG "attach debugger now" prompt and suppress modal error dialogs.
     // --automation: let this instance run alongside a Bloom the developer already has open, and
     // let BLOOM_AUTOMATION_MONITOR say where its windows go (see environmentForBloom).
-    const args = [findCollectionFile(collectionDir), "--e2e", "--automation"];
+    const args = [
+        ...(collectionDir ? [findCollectionFile(collectionDir)] : []),
+        "--e2e",
+        "--automation",
+    ];
     // --dont-disturb: keep the foreground and the keyboard away from the developer (point 5).
     if (launchWithDontDisturb()) args.push("--dont-disturb");
     // --vite-port: serve the React front end from a dev server, so the suite tests the working
@@ -760,8 +792,14 @@ async function startBloomOn(
     // for a successor; only when none appears do we treat the exit as a failure.
     let spawnedExitedAt: number | undefined;
     const handOffGraceMs = 10000;
+    // What a failure message says we were waiting for.
+    const wanted =
+        collectionDir ??
+        `the Choose Collection dialog, with settings in ${userSettingsDir}`;
     while (!found && Date.now() - startTime < readyTimeoutMs) {
-        found = await findBloomServingCollection(collectionDir);
+        found = collectionDir
+            ? await findBloomServingCollection(collectionDir)
+            : await findBloomAtChooserUsingSettings(userSettingsDir);
         if (found) break;
         if (exitStatus) {
             spawnedExitedAt ??= Date.now();
@@ -770,7 +808,7 @@ async function startBloomOn(
                     `Bloom exited before serving the collection, and no successor ` +
                         `instance appeared within ${handOffGraceMs / 1000}s ` +
                         `(code ${exitStatus.code}, signal ${exitStatus.signal}).\n` +
-                        `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
+                        `  exe: ${exe}\n  wanted: ${wanted}\n` +
                         formatOutput(),
                 );
         }
@@ -787,8 +825,8 @@ async function startBloomOn(
         }
         killProcessTree([bloomProcess.pid].filter(isPid));
         throw new Error(
-            `Bloom did not open the collection within ${readyTimeoutMs / 1000}s.\n` +
-                `  exe: ${exe}\n  wanted: ${collectionDir}\n` +
+            `Bloom did not ${collectionDir ? "open the collection" : "reach the Choose Collection dialog"} within ${readyTimeoutMs / 1000}s.\n` +
+                `  exe: ${exe}\n  wanted: ${wanted}\n` +
                 `  still running: ${exitStatus ? "no (already exited)" : "yes"}\n` +
                 `  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}\n` +
                 formatOutput(),
@@ -798,7 +836,7 @@ async function startBloomOn(
     if (!found.info.cdpPort) {
         killProcessTree([bloomProcess.pid, found.info.processId].filter(isPid));
         throw new Error(
-            `Bloom is serving ${collectionDir} on port ${found.httpPort} but reported no CDP port, ` +
+            `Bloom is serving ${wanted} on port ${found.httpPort} but reported no CDP port, ` +
                 `so tests cannot attach to its WebView2. Check that remote debugging is enabled in this build.`,
         );
     }
@@ -946,6 +984,93 @@ export async function launchBloom(
         },
     };
     return launched;
+}
+
+/** A Bloom launched with no collection, showing the Choose Collection dialog. */
+export interface ILaunchedChooserBloom {
+    /** The HTTP port Bloom's server opened on. */
+    httpPort: number;
+    /** The port the WebView2 hosting the chooser dialog answers CDP on. */
+    cdpPort: number;
+    /** The process id of the Bloom that is showing the chooser. */
+    bloomPid: number;
+    /**
+     * The .bloomCollection file of a collection created for this test, which the test can tell
+     * the chooser to open (POST workspace/openCollection with this path as the body).
+     */
+    collectionToOpen: string;
+    /**
+     * The folder this Bloom keeps its user settings in, as for ILaunchedBloom. It starts empty,
+     * which is what sends Bloom to the chooser: there is no most-recently-used collection to reopen.
+     */
+    userSettingsDir: string;
+    /** Kill the process tree, wait for the port to go dark, and delete the temp folder. */
+    stop: () => Promise<void>;
+}
+
+/**
+ * Launch Bloom with NO collection, so it opens the Choose Collection dialog — the only way to
+ * exercise that dialog's controls, since Bloom otherwise reopens the most recent collection.
+ * Like every Bloom launched here it gets an empty user-settings folder of its own (point 4 at the
+ * top), so its most-recently-used list is empty and it has nothing to reopen; and whatever the
+ * test changes there, such as the UI language, dies with the temp folder.
+ *
+ * The returned collectionToOpen names a collection created in the temp folder for this test, so
+ * the test can leave the chooser by POSTing workspace/openCollection (the same call a click on
+ * a collection card makes) without any native file dialog.
+ */
+export async function launchBloomIntoChooser(
+    spec: ICollectionSpec,
+): Promise<ILaunchedChooserBloom> {
+    const tempRoot = canonicalPath(
+        fs.mkdtempSync(Path.join(os.tmpdir(), "bloom-e2e-chooser-")),
+    );
+    const userSettingsDir = Path.join(tempRoot, "user-settings");
+    let collectionToOpen: string;
+    try {
+        collectionToOpen = findCollectionFile(
+            writeNewCollection(tempRoot, spec),
+        );
+        fs.mkdirSync(userSettingsDir);
+    } catch (error) {
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+        throw error;
+    }
+
+    let running: IRunningBloom | undefined;
+    // Tear down even if the run is aborted before the fixture's teardown runs.
+    const cleanUpOnExit = () => {
+        if (running) killProcessTree(running.pids);
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+    };
+    process.once("exit", cleanUpOnExit);
+
+    try {
+        running = await startBloomOn(undefined, userSettingsDir, 120000);
+    } catch (error) {
+        process.removeListener("exit", cleanUpOnExit);
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+        throw error;
+    }
+
+    return {
+        httpPort: running.httpPort,
+        cdpPort: running.cdpPort,
+        bloomPid: running.servingPid,
+        collectionToOpen,
+        userSettingsDir,
+        stop: async () => {
+            await killAndWaitForPortToGoDark(running!);
+            fs.rmSync(tempRoot, {
+                recursive: true,
+                force: true,
+                maxRetries: 20,
+                retryDelay: 500,
+            });
+            // Only after a fully successful teardown, as in launchBloom's stop().
+            process.removeListener("exit", cleanUpOnExit);
+        },
+    };
 }
 
 /**

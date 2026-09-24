@@ -364,14 +364,6 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         }
     }
 
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
-
     public id(): string {
         return ImageDescriptionAdapter.kToolID;
     }
