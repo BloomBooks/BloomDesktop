@@ -8,6 +8,10 @@ import {
 import { createValidXhtmlUniqueId } from "../xhtmlIdUtils";
 import { postData, postJson } from "../../../utils/bloomApi";
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
+import {
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
 
 const kComicalGeneratedClass: string = "comical-generated";
 
@@ -196,6 +200,12 @@ export class CanvasElementDuplication {
 
         this.host.setActiveElement(patriarchDuplicateElement);
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
+        // The copied contents carry the picture's own rotation and mirror, but the angle of the
+        // box is on the element itself, which is new.
+        setCanvasElementRotation(
+            patriarchDuplicateElement,
+            getCanvasElementRotation(sourceElement),
+        );
         const container = patriarchDuplicateElement.closest(
             ".bloom-canvas",
         ) as HTMLElement | null;
