@@ -56,7 +56,11 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
   and prints the fresh ports.
 - `--ensure-running` starts the stack decoupled from your session: in an Orca terminal tab titled
   "go.sh" when Orca is reachable, else detached with `output/bloom-launcher.log` (reported as
-  `logPath`). `output/bloom-launcher.starting.lock` stops two agents double-launching.
+  `logPath`). `output/bloom-launcher.starting.lock` stops two agents double-launching. It always
+  passes `--dont-disturb` to go.mjs, which passes it on to Bloom: under it no Bloom window
+  activates itself or comes to the front (Shell, splash, Choose Collection, every `ReactDialog`),
+  so an agent's Bloom never takes the developer's keyboard. `--automation`, which go.mjs passes to
+  every Bloom, no longer implies that; a developer's own `./go.sh` Bloom behaves normally.
 - `--ensure-running --nowatch` passes `--nowatch` through to go.mjs, so Bloom runs under a plain
   `dotnet run` instead of `dotnet watch`: much faster to a running Bloom, but a C# edit then needs
   an explicit `--restart`. The front end is unaffected (Vite serves it either way). It is rejected

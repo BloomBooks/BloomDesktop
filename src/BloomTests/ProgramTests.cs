@@ -56,6 +56,52 @@ namespace BloomTests
             Assert.That(Program.StartupRequestedPortSummary, Is.EqualTo("automation=true"));
         }
 
+        /// <summary>
+        /// ./go.sh passes --automation to every developer Bloom, so it must not by itself stop
+        /// Bloom taking the foreground; only --dont-disturb does that.
+        /// </summary>
+        [Test]
+        public void ParseStartupPortArguments_AutomationAloneDoesNotSetDontDisturb()
+        {
+            Program.ParseStartupPortArguments(new[] { "--automation" }, out var errorMessage);
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.False);
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_DontDisturbIsItsOwnFlag()
+        {
+            // Sanity check: the TearDown of an earlier test left the flag off.
+            Assert.That(Program.StartupDontDisturb, Is.False);
+
+            var remainingArgs = Program.ParseStartupPortArguments(
+                new[] { "--automation", "--dont-disturb", @"C:\Temp\Example.bloomcollection" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Is.Null);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(
+                Program.StartupRequestedPortSummary,
+                Is.EqualTo("automation=true, dontDisturb=true")
+            );
+            Assert.That(remainingArgs, Is.EqualTo(new[] { @"C:\Temp\Example.bloomcollection" }));
+        }
+
+        [Test]
+        public void ParseStartupPortArguments_RejectsARepeatedDontDisturb()
+        {
+            Program.ParseStartupPortArguments(
+                new[] { "--dont-disturb", "--dont-disturb" },
+                out var errorMessage
+            );
+
+            Assert.That(errorMessage, Does.Contain("--dont-disturb"));
+        }
+
         [Test]
         public void ParseStartupPortArguments_VitePortAloneDoesNotEnableAutomation()
         {

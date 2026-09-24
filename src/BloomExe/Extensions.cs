@@ -101,10 +101,13 @@ namespace Bloom
         /// reason to withhold it -- but note that it is unverified on Linux, since we do not
         /// currently build or test there. Before this, Shell.FinishPuttingShellInFront toggled topmost
         /// instantly, so Linux did not hold it at all. BL-16784.
+        ///
+        /// Does nothing under --dont-disturb: taking the foreground is exactly what a Bloom driven
+        /// by something other than the person at the keyboard must not do (Program.StartupDontDisturb).
         /// </summary>
         public static void BringToFrontNow(this Form form)
         {
-            if (form.IsDisposed)
+            if (form.IsDisposed || Program.StartupDontDisturb)
                 return;
             form.TopMost = true;
             form.Activate();

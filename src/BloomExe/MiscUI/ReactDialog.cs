@@ -21,6 +21,12 @@ namespace Bloom.MiscUI
     {
         public string CloseSource { get; set; } = null;
 
+        // Under --dont-disturb (an agent or a test suite driving Bloom on someone's machine) a
+        // dialog must not take the keyboard from whatever the person there is doing, the same
+        // rule Shell and SplashScreen follow. Whatever drives the dialog does so over CDP, which
+        // needs no focus.
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         private static readonly List<ReactDialog> _activeDialogs = new List<ReactDialog>();
 
         public ReactDialog(

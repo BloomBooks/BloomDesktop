@@ -110,6 +110,13 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // --dont-disturb: something other than the person at the keyboard is driving this Bloom
+        // (an agent, or the e2e and visual-regression suites on a developer's machine), so no
+        // window it opens may take the foreground or the keyboard. Separate from --automation,
+        // which ./go.sh passes to every developer Bloom: a developer testing by hand wants the
+        // ordinary behavior, and so does a test run on CI, where nobody else is at the screen.
+        internal static bool StartupDontDisturb { get; private set; }
+
         // Experimental features an e2e run asked for, passed as
         // --experimental-features <comma-separated tokens>, or null when none were asked for.
         // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
@@ -132,6 +139,7 @@ namespace Bloom
                 new[]
                 {
                     StartupAutomation ? "automation=true" : null,
+                    StartupDontDisturb ? "dontDisturb=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
@@ -829,6 +837,7 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupDontDisturb = false;
             StartupLauncherPort = null;
             StartupUserSettingsFolder = null;
             BloomSettingsProvider.SetUserSettingsFolder(null);
@@ -875,6 +884,14 @@ namespace Bloom
                         "--automation",
                         () => StartupAutomation,
                         value => StartupAutomation = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
+                        "--dont-disturb",
+                        () => StartupDontDisturb,
+                        value => StartupDontDisturb = value,
                         out errorMessage
                     )
                     || TryHandleStartupFlagArgument(
@@ -2291,11 +2308,36 @@ namespace Bloom
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
                     dlg.ShowInTaskbar = true;
+                    // An automation run puts this dialog where BLOOM_AUTOMATION_MONITOR says,
+                    // as it does the main window and the splash screen (see
+                    // AutomationWindowPlacement); CenterScreen would put it on whichever monitor
+                    // the mouse is on.
+                    var placement = AutomationWindowPlacement.GetChoice();
+                    if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                    {
+                        dlg.StartPosition = FormStartPosition.Manual;
+                        var offScreenArea = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                        dlg.Location = new System.Drawing.Point(
+                            offScreenArea.Left,
+                            offScreenArea.Top
+                        );
+                        dlg.ShowInTaskbar = false;
+                    }
+                    else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                    {
+                        dlg.StartPosition = FormStartPosition.Manual;
+                        var area = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
+                        dlg.Location = new System.Drawing.Point(
+                            area.Left + (area.Width - dlg.Width) / 2,
+                            area.Top + (area.Height - dlg.Height) / 2
+                        );
+                    }
                     // With no owner window to hand it the foreground, this opens behind
                     // whatever the user launched Bloom from (Windows Explorer, say) -- notably
                     // when the minimum-version gate's "Open a Different Collection" brings us
                     // here at startup -- and also when we reopen it programmatically after a
-                    // language change. See BL-16690.
+                    // language change. See BL-16690. (Under --dont-disturb it stays where it
+                    // opens; see BringToFrontNow.)
                     dlg.BringToFrontWhenShown();
                     dlg.ShowDialog();
                     closeSource = dlg.CloseSource;
