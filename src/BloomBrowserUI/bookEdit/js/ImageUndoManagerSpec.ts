@@ -382,4 +382,26 @@ describe("ImageUndoManager rotation handle drag", () => {
         activeElement = otherBox;
         expect(manager.canUndoImageOperation()).toBe(false);
     });
+
+    it("typing after a rotation is undone first, and then the rotation is", () => {
+        const textBox = makeTextCanvasElement();
+        setCanvasElementRotation(textBox, 45);
+        manager.pushUndoForCanvasElementRotation(textBox, 0);
+        activeElement = textBox;
+        expect(manager.canUndoImageOperation()).toBe(true);
+
+        // The user types; the text editor's undo holds that newer step.
+        const editable = textBox.getElementsByClassName(
+            "bloom-editable",
+        )[0] as HTMLElement;
+        editable.textContent = "some words and more";
+        expect(
+            manager.canUndoImageOperation(),
+            "Undo must take back the typing before the rotation",
+        ).toBe(false);
+
+        // The text editor's undo puts the text back; now the rotation is the newest step.
+        editable.textContent = "some words";
+        expect(manager.canUndoImageOperation()).toBe(true);
+    });
 });

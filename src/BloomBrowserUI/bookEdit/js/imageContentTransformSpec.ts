@@ -395,6 +395,22 @@ describe("rotateImageContentRight90Degrees, on an ordinary picture element", () 
         expect(px(elementOf(img).style.top)).toBeCloseTo(0);
     });
 
+    it("works from the element's position in pixels when it is placed in percentages", () => {
+        const img = makeOrdinaryPicture();
+        const element = elementOf(img);
+        element.style.left = "10%";
+        element.style.top = "5%";
+        // jsdom does no layout, so give the element the pixel position a browser would.
+        Object.defineProperty(element, "offsetLeft", { value: 100 });
+        Object.defineProperty(element, "offsetTop", { value: 50 });
+
+        rotateImageContentRight90Degrees(img);
+
+        // The same centre as the pixel case above, not 10 and 5 taken as pixels.
+        expect(px(element.style.left)).toBeCloseTo(150);
+        expect(px(element.style.top)).toBeCloseTo(0);
+    });
+
     it("does not stretch the element to the page's picture area", () => {
         const img = makeOrdinaryPicture();
 

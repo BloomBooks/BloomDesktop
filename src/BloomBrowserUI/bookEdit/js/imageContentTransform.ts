@@ -306,13 +306,18 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         element.style.left = `${roundPx(layout.elementLeft)}px`;
         element.style.top = `${roundPx(layout.elementTop)}px`;
     } else {
-        // Rotated about its own centre, so the element stays where the author put it.
+        // Rotated about its own centre, so the element stays where the author put it. A canvas
+        // element can be placed in percentages, so we work from its position in pixels.
+        const pxPosition = (styleValue: string, offset: number) =>
+            styleValue === "" || styleValue.endsWith("px")
+                ? pxOrZero(styleValue)
+                : offset;
         element.style.left = `${roundPx(
-            pxOrZero(element.style.left) +
+            pxPosition(element.style.left, element.offsetLeft) +
                 (elementWidth - layout.elementWidth) / 2,
         )}px`;
         element.style.top = `${roundPx(
-            pxOrZero(element.style.top) +
+            pxPosition(element.style.top, element.offsetTop) +
                 (elementHeight - layout.elementHeight) / 2,
         )}px`;
     }

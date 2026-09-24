@@ -54,6 +54,9 @@ type ImageOperationUndoItem =
           imageTransform: string;
           cropInfo: IImageCropInfo;
           elementGeometry: IElementGeometry;
+          // The element's text when the step was recorded. Typing afterwards is a newer step,
+          // which the text editor's own undo takes back first; see canUndoImageOperation.
+          textWhenRecorded: string;
       };
 // | {
 //       kind: "removeElement";
@@ -150,6 +153,7 @@ export class ImageUndoManager {
                 top: img?.style.top ?? "",
             },
             elementGeometry: this.getElementGeometry(canvasElement),
+            textWhenRecorded: canvasElement.textContent ?? "",
         });
     }
 
@@ -194,9 +198,14 @@ export class ImageUndoManager {
         if (topOfStack?.kind === "restoreImageTransform") {
             // The rotation handle rotates text boxes too, so this record does not
             // need a picture. We ask instead that the element it belongs to is the selected
-            // one, which is the same idea as one undo stack for each text box.
+            // one, which is the same idea as one undo stack for each text box. If its text has
+            // changed since, the typing is newer than the rotation, so we leave Undo to the text
+            // editor until the text is back the way it was.
             return (
-                !!activeElement && activeElement === topOfStack.canvasElement
+                !!activeElement &&
+                activeElement === topOfStack.canvasElement &&
+                (activeElement.textContent ?? "") ===
+                    topOfStack.textWhenRecorded
             );
         }
         if (topOfStack?.kind === "restoreImage") {
