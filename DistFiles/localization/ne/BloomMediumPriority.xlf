@@ -1739,10 +1739,10 @@
         <target xml:lang="ne-NP" state="needs-translation">this page</target>
         <note>ID: ImageLibrary.ThisPage</note>
       </trans-unit>
-      <trans-unit id="BookProcessor.AutoUpdateExplanation" translate="no">
-        <source xml:lang="en">Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size.</source>
-        <target xml:lang="ne-NP" state="needs-translation">Bloom needs to update the pages of this book so they work well with this version of Bloom. This happens once for each book, and again if you change the page size.</target>
-        <note>ID: BookProcessor.AutoUpdateExplanation</note>
+      <trans-unit id="BookProcessor.HousekeepingMessage">
+        <source xml:lang="en">Please wait while Bloom does some housekeeping on your book...</source>
+        <target xml:lang="ne-NP" state="needs-translation">Please wait while Bloom does some housekeeping on your book...</target>
+        <note>ID: BookProcessor.HousekeepingMessage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.AppTitle">
         <source xml:lang="en">Bloom AI Image Tools</source>
