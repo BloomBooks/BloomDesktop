@@ -442,4 +442,69 @@ describe("adjustBackgroundImageSize on a background that fills the page", () => 
 
         expect(shownRectangle(rotated.img, true)).toEqual(expected);
     });
+
+    // A landscape picture shown 600 by 300, 150 hidden at the left and 50 at the right, is
+    // fitted to a new page size, once as a picture that arrived that shape and once as a
+    // portrait picture 100 by 200 rotated 270 degrees, whose box is 300 by 600 at (0, -150).
+    // The hidden amounts differ on the two sides, so a conversion that mixed up the box and
+    // the shown rectangle would give the two different framings.
+    test.each([
+        { width: 400, height: 600 },
+        { width: 800, height: 300 },
+        { width: 300, height: 300 },
+    ])(
+        "a picture rotated 270 degrees and cropped off centre keeps its framing when the page becomes $width by $height",
+        async (newSize) => {
+            const state: BackgroundImageManagerState = {
+                bgImageLoadListeners: new WeakMap(),
+            };
+            const fit = async (
+                bloomCanvas: HTMLElement,
+                element: HTMLElement,
+            ) => {
+                bloomCanvasSize.width = newSize.width;
+                bloomCanvasSize.height = newSize.height;
+                await adjustBackgroundImageSize(
+                    state,
+                    bloomCanvas,
+                    element,
+                    false,
+                    () => undefined,
+                    () => {},
+                );
+                bloomCanvasSize.width = 400;
+                bloomCanvasSize.height = 300;
+            };
+            const upright = makeFilledBackground(200, 100, "", 600, -150, 0);
+            await fit(upright.bloomCanvas, upright.element);
+            const expected = shownRectangle(upright.img, false);
+
+            const rotated = makeFilledBackground(
+                100,
+                200,
+                "rotate(270deg)",
+                300,
+                0,
+                -150,
+            );
+            // Sanity check: before the resize both show the same rectangle.
+            expect(shownRectangle(rotated.img, true)).toEqual({
+                left: -150,
+                top: 0,
+                width: 600,
+            });
+            await fit(rotated.bloomCanvas, rotated.element);
+            const result = shownRectangle(rotated.img, true);
+
+            expect(result.left).toBeCloseTo(expected.left);
+            expect(result.top).toBeCloseTo(expected.top);
+            expect(result.width).toBeCloseTo(expected.width);
+            // And no blank band: the shown rectangle still covers the page.
+            expect(result.left).toBeLessThanOrEqual(0);
+            expect(result.top).toBeLessThanOrEqual(0);
+            expect(result.left + result.width).toBeGreaterThanOrEqual(
+                newSize.width - 0.01,
+            );
+        },
+    );
 });
