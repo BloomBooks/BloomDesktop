@@ -180,6 +180,14 @@ describe("canRotateCanvasElement", () => {
         expect(canRotateCanvasElement(element)).toBe(false);
     });
 
+    it("refuses a book link grid", () => {
+        const element = makeCanvasElement();
+        const grid = document.createElement("div");
+        grid.classList.add("bloom-link-grid");
+        element.appendChild(grid);
+        expect(canRotateCanvasElement(element)).toBe(false);
+    });
+
     it("allows an element whose bubble style is none", () => {
         const element = makeCanvasElement();
         element.setAttribute("data-test-bubble-style", "none");

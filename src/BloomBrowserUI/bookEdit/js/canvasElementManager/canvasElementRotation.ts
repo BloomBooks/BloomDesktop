@@ -81,8 +81,12 @@ export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
     if (canvasElement.getElementsByClassName(kVideoContainerClass).length > 0) {
         return false;
     }
-    // Navigation buttons are not rotated, in any way; see also rotateActiveImageRight90Degrees.
-    if (canvasElement.classList.contains(kBloomButtonClass)) {
+    // Navigation buttons and book link grids are not rotated, in any way; see also
+    // rotateActiveImageRight90Degrees.
+    if (
+        canvasElement.classList.contains(kBloomButtonClass) ||
+        canvasElement.getElementsByClassName("bloom-link-grid").length > 0
+    ) {
         return false;
     }
     // comicaljs draws these shapes axis-aligned; see the note at the top of this file.
