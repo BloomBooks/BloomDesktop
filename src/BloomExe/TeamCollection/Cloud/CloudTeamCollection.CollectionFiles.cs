@@ -106,7 +106,22 @@ namespace Bloom.TeamCollection.Cloud
                 null,
                 CancellationToken.None
             );
-            var finishResult = _client.CollectionFilesFinish(transactionId);
+            JObject finishResult;
+            try
+            {
+                finishResult = _client.CollectionFilesFinish(transactionId);
+            }
+            catch (CloudCollectionClientException e)
+                when (e.Code == CloudErrorCode.TransactionChanged)
+            {
+                // A concurrent collection-files-start resumed this transaction while this finish
+                // was verifying uploads; nothing was committed, and the open transaction now
+                // belongs to that newer attempt. Stop this attempt without touching it.
+                throw new ApplicationException(
+                    "The collection's settings files changed while they were being sent to the Team Collection, so Bloom stopped sending them. Please try again.",
+                    e
+                );
+            }
             var newVersion = (long?)(finishResult?["version"]) ?? (expectedVersion + 1);
             _cache.RecordCollectionFilesFinish(groupKey, newVersion);
             _cache.Save();

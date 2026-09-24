@@ -653,6 +653,89 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
+        public void CheckinFinish_TransactionChanged_StopsWithoutAborting()
+        {
+            // A concurrent checkin-start resumed the same transaction; it now belongs to that
+            // newer attempt, so this one must stop WITHOUT calling checkin-abort.
+            var collection = OpenCheckedOutHere();
+            _checkinFinishResponse = () =>
+                FakeResponses.Make(HttpStatusCode.Conflict, "{\"error\":\"TransactionChanged\"}");
+
+            var ex = Assert.Throws<ApplicationException>(() =>
+                collection.PutBook(_bookFolderPath, checkin: true)
+            );
+
+            Assert.That(ex.Message, Does.Contain("Please try again"));
+            Assert.That(
+                (ex.InnerException as CloudCollectionClientException)?.Code,
+                Is.EqualTo(CloudErrorCode.TransactionChanged)
+            );
+            Assert.That(
+                _checkinAbortCalled,
+                Is.False,
+                "must not abort the newer attempt's transaction"
+            );
+            Assert.That(
+                CloudCheckoutFile.ReadGuid(_bookFolderPath),
+                Is.EqualTo(kGuid),
+                "nothing was committed; the checkout is untouched"
+            );
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+        }
+
+        [Test]
+        public void CollectionFilesFinish_TransactionChanged_StopsWithoutAborting()
+        {
+            _bookRow = MakeRow(1, "cs-1", null, null);
+            var collection = OpenCollection();
+            collection.HydrateFromServer();
+            RobustFile.WriteAllText(
+                Path.Combine(_collectionFolderPath, "customCollectionStyles.css"),
+                "body {}"
+            );
+            var finishCalls = 0;
+            _executor.Handler = req =>
+            {
+                switch (req.Resource)
+                {
+                    case "functions/v1/collection-files-start":
+                        return FakeResponses.Make(
+                            HttpStatusCode.OK,
+                            new JObject
+                            {
+                                ["transactionId"] = "ctx-1",
+                                ["changedPaths"] = new JArray("customCollectionStyles.css"),
+                                ["s3"] = S3Block(),
+                            }.ToString()
+                        );
+                    case "functions/v1/collection-files-finish":
+                        finishCalls++;
+                        return FakeResponses.Make(
+                            HttpStatusCode.Conflict,
+                            "{\"error\":\"TransactionChanged\"}"
+                        );
+                    case "functions/v1/collection-files-abort":
+                    case "functions/v1/checkin-abort":
+                        Assert.Fail("must not abort the newer attempt's transaction");
+                        return null;
+                    default:
+                        return HandleServerRequest(req);
+                }
+            };
+
+            var ex = Assert.Throws<ApplicationException>(() =>
+                collection.PutCollectionFiles(new[] { "customCollectionStyles.css" })
+            );
+
+            Assert.That(finishCalls, Is.EqualTo(1), "not retried");
+            Assert.That(ex.Message, Does.Contain("Please try again"));
+            Assert.That(
+                (ex.InnerException as CloudCollectionClientException)?.Code,
+                Is.EqualTo(CloudErrorCode.TransactionChanged)
+            );
+        }
+
+        [Test]
         public void CheckinStart_IssuesGuidForTakeIfFree_KeepCheckedOut_RecordsIt()
         {
             // checkin-start taking a free lock (or creating a new book) issues a GUID; a Send that

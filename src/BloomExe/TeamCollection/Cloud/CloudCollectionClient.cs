@@ -31,6 +31,12 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>v1.8: checkin-start/collection-files-start refused the proposed file list
         /// (a bad or duplicate path after NFC normalization, or a malformed entry).</summary>
         InvalidManifest,
+
+        /// <summary>v1.9: checkin-finish/collection-files-finish found that a concurrent start
+        /// call resumed (and revised) the same transaction while this finish was verifying
+        /// uploads. Nothing was committed, and the still-open transaction now belongs to the
+        /// newer attempt, so it must NOT be aborted.</summary>
+        TransactionChanged,
     }
 
     /// <summary>
@@ -659,6 +665,12 @@ namespace Bloom.TeamCollection.Cloud
                 case "CheckoutElsewhere":
                     return new CloudCollectionClientException(
                         CloudErrorCode.CheckoutElsewhere,
+                        message,
+                        body
+                    );
+                case "TransactionChanged":
+                    return new CloudCollectionClientException(
+                        CloudErrorCode.TransactionChanged,
                         message,
                         body
                     );

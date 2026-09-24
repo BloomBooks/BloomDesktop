@@ -243,6 +243,7 @@ namespace BloomTests.TeamCollection.Cloud
         [TestCase("VersionConflict", CloudErrorCode.VersionConflict)]
         [TestCase("CheckoutElsewhere", CloudErrorCode.CheckoutElsewhere)]
         [TestCase("InvalidManifest", CloudErrorCode.InvalidManifest)]
+        [TestCase("TransactionChanged", CloudErrorCode.TransactionChanged)]
         public void CallEdgeFunction_TypedErrorCodes_MapToExpectedCloudErrorCode(
             string serverCode,
             CloudErrorCode expected

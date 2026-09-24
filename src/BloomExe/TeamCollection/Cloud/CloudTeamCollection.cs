@@ -1270,6 +1270,18 @@ namespace Bloom.TeamCollection.Cloud
                     RefreshIndexFromCache();
                 }
             }
+            catch (CloudCollectionClientException e)
+                when (e.Code == CloudErrorCode.TransactionChanged)
+            {
+                // A concurrent checkin-start resumed this same transaction while this finish was
+                // verifying uploads: nothing was committed, and the still-open transaction now
+                // belongs to that newer attempt. Aborting it would kill the newer attempt (and, for
+                // a new book, delete its uncommitted row), so just stop this one.
+                throw new ApplicationException(
+                    $"\"{bookFolderName}\" changed while it was being sent to the Team Collection, so Bloom stopped sending it. Please try again.",
+                    e
+                );
+            }
             catch (Exception e)
             {
                 try
