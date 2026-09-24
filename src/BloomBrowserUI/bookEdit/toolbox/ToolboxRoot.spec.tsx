@@ -5,12 +5,24 @@ import { renderRoot, unmountRoot } from "../../utils/reactRender";
 
 // The real ./toolbox module drags in the whole legacy toolbox (jQuery, every tool, the
 // edit-page frames...). All ToolboxRoot wants from it is the list of tools that exist,
-// which it uses to decide which enabled tool ids are real.
+// which it uses to build a section for each tool it is told to offer.
+const makeFakeTool = (id: string, featureName?: string) => ({
+    id: () => id,
+    iconPath: () => `/bloom/images/${id}.svg`,
+    featureName,
+    makeRootElement: () => {
+        const root = document.createElement("div");
+        root.textContent = `${id} panel`;
+        return root;
+    },
+});
+
 vi.mock("./toolbox", () => {
     return {
         getMasterToolList: () => [
-            { id: () => "talkingBook" },
-            { id: () => "game" },
+            makeFakeTool("talkingBook"),
+            makeFakeTool("game"),
+            makeFakeTool("settings"),
         ],
     };
 });
@@ -30,17 +42,13 @@ vi.mock("../../react_components/l10nComponents", async (importOriginal) => {
     };
 });
 
+// ToolboxRoot no longer asks the server which tools are enabled; toolbox.ts owns that and
+// tells us through addTool(). Fail loudly if that ever regresses into a fetch from here.
 vi.mock("axios", () => {
     return {
         default: {
-            get: (url: string) => {
-                if (url.includes("toolbox/enabledTools")) {
-                    return Promise.resolve({ data: "talkingBook,settings" });
-                }
-                // Nothing else here should be making requests; be loud rather than
-                // quietly returning something plausible if that ever changes.
-                return Promise.reject(new Error(`unexpected GET of ${url}`));
-            },
+            get: (url: string) =>
+                Promise.reject(new Error(`unexpected GET of ${url}`)),
         },
     };
 });
@@ -49,8 +57,6 @@ vi.mock("axios", () => {
 const { ToolboxRoot } = await import("./ToolboxRoot");
 const { getToolboxReactAdapter } = await import("./toolboxReactAdapter");
 
-// The adapter object is rebuilt on every render, so always read the current one rather
-// than holding on to it.
 const getAdapter = () => {
     const adapter = getToolboxReactAdapter();
     if (!adapter) {
@@ -61,8 +67,8 @@ const getAdapter = () => {
     return adapter;
 };
 
-// Each accordion header carries the tool's id on its icon span, so this is the order of
-// the sections the user would see.
+// Each accordion header carries the tool's canonical id on its icon span, so this is the
+// order of the sections the user would see.
 const getHeaderToolIds = (container: HTMLElement): string[] =>
     Array.from(
         container.querySelectorAll(".MuiAccordionSummary-root [data-toolid]"),
@@ -96,19 +102,27 @@ describe("ToolboxRoot", () => {
         }
     });
 
+    // Offer the two tools every book has, the way toolbox.ts does at startup.
+    const renderWithBaseTools = async (host: HTMLDivElement) => {
+        await act(async () => {
+            renderRoot(<ToolboxRoot />, host);
+        });
+        await act(async () => {
+            getAdapter().addTool("talkingBook");
+            getAdapter().addTool("settings");
+        });
+    };
+
     // BL-16602: visiting a game page auto-activates the Game tool; leaving the page removes
-    // it again. The legacy toolbox code owns each tool's showTool()/hideTool() lifecycle and
-    // learns about activation changes only through onActiveToolChanged, so if removing the
-    // active tool doesn't report the replacement, the tool the user can see is never
-    // activated. That left the Talking Book tool doing no highlighting at all.
+    // it again. toolbox.ts owns each tool's showTool()/hideTool() lifecycle and learns about
+    // activation changes only through onActiveToolChanged, so if removing the active tool
+    // doesn't report the replacement, the tool the user can see is never activated. That
+    // left the Talking Book tool doing no highlighting at all.
     it("reports the replacement tool when the active tool is removed", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
-
-        await act(async () => {
-            renderRoot(<ToolboxRoot />, container);
-        });
+        await renderWithBaseTools(container);
 
         const reportedToolIds: string[] = [];
         getAdapter().onActiveToolChanged((toolId) => {
@@ -120,14 +134,10 @@ describe("ToolboxRoot", () => {
             "settings",
         ]);
 
-        // Arriving on a game page: legacy code adds the required Game tool and makes it active.
+        // Arriving on a game page: toolbox.ts adds the required Game tool and makes it active.
         await act(async () => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-added", {
-                    detail: { toolId: "gameTool" },
-                }),
-            );
-            getAdapter().setActiveToolByToolId("gameTool");
+            getAdapter().addTool("game");
+            getAdapter().setActiveToolByToolId("game");
         });
 
         // Sanity checks, so that a failure below can't just mean the setup never worked.
@@ -137,15 +147,11 @@ describe("ToolboxRoot", () => {
             "settings",
         ]);
         expect(getExpandedToolId(container)).toBe("game");
-        expect(reportedToolIds).toEqual(["gameTool"]);
+        expect(reportedToolIds).toEqual(["game"]);
 
-        // Leaving the game page: legacy code removes the Game tool it required.
+        // Leaving the game page: toolbox.ts removes the Game tool it required.
         await act(async () => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-removed", {
-                    detail: { toolId: "gameTool" },
-                }),
-            );
+            getAdapter().removeTool("game");
         });
 
         expect(getHeaderToolIds(container)).toEqual([
@@ -153,17 +159,14 @@ describe("ToolboxRoot", () => {
             "settings",
         ]);
         expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["gameTool", "talkingBookTool"]);
+        expect(reportedToolIds).toEqual(["game", "talkingBook"]);
     });
 
     it("leaves the active tool alone when some other tool is removed", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
-
-        await act(async () => {
-            renderRoot(<ToolboxRoot />, container);
-        });
+        await renderWithBaseTools(container);
 
         const reportedToolIds: string[] = [];
         getAdapter().onActiveToolChanged((toolId) => {
@@ -171,23 +174,15 @@ describe("ToolboxRoot", () => {
         });
 
         await act(async () => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-added", {
-                    detail: { toolId: "gameTool" },
-                }),
-            );
-            getAdapter().setActiveToolByToolId("talkingBookTool");
+            getAdapter().addTool("game");
+            getAdapter().setActiveToolByToolId("talkingBook");
         });
 
         expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["talkingBookTool"]);
+        expect(reportedToolIds).toEqual(["talkingBook"]);
 
         await act(async () => {
-            window.dispatchEvent(
-                new CustomEvent("toolbox-tool-removed", {
-                    detail: { toolId: "gameTool" },
-                }),
-            );
+            getAdapter().removeTool("game");
         });
 
         expect(getHeaderToolIds(container)).toEqual([
@@ -196,6 +191,6 @@ describe("ToolboxRoot", () => {
         ]);
         // Removing a tool that wasn't active must not disturb the active tool.
         expect(getExpandedToolId(container)).toBe("talkingBook");
-        expect(reportedToolIds).toEqual(["talkingBookTool"]);
+        expect(reportedToolIds).toEqual(["talkingBook"]);
     });
 });
