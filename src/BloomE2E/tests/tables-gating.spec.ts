@@ -25,6 +25,12 @@
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../fixtures/bloomTest";
+import {
+    closeAddPageDialog,
+    getAddPageOffer,
+    openAddPageDialog,
+    selectPageInAddPageDialog,
+} from "../helpers/addPageDialog";
 import { readBook } from "../helpers/bookHtml";
 import {
     addPage,
@@ -489,6 +495,27 @@ test.describe("a book with a table where tables cannot be made", () => {
                         "because the click explained itself instead of making a table.",
                 ).toContain("table");
                 await setChangeLayoutMode(belowPro, false);
+            },
+        );
+
+        await step(
+            "Check the Alphabet Book page cannot be added from the Add Page dialog",
+            async () => {
+                // The ready-made page whose whole content is a table. It stays in the dialog, so
+                // that a person can see it, but the dialog offers the subscription notice in place
+                // of its Add Page button.
+                await openAddPageDialog(belowPro);
+                await selectPageInAddPageDialog(belowPro, "Alphabet Book");
+                const offer = await getAddPageOffer(belowPro);
+                expect(
+                    offer,
+                    "Selecting the Alphabet Book page below Pro should offer the notice that " +
+                        "names the subscription it needs, and no way to add it.",
+                ).toEqual({
+                    addButtonOffered: false,
+                    requiresSubscriptionNotice: true,
+                });
+                await closeAddPageDialog(belowPro);
             },
         );
 

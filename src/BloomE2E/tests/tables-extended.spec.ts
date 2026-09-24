@@ -56,6 +56,7 @@ import {
     waitForEditablePageReload,
     waitForPageCount,
 } from "../helpers/pageThumbnails";
+import { setPageSize } from "../helpers/pageSize";
 import {
     cell,
     cellTextBox,
@@ -755,6 +756,55 @@ test.describe("more ways to use a table", () => {
         await step("Go back to one content language", async () => {
             await setContentLanguages(page, ["en"]);
             await waitForTableAttached(page);
+        });
+    });
+
+    test("keeps all 54 cells tiled when the page turns landscape", async ({
+        page,
+        step,
+    }) => {
+        await step("Add the Alphabet Book page", async () => {
+            const before = (await getContentPages(page)).map((p) => p.id);
+            await addPage(page, "Alphabet Book");
+            const alphabet = (await getContentPages(page)).find(
+                (p) => !before.includes(p.id),
+            )!;
+            await goToPage(page, alphabet.id);
+            await waitForTableAttached(page);
+        });
+
+        await step("Put a letter and a picture in its cells", async () => {
+            await typeInCell(page, 0, 0, "en", "A");
+            await setCellContentType(page, 0, 1, "image");
+            await chooseImageFile(page, IMAGE_FILE, await cell(page, 0, 1));
+        });
+
+        await step("Turn the page landscape", async () => {
+            await setPageSize(page, "A5Landscape");
+            await waitForTableAttached(page);
+        });
+
+        await step(
+            "Check all 54 cells still tile, with their contents",
+            async () => {
+                const shape = await getTableShape(page);
+                expect(
+                    { rows: shape.rows, columns: shape.columns },
+                    "Turning the page landscape should not change the table's shape.",
+                ).toEqual({ rows: 9, columns: 6 });
+                await expectCellsTile(page);
+                await expectPictureInsideCell(page, 0, 1);
+                expect(
+                    await getCellText(page, 0, 0, "en"),
+                    "The letter typed before the page turned should still be there.",
+                ).toBe("A");
+            },
+        );
+
+        await step("Turn the page back to portrait", async () => {
+            await setPageSize(page, "A5Portrait");
+            await waitForTableAttached(page);
+            await expectCellsTile(page);
         });
     });
 

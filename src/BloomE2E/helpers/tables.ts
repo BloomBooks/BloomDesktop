@@ -239,7 +239,8 @@ export async function getCellContentType(
  * Measure the table and every cell in it, in the coordinates Playwright's own mouse uses, so that
  * these rects can be compared with those of anything else on the page.
  *
- * One round trip rather than one per cell: measuring a large table's cells one at a time both takes longer and risks reading them at different moments, which for a grid
+ * One round trip rather than one per cell: an Alphabet Book page has 54 cells, and measuring them
+ * one at a time both takes longer and risks reading them at different moments, which for a grid
  * mid-relayout would produce a shape that never existed.
  */
 export async function measureTable(

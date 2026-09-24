@@ -665,6 +665,35 @@ test.describe("a table on a canvas page", () => {
         );
     });
 
+    test("adds the ready-made Alphabet Book page", async ({ page, step }) => {
+        await step("Add the Alphabet Book page", async () => {
+            // Which page is new, rather than the first content page: this book already has the
+            // canvas page, and Bloom inserts the new one after whichever page is showing.
+            const before = (await getContentPages(page)).map((p) => p.id);
+            await addPage(page, "Alphabet Book");
+            const alphabet = (await getContentPages(page)).find(
+                (p) => !before.includes(p.id),
+            )!;
+            await goToPage(page, alphabet.id);
+            await waitForTableAttached(page);
+        });
+
+        await step("Check its table is nine rows by six columns", async () => {
+            const shape = await getTableShape(page);
+            expect(
+                { rows: shape.rows, columns: shape.columns },
+                "The Alphabet Book page should hold a nine by six table.",
+            ).toEqual({ rows: 9, columns: 6 });
+            await expectCellsTile(page);
+        });
+
+        await step("Type in one of its 54 cells", async () => {
+            // A page of 54 cells is only useful if they can be typed in.
+            await typeInCell(page, 0, 0, "en", "A");
+            expect(await getCellText(page, 0, 0, "en")).toBe("A");
+        });
+    });
+
     test("renders the tables as grids in a BloomPUB preview", async ({
         page,
         step,
@@ -676,7 +705,9 @@ test.describe("a table on a canvas page", () => {
         if (!player) throw new Error("The BloomPUB preview never opened.");
 
         await step("Check both tables draw as grids", async () => {
-            // The canvas page's own two tables.
+            // The canvas page's own two tables. bloom-player builds only the pages near the one
+            // it is showing, so the Alphabet Book page's table need not be in the preview's DOM
+            // at all; the Edit tab tests above cover that table.
             await expectTablesRenderAsGrids(player, 2, canvasPage.id);
         });
 
