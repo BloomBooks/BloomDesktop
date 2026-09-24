@@ -37,6 +37,11 @@ namespace Bloom.TeamCollection.Cloud
         /// uploads. Nothing was committed, and the still-open transaction now belongs to the
         /// newer attempt, so it must NOT be aborted.</summary>
         TransactionChanged,
+
+        /// <summary>Synthesized locally (not a server code): the request got no HTTP response at
+        /// all (network failure, timeout, connection dropped). The server may or may not have
+        /// acted on it, so callers must find out rather than assume either outcome.</summary>
+        NetworkError,
     }
 
     /// <summary>
@@ -83,6 +88,19 @@ namespace Bloom.TeamCollection.Cloud
         {
             Code = code;
         }
+    }
+
+    /// <summary>
+    /// Thrown by CloudTeamCollection's check-in when checkin-finish was sent but no answer came
+    /// back (even after retrying), so it is unknown whether the check-in committed. The book is
+    /// treated as checked in (read-only here) until the server says otherwise; the caller must
+    /// NOT preserve or revert anything, only tell the user. The
+    /// <see cref="Exception.Message"/> is a complete, user-facing explanation.
+    /// </summary>
+    public class CloudCheckinUnconfirmedException : ApplicationException
+    {
+        public CloudCheckinUnconfirmedException(string message, Exception innerException)
+            : base(message, innerException) { }
     }
 
     /// <summary>
@@ -262,15 +280,25 @@ namespace Bloom.TeamCollection.Cloud
                 new { p_collection_id = collectionId, p_group_key = groupKey }
             );
 
-        /// <summary>Conditional lock (CONTRACTS.md v1.9): succeeds only if the book is unlocked,
-        /// returning `{success: true, checkoutGuid, locked_by, locked_by_machine, locked_at}`; the
-        /// GUID goes only to this caller, who keeps it in the book folder's `.checkout` record.
-        /// Already locked by the caller (necessarily in another copy, or this copy would not be
-        /// asking) → `{success: false, locked_by_me: true}` with NO new GUID; locked by someone
-        /// else → `success: false` plus the holder's identity. <paramref name="machine"/> is for
-        /// display only.</summary>
-        public JObject CheckoutBook(string bookId, string machine) =>
-            (JObject)CallRpc("checkout_book", new { p_book_id = bookId, p_machine = machine });
+        /// <summary>Conditional lock (CONTRACTS.md v1.10): the CLIENT supplies the checkout GUID,
+        /// having already saved it in the book folder's `.checkout` record (write-ahead, so a
+        /// checkout whose response is lost is never stranded); the server stores only its hash.
+        /// A free book is locked → `{success: true, locked_by, locked_by_machine, locked_at}`.
+        /// Already locked by the caller under the SAME GUID → success again with no change (so a
+        /// retry after a lost response is safe). Locked by the caller under another GUID (another
+        /// copy holds it) → `{success: false, locked_by_me: true}`; locked by someone else →
+        /// `success: false` plus the holder's identity. <paramref name="machine"/> is for display
+        /// only.</summary>
+        public JObject CheckoutBook(string bookId, string machine, string checkoutGuid) =>
+            (JObject)CallRpc(
+                "checkout_book",
+                new
+                {
+                    p_book_id = bookId,
+                    p_machine = machine,
+                    p_checkout_guid = checkoutGuid,
+                }
+            );
 
         /// <summary>Account-switch takeover (batch item 9, CONTRACTS.md v1.9): atomically
         /// reassigns a book's lock from a DIFFERENT account to the caller, but ONLY when the
@@ -445,9 +473,9 @@ namespace Bloom.TeamCollection.Cloud
         /// transaction. <paramref name="bookId"/> null means "first Send of a new book".
         /// <paramref name="files"/> is the diff (added/changed paths only) as
         /// [{path,sha256,size}]. <paramref name="checkoutGuid"/> is this copy's checkout GUID
-        /// (null when it has none, e.g. a new book or a take-if-free check-in); when the server
-        /// issues a new one (taking a free lock, or a new book) the response carries it as
-        /// `checkoutGuid`. Throws <see cref="CloudCollectionClientException"/> with
+        /// (null when it has none, e.g. a new book or a take-if-free check-in). v1.10: the server
+        /// never issues a GUID here; a send that is not from a checkout only holds the lock for the
+        /// duration of the send. Throws <see cref="CloudCollectionClientException"/> with
         /// InvalidManifest (400), LockHeldByOther/CheckoutElsewhere/BaseVersionSuperseded/
         /// NameConflict (409) or ClientOutOfDate (426).
         /// </summary>
@@ -480,7 +508,9 @@ namespace Bloom.TeamCollection.Cloud
 
         /// <summary>
         /// Commits a check-in transaction: verifies uploads, writes the version/manifest rows,
-        /// releases the lock (unless <paramref name="keepCheckedOut"/>), emits events.
+        /// releases the lock (unless <paramref name="keepCheckedOut"/>), emits events. Idempotent:
+        /// calling it again for a transaction that already committed returns the same result, so
+        /// it is safe to retry when a response was lost.
         /// </summary>
         public JObject CheckinFinish(
             string transactionId,
@@ -570,6 +600,14 @@ namespace Bloom.TeamCollection.Cloud
 
         private JToken HandleResponse(IRestResponse response)
         {
+            // RestSharp reports a transport failure (no connection, timeout, aborted) as a
+            // response with no status code rather than throwing.
+            if (response.ResponseStatus != ResponseStatus.Completed || response.StatusCode == 0)
+                throw new CloudCollectionClientException(
+                    CloudErrorCode.NetworkError,
+                    response.ErrorMessage
+                        ?? "Bloom could not reach the Team Collection server (no response)."
+                );
             var statusCode = (int)response.StatusCode;
             if (statusCode >= 200 && statusCode < 300)
                 return string.IsNullOrWhiteSpace(response.Content)

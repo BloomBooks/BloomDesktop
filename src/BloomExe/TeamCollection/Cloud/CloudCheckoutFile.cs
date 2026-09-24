@@ -33,7 +33,7 @@ namespace Bloom.TeamCollection.Cloud
 
         private const int kCurrentVersion = 1;
 
-        /// <summary>The server-issued checkout GUID (canonical lowercase form).</summary>
+        /// <summary>The checkout GUID (canonical lowercase form); v1.10: made by this client before it asks for the checkout.</summary>
         public string CheckoutGuid { get; set; }
 
         /// <summary>The server book id (tc.books.id) the checkout is for.</summary>

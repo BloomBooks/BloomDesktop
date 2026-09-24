@@ -466,12 +466,15 @@ namespace Bloom.TeamCollection.Cloud
         /// checkout is allowed (the RPC already did that). <paramref name="currentUserId"/>/
         /// <paramref name="currentUserEmail"/> let it keep the display fields consistent when the
         /// winner is the current user (the RPC does not return the resolved email/name).
+        /// <paramref name="checkoutGuid"/> is the GUID this client supplied to checkout_book
+        /// (v1.10: the client makes it); null for a takeover, which keeps the existing one.
         /// </summary>
         public void RecordCheckoutResult(
             string bookId,
             JObject checkoutResult,
             string currentUserId,
-            string currentUserEmail
+            string currentUserEmail,
+            string checkoutGuid = null
         )
         {
             lock (_gate)
@@ -483,14 +486,13 @@ namespace Bloom.TeamCollection.Cloud
                     (string)checkoutResult["locked_by"] ?? (lockedByMe ? currentUserId : null);
                 book.LockedByMachine = (string)checkoutResult["locked_by_machine"];
                 book.LockedAt = (DateTime?)checkoutResult["locked_at"];
-                // Only a successful checkout_book hands out a (new) GUID. A takeover keeps the
-                // existing one, and "locked_by_me" means the lock (and its GUID) is unchanged,
-                // so both leave the hash alone; any other outcome is someone else's lock, whose
-                // hash we don't know until the next poll.
-                var newGuid = (string)checkoutResult["checkoutGuid"];
+                // Only a successful checkout_book locks the book under a (new) GUID -- ours. A
+                // takeover keeps the existing one, and "locked_by_me" means the lock (and its
+                // GUID) is unchanged, so both leave the hash alone; any other outcome is someone
+                // else's lock, whose hash we don't know until the next poll.
                 var success = (bool?)checkoutResult["success"] ?? false;
-                if (newGuid != null)
-                    book.CheckoutGuidHash = CloudCheckoutFile.HashGuid(newGuid);
+                if (success && checkoutGuid != null)
+                    book.CheckoutGuidHash = CloudCheckoutFile.HashGuid(checkoutGuid);
                 else if (!success && !lockedByMe)
                     book.CheckoutGuidHash = null;
                 SyncLockDisplayFieldsLocked(

@@ -869,41 +869,103 @@ namespace Bloom.TeamCollection.Cloud
         /// locked_by_machine, locked_at}` -- present whether or not `success` is true, so we can
         /// write-through the winner's identity into the cache even on a failed attempt (that's
         /// exactly what lets AttemptLock's caller show "checked out by X" immediately).
-        /// v1.9: a successful checkout returns the checkout GUID, which is saved in the book
-        /// folder's `.checkout` record -- that is what makes this copy the one the book is checked
-        /// out in. `locked_by_me` (the caller already holds it, in another copy) is a refusal:
-        /// there is no "check out here instead"; the book stays read-only in this copy.</summary>
+        /// v1.10 (write-ahead): this client makes the checkout GUID and saves it in the book
+        /// folder's `.checkout` record BEFORE asking -- that record is what makes this copy the
+        /// one the book is checked out in, and writing it first means a checkout whose response
+        /// is lost is never stranded. If the record can't be written we don't ask. A refusal
+        /// (someone else holds it, or `locked_by_me`: the caller holds it in another copy -- there
+        /// is no "check out here instead") deletes the record again. A network failure is retried
+        /// with the SAME GUID (checkout_book is idempotent for it); if the outcome is still
+        /// unknown the record stays, the book stays read-only, and the next poll or open decides
+        /// (the server's hash matches ours: checked out here; otherwise the obsolete-record
+        /// cancel removes it, silently when nothing changed locally).</summary>
         protected override bool TryLockInRepo(string bookName, BookStatus newStatus)
         {
             var bookId = ResolveBookId(bookName);
             if (bookId == null)
                 return true; // brand-new, never-committed local book; nothing to lock server-side yet.
+            ThrowIfCheckinStillUnconfirmed(bookName);
 
-            var result = _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine);
-            var success = (bool?)result["success"] ?? false;
-            if (success)
+            var bookFolderPath = Path.Combine(_localCollectionFolder, bookName);
+            // A record left by an earlier attempt whose outcome we never learned is reused, so
+            // that if that attempt did succeed this one is the idempotent retry rather than a
+            // refusal (locked_by_me under a different GUID) that would strand it.
+            var earlier = CloudCheckoutFile.Read(bookFolderPath);
+            var guid =
+                earlier != null && earlier.BookId == bookId
+                    ? earlier.CheckoutGuid
+                    : Guid.NewGuid().ToString("D").ToLowerInvariant();
+            WriteCheckoutFile(bookFolderPath, bookId, guid);
+
+            JObject result;
+            try
             {
-                var guid =
-                    (string)result["checkoutGuid"]
-                    ?? throw new ApplicationException(
-                        $"The Team Collection server checked out \"{bookName}\" but did not return its checkout GUID."
-                    );
-                var bookFolderPath = Path.Combine(_localCollectionFolder, bookName);
-                try
-                {
-                    WriteCheckoutFile(bookFolderPath, bookId, guid);
-                }
-                catch (Exception)
-                {
-                    // Without the record no copy could ever use this checkout; give it back
-                    // rather than leave the book locked to nobody's copy.
-                    _client.UnlockBook(bookId, guid);
-                    throw;
-                }
+                result = RetryOnNetworkError(
+                    "checkout_book",
+                    () => _client.CheckoutBook(bookId, TeamCollectionManager.CurrentMachine, guid)
+                );
             }
-            _cache.RecordCheckoutResult(bookId, result, _auth.CurrentUserId, _auth.CurrentEmail);
+            catch (CloudCollectionClientException e) when (e.Code == CloudErrorCode.NetworkError)
+            {
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: the outcome of checking out \"{bookName}\" is unknown (no response); keeping its .checkout record until the next poll or open decides."
+                );
+                throw;
+            }
+            catch (Exception)
+            {
+                // The server answered, and did not check the book out to us.
+                CloudCheckoutFile.Delete(bookFolderPath);
+                throw;
+            }
+            var success = (bool?)result["success"] ?? false;
+            if (!success)
+                CloudCheckoutFile.Delete(bookFolderPath);
+            _cache.RecordCheckoutResult(
+                bookId,
+                result,
+                _auth.CurrentUserId,
+                _auth.CurrentEmail,
+                guid
+            );
             _cache.Save();
             return success;
+        }
+
+        /// <summary>Waits between the retries of a call whose response was lost (see
+        /// <see cref="RetryOnNetworkError{T}"/>); one retry per entry. Tests shorten it.</summary>
+        internal TimeSpan[] LostResponseRetryDelays =
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3),
+        };
+
+        /// <summary>
+        /// Runs <paramref name="call"/>, retrying it (after each of
+        /// <see cref="LostResponseRetryDelays"/>) while it fails with
+        /// <see cref="CloudErrorCode.NetworkError"/>. Only for calls that are safe to repeat
+        /// (checkout_book with the same GUID, checkin-finish with the same transaction). Rethrows
+        /// the last NetworkError when every retry also got no answer.
+        /// </summary>
+        private T RetryOnNetworkError<T>(string what, Func<T> call)
+        {
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    return call();
+                }
+                catch (CloudCollectionClientException e)
+                    when (e.Code == CloudErrorCode.NetworkError
+                        && attempt < LostResponseRetryDelays.Length
+                    )
+                {
+                    Logger.WriteEvent(
+                        $"CloudTeamCollection: {what} got no response ({e.Message}); retrying."
+                    );
+                    Thread.Sleep(LostResponseRetryDelays[attempt]);
+                }
+            }
         }
 
         /// <summary>Single RPC unlock/force-unlock, per CONTRACTS.md's unlock_book/force_unlock.
@@ -929,7 +991,7 @@ namespace Bloom.TeamCollection.Cloud
             _cache.Save();
         }
 
-        /// <summary>Saves the `.checkout` record for a checkout this copy was just given.</summary>
+        /// <summary>Saves the `.checkout` record for a checkout this copy is about to ask for.</summary>
         private void WriteCheckoutFile(string bookFolderPath, string bookId, string checkoutGuid)
         {
             new CloudCheckoutFile
@@ -990,6 +1052,10 @@ namespace Bloom.TeamCollection.Cloud
         /// </summary>
         protected internal override bool IsEditableHere(string bookName, BookStatus status)
         {
+            // A check-in we sent but never heard back about counts as checked in (even a new
+            // book's first one) until the server tells us otherwise.
+            if (IsCheckinUnconfirmed(bookName))
+                return false;
             if (status.lockedBy == FakeUserIndicatingNewBook)
                 return true; // a new local-only book is always editable
             if (!status.checkedOutInThisCopy.HasValue)
@@ -1058,6 +1124,8 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
+            if (!inLostAndFound)
+                ThrowIfCheckinStillUnconfirmed(bookFolderName);
 
             // Account-switch takeover (batch item 9): if the repo still shows this book locked
             // to a DIFFERENT account but checked out in THIS copy, take the server lock over BEFORE
@@ -1182,25 +1250,42 @@ namespace Bloom.TeamCollection.Cloud
                         $"Could not check in \"{bookFolderName}\": the cloud Team Collection did not return a transaction."
                     );
 
-            // checkin-start issues a new GUID when it takes a free lock for us or creates a new
-            // book. The server now holds the lock under it whether or not this transaction goes
-            // on to commit, so record it right away.
-            var issuedGuid = (string)startResult["checkoutGuid"];
-            if (issuedGuid != null)
-            {
-                checkoutGuid = issuedGuid;
-                WriteCheckoutFile(sourceBookFolderPath, bookId, checkoutGuid);
-            }
-
+            // v1.10: checkin-start never issues a checkout GUID, and a check-in never writes a
+            // `.checkout` record. A send that isn't from a checkout in this copy (a new book, or a
+            // take-if-free check-in) only holds the lock for the duration of the send.
             var transactionId = (string)startResult["transactionId"];
             var location = ParseS3Location(startResult);
-            var keepCheckedOut = !string.IsNullOrEmpty(newStatus.lockedBy);
+            // Keeping the book checked out is only possible for an existing book this copy holds
+            // (the checkout, lock and GUID, simply stays as it is). A first check-in or a
+            // take-if-free send has no checkout of ours to keep (keeping one would need a GUID of
+            // its own, as for checkout_book, which is not a feature yet), so it always ends
+            // unlocked.
+            var keepCheckedOut =
+                !string.IsNullOrEmpty(newStatus.lockedBy) && checkoutGuid != null && bookId != null;
             // Upload what the SERVER says changed relative to its current version (see the
             // manifest comment above) — not a local guess.
             var changedPaths =
                 ((JArray)startResult["changedPaths"])?.Select(t => (string)t).ToList()
                 ?? new List<string>();
+            var checkin = new UnconfirmedCheckin
+            {
+                BookFolderName = bookFolderName,
+                TransactionId = transactionId,
+                BookId = bookId,
+                BookInstanceId = bookInstanceId,
+                ProposedName = proposedName,
+                Checksum = newStatus.checksum,
+                LocalManifest = localManifest,
+                KeepCheckedOut = keepCheckedOut,
+                CheckoutGuid = checkoutGuid,
+                // The comment must reach the server: unlike folder TCs (where the message rides
+                // inside history.db within the .bloom file), cloud history is displayed from the
+                // server's event log, so a comment we don't send here is invisible to everyone.
+                Comment = string.IsNullOrEmpty(checkinComment) ? null : checkinComment,
+            };
 
+            JObject finishResult;
+            var finishSent = false;
             try
             {
                 _transfer.UploadChangedFiles(
@@ -1217,58 +1302,24 @@ namespace Bloom.TeamCollection.Cloud
                         : new Progress<CloudTransferProgress>(_ => progressCallback(-1f)),
                     CancellationToken.None
                 );
-                // The comment must reach the server: unlike folder TCs (where the message rides
-                // inside history.db within the .bloom file), cloud history is displayed from the
-                // server's event log, so a comment we don't send here is invisible to everyone.
-                var finishResult = _client.CheckinFinish(
-                    transactionId,
-                    comment: string.IsNullOrEmpty(checkinComment) ? null : checkinComment,
-                    keepCheckedOut: keepCheckedOut
+                finishSent = true;
+                // checkin-finish is idempotent by transaction id, so a lost response is retried.
+                finishResult = RetryOnNetworkError(
+                    "checkin-finish",
+                    () => CallCheckinFinish(checkin)
                 );
-                var versionId = (string)finishResult["versionId"];
-                var seq = (long)finishResult["seq"];
-
-                // checkin-start/finish don't return the server-assigned book id for a first-ever
-                // Send (CONTRACTS.md gap -- see the task 05 final report); resolve it via a
-                // targeted state refresh matched on the stable, client-generated bookInstanceId.
-                if (bookId == null)
-                {
-                    HydrateFromServer();
-                    bookId = TryGetBookIdByInstanceId(bookInstanceId);
-                }
-
-                // The checkout (and its GUID) ends with the check-in unless it was kept.
-                if (!keepCheckedOut)
-                    CloudCheckoutFile.Delete(sourceBookFolderPath);
-                else if (issuedGuid != null && bookId != null)
-                    WriteCheckoutFile(sourceBookFolderPath, bookId, checkoutGuid); // now with the book id
-
-                if (bookId != null)
-                {
-                    _cache.RecordCheckinFinish(
-                        bookId,
-                        bookInstanceId,
-                        proposedName,
-                        versionId,
-                        seq,
-                        newStatus.checksum,
-                        localManifest,
-                        keepCheckedOut,
-                        // LockedBy is the raw auth user id (matches the server row + checkout_book),
-                        // NOT the email CurrentUserIdentity returns — see CloudCachedBook.LockedBy.
-                        keepCheckedOut ? _auth.CurrentUserId : null,
-                        keepCheckedOut ? TeamCollectionManager.CurrentMachine : null,
-                        keepCheckedOut ? _auth.CurrentEmail : null,
-                        keepCheckedOut && checkoutGuid != null
-                            ? CloudCheckoutFile.HashGuid(checkoutGuid)
-                            : null
-                    );
-                    // We just successfully uploaded this exact version, so the local folder IS this
-                    // version now (task 06's "localVersionSeq").
-                    _cache.RecordLocalVersionSeq(bookId, seq);
-                    _cache.Save();
-                    RefreshIndexFromCache();
-                }
+            }
+            catch (CloudCollectionClientException e)
+                when (e.Code == CloudErrorCode.NetworkError && finishSent)
+            {
+                // The finish may or may not have committed. Don't abort (that could only be
+                // right if it didn't); treat the book as checked in -- read-only here -- until the
+                // server tells us (see ResolveUnconfirmedCheckins).
+                RecordUnconfirmedCheckin(checkin);
+                throw new CloudCheckinUnconfirmedException(
+                    $"Bloom sent \"{bookFolderName}\" to the Team Collection but did not hear back whether the check-in was completed. Until it finds out, the book cannot be edited here. Bloom will check again automatically.",
+                    e
+                );
             }
             catch (CloudCollectionClientException e)
                 when (e.Code == CloudErrorCode.TransactionChanged)
@@ -1302,6 +1353,226 @@ namespace Bloom.TeamCollection.Cloud
                     throw MakeCheckinRefusedException(sourceBookFolderPath, clientException);
                 throw;
             }
+            CompleteCheckin(checkin, finishResult);
+        }
+
+        private JObject CallCheckinFinish(UnconfirmedCheckin checkin) =>
+            _client.CheckinFinish(
+                checkin.TransactionId,
+                comment: checkin.Comment,
+                keepCheckedOut: checkin.KeepCheckedOut
+            );
+
+        /// <summary>
+        /// The local half of a committed check-in (checkin-finish returned its result): end this
+        /// copy's checkout unless it was kept, and write the new version through to the cache.
+        /// </summary>
+        private void CompleteCheckin(UnconfirmedCheckin checkin, JObject finishResult)
+        {
+            var versionId = (string)finishResult["versionId"];
+            var seq = (long)finishResult["seq"];
+            var bookId = checkin.BookId;
+
+            // checkin-start/finish don't return the server-assigned book id for a first-ever
+            // Send (CONTRACTS.md gap -- see the task 05 final report); resolve it via a
+            // targeted state refresh matched on the stable, client-generated bookInstanceId.
+            if (bookId == null)
+            {
+                HydrateFromServer();
+                bookId = TryGetBookIdByInstanceId(checkin.BookInstanceId);
+            }
+
+            // The checkout (and its GUID) ends with the check-in unless it was kept.
+            var bookFolderPath = Path.Combine(_localCollectionFolder, checkin.BookFolderName);
+            if (!checkin.KeepCheckedOut)
+                CloudCheckoutFile.Delete(bookFolderPath);
+
+            if (bookId == null)
+                return;
+            _cache.RecordCheckinFinish(
+                bookId,
+                checkin.BookInstanceId,
+                checkin.ProposedName,
+                versionId,
+                seq,
+                checkin.Checksum,
+                checkin.LocalManifest,
+                checkin.KeepCheckedOut,
+                // LockedBy is the raw auth user id (matches the server row + checkout_book),
+                // NOT the email CurrentUserIdentity returns — see CloudCachedBook.LockedBy.
+                checkin.KeepCheckedOut
+                    ? _auth.CurrentUserId
+                    : null,
+                checkin.KeepCheckedOut ? TeamCollectionManager.CurrentMachine : null,
+                checkin.KeepCheckedOut ? _auth.CurrentEmail : null,
+                checkin.KeepCheckedOut ? CloudCheckoutFile.HashGuid(checkin.CheckoutGuid) : null
+            );
+            // We just successfully uploaded this exact version, so the local folder IS this
+            // version now (task 06's "localVersionSeq").
+            _cache.RecordLocalVersionSeq(bookId, seq);
+            _cache.Save();
+            RefreshIndexFromCache();
+        }
+
+        // ------------------------------------------------------------------
+        // Unconfirmed check-ins: checkin-finish was sent but no answer came back
+        // ------------------------------------------------------------------
+
+        /// <summary>Everything needed to finish (or give up on) a check-in whose checkin-finish
+        /// got no response.</summary>
+        private class UnconfirmedCheckin
+        {
+            public string BookFolderName;
+            public string TransactionId;
+
+            /// <summary>Null for a first check-in (a new book).</summary>
+            public string BookId;
+            public string BookInstanceId;
+            public string ProposedName;
+            public string Checksum;
+            public BookVersionManifest LocalManifest;
+            public bool KeepCheckedOut;
+            public string CheckoutGuid;
+            public string Comment;
+        }
+
+        // By book folder name. In memory only: after a restart, startup reconciliation settles
+        // the same question from the server's state and the local content.
+        private readonly Dictionary<string, UnconfirmedCheckin> _unconfirmedCheckins =
+            new Dictionary<string, UnconfirmedCheckin>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>True while a check-in of this book has been sent but not confirmed; the book
+        /// is then read-only here.</summary>
+        internal bool IsCheckinUnconfirmed(string bookFolderName)
+        {
+            lock (_unconfirmedCheckins)
+                return _unconfirmedCheckins.ContainsKey(bookFolderName);
+        }
+
+        /// <summary>
+        /// Treats a check-in whose finish got no answer as checked in until the server says
+        /// otherwise: the book becomes read-only here (see <see cref="IsEditableHere"/>) and, for
+        /// an existing book, shows as no longer checked out. The `.checkout` record is kept, in
+        /// case the answer turns out to be "still checked out in this copy".
+        /// </summary>
+        private void RecordUnconfirmedCheckin(UnconfirmedCheckin checkin)
+        {
+            lock (_unconfirmedCheckins)
+                _unconfirmedCheckins[checkin.BookFolderName] = checkin;
+            if (checkin.BookId != null)
+                _cache.RecordUnlock(checkin.BookId);
+            Logger.WriteEvent(
+                $"CloudTeamCollection: checkin-finish for \"{checkin.BookFolderName}\" (transaction {checkin.TransactionId}) got no response; the book is read-only until the outcome is known."
+            );
+        }
+
+        /// <summary>
+        /// Refuses to start a new check-in or checkout of a book whose previous check-in is still
+        /// unconfirmed, after first trying once more to find out.
+        /// </summary>
+        private void ThrowIfCheckinStillUnconfirmed(string bookFolderName)
+        {
+            UnconfirmedCheckin checkin;
+            lock (_unconfirmedCheckins)
+                _unconfirmedCheckins.TryGetValue(bookFolderName, out checkin);
+            if (checkin == null || ResolveUnconfirmedCheckin(checkin))
+                return;
+            throw new ApplicationException(
+                $"Bloom is still finding out whether the last check-in of \"{bookFolderName}\" reached the Team Collection. Please try again when your connection is working."
+            );
+        }
+
+        /// <summary>
+        /// Tries to settle every unconfirmed check-in (called on each successful poll, when the
+        /// server is evidently reachable).
+        /// </summary>
+        private void ResolveUnconfirmedCheckins()
+        {
+            List<UnconfirmedCheckin> pending;
+            lock (_unconfirmedCheckins)
+                pending = _unconfirmedCheckins.Values.ToList();
+            foreach (var checkin in pending)
+            {
+                try
+                {
+                    ResolveUnconfirmedCheckin(checkin);
+                }
+                catch (Exception e)
+                {
+                    // Leave it unconfirmed (still read-only); the next poll tries again.
+                    NonFatalProblem.ReportSentryOnly(e);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Asks the server again (checkin-finish is idempotent by transaction id). A result means
+        /// the check-in committed: complete it locally. Any other answer means it never
+        /// committed: refresh from the server, which then shows either the book still checked
+        /// out in this copy (editable again) or, for a new book, no such book (new and editable
+        /// again) -- or, if meanwhile the checkout was lost some other way, an obsolete record
+        /// that the usual cancel handles, preserving the edits. No answer at all leaves it
+        /// unconfirmed. Returns true when it is settled.
+        /// </summary>
+        private bool ResolveUnconfirmedCheckin(UnconfirmedCheckin checkin)
+        {
+            JObject finishResult;
+            try
+            {
+                finishResult = CallCheckinFinish(checkin);
+            }
+            catch (CloudCollectionClientException e) when (e.Code == CloudErrorCode.NetworkError)
+            {
+                return false;
+            }
+            catch (CloudCollectionClientException e)
+            {
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: the unconfirmed check-in of \"{checkin.BookFolderName}\" did not commit ({e.Code}: {e.Message})."
+                );
+                ForgetUnconfirmedCheckin(checkin);
+                if (e.Code != CloudErrorCode.TransactionChanged)
+                {
+                    try
+                    {
+                        // Releases a new book's send-only row; leaves an existing book's lock.
+                        _client.CheckinAbort(checkin.TransactionId);
+                    }
+                    catch (Exception abortException)
+                    {
+                        NonFatalProblem.ReportSentryOnly(abortException);
+                    }
+                }
+                HydrateFromServer();
+                var bookId = checkin.BookId ?? TryGetBookIdByInstanceId(checkin.BookInstanceId);
+                if (bookId != null)
+                    ReconcileCheckoutFiles(
+                        new[] { bookId },
+                        null,
+                        deferIfPossiblyBeingEdited: true
+                    );
+                UpdateBookStatus(checkin.BookFolderName, true);
+                return true;
+            }
+            ForgetUnconfirmedCheckin(checkin);
+            CompleteCheckin(checkin, finishResult);
+            // What PutBook would have done after a confirmed check-in: the local status now
+            // records the committed content.
+            WriteLocalStatus(
+                checkin.BookFolderName,
+                GetStatus(checkin.BookFolderName).WithChecksum(checkin.Checksum).WithOldName(null)
+            );
+            UpdateBookStatus(checkin.BookFolderName, true);
+            Logger.WriteEvent(
+                $"CloudTeamCollection: the unconfirmed check-in of \"{checkin.BookFolderName}\" had committed."
+            );
+            return true;
+        }
+
+        private void ForgetUnconfirmedCheckin(UnconfirmedCheckin checkin)
+        {
+            lock (_unconfirmedCheckins)
+                _unconfirmedCheckins.Remove(checkin.BookFolderName);
         }
 
         /// <summary>The check-in outcomes that mean "the repo will not take this content from
@@ -2079,7 +2350,72 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             EnsureCacheHydrated();
-            return ReconcileCheckoutFiles(null, progress, deferIfPossiblyBeingEdited: false);
+            var preservedAny = ReconcileCheckoutFiles(
+                null,
+                progress,
+                deferIfPossiblyBeingEdited: false
+            );
+            RecordLocalCopiesThatAreTheCommittedVersion();
+            return preservedAny;
+        }
+
+        /// <summary>
+        /// True when the local folder's content is exactly the book's committed version (its
+        /// checksum is the one the server recorded for the current version).
+        /// </summary>
+        private bool IsLocalCopyTheCommittedVersion(string bookFolderName)
+        {
+            var book = ResolveCachedBook(bookFolderName);
+            if (book?.CurrentVersionSeq == null || string.IsNullOrEmpty(book.CurrentChecksum))
+                return false;
+            var bookFolderPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            return Directory.Exists(bookFolderPath)
+                && MakeChecksum(bookFolderPath) == book.CurrentChecksum;
+        }
+
+        /// <summary>Records that the local folder holds the book's current committed version:
+        /// the local status takes the repo's, and the local version seq the current one, exactly
+        /// as a Receive of that version would leave them.</summary>
+        private void RecordLocalCopyIsTheCommittedVersion(string bookFolderName)
+        {
+            var book = ResolveCachedBook(bookFolderName);
+            WriteLocalStatus(bookFolderName, GetStatus(bookFolderName));
+            _cache.RecordLocalVersionSeq(book.Id, book.CurrentVersionSeq.Value);
+            _cache.Save();
+        }
+
+        /// <summary>
+        /// Collection open, after obsolete checkouts are settled: a local book that this copy has
+        /// not recorded as holding the current version, but whose content IS that version, is
+        /// simply recorded as current (quietly: the database wins, and there is nothing to
+        /// receive or preserve). The case that matters is a first check-in of a new book that
+        /// committed just before a crash or a lost answer: locally it still looks new (no local
+        /// status, no version), while the database has it committed with identical content.
+        /// Books with a `.checkout` record, and books whose repo name differs from the folder
+        /// name (a remote rename, handled by the shared pass), are left to the other passes.
+        /// </summary>
+        private void RecordLocalCopiesThatAreTheCommittedVersion()
+        {
+            foreach (var folderPath in Directory.EnumerateDirectories(_localCollectionFolder))
+            {
+                var folderName = Path.GetFileName(folderPath);
+                var book = ResolveCachedBook(folderName);
+                if (
+                    book == null
+                    || !book.CurrentVersionSeq.HasValue
+                    || book.DeletedAt.HasValue
+                    || (book.LocalVersionSeq ?? -1) >= book.CurrentVersionSeq.Value
+                    || !string.Equals(book.Name, folderName, StringComparison.OrdinalIgnoreCase)
+                    || CloudCheckoutFile.Read(folderPath) != null
+                )
+                    continue;
+                if (!IsLocalCopyTheCommittedVersion(folderName))
+                    continue;
+                RecordLocalCopyIsTheCommittedVersion(folderName);
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: \"{folderName}\" already holds the committed version {book.CurrentVersionSeq}; recorded it as current."
+                );
+            }
         }
 
         /// <summary>
@@ -2088,7 +2424,7 @@ namespace Bloom.TeamCollection.Cloud
         /// unlocked, or its checkoutGuidHash is not the hash of the record's GUID: someone checked
         /// the book in or out from another copy (e.g. the other half of a duplicated collection
         /// folder), an administrator force-unlocked it, or another account now holds it (every
-        /// way the lock can change hands issues a new GUID, except an account-switch takeover,
+        /// way the lock can change hands brings a new GUID or none, except an account-switch takeover,
         /// which only the copy holding the GUID can do). Cancelling means: if the local book
         /// changed since the last sync, save it to Lost and Found (WorkPreservedLocally incident,
         /// sub-case "ObsoleteCheckout"); remove the record; receive the repo version.
@@ -2119,6 +2455,10 @@ namespace Bloom.TeamCollection.Cloud
                     if (CloudCheckoutFile.Read(folderPath) == null)
                         continue;
                     var folderName = Path.GetFileName(folderPath);
+                    // A book whose check-in is unconfirmed keeps its record until that is settled
+                    // (the cache shows it unlocked meanwhile, which is not yet the server's word).
+                    if (IsCheckinUnconfirmed(folderName))
+                        continue;
                     var book = ResolveCachedBook(folderName);
                     // Nothing to compare against or receive for a book the repo doesn't know, has
                     // never committed, or has deleted (remote deletes have their own handling).
@@ -2167,6 +2507,20 @@ namespace Bloom.TeamCollection.Cloud
         )
         {
             var bookFolderPath = Path.Combine(_localCollectionFolder, bookFolderName);
+            if (IsLocalCopyTheCommittedVersion(bookFolderName))
+            {
+                // Typically our own check-in committed but its answer was lost (a crash, or a
+                // dropped connection): the local book already IS the Team Collection's version,
+                // so the database wins quietly -- nothing to preserve or receive.
+                CloudCheckoutFile.Delete(bookFolderPath);
+                RecordLocalCopyIsTheCommittedVersion(bookFolderName);
+                Logger.WriteEvent(
+                    $"CloudTeamCollection: \"{bookFolderName}\" is no longer checked out in this copy, and its content is the committed version; removed its .checkout record."
+                );
+                if (progress == null)
+                    UpdateBookStatus(bookFolderName, true);
+                return false;
+            }
             var preserved = IsLocalCopyModifiedSinceLastSync(bookFolderName);
             if (preserved)
                 SaveLocalCopyForRecovery(bookFolderPath, bookFolderName, "ObsoleteCheckout");
@@ -2245,6 +2599,10 @@ namespace Bloom.TeamCollection.Cloud
             // changed. The book snapshot is only needed to diff for those events, so only take it
             // when the poll actually carried book rows. The group-file check and the self-healing
             // download pass below run on EVERY poll regardless (see their own notes).
+            // The server just answered, so this is a good moment to settle any check-in whose
+            // finish got no response (see ResolveUnconfirmedCheckin).
+            ResolveUnconfirmedCheckins();
+
             var hasBookRows = changes["books"] is JArray booksArray && booksArray.Count > 0;
             var previousBooksById = hasBookRows
                 ? _cache.GetAllBooks().ToDictionary(b => b.Id)

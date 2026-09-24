@@ -441,13 +441,17 @@ namespace BloomTests.TeamCollection.Cloud
             CreateLocalBookFolder(checkoutGuid: null);
             _collection.IsBookPresentInRepo(kBookName);
 
+            string sentGuid = null;
             _executor.Handler = req =>
             {
                 Assert.That(req.Resource, Is.EqualTo("rest/v1/rpc/checkout_book"));
+                sentGuid = (string)
+                    JObject.Parse(
+                        (string)req.Parameters.First(p => p.Type == ParameterType.RequestBody).Value
+                    )["p_checkout_guid"];
                 var body = new JObject
                 {
                     ["success"] = true,
-                    ["checkoutGuid"] = kGuid,
                     ["locked_by"] = kCurrentUserEmail,
                     ["locked_by_machine"] = ThisMachine,
                     ["locked_at"] = DateTime.UtcNow.ToString("o"),
@@ -458,7 +462,8 @@ namespace BloomTests.TeamCollection.Cloud
             var success = _collection.AttemptLock(kBookName);
 
             Assert.That(success, Is.True);
-            Assert.That(CloudCheckoutFile.ReadGuid(BookFolderPath), Is.EqualTo(kGuid));
+            Assert.That(sentGuid, Is.Not.Null);
+            Assert.That(CloudCheckoutFile.ReadGuid(BookFolderPath), Is.EqualTo(sentGuid));
             Assert.That(
                 _collection.NeedCheckoutToEdit(BookFolderPath),
                 Is.False,

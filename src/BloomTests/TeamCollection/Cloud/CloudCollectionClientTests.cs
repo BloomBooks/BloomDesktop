@@ -328,15 +328,38 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void CheckoutBook_SendsBookAndMachineOnly()
+        public void CheckoutBook_SendsBookMachineAndTheClientsGuid()
         {
             var (client, executor, _) = MakeSignedInClient();
             executor.Handler = req => FakeResponses.Make(HttpStatusCode.OK, "{\"success\":true}");
 
-            client.CheckoutBook("book-1", "MyMachine");
+            client.CheckoutBook("book-1", "MyMachine", "the-guid");
 
             Assert.That(executor.RequestsSeen[0].Resource, Is.EqualTo("rest/v1/rpc/checkout_book"));
-            Assert.That(SentKeys(executor), Is.EquivalentTo(new[] { "p_book_id", "p_machine" }));
+            Assert.That(
+                SentKeys(executor),
+                Is.EquivalentTo(new[] { "p_book_id", "p_machine", "p_checkout_guid" })
+            );
+            Assert.That((string)SentBody(executor)["p_checkout_guid"], Is.EqualTo("the-guid"));
+        }
+
+        [TestCase(ResponseStatus.TimedOut)]
+        [TestCase(ResponseStatus.Error)]
+        public void CallRpc_NoResponse_ThrowsNetworkError(ResponseStatus status)
+        {
+            var (client, executor, _) = MakeSignedInClient();
+            executor.Handler = req => new RestResponse
+            {
+                ResponseStatus = status,
+                ErrorMessage = "connection dropped",
+            };
+
+            var e = Assert.Throws<CloudCollectionClientException>(() =>
+                client.CheckoutBook("book-1", "MyMachine", "the-guid")
+            );
+
+            Assert.That(e.Code, Is.EqualTo(CloudErrorCode.NetworkError));
+            Assert.That(e.Message, Is.EqualTo("connection dropped"));
         }
 
         [Test]

@@ -500,24 +500,25 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void RecordCheckoutResult_NewGuid_StoresItsHash_AndUnlockClearsIt()
+        public void RecordCheckoutResult_OurGuid_StoresItsHash_AndUnlockClearsIt()
         {
             var cache = new CloudRepoCache(_collectionFolderPath);
             cache.ApplyFullSnapshot(new JObject { ["books"] = new JArray(MakeBookRow("book-1")) });
             var guid = "3f2c0e8a-1111-4222-8333-444455556666";
 
+            // v1.10: the client made the GUID and sent it; the result doesn't echo it.
             cache.RecordCheckoutResult(
                 "book-1",
                 new JObject
                 {
                     ["success"] = true,
-                    ["checkoutGuid"] = guid,
                     ["locked_by"] = "me-user-id",
                     ["locked_by_machine"] = "MyMachine",
                     ["locked_at"] = DateTime.UtcNow,
                 },
                 currentUserId: "me-user-id",
-                currentUserEmail: "me@example.com"
+                currentUserEmail: "me@example.com",
+                checkoutGuid: guid
             );
             Assert.That(
                 cache.TryGetBook("book-1").CheckoutGuidHash,

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -87,32 +89,49 @@ namespace BloomTests.TeamCollection.Cloud
             new JObject
             {
                 ["success"] = true,
-                ["checkoutGuid"] = kGuid,
                 ["locked_by"] = "test@somewhere.org",
                 ["locked_by_machine"] = TeamCollectionManager.CurrentMachine,
                 ["locked_at"] = System.DateTime.UtcNow.ToString("o"),
             };
 
+        private static IRestResponse NoResponse() =>
+            new RestResponse
+            {
+                ResponseStatus = ResponseStatus.TimedOut,
+                ErrorMessage = "timed out",
+            };
+
         [Test]
-        public void AttemptLock_ServerGrants_ReturnsTrueUpdatesStatusAndWritesCheckoutRecord()
+        public void AttemptLock_WritesTheRecordBeforeAsking_WithTheGuidItSends_AndKeepsItOnSuccess()
         {
             Assert.That(
                 File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)),
                 Is.False,
                 "sanity check: no record before checking out"
             );
+            string sentGuid = null;
+            string guidOnDiskWhenAsked = null;
             _executor.Handler = req =>
             {
                 Assert.That(req.Resource, Is.EqualTo("rest/v1/rpc/checkout_book"));
+                sentGuid = (string)RequestBody(req)["p_checkout_guid"];
+                guidOnDiskWhenAsked = CloudCheckoutFile.ReadGuid(_bookFolderPath);
                 return FakeResponses.Make(HttpStatusCode.OK, GrantedCheckout().ToString());
             };
 
             var result = _collection.AttemptLock("My book");
 
             Assert.That(result, Is.True);
+            Assert.That(Guid.TryParse(sentGuid, out _), Is.True, "the client makes a real GUID");
+            Assert.That(sentGuid, Is.EqualTo(sentGuid.ToLowerInvariant()));
+            Assert.That(
+                guidOnDiskWhenAsked,
+                Is.EqualTo(sentGuid),
+                "write-ahead: the record is on disk before checkout_book is called"
+            );
             Assert.That(_collection.WhoHasBookLocked("My book"), Is.EqualTo("test@somewhere.org"));
             var record = CloudCheckoutFile.Read(_bookFolderPath);
-            Assert.That(record.CheckoutGuid, Is.EqualTo(kGuid));
+            Assert.That(record.CheckoutGuid, Is.EqualTo(sentGuid));
             Assert.That(record.BookId, Is.EqualTo(kBookId));
             Assert.That(record.CollectionId, Is.EqualTo(kCollectionId));
             Assert.That(record.UserEmail, Is.EqualTo("test@somewhere.org"));
@@ -120,22 +139,117 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void AttemptLock_LockedByMeElsewhere_ReturnsFalse_WritesNoRecord()
+        public void AttemptLock_LockedByMeElsewhere_ReturnsFalse_DeletesTheRecordItWrote()
         {
-            // The server says I already hold it -- necessarily in another copy -- and issues no
+            // The server says I already hold it -- necessarily in another copy, under another
             // GUID: this copy stays read-only (no "check out here instead").
+            var recordExistedWhenAsked = false;
             _executor.Handler = req =>
-                FakeResponses.Make(
+            {
+                recordExistedWhenAsked = File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath));
+                return FakeResponses.Make(
                     HttpStatusCode.OK,
                     new JObject { ["success"] = false, ["locked_by_me"] = true }.ToString()
                 );
+            };
 
             var result = _collection.AttemptLock("My book");
 
             Assert.That(result, Is.False);
+            Assert.That(recordExistedWhenAsked, Is.True, "sanity check: written ahead");
             Assert.That(File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)), Is.False);
             Assert.That(_collection.IsCheckedOutInThisCopy("My book"), Is.False);
             Assert.That(_collection.WhoHasBookLocked("My book"), Is.EqualTo("test@somewhere.org"));
+        }
+
+        [Test]
+        public void AttemptLock_ResponseLostOnce_RetriesWithTheSameGuid_AndSucceeds()
+        {
+            _collection.LostResponseRetryDelays = new[] { TimeSpan.Zero, TimeSpan.Zero };
+            var sentGuids = new List<string>();
+            _executor.Handler = req =>
+            {
+                sentGuids.Add((string)RequestBody(req)["p_checkout_guid"]);
+                // The first attempt's response is lost (the server may well have locked it).
+                return sentGuids.Count == 1
+                    ? NoResponse()
+                    : FakeResponses.Make(HttpStatusCode.OK, GrantedCheckout().ToString());
+            };
+
+            var result = _collection.AttemptLock("My book");
+
+            Assert.That(result, Is.True);
+            Assert.That(sentGuids, Has.Count.EqualTo(2));
+            Assert.That(sentGuids[1], Is.EqualTo(sentGuids[0]), "a retry must reuse the GUID");
+            Assert.That(CloudCheckoutFile.ReadGuid(_bookFolderPath), Is.EqualTo(sentGuids[0]));
+            Assert.That(_collection.IsCheckedOutInThisCopy("My book"), Is.True);
+        }
+
+        [Test]
+        public void AttemptLock_NoResponseEvenAfterRetries_KeepsTheRecord_BookStaysReadOnly()
+        {
+            _collection.LostResponseRetryDelays = new[] { TimeSpan.Zero, TimeSpan.Zero };
+            var calls = 0;
+            _executor.Handler = req =>
+            {
+                calls++;
+                return NoResponse();
+            };
+
+            var e = Assert.Throws<CloudCollectionClientException>(() =>
+                _collection.AttemptLock("My book")
+            );
+
+            Assert.That(e.Code, Is.EqualTo(CloudErrorCode.NetworkError));
+            Assert.That(calls, Is.EqualTo(3), "one call plus two retries");
+            Assert.That(
+                File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)),
+                Is.True,
+                "the outcome is unknown, so the record stays for the next poll or open to judge"
+            );
+            Assert.That(
+                _collection.IsCheckedOutInThisCopy("My book"),
+                Is.False,
+                "not checked out here until the server confirms it"
+            );
+            Assert.That(_collection.NeedCheckoutToEdit(_bookFolderPath), Is.True);
+        }
+
+        [Test]
+        public void AttemptLock_AfterAnUnknownOutcome_ReusesTheRecordsGuid()
+        {
+            // If the earlier attempt did succeed, only the same GUID gets the idempotent "yes";
+            // a fresh one would be refused as locked_by_me and strand the checkout.
+            new CloudCheckoutFile
+            {
+                CheckoutGuid = kGuid,
+                BookId = kBookId,
+                CollectionId = kCollectionId,
+                UserEmail = "test@somewhere.org",
+                CheckedOutAtUtc = DateTime.UtcNow,
+            }.Write(_bookFolderPath);
+            string sentGuid = null;
+            _executor.Handler = req =>
+            {
+                sentGuid = (string)RequestBody(req)["p_checkout_guid"];
+                return FakeResponses.Make(HttpStatusCode.OK, GrantedCheckout().ToString());
+            };
+
+            Assert.That(_collection.AttemptLock("My book"), Is.True);
+
+            Assert.That(sentGuid, Is.EqualTo(kGuid));
+            Assert.That(_collection.IsCheckedOutInThisCopy("My book"), Is.True);
+        }
+
+        [Test]
+        public void AttemptLock_ServerError_DeletesTheRecordItWrote()
+        {
+            _executor.Handler = req =>
+                FakeResponses.Make(HttpStatusCode.Forbidden, "{\"message\":\"not a member\"}");
+
+            Assert.Throws<CloudCollectionClientException>(() => _collection.AttemptLock("My book"));
+
+            Assert.That(File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)), Is.False);
         }
 
         /// <summary>
@@ -174,11 +288,8 @@ namespace BloomTests.TeamCollection.Cloud
             _executor.Handler = req =>
                 FakeResponses.Make(HttpStatusCode.OK, GrantedCheckout().ToString());
             _collection.AttemptLock("My book");
-            Assert.That(
-                CloudCheckoutFile.ReadGuid(_bookFolderPath),
-                Is.EqualTo(kGuid),
-                "sanity check: checked out here"
-            );
+            var guid = CloudCheckoutFile.ReadGuid(_bookFolderPath);
+            Assert.That(guid, Is.Not.Null, "sanity check: checked out here");
 
             JObject unlockBody = null;
             _executor.Handler = req =>
@@ -191,7 +302,7 @@ namespace BloomTests.TeamCollection.Cloud
             _collection.UnlockBook("My book");
 
             Assert.That(unlockBody, Is.Not.Null, "unlock_book should have been called");
-            Assert.That((string)unlockBody["p_checkout_guid"], Is.EqualTo(kGuid));
+            Assert.That((string)unlockBody["p_checkout_guid"], Is.EqualTo(guid));
             Assert.That(_collection.WhoHasBookLocked("My book"), Is.Null.Or.Empty);
             Assert.That(File.Exists(CloudCheckoutFile.GetPath(_bookFolderPath)), Is.False);
         }

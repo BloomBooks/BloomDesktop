@@ -31,6 +31,10 @@ namespace BloomTests.TeamCollection.Cloud
     /// obsolescence through another account's checkout or an administrator's force-unlock
     /// (detected at open and by polling), polling raising a book-state change when only the hash
     /// changes, and check-in refusals from checkin-finish (not retried; the caller recovers).
+    /// v1.10: a check-in never writes a record; a checkin-finish whose answer is lost is retried
+    /// and, if still unanswered, leaves the book read-only until a poll settles it either way
+    /// (existing book or first check-in); and the crash-right-after-commit cases reconcile at
+    /// open without a spurious Lost and Found copy.
     /// Drives a real CloudTeamCollection against a scripted server + S3, like
     /// CloudSyncAtStartupTests.
     /// </summary>
@@ -63,6 +67,7 @@ namespace BloomTests.TeamCollection.Cloud
         private JObject _bookRow;
         private long _maxEventId = 5;
         private readonly List<JObject> _checkinStartBodies = new List<JObject>();
+        private readonly List<JObject> _checkinFinishBodies = new List<JObject>();
         private Func<IRestResponse> _checkinFinishResponse;
         private bool _checkinAbortCalled;
 
@@ -74,6 +79,7 @@ namespace BloomTests.TeamCollection.Cloud
             Directory.CreateDirectory(_collectionFolderPath);
             TeamCollectionManager.ForceCurrentUserForTests(kCurrentUser);
             _checkinStartBodies.Clear();
+            _checkinFinishBodies.Clear();
             _checkinAbortCalled = false;
             _checkinFinishResponse = () =>
                 FakeResponses.Make(
@@ -130,6 +136,10 @@ namespace BloomTests.TeamCollection.Cloud
                 ["deleted_at"] = null,
             };
 
+        /// <summary>The server's book rows: none while <see cref="_bookRow"/> is null (the
+        /// server has never committed the book).</summary>
+        private JArray BookRows() => _bookRow == null ? new JArray() : new JArray(_bookRow);
+
         private static JObject S3Block() =>
             new JObject
             {
@@ -157,7 +167,7 @@ namespace BloomTests.TeamCollection.Cloud
                         HttpStatusCode.OK,
                         new JObject
                         {
-                            ["books"] = new JArray(_bookRow),
+                            ["books"] = BookRows(),
                             ["groups"] = new JArray(),
                             ["max_event_id"] = _maxEventId,
                         }.ToString()
@@ -168,7 +178,7 @@ namespace BloomTests.TeamCollection.Cloud
                         new JObject
                         {
                             ["events"] = new JArray(),
-                            ["books"] = new JArray(_bookRow),
+                            ["books"] = BookRows(),
                             ["max_event_id"] = _maxEventId,
                         }.ToString()
                     );
@@ -215,6 +225,7 @@ namespace BloomTests.TeamCollection.Cloud
                         }.ToString()
                     );
                 case "functions/v1/checkin-finish":
+                    _checkinFinishBodies.Add(Body());
                     return _checkinFinishResponse();
                 case "functions/v1/checkin-abort":
                     _checkinAbortCalled = true;
@@ -736,38 +747,15 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
-        public void CheckinStart_IssuesGuidForTakeIfFree_KeepCheckedOut_RecordsIt()
+        public void TakeIfFreeCheckin_WritesNoRecord_AndDoesNotAskToKeepTheBookCheckedOut()
         {
-            // checkin-start taking a free lock (or creating a new book) issues a GUID; a Send that
-            // keeps the book checked out must save it, so this copy can go on checking in.
+            // v1.10: checkin-start never issues a GUID, so a send that isn't from a checkout in
+            // this copy only holds the lock while sending; it can't be "kept" (that would need a
+            // GUID of our own, as for checkout_book, which is not a feature yet).
             _bookRow = MakeRow(1, "cs-1", null, null);
             var collection = OpenCollection();
             RecordLastSync(collection);
             collection.HydrateFromServer();
-            var issued = Guid.NewGuid().ToString();
-            _executor.Handler = req =>
-            {
-                if (req.Resource == "functions/v1/checkin-start")
-                {
-                    _checkinStartBodies.Add(
-                        JObject.Parse(
-                            (string)
-                                req.Parameters.First(p => p.Type == ParameterType.RequestBody).Value
-                        )
-                    );
-                    return FakeResponses.Make(
-                        HttpStatusCode.OK,
-                        new JObject
-                        {
-                            ["transactionId"] = "tx-2",
-                            ["changedPaths"] = new JArray(),
-                            ["s3"] = S3Block(),
-                            ["checkoutGuid"] = issued,
-                        }.ToString()
-                    );
-                }
-                return HandleServerRequest(req);
-            };
 
             collection.PutBookInRepoForTests(
                 _bookFolderPath,
@@ -779,10 +767,336 @@ namespace BloomTests.TeamCollection.Cloud
                 Is.Null,
                 "sanity check: this copy had no GUID to send"
             );
-            var record = CloudCheckoutFile.Read(_bookFolderPath);
-            Assert.That(record.CheckoutGuid, Is.EqualTo(issued));
-            Assert.That(record.BookId, Is.EqualTo(kBookId));
+            Assert.That((bool)_checkinFinishBodies.Single()["keepCheckedOut"], Is.False);
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False, "a check-in never writes one");
+            Assert.That(collection.GetStatus(kBookTitle).lockedBy, Is.Null.Or.Empty);
+        }
+
+        [Test]
+        public void KeepCheckedOutCheckin_OfABookHeldHere_LeavesTheCheckoutAsItWas()
+        {
+            var collection = OpenCheckedOutHere();
+
+            collection.PutBookInRepoForTests(
+                _bookFolderPath,
+                new BookStatus { lockedBy = kCurrentUser, checksum = "cs-new" }
+            );
+
+            Assert.That((string)_checkinStartBodies.Single()["checkoutGuid"], Is.EqualTo(kGuid));
+            Assert.That((bool)_checkinFinishBodies.Single()["keepCheckedOut"], Is.True);
+            Assert.That(CloudCheckoutFile.ReadGuid(_bookFolderPath), Is.EqualTo(kGuid));
             Assert.That(collection.IsCheckedOutInThisCopy(kBookTitle), Is.True);
+        }
+
+        // ------------------------------------------------------------------
+        // A checkin-finish whose answer is lost
+        // ------------------------------------------------------------------
+
+        private static IRestResponse NoResponse() =>
+            new RestResponse
+            {
+                ResponseStatus = ResponseStatus.TimedOut,
+                ErrorMessage = "timed out",
+            };
+
+        private static IRestResponse Committed(long seq) =>
+            FakeResponses.Make(
+                HttpStatusCode.OK,
+                new JObject { ["versionId"] = "v" + seq, ["seq"] = seq }.ToString()
+            );
+
+        private void Poll(CloudTeamCollection collection)
+        {
+            _maxEventId++;
+            try
+            {
+                collection.StartMonitoring();
+                collection.PollNow();
+            }
+            finally
+            {
+                collection.StopMonitoring();
+            }
+        }
+
+        [Test]
+        public void CheckinFinish_ResponseLostOnce_IsRetried_AndCompletes()
+        {
+            var collection = OpenCheckedOutHere();
+            collection.LostResponseRetryDelays = new[] { TimeSpan.Zero, TimeSpan.Zero };
+            var finishCalls = 0;
+            _checkinFinishResponse = () => ++finishCalls == 1 ? NoResponse() : Committed(2);
+
+            collection.PutBook(_bookFolderPath, checkin: true);
+
+            Assert.That(finishCalls, Is.EqualTo(2));
+            Assert.That(
+                _checkinFinishBodies.Select(b => (string)b["transactionId"]).Distinct(),
+                Is.EquivalentTo(new[] { "tx-1" }),
+                "the retry finishes the same transaction"
+            );
+            Assert.That(_checkinAbortCalled, Is.False);
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False);
+            Assert.That(collection.GetLocalVersionSeq(kBookTitle), Is.EqualTo(2));
+        }
+
+        /// <summary>Checks in the (edited) book held in this copy while every checkin-finish
+        /// goes unanswered, so the outcome is unknown.</summary>
+        private CloudTeamCollection CheckInWithoutAnAnswer(CloudTeamCollection collection)
+        {
+            collection.LostResponseRetryDelays = new[] { TimeSpan.Zero };
+            _checkinFinishResponse = NoResponse;
+            var editableBefore = !collection.NeedCheckoutToEdit(_bookFolderPath);
+
+            var unconfirmed = Assert.Throws<CloudCheckinUnconfirmedException>(() =>
+                collection.PutBook(_bookFolderPath, checkin: true)
+            );
+
+            Assert.That(editableBefore, Is.True, "sanity check: editable before the check-in");
+            Assert.That(unconfirmed.Message, Does.Contain("did not hear back"));
+            Assert.That(_checkinFinishBodies, Has.Count.EqualTo(2), "one call plus one retry");
+            Assert.That(_checkinAbortCalled, Is.False, "it may have committed: never abort");
+            Assert.That(collection.IsCheckinUnconfirmed(kBookTitle), Is.True);
+            Assert.That(
+                collection.NeedCheckoutToEdit(_bookFolderPath),
+                Is.True,
+                "read-only until the outcome is known"
+            );
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+            return collection;
+        }
+
+        [Test]
+        public void CheckinFinish_NoAnswer_BookReadOnly_ThenThePollFindsItCommitted()
+        {
+            var collection = CheckInWithoutAnAnswer(OpenCheckedOutHere());
+            Assert.That(
+                collection.GetStatus(kBookTitle).lockedBy,
+                Is.Null.Or.Empty,
+                "shown as checked in meanwhile"
+            );
+            Assert.That(File.Exists(CheckoutRecordPath), Is.True, "kept until we know");
+            var committedChecksum = Bloom.TeamCollection.TeamCollection.MakeChecksum(
+                _bookFolderPath
+            );
+
+            // It had committed: the retry gets the (idempotent) result.
+            _checkinFinishResponse = () => Committed(2);
+            _bookRow = MakeRow(2, committedChecksum, null, null);
+            Poll(collection);
+
+            Assert.That(collection.IsCheckinUnconfirmed(kBookTitle), Is.False);
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False);
+            Assert.That(collection.NeedCheckoutToEdit(_bookFolderPath), Is.True);
+            Assert.That(
+                collection.GetLocalStatus(kBookTitle).checksum,
+                Is.EqualTo(committedChecksum)
+            );
+            Assert.That(collection.GetLocalVersionSeq(kBookTitle), Is.EqualTo(2));
+            Assert.That(LostAndFoundFiles(), Is.Empty);
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+        }
+
+        [Test]
+        public void CheckinFinish_NoAnswer_BookReadOnly_ThenThePollFindsItStillCheckedOutHere()
+        {
+            var collection = CheckInWithoutAnAnswer(OpenCheckedOutHere());
+
+            // It never committed (the transaction has since expired); the server still has the
+            // book checked out in this copy.
+            _checkinFinishResponse = () =>
+                FakeResponses.Make(HttpStatusCode.Gone, "{\"error\":\"TransactionExpired\"}");
+            Poll(collection);
+
+            Assert.That(collection.IsCheckinUnconfirmed(kBookTitle), Is.False);
+            Assert.That(CloudCheckoutFile.ReadGuid(_bookFolderPath), Is.EqualTo(kGuid));
+            Assert.That(
+                collection.NeedCheckoutToEdit(_bookFolderPath),
+                Is.False,
+                "editable again: still checked out here"
+            );
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+            Assert.That(LostAndFoundFiles(), Is.Empty);
+        }
+
+        [Test]
+        public void CheckinFinish_NoAnswer_TryingToCheckInAgainBeforeKnowing_IsRefused()
+        {
+            var collection = CheckInWithoutAnAnswer(OpenCheckedOutHere());
+            var startsBefore = _checkinStartBodies.Count;
+
+            var ex = Assert.Throws<ApplicationException>(() =>
+                collection.PutBook(_bookFolderPath, checkin: true)
+            );
+
+            Assert.That(ex.Message, Does.Contain("still finding out"));
+            Assert.That(_checkinStartBodies, Has.Count.EqualTo(startsBefore));
+        }
+
+        /// <summary>A new local book (the server has no row for it), first check-in sent, no
+        /// answer to its finish.</summary>
+        private CloudTeamCollection FirstCheckInWithoutAnAnswer()
+        {
+            _bookRow = null;
+            var collection = OpenCollection();
+            collection.HydrateFromServer();
+            RobustFile.WriteAllText(HtmPath, kLocalEdit);
+            Assert.That(
+                collection.GetStatus(kBookTitle).lockedBy,
+                Is.EqualTo(Bloom.TeamCollection.TeamCollection.FakeUserIndicatingNewBook),
+                "sanity check: a new book"
+            );
+            return CheckInWithoutAnAnswer(collection);
+        }
+
+        [Test]
+        public void FirstCheckin_NoAnswer_ReadOnly_ThenThePollFindsItCommitted()
+        {
+            var collection = FirstCheckInWithoutAnAnswer();
+            Assert.That(
+                (string)_checkinStartBodies.Last()["checkoutGuid"],
+                Is.Null,
+                "sanity check: a first check-in has no GUID"
+            );
+
+            _checkinFinishResponse = () => Committed(1);
+            _bookRow = MakeRow(
+                1,
+                Bloom.TeamCollection.TeamCollection.MakeChecksum(_bookFolderPath),
+                null,
+                null
+            );
+            Poll(collection);
+
+            Assert.That(collection.IsCheckinUnconfirmed(kBookTitle), Is.False);
+            Assert.That(collection.IsCheckedOutInThisCopy(kBookTitle), Is.False, "checked in");
+            Assert.That(collection.NeedCheckoutToEdit(_bookFolderPath), Is.True);
+            Assert.That(collection.GetLocalVersionSeq(kBookTitle), Is.EqualTo(1));
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False);
+        }
+
+        [Test]
+        public void FirstCheckin_NoAnswer_ReadOnly_ThenThePollFindsItNeverCommitted()
+        {
+            var collection = FirstCheckInWithoutAnAnswer();
+
+            _checkinFinishResponse = () =>
+                FakeResponses.Make(HttpStatusCode.Gone, "{\"error\":\"TransactionExpired\"}");
+            Poll(collection);
+
+            Assert.That(collection.IsCheckinUnconfirmed(kBookTitle), Is.False);
+            Assert.That(
+                collection.GetStatus(kBookTitle).lockedBy,
+                Is.EqualTo(Bloom.TeamCollection.TeamCollection.FakeUserIndicatingNewBook)
+            );
+            Assert.That(
+                collection.NeedCheckoutToEdit(_bookFolderPath),
+                Is.False,
+                "a new book again, editable"
+            );
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+        }
+
+        // ------------------------------------------------------------------
+        // Startup reconciliation after a crash right after the server committed
+        // ------------------------------------------------------------------
+
+        [Test]
+        public void CheckoutWrittenAheadThenCrashBeforeTheCall_RecordRemovedSilentlyAtOpen()
+        {
+            // The record was saved, then Bloom died before checkout_book reached the server:
+            // the server never locked it.
+            var checksum = Bloom.TeamCollection.TeamCollection.MakeChecksum(_bookFolderPath);
+            _bookRow = MakeRow(1, checksum, null, null);
+            WriteCheckoutRecord(kGuid);
+            var collection = OpenCollection();
+            collection.WriteLocalStatus(kBookTitle, new BookStatus().WithChecksum(checksum));
+
+            var hadProblems = collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(hadProblems, Is.False);
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False);
+            Assert.That(LostAndFoundFiles(), Is.Empty);
+            Assert.That(LastLogEventBody(), Is.Null, "no incident");
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalContent));
+            Assert.That(collection.NeedCheckoutToEdit(_bookFolderPath), Is.True);
+        }
+
+        [Test]
+        public void ExistingBookCheckinCommittedJustBeforeACrash_ReconciledQuietly_NoLostAndFound()
+        {
+            // Checked out here, edited, checked in; the server committed (unlocked, new version
+            // with exactly this content), but Bloom died before hearing so: the record is still
+            // there and the local status still has the pre-edit checksum.
+            var lastSyncChecksum = Bloom.TeamCollection.TeamCollection.MakeChecksum(
+                _bookFolderPath
+            );
+            RobustFile.WriteAllText(HtmPath, kLocalEdit);
+            var committedChecksum = Bloom.TeamCollection.TeamCollection.MakeChecksum(
+                _bookFolderPath
+            );
+            Assert.That(committedChecksum, Is.Not.EqualTo(lastSyncChecksum), "sanity check");
+            _bookRow = MakeRow(2, committedChecksum, null, null);
+            WriteCheckoutRecord(kGuid);
+            var collection = OpenCollection();
+            collection.WriteLocalStatus(
+                kBookTitle,
+                new BookStatus().WithChecksum(lastSyncChecksum)
+            );
+
+            var hadProblems = collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(hadProblems, Is.False);
+            Assert.That(LostAndFoundFiles(), Is.Empty, "the local content IS the committed one");
+            Assert.That(HasWorkPreservedMessage(), Is.False);
+            Assert.That(File.Exists(CheckoutRecordPath), Is.False);
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+            Assert.That(collection.NeedCheckoutToEdit(_bookFolderPath), Is.True, "checked in");
+            Assert.That(
+                collection.GetLocalStatus(kBookTitle).checksum,
+                Is.EqualTo(committedChecksum)
+            );
+            Assert.That(collection.GetLocalVersionSeq(kBookTitle), Is.EqualTo(2));
+            Assert.That(collection.GetUpdatesAvailableCount(), Is.EqualTo(0));
+        }
+
+        /// <summary>
+        /// The shared part of this (no local status, same checksum in the repo: take the repo's
+        /// status) is covered for every backend by
+        /// SyncAtStartupTests.SyncAtStartup_SameBookLocallyAndShared_NoLocalStatus_KeepsBookAddsStatus;
+        /// this adds what is cloud-specific: the copy is recorded as holding the committed
+        /// version (no "update available", nothing received) and is not editable.
+        /// </summary>
+        [Test]
+        public void NewBookFirstCheckinCommittedJustBeforeACrash_ShownCheckedIn_AndCurrent()
+        {
+            RobustFile.WriteAllText(HtmPath, kLocalEdit);
+            _bookRow = MakeRow(
+                1,
+                Bloom.TeamCollection.TeamCollection.MakeChecksum(_bookFolderPath),
+                null,
+                null
+            );
+            var collection = OpenCollection();
+            Assert.That(
+                File.Exists(
+                    Bloom.TeamCollection.TeamCollection.GetStatusFilePath(
+                        kBookTitle,
+                        _collectionFolderPath
+                    )
+                ),
+                Is.False,
+                "sanity check: locally it still looks new"
+            );
+
+            var hadProblems = collection.SyncAtStartup(new ProgressSpy(), firstTimeJoin: false);
+
+            Assert.That(hadProblems, Is.False);
+            Assert.That(LostAndFoundFiles(), Is.Empty);
+            Assert.That(RobustFile.ReadAllText(HtmPath), Is.EqualTo(kLocalEdit));
+            Assert.That(collection.GetLocalVersionSeq(kBookTitle), Is.EqualTo(1));
+            Assert.That(collection.GetUpdatesAvailableCount(), Is.EqualTo(0));
+            Assert.That(collection.NeedCheckoutToEdit(_bookFolderPath), Is.True, "checked in");
         }
     }
 }

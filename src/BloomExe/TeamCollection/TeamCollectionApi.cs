@@ -1323,7 +1323,9 @@ namespace Bloom.TeamCollection
                             checkinComment: message
                         );
                     }
-                    catch (Exception)
+                    // An unconfirmed cloud check-in probably did commit (it is treated as checked
+                    // in), so its history event stays.
+                    catch (Exception e) when (!(e is Cloud.CloudCheckinUnconfirmedException))
                     {
                         BookHistory.RemoveMostRecentEvent(
                             book,
@@ -1372,6 +1374,23 @@ namespace Bloom.TeamCollection
 
                 UpdateUiForBook();
 
+                Application.Idle += OnIdleConnectionCheck;
+            }
+            catch (Cloud.CloudCheckinUnconfirmedException unconfirmed)
+            {
+                // checkin-finish got no answer. The book is treated as checked in (read-only)
+                // until the cloud collection finds out for sure, which it does by itself; there is
+                // nothing to recover here, only something to tell the user.
+                reportProgressFraction(0);
+                progress?.MessageWithoutLocalizing(unconfirmed.Message, ProgressKind.Warning);
+                _tcManager.CurrentCollection.MessageLog?.WriteMessage(
+                    MessageAndMilestoneType.ErrorNoReload,
+                    "TeamCollection.Cloud.CheckinUnconfirmed",
+                    unconfirmed.Message,
+                    bookInfo.FolderPath,
+                    null
+                );
+                UpdateUiForBook();
                 Application.Idle += OnIdleConnectionCheck;
             }
             catch (Cloud.CloudCheckinRefusedException refused)
