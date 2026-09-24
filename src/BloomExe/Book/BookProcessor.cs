@@ -91,11 +91,14 @@ namespace Bloom.Book
         /// whitespace). This uses the real off-screen browser layout (no font/text estimation); see
         /// fitImageOverTextSplits() in bloomEditing.ts.
         ///
-        /// <paramref name="progress"/>, if given, receives the whole-book update's status messages,
-        /// plus the percent done on its indicator (if it has one) as the per-page pass advances, so a
-        /// determinate progress dialog can show where we are. (It deliberately gets no per-page text
-        /// message: the bar already shows that, and a line per page just floods the log.) It may be
-        /// called on whatever thread this runs on; the progress objects we use marshal for themselves.
+        /// <paramref name="progress"/>, if given, receives the percent done on its indicator (if it
+        /// has one) as the passes advance, so a determinate progress dialog can show where we are,
+        /// and any warning or error. It deliberately gets none of the status text the whole-book
+        /// update and its per-image passes write ("Updating pages...", one line per image), nor a
+        /// per-page message: the bar already shows how far along we are, and those lines just fill
+        /// the dialog's log (BL-16893). A caller that wants the dialog to say what is happening
+        /// writes that itself before calling (see EnsurePerPageFixupIfNeeded). It may be called on
+        /// whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
             Book book,
@@ -103,7 +106,15 @@ namespace Bloom.Book
             IProgress progress = null
         )
         {
-            progress = progress ?? new NullProgress();
+            // Drop the status lines (see the summary); the percent, warnings and errors still get
+            // through. A NullProgress is left as it is: wrapping it would make it look like
+            // somewhere to report to (MigrateToMediaLevel1ShrinkLargeImages checks for exactly that),
+            // and a caller's own instance may carry state we must not lose (e.g. CancelRequested on
+            // PdfMaker.CancellableNullProgress).
+            if (progress == null)
+                progress = new NullProgress();
+            else if (!(progress is NullProgress))
+                progress = new QuietStatusProgress(progress);
             // 1. Structural "make it right" pass. Besides migrations, this ensures stylesheet links
             //    (and, when we Save below, the actual CSS files) that BloomBridge's raw HTML may
             //    be missing. See BookStorage.EnsureHasLinksToStylesheets.
@@ -357,7 +368,10 @@ namespace Bloom.Book
                         },
                         title
                     );
-                    dlg.SetScaledSize(560, 400);
+                    // ProgressBox asks for 540px, and BloomDialog adds 24px of padding on
+                    // each side plus its border, so anything narrower than about 590 clips
+                    // the right-hand end of every line of the explanation.
+                    dlg.SetScaledSize(620, 210);
                     return dlg;
                 },
                 (progress, worker) =>
@@ -415,11 +429,21 @@ namespace Bloom.Book
         // so it is persisted with it.
         private static void StampPerPageFixupDone(Book book)
         {
-            book.OurHtmlDom.UpdateMetaElement(
+            StampPerPageFixupDone(book.OurHtmlDom, GetLayoutStamp(book));
+        }
+
+        /// <summary>
+        /// Record in <paramref name="dom"/> that the book is at the current browser maintenance level
+        /// at page size <paramref name="layoutStamp"/> (e.g. "A5Portrait"). Also used by BookStarter for
+        /// a new book made from one of our own templates, which has nothing for the pass to do.
+        /// </summary>
+        internal static void StampPerPageFixupDone(HtmlDom dom, string layoutStamp)
+        {
+            dom.UpdateMetaElement(
                 kBrowserMaintenanceLevelMeta,
                 BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
             );
-            book.OurHtmlDom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, GetLayoutStamp(book));
+            dom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, layoutStamp);
         }
 
         /// <summary>

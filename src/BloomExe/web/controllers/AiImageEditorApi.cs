@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -523,6 +523,11 @@ namespace Bloom.web.controllers
                     editorUrl = GetAiImageEditorUrl(),
                     httpBase,
                     sessionToken = _sessionToken,
+                    // Which language Bloom's own UI is in. The editor needs it for text it
+                    // never translates (the art style descriptions), which it hides rather
+                    // than showing in English inside a translated Bloom. We tell it rather
+                    // than letting it ask, so the editor needs no knowledge of Bloom's API.
+                    uiLanguageId = LocalizationManager.UILanguageId,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
                     bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
                     // How big a screen a digital copy of this book is made for: the BloomPUB
@@ -907,31 +912,53 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// The image slots of one page, in document order: its image containers. A slot's index
-        /// in this list is its whole identity, and it is what "{pageId}:{ordinal}" holds.
-        /// Internal for testing.
-        ///
-        /// An image container is exactly what a user may replace, which is why nothing here
-        /// filters. The branding, license and QR-code images live outside any container, so
-        /// they are not slots and cannot be edited or overwritten.
-        ///
-        /// slotIndexOnPage in aiImageEditorPageCommands.ts numbers the same containers on the live
-        /// page, so the index the page frame sends at launch means the same thing here. It has
-        /// one exclusion this does not need: Bloom injects controls into the live page, and a
-        /// save strips them, so they are never in the DOM we read.
-        ///
-        /// Deciding which slots to OFFER is a separate job, done in EnumerateBookImages: a slot
-        /// it declines still holds its index here. Keeping this list unfiltered is what lets the
-        /// page frame work out an index for itself without knowing which slots we kept, so
-        /// resist the temptation to move any of that filtering in here.
+        /// Every image container under <paramref name="root"/>, in document order. The raw
+        /// selector, with no notion of what a slot means; <see cref="SelectImageSlotsOnPage"/>
+        /// is what numbers a page, and <see cref="GetGameTargetImageCopiesOfSlot"/> uses this
+        /// directly to look inside a draggable and inside a target, where the numbering rule
+        /// would throw away the very containers it is after.
         /// </summary>
-        internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
-            page.SafeSelectNodes(
+        internal static SafeXmlElement[] SelectImageContainersWithin(SafeXmlElement root) =>
+            root.SafeSelectNodes(
                     ".//*[contains(concat(' ', normalize-space(@class), ' '), ' "
                         + HtmlDom.kImageContainerClass
                         + " ')]"
                 )
                 .OfType<SafeXmlElement>()
+                .ToArray();
+
+        /// <summary>
+        /// The image slots of one page, in document order: its image containers, less the copies
+        /// held by Bloom Games targets. A slot's index in this list is its whole identity, and it
+        /// is what "{pageId}:{ordinal}" holds. Internal for testing.
+        ///
+        /// An image container is otherwise exactly what a user may replace. The branding, license
+        /// and QR-code images live outside any container, so they are not slots and cannot be
+        /// edited or overwritten.
+        ///
+        /// A game target's copy has to be left OUT of the numbering, not merely declined later,
+        /// because it is generated rather than authored: the browser writes it into the target
+        /// when the draggable is selected or its picture changes (copyContentToTarget), and a
+        /// target that has not had that done sits empty. So the same page can honestly have a
+        /// different number of image containers in the live browser and in the saved HTML, and
+        /// counting the copies made the ordinal mean one slot here and a different one there —
+        /// which sent a replacement into a target, where the next rebuild threw it away
+        /// (BL-16793). Counting only what an author placed makes the ordinal mean the same thing
+        /// in both, whatever state the targets are in.
+        ///
+        /// slotIndexOnPage in aiImageEditorPageCommands.ts numbers the same containers on the live
+        /// page, with the same exclusion, so the index the page frame sends at launch means the
+        /// same thing here. It has one further exclusion this does not need: Bloom injects
+        /// controls into the live page, and a save strips them, so they are never in the DOM we
+        /// read.
+        ///
+        /// Deciding which of these slots to OFFER is still a separate job, done in
+        /// EnumerateBookImages: a slot it declines (an SVG, say) keeps its index here, so the page
+        /// frame can work out an index for itself without knowing which slots we kept.
+        /// </summary>
+        internal static SafeXmlElement[] SelectImageSlotsOnPage(SafeXmlElement page) =>
+            SelectImageContainersWithin(page)
+                .Where(slot => !IsSlotInsideGameTarget(slot))
                 .ToArray();
 
         /// <summary>
@@ -959,13 +986,15 @@ namespace Bloom.web.controllers
         internal const string kDraggableIdAttribute = "data-draggable-id";
 
         /// <summary>
-        /// True when this image slot is inside a Bloom Games target, which makes its picture a
-        /// COPY of a draggable's rather than an image of its own: Bloom fills a target by cloning
-        /// the whole content of its draggable, image container and all (copyContentToTarget in
-        /// bloom-player's dragActivityRuntime.ts). Such a slot is not worth offering to the AI
-        /// image editor — the draggable's own slot is the real one, and Bloom regenerates target
-        /// content from the draggable, so an edit made to the copy would just be overwritten
-        /// (BL-16793).
+        /// True when this image container is inside a Bloom Games target, which makes its picture
+        /// a COPY of a draggable's rather than an image of its own: Bloom fills a target by
+        /// cloning the whole content of its draggable, image container and all
+        /// (copyContentToTarget in bloom-player's dragActivityRuntime.ts). Such a container is not
+        /// a slot at all as far as the AI image editor is concerned — the draggable's own slot is
+        /// the real one, and Bloom regenerates target content from the draggable, so an edit made
+        /// to the copy would just be overwritten. It is also generated rather than stored, so
+        /// counting it would make a page's slot numbering depend on whether the browser had got
+        /// round to filling the targets (BL-16793); see SelectImageSlotsOnPage.
         ///
         /// Keyed on the attribute's PRESENCE, not its value: the Games templates ship
         /// data-target-of="" and the id is filled in at runtime.
@@ -998,7 +1027,7 @@ namespace Bloom.web.controllers
             // edited. Nothing Bloom ships puts two pictures in one draggable, but
             // copyContentToTarget copies a whole bloom-canvas when it finds one, which is exactly
             // that shape, so pair by position rather than trusting there to be only one.
-            var positionInDraggable = Array.IndexOf(SelectImageSlotsOnPage(draggable), slot);
+            var positionInDraggable = Array.IndexOf(SelectImageContainersWithin(draggable), slot);
             if (positionInDraggable < 0)
                 return Array.Empty<SafeXmlElement>();
 
@@ -1007,11 +1036,12 @@ namespace Bloom.web.controllers
             return page.SafeSelectNodes(".//*[@" + kGameTargetOfAttribute + "]")
                 .OfType<SafeXmlElement>()
                 .Where(target => target.GetAttribute(kGameTargetOfAttribute) == draggableId)
-                // A target's copy is a whole image container, so it is a slot in its own right;
-                // ask the same two helpers the real slots go through.
+                // A target's copy is a whole image container, so it pairs with the
+                // draggable's containers position for position. The raw selector, not the
+                // page-numbering one, which exists precisely to drop these.
                 .Select(target =>
                 {
-                    var copies = SelectImageSlotsOnPage(target);
+                    var copies = SelectImageContainersWithin(target);
                     return positionInDraggable < copies.Length ? copies[positionInDraggable] : null;
                 })
                 .Where(copy => copy != null)
@@ -1316,18 +1346,13 @@ namespace Bloom.web.controllers
                         ImageCredits credits,
                         (double width, double height)? fractionOfPage
                     )>();
-                // Ordinal is the index within the full slot list, so a slot we decline to offer
-                // below still holds its place. That is what lets the page frame send an index it
-                // worked out for itself, without knowing which slots we kept.
+                // Ordinal is the index within the page's whole slot list, so a slot we decline to
+                // offer below still holds its place. That is what lets the page frame send an index
+                // it worked out for itself, without knowing which slots we kept. (A Bloom Games
+                // target's copy of a picture is not in that list at all — see
+                // SelectImageSlotsOnPage — so it is neither offered nor counted.)
                 for (var ordinal = 0; ordinal < slots.Length; ordinal++)
                 {
-                    // A Bloom Games target shows a copy of its draggable's picture, so its image
-                    // container is a second slot showing the same image. Offering it made a game
-                    // page look like it had nearly twice as many pictures as it has, and editing
-                    // the copy would achieve nothing (BL-16793).
-                    if (IsSlotInsideGameTarget(slots[ordinal]))
-                        continue;
-
                     var element = GetImageElementOfSlot(slots[ordinal]);
                     if (element == null)
                         continue;
