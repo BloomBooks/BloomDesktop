@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Bloom;
 using Bloom.Book;
 using Bloom.Utils;
@@ -180,11 +182,12 @@ namespace BloomTests.Utils
 
         /// <summary>
         /// A directory where the QR code png should be makes the write fail with access denied, as on
-        /// the BL-16915 reporter's machine. That must be reported, not thrown, so the book can be selected,
-        /// and the badge must drop its QR code rather than show a broken or out-of-date one.
+        /// the BL-16915 reporter's machine, and leaves no QR code file. That must be reported, not
+        /// thrown, so the book can be selected, and the badge must drop its QR code rather than show
+        /// a broken image.
         /// </summary>
         [Test]
-        public void UpdateQrCode_CannotWriteQrCodeFile_ReportsNonFatalProblemAndShowsNoQrCode()
+        public void UpdateQrCode_CannotWriteAndNoQrCodeFile_ReportsNonFatalProblemAndShowsNoQrCode()
         {
             using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_Qr"))
             {
@@ -219,8 +222,69 @@ namespace BloomTests.Utils
                 Assert.That(
                     dom.SafeSelectNodes("//img[contains(@class,'bloom-qrcode')]").Length,
                     Is.EqualTo(0),
-                    "without a current QR code file the badge should show no QR code"
+                    "without any QR code file the badge should show no QR code"
                 );
+            }
+        }
+
+        /// <summary>
+        /// When an existing QR code file can't be overwritten, the badge keeps using it: the QR code
+        /// only changes with the collection's primary language, so the old file is almost always right.
+        /// </summary>
+        [Test]
+        public void UpdateQrCode_CannotOverwriteExistingQrCodeFile_KeepsExistingQrCode()
+        {
+            using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_QrExisting"))
+            {
+                var qrPath = Path.Combine(folder.Path, "lang-qr-code.png");
+                File.WriteAllBytes(qrPath, new byte[] { 1, 2, 3 });
+                var denyWrite = new FileSystemAccessRule(
+                    WindowsIdentity.GetCurrent().User,
+                    FileSystemRights.WriteData,
+                    AccessControlType.Deny
+                );
+                var fileInfo = new FileInfo(qrPath);
+                var security = fileInfo.GetAccessControl();
+                security.AddAccessRule(denyWrite);
+                fileInfo.SetAccessControl(security);
+                try
+                {
+                    var dom = new HtmlDom(
+                        @"<html><head></head><body><div class='bloom-page'>
+						<div class='bloom-branding-wrapper'><a><img class='branding' src='made-with-bloom-badge.svg'/></a></div>
+					</div></body></html>"
+                    );
+
+                    using (new NonFatalProblem.ExpectedByUnitTest())
+                    {
+                        BookStorage.UpdateQrCode(
+                            dom,
+                            true,
+                            "xyz",
+                            "More {0} books",
+                            "Xyz",
+                            folder.Path
+                        );
+                    }
+
+                    var qrImages = dom.SafeSelectNodes("//img[contains(@class,'bloom-qrcode')]");
+                    Assert.That(
+                        qrImages.Length,
+                        Is.EqualTo(1),
+                        "the badge should keep its QR code"
+                    );
+                    Assert.That(qrImages[0].GetAttribute("src"), Is.EqualTo("lang-qr-code.png"));
+                    Assert.That(
+                        File.ReadAllBytes(qrPath),
+                        Is.EqualTo(new byte[] { 1, 2, 3 }),
+                        "sanity check: the write really was refused"
+                    );
+                }
+                finally
+                {
+                    security.RemoveAccessRule(denyWrite);
+                    fileInfo.SetAccessControl(security);
+                }
             }
         }
     }

@@ -3023,12 +3023,17 @@ namespace Bloom.Book
                         qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
                     else
                         qrFileName = kQrFileName;
+                    if (qrFileName == null && RobustFile.Exists(qrFilePath))
+                    {
+                        // Keep the existing file. The QR code only changes when the collection's
+                        // primary language does, so it is almost always still correct.
+                        qrFileName = kQrFileName;
+                    }
                     qrCodeFileFailed = qrFileName == null;
                 }
                 if (qrCodeFileFailed)
                 {
-                    // Without a current QR code file, showing no QR code is better than a broken
-                    // image or an old one that leads somewhere else.
+                    // There is no QR code file at all; show no QR code rather than a broken image.
                     AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
                     continue;
                 }
