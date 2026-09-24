@@ -3194,7 +3194,12 @@ namespace Bloom.Book
                             // Also make center square white to overlay Bloom logo and overlay the Bloom logo
                             TweakQrCodeBitmap(qrBitmap);
                             qrFileName = "lang-qr-code.png";
-                            qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
+                            // Reports a failure to write the file as a NonFatalProblem rather than
+                            // throwing, so the book can still be selected (BL-16915).
+                            ImageUtils.SaveOrDeletePngImageToPath(
+                                qrBitmap,
+                                Path.Combine(bookFolderPath, qrFileName)
+                            );
                         }
                     }
                 }
