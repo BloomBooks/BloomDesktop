@@ -9,10 +9,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 //  - The edit target. C# hands over the page id and file name of the image the user
 //    right-clicked (it survived a page save, which reloaded the page frame), and the overlay
 //    matches that against the book image list to fill the "Image to Edit" slot (BL-16682).
-//  - Saving after a commit. The current-page swaps only touched the LIVE DOM, so unless we
-//    save, a second commit in the same session would read its oldSrc from a saved page still
-//    showing the pre-edit image and match nothing. Because this overlay lives in the top
-//    window, we can save immediately: the page reload underneath leaves its controls alone.
+//  - NOT saving after a commit. A current-page swap lives only in the live page, like a pasted
+//    picture, and is saved by the normal page save when the user moves on. Saving at once
+//    would reload the page frame and discard the undo the swap registered (BL-16330).
 
 const post = vi.fn();
 const postJson = vi.fn();
