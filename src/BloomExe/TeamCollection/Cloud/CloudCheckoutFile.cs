@@ -119,7 +119,13 @@ namespace Bloom.TeamCollection.Cloud
                     .ToUniversalTime()
                     .ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture),
             };
-            RobustFile.WriteAllText(GetPath(bookFolderPath), json.ToString(), Encoding.UTF8);
+            // No byte-order mark: other tools (and the E2E harness) read this as plain JSON.
+            // Read() tolerates one anyway, since Encoding.UTF8 strips a leading BOM.
+            RobustFile.WriteAllText(
+                GetPath(bookFolderPath),
+                json.ToString(),
+                new UTF8Encoding(false)
+            );
         }
 
         /// <summary>Removes the record from <paramref name="bookFolderPath"/>, if there is one.</summary>

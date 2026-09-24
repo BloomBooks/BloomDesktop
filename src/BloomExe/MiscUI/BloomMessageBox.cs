@@ -75,6 +75,17 @@ namespace Bloom.MiscUI
         /// </summary>
         public static string ShowSimple(string message, MessageBoxIcon icon = MessageBoxIcon.None)
         {
+            if (Program.UnattendedAutomation && !s_justRecordMessageBoxMessagesForTesting)
+            {
+                // In UNATTENDED automation (E2E harnesses, CI) there is no human to click Close,
+                // so the modal would block the UI thread -- and whatever API call raised it --
+                // forever (the same reasoning as HtmlErrorReporter's and ProblemReportApi's
+                // automation gates). A single-button message needs no answer; log it instead.
+                SIL.Reporting.Logger.WriteEvent(
+                    "BloomMessageBox suppressed in automation mode: " + message
+                );
+                return "close";
+            }
             var closeText = LocalizationManager.GetString("Common.Close", "Close");
             var messageBoxButtons = new[]
             {

@@ -1381,14 +1381,34 @@ namespace Bloom.TeamCollection
                 // Retrying can't help, so treat it like the conflict branch above: keep the local
                 // work in Lost and Found and bring this copy up to date with the repo.
                 var bookName = Path.GetFileName(bookInfo.FolderPath);
-                SaveToLostAndFoundAndReceive(
-                    bookInfo,
-                    bookName,
-                    reportProgressFraction,
-                    progress,
-                    refused.Message
-                        + " Your changes have been saved to Lost and Found, and you now have the Team Collection's version."
-                );
+                if (
+                    _tcManager.CurrentCollection.GetStatus(bookName).lockedBy
+                    == TeamCollection.FakeUserIndicatingNewBook
+                )
+                {
+                    // A book that has never been checked in has no Team Collection version to
+                    // receive (and swapping in one is what the recovery below is for), so the
+                    // local book, which is the only copy of it, is left exactly as it is.
+                    reportProgressFraction(0);
+                    progress?.MessageWithoutLocalizing(refused.Message, ProgressKind.Error);
+                    BookHistory.AddEvent(
+                        bookInfo,
+                        BookHistoryEventType.SyncProblem,
+                        refused.Message
+                    );
+                    BloomMessageBox.ShowInfo(refused.Message);
+                }
+                else
+                {
+                    SaveToLostAndFoundAndReceive(
+                        bookInfo,
+                        bookName,
+                        reportProgressFraction,
+                        progress,
+                        refused.Message
+                            + " Your changes have been saved to Lost and Found, and you now have the Team Collection's version."
+                    );
+                }
                 UpdateUiForBook();
                 Application.Idle += OnIdleConnectionCheck;
             }

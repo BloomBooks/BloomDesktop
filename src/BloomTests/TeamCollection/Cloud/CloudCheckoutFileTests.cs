@@ -68,6 +68,31 @@ namespace BloomTests.TeamCollection.Cloud
         }
 
         [Test]
+        public void Write_HasNoByteOrderMark()
+        {
+            MakeRecord().Write(BookFolderPath);
+
+            var bytes = File.ReadAllBytes(Path.Combine(BookFolderPath, ".checkout"));
+            Assert.That(bytes.Length, Is.GreaterThan(3), "sanity: the record has content");
+            Assert.That(
+                (char)bytes[0],
+                Is.EqualTo('{'),
+                "plain JSON readers (e.g. JSON.parse) choke on a leading UTF-8 BOM"
+            );
+        }
+
+        [Test]
+        public void Read_ToleratesAByteOrderMark()
+        {
+            MakeRecord().Write(BookFolderPath);
+            var path = Path.Combine(BookFolderPath, ".checkout");
+            File.WriteAllText(path, File.ReadAllText(path), new System.Text.UTF8Encoding(true));
+            Assert.That(File.ReadAllBytes(path)[0], Is.EqualTo(0xEF), "sanity: now has a BOM");
+
+            Assert.That(CloudCheckoutFile.ReadGuid(BookFolderPath), Is.EqualTo(kGuid));
+        }
+
+        [Test]
         public void Write_UsesTheAgreedFileNameAndJsonShape()
         {
             MakeRecord().Write(BookFolderPath);
