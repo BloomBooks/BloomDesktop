@@ -110,6 +110,10 @@ namespace Bloom
             bookDownloadStartingEvent.Subscribe(
                 (x) =>
                 {
+                    // Not while something other than the person at the keyboard drives Bloom
+                    // (--dont-disturb): the download goes ahead, but the foreground stays theirs.
+                    if (Program.StartupDontDisturb)
+                        return;
                     try
                     {
                         this.Invoke((Action)this.Activate);
