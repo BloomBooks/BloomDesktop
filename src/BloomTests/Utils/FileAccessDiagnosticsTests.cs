@@ -83,6 +83,8 @@ namespace BloomTests.Utils
                 FileAccessDiagnostics.DescribeAntivirusProductState(393472),
                 Is.EqualTo("real-time protection off or snoozed, definitions up to date")
             );
+            Assert.That(FileAccessDiagnostics.IsRealTimeProtectionOn(266240), Is.True);
+            Assert.That(FileAccessDiagnostics.IsRealTimeProtectionOn(393472), Is.False);
         }
 
         [Test]
@@ -108,6 +110,10 @@ namespace BloomTests.Utils
             Assert.That(
                 FileAccessDiagnostics.GetLikelyCause(null, null, null, 1),
                 Does.Contain("Controlled Folder Access")
+            );
+            Assert.That(
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, null, true),
+                Does.Contain("Avast's Ransomware Shield")
             );
             Assert.That(
                 FileAccessDiagnostics.GetLikelyCause(null, null, "Dropbox", 0),

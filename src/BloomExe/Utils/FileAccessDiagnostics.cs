@@ -389,11 +389,16 @@ namespace Bloom.Utils
             FileAttributes? folderAttributes,
             string syncRoot,
             int? controlledFolderAccess,
-            uint? placeholderState = null
+            uint? placeholderState = null,
+            bool avastActiveAndUnderDocuments = false
         )
         {
             if (controlledFolderAccess == 1)
                 return "Windows Security's Controlled Folder Access is turned on; it may be blocking Bloom from changing files in this folder.";
+            // Every BL-3227-style report we have (BL-16507, BL-16915, BL-16919) had Avast's real-time
+            // protection on and the book under Documents, which Avast's Ransomware Shield protects.
+            if (avastActiveAndUnderDocuments)
+                return "Avast's Ransomware Shield may be blocking Bloom. You can allow Bloom in Avast under Protection > Ransomware Shield.";
             if (
                 syncRoot != null
                 || (placeholderState.HasValue && IsPlaceholder(placeholderState.Value))
@@ -405,6 +410,48 @@ namespace Bloom.Utils
                 return $"This file is in a folder managed by {provider}, which may be holding it while it syncs.";
             }
             return null;
+        }
+
+        /// <summary>
+        /// The display names of the antivirus products Windows Security Center reports with real-time
+        /// protection on. Empty if none, or if they can't be read. Never throws.
+        /// </summary>
+        public static List<string> GetActiveAntivirusNames()
+        {
+            var result = new List<string>();
+            if (!Platform.IsWindows)
+                return result;
+            try
+            {
+                using (
+                    var searcher = new System.Management.ManagementObjectSearcher(
+                        @"root\SecurityCenter2",
+                        "SELECT displayName, productState FROM AntivirusProduct"
+                    )
+                )
+                {
+                    foreach (var instance in searcher.Get())
+                    {
+                        if (
+                            instance["productState"] is uint state
+                            && IsRealTimeProtectionOn((int)state)
+                            && instance["displayName"] is string name
+                        )
+                            result.Add(name);
+                    }
+                }
+            }
+            catch (Exception) { }
+            return result;
+        }
+
+        /// <summary>
+        /// True if a SecurityCenter2 productState says real-time protection is on.
+        /// </summary>
+        public static bool IsRealTimeProtectionOn(int productState)
+        {
+            var protection = (productState >> 8) & 0xFF;
+            return protection == 0x10 || protection == 0x11;
         }
 
         private static bool IsPlaceholder(uint placeholderState) =>
@@ -459,12 +506,28 @@ namespace Bloom.Utils
                 syncRoot = syncRoot ?? environmentSyncRoot;
                 var cfa = ReadControlledFolderAccessSetting();
                 bldr.AppendLine($"Controlled Folder Access: {DescribeControlledFolderAccess(cfa)}");
+                var activeAntivirus = GetActiveAntivirusNames();
+                bldr.AppendLine(
+                    $"antivirus with real-time protection on: {(activeAntivirus.Count == 0 ? "none found" : string.Join(", ", activeAntivirus))}"
+                );
+                var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var underDocuments =
+                    !string.IsNullOrEmpty(documents)
+                    && FindSyncRootContaining(
+                        path,
+                        new[] { new KeyValuePair<string, string>("Documents", documents) }
+                    ) != null;
+                bldr.AppendLine($"under Documents: {underDocuments}");
+                var avastActive = activeAntivirus.Any(name =>
+                    name.IndexOf("Avast", StringComparison.OrdinalIgnoreCase) >= 0
+                );
                 likelyCause = GetLikelyCause(
                     fileAttributes,
                     folderAttributes,
                     syncRoot,
                     cfa,
-                    placeholderState
+                    placeholderState,
+                    avastActive && underDocuments
                 );
             }
             catch (Exception e)
