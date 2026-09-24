@@ -251,10 +251,12 @@ so does `./go.sh`. A Bloom you start any other way is unaffected, however the va
 ### Whether the Bloom window takes the keyboard: `BLOOM_E2E_DONT_DISTURB`
 
 Where a window goes and whether it takes the foreground are separate. On a developer's machine
-the fixture also passes `--dont-disturb`, under which none of Bloom's windows (the main window,
-the splash screen, the Choose Collection dialog, any other dialog) activates itself or comes to
-the front, so a run never takes your keyboard; the tests drive Bloom over CDP, which needs no
-focus. On CI (when `CI` is set, as GitHub Actions sets it) the fixture leaves it off, so Bloom
+the fixture also passes `--dont-disturb`, under which none of Bloom's own windows (the main
+window, the splash screen, the Choose Collection dialog, Collection Settings and the other Bloom
+dialogs) activates itself or comes to the front, so a run never takes your keyboard; the tests
+drive Bloom over CDP, which needs no focus. The exception is a native Windows dialog, a file
+picker or a raw message box, which Windows activates whatever Bloom asks; a test must never open
+one anyway (see "Writing a test"). On CI (when `CI` is set, as GitHub Actions sets it) the fixture leaves it off, so Bloom
 behaves as it does for a user and focus-dependent behavior stays covered. The visual-regression
 suite follows the same rule.
 

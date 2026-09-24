@@ -9,6 +9,10 @@ namespace Bloom.Registration
 {
     public partial class LicenseDialog : Form
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         private Browser _licenseBrowser;
 
         /// <summary>

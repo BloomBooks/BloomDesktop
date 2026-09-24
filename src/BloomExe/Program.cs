@@ -115,6 +115,9 @@ namespace Bloom
         // window it opens may take the foreground or the keyboard. Separate from --automation,
         // which ./go.sh passes to every developer Bloom: a developer testing by hand wants the
         // ordinary behavior, and so does a test run on CI, where nobody else is at the screen.
+        // Bloom's own windows honor it (Shell, SplashScreen, ReactDialog, the WinForms dialogs
+        // through ShowWithoutActivation, and Extensions.BringToFrontNow); native Windows dialogs,
+        // such as a file picker or a MessageBox, are activated by Windows regardless.
         internal static bool StartupDontDisturb { get; private set; }
 
         // Experimental features an e2e run asked for, passed as

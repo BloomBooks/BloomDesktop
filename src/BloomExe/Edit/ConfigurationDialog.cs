@@ -7,6 +7,10 @@ namespace Bloom.Edit
 {
     public partial class ConfigurationDialog : Form
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         private readonly string _filePath;
         private readonly string _libraryJsonData;
 
