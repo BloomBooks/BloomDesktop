@@ -86,6 +86,23 @@ namespace BloomTests.Utils
         }
 
         [Test]
+        public void FindSyncRootContaining_NestedRoots_ReturnsInnermost()
+        {
+            var roots = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("OneDrive", @"C:\Users\HP\OneDrive"),
+                new KeyValuePair<string, string>("Other", @"C:\Users\HP\OneDrive\Shared"),
+            };
+
+            var result = FileAccessDiagnostics.FindSyncRootContaining(
+                @"C:\Users\HP\OneDrive\Shared\book\license.png",
+                roots
+            );
+
+            Assert.That(result, Is.EqualTo(@"Other (C:\Users\HP\OneDrive\Shared)"));
+        }
+
+        [Test]
         public void DescribeAntivirusProductState_ValuesFromBL16915Report()
         {
             // Avast was active; Defender was passive because Avast had taken over.
@@ -163,10 +180,11 @@ namespace BloomTests.Utils
 
         /// <summary>
         /// A directory where the QR code png should be makes the write fail with access denied, as on
-        /// the BL-16915 reporter's machine. That must be reported, not thrown, so the book can be selected.
+        /// the BL-16915 reporter's machine. That must be reported, not thrown, so the book can be selected,
+        /// and the badge must drop its QR code rather than show a broken or out-of-date one.
         /// </summary>
         [Test]
-        public void UpdateQrCode_CannotWriteQrCodeFile_ReportsNonFatalProblem()
+        public void UpdateQrCode_CannotWriteQrCodeFile_ReportsNonFatalProblemAndShowsNoQrCode()
         {
             using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_Qr"))
             {
@@ -174,8 +192,16 @@ namespace BloomTests.Utils
                 Directory.CreateDirectory(blocker);
                 var dom = new HtmlDom(
                     @"<html><head></head><body><div class='bloom-page'>
-						<div class='bloom-branding-wrapper'><a><img class='branding' src='made-with-bloom-badge.svg'/></a></div>
+						<div class='bloom-branding-wrapper'><a href='https://bloomlibrary.org/language:old'>
+							<img class='branding' src='made-with-bloom-badge-text.svg'/>
+							<img class='bloom-qrcode' src='lang-qr-code.png'/>
+						</a></div>
 					</div></body></html>"
+                );
+                Assert.That(
+                    dom.SafeSelectNodes("//img[contains(@class,'bloom-qrcode')]").Length,
+                    Is.EqualTo(1),
+                    "sanity check: the badge starts with a QR code image"
                 );
 
                 using (new NonFatalProblem.ExpectedByUnitTest())
@@ -192,8 +218,8 @@ namespace BloomTests.Utils
 
                 Assert.That(
                     dom.SafeSelectNodes("//img[contains(@class,'bloom-qrcode')]").Length,
-                    Is.EqualTo(1),
-                    "the page should still reference the QR code image"
+                    Is.EqualTo(0),
+                    "without a current QR code file the badge should show no QR code"
                 );
             }
         }

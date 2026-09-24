@@ -2992,6 +2992,7 @@ namespace Bloom.Book
             var displayUrl = "BloomLibrary.org/language:" + langCode;
 
             string qrFileName = null;
+            var qrCodeFileFailed = false;
             const string kQrFileName = "lang-qr-code.png";
             var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
 
@@ -3016,12 +3017,20 @@ namespace Bloom.Book
 
                 anchor.SetAttribute("href", url + "?utm_source=badgeclick");
 
-                if (qrFileName == null)
+                if (qrFileName == null && !qrCodeFileFailed)
                 {
                     if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
                         qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
                     else
                         qrFileName = kQrFileName;
+                    qrCodeFileFailed = qrFileName == null;
+                }
+                if (qrCodeFileFailed)
+                {
+                    // Without a current QR code file, showing no QR code is better than a broken
+                    // image or an old one that leads somewhere else.
+                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
+                    continue;
                 }
 
                 AdjustHtmlForHavingQrCode(
@@ -3166,6 +3175,10 @@ namespace Bloom.Book
                 captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
+        /// <summary>
+        /// Write the QR code image for url into the book folder and return its file name, or null
+        /// if the file could not be written (that is reported as a NonFatalProblem).
+        /// </summary>
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
         {
             string qrFileName;
@@ -3196,10 +3209,13 @@ namespace Bloom.Book
                             qrFileName = "lang-qr-code.png";
                             // Reports a failure to write the file as a NonFatalProblem rather than
                             // throwing, so the book can still be selected (BL-16915).
-                            ImageUtils.SaveOrDeletePngImageToPath(
-                                qrBitmap,
-                                Path.Combine(bookFolderPath, qrFileName)
-                            );
+                            if (
+                                !ImageUtils.SaveOrDeletePngImageToPath(
+                                    qrBitmap,
+                                    Path.Combine(bookFolderPath, qrFileName)
+                                )
+                            )
+                                return null;
                         }
                     }
                 }

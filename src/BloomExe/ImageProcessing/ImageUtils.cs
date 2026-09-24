@@ -2701,8 +2701,9 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Save the Image data to path as a PNG image, or delete the file if image is null.
+        /// Returns false if that failed; the failure has already been reported as a NonFatalProblem.
         /// </summary>
-        public static void SaveOrDeletePngImageToPath(System.Drawing.Image image, string imagePath)
+        public static bool SaveOrDeletePngImageToPath(System.Drawing.Image image, string imagePath)
         {
             var originalReadOnly = FileAttributes.Normal;
             try
@@ -2738,6 +2739,7 @@ namespace Bloom.ImageProcessing
                     if (RobustFile.Exists(imagePath))
                         RobustFile.Delete(imagePath);
                 }
+                return true;
             }
             catch (Exception error)
             {
@@ -2763,6 +2765,7 @@ namespace Bloom.ImageProcessing
                     showSendReport: false,
                     showRequestDetails: true
                 );
+                return false;
             }
         }
 

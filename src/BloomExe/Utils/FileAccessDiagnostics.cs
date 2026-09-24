@@ -74,7 +74,7 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// Return "provider (root folder)" for the first sync root that contains path, or null.
+        /// Return "provider (root folder)" for the innermost sync root that contains path, or null.
         /// Each root is a pair of provider name and root folder.
         /// </summary>
         public static string FindSyncRootContaining(
@@ -83,6 +83,8 @@ namespace Bloom.Utils
         )
         {
             var fullPath = Path.GetFullPath(path);
+            string bestProvider = null;
+            string bestRoot = null;
             foreach (var root in syncRoots)
             {
                 if (string.IsNullOrWhiteSpace(root.Value))
@@ -97,16 +99,19 @@ namespace Bloom.Utils
                 {
                     continue; // a malformed registry or environment value must not hide the rest
                 }
-                if (
+                var contains =
                     fullPath.Equals(rootPath, StringComparison.OrdinalIgnoreCase)
                     || fullPath.StartsWith(
                         rootPath + Path.DirectorySeparatorChar,
                         StringComparison.OrdinalIgnoreCase
-                    )
-                )
-                    return $"{root.Key} ({rootPath})";
+                    );
+                if (contains && (bestRoot == null || rootPath.Length > bestRoot.Length))
+                {
+                    bestProvider = root.Key;
+                    bestRoot = rootPath;
+                }
             }
-            return null;
+            return bestRoot == null ? null : $"{bestProvider} ({bestRoot})";
         }
 
         /// <summary>
