@@ -124,17 +124,17 @@
       </trans-unit>
       <trans-unit id="AccountMenu.Account">
         <source xml:lang="en">Account</source>
-        <target xml:lang="es-ES" state="needs-translation">Account</target>
+        <target xml:lang="es-ES" state="translated">Cuenta</target>
         <note>ID: AccountMenu.Account</note>
       </trans-unit>
       <trans-unit id="AccountMenu.SignIn">
         <source xml:lang="en">Sign in</source>
-        <target xml:lang="es-ES" state="needs-translation">Sign in</target>
+        <target xml:lang="es-ES" state="translated">Iniciar sesión</target>
         <note>ID: AccountMenu.SignIn</note>
       </trans-unit>
       <trans-unit id="AccountMenu.SignOut">
         <source xml:lang="en">Sign out</source>
-        <target xml:lang="es-ES" state="needs-translation">Sign out</target>
+        <target xml:lang="es-ES" state="translated">Cerrar sesión</target>
         <note>ID: AccountMenu.SignOut</note>
       </trans-unit>
       <trans-unit id="AutoUpdateSoftwareDialog.SoftwareUpdates" sil:dynamic="true" approved="yes">
@@ -385,12 +385,12 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Collection.CollectionRequiresNewerVersion">
         <source xml:lang="en">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</source>
-        <target xml:lang="es-ES" state="needs-translation">The collection "{0}" requires Bloom {1} or greater. You are running Bloom {2}.</target>
+        <target xml:lang="es-ES" state="translated">La colección "{0}" requiere Bloom {1} o superior. Está ejecutando Bloom {2}.</target>
         <note>ID: Collection.CollectionRequiresNewerVersion</note>
       </trans-unit>
       <trans-unit id="Collection.NewerVersionNeededHeader" sil:dynamic="true">
         <source xml:lang="en">This collection needs a newer version of Bloom.</source>
-        <target xml:lang="es-ES" state="needs-translation">This collection needs a newer version of Bloom.</target>
+        <target xml:lang="es-ES" state="translated">Esta colección necesita una versión más reciente de Bloom.</target>
         <note>ID: Collection.NewerVersionNeededHeader</note>
       </trans-unit>
       <trans-unit id="Collection.NothingNewerAvailable">
@@ -405,7 +405,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="Collection.UpgradeBloom">
         <source xml:lang="en">Upgrade Bloom</source>
-        <target xml:lang="es-ES" state="needs-translation">Upgrade Bloom</target>
+        <target xml:lang="es-ES" state="translated">Actualizar Bloom</target>
         <note>ID: Collection.UpgradeBloom</note>
       </trans-unit>
       <trans-unit id="CollectionChooser.BookCountSingular">
@@ -673,7 +673,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes">
         <source xml:lang="en">Show QR Codes</source>
-        <target xml:lang="es-ES" state="needs-translation">Show QR Codes</target>
+        <target xml:lang="es-ES" state="translated">Mostrar códigos QR</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.ShowQrCodes</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.ShowQrCodes.Description">
