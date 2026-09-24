@@ -429,15 +429,19 @@ namespace Bloom.Utils
                         "SELECT displayName, productState FROM AntivirusProduct"
                     )
                 )
+                using (var instances = searcher.Get())
                 {
-                    foreach (var instance in searcher.Get())
+                    foreach (var instance in instances)
                     {
-                        if (
-                            instance["productState"] is uint state
-                            && IsRealTimeProtectionOn((int)state)
-                            && instance["displayName"] is string name
-                        )
-                            result.Add(name);
+                        using (instance)
+                        {
+                            if (
+                                instance["productState"] is uint state
+                                && IsRealTimeProtectionOn((int)state)
+                                && instance["displayName"] is string name
+                            )
+                                result.Add(name);
+                        }
                     }
                 }
             }
@@ -476,7 +480,14 @@ namespace Bloom.Utils
                     bldr.AppendLine(
                         $"file attributes: {(fileAttributes.HasValue ? DescribeAttributes(fileAttributes.Value) : "could not be read")}"
                     );
-                    bldr.AppendLine($"opening the file read-only {TryOpenForRead(path)}");
+                    // Opening a cloud placeholder that is not on disk makes the sync program
+                    // download it, which could hold up the user for a long time.
+                    if (fileAttributes.HasValue && AttributesSuggestCloudFile(fileAttributes.Value))
+                        bldr.AppendLine(
+                            "opening the file read-only: skipped (cloud placeholder; opening it could start a download)"
+                        );
+                    else
+                        bldr.AppendLine($"opening the file read-only {TryOpenForRead(path)}");
                 }
                 uint? placeholderState = exists ? GetPlaceholderState(path) : null;
                 if (exists)
