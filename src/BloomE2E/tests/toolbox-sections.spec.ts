@@ -7,6 +7,8 @@
 // real "More..." check box because that journey is part of what is being pinned; the other tests
 // take the fast setup route (enableToolForBook).
 
+import * as fs from "fs";
+import * as Path from "path";
 import { expect, test } from "../fixtures/bloomTest";
 import { editBook, makeBookFromTemplate } from "../helpers/bookMaking";
 import { openReaderTool } from "../helpers/readerTools";
@@ -101,6 +103,14 @@ test("the book remembers which tool was open [Test Case ID 830]", async ({
     expect(await getOpenTool(page)).toBe("leveledReader");
 
     await editBook(page, bookFolder);
+    // The book keeps it in its meta.json, not just in memory, so it survives a restart of Bloom.
+    const meta = JSON.parse(
+        fs.readFileSync(Path.join(bookFolder, "meta.json"), "utf8"),
+    ) as { currentTool?: string };
+    expect(
+        meta.currentTool,
+        "The book's meta.json should record the Leveled Reader as its open tool.",
+    ).toMatch(/^leveledReader/);
     await showToolbox(page);
 
     await expectOpenTool(
