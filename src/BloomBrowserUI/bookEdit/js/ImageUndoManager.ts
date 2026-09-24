@@ -54,8 +54,9 @@ type ImageOperationUndoItem =
           imageTransform: string;
           cropInfo: IImageCropInfo;
           elementGeometry: IElementGeometry;
-          // The element's text when the step was recorded. Typing afterwards is a newer step,
-          // which the text editor's own undo takes back first; see canUndoImageOperation.
+          // The contents of the element's text boxes, formatting included, when the step was
+          // recorded. Typing or formatting afterwards is a newer step, which the text editor's
+          // own undo takes back first; see canUndoImageOperation.
           textWhenRecorded: string;
       };
 // | {
@@ -153,7 +154,7 @@ export class ImageUndoManager {
                 top: img?.style.top ?? "",
             },
             elementGeometry: this.getElementGeometry(canvasElement),
-            textWhenRecorded: canvasElement.textContent ?? "",
+            textWhenRecorded: textBoxContents(canvasElement),
         });
     }
 
@@ -204,8 +205,7 @@ export class ImageUndoManager {
             return (
                 !!activeElement &&
                 activeElement === topOfStack.canvasElement &&
-                (activeElement.textContent ?? "") ===
-                    topOfStack.textWhenRecorded
+                textBoxContents(activeElement) === topOfStack.textWhenRecorded
             );
         }
         if (topOfStack?.kind === "restoreImage") {
@@ -415,6 +415,14 @@ export function prepareUndoForImageOperation(
     imageOrContainer: HTMLElement,
 ): void {
     getImageUndoManager().prepareUndoForImageOperation(imageOrContainer);
+}
+
+// The markup inside the element's text boxes, which changes with typing and with formatting such
+// as bold. It leaves out the text boxes' own attributes, which the editor changes on focus.
+function textBoxContents(canvasElement: HTMLElement): string {
+    return Array.from(canvasElement.getElementsByClassName("bloom-editable"))
+        .map((editable) => editable.innerHTML)
+        .join("\n");
 }
 
 export function pushUndoForImageTransform(canvasElement: HTMLElement): void {

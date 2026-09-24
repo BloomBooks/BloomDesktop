@@ -404,4 +404,26 @@ describe("ImageUndoManager rotation handle drag", () => {
         editable.textContent = "some words";
         expect(manager.canUndoImageOperation()).toBe(true);
     });
+
+    it("formatting after a rotation is undone first, and then the rotation is", () => {
+        const textBox = makeTextCanvasElement();
+        setCanvasElementRotation(textBox, 45);
+        manager.pushUndoForCanvasElementRotation(textBox, 0);
+        activeElement = textBox;
+        expect(manager.canUndoImageOperation()).toBe(true);
+
+        // Bold on the words leaves the text itself the same.
+        const editable = textBox.getElementsByClassName(
+            "bloom-editable",
+        )[0] as HTMLElement;
+        editable.innerHTML = "<strong>some words</strong>";
+        expect(editable.textContent).toBe("some words");
+        expect(
+            manager.canUndoImageOperation(),
+            "Undo must take back the formatting before the rotation",
+        ).toBe(false);
+
+        editable.innerHTML = "some words";
+        expect(manager.canUndoImageOperation()).toBe(true);
+    });
 });

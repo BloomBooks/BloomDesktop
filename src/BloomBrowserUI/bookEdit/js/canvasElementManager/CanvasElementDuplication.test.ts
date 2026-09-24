@@ -44,6 +44,7 @@ describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)",
         expect(getCanvasElementRotation(source)).toBe(37);
 
         let active: HTMLElement | undefined = source;
+        let rotationWhenMeasured: number | undefined;
         const spec = { style: "none", tails: [], level: 1, version: "1" };
         const host = {
             getPatriarchBubbleOfActiveElement: () => ({ content: source }),
@@ -59,10 +60,12 @@ describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)",
                 bloomCanvas.appendChild(copy);
                 return copy;
             },
-            findBestLocationForNewCanvasElement: () => ({
-                getScaledX: () => 20,
-                getScaledY: () => 20,
-            }),
+            findBestLocationForNewCanvasElement: (parent: HTMLElement) => {
+                // The copy's place is measured from the source's upright box, not from the
+                // larger rectangle a rotated element covers.
+                rotationWhenMeasured = getCanvasElementRotation(parent);
+                return { getScaledX: () => 20, getScaledY: () => 20 };
+            },
             reorderRectangleCanvasElement: vi.fn(),
             addChildInternal: vi.fn(),
             adjustRelativePointToBloomCanvas: vi.fn(),
@@ -76,6 +79,11 @@ describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)",
         expect(copy).not.toBe(source);
         expect(active).toBe(copy);
         expect(getCanvasElementRotation(copy!)).toBe(37);
+        expect(rotationWhenMeasured).toBe(0);
+        expect(
+            getCanvasElementRotation(source),
+            "The source must get its angle back after the measuring",
+        ).toBe(37);
         // The picture's own mirror comes with the copied contents.
         expect(copy!.querySelector("img")!.style.transform).toBe(
             "scale(-1, 1)",

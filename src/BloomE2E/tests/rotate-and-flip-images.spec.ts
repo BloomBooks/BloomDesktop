@@ -29,7 +29,9 @@ import {
     canvasElement,
     canvasElementMenuPanels,
     closeCanvasElementMenu,
+    deleteCanvasElement,
     dragPaletteItemOntoCanvas,
+    duplicateCanvasElement,
     dragRotateHandle,
     expectRotateHandleShown,
     flipSelectedImage,
@@ -56,6 +58,7 @@ import {
     mirroredAboutOwnAxis,
     type IPictureRotation,
 } from "../helpers/images";
+import { moveCaretToEnd, typeWithKeys } from "../helpers/keys";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
 import { undo } from "../helpers/workspace";
 
@@ -681,4 +684,135 @@ test.describe("rotating and flipping pictures", () => {
         await goToPage(page, itemsPage.id);
         await saveScreenshotIfAsked([canvas(page)], "30-items-after-visits");
     });
+
+    test("at any angle, Flip horizontal mirrors the picture's own left and right, so 15 and 45 degrees mirror the same way [Test Case ID 827]", async ({
+        page,
+    }) => {
+        await goToPage(page, itemsPage.id);
+        const picture = await selectCanvasElement(page, overlayPicture);
+        // Left rotated 90 degrees and mirrored by the tests before; take the mirror off first.
+        expect(await getCanvasElementRotation(picture)).toBe(90);
+        await flipSelectedImage(page, "horizontal");
+        await expect
+            .poll(async () => getPictureRotation(page, picture))
+            .toEqual(ROTATED_90);
+
+        // With Ctrl held, so the knob does not snap the angle away from 15.
+        const at15 = await dragRotateHandle(page, -75, { withCtrl: true });
+        expect(Math.abs(at15 - 15)).toBeLessThan(1.5);
+        await flipSelectedImage(page, "horizontal");
+        expectRotationClose(
+            await getPictureRotation(page, picture),
+            mirroredAboutOwnAxis(rotationOf(at15), "horizontal"),
+            "At 15 degrees, Flip horizontal did not mirror the picture's own left and right.",
+        );
+        await saveScreenshotIfAsked([canvas(page)], "31-flip-at-15");
+        await flipSelectedImage(page, "horizontal");
+
+        // 15 + 30 is 45, where the knob snaps.
+        expect(await dragRotateHandle(page, 30)).toBe(45);
+        await flipSelectedImage(page, "horizontal");
+        expectRotationClose(
+            await getPictureRotation(page, picture),
+            mirroredAboutOwnAxis(rotationOf(45), "horizontal"),
+            "At 45 degrees, Flip horizontal did not mirror the picture's own left and right.",
+        );
+        await saveScreenshotIfAsked([canvas(page)], "32-flip-at-45");
+
+        // Flipping and then rotating gives the same as rotating and then flipping: take the knob
+        // back to upright, and the picture is simply mirrored left to right.
+        expect(await dragRotateHandle(page, -45)).toBe(0);
+        await expect
+            .poll(async () => getPictureRotation(page, picture))
+            .toEqual(mirroredAboutOwnAxis(kUprightPicture, "horizontal"));
+        await saveScreenshotIfAsked([canvas(page)], "33-flipped-then-upright");
+    });
+
+    test("Duplicate gives the copy the angle and the mirror of the original [Test Case ID 827]", async ({
+        page,
+    }) => {
+        await goToPage(page, itemsPage.id);
+        const picture = await selectCanvasElement(page, overlayPicture);
+        const angle = await dragRotateHandle(page, 30, { withCtrl: true });
+        expect(Math.abs(angle - 30)).toBeLessThan(1.5);
+        const original = await getPictureRotation(page, picture);
+        // Sanity check: the original is rotated and mirrored, so an upright copy would show.
+        expect(original).not.toEqual(kUprightPicture);
+
+        const copyIndex = await duplicateCanvasElement(page);
+        const copy = canvasElement(page, copyIndex);
+        await expect
+            .poll(async () => getCanvasElementRotation(copy), {
+                message: "The copy is not rotated like the original.",
+            })
+            .toBeCloseTo(angle, 1);
+        expect(await getPictureRotation(page, copy)).toEqual(original);
+        await saveScreenshotIfAsked([canvas(page)], "34-duplicate");
+
+        // Leave the page as it was: the copy goes.
+        await selectCanvasElement(page, copyIndex);
+        await deleteCanvasElement(page);
+    });
+
+    test("after typing in a rotated text box, Undo takes back the typing before the rotation [Test Case ID 827]", async ({
+        page,
+    }) => {
+        await goToPage(page, itemsPage.id);
+        const box = await selectCanvasElement(page, textBox);
+        const angle = await getCanvasElementRotation(box);
+        // Left at about 30 degrees by the test that leaves the page and comes back.
+        expect(Math.abs(angle - 30)).toBeLessThan(1.5);
+        // A fresh rotation, so that it is the newest step before the typing.
+        const rotated = await dragRotateHandle(page, 20, { withCtrl: true });
+        expect(Math.abs(rotated - 50)).toBeLessThan(1.5);
+
+        const editable = box.locator(".bloom-editable:visible").first();
+        const textBefore = (await editable.textContent()) ?? "";
+        await moveCaretToEnd(editable);
+        await typeWithKeys(page, "xyz");
+        await expect
+            .poll(async () => editable.textContent())
+            .not.toBe(textBefore);
+
+        // The text editor may take the typing back in more than one step; the box must stay
+        // rotated until all of it is gone.
+        for (let step = 0; step < 10; step++) {
+            if ((await editable.textContent()) === textBefore) break;
+            await undo(page);
+            expect(
+                await getCanvasElementRotation(box),
+                "Undo took back the rotation before the typing.",
+            ).toBeCloseTo(rotated, 1);
+        }
+        expect(await editable.textContent()).toBe(textBefore);
+        await saveScreenshotIfAsked([canvas(page)], "35-undo-typing-first");
+
+        await undo(page);
+        await expect
+            .poll(async () => getCanvasElementRotation(box), {
+                message:
+                    "Once the typing was gone, Undo did not take back the rotation.",
+            })
+            .toBeCloseTo(angle, 1);
+    });
 });
+
+// How a picture that is neither rotated nor mirrored looks inside a box rotated by `degrees`.
+function rotationOf(degrees: number): IPictureRotation {
+    const r = (degrees * Math.PI) / 180;
+    return { a: Math.cos(r), b: Math.sin(r), c: -Math.sin(r), d: Math.cos(r) };
+}
+
+// The two rotations match to two decimal places. An angle from the knob is not a round number,
+// so an exact comparison with a computed matrix would fail on rounding alone.
+function expectRotationClose(
+    actual: IPictureRotation,
+    expected: IPictureRotation,
+    message: string,
+): void {
+    for (const key of ["a", "b", "c", "d"] as const)
+        expect(actual[key], `${message} (${key})`).toBeCloseTo(
+            expected[key],
+            2,
+        );
+}

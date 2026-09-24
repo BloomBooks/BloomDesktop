@@ -142,11 +142,17 @@ export class CanvasElementDuplication {
     ): HTMLElement | undefined {
         const sourceElement = patriarchSourceBubble.content;
         const proposedOffset = 15;
+        // The location is worked out from the source's rectangle on screen, which for a rotated
+        // element is the larger rectangle around it. Measure the upright box instead, so that
+        // the copy, rotated the same way, lands where the source is.
+        const sourceRotation = getCanvasElementRotation(sourceElement);
+        setCanvasElementRotation(sourceElement, 0);
         const newPoint = this.host.findBestLocationForNewCanvasElement(
             sourceElement,
             sameLocation ? 0 : proposedOffset + sourceElement.clientWidth, // try to not overlap too much
             sameLocation ? 0 : proposedOffset,
         );
+        setCanvasElementRotation(sourceElement, sourceRotation);
         if (!newPoint) {
             return;
         }
@@ -202,10 +208,7 @@ export class CanvasElementDuplication {
         this.matchSizeOfSource(sourceElement, patriarchDuplicateElement);
         // The copied contents carry the picture's own rotation and mirror, but the angle of the
         // box is on the element itself, which is new.
-        setCanvasElementRotation(
-            patriarchDuplicateElement,
-            getCanvasElementRotation(sourceElement),
-        );
+        setCanvasElementRotation(patriarchDuplicateElement, sourceRotation);
         const container = patriarchDuplicateElement.closest(
             ".bloom-canvas",
         ) as HTMLElement | null;
