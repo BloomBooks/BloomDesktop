@@ -59,8 +59,18 @@ export const ReaderToolNav: FunctionComponent<{
         }
     `;
 
+    // The e2e suite reads which stage/level is showing from these attributes: the visible
+    // "Stage {0}" text is localized, and both reader tools render this same component, so the
+    // id says which tool's stepper it is.
+    const testIdPrefix = props.isForLeveled
+        ? "leveled-reader-level"
+        : "decodable-reader-stage";
+
     return (
         <div
+            data-testid={testIdPrefix}
+            data-phase-number={curPhaseNum()}
+            data-phase-count={numberOfPhases()}
             css={css`
                 display: flex;
                 align-items: center;
@@ -121,6 +131,7 @@ export const ReaderToolNav: FunctionComponent<{
                     }
                     variant="text"
                     disabled={curPhaseNum() <= 1}
+                    data-testid={`${testIdPrefix}-previous`}
                     l10nKey=""
                     hasText={false}
                     enabled={true}
@@ -137,6 +148,7 @@ export const ReaderToolNav: FunctionComponent<{
                     }
                     variant="text"
                     disabled={curPhaseNum() === numberOfPhases()}
+                    data-testid={`${testIdPrefix}-next`}
                     l10nKey=""
                     hasText={false}
                     enabled={true}

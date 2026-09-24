@@ -153,6 +153,10 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
             editorUrl: string;
             httpBase: string;
             sessionToken: string;
+            // Which language Bloom's UI is in ("en", "fr", "es-419"). Rides through the
+            // `...launchData` spread below into the editor's init payload, so the name must
+            // match what the editor reads.
+            uiLanguageId: string;
             book: { id: string; title: string };
             bookImages?: Array<{
                 id: string;
@@ -445,6 +449,9 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                               string,
                               string | number | boolean
                           >;
+                          // For the "modal-open" message: whether the AI Image Editor
+                          // now has a dialog of its own open.
+                          open?: boolean;
                       };
                   }
                 | undefined;
@@ -708,6 +715,19 @@ export function openAiImageEditor(target: IAiImageEditorTarget): void {
                     trackEvent(ourNameForIt, data.payload?.properties);
                     break;
                 }
+                case "modal-open":
+                    // Our close button is drawn over the iframe, so the editor cannot
+                    // cover it with a dialog of its own; two close buttons a few pixels
+                    // apart invite shutting the whole editor when the user meant to
+                    // shut the dialog. Hidden rather than dimmed, and pointer events go
+                    // with it so it cannot be clicked while it is invisible.
+                    closeBtn.style.visibility = data.payload?.open
+                        ? "hidden"
+                        : "visible";
+                    closeBtn.style.pointerEvents = data.payload?.open
+                        ? "none"
+                        : "auto";
+                    break;
                 case "log":
                     console.log(
                         "[AI Image Editor:" +

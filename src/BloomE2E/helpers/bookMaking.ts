@@ -47,6 +47,11 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    // A person makes a book from the Collections tab, and so does this. Selecting the template
+    // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
+    // template, which has no page to edit, once the new book is made (every time the book being
+    // left had a reader tool turned on), so a test making its second book would hang here.
+    await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
@@ -754,4 +759,17 @@ export async function visitXmatterPages(
         });
     }
     return shown;
+}
+
+/**
+ * Show a book in the Edit tab, the way a person does by selecting it in the collection and going
+ * back to Edit, and wait until its page is ready to edit. Leaving the book that was being edited
+ * this way is also what makes Bloom save it, so this is how a test leaves one book for another and
+ * comes back to see what the first one remembered.
+ */
+export async function editBook(page: Page, bookFolder: string): Promise<void> {
+    await switchTab(page, "collection");
+    await selectBook(page, bookFolder);
+    await switchTab(page, "edit");
+    await waitForEditablePage(page);
 }
