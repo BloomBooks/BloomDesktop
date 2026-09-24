@@ -2325,12 +2325,7 @@ namespace Bloom
                     }
                     else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
                     {
-                        dlg.StartPosition = FormStartPosition.Manual;
-                        var area = AutomationWindowPlacement.GetChosenMonitor().WorkingArea;
-                        dlg.Location = new System.Drawing.Point(
-                            area.Left + (area.Width - dlg.Width) / 2,
-                            area.Top + (area.Height - dlg.Height) / 2
-                        );
+                        dlg.CenterWithin(AutomationWindowPlacement.GetChosenMonitor().WorkingArea);
                     }
                     // With no owner window to hand it the foreground, this opens behind
                     // whatever the user launched Bloom from (Windows Explorer, say) -- notably

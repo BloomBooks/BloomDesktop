@@ -57,6 +57,21 @@ namespace Bloom.MiscUI
 
         private int _desiredLogicalWidth = 0;
         private int _desiredLogicalHeight = 0;
+        private System.Drawing.Rectangle? _centerWithin;
+
+        /// <summary>
+        /// Open the dialog centered in this screen area (a monitor's working area, say) rather
+        /// than wherever StartPosition would put it. The centering happens in OnLoad, after the
+        /// size SetScaledSize asked for is applied, so it centers the dialog's real size rather
+        /// than the size it has before loading.
+        /// </summary>
+        public void CenterWithin(System.Drawing.Rectangle area)
+        {
+            StartPosition = FormStartPosition.Manual;
+            // Inside the area from the start, so OnLoad scales by that monitor's DPI.
+            Location = area.Location;
+            _centerWithin = area;
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -69,6 +84,14 @@ namespace Bloom.MiscUI
                 int scaledWidth = (int)Math.Round(_desiredLogicalWidth * DeviceDpi / 96.0);
                 int scaledHeight = (int)Math.Round(_desiredLogicalHeight * DeviceDpi / 96.0);
                 Size = new System.Drawing.Size(scaledWidth, scaledHeight);
+            }
+            if (_centerWithin.HasValue)
+            {
+                var area = _centerWithin.Value;
+                Location = new System.Drawing.Point(
+                    area.Left + (area.Width - Width) / 2,
+                    area.Top + (area.Height - Height) / 2
+                );
             }
         }
 
