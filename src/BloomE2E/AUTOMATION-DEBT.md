@@ -847,23 +847,3 @@ How to react meanwhile: **do not re-run and move on without first looking for th
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
 (Found 2026-09-21.)
-
----
-
-## The Choose Collection dialog ignores BLOOM_AUTOMATION_MONITOR and takes the keyboard
-
-Under `--automation` the main window and the splash screen open where `BLOOM_AUTOMATION_MONITOR`
-says and never take the foreground (see `AutomationWindowPlacement`). The Choose Collection
-dialog, and every other `ReactDialog`, does neither: it opens centred on whichever monitor the
-mouse is on, and brings itself to the front. So while `ui-language-chooser.spec.ts` runs, its
-dialog appears in front of whatever the developer is doing and takes their keyboard for about a
-minute, and under `headless` it is still visible.
-
-It is not simply a matter of giving dialogs the main window's rule: `./go.sh` passes
-`--automation` to every developer Bloom too, so dialogs in a hand-testing session would then open
-without the keyboard. The open question is what should tell "a machine is driving this Bloom,
-do not disturb the person" apart from `--automation`, which also carries the multi-instance
-bypass and the launcher's `BLOOM_AUTOMATION_READY` handshake; and whether CI runs, where nobody
-is competing for the screen, should keep normal focus so focus-dependent behavior stays covered.
-Under discussion among the developers.
-(Found 2026-09-23, while preflighting #8275.)
