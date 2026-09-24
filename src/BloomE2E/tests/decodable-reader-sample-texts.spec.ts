@@ -21,17 +21,19 @@ import {
     getSavedReaderSettings,
     setSampleTexts,
     setTypedSampleWords,
+    useKnownReaderStages,
 } from "../helpers/readerSetup";
 
 test.use({
     collectionSpec: { name: "reader-sample-texts", languages: ["en"] },
 });
 
-test("builds a book with the Decodable Reader tool turned on", async ({
+test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
     await enableDecodableReaderTool(page);
+    await useKnownReaderStages(page);
 });
 
 // The old dialog listed files it could not read, with a reason. The React conversion dropped
@@ -106,7 +108,8 @@ test("the matching-words preview gains a sample-text word when its letter is tau
         .split(" ")
         .filter((letter) => letter);
     // sanity check: this collection's first stage teaches a, e and r, and not yet t -- the words
-    // above are chosen around that. If the fixture collection changes, this is what to update.
+    // above are chosen around that. useKnownReaderStages sets those stages; if it changes, this is
+    // what to update.
     expect(
         stageLetters.sort(),
         `The first stage teaches ${saved.stages[0].letters}, so the words this test uses no longer fit.`,
