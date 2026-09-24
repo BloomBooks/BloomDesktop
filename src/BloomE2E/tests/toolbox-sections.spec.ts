@@ -2,8 +2,8 @@
 // tools on and off under "More...", which section is open, and the book remembering that.
 //
 // These are characterization tests: they pin how the toolbox behaves today so that the toolbox
-// infrastructure rewrite (BL-16608) has to keep it. No manual test card covered this; the nearest,
-// "Use Multiple Tools Together", is a one-line placeholder. Turning a tool on is driven through the
+// infrastructure rewrite (BL-16608) has to keep it. No manual test card covered this, so these tests
+// have a card of their own: Notion test case 830. Turning a tool on is driven through the
 // real "More..." check box because that journey is part of what is being pinned; the other tests
 // take the fast setup route (enableToolForBook).
 
@@ -25,7 +25,7 @@ test.use({
     collectionSpec: { name: "toolbox-sections", languages: ["en"] },
 });
 
-test("turning a tool on under More... adds its section in order and opens it", async ({
+test("turning a tool on under More... adds its section in order and opens it [Test Case ID 830]", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
@@ -56,7 +56,7 @@ test("turning a tool on under More... adds its section in order and opens it", a
     );
 });
 
-test("turning a tool off under More... removes its section", async ({
+test("turning a tool off under More... removes its section [Test Case ID 830]", async ({
     page,
 }) => {
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
@@ -73,7 +73,7 @@ test("turning a tool off under More... removes its section", async ({
     ).toEqual(expect.arrayContaining(["talkingBook", "settings"]));
 });
 
-test("clicking the header of the open tool leaves it open", async ({
+test("clicking the header of the open tool leaves it open [Test Case ID 830]", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
@@ -86,11 +86,18 @@ test("clicking the header of the open tool leaves it open", async ({
     expect(await getOpenTool(page)).toBe(open);
 });
 
-test("the book remembers which tool was open", async ({ page }) => {
+test("the book remembers which tool was open [Test Case ID 830]", async ({
+    page,
+}) => {
     const bookFolder = await makeBookFromTemplate(page, "Basic Book");
     await enableToolForBook(page, bookFolder, "leveledReader");
+    await showToolbox(page);
+    // sanity check: the tool we will look for is not the one the book opens anyway
+    expect(
+        await waitForOpenTool(page),
+        "The book should not open the Leveled Reader before it has been opened once.",
+    ).not.toBe("leveledReader");
     await openReaderTool(page, "leveledReader");
-    // sanity check: the tool we will look for is not the one a new book opens anyway
     expect(await getOpenTool(page)).toBe("leveledReader");
 
     await editBook(page, bookFolder);
