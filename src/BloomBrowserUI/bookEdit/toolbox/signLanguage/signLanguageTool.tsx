@@ -1,5 +1,4 @@
 import * as React from "react";
-import { renderForInstance } from "../../../utils/reactRender";
 import { Label } from "../../../react_components/l10nComponents";
 import { getPageIframeBody } from "../../../utils/shared";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
@@ -854,13 +853,6 @@ export class SignLanguageToolControls extends React.Component<
         }
         return result;
     }
-
-    public static setup(root): SignLanguageToolControls {
-        return renderForInstance<SignLanguageToolControls>(
-            <SignLanguageToolControls />,
-            root,
-        );
-    }
 }
 
 export class SignLanguageTool extends ToolboxToolReactAdaptor {
@@ -979,11 +971,22 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         ) as HTMLElement[];
     }
 
-    public makeRootElement(): HTMLDivElement {
-        const root = document.createElement("div");
-        root.setAttribute("class", "signLanguageBody");
-        this.reactControls = SignLanguageToolControls.setup(root);
-        return root as HTMLDivElement;
+    public renderPanel(): JSX.Element {
+        return (
+            <div className="signLanguageBody">
+                <SignLanguageToolControls
+                    // React calls a changed callback ref with null before calling the new
+                    // one with the instance. We only record non-null values, so that our
+                    // (unchanged) call sites can go on assuming reactControls is set once
+                    // the panel has been rendered.
+                    ref={(renderedElement) => {
+                        if (renderedElement) {
+                            this.reactControls = renderedElement;
+                        }
+                    }}
+                />
+            </div>
+        );
     }
 
     // Specify 'true' to get only containers marked as selected

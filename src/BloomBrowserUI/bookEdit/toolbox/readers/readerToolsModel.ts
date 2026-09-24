@@ -41,7 +41,7 @@ import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
-import { isToolboxUiReady } from "../toolboxReactAdapter";
+import { isToolboxUiMounted } from "../toolboxState";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -1576,7 +1576,7 @@ export class ReaderToolsModel {
      * the book's real settings with defaults.
      */
     public saveState(): void {
-        if (!isToolboxUiReady()) return;
+        if (!isToolboxUiMounted()) return;
 
         postString(
             "editView/saveToolboxSetting",
@@ -1597,7 +1597,7 @@ export class ReaderToolsModel {
      * until the toolbox UI exists (in particular, in unit tests).
      */
     public restoreState(): void {
-        if (!isToolboxUiReady()) return;
+        if (!isToolboxUiMounted()) return;
 
         const state = new DRTState();
 
