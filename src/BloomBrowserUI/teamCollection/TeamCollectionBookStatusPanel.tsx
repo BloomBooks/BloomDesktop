@@ -25,6 +25,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import LinearProgress from "@mui/material/LinearProgress";
 import {
     IBookTeamCollectionStatus,
+    isCheckedOutToMeHere,
     isCloudTeamCollection,
     useTeamCollectionCapabilities,
 } from "./teamCollectionApi";
@@ -87,10 +88,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
     const [message, setMessage] = useState(props.checkInMessage);
     const messageInput = useRef<HTMLInputElement>(null);
 
-    const lockedByMe =
-        props.who !== "" &&
-        props.who === props.currentUser &&
-        props.where === props.currentMachine;
+    const lockedByMe = isCheckedOutToMeHere(props);
+    // Cloud: checked out to me, but in another copy of the collection (possibly on this same
+    // computer), rather than on another computer.
+    const lockedByMeInAnotherCopy = props.checkedOutInThisCopy === false;
     // Null-coalesce the name parts: cloud backends have no first/surname split (the server
     // knows only the account email), and template-interpolating null renders a literal
     // "null null" (seen in the first two-instance smoke test). Empty name falls back to
@@ -292,6 +293,22 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         "TeamCollection.CheckedOutToYouElsewhereDescription",
         "The %0 is the name of the computer where the book is checked out.",
         props.where,
+        undefined,
+        true,
+    );
+    const mainTitleLockedInAnotherCopy = useL10n(
+        "This book is checked out to you in another copy of this collection",
+        "TeamCollection.CheckedOutToYouInAnotherCopy",
+        undefined,
+        undefined,
+        undefined,
+        true,
+    );
+    const subTitleLockedInAnotherCopy = useL10n(
+        "You cannot edit the book here until you check it in from the copy of the collection where you checked it out.",
+        "TeamCollection.CheckedOutToYouInAnotherCopyDescription",
+        undefined,
+        undefined,
         undefined,
         true,
     );
@@ -669,8 +686,16 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             case "lockedByMeElsewhere":
                 return (
                     <StatusPanelCommon
-                        title={mainTitleLockedElsewhere}
-                        subTitle={subTitleLockedElsewhere}
+                        title={
+                            lockedByMeInAnotherCopy
+                                ? mainTitleLockedInAnotherCopy
+                                : mainTitleLockedElsewhere
+                        }
+                        subTitle={
+                            lockedByMeInAnotherCopy
+                                ? subTitleLockedInAnotherCopy
+                                : subTitleLockedElsewhere
+                        }
                         icon={avatar}
                         menu={menu}
                     >

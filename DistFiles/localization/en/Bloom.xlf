@@ -5939,6 +5939,16 @@ is mostly status, which shows on the Collection Tab -->
         <note>ID: TeamCollection.CheckedOutToYouElsewhereDescription</note>
         <note>The %0 is the name of the computer where the book is checked out.</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouInAnotherCopy" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This book is checked out to you in another copy of this collection</source>
+        <note>ID: TeamCollection.CheckedOutToYouInAnotherCopy</note>
+        <note>Heading of the Team Collection book status panel when the current user has the book checked out, but in a different copy of the collection folder (which may be on this same computer or another one), so it cannot be edited here.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.CheckedOutToYouInAnotherCopyDescription" sil:dynamic="true" translate="no">
+        <source xml:lang="en">You cannot edit the book here until you check it in from the copy of the collection where you checked it out.</source>
+        <note>ID: TeamCollection.CheckedOutToYouInAnotherCopyDescription</note>
+        <note>Explanation under the heading "This book is checked out to you in another copy of this collection" in the Team Collection book status panel.</note>
+      </trans-unit>
       <trans-unit id="TeamCollection.CheckIn" sil:dynamic="true">
         <source xml:lang="en">Check in book</source>
         <note>ID: TeamCollection.CheckIn</note>

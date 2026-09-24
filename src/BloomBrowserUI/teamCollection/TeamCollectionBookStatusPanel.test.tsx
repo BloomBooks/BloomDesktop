@@ -257,4 +257,45 @@ describe("TeamCollectionBookStatusPanel: cloud Team Collection additions (Wave 2
             document.querySelector('[data-testid="cloud-checkin-progress"]'),
         ).toBeNull();
     });
+
+    it("checked out to me in ANOTHER copy (checkedOutInThisCopy false), even on this same machine: the 'another copy' state, no check-in", () => {
+        mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
+        const container = renderPanel({
+            ...initialBookStatus,
+            requiresSignIn: true,
+            signedIn: true,
+            who: "me@example.com",
+            currentUser: "me@example.com",
+            currentMachine: "MyMachine",
+            // Sanity: the old machine rule alone would have called this "checked out here".
+            where: "MyMachine",
+            checkedOutInThisCopy: false,
+        });
+        expect(container.textContent).toContain(
+            "TeamCollection.CheckedOutToYouInAnotherCopy",
+        );
+        expect(container.textContent).not.toContain(
+            "TeamCollection.CheckedOutToYouElsewhere",
+        );
+        expect(container.querySelector(".checkin-button")).toBeNull();
+    });
+
+    it("checked out to me in THIS copy (checkedOutInThisCopy true), recorded on another machine: lockedByMe with check-in", () => {
+        // E.g. the collection folder was copied to this computer: the checkout travels with it.
+        mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
+        const container = renderPanel({
+            ...initialBookStatus,
+            requiresSignIn: true,
+            signedIn: true,
+            who: "me@example.com",
+            currentUser: "me@example.com",
+            currentMachine: "MyMachine",
+            where: "MyOldMachine",
+            checkedOutInThisCopy: true,
+        });
+        expect(container.querySelector(".checkin-button")).not.toBeNull();
+        expect(container.textContent).not.toContain(
+            "TeamCollection.CheckedOutToYouInAnotherCopy",
+        );
+    });
 });

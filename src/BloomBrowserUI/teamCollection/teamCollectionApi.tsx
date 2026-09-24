@@ -39,6 +39,26 @@ export interface IBookTeamCollectionStatus {
     signedIn?: boolean; // whether the current user is signed in to the cloud account
     requiresSignIn?: boolean; // true for cloud-backed collections, which need an authenticated user to check out/in
     offlineDisabledReason?: string; // non-empty => this book can't be used at all while offline (e.g. it has never been downloaded to this computer)
+    // Cloud: whether the book is checked out in THIS copy of the collection (its folder holds the
+    // current checkout GUID), whatever the machine. When defined it replaces the
+    // where === currentMachine test in "is it checked out here?".
+    checkedOutInThisCopy?: boolean;
+}
+
+/**
+ * Whether the book is checked out to the current user HERE: in this copy of the collection for
+ * a cloud Team Collection (checkedOutInThisCopy), on this computer for a folder one.
+ */
+export function isCheckedOutToMeHere(
+    status: IBookTeamCollectionStatus,
+): boolean {
+    if (!status.who || status.who !== status.currentUser) {
+        return false;
+    }
+    if (status.checkedOutInThisCopy !== undefined) {
+        return status.checkedOutInThisCopy;
+    }
+    return status.where === status.currentMachine;
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {

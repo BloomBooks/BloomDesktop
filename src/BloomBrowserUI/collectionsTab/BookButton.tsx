@@ -10,6 +10,8 @@ import {
 import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
 import {
+    IBookTeamCollectionStatus,
+    isCheckedOutToMeHere,
     isCloudTeamCollection,
     useTColBookStatus,
     useTeamCollectionCapabilities,
@@ -39,6 +41,21 @@ import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
+
+// The checked-out avatar's border: gold when checked out to me here (in this copy of a cloud
+// collection, or on this computer for a folder one), purple when checked out to me somewhere
+// else, blue when checked out to someone else.
+function getCheckoutAvatarBorderColor(
+    status: IBookTeamCollectionStatus,
+): string {
+    if (isCheckedOutToMeHere(status)) {
+        return kBloomGold;
+    }
+    if (status.who === status.currentUser) {
+        return kBloomPurple;
+    }
+    return kBloomBlue;
+}
 
 export const BookButton: React.FunctionComponent<{
     book: IBookInfo;
@@ -600,15 +617,9 @@ export const BookButton: React.FunctionComponent<{
                         teamCollectionStatus.who
                     }
                     avatarSizeInt={32}
-                    borderColor={
-                        teamCollectionStatus.who ===
-                        teamCollectionStatus.currentUser
-                            ? teamCollectionStatus.where ===
-                              teamCollectionStatus.currentMachine
-                                ? kBloomGold
-                                : kBloomPurple
-                            : kBloomBlue
-                    }
+                    borderColor={getCheckoutAvatarBorderColor(
+                        teamCollectionStatus,
+                    )}
                 />
             )}
             <Button
