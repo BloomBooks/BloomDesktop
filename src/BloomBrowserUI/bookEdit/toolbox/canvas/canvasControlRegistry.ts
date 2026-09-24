@@ -53,7 +53,6 @@ import {
     isPlaceHolderImage,
     kImageContainerClass,
     pageBackgroundNeedsTransparency,
-    setImageTransparencyToAuto,
     setImgTransparentParam,
 } from "../../js/bloomImages";
 import { doVideoCommand } from "../../js/bloomVideo";
@@ -928,7 +927,11 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                             onSelect: () => {
                                 if (!img) return;
                                 reportTransparencyChoice("auto");
-                                setImageTransparencyToAuto(img);
+                                img.classList.remove(
+                                    "bloom-transparent",
+                                    "bloom-opaque",
+                                );
+                                applyTransparencyParam();
                             },
                         },
                         {

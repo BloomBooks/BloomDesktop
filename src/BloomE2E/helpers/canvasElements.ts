@@ -568,20 +568,6 @@ export async function flipSelectedImage(
 }
 
 /**
- * Set the selected picture's transparency with the Transparency submenu of its "..." menu.
- */
-export async function setSelectedImageTransparency(
-    page: Page,
-    choice: "Auto" | "Transparent" | "Opaque",
-): Promise<void> {
-    await clickCanvasElementSubmenuItem(
-        page,
-        "EditTab.Image.Transparency",
-        `EditTab.Image.Transparency.${choice}`,
-    );
-}
-
-/**
  * Put the selected picture back the way it arrived with the Reset Image command on its "..." menu.
  */
 export async function resetSelectedImage(page: Page): Promise<void> {

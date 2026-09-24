@@ -31,7 +31,6 @@ import {
     getImageFromCanvasElement,
     kImageContainerClass,
     normalizeCoverImageDesignation,
-    setImageTransparencyToAuto,
     SetupMetadataButton,
     UpdateImageTooltipVisibility,
     HandleImageError,
@@ -1452,8 +1451,7 @@ export class CanvasElementManager {
     // goes, and so do the 90-degree rotations and the mirrors that Rotate right and Flip apply to
     // the picture. The rotation of a canvas element box is left alone, because it belongs to
     // the box, like its size and its position; the rotate handle and Undo are the way back
-    // from that. The transparency goes back to "Auto", which is the state of a picture that
-    // the user has not made a choice about.
+    // from that.
     //
     // This command deliberately puts nothing on the undo stack, as the older reset-crop
     // command did not either: a reset is itself a way back, so an undo of it would be a way
@@ -1464,7 +1462,6 @@ export class CanvasElementManager {
         const img = getImageFromCanvasElement(this.activeElement);
         if (!img) return;
         clearImageContentTransform(img);
-        setImageTransparencyToAuto(img);
         this.resetCropping();
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }

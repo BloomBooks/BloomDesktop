@@ -191,10 +191,6 @@ export const buildCanvasElementControlRegistryContext = (
             rectangle?.classList.contains("bloom-theme-background") ?? false,
         isCropped: !!img?.style?.width,
         isImageContentTransformed: img ? imageContentIsTransformed(img) : false,
-        hasChosenTransparency:
-            !!img &&
-            (img.classList.contains("bloom-transparent") ||
-                img.classList.contains("bloom-opaque")),
         isNavigationButton: elementType.startsWith("navigation-"),
         isButton,
         isBackgroundImage,

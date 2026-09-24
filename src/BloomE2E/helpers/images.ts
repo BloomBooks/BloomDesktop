@@ -289,24 +289,6 @@ export async function getPictureInlineLayout(
 }
 
 /**
- * Which transparency the picture's Transparency submenu has ticked: "Auto" unless the person chose
- * Transparent or Opaque, which Bloom records as a class on the picture.
- */
-export async function getImageTransparencyChoice(
-    page: Page,
-    within?: Locator,
-): Promise<"Auto" | "Transparent" | "Opaque"> {
-    const img = imageIn(page, within);
-    await img.waitFor({ state: "attached", timeout: 30000 });
-    return img.evaluate((element) => {
-        if (element.classList.contains("bloom-transparent"))
-            return "Transparent";
-        if (element.classList.contains("bloom-opaque")) return "Opaque";
-        return "Auto";
-    });
-}
-
-/**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.
  */

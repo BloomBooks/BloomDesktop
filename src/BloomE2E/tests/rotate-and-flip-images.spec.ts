@@ -44,14 +44,12 @@ import {
     resetSelectedImage,
     rotateSelectedImageRight,
     selectCanvasElement,
-    setSelectedImageTransparency,
 } from "../helpers/canvasElements";
 import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import {
     chooseImageFile,
     cropImage,
     getImagePlacement,
-    getImageTransparencyChoice,
     getPictureInlineLayout,
     getPictureRotation,
     kUprightPicture,
@@ -373,7 +371,7 @@ test.describe("rotating and flipping pictures", () => {
         await saveScreenshotIfAsked([canvas(page)], "12-undo-rotate");
     });
 
-    test("Reset Image clears a crop, a mirror and a transparency choice, but leaves a box rotated with the knob [Test Case ID 827]", async ({
+    test("Reset Image clears a crop and a mirror, but leaves a box rotated with the knob [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, itemsPage.id);
@@ -387,14 +385,10 @@ test.describe("rotating and flipping pictures", () => {
         await cropImage(page, "e", 40, picture);
         expect(await dragRotateHandle(page, 88)).toBe(90);
         await flipSelectedImage(page, "horizontal");
-        await setSelectedImageTransparency(page, "Transparent");
         // Sanity check what Reset Image is about to clear.
         await expect
             .poll(async () => (await getImagePlacement(page, picture)).cropped)
             .toBe(true);
-        await expect
-            .poll(async () => getImageTransparencyChoice(page, picture))
-            .toBe("Transparent");
         await expect
             .poll(async () => getPictureRotation(page, picture))
             .toEqual(mirroredOnScreen(ROTATED_90, "horizontal"));
@@ -406,9 +400,6 @@ test.describe("rotating and flipping pictures", () => {
         await expect
             .poll(async () => (await getImagePlacement(page, picture)).cropped)
             .toBe(false);
-        await expect
-            .poll(async () => getImageTransparencyChoice(page, picture))
-            .toBe("Auto");
         // The mirror is gone, and the box is still rotated the 90 degrees the knob gave it.
         await expect
             .poll(async () => getCanvasElementRotation(picture))

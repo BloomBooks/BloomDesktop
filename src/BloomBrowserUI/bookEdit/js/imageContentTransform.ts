@@ -196,9 +196,6 @@ export function computeRotatedBackgroundLayout(
     };
 }
 
-// The class the Expand Image command puts on a background picture that must fill the page.
-const kFillsPageClass = "bloom-imageObjectFit-cover";
-
 // Read a length we wrote ourselves. Anything we did not write counts as zero.
 function pxOrZero(value: string): number {
     const parsed = parseFloat(value);
@@ -299,7 +296,7 @@ function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
         picture.height,
         picture.left,
         picture.top,
-        img.classList.contains(kFillsPageClass),
+        img.classList.contains("bloom-imageObjectFit-cover"),
     );
 
     element.style.width = `${roundPx(layout.elementWidth)}px`;
