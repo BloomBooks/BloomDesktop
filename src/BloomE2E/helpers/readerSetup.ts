@@ -77,6 +77,8 @@ export interface IReaderStage {
 export interface IReaderSettings {
     letters: string;
     moreWords: string;
+    /** 1 when stages are defined by allowed-word lists rather than by letters. */
+    useAllowedWords?: number;
     stages: IReaderStage[];
 }
 
@@ -628,6 +630,29 @@ export async function changeSavedReaderSettings(
         JSON.stringify(settings),
         "application/json",
     );
+}
+
+/**
+ * Give the collection a known alphabet and four decodable stages. This is SETUP, not a path under
+ * test, and it must run after the book exists, because the settings endpoint needs a current book.
+ *
+ * A test may not rely on the stages a new collection happens to arrive with: Bloom copies them from
+ * the machine's app-data folder when it has some for the collection's language (see "Choosing or
+ * creating test inputs" in the add-e2e-test skill), so they differ between machines.
+ */
+export async function useKnownReaderStages(page: Page): Promise<void> {
+    await changeSavedReaderSettings(page, (settings) => {
+        settings.letters =
+            "a b c ch d e f g h i j k l m n ng o p q r s sh t th u v w x y z";
+        settings.moreWords = "";
+        settings.useAllowedWords = 0; // letters, not allowed-word lists
+        settings.stages = [
+            { name: "1", letters: "a e r", sightWords: "the of and to" },
+            { name: "2", letters: "i o", sightWords: "is you that he" },
+            { name: "3", letters: "n t", sightWords: "was for as with" },
+            { name: "4", letters: "l s", sightWords: "his they I" },
+        ];
+    });
 }
 
 /**

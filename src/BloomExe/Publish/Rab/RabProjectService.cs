@@ -2979,18 +2979,27 @@ namespace Bloom.Publish.Rab
             return $"Downloading Reading App Builder installer: {transferredText} received";
         }
 
+        /// <summary>
+        /// Renders a byte count for the download progress log line, e.g. "1.5 MB".
+        /// </summary>
+        /// <remarks>
+        /// Invariant on purpose. This goes into Logger.WriteEvent, in an entirely unlocalized
+        /// English sentence, and a log we are sent from the field should read the same whatever the
+        /// reporter's machine was set to — "1,5 MB" in the middle of an English line is just
+        /// confusing. Without this, the number's shape follows the user's culture.
+        /// </remarks>
         internal static string FormatRabInstallerDownloadBytes(long byteCount)
         {
             const double kilobyte = 1024d;
             const double megabyte = kilobyte * 1024d;
 
             if (byteCount >= megabyte)
-                return $"{byteCount / megabyte:0.0} MB";
+                return FormattableString.Invariant($"{byteCount / megabyte:0.0} MB");
 
             if (byteCount >= kilobyte)
-                return $"{byteCount / kilobyte:0.0} KB";
+                return FormattableString.Invariant($"{byteCount / kilobyte:0.0} KB");
 
-            return $"{byteCount} B";
+            return FormattableString.Invariant($"{byteCount} B");
         }
 
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()

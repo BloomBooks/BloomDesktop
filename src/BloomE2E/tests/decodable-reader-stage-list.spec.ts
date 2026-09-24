@@ -17,15 +17,17 @@ import {
     openDecodableStagesSetup,
     removeSelectedStage,
     selectStage,
+    useKnownReaderStages,
 } from "../helpers/readerSetup";
 
 test.use({ collectionSpec: { name: "reader-stage-list", languages: ["en"] } });
 
-test("builds a book with the Decodable Reader tool turned on", async ({
+test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
     await enableDecodableReaderTool(page);
+    await useKnownReaderStages(page);
 });
 
 test("removing the selected stage takes that stage out of the list", async ({

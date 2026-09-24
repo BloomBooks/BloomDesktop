@@ -1145,31 +1145,51 @@ namespace Bloom.Edit
         {
             RunOffTheApiLock(() =>
             {
-                BookProcessor.EnsurePerPageFixupIfNeeded(book, _webSocketServer);
-                // The user may have switched books or left the tab while the dialog was up.
-                if (!Visible || CurrentBook != book)
-                    return;
-                // ProcessBook rebuilt the pages, so the IPage objects and editable areas
-                // need redoing before we show one again.
-                book.PrepareForEditing();
-                // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
-                // layout change may have run it too, which regenerates the xmatter pages with fresh
-                // ids. We returned null from the save callback, so the editor is empty and nothing
-                // else will put a page back in it -- landing on the first page is much better than
-                // leaving the user looking at a blank editor, which reads as Bloom having lost the
-                // book. (StartNavigationToEditPage falls back the same way.)
-                var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
-                var pageToShow = page ?? book.FirstPage;
-                if (pageToShow == null)
-                    return; // a book with no pages at all; nothing we can do
-                // Only hand on when we got the page that was actually asked for. The caller's action
-                // is about that page -- the AI image editor opens on a slot in it -- so running it on
-                // a fallback page would act on the wrong thing.
-                if (page != null && afterPageReloaded != null)
-                    RunAfterNextPageLoad(_ => afterPageReloaded());
-                _view.GoToPage(pageToShow);
-                _view.UpdatePageList(true);
+                BookProcessor.EnsurePerPageFixupIfNeededThen(
+                    book,
+                    _webSocketServer,
+                    // The dialog reports itself closed on one of the API server's threads, so come
+                    // back to the UI thread -- and off the API lock -- before touching the view.
+                    // (When there was nothing to do this runs straight away, still on this thread;
+                    // the extra hop is harmless.)
+                    () =>
+                        RunOffTheApiLock(() =>
+                            ReturnToPageAfterFixup(book, pageId, afterPageReloaded)
+                        )
+                );
             });
+        }
+
+        /// <summary>
+        /// Put the editor back together once the per-page fix-up has finished (or was not needed):
+        /// show <paramref name="pageId"/> again, or the first page if it is gone, and then run
+        /// <paramref name="afterPageReloaded"/>. Must run on the UI thread.
+        /// </summary>
+        private void ReturnToPageAfterFixup(Book.Book book, string pageId, Action afterPageReloaded)
+        {
+            // The user may have switched books or left the tab while the dialog was up.
+            if (!Visible || CurrentBook != book)
+                return;
+            // ProcessBook rebuilt the pages, so the IPage objects and editable areas
+            // need redoing before we show one again.
+            book.PrepareForEditing();
+            // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
+            // layout change may have run it too, which regenerates the xmatter pages with fresh
+            // ids. We returned null from the save callback, so the editor is empty and nothing
+            // else will put a page back in it -- landing on the first page is much better than
+            // leaving the user looking at a blank editor, which reads as Bloom having lost the
+            // book. (StartNavigationToEditPage falls back the same way.)
+            var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
+            var pageToShow = page ?? book.FirstPage;
+            if (pageToShow == null)
+                return; // a book with no pages at all; nothing we can do
+            // Only hand on when we got the page that was actually asked for. The caller's action
+            // is about that page -- the AI image editor opens on a slot in it -- so running it on
+            // a fallback page would act on the wrong thing.
+            if (page != null && afterPageReloaded != null)
+                RunAfterNextPageLoad(_ => afterPageReloaded());
+            _view.GoToPage(pageToShow);
+            _view.UpdatePageList(true);
         }
 
         /// <summary>

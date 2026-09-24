@@ -20,9 +20,18 @@ import {
     openReaderTool,
     setReaderPhase,
 } from "../helpers/readerTools";
+import { useKnownReaderStages } from "../helpers/readerSetup";
 
 test.use({
     collectionSpec: { name: "reader-stage-and-level", languages: ["en"] },
+});
+
+// The decodable tests move to stage 4, so the collection needs at least four stages, and a new
+// collection's stages depend on the machine it runs on (see useKnownReaderStages). Setting them
+// needs a current book, hence the book. The next book a test makes picks them up when its tool opens.
+test.beforeEach(async ({ page }) => {
+    await makeBookFromTemplate(page, "Basic Book");
+    await useKnownReaderStages(page);
 });
 
 test("each book remembers its own decodable stage [Test Case ID 442]", async ({

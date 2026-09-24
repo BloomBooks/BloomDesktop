@@ -15,6 +15,7 @@ import {
     getSavedReaderSettings,
     getStageCount,
     openDecodableStagesSetup,
+    useKnownReaderStages,
 } from "../helpers/readerSetup";
 
 // One test per file, deliberately. Saving the reader settings leaves a second workspace-root
@@ -24,11 +25,12 @@ import {
 
 test.use({ collectionSpec: { name: "reader-empty-stage", languages: ["en"] } });
 
-test("builds a book with the Decodable Reader tool turned on", async ({
+test("builds a book with the Decodable Reader tool turned on, and known stages", async ({
     page,
 }) => {
     await makeBookFromTemplate(page, "Basic Book");
     await enableDecodableReaderTool(page);
+    await useKnownReaderStages(page);
 });
 
 // The dialog always offers a stage to type into, so it is easy to leave an empty one behind. The

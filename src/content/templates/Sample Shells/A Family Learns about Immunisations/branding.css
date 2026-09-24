@@ -1,0 +1,95 @@
+/*{
+    label: "default branding";
+    compatibleWithAppearanceVersion: 6.0;
+}*/
+/*****
+Note the following division of labor:
+Rules that place branding on an xmatter page belong in bloom-xmatter-commons.less or the stylesheet of a particular xmatter.
+Rules that format the branding go in branding-base.less, or in the branding.less of a particular branding.
+****/
+[data-book*="branding"] {
+    display: flex;
+    flex-direction: column;
+}
+[data-book*="branding"] img {
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
+    max-width: 100%;
+    align-self: center;
+    object-fit: contain;
+}
+[data-book="outside-back-cover-branding-bottom-html"] {
+    width: 100%;
+}
+/*  these rules allow different branding insertions depending on orientation */
+.portraitOnly,
+.landscapeOnly {
+    display: none;
+}
+.Size6x9Portrait .portraitOnly,
+.USComicPortrait .portraitOnly,
+.Device16x9Portrait .portraitOnly,
+.QuarterLetterPortrait .portraitOnly,
+.HalfLetterPortrait .portraitOnly,
+.LetterPortrait .portraitOnly,
+.LegalPortrait .portraitOnly,
+.A3Portrait .portraitOnly,
+.A4Portrait .portraitOnly,
+.A5Portrait .portraitOnly,
+.B5Portrait .portraitOnly,
+.A6Portrait .portraitOnly {
+    display: unset;
+}
+.Size6x9Landscape .landscapeOnly,
+.Cm13Landscape .landscapeOnly,
+.Device16x9Landscape .landscapeOnly,
+.LetterLandscape .landscapeOnly,
+.LegalLandscape .landscapeOnly,
+.A3Landscape .landscapeOnly,
+.A4Landscape .landscapeOnly,
+.A5Landscape .landscapeOnly,
+.A6Landscape .landscapeOnly {
+    display: unset;
+}
+.bloom-branding-wrapper {
+    border: 5px solid #d65649;
+    background-color: white;
+    border-radius: 8px;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.bloom-branding-wrapper img.branding {
+    width: 4.7cm;
+    padding: 10px;
+    box-sizing: border-box;
+    vertical-align: top;
+}
+.bloom-branding-wrapper .bloom-qrcode {
+    width: 2.8cm;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.bloom-branding-wrapper .bloom-lang-on-blorg {
+    font-size: 9pt;
+    line-height: 1.2;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 12px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    max-width: 7cm;
+}
+.bloom-branding-wrapper .bloom-lang-on-blorg .bloom-blorg-url {
+    color: #d65649;
+    font-weight: bold;
+}
+.bloom-page.bloom-customLayout[data-custom-layout-id]
+    .marginBox
+    .bloom-translationGroup:not(.bloom-imageDescription) {
+    display: flex !important;
+}
+/*# sourceMappingURL=branding.css.map */
+/*# sourceMappingURL=branding.css.map */

@@ -2024,9 +2024,20 @@ namespace Bloom.Book
             // language.
             // (The commit label when these were added says "so that a single branding can vary things by lang."
             // We don't appear to actually do that but it still seems like it might be useful.)
-            bookDom.Body.SetAttribute("data-L1", this._bookData.Language1Tag);
-            bookDom.Body.SetAttribute("data-L2", this._bookData.Language2Tag);
-            bookDom.Body.SetAttribute("data-L3", this._bookData.Language3Tag);
+            SetLanguageAttributeOnBody(bookDom, 1, this._bookData.Language1Tag);
+            SetLanguageAttributeOnBody(bookDom, 2, this._bookData.Language2Tag);
+            SetLanguageAttributeOnBody(bookDom, 3, this._bookData.Language3Tag);
+        }
+
+        /// <summary>
+        /// Set data-l1 (etc.) on the body. The name must be lower case: HTML does not allow upper case
+        /// in data- attribute names, and browsers lower-case them anyway. Bloom used to write data-L1;
+        /// our DOM treats that as a different attribute, so remove it or the book would carry both.
+        /// </summary>
+        private static void SetLanguageAttributeOnBody(HtmlDom bookDom, int number, string tag)
+        {
+            bookDom.Body.RemoveAttribute("data-L" + number);
+            bookDom.Body.SetAttribute("data-l" + number, tag);
         }
 
         private void AddReaderBodyAttributes(HtmlDom bookDom)
