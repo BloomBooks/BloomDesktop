@@ -2992,7 +2992,6 @@ namespace Bloom.Book
             var displayUrl = "BloomLibrary.org/language:" + langCode;
 
             string qrFileName = null;
-            var qrCodeFileFailed = false;
             const string kQrFileName = "lang-qr-code.png";
             var qrFilePath = Path.Combine(bookFolderPath, kQrFileName);
 
@@ -3017,25 +3016,12 @@ namespace Bloom.Book
 
                 anchor.SetAttribute("href", url + "?utm_source=badgeclick");
 
-                if (qrFileName == null && !qrCodeFileFailed)
+                if (qrFileName == null)
                 {
                     if (updateQrCodeFileEvenIfItExists || !RobustFile.Exists(qrFilePath))
                         qrFileName = GenerateQrCodeImage(bookFolderPath, url + "?utm_source=qr");
                     else
                         qrFileName = kQrFileName;
-                    if (qrFileName == null && RobustFile.Exists(qrFilePath))
-                    {
-                        // Keep the existing file. The QR code only changes when the collection's
-                        // primary language does, so it is almost always still correct.
-                        qrFileName = kQrFileName;
-                    }
-                    qrCodeFileFailed = qrFileName == null;
-                }
-                if (qrCodeFileFailed)
-                {
-                    // There is no QR code file at all; show no QR code rather than a broken image.
-                    AdjustHtmlForNoQrCode(qrWrapper, anchor, imgBranding, imgQr, label);
-                    continue;
                 }
 
                 AdjustHtmlForHavingQrCode(
@@ -3180,10 +3166,6 @@ namespace Bloom.Book
                 captionDiv.AppendChild(doc.CreateTextNode(after));
         }
 
-        /// <summary>
-        /// Write the QR code image for url into the book folder and return its file name, or null
-        /// if the file could not be written (that is reported as a NonFatalProblem).
-        /// </summary>
         private static string GenerateQrCodeImage(string bookFolderPath, string url)
         {
             string qrFileName;
@@ -3214,13 +3196,10 @@ namespace Bloom.Book
                             qrFileName = "lang-qr-code.png";
                             // Reports a failure to write the file as a NonFatalProblem rather than
                             // throwing, so the book can still be selected (BL-16915).
-                            if (
-                                !ImageUtils.SaveOrDeletePngImageToPath(
-                                    qrBitmap,
-                                    Path.Combine(bookFolderPath, qrFileName)
-                                )
-                            )
-                                return null;
+                            ImageUtils.SaveOrDeletePngImageToPath(
+                                qrBitmap,
+                                Path.Combine(bookFolderPath, qrFileName)
+                            );
                         }
                     }
                 }

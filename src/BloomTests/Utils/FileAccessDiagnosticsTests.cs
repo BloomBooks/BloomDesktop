@@ -183,11 +183,11 @@ namespace BloomTests.Utils
         /// <summary>
         /// A directory where the QR code png should be makes the write fail with access denied, as on
         /// the BL-16915 reporter's machine, and leaves no QR code file. That must be reported, not
-        /// thrown, so the book can be selected, and the badge must drop its QR code rather than show
-        /// a broken image.
+        /// thrown, so the book can be selected. The badge still references the QR code file; a broken
+        /// image makes the problem visible.
         /// </summary>
         [Test]
-        public void UpdateQrCode_CannotWriteAndNoQrCodeFile_ReportsNonFatalProblemAndShowsNoQrCode()
+        public void UpdateQrCode_CannotWriteAndNoQrCodeFile_ReportsNonFatalProblemAndKeepsQrCodeImage()
         {
             using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_Qr"))
             {
@@ -221,8 +221,8 @@ namespace BloomTests.Utils
 
                 Assert.That(
                     dom.SafeSelectNodes("//img[contains(@class,'bloom-qrcode')]").Length,
-                    Is.EqualTo(0),
-                    "without any QR code file the badge should show no QR code"
+                    Is.EqualTo(1),
+                    "the badge should still reference the QR code file"
                 );
             }
         }
