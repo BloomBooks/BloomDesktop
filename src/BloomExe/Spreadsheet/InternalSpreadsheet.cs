@@ -39,6 +39,13 @@ namespace Bloom.Spreadsheet
         public const string WidgetSourceColumnLabel = "[activities source]";
         public const string PageTypeColumnLabel = "[page type]";
         public const string AttributeColumnLabel = "[attribute]";
+
+        // A hidden column holding a JSON object with whatever non-textual state a row's
+        // object needs to be reconstructed on import. Used by [table] and [table cell]
+        // rows. Its presence anywhere in a spreadsheet marks that spreadsheet as the
+        // authority on the objects whose rows use it.
+        public const string DetailsColumnLabel = "[details]";
+        public const string DetailsColumnFriendlyName = "Details";
         public const string ImageSourceColumnFriendlyName = "Image File Path";
 
         public const string BlankContentIndicator = "[blank]";
@@ -47,6 +54,17 @@ namespace Bloom.Spreadsheet
         public const string CoverImageRowLabel = "[cover image]";
         public const string PageContentRowLabel = "[page content]";
         public const string ImageDescriptionRowLabel = "[image description]";
+
+        // A row for one bloom-table. It holds no text of its own: the whole table element,
+        // with every attribute of the table and of each of its cells, rides in [details]
+        // as JSON. It is followed immediately by one [table cell] row per visible cell.
+        public const string TableRowLabel = "[table]";
+
+        // A row for one visible (non bloom-skip) cell of the table whose [table] row it
+        // follows. Which cell it is rides in [details] as JSON; the cell's content rides
+        // in the ordinary columns -- the language columns for a text cell, [image source]
+        // for a picture cell, [video source] for a video cell.
+        public const string TableCellRowLabel = "[table cell]";
 
         internal static string MapRowLabelToDataBookLabel(string rowTypeLabel)
         {
@@ -350,7 +368,10 @@ namespace Bloom.Spreadsheet
             {
                 GetColumnForTag(PageNumberColumnLabel),
                 GetColumnForTag(ImageSourceColumnLabel),
-            };
+                GetColumnForTag(DetailsColumnLabel),
+            }
+                .Where(i => i >= 0) // optional columns may be absent
+                .ToList();
 
         public void SortHiddenContentRowsToTheBottom()
         {
