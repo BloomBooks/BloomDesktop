@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32;
 using SIL.IO;
@@ -28,8 +29,6 @@ namespace Bloom.Utils
         private const string kCfaPolicyKeyPath =
             @"SOFTWARE\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\Controlled Folder Access";
         private const string kCfaValueName = "EnableControlledFolderAccess";
-        private const string kSyncRootManagerKeyPath =
-            @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager";
 
         /// <summary>
         /// List every attribute that is set, including the cloud-file ones .NET prints only as numbers.
@@ -115,45 +114,12 @@ namespace Bloom.Utils
         }
 
         /// <summary>
-        /// The sync roots registered with Windows (by OneDrive, Google Drive, Dropbox, iCloud...),
-        /// plus the OneDrive folders named by environment variables. Never throws.
+        /// The OneDrive folders named by environment variables, for sync clients that do not register
+        /// with the Cloud Files API. Never throws.
         /// </summary>
-        public static List<KeyValuePair<string, string>> GetSyncRoots()
+        public static List<KeyValuePair<string, string>> GetSyncRootsFromEnvironment()
         {
             var result = new List<KeyValuePair<string, string>>();
-            if (!Platform.IsWindows)
-                return result;
-            try
-            {
-                using (var manager = Registry.LocalMachine.OpenSubKey(kSyncRootManagerKeyPath))
-                {
-                    if (manager != null)
-                    {
-                        foreach (var providerKeyName in manager.GetSubKeyNames())
-                        {
-                            // Key names look like "OneDrive!S-1-5-21-...!Personal".
-                            var provider = providerKeyName.Split('!')[0];
-                            using (
-                                var userRoots = manager.OpenSubKey(
-                                    providerKeyName + @"\UserSyncRoots"
-                                )
-                            )
-                            {
-                                if (userRoots == null)
-                                    continue;
-                                foreach (var valueName in userRoots.GetValueNames())
-                                {
-                                    if (userRoots.GetValue(valueName) is string rootPath)
-                                        result.Add(
-                                            new KeyValuePair<string, string>(provider, rootPath)
-                                        );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception) { }
             foreach (var variable in new[] { "OneDrive", "OneDriveCommercial", "OneDriveConsumer" })
             {
                 var value = Environment.GetEnvironmentVariable(variable);
@@ -161,6 +127,154 @@ namespace Bloom.Utils
                     result.Add(new KeyValuePair<string, string>(variable, value));
             }
             return result;
+        }
+
+        // CF_SYNC_ROOT_INFO_CLASS.CF_SYNC_ROOT_INFO_PROVIDER
+        private const int kCfSyncRootInfoProvider = 2;
+
+        // CF_SYNC_ROOT_PROVIDER_INFO: a status, then two WCHAR[CF_MAX_PROVIDER_NAME_LENGTH + 1] arrays.
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct CfSyncRootProviderInfo
+        {
+            public uint ProviderStatus;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string ProviderName;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+            public string ProviderVersion;
+        }
+
+        [DllImport("cldapi.dll", CharSet = CharSet.Unicode)]
+        private static extern int CfGetSyncRootInfoByPath(
+            string filePath,
+            int infoClass,
+            out CfSyncRootProviderInfo infoBuffer,
+            uint infoBufferLength,
+            out uint returnedLength
+        );
+
+        [DllImport("cldapi.dll")]
+        private static extern uint CfGetPlaceholderStateFromAttributeTag(
+            uint fileAttributes,
+            uint reparseTag
+        );
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct Win32FindData
+        {
+            public uint FileAttributes;
+            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
+            public uint FileSizeHigh;
+            public uint FileSizeLow;
+            public uint Reserved0; // the reparse tag, when FileAttributes has ReparsePoint
+            public uint Reserved1;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string FileName;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)]
+            public string AlternateFileName;
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern IntPtr FindFirstFileW(string fileName, out Win32FindData findData);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool FindClose(IntPtr findHandle);
+
+        /// <summary>
+        /// Ask the Windows Cloud Files API which sync provider (OneDrive, Google Drive, Dropbox,
+        /// iCloud...) owns folderPath. Returns the provider's name, or null if none does. version gets
+        /// its version and hresult the API's answer, so the report can say why nothing was found.
+        /// Never throws.
+        /// </summary>
+        public static string GetCloudFilesSyncProvider(
+            string folderPath,
+            out string version,
+            out string hresult
+        )
+        {
+            version = null;
+            hresult = null;
+            if (!Platform.IsWindows)
+                return null;
+            try
+            {
+                var result = CfGetSyncRootInfoByPath(
+                    folderPath,
+                    kCfSyncRootInfoProvider,
+                    out var info,
+                    (uint)Marshal.SizeOf<CfSyncRootProviderInfo>(),
+                    out _
+                );
+                hresult = $"0x{result:X8}";
+                if (result != 0)
+                    return null;
+                version = info.ProviderVersion;
+                return info.ProviderName;
+            }
+            catch (Exception e)
+            {
+                hresult = e.GetType().Name; // e.g. cldapi.dll missing before Windows 10 1709
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Describe a CF_PLACEHOLDER_STATE value in words.
+        /// </summary>
+        public static string DescribePlaceholderState(uint state)
+        {
+            if (state == 0xFFFFFFFF)
+                return "invalid";
+            if (state == 0)
+                return "not a placeholder";
+            var names = new List<string>();
+            void Add(uint flag, string name)
+            {
+                if ((state & flag) != 0)
+                    names.Add(name);
+            }
+            Add(0x1, "placeholder");
+            Add(0x2, "sync root");
+            Add(0x4, "essential properties present");
+            Add(0x8, "in sync");
+            Add(0x10, "partial");
+            Add(0x20, "partially on disk");
+            var unknown = state & ~0x3Fu;
+            if (unknown != 0)
+                names.Add($"0x{unknown:X}");
+            return string.Join(", ", names);
+        }
+
+        /// <summary>
+        /// The Cloud Files placeholder state of path, found from its directory entry so that no handle
+        /// to the file is needed (opening it may be what Windows is refusing). Null if it can't be read.
+        /// Never throws.
+        /// </summary>
+        public static uint? GetPlaceholderState(string path)
+        {
+            if (!Platform.IsWindows)
+                return null;
+            try
+            {
+                var handle = FindFirstFileW(path, out var data);
+                if (handle == new IntPtr(-1))
+                    return null;
+                FindClose(handle);
+                var reparseTag =
+                    (data.FileAttributes & (uint)FileAttributes.ReparsePoint) != 0
+                        ? data.Reserved0
+                        : 0;
+                return CfGetPlaceholderStateFromAttributeTag(data.FileAttributes, reparseTag);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -274,13 +388,15 @@ namespace Bloom.Utils
             FileAttributes? fileAttributes,
             FileAttributes? folderAttributes,
             string syncRoot,
-            int? controlledFolderAccess
+            int? controlledFolderAccess,
+            uint? placeholderState = null
         )
         {
             if (controlledFolderAccess == 1)
                 return "Windows Security's Controlled Folder Access is turned on; it may be blocking Bloom from changing files in this folder.";
             if (
                 syncRoot != null
+                || (placeholderState.HasValue && IsPlaceholder(placeholderState.Value))
                 || (fileAttributes.HasValue && AttributesSuggestCloudFile(fileAttributes.Value))
                 || (folderAttributes.HasValue && AttributesSuggestCloudFile(folderAttributes.Value))
             )
@@ -290,6 +406,9 @@ namespace Bloom.Utils
             }
             return null;
         }
+
+        private static bool IsPlaceholder(uint placeholderState) =>
+            placeholderState != 0xFFFFFFFF && (placeholderState & 0x1) != 0;
 
         /// <summary>
         /// Gather the evidence for path from the running system and return the likely cause (or null)
@@ -312,16 +431,41 @@ namespace Bloom.Utils
                     );
                     bldr.AppendLine($"opening the file read-only {TryOpenForRead(path)}");
                 }
+                uint? placeholderState = exists ? GetPlaceholderState(path) : null;
+                if (exists)
+                    bldr.AppendLine(
+                        $"cloud placeholder state: {(placeholderState.HasValue ? DescribePlaceholderState(placeholderState.Value) : "could not be read")}"
+                    );
                 var folder = Path.GetDirectoryName(path);
                 var folderAttributes = TryGetAttributes(folder);
                 bldr.AppendLine(
                     $"folder attributes: {(folderAttributes.HasValue ? DescribeAttributes(folderAttributes.Value) : "could not be read")}"
                 );
-                var syncRoot = FindSyncRootContaining(path, GetSyncRoots());
-                bldr.AppendLine($"sync provider: {syncRoot ?? "none found"}");
+                var syncRoot = GetCloudFilesSyncProvider(
+                    folder,
+                    out var providerVersion,
+                    out var cloudFilesResult
+                );
+                bldr.AppendLine(
+                    $"Cloud Files sync provider: {(syncRoot == null ? "none" : $"{syncRoot} version {providerVersion}")} (result {cloudFilesResult})"
+                );
+                var environmentSyncRoot = FindSyncRootContaining(
+                    path,
+                    GetSyncRootsFromEnvironment()
+                );
+                bldr.AppendLine(
+                    $"OneDrive folder from environment: {environmentSyncRoot ?? "none containing this file"}"
+                );
+                syncRoot = syncRoot ?? environmentSyncRoot;
                 var cfa = ReadControlledFolderAccessSetting();
                 bldr.AppendLine($"Controlled Folder Access: {DescribeControlledFolderAccess(cfa)}");
-                likelyCause = GetLikelyCause(fileAttributes, folderAttributes, syncRoot, cfa);
+                likelyCause = GetLikelyCause(
+                    fileAttributes,
+                    folderAttributes,
+                    syncRoot,
+                    cfa,
+                    placeholderState
+                );
             }
             catch (Exception e)
             {

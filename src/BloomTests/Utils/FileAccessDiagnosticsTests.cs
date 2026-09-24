@@ -105,6 +105,57 @@ namespace BloomTests.Utils
         }
 
         [Test]
+        public void DescribePlaceholderState_Flags_NamesThem()
+        {
+            Assert.That(
+                FileAccessDiagnostics.DescribePlaceholderState(0),
+                Is.EqualTo("not a placeholder")
+            );
+            Assert.That(
+                FileAccessDiagnostics.DescribePlaceholderState(0xFFFFFFFF),
+                Is.EqualTo("invalid")
+            );
+            Assert.That(
+                FileAccessDiagnostics.DescribePlaceholderState(0x1 | 0x10),
+                Is.EqualTo("placeholder, partial")
+            );
+        }
+
+        [Test]
+        public void GetLikelyCause_PlaceholderFile_BlamesSyncProgram()
+        {
+            Assert.That(
+                FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0x1),
+                Does.Contain("cloud sync program")
+            );
+            Assert.That(FileAccessDiagnostics.GetLikelyCause(null, null, null, 0, 0), Is.Null);
+        }
+
+        /// <summary>
+        /// Calls the real Cloud Files API. A temporary folder is not under any sync root, so the API
+        /// must answer "none" with a failure code rather than throw or invent a provider.
+        /// </summary>
+        [Test]
+        public void GetCloudFilesSyncProvider_TempFolder_ReturnsNoneWithResultCode()
+        {
+            using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_CloudFiles"))
+            {
+                var provider = FileAccessDiagnostics.GetCloudFilesSyncProvider(
+                    folder.Path,
+                    out _,
+                    out var result
+                );
+
+                Assert.That(provider, Is.Null);
+                Assert.That(
+                    result,
+                    Does.StartWith("0x8"),
+                    "the API should report why there is no sync root"
+                );
+            }
+        }
+
+        [Test]
         public void DescribeAntivirusProductState_ValuesFromBL16915Report()
         {
             // Avast was active; Defender was passive because Avast had taken over.
@@ -176,7 +227,9 @@ namespace BloomTests.Utils
                 Assert.That(result, Does.Contain("file attributes: Archive"));
                 Assert.That(result, Does.Contain("opening the file read-only succeeded"));
                 Assert.That(result, Does.Contain("Controlled Folder Access: "));
-                Assert.That(result, Does.Contain("sync provider: "));
+                Assert.That(result, Does.Contain("cloud placeholder state: not a placeholder"));
+                Assert.That(result, Does.Contain("Cloud Files sync provider: "));
+                Assert.That(result, Does.Contain("OneDrive folder from environment: "));
             }
         }
 
