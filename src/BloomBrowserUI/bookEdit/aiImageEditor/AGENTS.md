@@ -39,6 +39,27 @@ is *not* enough on its own: a save can also reload the whole workspace root, so 
 page to come back before opening the overlay. `AiImageEditorApi.HandleSaveThenLaunch` explains
 that in full.
 
+## Localization
+
+The editor's own strings are translated by Bloom, not by the editor. On startup the iframe POSTs
+its whole string table (every id with its English) to Bloom's general-purpose
+**`i18n/loadStrings`**, the same endpoint the image gallery uses, and shows what comes back.
+
+The editor asks only for ids Bloom actually has. Its `lib/untranslated.ts` lists every string we
+have not made localizable, and `ALL_IMAGE_EDITOR_STRINGS` leaves those out, so they stay hardcoded
+English in the editor. That is what a string not yet chosen for translation looks like: absent from
+the table, rather than present and unanswered.
+
+The check on that is `loadStrings` itself. On Developer and Alpha channels it reports any id it
+cannot find, as a toast plus a `CopyToDistributionXlf_` entry in the local xlf. So a toast when the
+editor starts means an editor build added a string without either a `<trans-unit>` in
+`DistFiles/localization/en` or an entry in `lib/untranslated.ts`. Nothing breaks meanwhile: an
+unanswered id comes back as the English the editor sent.
+
+The ids are `AiImageEditor.*`, except where the editor reuses a string Bloom already has
+(`Common.Close`, `EditTab.PasteButton`, and so on). Nothing here decides them: they live in the
+editor repo.
+
 ## Tests
 
 - `*.test.ts` are Vitest and run in the normal suite. `aiImageEditorOverlay.test.ts` needs no page DOM
@@ -46,4 +67,4 @@ that in full.
 - `bloom-exe-*.uitest.ts` are Playwright against a **running** `Bloom.exe`, excluded from Vitest
   and matched by glob (`**/bloom-exe*.uitest.ts`), so they are fine anywhere in the tree. They
   exercise the HTTP endpoints rather than this front-end code. To drive the real UI end to end,
-  see `.github/skills/bloom-automation/ai-image-editor-driving.md`.
+  see `.claude/skills/run-bloom/ai-image-editor-driving.md`.
