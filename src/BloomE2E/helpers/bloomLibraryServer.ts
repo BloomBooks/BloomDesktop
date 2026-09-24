@@ -134,6 +134,23 @@ export async function findBooksUploadedBy(
 }
 
 /**
+ * The S3 folder a baseUrl names, decoded: Bloom writes baseUrl with HttpUtility.UrlEncode, which
+ * puts spaces as "+", so undo that before the general decoding turns the %2f slashes (and any %2b
+ * plus) back into themselves.
+ */
+function decodeBaseUrl(baseUrl: string): string {
+    return decodeURIComponent(baseUrl.replace(/\+/g, " "));
+}
+
+/**
+ * The name of the book folder an upload wrote, the last part of its baseUrl. Bloom names it after
+ * the book's folder on disk, so a test can tell which book an uploaded copy is.
+ */
+export function folderNameOfUploadedBook(baseUrl: string): string {
+    return decodeBaseUrl(baseUrl).split("/").filter(Boolean).pop()!;
+}
+
+/**
  * One file of a book as it was uploaded, read from the sandbox's S3 bucket. `baseUrl` is the folder
  * the upload wrote, in the form Bloom writes it (BloomS3Client.GetBaseUrl): take it from the
  * bulk-upload log (IBulkUploadResult.uploadedBaseUrls), not from the book's record, which can point
@@ -146,10 +163,8 @@ async function fetchUploadedBookFile(
     fileName: string | ((folderName: string) => string),
     describe: string,
 ): Promise<string> {
-    // Bloom writes baseUrl with HttpUtility.UrlEncode, which puts spaces as "+", so undo that
-    // before the general decoding turns the %2f slashes (and any %2b plus) back into themselves.
-    const folderPath = decodeURIComponent(baseUrl.replace(/\+/g, " "));
-    const folderName = folderPath.split("/").filter(Boolean).pop()!;
+    const folderPath = decodeBaseUrl(baseUrl);
+    const folderName = folderNameOfUploadedBook(baseUrl);
     const name = typeof fileName === "string" ? fileName : fileName(folderName);
     // The URL constructor re-encodes the spaces and the rest of the path for the request.
     const url = new URL(folderPath).href + encodeURIComponent(name);

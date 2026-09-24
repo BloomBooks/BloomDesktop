@@ -20,6 +20,7 @@
 
 import { expect, test } from "../fixtures/bloomTest";
 import type { Page } from "@playwright/test";
+import * as Path from "node:path";
 import type { IBloomApp } from "../fixtures/bloomTest";
 import {
     addPage,
@@ -53,6 +54,7 @@ import {
 import {
     deleteAllBooksUploadedBy,
     findBooksUploadedBy,
+    folderNameOfUploadedBook,
     getBookshelvesOfUploadedBook,
     getXmatterPackOfUploadedBook,
     type IBloomLibraryLogin,
@@ -166,11 +168,12 @@ async function expectBooksOnServer(
         onServer.map((b) => b.title).sort(),
         `dev.bloomlibrary.org should list the four uploaded books for ${TEST_ACCOUNT_EMAIL}.`,
     ).toEqual([...BOOK_TITLES].sort());
+    // One logged location per book, each for a different one of the four: an upload's folder is
+    // named after the book's folder.
     expect(
-        upload.uploadedBaseUrls.length,
-        `The upload's log should say where each of the four books went. Log:
-${upload.log}`,
-    ).toBe(BOOK_TITLES.length);
+        upload.uploadedBaseUrls.map(folderNameOfUploadedBook).sort(),
+        `The upload's log should say where each of the four books went. Log:\n${upload.log}`,
+    ).toEqual(bookFolders.map((folder) => Path.basename(folder)).sort());
     for (const baseUrl of upload.uploadedBaseUrls) {
         // Exactly this shelf: Bloom sends only the collection's current bookshelf tag, dropping
         // any earlier one (BookUpload.UploadBookAsync).
