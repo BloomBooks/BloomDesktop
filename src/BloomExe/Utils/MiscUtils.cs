@@ -234,7 +234,7 @@ namespace Bloom.Utils
             var bldr = new StringBuilder();
             if (!String.IsNullOrEmpty(firstLine))
                 bldr.AppendLine(firstLine);
-            if (RobustFile.Exists(path))
+            if (FileAccessDiagnostics.FileIsPresent(path))
             {
                 bldr.AppendLine(
                     $"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445."

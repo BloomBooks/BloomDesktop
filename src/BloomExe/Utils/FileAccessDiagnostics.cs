@@ -420,8 +420,8 @@ namespace Bloom.Utils
             likelyCause = null;
             try
             {
-                var exists = RobustFile.Exists(path);
-                bldr.AppendLine($"file exists: {exists}");
+                var exists = FileIsPresent(path, out var existence);
+                bldr.AppendLine($"file exists: {existence}");
                 FileAttributes? fileAttributes = null;
                 if (exists)
                 {
@@ -473,6 +473,52 @@ namespace Bloom.Utils
             }
             return bldr.ToString();
         }
+
+        /// <summary>
+        /// Whether path names a file, including one Bloom is not allowed to see. RobustFile.Exists answers
+        /// false for both "not there" and "not allowed", and only the second is what we are trying to
+        /// diagnose, so tell them apart by why reading the attributes fails. description says which
+        /// case it was. Never throws.
+        /// </summary>
+        public static bool FileIsPresent(string path, out string description)
+        {
+            try
+            {
+                // One direct call: RobustFile would retry "not found" for seconds.
+                var attributes = GetFileAttributesW(path);
+                if (attributes != kInvalidFileAttributes)
+                {
+                    var isFile = (attributes & (uint)FileAttributes.Directory) == 0;
+                    description = isFile ? "True" : "False (it is a folder)";
+                    return isFile;
+                }
+                var error = Marshal.GetLastWin32Error();
+                if (error == kErrorFileNotFound || error == kErrorPathNotFound)
+                {
+                    description = "False";
+                    return false;
+                }
+                description = $"probably (its attributes can't be read: Windows error {error})";
+                return true;
+            }
+            catch (Exception e)
+            {
+                description = $"unknown ({e.GetType().Name})";
+                return RobustFile.Exists(path);
+            }
+        }
+
+        private const uint kInvalidFileAttributes = 0xFFFFFFFF;
+        private const int kErrorFileNotFound = 2;
+        private const int kErrorPathNotFound = 3;
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern uint GetFileAttributesW(string fileName);
+
+        /// <summary>
+        /// As above, without the description.
+        /// </summary>
+        public static bool FileIsPresent(string path) => FileIsPresent(path, out _);
 
         private static FileAttributes? TryGetAttributes(string path)
         {

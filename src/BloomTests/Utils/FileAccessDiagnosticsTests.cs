@@ -126,6 +126,24 @@ namespace BloomTests.Utils
         }
 
         [Test]
+        public void FileIsPresent_MissingFileOrFolder_False()
+        {
+            using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests_Present"))
+            {
+                Assert.That(
+                    FileAccessDiagnostics.FileIsPresent(Path.Combine(folder.Path, "nothing.png")),
+                    Is.False
+                );
+                Assert.That(
+                    FileAccessDiagnostics.FileIsPresent(Path.Combine(folder.Path, "no", "x.png")),
+                    Is.False,
+                    "a missing folder is not an access problem"
+                );
+                Assert.That(FileAccessDiagnostics.FileIsPresent(folder.Path), Is.False);
+            }
+        }
+
+        [Test]
         public void Collect_ExistingFile_RunsEveryProbeWithoutError()
         {
             using (var folder = new TemporaryFolder("FileAccessDiagnosticsTests"))
