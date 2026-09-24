@@ -880,18 +880,27 @@ function populateTempCollections(dest: string) {
  * Whether to launch Bloom with --dont-disturb: yes on a developer's machine, no on CI (which sets
  * CI), unless BLOOM_E2E_DONT_DISTURB is "1" or "0". The same rule as the BloomE2E suite's
  * launchWithDontDisturb (src/BloomE2E/fixtures/launchBloom.ts), kept as a copy because the two
- * suites are separate packages.
+ * suites are separate packages. Logs its choice, as that one does, so a run's output says whether
+ * Bloom's windows could take the foreground.
  */
 function launchWithDontDisturb(): boolean {
     const asked = process.env.BLOOM_E2E_DONT_DISTURB?.trim();
-    if (asked === "1") return true;
-    if (asked === "0") return false;
-    if (asked)
+    if (asked && asked !== "1" && asked !== "0")
         throw new Error(
             `BLOOM_E2E_DONT_DISTURB must be 1 or 0, not "${asked}". Unset, it means 1 on a ` +
                 `developer's machine and 0 on CI.`,
         );
-    return !process.env.CI;
+    const choice = asked ? asked === "1" : !process.env.CI;
+    let reason: string;
+    if (asked) reason = `BLOOM_E2E_DONT_DISTURB=${asked}`;
+    else if (process.env.CI) reason = "CI is set";
+    else reason = "not on CI";
+    console.log(
+        choice
+            ? `Launching with --dont-disturb (${reason}): Bloom's windows will not take the foreground.`
+            : `Launching without --dont-disturb (${reason}): Bloom's windows take the foreground as they would for a user.`,
+    );
+    return choice;
 }
 
 async function launchDedicatedBloom() {
