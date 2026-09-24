@@ -12,7 +12,11 @@ import {
     kBloomButtonClass,
     kBloomCanvasSelector,
 } from "../../toolbox/canvas/canvasElementConstants";
-import { CanvasElementHandleDragInteractions } from "./CanvasElementHandleDragInteractions";
+import {
+    CanvasElementHandleDragInteractions,
+    shownPictureIsBiggerThanElement,
+} from "./CanvasElementHandleDragInteractions";
+import { getImageContentTransform } from "../imageContentTransform";
 import {
     canRotateCanvasElement,
     getCanvasElementRotation,
@@ -464,11 +468,24 @@ export function adjustMoveCropHandleVisibility(
         // cropped look as if it were. The image and the element are both children of the
         // same rotation, so their own widths and heights can be compared directly. (For an
         // image the control frame is the same size as the element; the few extra pixels the
-        // frame gets are for text elements, which have no image.)
-        wantMoveCropHandle =
-            img.offsetWidth > activeElement.clientWidth + 1 ||
-            img.offsetHeight > activeElement.clientHeight + 1;
-        if (!wantMoveCropHandle && removeCropAttrsIfNotNeeded) {
+        // frame gets are for text elements, which have no image.) A picture rotated 90 degrees
+        // inside its element shows its box with the two dimensions swapped, so that is the
+        // size to compare.
+        const quarterRotations = getImageContentTransform(img).quarterRotations;
+        wantMoveCropHandle = shownPictureIsBiggerThanElement(
+            activeElement.clientWidth,
+            activeElement.clientHeight,
+            img.offsetWidth,
+            img.offsetHeight,
+            quarterRotations,
+        );
+        // A picture rotated 90 degrees needs its width, left and top even when it is not
+        // cropped, because its box lies across the element; see setRotatedBackgroundLayout.
+        if (
+            !wantMoveCropHandle &&
+            removeCropAttrsIfNotNeeded &&
+            quarterRotations % 2 === 0
+        ) {
             img.style.width = "";
             img.style.top = "";
             img.style.left = "";

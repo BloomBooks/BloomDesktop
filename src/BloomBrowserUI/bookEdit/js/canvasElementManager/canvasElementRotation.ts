@@ -160,3 +160,28 @@ export function isPointInsideRotatedCanvasElement(
     const local = unrotateVector(x - centerX, y - centerY, degrees);
     return Math.abs(local.x) <= width / 2 && Math.abs(local.y) <= height / 2;
 }
+
+// The editable text the user clicked on inside a rotated canvas element, or undefined. A rotated
+// element is a stacking context, so the comicaljs canvas lies over everything inside it and is
+// what the browser hits; the click's target is then that canvas and not the text. The caller
+// passes everything under the pointer, from document.elementsFromPoint, and we look through that
+// instead of at the topmost thing alone. Only an editable inside the element the user pressed on
+// counts, so text that another element covers is not chosen.
+export function findEditableUnderPointerInRotatedElement(
+    elementsUnderPointer: Element[],
+    pressedElement: HTMLElement,
+): HTMLElement | undefined {
+    if (!pressedElement.classList.contains(kRotatedClass)) {
+        return undefined;
+    }
+    for (const element of elementsUnderPointer) {
+        const editable = element.closest(".bloom-editable");
+        if (
+            editable instanceof HTMLElement &&
+            pressedElement.contains(editable)
+        ) {
+            return editable;
+        }
+    }
+    return undefined;
+}

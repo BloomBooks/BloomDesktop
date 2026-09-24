@@ -15,6 +15,7 @@ vi.mock("comicaljs", () => ({
 // stubbed comicaljs.
 import {
     canRotateCanvasElement,
+    findEditableUnderPointerInRotatedElement,
     getCanvasElementRotation,
     getHandleCursorForRotation,
     isPointInsideRotatedCanvasElement,
@@ -277,5 +278,71 @@ describe("getHandleCursorForRotation", () => {
     it("treats a full rotation as no rotation", () => {
         expect(getHandleCursorForRotation("nw", 360)).toBe("nw-resize");
         expect(getHandleCursorForRotation("n", 720)).toBe("ns-resize");
+    });
+});
+
+describe("findEditableUnderPointerInRotatedElement", () => {
+    // A rotated text box and another text box, as they sit under the comicaljs canvas.
+    function makePage(): {
+        canvas: HTMLElement;
+        rotated: HTMLElement;
+        rotatedEditable: HTMLElement;
+        otherEditable: HTMLElement;
+    } {
+        document.body.innerHTML = `
+            <div class="bloom-canvas">
+                <canvas class="comical-generated"></canvas>
+                <div id="rotated" class="bloom-canvas-element ${kRotatedClass}">
+                    <div class="bloom-translationGroup">
+                        <div id="rotatedEditable" class="bloom-editable"><p id="words">Words</p></div>
+                    </div>
+                </div>
+                <div class="bloom-canvas-element">
+                    <div class="bloom-translationGroup">
+                        <div id="otherEditable" class="bloom-editable"><p>Other</p></div>
+                    </div>
+                </div>
+            </div>`;
+        return {
+            canvas: document.querySelector("canvas") as HTMLElement,
+            rotated: document.getElementById("rotated")!,
+            rotatedEditable: document.getElementById("rotatedEditable")!,
+            otherEditable: document.getElementById("otherEditable")!,
+        };
+    }
+
+    it("finds the text under the comicaljs canvas in the element the user pressed on", () => {
+        const page = makePage();
+        const words = document.getElementById("words")!;
+        // Sanity check: the topmost thing, which is what event.target would be, is no editable.
+        expect(page.canvas.closest(".bloom-editable")).toBeNull();
+
+        expect(
+            findEditableUnderPointerInRotatedElement(
+                [page.canvas, words, page.rotatedEditable, page.rotated],
+                page.rotated,
+            ),
+        ).toBe(page.rotatedEditable);
+    });
+
+    it("ignores text that belongs to another element", () => {
+        const page = makePage();
+        expect(
+            findEditableUnderPointerInRotatedElement(
+                [page.canvas, page.otherEditable, page.rotated],
+                page.rotated,
+            ),
+        ).toBeUndefined();
+    });
+
+    it("does nothing for an element that is not rotated", () => {
+        const page = makePage();
+        page.rotated.classList.remove(kRotatedClass);
+        expect(
+            findEditableUnderPointerInRotatedElement(
+                [page.canvas, page.rotatedEditable],
+                page.rotated,
+            ),
+        ).toBeUndefined();
     });
 });

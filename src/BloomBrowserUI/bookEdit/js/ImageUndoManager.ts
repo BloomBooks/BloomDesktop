@@ -31,6 +31,8 @@ type ImageOperationUndoItem =
           element: HTMLElement;
           imageInfo: IImageInfo;
           cropInfo: IImageCropInfo;
+          // The img's inline transform: the rotation and mirror of the picture being replaced.
+          imageTransform: string;
       }
     // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
     // its metadata, so the things to put back are the rotation of the canvas element box, the
@@ -56,6 +58,7 @@ export interface ImageUndoManagerHost {
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
+        imageTransform?: string,
     ): void;
     // Put the frame, the game target and the tool panel back in step after an undo that only
     // changed a rotation, a mirror or a crop.
@@ -87,6 +90,8 @@ export class ImageUndoManager {
             element: imageOrContainer,
             imageInfo: this.getCurrentImageInfo(imageOrContainer),
             cropInfo: this.getCurrentImageCropInfo(imageOrContainer),
+            imageTransform:
+                this.getImageElement(imageOrContainer)?.style.transform ?? "",
         };
     }
 
@@ -214,6 +219,7 @@ export class ImageUndoManager {
                 this.host.updateCanvasElementForChangedImage(
                     undoItem.element,
                     undoItem.cropInfo,
+                    undoItem.imageTransform,
                 );
                 const page = undoItem.element.closest(
                     ".bloom-page",

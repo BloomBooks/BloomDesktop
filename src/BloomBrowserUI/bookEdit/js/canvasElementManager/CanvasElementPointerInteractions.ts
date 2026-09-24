@@ -16,6 +16,7 @@ import {
     getLeftAndTopPaddings,
 } from "./CanvasElementGeometry";
 import {
+    findEditableUnderPointerInRotatedElement,
     getCanvasElementRotation,
     isPointInsideRotatedCanvasElement,
     kRotatedClass,
@@ -230,7 +231,18 @@ export class CanvasElementPointerInteractions {
         );
     }
 
-    private moveInsertionPointAndFocusTo = (x, y): Range | undefined => {
+    // Put the caret at the point (x, y) in viewport coordinates and focus the text there.
+    //
+    // Pass editableUnderCanvas when the text is inside a rotated canvas element, where the
+    // comicaljs canvas lies over it. The caret lookup is a hit test like any other, so while it
+    // runs the canvases of that bloom-canvas take no pointer events and the lookup reaches the
+    // text. If the lookup still lands outside that editable, the caret goes at the end of it,
+    // so that the click at least starts editing the text the user clicked on.
+    private moveInsertionPointAndFocusTo = (
+        x: number,
+        y: number,
+        editableUnderCanvas?: HTMLElement,
+    ): Range | undefined => {
         type DocumentWithCaret = Document & {
             caretPositionFromPoint?: (
                 x: number,
@@ -239,11 +251,48 @@ export class CanvasElementPointerInteractions {
             caretRangeFromPoint?: (x: number, y: number) => Range | null;
         };
         const doc = document as DocumentWithCaret;
-        const rangeOrCaret = doc.caretPositionFromPoint
-            ? doc.caretPositionFromPoint(x, y)
-            : doc.caretRangeFromPoint
-              ? doc.caretRangeFromPoint(x, y)
-              : null;
+        const coveringCanvases = editableUnderCanvas
+            ? (Array.from(
+                  editableUnderCanvas
+                      .closest(kBloomCanvasSelector)
+                      ?.getElementsByTagName("canvas") ?? [],
+              ) as HTMLElement[])
+            : [];
+        const oldPointerEvents = coveringCanvases.map(
+            (canvas) => canvas.style.pointerEvents,
+        );
+        coveringCanvases.forEach((canvas) => {
+            canvas.style.pointerEvents = "none";
+        });
+        let rangeOrCaret: Range | CaretPosition | null;
+        try {
+            rangeOrCaret = doc.caretPositionFromPoint
+                ? doc.caretPositionFromPoint(x, y)
+                : doc.caretRangeFromPoint
+                  ? doc.caretRangeFromPoint(x, y)
+                  : null;
+        } finally {
+            coveringCanvases.forEach((canvas, index) => {
+                canvas.style.pointerEvents = oldPointerEvents[index];
+            });
+        }
+
+        if (
+            editableUnderCanvas &&
+            !(
+                rangeOrCaret &&
+                editableUnderCanvas.contains(
+                    "endContainer" in rangeOrCaret
+                        ? rangeOrCaret.endContainer
+                        : rangeOrCaret.offsetNode,
+                )
+            )
+        ) {
+            const endOfText = document.createRange();
+            endOfText.selectNodeContents(editableUnderCanvas);
+            endOfText.collapse(false);
+            rangeOrCaret = endOfText;
+        }
 
         if (!rangeOrCaret) {
             return undefined;
@@ -269,7 +318,7 @@ export class CanvasElementPointerInteractions {
 
         if (range && range.collapse && range?.endContainer?.parentElement) {
             range.collapse(false); // probably not needed?
-            range.endContainer.parentElement.focus();
+            (editableUnderCanvas ?? range.endContainer.parentElement).focus();
             const setSelection = () => {
                 const selection = window.getSelection();
                 selection?.removeAllRanges();
@@ -557,16 +606,39 @@ export class CanvasElementPointerInteractions {
             event.stopPropagation();
         }
 
+        const pressedElement = this.bubbleToDrag?.content;
         this.bubbleToDrag = undefined;
         this.mouseDownContainer?.classList.remove("grabbing");
-        const editable = (event.target as HTMLElement)?.closest(
+        let editable = (event.target as HTMLElement)?.closest(
             ".bloom-editable",
-        );
+        ) as HTMLElement | null | undefined;
+        // Inside a rotated element the comicaljs canvas is the target, not the text; see
+        // findEditableUnderPointerInRotatedElement. The browser has not placed the caret
+        // either, because onMouseDown prevented the default of a press it did not see
+        // landing on the text, so we place it ourselves.
+        let editableIsUnderCanvas = false;
+        if (!editable && pressedElement && !this.gotAMoveWhileMouseDown) {
+            editable = findEditableUnderPointerInRotatedElement(
+                pressedElement.ownerDocument.elementsFromPoint(
+                    event.clientX,
+                    event.clientY,
+                ),
+                pressedElement,
+            );
+            editableIsUnderCanvas = !!editable;
+        }
         if (
             editable &&
             editable.closest(kCanvasElementSelector) ===
                 this.host.getCanvasElementWeAreTextEditing()
         ) {
+            if (editableIsUnderCanvas) {
+                this.moveInsertionPointAndFocusTo(
+                    event.clientX,
+                    event.clientY,
+                    editable,
+                );
+            }
             return;
         }
         if (
@@ -574,12 +646,16 @@ export class CanvasElementPointerInteractions {
             editable &&
             this.activeElementAtMouseDown === this.host.getActiveElement()
         ) {
-            const canvasElement = (event.target as HTMLElement)?.closest(
+            const canvasElement = editable.closest(
                 kCanvasElementSelector,
             ) as HTMLElement;
             this.host.setCanvasElementWeAreTextEditing(canvasElement);
             canvasElement?.classList.add("bloom-focusedCanvasElement");
-            this.moveInsertionPointAndFocusTo(event.clientX, event.clientY);
+            this.moveInsertionPointAndFocusTo(
+                event.clientX,
+                event.clientY,
+                editableIsUnderCanvas ? editable : undefined,
+            );
         } else {
             event.preventDefault();
             event.stopPropagation();

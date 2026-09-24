@@ -75,6 +75,31 @@ export function getShownContentRectangle(
     };
 }
 
+// True if the picture the element shows is bigger than the element in either direction, which is
+// when the picture is cropped and the move-crop handle is wanted. The size compared is that of
+// the rectangle the element shows, as in getCroppedSides, so a picture rotated 90 degrees whose
+// box lies across its element is not mistaken for a cropped one.
+export function shownPictureIsBiggerThanElement(
+    elementWidth: number,
+    elementHeight: number,
+    boxWidth: number,
+    boxHeight: number,
+    quarterRotations: number,
+    // Client values are whole pixels, and rounding easily produces a spurious difference of one.
+    slop = 1,
+): boolean {
+    const shown = getShownContentRectangle(
+        0,
+        0,
+        boxWidth,
+        boxHeight,
+        quarterRotations,
+    );
+    return (
+        shown.width > elementWidth + slop || shown.height > elementHeight + slop
+    );
+}
+
 // Which sides of a picture are cropped, so that the marks go on the right handles.
 export function getCroppedSides(
     elementWidth: number,

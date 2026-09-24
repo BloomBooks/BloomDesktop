@@ -3,7 +3,49 @@ import {
     clampCropPosition,
     getCroppedSides,
     getShownContentRectangle,
+    shownPictureIsBiggerThanElement,
 } from "./CanvasElementHandleDragInteractions";
+
+describe("shownPictureIsBiggerThanElement", () => {
+    it("does not call an uncropped picture rotated 90 degrees cropped", () => {
+        // A landscape picture 400 by 300, rotated 90 degrees on the page background, as Rotate
+        // Right leaves it: the element is 300 wide and 400 tall, and the picture's box is still
+        // 400 by 300 and lies across it.
+        const boxWidth = 400;
+        const elementWidth = 300;
+        // Sanity check: the box alone is wider than the element, which is what a comparison
+        // that ignores the rotation would take for a crop.
+        expect(boxWidth).toBeGreaterThan(elementWidth + 1);
+        expect(
+            shownPictureIsBiggerThanElement(
+                elementWidth,
+                400,
+                boxWidth,
+                300,
+                1,
+            ),
+        ).toBe(false);
+        expect(
+            shownPictureIsBiggerThanElement(elementWidth, 400, 400, 300, 3),
+        ).toBe(false);
+    });
+
+    it("still sees a crop of a picture rotated 90 degrees", () => {
+        // The same picture drawn twice as big: it shows 600 by 800 in an element 300 by 400.
+        expect(shownPictureIsBiggerThanElement(300, 400, 800, 600, 1)).toBe(
+            true,
+        );
+    });
+
+    it("sees a crop of a picture that is not rotated", () => {
+        expect(shownPictureIsBiggerThanElement(480, 720, 1080, 720, 0)).toBe(
+            true,
+        );
+        expect(shownPictureIsBiggerThanElement(480, 320, 480, 320, 0)).toBe(
+            false,
+        );
+    });
+});
 
 describe("getCroppedSides", () => {
     it("says no side is cropped when the picture just fills its element", () => {

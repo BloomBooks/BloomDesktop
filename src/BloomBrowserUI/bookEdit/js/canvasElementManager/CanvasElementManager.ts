@@ -1863,9 +1863,14 @@ export class CanvasElementManager {
 
     // When the image is changed in a canvas element (e.g., choose or paste image),
     // we remove cropping, adjust the aspect ratio, and move the control frame.
+    // The rotation and mirror of the picture (imageContentTransform.ts) belong to the old
+    // picture, so they go too, unless the caller passes imageTransform, as Undo does to put
+    // back the transform the restored picture had. The rotation of the canvas element box
+    // belongs to the box and is left alone.
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
+        imageTransform = "",
     ) {
         const canvasElement = imgOrImageContainer.closest(
             kCanvasElementSelector,
@@ -1881,6 +1886,9 @@ export class CanvasElementManager {
         img.style.height = "";
         img.style.left = "";
         img.style.top = "";
+        // With the transform gone, the size code below sees no rotation and fits a background
+        // element to the new picture's natural shape.
+        img.style.transform = imageTransform;
         // Get the aspect ratio right (aligns control frame)
         if (canvasElement.classList.contains(kBackgroundImageClass)) {
             this.adjustBackgroundImageSize(
