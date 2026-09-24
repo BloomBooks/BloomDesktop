@@ -51,7 +51,8 @@ Bloom's Edit tab is several iframes. Resolve frames by **name**, never by positi
 
 Selectors the helpers rely on (keep them centralized in `helpers/`):
 
-- Canvas tool tab header: `h3[data-toolid="canvasTool"]`. Check whether `#canvasToolControls`
+- Canvas tool tab header (the toolbox is a MUI accordion; the header's icon carries the tool's
+  canonical id): `.MuiAccordionSummary-root:has([data-toolid="canvas"])`. Check whether `#canvasToolControls`
   is already visible first; if it is, do not click the tab again.
 - Canvas surface: `.bloom-canvas`. Created elements: `.bloom-canvas-element`.
 - Speech/comic palette item: `img[src*="comic-icon.svg"]`.
