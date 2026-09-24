@@ -429,11 +429,21 @@ namespace Bloom.Book
         // so it is persisted with it.
         private static void StampPerPageFixupDone(Book book)
         {
-            book.OurHtmlDom.UpdateMetaElement(
+            StampPerPageFixupDone(book.OurHtmlDom, GetLayoutStamp(book));
+        }
+
+        /// <summary>
+        /// Record in <paramref name="dom"/> that the book is at the current browser maintenance level
+        /// at page size <paramref name="layoutStamp"/> (e.g. "A5Portrait"). Also used by BookStarter for
+        /// a new book made from one of our own templates, which has nothing for the pass to do.
+        /// </summary>
+        internal static void StampPerPageFixupDone(HtmlDom dom, string layoutStamp)
+        {
+            dom.UpdateMetaElement(
                 kBrowserMaintenanceLevelMeta,
                 BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
             );
-            book.OurHtmlDom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, GetLayoutStamp(book));
+            dom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, layoutStamp);
         }
 
         /// <summary>
