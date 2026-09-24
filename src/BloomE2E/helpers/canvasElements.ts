@@ -541,9 +541,9 @@ export async function getCanvasElementMenuGroups(
 }
 
 /**
- * Turn the selected picture a quarter turn clockwise with the Rotate right command on its "..."
- * menu. What turns is Bloom's business: an overlay picture turns as a whole box, while the page's
- * background picture turns inside its box and the box changes shape.
+ * Rotate the selected picture 90 degrees clockwise with the Rotate right command on its "..."
+ * menu. What rotates is Bloom's business: an overlay picture rotates as a whole box, while the page's
+ * background picture rotates inside its box and the box changes shape.
  */
 export async function rotateSelectedImageRight(page: Page): Promise<void> {
     await clickCanvasElementMenuItem(page, "EditTab.Image.RotateRight");
@@ -552,7 +552,7 @@ export async function rotateSelectedImageRight(page: Page): Promise<void> {
 /**
  * Mirror the selected picture with the Flip submenu of its "..." menu. "horizontal" swaps the left
  * and the right of the picture as it is seen on screen, "vertical" the top and the bottom, however
- * the picture or its box is turned.
+ * the picture or its box is rotated.
  */
 export async function flipSelectedImage(
     page: Page,
@@ -588,7 +588,7 @@ export async function resetSelectedImage(page: Page): Promise<void> {
     await clickCanvasElementMenuItem(page, "EditTab.Image.Reset");
 }
 
-/** The round knob above the selected canvas element that turns it when dragged. */
+/** The round knob above the selected canvas element that rotates it when dragged. */
 function rotateHandle(page: Page): Locator {
     return editablePageFrame(page).locator(
         "#canvas-element-control-frame .bloom-ui-canvas-element-rotate-handle",
@@ -597,7 +597,7 @@ function rotateHandle(page: Page): Locator {
 
 /**
  * Wait until the selected canvas element's rotation knob is showing, or until it is not, as
- * `shown` says. Bloom offers the knob only for an element it can turn; `what` names the element
+ * `shown` says. Bloom offers the knob only for an element it can rotate; `what` names the element
  * for the failure message.
  */
 export async function expectRotateHandleShown(
@@ -613,13 +613,13 @@ export async function expectRotateHandleShown(
             timeout: 15000,
             message: shown
                 ? `The rotation knob never appeared for ${what}.`
-                : `The rotation knob is showing for ${what}, which Bloom should not offer to turn.`,
+                : `The rotation knob is showing for ${what}, which Bloom should not offer to rotate.`,
         })
         .toBe(shown);
 }
 
 /**
- * The angle a canvas element is turned by, in degrees clockwise from 0 up to 360, read from the
+ * The angle a canvas element is rotated by, in degrees clockwise from 0 up to 360, read from the
  * rotate() in its inline style, which is what Bloom saves in the book. 0 when it has none.
  */
 export async function getCanvasElementRotation(
@@ -637,8 +637,8 @@ export async function getCanvasElementRotation(
 
 /**
  * Where a canvas element sits on its canvas and how big it is, as the four numbers in its inline
- * style, in CSS pixels. A turn is about the element's centre, so these do not change when it turns,
- * and a turned element that moved on its own shows here.
+ * style, in CSS pixels. A rotation is about the element's centre, so these do not change when it rotates,
+ * and a rotated element that moved on its own shows here.
  */
 export async function getCanvasElementPlacement(element: Locator): Promise<{
     left: number;
@@ -658,14 +658,14 @@ export async function getCanvasElementPlacement(element: Locator): Promise<{
 }
 
 /**
- * Turn the selected canvas element by dragging its rotation knob `degrees` around the element's
+ * Rotate the selected canvas element by dragging its rotation knob `degrees` around the element's
  * centre, clockwise when positive, the way a person does. With `withCtrl`, Ctrl is held for the
  * drag, which stops the angle snapping to the nearest multiple of 45 degrees. Returns the angle the
  * element ends at, once it has changed.
  *
  * The pointer travels round a circle through the knob, in small steps, so that the angle Bloom
- * measures from the centre to the pointer never jumps. Bloom turns the element by however far that
- * angle moves, so where the knob starts (above the element, or below it once turned past 135
+ * measures from the centre to the pointer never jumps. Bloom rotates the element by however far that
+ * angle moves, so where the knob starts (above the element, or below it once rotated past 135
  * degrees) does not matter.
  */
 export async function dragRotateHandle(
@@ -676,7 +676,7 @@ export async function dragRotateHandle(
     const element = activeCanvasElement(page);
     const before = await getCanvasElementRotation(element);
     const knob = await requireBox(rotateHandle(page), "the rotation knob");
-    // Bloom turns about the centre of the element's on-screen box, turned or not.
+    // Bloom rotates about the centre of the element's on-screen box, rotated or not.
     const box = await getActiveCanvasElementRect(page);
     const centreX = box.x + box.width / 2;
     const centreY = box.y + box.height / 2;
@@ -708,7 +708,7 @@ export async function dragRotateHandle(
     await expect
         .poll(async () => getCanvasElementRotation(element), {
             timeout: 15000,
-            message: `Dragging the rotation knob by ${degrees} degrees did not turn the element.`,
+            message: `Dragging the rotation knob by ${degrees} degrees did not rotate the element.`,
         })
         .not.toBe(before);
     return getCanvasElementRotation(element);

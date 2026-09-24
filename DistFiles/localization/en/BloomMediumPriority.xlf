@@ -48,7 +48,7 @@
       <trans-unit id="EditTab.Image.RotateRight" translate="no">
         <source xml:lang="en">Rotate right</source>
         <note>ID: EditTab.Image.RotateRight</note>
-        <note>Command on the menu for a picture in the Edit tab. It turns the picture a quarter turn clockwise.</note>
+        <note>Command on the menu for a picture in the Edit tab. It rotates the picture 90 degrees clockwise.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.Flip" translate="no">
         <source xml:lang="en">Flip</source>
@@ -68,7 +68,7 @@
       <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Rotate" translate="no">
         <source xml:lang="en">Rotate</source>
         <note>ID: EditTab.Toolbox.ComicTool.Handle.Rotate</note>
-        <note>Tooltip on the small handle above a selected item on a page in the Edit tab. Dragging that handle around the item turns the item to any angle.</note>
+        <note>Tooltip on the small handle above a selected item on a page in the Edit tab. Dragging that handle around the item rotates the item to any angle.</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>

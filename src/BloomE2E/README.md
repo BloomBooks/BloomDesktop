@@ -159,8 +159,8 @@ real bug in the code under test; read the message and fix it rather than working
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
   file and AUTOMATION-DEBT.md give.
-- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureTurn`,
-  which says how a picture is turned and mirrored on screen, box and picture together, with
+- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+  which says how a picture is rotated and mirrored on screen, box and picture together, with
   `kUprightPicture` and `mirroredOnScreen` to build the expected answer; `getPictureInlineLayout`,
   the inline styles that lay out a picture and its box; and `getImageTransparencyChoice`.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,

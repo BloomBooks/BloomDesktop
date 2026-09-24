@@ -177,7 +177,7 @@ export function setupControlFrame(
             callbacks.startMoveCrop(event);
         });
         // The rotate handle is the "lollipop": a stem rising from the top edge of the frame
-        // with a knob on the end, which the user drags around the element to turn it. We put
+        // with a knob on the end, which the user drags around the element to rotate it. We put
         // it outside the frame because every centre-of-a-side position inside the frame is
         // already a crop handle. On an element right at the top of its bloom-canvas the
         // lollipop is clipped, as the corner resize handles already are there.
@@ -308,32 +308,32 @@ export function alignControlFrameWithActiveElement(
         "bloom-noAutoHeight",
         activeElement.classList.contains("bloom-noAutoHeight"),
     );
-    // The frame must lie over the element, so it turns with it. Both turn about their
+    // The frame must lie over the element, so it rotates with it. Both rotate about their
     // centres (the CSS default), and we give the frame the same size and position as the
     // element below, so copying the transform is enough to keep them together.
     controlFrame.style.transform = activeElement.style.transform;
-    // The frame turns everything inside it, including the tooltip of each handle, which the
-    // CSS then turns back so that the text stays level.
+    // The frame rotates everything inside it, including the tooltip of each handle, which the
+    // CSS then rotates back so that the text stays level.
     const rotation = getCanvasElementRotation(activeElement);
     controlFrame.style.setProperty(
         "--canvas-element-rotation",
         rotation + "deg",
     );
     setHandleCursorsForRotation(controlFrame, rotation);
-    // The lollipop hangs from the element's top edge. Once the element is turned far enough,
+    // The lollipop hangs from the element's top edge. Once the element is rotated far enough,
     // that edge points down the screen, and the lollipop lands behind the panel of controls
     // that sits below the element. So for those angles we hang it from the element's bottom
     // edge instead. We leave it alone during a drag: the lollipop is under the pointer, and
-    // moving it to the other end of the element part way through a turn would take it out
+    // moving it to the other end of the element part way through a rotation would take it out
     // from under the pointer.
     //
-    // The switch waits for three eighths of a turn, not a quarter turn. At a quarter turn the
+    // The switch waits for 135 degrees, not 90. At 90 degrees the
     // handle points straight out to the side, where the panel does not reach it, so a switch
     // there only moved the handle across the element for no gain, at the angle a user stops at
     // most often (BL-16741). The rotation snap stops at every 45 degrees, so 135 is the first
     // stop where the handle is on its way under the panel.
     //
-    // Turning to 180 degrees still moves the handle on the mouse-up of the drag that got there,
+    // Rotating to 180 degrees still moves the handle on the mouse-up of the drag that got there,
     // because endRotateDrag calls stopMoving before it aligns the frame. That is the angle where
     // the panel really does cover the handle, so the move is what the user needs, but it does
     // take the handle out from under the pointer at the end of the drag.
@@ -459,7 +459,7 @@ export function adjustMoveCropHandleVisibility(
     let wantMoveCropHandle = false;
     if (img) {
         // Compare the laid-out sizes rather than the on-screen rectangles. For a rotated
-        // canvas element getBoundingClientRect reports the box around the turned element,
+        // canvas element getBoundingClientRect reports the box around the rotated element,
         // which is bigger than the element itself and would make a picture that is not
         // cropped look as if it were. The image and the element are both children of the
         // same rotation, so their own widths and heights can be compared directly. (For an

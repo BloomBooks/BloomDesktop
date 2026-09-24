@@ -132,7 +132,7 @@ export interface IControlContext {
     isRectangle: boolean;
     rectangleHasBackground: boolean;
     isCropped: boolean;
-    // The picture inside the box has been turned or mirrored by Rotate right or Flip.
+    // The picture inside the box has been rotated or mirrored by Rotate right or Flip.
     isImageContentTransformed: boolean;
     // The user chose Transparent or Opaque for the picture, instead of leaving it on Auto.
     hasChosenTransparency: boolean;

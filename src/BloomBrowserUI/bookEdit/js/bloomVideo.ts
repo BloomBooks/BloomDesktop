@@ -376,25 +376,10 @@ let currentVideoElement: HTMLVideoElement | null = null;
 // (This is also called by code in CanvasElementManager, when it determines that mouse activity
 // on the button SHOULD be considered a click, not a drag of the canvas element. The event is
 // then actually from the mouseup, and forcePlay is true.)
-// The video one of the three buttons belongs to. Callers pass the button when the event's own
-// target is not it, which happens inside a turned canvas element: the comicaljs canvas covers
-// the buttons and is the target instead. See kPointerInsideClass in canvasElementRotation.ts
-// (BL-16741).
-function videoForButtonClick(
-    ev: MouseEvent,
-    button?: HTMLElement,
-): HTMLVideoElement | undefined {
-    return (button ?? (ev.target as HTMLElement))
+export function handlePlayClick(ev: MouseEvent, forcePlay?: boolean) {
+    const video = (ev.target as HTMLElement)
         ?.closest(".bloom-videoContainer")
         ?.getElementsByTagName("video")[0];
-}
-
-export function handlePlayClick(
-    ev: MouseEvent,
-    forcePlay?: boolean,
-    button?: HTMLElement,
-) {
-    const video = videoForButtonClick(ev, button);
     if (!video) {
         return; // should not happen
     }
@@ -418,10 +403,12 @@ export function handlePlayClick(
     play(video);
 }
 
-export function handleReplayClick(ev: MouseEvent, button?: HTMLElement) {
+function handleReplayClick(ev: MouseEvent) {
     ev.stopPropagation();
     ev.preventDefault();
-    const video = videoForButtonClick(ev, button);
+    const video = (ev.target as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
     if (!video) {
         return; // should not happen
     }
@@ -435,10 +422,12 @@ function play(video: HTMLVideoElement) {
 
 // This is called when the user clicks the pause button on a video.
 // Unlike when pause is done from the control bar, we add a class that shows some buttons.
-export function handlePauseClick(ev: MouseEvent, button?: HTMLElement) {
+function handlePauseClick(ev: MouseEvent) {
     ev.stopPropagation();
     ev.preventDefault();
-    const video = videoForButtonClick(ev, button);
+    const video = (ev.target as HTMLElement)
+        ?.closest(".bloom-videoContainer")
+        ?.getElementsByTagName("video")[0];
     if (!video) return;
     // just possibly, the one we paused is not the one we most recently started playing.
     currentVideoElement = video;

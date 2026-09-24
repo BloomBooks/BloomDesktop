@@ -139,7 +139,7 @@ describe("setCanvasElementRotation", () => {
         expect(element.classList.contains(kRotatedClass)).toBe(false);
     });
 
-    it("treats a whole turn as no rotation at all", () => {
+    it("treats a full rotation as no rotation at all", () => {
         const element = makeCanvasElement();
         setCanvasElementRotation(element, 360);
         expect(element.style.transform).toBe("");
@@ -164,6 +164,15 @@ describe("canRotateCanvasElement", () => {
         expect(canRotateCanvasElement(element)).toBe(false);
     });
 
+    it("refuses a video", () => {
+        const element = makeCanvasElement();
+        const videoContainer = document.createElement("div");
+        videoContainer.classList.add("bloom-videoContainer");
+        element.appendChild(videoContainer);
+        expect(element.getAttribute("data-test-bubble-style")).toBeNull();
+        expect(canRotateCanvasElement(element)).toBe(false);
+    });
+
     it("allows an element whose bubble style is none", () => {
         const element = makeCanvasElement();
         element.setAttribute("data-test-bubble-style", "none");
@@ -176,24 +185,24 @@ describe("rotateVector and unrotateVector", () => {
         expect(rotateVector(3, 4, 0)).toEqual({ x: 3, y: 4 });
     });
 
-    it("turns clockwise, which is down the screen from the x axis", () => {
-        const turned = rotateVector(10, 0, 90);
-        expect(turned.x).toBeCloseTo(0);
-        expect(turned.y).toBeCloseTo(10);
+    it("rotates clockwise, which is down the screen from the x axis", () => {
+        const rotated = rotateVector(10, 0, 90);
+        expect(rotated.x).toBeCloseTo(0);
+        expect(rotated.y).toBeCloseTo(10);
     });
 
-    it("turns half a turn", () => {
-        const turned = rotateVector(10, 5, 180);
-        expect(turned.x).toBeCloseTo(-10);
-        expect(turned.y).toBeCloseTo(-5);
+    it("rotates 180 degrees", () => {
+        const rotated = rotateVector(10, 5, 180);
+        expect(rotated.x).toBeCloseTo(-10);
+        expect(rotated.y).toBeCloseTo(-5);
     });
 
-    it("undoes the turn", () => {
-        const turned = rotateVector(7, -3, 37);
-        // Sanity check: the turn really moved the vector.
-        expect(turned.x).not.toBeCloseTo(7);
+    it("undoes the rotation", () => {
+        const rotated = rotateVector(7, -3, 37);
+        // Sanity check: the rotation really moved the vector.
+        expect(rotated.x).not.toBeCloseTo(7);
 
-        const back = unrotateVector(turned.x, turned.y, 37);
+        const back = unrotateVector(rotated.x, rotated.y, 37);
 
         expect(back.x).toBeCloseTo(7);
         expect(back.y).toBeCloseTo(-3);
@@ -210,11 +219,11 @@ describe("isPointInsideRotatedCanvasElement", () => {
         );
     });
 
-    it("tests the turned box when the element is rotated", () => {
+    it("tests the rotated box when the element is rotated", () => {
         const element = makeCanvasElement();
         giveElementABox(element, 100, 100, 100, 20);
         setCanvasElementRotation(element, 90);
-        // A quarter turn about the centre (150, 110) puts the long side up and down the
+        // A 90-degree rotation about the centre (150, 110) puts the long side up and down the
         // screen, so a point above the centre is now inside and one beside it is not.
         expect(isPointInsideRotatedCanvasElement(element, 150, 155)).toBe(true);
         expect(isPointInsideRotatedCanvasElement(element, 195, 110)).toBe(
@@ -242,30 +251,30 @@ describe("getHandleCursorForRotation", () => {
         expect(getHandleCursorForRotation("sw", 0)).toBe("sw-resize");
     });
 
-    it("swaps the two axes of the sides at a quarter turn", () => {
+    it("swaps the two axes of the sides at a 90-degree rotation", () => {
         expect(getHandleCursorForRotation("n", 90)).toBe("ew-resize");
         expect(getHandleCursorForRotation("e", 90)).toBe("ns-resize");
     });
 
     it("gives a side the diagonal its axis really lies on at 45 degrees", () => {
-        // A vertical axis turned 45 degrees clockwise runs from the bottom left to the top
+        // A vertical axis rotated 45 degrees clockwise runs from the bottom left to the top
         // right, so the north handle takes the north-east to south-west cursor.
         expect(getHandleCursorForRotation("n", 45)).toBe("nesw-resize");
         expect(getHandleCursorForRotation("e", 45)).toBe("nwse-resize");
     });
 
-    it("moves a corner round to the direction the turn takes it to", () => {
+    it("moves a corner round to the direction the rotation takes it to", () => {
         expect(getHandleCursorForRotation("nw", 90)).toBe("ne-resize");
         expect(getHandleCursorForRotation("nw", 45)).toBe("n-resize");
         expect(getHandleCursorForRotation("se", 180)).toBe("nw-resize");
     });
 
-    it("takes an angle to the nearest eighth of a turn", () => {
+    it("takes an angle to the nearest 45 degrees", () => {
         expect(getHandleCursorForRotation("n", 4)).toBe("ns-resize");
         expect(getHandleCursorForRotation("n", 88)).toBe("ew-resize");
     });
 
-    it("treats a whole turn as no turn", () => {
+    it("treats a full rotation as no rotation", () => {
         expect(getHandleCursorForRotation("nw", 360)).toBe("nw-resize");
         expect(getHandleCursorForRotation("n", 720)).toBe("ns-resize");
     });

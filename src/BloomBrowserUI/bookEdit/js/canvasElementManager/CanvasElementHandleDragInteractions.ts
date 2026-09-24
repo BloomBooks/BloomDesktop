@@ -51,22 +51,22 @@ export interface ICanvasElementHandleDragInteractionsHost {
 // Where a picture lands inside the canvas element that holds it, in the element's own
 // coordinates.
 //
-// The picture's own box may be turned inside the element, by the Rotate Right command on a page
-// background. A CSS transform turns the box about its own centre and leaves the layout alone, so
+// The picture's own box may be rotated inside the element, by the Rotate Right command on a page
+// background. A CSS transform rotates the box about its own centre and leaves the layout alone, so
 // what the element shows is a rectangle the size of the box with its two dimensions swapped for
-// an odd number of quarter turns, centred where the layout put the box's centre. Every crop
+// an odd number of 90-degree rotations, centred where the layout put the box's centre. Every crop
 // measurement has to use this rectangle. The box itself, which the picture's `left`, `top` and
-// `width` describe, is the right answer only for a picture that is not turned.
+// `width` describe, is the right answer only for a picture that is not rotated.
 export function getShownContentRectangle(
     boxLeft: number,
     boxTop: number,
     boxWidth: number,
     boxHeight: number,
-    quarterTurns: number,
+    quarterRotations: number,
 ): { left: number; top: number; width: number; height: number } {
-    const isQuarterTurn = quarterTurns % 2 === 1;
-    const width = isQuarterTurn ? boxHeight : boxWidth;
-    const height = isQuarterTurn ? boxWidth : boxHeight;
+    const isQuarterRotation = quarterRotations % 2 === 1;
+    const width = isQuarterRotation ? boxHeight : boxWidth;
+    const height = isQuarterRotation ? boxWidth : boxHeight;
     return {
         left: boxLeft + boxWidth / 2 - width / 2,
         top: boxTop + boxHeight / 2 - height / 2,
@@ -83,7 +83,7 @@ export function getCroppedSides(
     boxTop: number,
     boxWidth: number,
     boxHeight: number,
-    quarterTurns: number,
+    quarterRotations: number,
     // Client values are whole pixels, and rounding easily produces a spurious difference of one.
     slop = 1,
 ): { n: boolean; e: boolean; s: boolean; w: boolean } {
@@ -92,7 +92,7 @@ export function getCroppedSides(
         boxTop,
         boxWidth,
         boxHeight,
-        quarterTurns,
+        quarterRotations,
     );
     return {
         n: shown.top < -slop,
@@ -106,8 +106,8 @@ export function getCroppedSides(
 // author drags it about inside the crop. The wanted position is what the pointer asks for; the
 // result is that position pulled back far enough that no blank band appears at an edge.
 //
-// The box is what we write, but the element shows the turned rectangle, so the limits belong to
-// that rectangle. On a picture whose two dimensions differ, and which is turned, the two frames
+// The box is what we write, but the element shows the rotated rectangle, so the limits belong to
+// that rectangle. On a picture whose two dimensions differ, and which is rotated, the two frames
 // disagree by half the difference, which is enough to hold the picture still through a whole
 // drag.
 export function clampCropPosition(
@@ -117,14 +117,14 @@ export function clampCropPosition(
     wantedBoxTop: number,
     boxWidth: number,
     boxHeight: number,
-    quarterTurns: number,
+    quarterRotations: number,
 ): { left: number; top: number } {
     const shown = getShownContentRectangle(
         wantedBoxLeft,
         wantedBoxTop,
         boxWidth,
         boxHeight,
-        quarterTurns,
+        quarterRotations,
     );
     const clampedShownLeft = Math.max(
         Math.min(shown.left, 0),
@@ -134,7 +134,7 @@ export function clampCropPosition(
         Math.min(shown.top, 0),
         elementHeight - shown.height,
     );
-    // The turn moves the box and the rectangle it shows by the same amount, so one difference
+    // The rotation moves the box and the rectangle it shows by the same amount, so one difference
     // carries the clamp back into the box's own frame.
     return {
         left: wantedBoxLeft + clampedShownLeft - shown.left,
@@ -221,7 +221,7 @@ export class CanvasElementHandleDragInteractions {
         );
     }
 
-    // A rotated element turns about its own centre, so changing the size of the box moves
+    // A rotated element rotates about its own centre, so changing the size of the box moves
     // what the user sees at both ends of it: the edge or corner opposite the one being
     // dragged drifts away. This shifts the element to put that opposite edge back where it
     // was on screen.
@@ -253,7 +253,7 @@ export class CanvasElementHandleDragInteractions {
             newTop +
             activeElement.clientHeight / 2 -
             (this.oldTop + this.oldHeight / 2);
-        // On screen that shift appears turned by the element's angle. The difference between
+        // On screen that shift appears rotated by the element's angle. The difference between
         // where it appears and where the arithmetic put it is what we must undo.
         const onScreen = rotateVector(centerShiftX, centerShiftY, rotation);
         activeElement.style.left = `${newLeft + onScreen.x - centerShiftX}px`;
@@ -261,7 +261,7 @@ export class CanvasElementHandleDragInteractions {
     }
 
     // Start dragging the rotate handle (the "lollipop" above the top of the control frame).
-    // We turn the element by however far the pointer travels around its centre, so the point
+    // We rotate the element by however far the pointer travels around its centre, so the point
     // the user grabbed stays under the pointer.
     public startRotateDrag = (event: MouseEvent) => {
         event.preventDefault();
@@ -270,8 +270,8 @@ export class CanvasElementHandleDragInteractions {
         if (!activeElement) return;
         this.currentDragControl = event.currentTarget as HTMLElement;
         this.currentDragControl.classList.add("active-control");
-        // Turning about the centre leaves the centre of the bounding rectangle where it was,
-        // so this is the centre of rotation whether or not the element is already turned.
+        // Rotating about the centre leaves the centre of the bounding rectangle where it was,
+        // so this is the centre of rotation whether or not the element is already rotated.
         const bounds = activeElement.getBoundingClientRect();
         this.rotateCenterX = bounds.left + bounds.width / 2;
         this.rotateCenterY = bounds.top + bounds.height / 2;
@@ -414,7 +414,7 @@ export class CanvasElementHandleDragInteractions {
             this.oldImageTop + deltaY,
             img.clientWidth,
             img.clientHeight,
-            getImageContentTransform(img).quarterTurns,
+            getImageContentTransform(img).quarterRotations,
         );
         imgStyle.left = newLeft + "px";
         imgStyle.top = newTop + "px";
@@ -930,24 +930,24 @@ export class CanvasElementHandleDragInteractions {
         const minHeight = this.host.getMinHeight();
 
         // How far each edge can travel is a property of the rectangle the element shows, not of
-        // the picture's own box, and the two differ on a turned picture. The n and w handles move
+        // the picture's own box, and the two differ on a rotated picture. The n and w handles move
         // the picture as well as the edge, so they measure from where the picture was when this
         // drag began; the s and e handles leave the picture alone, so they measure from where it
         // was when this handle was first taken hold of.
-        const quarterTurns = getImageContentTransform(img).quarterTurns;
+        const quarterRotations = getImageContentTransform(img).quarterRotations;
         const shownNow = getShownContentRectangle(
             this.oldImageLeft,
             this.oldImageTop,
             this.oldImageWidth,
             this.oldImageHeight,
-            quarterTurns,
+            quarterRotations,
         );
         const shownAtFirst = getShownContentRectangle(
             this.initialCropImageLeft,
             this.initialCropImageTop,
             this.initialCropImageWidth,
             this.initialCropImageHeight,
-            quarterTurns,
+            quarterRotations,
         );
 
         switch (this.currentDragSide) {
@@ -1089,8 +1089,8 @@ export class CanvasElementHandleDragInteractions {
             return;
         }
         // Compare the laid-out positions and sizes rather than the on-screen rectangles.
-        // getBoundingClientRect reports the upright box around a turned element, which is
-        // larger than the element itself, so on a turned element it puts the mark on sides
+        // getBoundingClientRect reports the upright box around a rotated element, which is
+        // larger than the element itself, so on a rotated element it puts the mark on sides
         // that are not cropped. The image and the element are inside the same rotation, so
         // their own offsets, widths and heights compare directly.
         let imgLeft = 0;
@@ -1110,7 +1110,7 @@ export class CanvasElementHandleDragInteractions {
             imgTop,
             img.offsetWidth,
             img.offsetHeight,
-            getImageContentTransform(img).quarterTurns,
+            getImageContentTransform(img).quarterRotations,
         );
         sideHandles.forEach((handle) => {
             const longClass = Array.from(handle.classList).find((c) =>

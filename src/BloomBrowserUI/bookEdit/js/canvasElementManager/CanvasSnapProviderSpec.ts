@@ -47,7 +47,7 @@ describe("CanvasSnapProvider.getSnappedRotation", () => {
         expect(snapProvider.getSnappedRotation(-43, plainEvent)).toBe(-45);
     });
 
-    it("snaps an angle near a whole turn to the whole turn", () => {
+    it("snaps an angle near a full rotation to the full rotation", () => {
         // 360 rather than 0: the caller brings the angle into range when it writes it.
         expect(snapProvider.getSnappedRotation(359, plainEvent)).toBe(360);
     });

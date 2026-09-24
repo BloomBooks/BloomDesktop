@@ -26,10 +26,10 @@ describe("getCroppedSides", () => {
         });
     });
 
-    it("marks the sides the element really hides for a turned picture", () => {
-        // The same crop after a quarter turn, as Rotate Right leaves it: a box 720 by 480 at
+    it("marks the sides the element really hides for a rotated picture", () => {
+        // The same crop after a 90-degree rotation, as Rotate Right leaves it: a box 720 by 480 at
         // (-120, -80) in an element 480 by 320. The box hangs outside on all four sides in its
-        // own coordinates, but the turn shows a rectangle 480 by 720, which fits the element's
+        // own coordinates, but the rotation shows a rectangle 480 by 720, which fits the element's
         // width exactly and hangs out above and below.
         expect(getCroppedSides(480, 320, -120, -80, 720, 480, 1)).toEqual({
             n: true,
@@ -39,10 +39,10 @@ describe("getCroppedSides", () => {
         });
     });
 
-    it("treats a half turn like no turn, because it swaps nothing", () => {
+    it("treats a 180-degree rotation like no rotation, because it swaps nothing", () => {
         const upright = getCroppedSides(480, 720, -300, 0, 1080, 720, 0);
-        const halfTurned = getCroppedSides(480, 720, -300, 0, 1080, 720, 2);
-        expect(halfTurned).toEqual(upright);
+        const halfRotated = getCroppedSides(480, 720, -300, 0, 1080, 720, 2);
+        expect(halfRotated).toEqual(upright);
     });
 
     it("does not mark a side for a difference of less than a pixel", () => {
@@ -57,7 +57,7 @@ describe("getCroppedSides", () => {
 });
 
 describe("getShownContentRectangle", () => {
-    it("returns the box itself when the picture is not turned", () => {
+    it("returns the box itself when the picture is not rotated", () => {
         expect(getShownContentRectangle(-300, 0, 1080, 720, 0)).toEqual({
             left: -300,
             top: 0,
@@ -66,9 +66,9 @@ describe("getShownContentRectangle", () => {
         });
     });
 
-    it("swaps the two dimensions about the centre for a quarter turn", () => {
+    it("swaps the two dimensions about the centre for a 90-degree rotation", () => {
         // The layout Rotate Right leaves on a cropped page background: a box 720 by 480 at
-        // (-120, -80). The turn is about the box's own centre, at (240, 160), so the element
+        // (-120, -80). The rotation is about the box's own centre, at (240, 160), so the element
         // shows 480 by 720 there, which starts at the element's left edge and reaches 200
         // above its top.
         expect(getShownContentRectangle(-120, -80, 720, 480, 1)).toEqual({
@@ -79,7 +79,7 @@ describe("getShownContentRectangle", () => {
         });
     });
 
-    it("returns the box itself for a half turn, which swaps nothing", () => {
+    it("returns the box itself for a 180-degree rotation, which swaps nothing", () => {
         expect(getShownContentRectangle(-120, -80, 720, 480, 2)).toEqual({
             left: -120,
             top: -80,
@@ -113,8 +113,8 @@ describe("clampCropPosition", () => {
         });
     });
 
-    it("uses the turned rectangle, not the box, for a turned picture", () => {
-        // Element 480 by 320, holding a box 720 by 480 given a quarter turn, so the element
+    it("uses the rotated rectangle, not the box, for a rotated picture", () => {
+        // Element 480 by 320, holding a box 720 by 480 given a 90-degree rotation, so the element
         // shows 480 by 720. The width matches the element exactly, so the only position that
         // leaves no blank band puts the box at -120. Up and down, the box may sit anywhere
         // from -280 to 120, and 200 is past that.
@@ -128,7 +128,7 @@ describe("clampCropPosition", () => {
         });
     });
 
-    it("lets a turned picture move where the box's own numbers would pin it", () => {
+    it("lets a rotated picture move where the box's own numbers would pin it", () => {
         // The bug this fixes: measuring the box rather than what the element shows made the
         // limits cross each other, and the same position came back for every drag.
         const high = clampCropPosition(480, 320, 0, -100, 720, 480, 1);

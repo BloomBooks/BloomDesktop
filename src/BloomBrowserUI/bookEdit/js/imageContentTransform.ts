@@ -1,9 +1,9 @@
-// Turning and mirroring the picture inside its container.
+// Rotating and mirroring the picture inside its container.
 //
 // This is separate from rotating a whole canvas element (canvasElementManager/
-// canvasElementRotation.ts). There the box turns on the page and the picture rides round with
-// it. Here the picture turns inside the page's picture area: the Rotate Right command uses this
-// for a page background picture, whose box is the page's picture area itself and so cannot turn
+// canvasElementRotation.ts). There the box rotates on the page and the picture rides round with
+// it. Here the picture rotates inside the page's picture area: the Rotate Right command uses this
+// for a page background picture, whose box is the page's picture area itself and so cannot rotate
 // on the page, and the Flip commands use it for every picture, because mirroring a box would
 // make no sense.
 //
@@ -13,14 +13,14 @@
 // JavaScript runs, so it is the single source of truth and this module owns the parsing.
 //
 // The three logical values we keep are:
-// - a number of quarter turns clockwise, 0 to 3, from the `rotate` part;
+// - a number of 90-degree rotations clockwise, 0 to 3, from the `rotate` part;
 // - whether the picture is mirrored along its own x axis, from the sign of sx;
 // - whether it is mirrored along its own y axis, from the sign of sy.
 //
-// The scale carries the mirrors and nothing else: each factor is 1 or -1. A quarter turn
+// The scale carries the mirrors and nothing else: each factor is 1 or -1. A 90-degree rotation
 // leaves the picture's layout box lying across its container, and we answer that by moving
 // the box and the box's own canvas element, not by shrinking the picture. See
-// computeTurnedBackgroundLayout.
+// computeRotatedBackgroundLayout.
 
 import {
     kBackgroundImageClass,
@@ -31,11 +31,11 @@ import {
 export type FlipAxis = "horizontal" | "vertical";
 
 interface ImageContentTransform {
-    // Quarter turns clockwise: 0, 1, 2 or 3.
-    quarterTurns: number;
-    // Mirrored along the picture's own x axis (before the turn is applied).
+    // 90-degree rotations clockwise: 0, 1, 2 or 3.
+    quarterRotations: number;
+    // Mirrored along the picture's own x axis (before the rotation is applied).
     flipX: boolean;
-    // Mirrored along the picture's own y axis (before the turn is applied).
+    // Mirrored along the picture's own y axis (before the rotation is applied).
     flipY: boolean;
 }
 
@@ -43,20 +43,20 @@ const kRotatePattern = /rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)/;
 const kScalePattern =
     /scale\(\s*(-?[0-9]*\.?[0-9]+)\s*(?:,\s*(-?[0-9]*\.?[0-9]+)\s*)?\)/;
 
-// Read the current turn and mirror state of the picture.
+// Read the current rotation and mirror state of the picture.
 export function getImageContentTransform(
     img: HTMLImageElement,
 ): ImageContentTransform {
     const transform = img.style.transform ?? "";
 
-    let quarterTurns = 0;
+    let quarterRotations = 0;
     const rotateMatch = kRotatePattern.exec(transform);
     if (rotateMatch) {
         const degrees = parseFloat(rotateMatch[1]);
-        // Round to the nearest quarter turn. Only quarter turns can get here, because this
+        // Round to the nearest multiple of 90 degrees. Only 90-degree rotations can get here, because this
         // is the only code that writes the value, but rounding keeps a hand-edited or
-        // future value from producing a fractional turn count.
-        quarterTurns = ((Math.round(degrees / 90) % 4) + 4) % 4;
+        // future value from producing a fractional rotation count.
+        quarterRotations = ((Math.round(degrees / 90) % 4) + 4) % 4;
     }
 
     let flipX = false;
@@ -70,16 +70,16 @@ export function getImageContentTransform(
         flipY = sy < 0;
     }
 
-    return { quarterTurns, flipX, flipY };
+    return { quarterRotations, flipX, flipY };
 }
 
-// True if the picture has been turned or mirrored at all.
+// True if the picture has been rotated or mirrored at all.
 export function imageContentIsTransformed(img: HTMLImageElement): boolean {
     const state = getImageContentTransform(img);
-    return state.quarterTurns !== 0 || state.flipX || state.flipY;
+    return state.quarterRotations !== 0 || state.flipX || state.flipY;
 }
 
-// Write the turn and mirror state back to the img's inline transform.
+// Write the rotation and mirror state back to the img's inline transform.
 function setImageContentTransform(
     img: HTMLImageElement,
     state: ImageContentTransform,
@@ -87,15 +87,15 @@ function setImageContentTransform(
     const sx = state.flipX ? -1 : 1;
     const sy = state.flipY ? -1 : 1;
 
-    if (state.quarterTurns === 0 && sx === 1 && sy === 1) {
+    if (state.quarterRotations === 0 && sx === 1 && sy === 1) {
         // Back to the original picture, so leave no transform behind at all.
         img.style.transform = "";
         return;
     }
 
     const parts: string[] = [];
-    if (state.quarterTurns !== 0) {
-        parts.push(`rotate(${state.quarterTurns * 90}deg)`);
+    if (state.quarterRotations !== 0) {
+        parts.push(`rotate(${state.quarterRotations * 90}deg)`);
     }
     if (sx !== 1 || sy !== 1) {
         parts.push(`scale(${sx}, ${sy})`);
@@ -103,7 +103,7 @@ function setImageContentTransform(
     img.style.transform = parts.join(" ");
 }
 
-// Put the picture back the way it arrived: no turn and no mirror. The Reset Image command
+// Put the picture back the way it arrived: no rotation and no mirror. The Reset Image command
 // uses this together with removing the crop. It does not touch the rotation of a canvas
 // element box, which is a property of the box rather than of the picture.
 export function clearImageContentTransform(img: HTMLImageElement): void {
@@ -117,34 +117,34 @@ export interface BackgroundPictureLayout {
     elementHeight: number;
     elementLeft: number;
     elementTop: number;
-    // The picture's layout box, which is what a transform then turns.
+    // The picture's layout box, which is what a transform then rotates.
     imageWidth: number;
     imageHeight: number;
     imageLeft: number;
     imageTop: number;
 }
 
-// Where a background picture and its canvas element must go after one more quarter turn.
+// Where a background picture and its canvas element must go after one more 90-degree rotation.
 //
 // Bloom shows a background picture by giving its canvas element the shape of the picture and
 // centring that element in the page's picture area. A picture that is not the shape of the page
 // therefore leaves blank bands above and below (or left and right), and the Expand Image
-// command is there for an author who would rather fill the page. A quarter turn changes the
+// command is there for an author who would rather fill the page. A 90-degree rotation changes the
 // shape of the picture, so it has to change the shape of the element in the same way: what you
-// get by turning a picture is what you would have got if the picture had arrived already
-// turned.
+// get by rotating a picture is what you would have got if the picture had arrived already
+// rotated.
 //
-// So we turn the whole content of the element, which swaps the element's two dimensions, and
-// then scale everything so that the swapped element fits the page again. Turning the content of
-// a container of width Cw and height Ch a quarter turn clockwise gives a container of width Ch
-// and height Cw, and carries the point (x, y) to (Ch - y, x). The picture's box turns about its
+// So we rotate the whole content of the element, which swaps the element's two dimensions, and
+// then scale everything so that the swapped element fits the page again. Rotating the content of
+// a container of width Cw and height Ch 90 degrees clockwise gives a container of width Ch
+// and height Cw, and carries the point (x, y) to (Ch - y, x). The picture's box rotates about its
 // own centre, because that is what a CSS transform does, so the only thing we have to place is
 // that centre.
 //
 // The caller passes the picture's drawn rectangle, not its layout box. For a cropped picture the
 // two are the same, but an uncropped picture is drawn inside its box by object-fit, and it is
 // the drawn rectangle that has to land in the right place.
-export function computeTurnedBackgroundLayout(
+export function computeRotatedBackgroundLayout(
     // The bloom-canvas: the page's picture area.
     pageWidth: number,
     pageHeight: number,
@@ -161,7 +161,7 @@ export function computeTurnedBackgroundLayout(
     // its ends clipped, instead of fitting inside the page with blank bands.
     fillsPage: boolean,
 ): BackgroundPictureLayout {
-    // The turned element measures elementHeight by elementWidth. Scale it to the page.
+    // The rotated element measures elementHeight by elementWidth. Scale it to the page.
     const widthRatio = pageWidth / elementHeight;
     const heightRatio = pageHeight / elementWidth;
     const scale = fillsPage
@@ -171,13 +171,13 @@ export function computeTurnedBackgroundLayout(
     const newElementWidth = fillsPage ? pageWidth : scale * elementHeight;
     const newElementHeight = fillsPage ? pageHeight : scale * elementWidth;
 
-    // Where the turned content sits inside the new element. When the element fits the page, the
+    // Where the rotated content sits inside the new element. When the element fits the page, the
     // two are the same size and this is zero. When the element fills the page, the content is
     // bigger than the element, and we centre it so that equal amounts are clipped from each end.
     const shiftLeft = (newElementWidth - scale * elementHeight) / 2;
     const shiftTop = (newElementHeight - scale * elementWidth) / 2;
 
-    // The centre of the picture's box, carried by the turn and then scaled.
+    // The centre of the picture's box, carried by the rotation and then scaled.
     const centreX =
         scale * (elementHeight - imageTop - imageHeight / 2) + shiftLeft;
     const centreY = scale * (imageLeft + imageWidth / 2) + shiftTop;
@@ -250,22 +250,22 @@ function getDrawnPictureRectangle(
     };
 }
 
-// Move the picture's canvas element and the picture inside it for one more quarter turn, and say
+// Move the picture's canvas element and the picture inside it for one more 90-degree rotation, and say
 // whether it worked. It does not touch the transform; the caller does that.
 //
-// This is where a crop survives a turn. The four numbers that hold a crop say how big to draw
+// This is where a crop survives a rotation. The four numbers that hold a crop say how big to draw
 // the whole picture and how far to move it up and to the left. They describe the picture as it
-// lies before the turn, and they stay true of it afterwards: all that changes is where that box
-// has to be for the turned picture to land on the page.
+// lies before the rotation, and they stay true of it afterwards: all that changes is where that box
+// has to be for the rotated picture to land on the page.
 //
-// There are two kinds of element to place the turned content in, and one formula covers both.
+// There are two kinds of element to place the rotated content in, and one formula covers both.
 // A background picture has to fit the page's picture area, so its element is scaled to that
 // area and centred in it. Any other element keeps the size it has, so the area is that element
-// with its own two dimensions swapped, the scale comes out as one, and the element turns about
+// with its own two dimensions swapped, the scale comes out as one, and the element rotates about
 // its own centre and stays where the author put it. The Rotate Right command reaches an element
-// of the second kind when its box cannot turn on the page for some other reason, which is the
+// of the second kind when its box cannot rotate on the page for some other reason, which is the
 // case for an element whose outline comicaljs draws.
-function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
+function setRotatedBackgroundLayout(img: HTMLImageElement): boolean {
     const element = img.closest(kCanvasElementSelector) as HTMLElement | null;
     const page = img.closest(kBloomCanvasSelector) as HTMLElement | null;
     if (!element || !page) {
@@ -274,7 +274,7 @@ function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
     const isBackground = element.classList.contains(kBackgroundImageClass);
     const elementWidth = element.clientWidth;
     const elementHeight = element.clientHeight;
-    // The area the turned element has to land in.
+    // The area the rotated element has to land in.
     const areaWidth = isBackground ? page.clientWidth : elementHeight;
     const areaHeight = isBackground ? page.clientHeight : elementWidth;
     const picture = getDrawnPictureRectangle(img);
@@ -286,11 +286,11 @@ function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
         !picture
     ) {
         // Something has not been laid out yet, so we have nothing to measure and would write
-        // nonsense. The turn itself still happens, and the container clips any overhang.
+        // nonsense. The rotation itself still happens, and the container clips any overhang.
         return false;
     }
 
-    const layout = computeTurnedBackgroundLayout(
+    const layout = computeRotatedBackgroundLayout(
         areaWidth,
         areaHeight,
         elementWidth,
@@ -309,7 +309,7 @@ function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
         element.style.left = `${roundPx(layout.elementLeft)}px`;
         element.style.top = `${roundPx(layout.elementTop)}px`;
     } else {
-        // Turned about its own centre, so the element stays where the author put it.
+        // Rotated about its own centre, so the element stays where the author put it.
         element.style.left = `${roundPx(
             pxOrZero(element.style.left) +
                 (elementWidth - layout.elementWidth) / 2,
@@ -322,11 +322,11 @@ function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
 
     // If the picture fills its element again, it needs no numbers of its own. Leaving them off
     // matters: an explicit width is how the rest of Bloom recognizes a crop, so an uncropped
-    // picture must not acquire one just by being turned. The other direction matters as well.
+    // picture must not acquire one just by being rotated. The other direction matters as well.
     // When the page changes size, adjustBackgroundImageSizeToFit keeps the element's own shape
     // for a picture that has a width and goes back to the picture's natural shape for one that
-    // has none. A quarter turn always writes a width, so the turned shape survives a resize; a
-    // half turn writes none, and the natural shape is then the right one.
+    // has none. A 90-degree rotation always writes a width, so the rotated shape survives a resize; a
+    // 180-degree rotation writes none, and the natural shape is then the right one.
     const fillsElementExactly =
         Math.abs(layout.imageWidth - layout.elementWidth) < 1 &&
         Math.abs(layout.imageHeight - layout.elementHeight) < 1 &&
@@ -349,30 +349,30 @@ function setTurnedBackgroundLayout(img: HTMLImageElement): boolean {
     return true;
 }
 
-// Turn the picture a quarter turn clockwise inside the page's picture area, keeping any crop the
-// author made. See setTurnedBackgroundLayout for how, and computeTurnedBackgroundLayout for why
+// Rotate the picture 90 degrees clockwise inside the page's picture area, keeping any crop the
+// author made. See setRotatedBackgroundLayout for how, and computeRotatedBackgroundLayout for why
 // the picture's own canvas element changes shape as well.
 export function rotateImageContentRight(img: HTMLImageElement): void {
     const state = getImageContentTransform(img);
     // Measure and move first: clientWidth reports the layout box, which a transform does not
     // change, so the old transform can stay in place while we measure.
-    setTurnedBackgroundLayout(img);
+    setRotatedBackgroundLayout(img);
     setImageContentTransform(img, {
         ...state,
-        quarterTurns: (state.quarterTurns + 1) % 4,
+        quarterRotations: (state.quarterRotations + 1) % 4,
     });
 }
 
 // Mirror the picture about the axis the user sees on screen. "Horizontal" means left and
-// right change places on screen, whichever way the picture has been turned. After an odd
-// number of quarter turns the picture's own x axis runs up and down the screen, so a
+// right change places on screen, whichever way the picture has been rotated. After an odd
+// number of 90-degree rotations the picture's own x axis runs up and down the screen, so a
 // horizontal flip on screen is a flip of the picture's y axis.
 //
-// The canvas element box can be turned as well, by the Rotate Right command or by the
-// rotation handle, and that turn moves the picture on screen just as a turn of the picture
-// itself does. The caller passes that angle as boxRotationDegrees. The handle turns to any
+// The canvas element box can be rotated as well, by the Rotate Right command or by the
+// rotation handle, and that rotation moves the picture on screen just as a rotation of the picture
+// itself does. The caller passes that angle as boxRotationDegrees. The handle rotates to any
 // angle, and no mirror of the picture's own axes equals a mirror about the screen axis at,
-// say, 37 degrees, so we take the box angle to the nearest quarter turn and mirror about the
+// say, 37 degrees, so we take the box angle to the nearest multiple of 90 degrees and mirror about the
 // axis of the picture that lies nearest the one the user asked for.
 export function flipImageContent(
     img: HTMLImageElement,
@@ -380,9 +380,11 @@ export function flipImageContent(
     boxRotationDegrees = 0,
 ): void {
     const state = getImageContentTransform(img);
-    const boxQuarterTurns = Math.round(boxRotationDegrees / 90);
-    const isQuarterTurn = (state.quarterTurns + boxQuarterTurns) % 2 !== 0;
-    const flipLocalX = axis === "horizontal" ? !isQuarterTurn : isQuarterTurn;
+    const boxQuarterRotations = Math.round(boxRotationDegrees / 90);
+    const isQuarterRotation =
+        (state.quarterRotations + boxQuarterRotations) % 2 !== 0;
+    const flipLocalX =
+        axis === "horizontal" ? !isQuarterRotation : isQuarterRotation;
     setImageContentTransform(img, {
         ...state,
         flipX: flipLocalX ? !state.flipX : state.flipX,

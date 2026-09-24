@@ -178,47 +178,57 @@ export async function cropImage(
 }
 
 /**
- * How a picture is turned and mirrored on screen: the 2x2 part of a CSS transform, with the part
+ * How a picture is rotated and mirrored on screen: the 2x2 part of a CSS transform, with the part
  * that moves things left out. Upright and unmirrored is { a: 1, b: 0, c: 0, d: 1 }. A picture
- * turned a quarter turn clockwise is { a: 0, b: 1, c: -1, d: 0 }; one mirrored left to right is
+ * rotated 90 degrees clockwise is { a: 0, b: 1, c: -1, d: 0 }; one mirrored left to right is
  * { a: -1, b: 0, c: 0, d: 1 }. Each number is rounded to three places.
  */
-export interface IPictureTurn {
+export interface IPictureRotation {
     a: number;
     b: number;
     c: number;
     d: number;
 }
 
-/** The IPictureTurn of a picture that is neither turned nor mirrored. */
-export const kUprightPicture: IPictureTurn = { a: 1, b: 0, c: 0, d: 1 };
+/** The IPictureRotation of a picture that is neither rotated nor mirrored. */
+export const kUprightPicture: IPictureRotation = { a: 1, b: 0, c: 0, d: 1 };
 
 /**
- * `turn` as it looks after the picture is mirrored about the screen's own axis: "horizontal" swaps
+ * `rotation` as it looks after the picture is mirrored about the screen's own axis: "horizontal" swaps
  * what is on the left and the right of the screen, "vertical" what is at the top and the bottom.
- * This is what the Flip commands promise, however the picture was turned before.
+ * This is what the Flip commands promise, however the picture was rotated before.
  */
 export function mirroredOnScreen(
-    turn: IPictureTurn,
+    rotation: IPictureRotation,
     axis: "horizontal" | "vertical",
-): IPictureTurn {
-    // Mirroring after the turn is the mirror matrix times the turn, which negates one row.
+): IPictureRotation {
+    // Mirroring after the rotation is the mirror matrix times the rotation, which negates one row.
     const clean = (x: number) => (x === 0 ? 0 : x);
     if (axis === "horizontal")
-        return { a: clean(-turn.a), b: turn.b, c: clean(-turn.c), d: turn.d };
-    return { a: turn.a, b: clean(-turn.b), c: turn.c, d: clean(-turn.d) };
+        return {
+            a: clean(-rotation.a),
+            b: rotation.b,
+            c: clean(-rotation.c),
+            d: rotation.d,
+        };
+    return {
+        a: rotation.a,
+        b: clean(-rotation.b),
+        c: rotation.c,
+        d: clean(-rotation.d),
+    };
 }
 
 /**
- * How a picture on the page being shown is turned and mirrored on screen, whatever did it: a turn
- * of its whole box (the rotation knob, or Rotate right on an overlay) and a turn or mirror of the
+ * How a picture on the page being shown is rotated and mirrored on screen, whatever did it: a rotation
+ * of its whole box (the rotation knob, or Rotate right on an overlay) and a rotation or mirror of the
  * picture inside the box (Rotate right on the page's background picture, and Flip) combine here
  * into the one answer a reader's eye gives.
  */
-export async function getPictureTurn(
+export async function getPictureRotation(
     page: Page,
     within?: Locator,
-): Promise<IPictureTurn> {
+): Promise<IPictureRotation> {
     const img = imageIn(page, within);
     await img.waitFor({ state: "attached", timeout: 30000 });
     return img.evaluate((element) => {
@@ -250,8 +260,8 @@ export interface IInlineLayout {
 
 /**
  * How a picture and the canvas element that holds it are laid out, as the values of their inline
- * styles, exactly as they will be saved in the book. The crop, the turn and mirror of the picture,
- * and the size, place and turn of its box all live here, so two equal answers mean the picture is
+ * styles, exactly as they will be saved in the book. The crop, the rotation and mirror of the picture,
+ * and the size, place and rotation of its box all live here, so two equal answers mean the picture is
  * laid out exactly the same. Values, not the style attribute's text: the order of the declarations
  * in that text depends on the order code set them in, which says nothing about the layout.
  */

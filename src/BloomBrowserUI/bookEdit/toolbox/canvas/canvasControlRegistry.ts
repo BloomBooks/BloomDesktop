@@ -569,13 +569,13 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
             getCanvasElementManager()?.resetImage();
         },
     },
-    // "Rotate right" — a quarter turn clockwise. What turns depends on what the image is
+    // "Rotate right" — 90 degrees clockwise. What rotates depends on what the image is
     // part of, because the two cases want different things:
-    // - An ordinary image canvas element turns as a whole, using the same rotation the
+    // - An ordinary image canvas element rotates as a whole, using the same rotation the
     //   rotate handle on the control frame sets, so the two commands cannot disagree.
-    // - A background image fills its bloom-canvas and cannot be turned as a box, so the
-    //   picture inside turns and its own box is reshaped to match. Any cropping is kept: the
-    //   cropped region turns with the picture and is scaled to fit the page.
+    // - A background image fills its bloom-canvas and cannot be rotated as a box, so the
+    //   picture inside rotates and its own box is reshaped to match. Any cropping is kept: the
+    //   cropped region rotates with the picture and is scaled to fit the page.
     rotateRight: {
         kind: "command",
         id: "rotateRight",
@@ -588,7 +588,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
     },
     // "Flip" — mirror the picture. This always applies to the picture rather than to the
     // canvas element, because mirroring a box moves it without changing how it looks.
-    // The axes are the ones the user sees on screen, whatever way the picture is turned.
+    // The axes are the ones the user sees on screen, whatever way the picture is rotated.
     flipImage: {
         kind: "command",
         id: "flipImage",
@@ -617,7 +617,7 @@ export const controlRegistry: Record<TopLevelControlId, IControlDefinition> = {
                         {
                             l10nId: "EditTab.Image.FlipVertical",
                             englishLabel: "Flip vertical",
-                            // The same icon turned a quarter turn, so that the pair reads as
+                            // The same icon rotated 90 degrees, so that the pair reads as
                             // one idea about two axes. MUI has no vertical flip icon.
                             icon: React.createElement(FlipIcon, {
                                 style: { transform: "rotate(90deg)" },

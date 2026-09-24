@@ -13,23 +13,16 @@
 //
 // Not every canvas element can rotate. A speech bubble, thought bubble, caption, rectangle
 // or ellipse has its outline and tail drawn by comicaljs onto a shared SVG layer, from the
-// element's un-rotated offset box. A CSS rotation of the element does not turn that drawn
-// shape, so we do not offer rotation for those elements. See canRotateCanvasElement.
+// element's un-rotated offset box. A CSS rotation of the element does not rotate that drawn
+// shape, so we do not offer rotation for those elements. Nor do we offer it for a video. See
+// canRotateCanvasElement.
 import { Bubble } from "comicaljs";
 import { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
+import { kVideoContainerClass } from "../videoUtils";
 
 // Marks a rotated canvas element. The angle itself is in the inline transform; this class
 // exists so that CSS and selectors can find the rotated elements cheaply.
 export const kRotatedClass = "bloom-rotated";
-
-// Marks the turned canvas element the pointer is inside. A turned element has a CSS transform,
-// which makes it a stacking context, so the high z-indexes its contents use to get above the
-// comicaljs canvas no longer reach past the element itself. The canvas therefore covers the
-// element and takes the pointer, and the browser never gives the element :hover. Anything shown
-// on hover, such as a video's play button, would never appear. CanvasElementPointerInteractions
-// puts this class on the element the pointer is really inside, using the same rotation-aware hit
-// test that click uses, and the CSS accepts it in place of :hover (BL-16741).
-export const kPointerInsideClass = "bloom-pointer-inside";
 
 const kRotatePattern = /rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)/;
 
@@ -65,9 +58,6 @@ export function setCanvasElementRotation(
     if (rounded === 0 || rounded === 360) {
         canvasElement.style.transform = "";
         canvasElement.classList.remove(kRotatedClass);
-        // The code that marks the element the pointer is inside only ever visits the turned
-        // elements, so it can neither find nor clear this once the element is upright again.
-        canvasElement.classList.remove(kPointerInsideClass);
     } else {
         canvasElement.style.transform = `rotate(${rounded}deg)`;
         canvasElement.classList.add(kRotatedClass);
@@ -76,10 +66,16 @@ export function setCanvasElementRotation(
 
 // True if we offer rotation for this canvas element.
 export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
-    // The background image fills its bloom-canvas and cannot be moved or resized, so turning
-    // the box makes no sense. The Rotate Right command turns the picture inside the box
+    // The background image fills its bloom-canvas and cannot be moved or resized, so rotating
+    // the box makes no sense. The Rotate Right command rotates the picture inside the box
     // instead; see rotateImageContentRight in imageContentTransform.ts.
     if (canvasElement.classList.contains(kBackgroundImageClass)) {
+        return false;
+    }
+    // A rotated element is a stacking context, so the comicaljs canvas covers its contents and
+    // takes the pointer. A video's play, pause and replay buttons would then never show on
+    // hover or receive a click.
+    if (canvasElement.getElementsByClassName(kVideoContainerClass).length > 0) {
         return false;
     }
     // comicaljs draws these shapes axis-aligned; see the note at the top of this file.
@@ -88,7 +84,7 @@ export function canRotateCanvasElement(canvasElement: HTMLElement): boolean {
 }
 
 // Rotate the vector (x, y) by the given angle, clockwise, which is the direction CSS
-// `rotate()` turns in a document whose y axis points down.
+// `rotate()` rotates in a document whose y axis points down.
 export function rotateVector(
     x: number,
     y: number,
@@ -120,16 +116,16 @@ export function unrotateVector(
 // The eight directions of the eight directional resize cursors, clockwise from the top.
 const kClockwiseDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 
-// The cursors for an axis, one for each 45 degrees of turn from the vertical. A vertical axis
-// turned 45 degrees clockwise runs from the bottom left to the top right, which is the
+// The cursors for an axis, one for each 45 degrees of rotation from the vertical. A vertical axis
+// rotated 45 degrees clockwise runs from the bottom left to the top right, which is the
 // north-east to south-west diagonal, so that cursor comes second.
 const kAxisCursors = ["ns-resize", "nesw-resize", "ew-resize", "nwse-resize"];
 
-// The cursor for one handle of the control frame on an element turned by the given angle. The
-// handles turn with the element, but a cursor cannot turn, so a handle on a turned element
+// The cursor for one handle of the control frame on an element rotated by the given angle. The
+// handles rotate with the element, but a cursor cannot rotate, so a handle on a rotated element
 // needs the cursor of another direction. There are only eight cursors, so the angle is taken
-// to the nearest eighth of a turn. A corner moves along one of the eight directions and takes
-// a directional cursor; a side moves along an axis, and an axis turned half a turn is the same
+// to the nearest 45 degrees. A corner moves along one of the eight directions and takes
+// a directional cursor; a side moves along an axis, and an axis rotated 180 degrees is the same
 // axis, so four cursors cover the sides.
 export function getHandleCursorForRotation(
     handle: "n" | "e" | "s" | "w" | "nw" | "ne" | "se" | "sw",
@@ -159,7 +155,7 @@ export function isPointInsideRotatedCanvasElement(
     const height = canvasElement.offsetHeight;
     const centerX = left + width / 2;
     const centerY = top + height / 2;
-    // Turning the point back by the element's angle puts it in the same frame as the
+    // Rotating the point back by the element's angle puts it in the same frame as the
     // un-rotated box, where the test is a simple rectangle containment.
     const local = unrotateVector(x - centerX, y - centerY, degrees);
     return Math.abs(local.x) <= width / 2 && Math.abs(local.y) <= height / 2;

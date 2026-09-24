@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
     clearImageContentTransform,
-    computeTurnedBackgroundLayout,
+    computeRotatedBackgroundLayout,
     flipImageContent,
     getImageContentTransform,
     imageContentIsTransformed,
@@ -9,8 +9,8 @@ import {
 } from "./imageContentTransform";
 
 // A picture inside a container, which is what the code expects. There is no page and no canvas
-// element around it, so a turn of this picture changes only the transform. That keeps the
-// transform easy to read in the tests that are about the turn and the mirror; the tests about
+// element around it, so a rotation of this picture changes only the transform. That keeps the
+// transform easy to read in the tests that are about the rotation and the mirror; the tests about
 // where a background picture lands use makeBackgroundImage below.
 function makeImage(): HTMLImageElement {
     const container = document.createElement("div");
@@ -47,7 +47,7 @@ function getScaleMagnitude(img: HTMLImageElement): number | undefined {
 // A page background picture as Bloom builds it: the page's picture area (the bloom-canvas), the
 // background canvas element inside it, the image container, and the picture. jsdom lays nothing
 // out, so we answer the layout questions ourselves, from the styles the code writes. That is
-// what lets a test turn a picture several times and see where it really ends up.
+// what lets a test rotate a picture several times and see where it really ends up.
 //
 // The rules here are the browser's rules for these elements. A picture with an explicit width
 // is that wide, and as tall as its own shape then makes it. A picture with no explicit width
@@ -119,7 +119,7 @@ function makeBackgroundImage(
     return img;
 }
 
-// The canvas element a picture belongs to, so a test can read where the turn put it.
+// The canvas element a picture belongs to, so a test can read where the rotation put it.
 function elementOf(img: HTMLImageElement): HTMLElement {
     return img.closest(".bloom-canvas-element") as HTMLElement;
 }
@@ -132,29 +132,29 @@ function px(value: string): number {
 describe("getImageContentTransform", () => {
     it("reports nothing for a picture with no transform", () => {
         expect(getImageContentTransform(makeImage())).toEqual({
-            quarterTurns: 0,
+            quarterRotations: 0,
             flipX: false,
             flipY: false,
         });
     });
 
-    it("reads the number of quarter turns", () => {
+    it("reads the number of 90-degree rotations", () => {
         const img = makeImage();
         img.style.transform = "rotate(180deg)";
-        expect(getImageContentTransform(img).quarterTurns).toBe(2);
+        expect(getImageContentTransform(img).quarterRotations).toBe(2);
     });
 
-    it("brings a turn of a whole circle or more back into range", () => {
+    it("brings a rotation of 360 degrees or more back into range", () => {
         const img = makeImage();
         img.style.transform = "rotate(450deg)";
-        expect(getImageContentTransform(img).quarterTurns).toBe(1);
+        expect(getImageContentTransform(img).quarterRotations).toBe(1);
     });
 
     it("reads a mirror of one axis from the sign of the scale", () => {
         const img = makeImage();
         img.style.transform = "rotate(90deg) scale(-1, 1)";
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 1,
+            quarterRotations: 1,
             flipX: true,
             flipY: false,
         });
@@ -164,7 +164,7 @@ describe("getImageContentTransform", () => {
         const img = makeImage();
         img.style.transform = "scale(-0.5)";
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 0,
+            quarterRotations: 0,
             flipX: true,
             flipY: true,
         });
@@ -182,7 +182,7 @@ describe("imageContentIsTransformed", () => {
         expect(imageContentIsTransformed(img)).toBe(false);
     });
 
-    it("is true for a turned picture", () => {
+    it("is true for a rotated picture", () => {
         const img = makeImage();
         img.style.transform = "rotate(90deg)";
         expect(imageContentIsTransformed(img)).toBe(true);
@@ -196,34 +196,34 @@ describe("imageContentIsTransformed", () => {
 });
 
 describe("rotateImageContentRight", () => {
-    it("adds a quarter turn each time, and four turns leave nothing behind", () => {
+    it("adds a 90-degree rotation each time, and four rotations leave nothing behind", () => {
         const img = makeImage();
 
         rotateImageContentRight(img);
-        expect(getImageContentTransform(img).quarterTurns).toBe(1);
+        expect(getImageContentTransform(img).quarterRotations).toBe(1);
         rotateImageContentRight(img);
-        expect(getImageContentTransform(img).quarterTurns).toBe(2);
+        expect(getImageContentTransform(img).quarterRotations).toBe(2);
         rotateImageContentRight(img);
-        expect(getImageContentTransform(img).quarterTurns).toBe(3);
+        expect(getImageContentTransform(img).quarterRotations).toBe(3);
         rotateImageContentRight(img);
 
-        expect(getImageContentTransform(img).quarterTurns).toBe(0);
+        expect(getImageContentTransform(img).quarterRotations).toBe(0);
         expect(img.style.transform).toBe("");
     });
 
-    it("keeps a mirror while it turns", () => {
+    it("keeps a mirror while it rotates", () => {
         const img = makeImage();
         img.style.transform = "scale(-1, 1)";
         rotateImageContentRight(img);
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 1,
+            quarterRotations: 1,
             flipX: true,
             flipY: false,
         });
     });
 
     it("never shrinks the picture with the transform", () => {
-        // The transform carries the turn and the mirrors and nothing else. Where the picture
+        // The transform carries the rotation and the mirrors and nothing else. Where the picture
         // goes is said by the picture's own size and place, and by its canvas element's.
         const img = makeImage();
         giveSizes(img, 200, 100, 200, 100);
@@ -238,26 +238,26 @@ describe("rotateImageContentRight", () => {
 describe("rotateImageContentRight, on a page background picture", () => {
     // A photograph three units wide and two high, which the camera saved on its side, on a page
     // whose picture area is 480 by 720. Bloom gives the picture's canvas element the shape of
-    // the picture, so before any turn that element is 480 by 320, centred in the page.
+    // the picture, so before any rotation that element is 480 by 320, centred in the page.
     function makeSidewaysPhotograph(): HTMLImageElement {
         return makeBackgroundImage(480, 720, 480, 320, 300, 200);
     }
 
-    it("turns an uncropped picture to exactly where it would be if it had arrived turned", () => {
+    it("rotates an uncropped picture to exactly where it would be if it had arrived rotated", () => {
         const img = makeSidewaysPhotograph();
-        // Sanity check: the picture has no numbers of its own before the turn.
+        // Sanity check: the picture has no numbers of its own before the rotation.
         expect(img.style.width).toBe("");
 
         rotateImageContentRight(img);
 
-        // The element now has the shape of the turned picture, which on this page is the shape
+        // The element now has the shape of the rotated picture, which on this page is the shape
         // of the page itself, so the picture fills the page. That is what an author would have
-        // had if they had turned the file before they chose it.
+        // had if they had rotated the file before they chose it.
         expect(px(elementOf(img).style.width)).toBeCloseTo(480);
         expect(px(elementOf(img).style.height)).toBeCloseTo(720);
         expect(px(elementOf(img).style.left)).toBeCloseTo(0);
         expect(px(elementOf(img).style.top)).toBeCloseTo(0);
-        // The picture's box still lies the way the picture does, and the turn of the box about
+        // The picture's box still lies the way the picture does, and the rotation of the box about
         // its own centre brings it upright over the element.
         expect(px(img.style.width)).toBeCloseTo(720);
         expect(px(img.style.left)).toBeCloseTo(-120);
@@ -273,10 +273,10 @@ describe("rotateImageContentRight, on a page background picture", () => {
         expect(img.style.height).toBe("");
     });
 
-    it("brings an uncropped picture back to where it began after four turns", () => {
+    it("brings an uncropped picture back to where it began after four rotations", () => {
         const img = makeSidewaysPhotograph();
 
-        for (let turn = 0; turn < 4; turn++) {
+        for (let rotation = 0; rotation < 4; rotation++) {
             rotateImageContentRight(img);
         }
 
@@ -288,10 +288,10 @@ describe("rotateImageContentRight, on a page background picture", () => {
         expect(img.style.transform).toBe("");
     });
 
-    it("gives an uncropped picture no numbers of its own after a half turn", () => {
+    it("gives an uncropped picture no numbers of its own after a 180-degree rotation", () => {
         const img = makeSidewaysPhotograph();
         rotateImageContentRight(img);
-        // Sanity check: the quarter turn does give it numbers.
+        // Sanity check: the 90-degree rotation does give it numbers.
         expect(img.style.width).not.toBe("");
 
         rotateImageContentRight(img);
@@ -316,7 +316,7 @@ describe("rotateImageContentRight, on a page background picture", () => {
 
     it("keeps the crop", () => {
         const img = makeCroppedPhotograph();
-        // Sanity check: the crop is really there before the turn.
+        // Sanity check: the crop is really there before the rotation.
         expect(px(img.style.width)).toBeCloseTo(1080);
 
         rotateImageContentRight(img);
@@ -330,14 +330,14 @@ describe("rotateImageContentRight, on a page background picture", () => {
 
         rotateImageContentRight(img);
 
-        // The crop had the shape of the page, so turned it has the page's shape lying down, and
-        // it cannot fill a page that has not changed. The element takes the turned crop's shape
+        // The crop had the shape of the page, so rotated it has the page's shape lying down, and
+        // it cannot fill a page that has not changed. The element takes the rotated crop's shape
         // and keeps the page's width, which leaves 200 blank above it and 200 below.
         expect(px(elementOf(img).style.width)).toBeCloseTo(480);
         expect(px(elementOf(img).style.height)).toBeCloseTo(320);
         expect(px(elementOf(img).style.top)).toBeCloseTo(200);
         // The whole crop is there: its box is 720 by 480, its centre is the centre of the
-        // element, and turning it about that centre covers the element exactly.
+        // element, and rotating it about that centre covers the element exactly.
         expect(px(img.style.width)).toBeCloseTo(720);
         expect(px(img.style.left)).toBeCloseTo(-120);
         expect(px(img.style.top)).toBeCloseTo(-80);
@@ -358,8 +358,8 @@ describe("rotateImageContentRight, on a page background picture", () => {
         expect(px(img.style.top)).toBeCloseTo(-180);
     });
 
-    it("turns the picture even when nothing has been laid out yet", () => {
-        // A page that has not been laid out gives no sizes to measure. We must still turn the
+    it("rotates the picture even when nothing has been laid out yet", () => {
+        // A page that has not been laid out gives no sizes to measure. We must still rotate the
         // picture, and we must write no numbers we cannot work out.
         const img = makeBackgroundImage(0, 0, 0, 0, 300, 200);
 
@@ -372,8 +372,8 @@ describe("rotateImageContentRight, on a page background picture", () => {
 });
 
 describe("rotateImageContentRight, on an ordinary picture element", () => {
-    // The Rotate Right command turns the picture inside the box, rather than the box on the
-    // page, whenever the box itself cannot turn. That is true of a background picture, and also
+    // The Rotate Right command rotates the picture inside the box, rather than the box on the
+    // page, whenever the box itself cannot rotate. That is true of a background picture, and also
     // of an element whose outline comicaljs draws. Such an element is not the page's background,
     // so it must keep the size and the place the author gave it.
     function makeOrdinaryPicture(): HTMLImageElement {
@@ -406,12 +406,12 @@ describe("rotateImageContentRight, on an ordinary picture element", () => {
         expect(px(elementOf(img).style.height)).toBeLessThan(720);
     });
 
-    it("keeps the picture the size it was, turned to fill the swapped element", () => {
+    it("keeps the picture the size it was, rotated to fill the swapped element", () => {
         const img = makeOrdinaryPicture();
 
         rotateImageContentRight(img);
 
-        // The picture's box still lies the way the picture does, at its old size, and the turn
+        // The picture's box still lies the way the picture does, at its old size, and the rotation
         // about its own centre brings it upright over the element.
         expect(px(img.style.width)).toBeCloseTo(300);
         expect(px(img.style.left)).toBeCloseTo(-50);
@@ -420,10 +420,10 @@ describe("rotateImageContentRight, on an ordinary picture element", () => {
     });
 });
 
-describe("computeTurnedBackgroundLayout", () => {
+describe("computeRotatedBackgroundLayout", () => {
     it("swaps the two dimensions of the element and fits it to the page", () => {
         // A landscape element, 480 by 320, on a page 480 by 720.
-        const layout = computeTurnedBackgroundLayout(
+        const layout = computeRotatedBackgroundLayout(
             480,
             720,
             480,
@@ -441,7 +441,7 @@ describe("computeTurnedBackgroundLayout", () => {
 
     it("centres the element in the page", () => {
         // A square element on a tall page: it fills the width and leaves equal bands.
-        const layout = computeTurnedBackgroundLayout(
+        const layout = computeRotatedBackgroundLayout(
             480,
             720,
             480,
@@ -460,7 +460,7 @@ describe("computeTurnedBackgroundLayout", () => {
     });
 
     it("puts the centre of the picture at the centre of the element", () => {
-        const layout = computeTurnedBackgroundLayout(
+        const layout = computeRotatedBackgroundLayout(
             480,
             720,
             480,
@@ -481,7 +481,7 @@ describe("computeTurnedBackgroundLayout", () => {
     });
 
     it("magnifies instead of shrinking for a picture that must fill the page", () => {
-        const fitted = computeTurnedBackgroundLayout(
+        const fitted = computeRotatedBackgroundLayout(
             480,
             720,
             480,
@@ -492,7 +492,7 @@ describe("computeTurnedBackgroundLayout", () => {
             0,
             false,
         );
-        const filling = computeTurnedBackgroundLayout(
+        const filling = computeRotatedBackgroundLayout(
             480,
             720,
             480,
@@ -517,7 +517,7 @@ describe("flipImageContent", () => {
         const img = makeImage();
         flipImageContent(img, "horizontal");
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 0,
+            quarterRotations: 0,
             flipX: true,
             flipY: false,
         });
@@ -527,7 +527,7 @@ describe("flipImageContent", () => {
         const img = makeImage();
         flipImageContent(img, "vertical");
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 0,
+            quarterRotations: 0,
             flipX: false,
             flipY: true,
         });
@@ -544,52 +544,52 @@ describe("flipImageContent", () => {
         expect(img.style.transform).toBe("");
     });
 
-    it("mirrors the other axis of the picture after a quarter turn", () => {
+    it("mirrors the other axis of the picture after a 90-degree rotation", () => {
         const img = makeImage();
         rotateImageContentRight(img);
-        // After a quarter turn the x axis of the picture runs up and down the screen, so a
+        // After a 90-degree rotation the x axis of the picture runs up and down the screen, so a
         // mirror from side to side on screen is a mirror of the y axis of the picture.
         flipImageContent(img, "horizontal");
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 1,
+            quarterRotations: 1,
             flipX: false,
             flipY: true,
         });
     });
 
-    it("mirrors the other axis when the box is turned a quarter turn", () => {
+    it("mirrors the other axis when the box is rotated 90 degrees", () => {
         const img = makeImage();
-        // The picture itself is not turned; the box around it is, which moves the picture on
+        // The picture itself is not rotated; the box around it is, which moves the picture on
         // screen in the same way, so a mirror from side to side on screen is again a mirror
         // of the y axis of the picture.
         flipImageContent(img, "horizontal", 90);
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 0,
+            quarterRotations: 0,
             flipX: false,
             flipY: true,
         });
     });
 
-    it("mirrors the requested axis when the box is turned a half turn", () => {
+    it("mirrors the requested axis when the box is rotated 180 degrees", () => {
         const img = makeImage();
         flipImageContent(img, "horizontal", 180);
         expect(getImageContentTransform(img).flipX).toBe(true);
     });
 
-    it("takes the two turns together", () => {
+    it("takes the two rotations together", () => {
         const img = makeImage();
         rotateImageContentRight(img);
-        // A quarter turn of the picture and a quarter turn of the box make a half turn, which
+        // A 90-degree rotation of the picture and a 90-degree rotation of the box make a 180-degree rotation, which
         // leaves the axes of the picture the way they started on screen.
         flipImageContent(img, "horizontal", 90);
         expect(getImageContentTransform(img)).toEqual({
-            quarterTurns: 1,
+            quarterRotations: 1,
             flipX: true,
             flipY: false,
         });
     });
 
-    it("takes the angle of the box to the nearest quarter turn", () => {
+    it("takes the angle of the box to the nearest multiple of 90 degrees", () => {
         const img = makeImage();
         flipImageContent(img, "horizontal", 80);
         expect(getImageContentTransform(img).flipY).toBe(true);
@@ -611,7 +611,7 @@ describe("flipImageContent", () => {
 });
 
 describe("clearImageContentTransform", () => {
-    it("removes the turn and the mirror", () => {
+    it("removes the rotation and the mirror", () => {
         const img = makeImage();
         img.style.transform = "rotate(90deg) scale(-1, 1)";
         // Sanity check: there is something to clear.

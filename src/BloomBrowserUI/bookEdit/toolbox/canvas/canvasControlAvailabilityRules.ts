@@ -31,7 +31,7 @@ export const imageAvailabilityRules: AvailabilityRulesMap = {
     resetImage: {
         visible: (ctx) => ctx.hasImage,
         // Reset Image puts the picture back the way it arrived, so it applies to a crop, to a
-        // turn or a mirror, and to a transparency the user chose by hand. It does not
+        // rotation or a mirror, and to a transparency the user chose by hand. It does not
         // straighten a rotated canvas element box; that rotation belongs to the box, like its
         // size and its position.
         enabled: (ctx) =>

@@ -192,7 +192,7 @@ describe("ImageUndoManager rotate and flip", () => {
 
         manager.pushUndoForImageTransform(canvasElement);
 
-        // Rotate right turns the box by another quarter turn.
+        // Rotate right rotates the box by another 90 degrees.
         canvasElement.style.transform = "rotate(120deg)";
         expect(canvasElement.style.transform).toBe("rotate(120deg)");
 
@@ -215,7 +215,7 @@ describe("ImageUndoManager rotate and flip", () => {
         expect(canvasElement.classList.contains("bloom-rotated")).toBe(false);
     });
 
-    it("undo puts back the turn of the picture and the crop that the turn removed", () => {
+    it("undo puts back the rotation of the picture and the crop that the rotation removed", () => {
         imgElement.style.width = "150px";
         imgElement.style.height = "120px";
         imgElement.style.left = "-25px";
@@ -223,7 +223,7 @@ describe("ImageUndoManager rotate and flip", () => {
 
         manager.pushUndoForImageTransform(canvasElement);
 
-        // Rotate right on a background image turns the picture and drops the crop.
+        // Rotate right on a background image rotates the picture and drops the crop.
         imgElement.style.transform = "rotate(90deg) scale(0.667, 0.667)";
         imgElement.style.width = "";
         imgElement.style.height = "";
@@ -307,7 +307,7 @@ describe("ImageUndoManager rotation handle drag", () => {
         setCanvasElementRotation(textBox, 10);
         expect(textBox.style.transform).toBe("rotate(10deg)");
 
-        // The drag turns the box, then records where it started.
+        // The drag rotates the box, then records where it started.
         setCanvasElementRotation(textBox, 75);
         manager.pushUndoForCanvasElementRotation(textBox, 10);
         expect(textBox.style.transform).toBe("rotate(75deg)");

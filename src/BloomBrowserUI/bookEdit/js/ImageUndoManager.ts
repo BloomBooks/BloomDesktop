@@ -34,9 +34,9 @@ type ImageOperationUndoItem =
       }
     // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
     // its metadata, so the things to put back are the rotation of the canvas element box, the
-    // turn and mirror of the picture, the crop, and the size and place of the box itself: a
-    // turn of a page background picture changes the shape of its box, because the box takes the
-    // shape of the picture. There is no img when the rotation handle turns a text box or a
+    // rotation and mirror of the picture, the crop, and the size and place of the box itself: a
+    // rotation of a page background picture changes the shape of its box, because the box takes the
+    // shape of the picture. There is no img when the rotation handle rotates a text box or a
     // video.
     | {
           kind: "restoreImageTransform";
@@ -105,7 +105,7 @@ export class ImageUndoManager {
     /**
      * Record a drag of the rotation handle, so that Undo can put the angle back. The caller
      * gives the angle the element had when the drag started, because by the time the drag
-     * ends the element is already turned. It calls this only when the angle really changed,
+     * ends the element is already rotated. It calls this only when the angle really changed,
      * so a click on the handle leaves nothing for Undo to do.
      */
     public pushUndoForCanvasElementRotation(
@@ -120,8 +120,8 @@ export class ImageUndoManager {
         elementRotation: number,
     ): void {
         this.clearImageOperationUndoOnPageChange();
-        // A rotation handle turns text boxes and videos as well, so there is not always a
-        // picture. The turn and the crop of the picture are only in the record when there is.
+        // A rotation handle rotates text boxes as well, so there is not always a
+        // picture. The rotation and the crop of the picture are only in the record when there is.
         const img = this.getImageElement(canvasElement);
         this.imageOperationUndoStack.push({
             kind: "restoreImageTransform",
@@ -183,7 +183,7 @@ export class ImageUndoManager {
                 this.imageOperationUndoStack.length - 1
             ];
         if (topOfStack?.kind === "restoreImageTransform") {
-            // The rotation handle turns text boxes and videos too, so this record does not
+            // The rotation handle rotates text boxes too, so this record does not
             // need a picture. We ask instead that the element it belongs to is the selected
             // one, which is the same idea as one undo stack for each text box.
             return (

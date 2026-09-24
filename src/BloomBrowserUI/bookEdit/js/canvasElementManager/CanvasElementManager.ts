@@ -1357,7 +1357,7 @@ export class CanvasElementManager {
         });
     }
 
-    // Turn the active canvas element a quarter turn clockwise. Used by the Rotate Right
+    // Rotate the active canvas element 90 degrees clockwise. Used by the Rotate Right
     // menu command, for everything except a background image; see rotateActiveImageRight.
     public rotateActiveElementRight(): void {
         if (
@@ -1376,7 +1376,7 @@ export class CanvasElementManager {
 
     // Rotate whatever the Rotate Right command applies to for the active element: the
     // element itself where that is possible, otherwise the picture inside it. A background
-    // image fills its bloom-canvas and cannot be turned as a box, so for it we turn the
+    // image fills its bloom-canvas and cannot be rotated as a box, so for it we rotate the
     // picture inside the box and reshape the box to match, which gives what an author wants
     // for a photograph that arrived on its side: the picture upright, and any crop kept.
     // Answers whether anything was rotated.
@@ -1411,8 +1411,8 @@ export class CanvasElementManager {
             return;
         }
         pushUndoForImageTransform(this.activeElement);
-        // The box may be turned as well, which moves the picture on screen, so the axis the
-        // user asked for is found from the two turns together; see flipImageContent.
+        // The box may be rotated as well, which moves the picture on screen, so the axis the
+        // user asked for is found from the two rotations together; see flipImageContent.
         flipImageContent(
             img,
             axis,
@@ -1448,7 +1448,7 @@ export class CanvasElementManager {
     }
 
     // The Reset Image command: put the picture back the way it arrived. That means the crop
-    // goes, and so do the quarter turns and the mirrors that Rotate right and Flip apply to
+    // goes, and so do the 90-degree rotations and the mirrors that Rotate right and Flip apply to
     // the picture. The rotation of a canvas element box is left alone, because it belongs to
     // the box, like its size and its position; the rotate handle and Undo are the way back
     // from that. The transparency goes back to "Auto", which is the state of a picture that
@@ -1511,8 +1511,8 @@ export class CanvasElementManager {
         const currentImgWidth = imgStyleWidth
             ? CanvasElementManager.pxToNumber(imgStyleWidth)
             : img.clientWidth;
-        if (getImageContentTransform(img).quarterTurns % 2 === 1) {
-            return this.getExpandedTurnedImageDimensions(img, bloomCanvas);
+        if (getImageContentTransform(img).quarterRotations % 2 === 1) {
+            return this.getExpandedRotatedImageDimensions(img, bloomCanvas);
         }
         // using <= here because client values are whole pixels and rounding easily
         // produces a spurious 1px difference.
@@ -1571,11 +1571,11 @@ export class CanvasElementManager {
         return null;
     }
 
-    // The same as getExpandedImageDimensions, for a picture that has been turned a quarter
-    // turn. The picture's layout box lies across the page, so the box's width has to cover the
+    // The same as getExpandedImageDimensions, for a picture that has been rotated 90
+    // degrees. The picture's layout box lies across the page, so the box's width has to cover the
     // page's height and the box's height has to cover the page's width, and both offsets have
-    // to move, because the box turns about its own centre.
-    private getExpandedTurnedImageDimensions(
+    // to move, because the box rotates about its own centre.
+    private getExpandedRotatedImageDimensions(
         img: HTMLImageElement,
         bloomCanvas: HTMLElement,
     ): {
@@ -2295,11 +2295,11 @@ export class CanvasElementManager {
             // older books, left and top might be percentages, which offsetLeft and offsetTop
             // resolve to pixels for us.
             //
-            // A turned element is why this cannot use the on-screen rectangle.
-            // getBoundingClientRect reports the upright box around the turned element, and
+            // A rotated element is why this cannot use the on-screen rectangle.
+            // getBoundingClientRect reports the upright box around the rotated element, and
             // the corner of that box is not the corner of the element's own box: for a
-            // quarter turn the two differ by half the difference of the element's width and
-            // height. Reading the position from it therefore moved a turned element on every
+            // 90-degree rotation the two differ by half the difference of the element's width and
+            // height. Reading the position from it therefore moved a rotated element on every
             // page load, up the page and to the right for a wide element, and down and to the
             // left for a tall one, a little further each time (BL-16741).
             this.adjustCanvasElementLocation(
