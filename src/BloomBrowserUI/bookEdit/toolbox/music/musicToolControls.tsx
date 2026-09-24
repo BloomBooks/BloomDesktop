@@ -2,6 +2,7 @@ import * as React from "react";
 import { css, ThemeProvider } from "@emotion/react";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { getBloomPageElement, getPageIFrame } from "../../../utils/shared";
 import { Div, Label, Span } from "../../../react_components/l10nComponents";
 import { RadioGroup } from "../../../react_components/RadioGroup";
 import { get } from "../../../utils/bloomApi";
@@ -289,7 +290,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
             setPlayState(false);
             return;
         }
-        const bookSrc = ToolboxToolReactAdaptor.getPageFrame().src;
+        const bookSrc = getPageIFrame().src;
         const index = bookSrc.lastIndexOf("/");
         const bookFolderUrl = bookSrc.substring(0, index + 1);
         const musicUrl = encodeURI(bookFolderUrl + "audio/" + audioFileName);
@@ -331,7 +332,7 @@ export class MusicToolControls extends React.Component<unknown, IMusicState> {
                 this.pausePlaying(); // pauses player and sets playing state to false
                 break;
             case "continueMusic": {
-                const bloomPage = ToolboxToolReactAdaptor.getBloomPage();
+                const bloomPage = getBloomPageElement();
                 if (bloomPage) {
                     bloomPage.removeAttribute(MusicToolControls.musicAttrName);
                 }
@@ -459,6 +460,11 @@ export class MusicToolAdaptor extends ToolboxToolReactAdaptor {
 
     public id(): string {
         return kMusicToolId;
+    }
+
+    /** The icon for this tool's section header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/music/music-notes-white.svg";
     }
 
     public featureName? = kMusicToolId;
