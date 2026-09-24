@@ -3,14 +3,14 @@
 // version-id capture, .manifest.json writes). Only the functions under
 // supabase/functions/** ever construct clients with these credentials — see
 // server/dev/DEV-CREDENTIALS.md for the full spec this implements.
-import { STSClient, AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
+import { STSClient, AssumeRoleCommand } from "@aws-sdk/client-sts";
 import {
     DeleteObjectCommand,
     HeadObjectCommand,
     ListObjectVersionsCommand,
     PutObjectCommand,
     S3Client,
-} from "npm:@aws-sdk/client-s3@3";
+} from "@aws-sdk/client-s3";
 import {
     adminS3Credentials,
     isLocalMode,
@@ -308,7 +308,9 @@ export const listObjectVersions = async (
     client: S3Client,
     bucket: string,
     key: string,
-): Promise<{ versionId: string; isLatest: boolean }[]> => {
+): Promise<
+    { versionId: string; isLatest: boolean; lastModified: Date | undefined }[]
+> => {
     const out = await client.send(
         new ListObjectVersionsCommand({ Bucket: bucket, Prefix: key }),
     );
@@ -317,6 +319,7 @@ export const listObjectVersions = async (
         .map((v) => ({
             versionId: v.VersionId as string,
             isLatest: !!v.IsLatest,
+            lastModified: v.LastModified,
         }));
 };
 

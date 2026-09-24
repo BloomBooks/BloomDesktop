@@ -191,7 +191,7 @@ functions serve.
 
 **2. `[edge_runtime].policy = "oneshot"` (the config.toml default, good for hot-reload)
 causes `InvalidWorkerCreation: worker did not respond in time` on every call that reaches
-`_shared/s3.ts`.** Reason: `oneshot` re-transpiles/type-checks the whole module graph —
+`_shared/tc/s3.ts`.** Reason: `oneshot` re-transpiles/type-checks the whole module graph —
 including the heavy `npm:@aws-sdk/client-s3` + `client-sts` imports — on every single
 request, and that cold compile reliably exceeds the edge-runtime's fixed ~10s worker-boot
 timeout. **Fix**: `supabase/config.toml`'s `[edge_runtime]` section is set to

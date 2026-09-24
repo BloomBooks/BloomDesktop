@@ -250,7 +250,7 @@ namespace BloomTests.TeamCollection.Cloud
         )
         {
             // `{error: "<Code>"}` is CONTRACTS.md's standard envelope, and the shape every edge
-            // function REALLY sends (supabase/functions/_shared/errors.ts's errorResponse). An
+            // function REALLY sends (supabase/functions/_shared/tc/errors.ts's errorResponse). An
             // earlier version of this test asserted against `{code: "<Code>"}` -- a shape the
             // real server never produces -- which is exactly how MapError's matching `code`-only
             // lookup shipped broken: the test validated the client's wrong assumption instead of

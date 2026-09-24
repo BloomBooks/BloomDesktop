@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "lib": ["deno.window"],
+        "strict": true
+    },
+    "imports": {
+        "@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@3.1133.0",
+        "@aws-sdk/client-sts": "npm:@aws-sdk/client-sts@3.1133.0"
+    }
+}

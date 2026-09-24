@@ -1,6 +1,6 @@
 -- Bloom Cloud Team Collections — dev seed users
 -- This file seeds three stable developer identities into the local Supabase stack.
--- The local GoTrue instance has enable_confirmations = false (see config.auth.toml.snippet),
+-- The local GoTrue instance has enable_confirmations = false (see [auth.email] in supabase/config.toml),
 -- so these users are immediately confirmed and can sign in.
 --
 -- Shared password for all three dev users: BloomDev123!
@@ -12,7 +12,7 @@
 --   https://github.com/supabase/auth/blob/main/internal/models/user.go
 --   Standard Supabase seed patterns: insert into auth.users, then auth.identities.
 --
--- To re-seed after a wipe: supabase db reset  (which replays migrations then runs seed.sql).
+-- To re-seed after a wipe: supabase db reset  (which replays migrations then runs the [db.seed] files, including this one).
 -- To add ad-hoc users at runtime: POST http://localhost:54321/auth/v1/signup  (no seed needed).
 --
 -- WARNING: These credentials are for local development only. NEVER use in production.
@@ -20,7 +20,7 @@
 BEGIN;
 
 -- ---------------------------------------------------------------------------
--- Helper: ensure idempotency (re-running seed.sql does not fail).
+-- Helper: ensure idempotency (re-running this file does not fail).
 -- We delete existing rows for our well-known UUIDs then re-insert.
 -- ---------------------------------------------------------------------------
 

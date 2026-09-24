@@ -20,14 +20,14 @@
          permission policy is the ceiling (PutObject/GetObject/GetObjectVersion/
          AbortMultipartUpload/ListMultipartUploadParts on both buckets); the edge
          function narrows further per call via AssumeRole's `Policy` parameter (see
-         supabase/functions/_shared/s3.ts's `buildSessionPolicy`).
+         supabase/functions/_shared/tc/s3.ts's `buildSessionPolicy`).
       3. An "assume-only" IAM user `bloom-teams-broker-caller` whose ONLY permission
          is `sts:AssumeRole` on that one role - if its access key ever leaks, the
          attacker can only mint scoped-down session credentials via the broker role,
          never touch S3 directly. Its access key becomes the edge functions'
          AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY secrets.
       4. An IAM user `bloom-teams-admin` with direct (non-assumed) S3 permissions on
-         both buckets - this backs `adminS3Client()` in _shared/s3.ts, used ONLY
+         both buckets - this backs `adminS3Client()` in _shared/tc/s3.ts, used ONLY
          server-side for HeadObject checksum/version-id verification and the
          `.manifest.json` backup PUT (never handed to a client). This is the
          production counterpart of MinIO's root credentials in dev mode.
@@ -44,7 +44,7 @@
 .PARAMETER Region
     AWS region for the buckets and IAM (IAM is technically global, but the access
     key's region-scoped S3 endpoint is derived from this). Default: us-east-1,
-    matching supabase/functions/_shared/env.ts's `prodBrokerConfig`/`s3Env` defaults.
+    matching supabase/functions/_shared/tc/env.ts's `prodBrokerConfig`/`s3Env` defaults.
 
 .PARAMETER AwsProfile
     Named AWS CLI profile to use (`aws --profile <name> ...`). Leave unset to use
@@ -56,7 +56,7 @@
     MUST stay strictly greater than the checkin/collection-files transaction lifetime
     (48h - see tc.checkin_transactions.expires_at in
     supabase/migrations/20260706000001_tc_schema.sql, and the enforced invariant in
-    supabase/functions/_shared/invariants.test.ts) or an in-flight transaction could
+    supabase/functions/tests/tc-invariants-test.ts) or an in-flight transaction could
     have its referenced object version deleted out from under it.
 
 .PARAMETER AbortMultipartDays
@@ -72,7 +72,7 @@
     STATUS: written and reviewed as part of task 02 (2026-07-06); NOT YET RUN against
     a real AWS account - no AWS account was available in that environment (see the
     task file's Progress log). Acceptance for task 02 does not require running this;
-    it is deferred until real infrastructure work begins (see IMPLEMENTATION.md's
+    it is deferred until real infrastructure work begins (see BloomDesktop's Design/CloudTeamCollections/IMPLEMENTATION.md,
     "Deferred until real infrastructure is available" list). Whoever runs this for
     real should:
       - Review the IAM policy JSON below against current least-privilege guidance.
@@ -341,7 +341,7 @@ function Ensure-BrokerRoleAndCaller {
         $created = Invoke-Aws -Arguments @(
             "iam", "create-role", "--role-name", $BrokerRoleName,
             "--assume-role-policy-document", "file://$tempFile",
-            "--description", "Bloom Cloud Team Collections - assumed by edge functions to mint per-request, per-book-scoped S3 credentials (see supabase/functions/_shared/s3.ts)"
+            "--description", "Bloom Cloud Team Collections - assumed by edge functions to mint per-request, per-book-scoped S3 credentials (see supabase/functions/_shared/tc/s3.ts)"
         )
         Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
         $roleArn = $created.Role.Arn
@@ -418,10 +418,15 @@ function Ensure-AdminUser {
     Ensure-IamUser -UserName $AdminUserName | Out-Null
 
     # Direct (non-assumed) permissions for server-side-only verification/backup
-    # writes - see _shared/s3.ts's adminS3Client() doc comment. GetObjectAttributes
+    # writes - see _shared/tc/s3.ts's adminS3Client() doc comment. GetObjectAttributes
     # covers the ChecksumMode=ENABLED HeadObject readback verifyUploadedObject()
     # relies on; ListBucket is occasionally needed for diagnostics/tooling, not by
     # the edge functions themselves, but cheap to include for an admin identity.
+    # The sweep-stale-uploads function (see its index.ts) lists a key's versions
+    # (ListObjectVersions -> s3:ListBucketVersions, a bucket-level permission) and
+    # deletes specific orphaned versions (DeleteObject with a VersionId ->
+    # s3:DeleteObjectVersion). Plain s3:DeleteObject is deliberately NOT granted: the
+    # admin identity never needs to create delete markers.
     $bucketArns       = $BucketNames | ForEach-Object { "arn:aws:s3:::$_" }
     $bucketObjectArns = $BucketNames | ForEach-Object { "arn:aws:s3:::$_/*" }
     $adminPolicy = @{
@@ -434,9 +439,15 @@ function Ensure-AdminUser {
                 Resource = $bucketObjectArns
             },
             @{
+                Sid      = "SweepDeleteOrphanedVersions"
+                Effect   = "Allow"
+                Action   = @("s3:DeleteObjectVersion")
+                Resource = $bucketObjectArns
+            },
+            @{
                 Sid      = "AdminListBuckets"
                 Effect   = "Allow"
-                Action   = @("s3:ListBucket")
+                Action   = @("s3:ListBucket", "s3:ListBucketVersions")
                 Resource = $bucketArns
             }
         )
@@ -482,7 +493,7 @@ $adminKey = Ensure-AdminUser -BucketNames $bucketNames
 # run (Ensure-AccessKey returns $null when a key already existed - see its comment).
 # ---------------------------------------------------------------------------
 Write-Step "Supabase secrets"
-Write-Host "Run against the hosted Supabase project (once it exists - see IMPLEMENTATION.md's" -ForegroundColor Cyan
+Write-Host "Run against the hosted Supabase project (once it exists - see BloomDesktop's IMPLEMENTATION.md," -ForegroundColor Cyan
 Write-Host "'Deferred until real infrastructure is available' list):" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  supabase secrets set BLOOM_CLOUD_LOCAL_MODE=false"
@@ -507,7 +518,7 @@ if ($adminKey) {
 }
 Write-Host ""
 Write-Host "AWS_REGION is read by the STS client for the broker role assume call (defaults to"
-Write-Host "us-east-1 in _shared/env.ts if unset) - only set it explicitly if this Region differs:"
+Write-Host "us-east-1 in _shared/tc/env.ts if unset) - only set it explicitly if this Region differs:"
 Write-Host "  supabase secrets set AWS_REGION=$Region"
 Write-Host ""
 Write-Host "Capture any freshly-printed secret values above NOW - AWS will not show them again." -ForegroundColor Red

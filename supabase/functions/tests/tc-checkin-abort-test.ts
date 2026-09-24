@@ -1,16 +1,16 @@
 // Unit tests for checkin-abort's handler — the thinnest of the six, so mostly pinning
 // down request validation and RPC error/argument passthrough.
-import { assertEquals } from "jsr:@std/assert@1";
+import { assertEquals } from "@std/assert";
 import {
     callHandler,
     mockRequest,
     routedFetchStub,
     setTestEnv,
     withMockFetch,
-} from "../_shared/test_support.ts";
+} from "../_shared/tc/test_support.ts";
 
 setTestEnv();
-const { handler } = await import("./index.ts");
+const { handler } = await import("../checkin-abort/index.ts");
 
 Deno.test(
     "checkin-abort: happy path calls checkin_abort_tx with the transactionId and returns 200 {}",

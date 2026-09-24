@@ -19,7 +19,7 @@ namespace Bloom.TeamCollection.Cloud
     {
         /// <summary>
         /// Lower-case hex SHA-256 of the file's bytes. This convention (not base64) is chosen to
-        /// match the server side: supabase/functions/_shared/s3.ts's `hexToBase64` doc comment says
+        /// match the server side: supabase/functions/_shared/tc/s3.ts's `hexToBase64` doc comment says
         /// "the manifest's `sha256` field (matching the C# client, which uses
         /// Convert.ToHexString/SHA256) is lowercase hex" — S3's own `x-amz-checksum-sha256` attribute
         /// is base64, so callers must convert at the point they build the S3 request (see

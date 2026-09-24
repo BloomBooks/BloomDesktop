@@ -36,9 +36,13 @@ is launched):
    `dotnet test src/BloomTests/BloomTests.csproj --filter "FullyQualifiedName~CloudTeamCollectionLiveTests"`.
 2. **pgTAP schema/RLS tests** — `supabase test db` (42 tests; they `SET LOCAL ROLE
    authenticated` because superuser bypasses RLS — a vacuously-green trap if ever rewritten).
-3. **Deno edge-function tests** — `deno test` under `supabase/functions/` (32 tests; these
-   mock S3/STS so they only need `deno`, not the stack — `npm i -g deno` or the standard
-   installer).
+3. **Deno edge-function tests** — from the repo root,
+   `deno test --allow-all supabase/functions/tests/tc-*-test.ts` (these mock PostgREST and
+   S3/STS so they only need `deno`, not the stack — `npm i -g deno` or the standard
+   installer). `deno check supabase/functions/*/index.ts` type-checks the functions.
+
+The backend these suites exercise (`supabase/`) is a test-only mirror of bloom-core-supabase;
+see `supabase/README.md` before changing anything there.
 
 A CI shape that works: the mocked suites in the ordinary per-commit build; the stack-backed
 suites (1–2) plus the E2E matrix on the dedicated interactive agent described in the E2E

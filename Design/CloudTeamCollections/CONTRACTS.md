@@ -1,7 +1,39 @@
 # Cloud Team Collections — frozen API contracts (v1)
 
+> **Where this lives:** this copy is in the `bloom-core-supabase` repo (`Design/CloudTeamCollections/`),
+> next to the backend it describes. Paths under `src/`, `Design/`, `tasks/`, `orchestration/`,
+> and mentions of `IMPLEMENTATION.md` or `../CloudTeamCollections.md`, refer to the BloomDesktop
+> repo (its `Design/CloudTeamCollections/` folder), where the desktop client and the project's
+> design notes live.
+
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.7** (16 Jul 2026 — added the `get_collection_file_manifest` RPC,
+**Contract version: 1.9** (24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
+"seat" and the v1.8 takeover token are replaced by a **checkout GUID**, which says which local
+copy of a book holds its checkout, so check-in keeps working when a collection folder is moved,
+renamed or copied, and a second copy can no longer silently take the checkout from the first.
+`checkout_book(book_id, machine)` loses its `seat` argument, succeeds only for a free book, and
+returns `checkoutGuid` (a book the caller already holds returns `{success: false, locked_by_me:
+true}` and is NOT re-issued a GUID); `checkout_book_takeover(book_id, checkout_guid, machine)`
+takes that GUID and keeps it; `unlock_book` and `delete_book` gain a required `checkout_guid`
+argument (`CheckoutElsewhere` when it does not match); `checkin-start` takes an optional
+`checkoutGuid`, returns `checkoutGuid` when it issues one, and answers `409 CheckoutElsewhere`
+when the caller holds the book under a different GUID; `checkin-finish` answers `409
+CheckoutElsewhere` if the checkout changed since start; book rows from `get_collection_state` /
+`get_changes` carry `checkoutGuidHash` instead of `locked_seat`. `force_unlock` is unchanged: an
+admin never needs the GUID. v1.9 follow-up, same day (BL-16531 review; no version bump, since no
+request or response field changes): `checkin-finish` and `collection-files-finish` can answer
+`409 TransactionChanged` when a concurrent start resumed (rewrote) the transaction while finish
+was verifying it — nothing is committed and it is retryable like any other failed finish;
+`checkin-start` taking a free lock now emits a CheckOut event, as `checkout_book` does; and
+`checkin-start` obtains its S3 credentials before it takes the lock, so a credential failure can
+no longer leave a checkout GUID issued that the client never received. v1.8, 23 Sep 2026, BL-16531 review fixes — BREAKING for the client:
+`checkout_book` now returns a secret `checkout_token` on success, and `checkout_book_takeover`
+takes that token as a new second argument and grants takeover only for it (machine/seat no
+longer grant anything); `checkin-start`/`collection-files-start` NFC-normalize and validate
+every path (`changedPaths` come back NFC; new `400 InvalidManifest`) and `checkin-start` now
+also reports `NameConflict` for a rename of an existing book; `checkin-finish` re-checks the
+lock and base version (`409 LockHeldByOther` / `BaseVersionSuperseded`); the internal finish
+RPCs became service-role only. v1.7, 16 Jul 2026 — added the `get_collection_file_manifest` RPC,
 additive (E9): a per-file manifest for one collection-file group so the download path fetches
 only changed files pinned to their committed `s3_version_id`, mirroring `get_book_manifest`;
 the data already lived in `tc.collection_group_files`, this just exposes it for reads. No
@@ -111,10 +143,10 @@ four files, applied in this order (wired via `[db.migrations].schema_paths` in `
 
 | file | contents |
 |------|----------|
-| `supabase/schemas/01_schema.sql`   | the `tc` schema + enum types |
-| `supabase/schemas/02_functions.sql`| every function (RPCs, `_tx`, triggers, helpers) |
-| `supabase/schemas/03_tables.sql`   | tables, constraints, indexes, triggers |
-| `supabase/schemas/04_security.sql` | RLS enable + policies + grants |
+| `supabase/schemas/tc/01_schema.sql`   | the `tc` schema + enum types |
+| `supabase/schemas/tc/02_functions.sql`| every function (RPCs, `_tx`, triggers, helpers) |
+| `supabase/schemas/tc/03_tables.sql`   | tables, constraints, indexes, triggers |
+| `supabase/schemas/tc/04_security.sql` | RLS enable + policies + grants |
 
 These files are what you **edit and review**. What actually runs (`supabase db reset` locally,
 `supabase db push` to a project) is a migration under `supabase/migrations/`, which is a
@@ -128,13 +160,13 @@ These files are what you **edit and review**. What actually runs (`supabase db r
 > schema undocumented. Concatenation is lossless, so that is how the migration is built.
 
 **Making a schema change (pre-launch — current state):** there is a single initial migration and
-the only database is local, so history is disposable. Edit the relevant `schemas/*.sql` file, run
+the only database is local, so history is disposable. Edit the relevant `schemas/tc/*.sql` file, run
 `build/regen-init-migration.sh`, then `supabase db reset` to rebuild and `supabase test db` to
 check. Keep `SCHEMA.md`'s diagram in sync for table changes.
 
 **After go-live:** once a real project database exists, its history must be preserved, so you can
 no longer regenerate the initial migration. Switch to **forward-only delta migrations**: edit the
-`schemas/*.sql` file (still the source of truth), then hand-write a small migration for the delta
+`schemas/tc/*.sql` file (still the source of truth), then hand-write a small migration for the delta
 (or generate one with `supabase db diff` and **re-add the `COMMENT ON` / `GRANT` lines it drops** —
 see the caveat above). Never edit the already-applied initial migration.
 
@@ -151,15 +183,15 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `create_collection(id uuid, name text)` | creates collection + caller as sole claimed admin |
 | `my_collections()` | collections where caller's email is approved (claimed or not) |
 | `claim_memberships()` | fills user_id on rows matching caller's verified email |
-| `get_collection_state(collection_id, since_event_id?)` | full/delta snapshot: book rows (locks, current version seq + checksum), collection-file group versions, `max_event_id` |
-| `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up) |
+| `get_collection_state(collection_id, since_event_id?)` | full/delta snapshot: book rows (locks, current version seq + checksum), collection-file group versions, `max_event_id`. v1.9: book rows carry `checkoutGuidHash` (see "Checkout GUID" below; NULL when unlocked) |
+| `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up). v1.9: book rows carry `checkoutGuidHash` |
 | `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
 | `get_collection_file_manifest(collection_id, group_key)` | v1.7: per-file current manifest `{groupKey, version, files:[{path, sha256, size, s3VersionId}]}` for one collection-file group, so the download path fetches only changed files pinned to their committed `s3_version_id` (E9); a never-written group returns `version 0` / empty `files`. Mirrors `get_book_manifest`. |
-| `checkout_book(book_id, machine text, seat text?)` | conditional lock; returns resulting status (winner's identity on failure). v1.5: also records the caller's `seat` — a stable hash of the local collection folder path identifying WHICH local copy took the lock (never the raw path); returns `locked_seat`. |
-| `checkout_book_takeover(book_id, machine text, seat text?)` | v1.4/v1.5: atomically reassigns another account's lock to the caller ONLY when the existing lock is recorded for the same machine AND the same seat (account-switch, batch item 9 + bug #0: two local copies on one computer are two seats); a NULL stored seat never matches (fail-safe). Returns `{success, locked_by, locked_by_machine, locked_seat, locked_at}` (same shape as checkout_book); emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, locked on a different machine, or locked in a different/unknown seat. Note: `machine` and `seat` are client-asserted, consistent with checkout_book's existing trust model. |
-| `unlock_book(book_id)` | release own lock (undo checkout, no content change) |
-| `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event |
-| `delete_book(book_id)` | requires caller holds the lock; sets `deleted_at`; emits Deleted |
+| `checkout_book(book_id, machine text)` | conditional lock of a FREE book; returns resulting status (winner's identity on failure). v1.9: on success returns `{success: true, locked_by, locked_by_machine, locked_at, checkoutGuid}`, a new checkout GUID issued to this caller only (see "Checkout GUID" below). A book the caller already holds (in this copy or another) returns `{success: false, locked_by_me: true, locked_by, locked_by_machine, locked_at}` and changes nothing: no new GUID, because that would orphan the copy holding the current one. Locked by someone else (or deleted): `{success: false, locked_by, locked_by_machine, locked_at}`. `machine` is for display only. |
+| `checkout_book_takeover(book_id, checkout_guid text, machine text)` | v1.4/v1.9: atomically reassigns a DIFFERENT account's lock to the caller ONLY when `checkout_guid` is the lock's current checkout GUID (account switch, batch item 9: account B opening the local copy account A checked the book out in, whose `.checkout` file holds the GUID). Presenting the member-readable hash does not work. The GUID is kept (not rotated), so the same copy goes on working under the new account. `machine` is recorded with the new lock for display. Returns `{success, locked_by, locked_by_machine, locked_at}`; emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, or the GUID is missing/wrong. |
+| `unlock_book(book_id, checkout_guid text)` | release own lock (undo checkout, no content change). v1.9: needs the current checkout GUID; otherwise raises `CheckoutElsewhere: ...` (SQLSTATE P0001; HTTP 400), as it does for the hash in place of the GUID. Not the holder: `lock_not_held: ...` as before |
+| `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event. Never needs the checkout GUID; clears it with the lock |
+| `delete_book(book_id, checkout_guid text)` | requires caller holds the lock and (v1.9) presents its checkout GUID (else `CheckoutElsewhere: ...`, SQLSTATE P0001); sets `deleted_at`; emits Deleted |
 | `undelete_book(book_id)` | admin; clears tombstone (name-uniqueness enforced) |
 | `rename_check(book_id, new_name)` | advisory uniqueness pre-check |
 | `members: list/add/remove/set_role` | admin-only approved-accounts management; remove force-unlocks that user's checkouts (evented); last-admin guard. v1.6: list rows carry `display_name` |
@@ -169,19 +201,58 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 
 All timestamps server-side. All RPCs RLS-gated; books/versions accept no direct writes.
 
+#### Checkout GUID (v1.9)
+
+Every new checkout — `checkout_book`, or `checkin-start` creating a new book or taking a free
+lock — issues a random GUID (canonical lowercase UUID text), returned only to the client that
+took the lock. The client keeps it in `<bookFolder>/.checkout`, which is never uploaded. The
+server stores only its hash in `tc.books.checkout_guid_hash`:
+
+    checkoutGuidHash = lowercase hex( SHA-256( UTF-8 bytes of lower(guid) ) )
+
+(SQL: `encode(sha256(convert_to(lower(guid), 'UTF8')), 'hex')`). The hash is member-readable
+(a hash of 122 random bits cannot be reversed) and comes back on every book row as
+`checkoutGuidHash`; the GUID itself is stored nowhere. A copy's `.checkout` is current only when
+the row is locked by the caller and `checkoutGuidHash` equals the hash of its GUID. Check-in,
+`unlock_book` and `delete_book` by the holder need the GUID, and so does `checkout_book_takeover`
+by another account; `force_unlock` and member removal (admin) never do, and clear it with the
+lock. The hash is also cleared whenever the lock is released or passes to another account without
+a new GUID (only `checkout_book_takeover` hands the same GUID on).
+
 ### Edge functions (`/functions/v1/<name>`, JWT-verified; only these hold AWS creds)
 
 #### `checkin-start` POST
 Req: `{ collectionId, bookId?, bookInstanceId, proposedName, baseVersionId?, checksum,
-clientVersion, files: [{path, sha256, size}] }`
+clientVersion, files: [{path, sha256, size}], checkoutGuid? }`
 - `bookId` null ⇒ first Send of a new book: validates name/instance-id uniqueness; creates the
   row locked to caller with NO current version (invisible to teammates until first commit).
+  v1.9: this issues a checkout GUID. Re-calling for the same never-committed book (resume) needs
+  that GUID as `checkoutGuid` (else 409 `CheckoutElsewhere`), unless the row has none, in which
+  case a new one is issued.
+- v1.9, existing book: if the caller already holds the lock, `checkoutGuid` must be its current
+  checkout GUID, else 409 `CheckoutElsewhere` (the caller holds it in another copy); if the book is
+  free, start takes the lock, issues a new GUID and emits a CheckOut event (type 0, exactly as
+  `checkout_book` does, so other clients see the lock via realtime/`get_changes`); if someone
+  else holds it, 409 `LockHeldByOther` as before.
+- The S3 credentials are obtained before the lock is taken (so a failure there leaves no GUID
+  issued that the response never carried); a refused start returns none.
+- Existing book: `proposedName` must not equal (case-insensitively, after NFC) another live
+  book's name, else 409 `NameConflict` (v1.8; previously only caught at finish).
+- v1.8: every `files[].path` is NFC-normalized before anything else, and validated: it must be a
+  non-empty relative path (no leading `/`, no empty, `.` or `..` segment), with a `sha256`
+  string and a non-negative integer `size`; two entries whose paths are equal after
+  normalization are refused. Failure ⇒ 400 `InvalidManifest` (+`detail`, and `entries` or
+  `paths`). `changedPaths` are returned NFC: **the client must upload each changed file to
+  `prefix + changedPath` exactly as returned**, not under its local spelling.
+- The transaction records the book's current version as its base (whether or not
+  `baseVersionId` was sent); `checkin-finish` refuses to commit if the book has moved on.
 - Re-call with the same open transaction ⇒ refreshed credentials, same transactionId.
-200: `{ transactionId, changedPaths[], s3: { bucket, region, prefix,
+200: `{ transactionId, changedPaths[], checkoutGuid?, s3: { bucket, region, prefix,
 credentials: { accessKeyId, secretAccessKey, sessionToken, expiration } } }`
-(creds scoped `tc/{cid}/books/{bookInstanceId}/*`, 1 h)
-Errors: 401/403 · 409 `LockHeldByOther` (+holder) / `BaseVersionSuperseded` / `NameConflict`
-· 426 `ClientOutOfDate`.
+(creds scoped `tc/{cid}/books/{bookInstanceId}/*`, 1 h; `checkoutGuid` only when this call
+issued a new checkout — the client must save it in the book's `.checkout` file)
+Errors: 400 `InvalidManifest` · 401/403 · 409 `LockHeldByOther` (+holder) /
+`CheckoutElsewhere` / `BaseVersionSuperseded` / `NameConflict` · 426 `ClientOutOfDate`.
 
 #### `checkin-finish` POST
 Req: `{ transactionId, comment?, keepCheckedOut? }`
@@ -190,6 +261,31 @@ version (metadata) row, current-manifest rows (superseded rows pruned), book row
 lock release (unless keepCheckedOut), events (Created+CheckIn for a new book), writes
 `.manifest.json`. 200: `{ versionId, seq }` · 409 `MissingOrBadUploads { paths[] }`
 (re-upload + retry, idempotent) · 410 transaction expired.
+v1.8: before committing it re-checks, under a row lock, that the caller still holds the book's
+lock and that the book is still at the transaction's base version; otherwise nothing is written
+and it returns 409 `LockHeldByOther` (`holder` as in checkin-start, or `null` if the lock was
+released, e.g. force-unlocked) or 409 `BaseVersionSuperseded` (`currentVersionId`,
+`currentVersionSeq`) — the client must Receive and re-send rather than retry. A retry of a
+finish that already committed (even one racing it) returns the same `{ versionId, seq }`.
+v1.9: it also refuses with 409 `CheckoutElsewhere` unless the book still has the checkout GUID
+the transaction started under (checked after `LockHeldByOther`, before
+`BaseVersionSuperseded`). `keepCheckedOut: true` keeps the lock AND the GUID; otherwise both are
+released.
+v1.9 follow-up: 409 `TransactionChanged` means a `checkin-start` for the same transaction (a
+resume, which rewrites its file list) ran while this finish was verifying the uploads, so what
+was verified is no longer what would be committed. Nothing is written and the transaction stays
+open; treat it like any other failed finish (start again, upload the returned `changedPaths`,
+finish).
+
+*Internal (not called by the client):* the finish edge functions establish the caller from
+their own JWT via the `tc.current_caller()` RPC (validated by PostgREST, so this works for a
+Firebase ID token under Option A as well as a local GoTrue token), then call
+`tc.checkin_finish_tx` / `tc.collection_files_finish_tx` with the **service-role key**, passing
+that user id. Those two RPCs are EXECUTE-able by `service_role` only, because they trust the
+S3 version-ids they are given; a member calling them directly gets `permission denied`. Each
+also takes `p_expected_revision`: the transaction row's `revision` as the edge function read it
+along with the file list it verified; every start resume bumps `revision`, and a mismatch is the
+409 `TransactionChanged` above.
 
 #### `checkin-abort` POST — `{ transactionId }` → 200.
 
@@ -199,7 +295,11 @@ lock release (unless keepCheckedOut), events (Created+CheckIn for a new book), w
 #### `collection-files-start` / `collection-files-finish` POST
 `{ collectionId, groupKey: 'other'|'allowed-words'|'sample-texts', expectedVersion, files[] }`
 two-phase like check-in; finish bumps the group version atomically; 409 `VersionConflict`
-⇒ client pulls first (repo-wins rule).
+⇒ client pulls first (repo-wins rule). v1.8: paths are NFC-normalized/validated at start
+exactly as for checkin-start (400 `InvalidManifest`; upload to the returned `changedPaths`),
+and finish retries are idempotent (`{ version }` of the committed transaction). v1.9 follow-up:
+finish can also answer 409 `TransactionChanged` (a concurrent start resumed the transaction
+while finish was verifying it; nothing committed, retry as for any failed finish).
 
 ## Realtime
 

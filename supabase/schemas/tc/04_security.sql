@@ -1,6 +1,15 @@
 -- Team Collections cloud: row-level security (enable + policies) and grants.
 -- Writes go through SECURITY DEFINER RPCs, so most tables expose only SELECT to
 -- `authenticated`; anon gets nothing.
+--
+-- Who may call which RPC: everything a member could safely do by calling it directly is
+-- granted to `authenticated` and reads the caller from their own JWT (auth.jwt()),
+-- including the edge functions' start/abort RPCs, which the edge functions call with the
+-- caller's forwarded token. The finish RPCs are different: they commit S3 version-ids
+-- that only the edge function has verified, so they are granted to `service_role` alone,
+-- the edge functions call them with the service-role key, and the caller's identity is a
+-- parameter the edge function first established from the caller's JWT (tc.current_caller).
+-- Operational tools (sweep, admin recovery) are service_role-only too.
 ALTER TABLE tc.books ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY books_select ON tc.books FOR SELECT USING (tc.is_member(collection_id));
@@ -61,27 +70,41 @@ CREATE POLICY versions_select ON tc.versions FOR SELECT USING (tc.is_member(coll
 
 GRANT USAGE ON SCHEMA tc TO authenticated;
 
+-- The service role calls only the service-role-only SECURITY DEFINER functions below
+-- (finish RPCs, sweep worklist/re-check, support_set_admin); it needs the schema.
+GRANT USAGE ON SCHEMA tc TO service_role;
+
 GRANT ALL ON FUNCTION tc.add_palette_colors(p_collection_id uuid, p_palette text, p_colors text[]) TO authenticated;
 
 GRANT ALL ON FUNCTION tc.checkin_abort_tx(p_transaction_id uuid) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.checkin_finish_tx(p_transaction_id uuid, p_comment text, p_keep_checked_out boolean, p_captured jsonb) TO authenticated;
+-- The finish RPCs record S3 version-ids as verified, trusting their p_captured argument,
+-- and take the caller's identity as a parameter; only the finish edge functions, which
+-- verify those uploads against S3 first and establish the caller from their own JWT, may
+-- call them (with the service-role key). Granted to authenticated they would let a member
+-- commit arbitrary, unverified version-ids straight to the shared manifest.
+REVOKE ALL ON FUNCTION tc.checkin_finish_tx(p_transaction_id uuid, p_user_id text, p_user_email text, p_user_name text, p_comment text, p_keep_checked_out boolean, p_captured jsonb, p_expected_revision bigint) FROM PUBLIC, anon, authenticated;
+GRANT ALL ON FUNCTION tc.checkin_finish_tx(p_transaction_id uuid, p_user_id text, p_user_email text, p_user_name text, p_comment text, p_keep_checked_out boolean, p_captured jsonb, p_expected_revision bigint) TO service_role;
 
-GRANT ALL ON FUNCTION tc.checkin_start_tx(p_collection_id uuid, p_book_id uuid, p_book_instance_id uuid, p_proposed_name text, p_base_version_id uuid, p_checksum text, p_client_version text, p_files jsonb) TO authenticated;
+GRANT ALL ON FUNCTION tc.checkin_start_tx(p_collection_id uuid, p_book_id uuid, p_book_instance_id uuid, p_proposed_name text, p_base_version_id uuid, p_checksum text, p_client_version text, p_files jsonb, p_checkout_guid text) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.checkout_book(p_book_id uuid, p_machine text, p_seat text) TO authenticated;
+GRANT ALL ON FUNCTION tc.checkout_book(p_book_id uuid, p_machine text) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.checkout_book_takeover(p_book_id uuid, p_machine text, p_seat text) TO authenticated;
+GRANT ALL ON FUNCTION tc.checkout_book_takeover(p_book_id uuid, p_checkout_guid text, p_machine text) TO authenticated;
 
 GRANT ALL ON FUNCTION tc.claim_memberships() TO authenticated;
 
-GRANT ALL ON FUNCTION tc.collection_files_finish_tx(p_transaction_id uuid, p_captured jsonb) TO authenticated;
+-- Service-role only, for the same reason as checkin_finish_tx above.
+REVOKE ALL ON FUNCTION tc.collection_files_finish_tx(p_transaction_id uuid, p_user_id text, p_user_email text, p_user_name text, p_captured jsonb, p_expected_revision bigint) FROM PUBLIC, anon, authenticated;
+GRANT ALL ON FUNCTION tc.collection_files_finish_tx(p_transaction_id uuid, p_user_id text, p_user_email text, p_user_name text, p_captured jsonb, p_expected_revision bigint) TO service_role;
 
 GRANT ALL ON FUNCTION tc.collection_files_start_tx(p_collection_id uuid, p_group_key text, p_expected_version bigint, p_files jsonb) TO authenticated;
 
 GRANT ALL ON FUNCTION tc.create_collection(p_id uuid, p_name text) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.delete_book(p_book_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION tc.current_caller() TO authenticated;
+
+GRANT ALL ON FUNCTION tc.delete_book(p_book_id uuid, p_checkout_guid text) TO authenticated;
 
 GRANT ALL ON FUNCTION tc.download_start_check(p_collection_id uuid) TO authenticated;
 
@@ -97,6 +120,9 @@ GRANT ALL ON FUNCTION tc.get_collection_state(p_collection_id uuid, p_since_even
 
 REVOKE ALL ON FUNCTION tc.list_stale_upload_garbage() FROM PUBLIC;
 GRANT ALL ON FUNCTION tc.list_stale_upload_garbage() TO service_role;
+
+REVOKE ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) FROM PUBLIC;
+GRANT ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) TO service_role;
 
 GRANT ALL ON FUNCTION tc.log_event(p_collection_id uuid, p_book_id uuid, p_type integer, p_message text, p_book_name text, p_bloom_version text) TO authenticated;
 
@@ -123,9 +149,14 @@ GRANT ALL ON FUNCTION tc.support_set_admin(p_collection_id uuid, p_email text) T
 
 GRANT ALL ON FUNCTION tc.undelete_book(p_book_id uuid) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.unlock_book(p_book_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION tc.unlock_book(p_book_id uuid, p_checkout_guid text) TO authenticated;
 
-GRANT SELECT ON TABLE tc.books TO authenticated;
+-- Listed column by column so that a column added later is not member-readable until it is
+-- added here. checkout_guid_hash is readable on purpose: it is a hash of 122 random bits,
+-- and clients compare it with their local .checkout file (CONTRACTS.md v1.9).
+GRANT SELECT (id, collection_id, instance_id, name, current_version_id, current_version_seq,
+              current_checksum, locked_by, locked_by_machine, locked_at, deleted_at,
+              created_at, created_by, checkout_guid_hash) ON TABLE tc.books TO authenticated;
 
 GRANT SELECT ON TABLE tc.checkin_transactions TO authenticated;
 

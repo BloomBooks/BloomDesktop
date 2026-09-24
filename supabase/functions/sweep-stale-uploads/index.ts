@@ -14,15 +14,24 @@
 // Operational job: works across ALL collections, so it runs only for the service role. Intended
 // to be invoked ~daily by a scheduler with the service-role key; safe to run more often
 // (idempotent -- a second run finds nothing newer than the referenced version).
-import { HttpError, jsonResponse } from "../_shared/errors.ts";
-import { serveJsonPost } from "../_shared/handler.ts";
-import { callTcRpc } from "../_shared/rpc.ts";
+//
+// The worklist is a snapshot, and check-ins keep happening while the sweep runs, so two guards
+// keep it from deleting an upload that a check-in has since committed (or is still using):
+//   - it only ever deletes versions older than UPLOAD_GRACE_MS (the check-in transaction
+//     lifetime), so an upload belonging to a transaction that could still be live is never a
+//     candidate; and
+//   - immediately before deleting a key's candidates it re-reads that key's state
+//     (tc.stale_upload_key_state) and skips the key unless it is still stale and still
+//     references the version the candidates were chosen against.
+import { HttpError, jsonResponse } from "../_shared/tc/errors.ts";
+import { serveJsonPost } from "../_shared/tc/handler.ts";
+import { callTcRpc } from "../_shared/tc/rpc.ts";
 import {
     adminS3Client,
     deleteObjectVersion,
     listObjectVersions,
-} from "../_shared/s3.ts";
-import { s3Env } from "../_shared/env.ts";
+} from "../_shared/tc/s3.ts";
+import { s3Env } from "../_shared/tc/env.ts";
 
 interface GarbageRow {
     transaction_kind: string;
@@ -30,6 +39,16 @@ interface GarbageRow {
     s3_key: string;
     referenced_version_id: string | null;
 }
+
+interface KeyState {
+    stillStale: boolean;
+    referencedVersionId: string | null;
+}
+
+/** Only S3 versions at least this old are ever deleted: the check-in / collection-files
+ * transaction lifetime (expires_at = started_at + 48 h in 03_tables.sql), so an upload that a
+ * still-live transaction may yet commit is never touched. */
+export const UPLOAD_GRACE_MS = 48 * 60 * 60 * 1000;
 
 /** This job deletes S3 objects across every collection, so it must only run for the service
  * role. The worklist RPC is granted only to service_role too (defense in depth), but reject a
@@ -72,8 +91,14 @@ export const handler = async (
     let keysProcessed = 0;
     let versionsDeleted = 0;
     let referencedMissing = 0;
+    let keysChanged = 0;
+    const cutoff = Date.now() - UPLOAD_GRACE_MS;
+    // A key appears once per dead transaction that touched it; one pass per key is enough.
+    const seen = new Set<string>();
 
     for (const row of worklist) {
+        if (seen.has(row.s3_key)) continue;
+        seen.add(row.s3_key);
         keysProcessed++;
         const versions = await listObjectVersions(client, bucket, row.s3_key);
 
@@ -101,6 +126,32 @@ export const handler = async (
             garbage = versions.slice(0, refIndex).map((v) => v.versionId);
         }
 
+        // Grace period: drop anything too young (or with no timestamp -- fail safe).
+        const oldEnough = new Set(
+            versions
+                .filter(
+                    (v) =>
+                        v.lastModified !== undefined &&
+                        v.lastModified.getTime() < cutoff,
+                )
+                .map((v) => v.versionId),
+        );
+        garbage = garbage.filter((id) => oldEnough.has(id));
+        if (garbage.length === 0) continue;
+
+        // Re-read the key right before deleting: a check-in may have committed a new version
+        // (or started uploading this path) since the worklist snapshot.
+        const now = await callTcRpc<KeyState>(req, "stale_upload_key_state", {
+            p_s3_key: row.s3_key,
+        });
+        if (
+            !now.stillStale ||
+            now.referencedVersionId !== row.referenced_version_id
+        ) {
+            keysChanged++;
+            continue;
+        }
+
         for (const versionId of garbage) {
             await deleteObjectVersion(client, bucket, row.s3_key, versionId);
             versionsDeleted++;
@@ -111,6 +162,7 @@ export const handler = async (
         keysProcessed,
         versionsDeleted,
         referencedMissing,
+        keysChanged,
     });
 };
 

@@ -582,7 +582,7 @@ namespace Bloom.TeamCollection.Cloud
         /// <summary>
         /// Classifies an error response into a <see cref="CloudCollectionClientException"/>.
         /// Edge functions return CONTRACTS.md's standard envelope `{error: "<Code>", ...extra}`
-        /// (built by supabase/functions/_shared/errors.ts) for the documented 409s/426s;
+        /// (built by supabase/functions/_shared/tc/errors.ts) for the documented 409s/426s;
         /// Postgres RPC errors arrive as `{code, message, details, hint}` (PostgREST's shape,
         /// where `code` is the SQLSTATE from the RAISE EXCEPTION in the SQL functions). Anything
         /// we don't recognize maps to <see cref="CloudErrorCode.Unknown"/> with the server's own

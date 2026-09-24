@@ -2,7 +2,7 @@
 // function. Centralised here so the local/prod credential-provider seam (see
 // server/dev/DEV-CREDENTIALS.md) lives in exactly one place.
 
-/** Reads a required env var; throws (fails fast) if missing — see AGENTS.md testing
+/** Reads a required env var; throws (fails fast) if missing — see BloomDesktop's AGENTS.md testing
  * philosophy: don't silently work around a missing dependency. */
 export const requireEnv = (name: string): string => {
     const value = Deno.env.get(name);
@@ -27,21 +27,34 @@ export const isLocalMode = (): boolean =>
 
 /** Supabase project URL + anon key, auto-injected by the Supabase CLI/platform into
  * every edge function's environment — used to call PostgREST RPCs with the caller's
- * OWN forwarded JWT (never the service-role key; see the migration's header comment
- * for why that is both sufficient and correct here). */
+ * OWN forwarded JWT (see rpc.ts for which calls do that and which use the service-role
+ * key instead). */
 export const supabaseUrl = (): string => requireEnv("SUPABASE_URL");
 export const supabaseAnonKey = (): string => requireEnv("SUPABASE_ANON_KEY");
 
+/** Service-role key, also auto-injected by the Supabase CLI/platform. Used ONLY for the
+ * internal finish RPCs that record S3 state the edge function has just verified (see
+ * rpc.ts callTcServiceRpc); never forwarded to, or derived from, a client. */
+export const supabaseServiceRoleKey = (): string =>
+    requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+
 /** S3 / MinIO connection details. */
 export interface S3Env {
-    endpoint: string;
+    /** Custom S3 endpoint. Always set in local mode (the MinIO URL); normally unset in
+     * a hosted deployment, where undefined makes the AWS SDK pick the default AWS
+     * endpoint for `region` (see GOING-LIVE.md 2.3). */
+    endpoint: string | undefined;
     bucket: string;
     region: string;
     forcePathStyle: boolean;
 }
 
 export const s3Env = (): S3Env => ({
-    endpoint: requireEnv("BLOOM_S3_ENDPOINT"),
+    // Local mode has no AWS to fall back to, so a missing MinIO endpoint is a
+    // configuration error there; elsewhere its absence means "real AWS".
+    endpoint: isLocalMode()
+        ? requireEnv("BLOOM_S3_ENDPOINT")
+        : Deno.env.get("BLOOM_S3_ENDPOINT") || undefined,
     bucket: requireEnv("BLOOM_S3_BUCKET"),
     region: optionalEnv("BLOOM_S3_REGION", "us-east-1"),
     // MinIO requires path-style; real AWS uses virtual-hosted style. Local mode always
@@ -60,7 +73,7 @@ export const minioRootCredentials = () => ({
 });
 
 /** Production broker configuration: the "assume-only" IAM user's credentials and the
- * bloom-teams-broker role ARN it is allowed to assume (see server/provision-aws.ts). */
+ * bloom-teams-broker role ARN it is allowed to assume (see server/provision-aws.ps1). */
 export const prodBrokerConfig = () => ({
     roleArn: requireEnv("BLOOM_TEAMS_BROKER_ROLE_ARN"),
     accessKeyId: requireEnv("AWS_ACCESS_KEY_ID"),

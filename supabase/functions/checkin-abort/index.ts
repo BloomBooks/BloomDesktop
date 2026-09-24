@@ -1,8 +1,8 @@
 // POST /functions/v1/checkin-abort — CONTRACTS.md §checkin-abort
 // Req: { transactionId } -> 200. Idempotent; rolls back a never-finished new book.
-import { requireField, serveJsonPost } from "../_shared/handler.ts";
-import { jsonResponse } from "../_shared/errors.ts";
-import { callTcRpc } from "../_shared/rpc.ts";
+import { requireField, serveJsonPost } from "../_shared/tc/handler.ts";
+import { jsonResponse } from "../_shared/tc/errors.ts";
+import { callTcRpc } from "../_shared/tc/rpc.ts";
 
 // Exported so Deno tests can import and call it directly — see checkin-start/index.ts's
 // comment on the `import.meta.main` guard below.

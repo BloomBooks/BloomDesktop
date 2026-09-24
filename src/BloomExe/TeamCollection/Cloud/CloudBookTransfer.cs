@@ -325,7 +325,7 @@ namespace Bloom.TeamCollection.Cloud
                         // it is live-verified against the local MinIO stack (task 04) — S3/MinIO
                         // store and correctly return it via GetObjectAttributes/HeadObject
                         // (ChecksumMode: ENABLED) exactly as if the property had set it, which is
-                        // what supabase/functions/_shared/s3.ts's verifyUploadedObject reads back at
+                        // what supabase/functions/_shared/tc/s3.ts's verifyUploadedObject reads back at
                         // checkin-finish — and switching to the property would also flip the SDK
                         // into its trailing-checksum/chunked-encoding path, an unnecessary behavior
                         // change for S3-compatible endpoints (see the WHEN_REQUIRED config in

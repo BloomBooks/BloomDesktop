@@ -269,9 +269,16 @@ BEGIN
 END;
 $$;
 
+-- Keep the checkout GUID Alice's client would save in the book's .checkout file; the
+-- delete below needs it.
+SELECT set_config('tests.alice_guid',
+    tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine') ->> 'checkoutGuid',
+    true);
+
 SELECT ok(
-    (SELECT (tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine')) ->> 'success' = 'true'),
-    '5a: Alice wins the checkout race (first call)'
+    current_setting('tests.alice_guid', true) IS NOT NULL
+    AND (SELECT locked_by FROM tc.books WHERE id = 'b0000000-0000-0000-0000-000000000001') = 'user-alice-001',
+    '5a: Alice wins the checkout race (first call) and gets a checkout GUID'
 );
 
 -- Bob tries to check out the same book — should fail
@@ -389,8 +396,9 @@ END;
 $$;
 
 SELECT lives_ok(
-    $$SELECT tc.delete_book('b0000000-0000-0000-0000-000000000001')$$,
-    '8a: delete_book succeeds when caller holds the lock'
+    format($$SELECT tc.delete_book('b0000000-0000-0000-0000-000000000001', %L)$$,
+        current_setting('tests.alice_guid')),
+    '8a: delete_book succeeds when caller holds the lock (with its checkout GUID)'
 );
 
 SELECT ok(
@@ -425,8 +433,8 @@ END;
 $$;
 
 -- Re-checkout so we can delete again
-SELECT tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine');
-SELECT tc.delete_book('b0000000-0000-0000-0000-000000000001');
+SELECT tc.delete_book('b0000000-0000-0000-0000-000000000001',
+    tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine') ->> 'checkoutGuid');
 
 -- Inserting a new book with the same name should succeed (tombstone excluded from index)
 SELECT lives_ok(

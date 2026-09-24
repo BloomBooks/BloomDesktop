@@ -1,11 +1,11 @@
 // POST /functions/v1/download-start — CONTRACTS.md §download-start
 // Req: { collectionId } -> 200 { s3: {...} } read-only creds
 // (GetObject + GetObjectVersion) scoped tc/{cid}/*, 1h.
-import { requireField, serveJsonPost } from "../_shared/handler.ts";
-import { jsonResponse } from "../_shared/errors.ts";
-import { callTcRpc } from "../_shared/rpc.ts";
-import { getScopedCredentials } from "../_shared/s3.ts";
-import { collectionPrefix } from "../_shared/paths.ts";
+import { requireField, serveJsonPost } from "../_shared/tc/handler.ts";
+import { jsonResponse } from "../_shared/tc/errors.ts";
+import { callTcRpc } from "../_shared/tc/rpc.ts";
+import { getScopedCredentials } from "../_shared/tc/s3.ts";
+import { collectionPrefix } from "../_shared/tc/paths.ts";
 
 const DOWNLOAD_ACTIONS = ["s3:GetObject", "s3:GetObjectVersion"];
 

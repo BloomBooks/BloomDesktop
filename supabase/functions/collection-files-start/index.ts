@@ -2,11 +2,11 @@
 // Req: { collectionId, groupKey: 'other'|'allowed-words'|'sample-texts', expectedVersion,
 //        files[] } -> two-phase like check-in.
 // 409 VersionConflict ⇒ client pulls first (repo-wins rule).
-import { requireField, serveJsonPost } from "../_shared/handler.ts";
-import { HttpError, jsonResponse } from "../_shared/errors.ts";
-import { callTcRpc } from "../_shared/rpc.ts";
-import { getScopedCredentials, S3_WRITE_ACTIONS } from "../_shared/s3.ts";
-import { collectionFilesPrefix } from "../_shared/paths.ts";
+import { requireField, serveJsonPost } from "../_shared/tc/handler.ts";
+import { HttpError, jsonResponse } from "../_shared/tc/errors.ts";
+import { callTcRpc } from "../_shared/tc/rpc.ts";
+import { getScopedCredentials, S3_WRITE_ACTIONS } from "../_shared/tc/s3.ts";
+import { collectionFilesPrefix } from "../_shared/tc/paths.ts";
 
 const VALID_GROUP_KEYS = new Set(["other", "allowed-words", "sample-texts"]);
 

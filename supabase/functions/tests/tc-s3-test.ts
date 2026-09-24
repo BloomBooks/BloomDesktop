@@ -1,18 +1,18 @@
-// Unit tests for _shared/s3.ts: the local-mode MinIO AssumeRole credential seam, checksum
+// Unit tests for _shared/tc/s3.ts: the local-mode MinIO AssumeRole credential seam, checksum
 // verification, and the manifest backup write. S3Client/STSClient calls are mocked via
 // aws-sdk-client-mock (patches the SDK client prototypes) rather than a live MinIO —
 // the live-integration spike (see the task's Progress log) already exercised the real
 // MinIO AssumeRole round-trip; these tests cover the wiring/logic cheaply and
 // hermetically instead.
-import { assertEquals, assertExists } from "jsr:@std/assert@1";
-import { mockClient } from "npm:aws-sdk-client-mock@4";
-import { AssumeRoleCommand, STSClient } from "npm:@aws-sdk/client-sts@3";
+import { assertEquals, assertExists } from "@std/assert";
+import { mockClient } from "aws-sdk-client-mock";
+import { AssumeRoleCommand, STSClient } from "@aws-sdk/client-sts";
 import {
     HeadObjectCommand,
     PutObjectCommand,
     S3Client,
-} from "npm:@aws-sdk/client-s3@3";
-import { setTestEnv } from "./test_support.ts";
+} from "@aws-sdk/client-s3";
+import { setTestEnv } from "../_shared/tc/test_support.ts";
 
 setTestEnv();
 
@@ -22,7 +22,7 @@ const {
     hexToBase64,
     verifyUploadedObject,
     writeManifestBackup,
-} = await import("./s3.ts");
+} = await import("../_shared/tc/s3.ts");
 
 Deno.test(
     "hexToBase64 round-trips a known SHA-256 hex digest to its base64 form",

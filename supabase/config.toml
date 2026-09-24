@@ -25,7 +25,7 @@ port = 54322
 shadow_port = 54320
 # The database major version to use. This has to be the same as your remote database's. Run
 # `SHOW server_version;` on the remote database to check.
-major_version = 15
+major_version = 17
 
 # Declarative schema (the `tc` cloud Team Collections schema). These files are the
 # hand-maintained source of truth for the database; the migration in migrations/ is
@@ -34,12 +34,14 @@ major_version = 15
 # drops COMMENT ON and GRANT EXECUTE. Files are applied in the order listed
 # (schema -> functions -> tables -> security), which satisfies their dependencies. Full
 # workflow (incl. post-launch forward-only deltas): Design/CloudTeamCollections/CONTRACTS.md.
+# The schema, migration, tests and functions are a test-only mirror of bloom-core-supabase
+# (see supabase/README.md). This config.toml is not mirrored: project_id and the seed path differ.
 [db.migrations]
 schema_paths = [
-  "./schemas/01_schema.sql",
-  "./schemas/02_functions.sql",
-  "./schemas/03_tables.sql",
-  "./schemas/04_security.sql",
+  "./schemas/tc/01_schema.sql",
+  "./schemas/tc/02_functions.sql",
+  "./schemas/tc/03_tables.sql",
+  "./schemas/tc/04_security.sql",
 ]
 
 # Local seed: creates the standard local test users (admin/alice/bob@dev.local) — see server/dev/README.md
@@ -193,13 +195,23 @@ enabled = true
 # Use `oneshot` for hot reload (recommended for development), `per_worker` for production.
 # NOTE (task 02, 6 Jul 2026): `oneshot` re-transpiles/type-checks the whole module graph
 # — including the heavy npm:@aws-sdk/client-s3 + client-sts imports in
-# supabase/functions/_shared/s3.ts — on EVERY request. That cold-start regularly exceeds
+# supabase/functions/_shared/tc/s3.ts — on EVERY request. That cold-start regularly exceeds
 # the edge-runtime's fixed ~10s worker-boot timeout (InvalidWorkerCreation: "worker did
 # not respond in time"), which made checkin-start/etc. fail every call locally. `per_worker`
 # compiles once and reuses the worker, which is also a closer match to how these functions
 # actually run in production. See server/dev/README.md.
 policy = "per_worker"
 inspector_port = 8083
+# The Deno major version to use.
+deno_version = 2
+# The TC functions (see supabase/functions/_shared/tc/env.ts) read BLOOM_CLOUD_LOCAL_MODE,
+# BLOOM_S3_* and, on hosted projects, the AWS broker secrets. They are deliberately NOT listed as
+# [edge_runtime.secrets] env(...) entries: locally they come from server/dev/functions.env via
+#   supabase functions serve --env-file server/dev/functions.env
+# and on hosted projects from `supabase secrets set`. An env(...) entry for an unset variable
+# would hand the functions a placeholder instead of letting them fail fast. The CLI injects
+# SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY (the finish functions need the
+# service-role key) on top of the env file, so functions.env must not set those.
 
 [analytics]
 enabled = false

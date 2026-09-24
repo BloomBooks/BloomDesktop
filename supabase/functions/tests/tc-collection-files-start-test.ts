@@ -1,7 +1,7 @@
 // Unit tests for collection-files-start's handler: groupKey validation, the
 // optimistic-version RPC call, and scoped S3 credential issuance.
-import { assertEquals } from "jsr:@std/assert@1";
-import { AssumeRoleCommand } from "npm:@aws-sdk/client-sts@3";
+import { assertEquals } from "@std/assert";
+import { AssumeRoleCommand } from "@aws-sdk/client-sts";
 import {
     callHandler,
     mockRequest,
@@ -9,10 +9,10 @@ import {
     setTestEnv,
     stubAssumeRole,
     withMockFetch,
-} from "../_shared/test_support.ts";
+} from "../_shared/tc/test_support.ts";
 
 setTestEnv();
-const { handler } = await import("./index.ts");
+const { handler } = await import("../collection-files-start/index.ts");
 
 const VALID_BODY = {
     collectionId: "col-1",
