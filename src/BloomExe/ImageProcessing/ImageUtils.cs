@@ -2747,9 +2747,13 @@ namespace Bloom.ImageProcessing
                 // files).
                 // BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
                 // Logging it will allow us to possibly correlate an error here with another problem that does get reported.
+                var details = MiscUtils.GetExtendedFileCopyErrorInformation(
+                    imagePath,
+                    out var likelyCause
+                );
                 var message = $"Could not update PNG image (BL-3227) at {imagePath}";
-                string details;
-                details = MiscUtils.GetExtendedFileCopyErrorInformation(imagePath);
+                if (likelyCause != null)
+                    message += " " + likelyCause;
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.All,
