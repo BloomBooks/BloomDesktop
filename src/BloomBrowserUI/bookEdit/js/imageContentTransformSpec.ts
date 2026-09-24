@@ -567,23 +567,15 @@ describe("flipImageContent on a cropped picture", () => {
         const img = makeOffCentreCrop(300, 400);
         img.style.transform = "rotate(90deg)";
 
+        // The picture's own left and right now run up and down the element.
         flipImageContent(img, "horizontal");
-        // 0 hidden at the left and 100 at the right become 100 and 0.
-        expect(img.style.left).toBe("-200px");
-        expect(img.style.top).toBe("-50px");
-
-        flipImageContent(img, "vertical");
         // 150 hidden at the top and 50 at the bottom become 50 and 150.
         expect(img.style.top).toBe("50px");
-    });
-
-    it("mirrors up and down in the element when the box is rotated 90 degrees and the user asks for left and right", () => {
-        const img = makeOffCentreCrop();
-
-        flipImageContent(img, "horizontal", 90);
-
         expect(img.style.left).toBe("-100px");
-        expect(img.style.top).toBe("-150px");
+
+        flipImageContent(img, "vertical");
+        // 0 hidden at the left and 100 at the right become 100 and 0.
+        expect(img.style.left).toBe("-200px");
     });
 });
 
@@ -619,44 +611,10 @@ describe("flipImageContent", () => {
         expect(img.style.transform).toBe("");
     });
 
-    it("mirrors the other axis of the picture after a 90-degree rotation", () => {
+    it("mirrors the picture's own x axis after a 90-degree rotation too", () => {
         const img = makeImage();
         rotateImageContentRight90Degrees(img);
-        // After a 90-degree rotation the x axis of the picture runs up and down the screen, so a
-        // mirror from side to side on screen is a mirror of the y axis of the picture.
         flipImageContent(img, "horizontal");
-        expect(getImageContentTransform(img)).toEqual({
-            quarterRotations: 1,
-            flipX: false,
-            flipY: true,
-        });
-    });
-
-    it("mirrors the other axis when the box is rotated 90 degrees", () => {
-        const img = makeImage();
-        // The picture itself is not rotated; the box around it is, which moves the picture on
-        // screen in the same way, so a mirror from side to side on screen is again a mirror
-        // of the y axis of the picture.
-        flipImageContent(img, "horizontal", 90);
-        expect(getImageContentTransform(img)).toEqual({
-            quarterRotations: 0,
-            flipX: false,
-            flipY: true,
-        });
-    });
-
-    it("mirrors the requested axis when the box is rotated 180 degrees", () => {
-        const img = makeImage();
-        flipImageContent(img, "horizontal", 180);
-        expect(getImageContentTransform(img).flipX).toBe(true);
-    });
-
-    it("takes the two rotations together", () => {
-        const img = makeImage();
-        rotateImageContentRight90Degrees(img);
-        // A 90-degree rotation of the picture and a 90-degree rotation of the box make a 180-degree rotation, which
-        // leaves the axes of the picture the way they started on screen.
-        flipImageContent(img, "horizontal", 90);
         expect(getImageContentTransform(img)).toEqual({
             quarterRotations: 1,
             flipX: true,
@@ -664,13 +622,18 @@ describe("flipImageContent", () => {
         });
     });
 
-    it("takes the angle of the box to the nearest multiple of 90 degrees", () => {
-        const img = makeImage();
-        flipImageContent(img, "horizontal", 80);
-        expect(getImageContentTransform(img).flipY).toBe(true);
-        const other = makeImage();
-        flipImageContent(other, "horizontal", 10);
-        expect(getImageContentTransform(other).flipX).toBe(true);
+    it("gives the same result flipping then rotating as rotating then flipping", () => {
+        const rotatedFirst = makeImage();
+        rotateImageContentRight90Degrees(rotatedFirst);
+        flipImageContent(rotatedFirst, "vertical");
+
+        const flippedFirst = makeImage();
+        flipImageContent(flippedFirst, "vertical");
+        rotateImageContentRight90Degrees(flippedFirst);
+
+        // Sanity check: something was done.
+        expect(rotatedFirst.style.transform).not.toBe("");
+        expect(rotatedFirst.style.transform).toBe(flippedFirst.style.transform);
     });
 
     it("keeps a centred crop, because a mirror does not change the shape of the box", () => {

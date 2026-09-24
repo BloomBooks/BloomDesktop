@@ -168,14 +168,14 @@ real bug in the code under test; read the message and fix it rather than working
   and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
   `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
   the picture commands on the menu (`rotateSelectedImageRight90Degrees`,
-  `flipSelectedImage`, `setSelectedImageTransparency`, `resetSelectedImage`); and the rotation knob
+  `flipSelectedImage`, `resetSelectedImage`); and the rotation knob
   and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
   `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
   file and AUTOMATION-DEBT.md give.
 - `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
   which says how a picture is rotated and mirrored on screen, box and picture together, with
-  `kUprightPicture` and `mirroredOnScreen` to build the expected answer; `getPictureInlineLayout`,
-  the inline styles that lay out a picture and its box; and `getImageTransparencyChoice`.
+  `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
+  the inline styles that lay out a picture and its box.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language

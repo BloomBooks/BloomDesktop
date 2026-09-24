@@ -194,27 +194,29 @@ export interface IPictureRotation {
 export const kUprightPicture: IPictureRotation = { a: 1, b: 0, c: 0, d: 1 };
 
 /**
- * `rotation` as it looks after the picture is mirrored about the screen's own axis: "horizontal" swaps
- * what is on the left and the right of the screen, "vertical" what is at the top and the bottom.
- * This is what the Flip commands promise, however the picture was rotated before.
+ * `rotation` as it looks after the picture is mirrored about one of its own axes: "horizontal" swaps
+ * the picture's own left and right, "vertical" its own top and bottom. This is what the Flip commands
+ * promise, however the picture was rotated before, so flipping and then rotating gives the same as
+ * rotating and then flipping.
  */
-export function mirroredOnScreen(
+export function mirroredAboutOwnAxis(
     rotation: IPictureRotation,
     axis: "horizontal" | "vertical",
 ): IPictureRotation {
-    // Mirroring after the rotation is the mirror matrix times the rotation, which negates one row.
+    // Mirroring before the rotation is the rotation times the mirror matrix, which negates one
+    // column: (a, b) is where the picture's own x axis goes, (c, d) its own y axis.
     const clean = (x: number) => (x === 0 ? 0 : x);
     if (axis === "horizontal")
         return {
             a: clean(-rotation.a),
-            b: rotation.b,
-            c: clean(-rotation.c),
+            b: clean(-rotation.b),
+            c: rotation.c,
             d: rotation.d,
         };
     return {
         a: rotation.a,
-        b: clean(-rotation.b),
-        c: rotation.c,
+        b: rotation.b,
+        c: clean(-rotation.c),
         d: clean(-rotation.d),
     };
 }

@@ -53,7 +53,7 @@ import {
     getPictureInlineLayout,
     getPictureRotation,
     kUprightPicture,
-    mirroredOnScreen,
+    mirroredAboutOwnAxis,
     type IPictureRotation,
 } from "../helpers/images";
 import { saveScreenshotIfAsked } from "../helpers/screenshot";
@@ -311,7 +311,7 @@ test.describe("rotating and flipping pictures", () => {
         ).toBe(0);
         await expect
             .poll(async () => getPictureRotation(page, picture))
-            .toEqual(mirroredOnScreen(kUprightPicture, "horizontal"));
+            .toEqual(mirroredAboutOwnAxis(kUprightPicture, "horizontal"));
         await expect
             .poll(async () => getCanvasElementPlacement(picture))
             .toEqual(placement);
@@ -324,7 +324,7 @@ test.describe("rotating and flipping pictures", () => {
         await flipSelectedImage(page, "vertical");
         await expect
             .poll(async () => getPictureRotation(page, picture))
-            .toEqual(mirroredOnScreen(kUprightPicture, "vertical"));
+            .toEqual(mirroredAboutOwnAxis(kUprightPicture, "vertical"));
         await expect
             .poll(async () => getCanvasElementPlacement(picture))
             .toEqual(placement);
@@ -346,7 +346,10 @@ test.describe("rotating and flipping pictures", () => {
         ).toEqual(kUprightPicture);
         await rotateSelectedImageRight90Degrees(page);
         await flipSelectedImage(page, "horizontal");
-        const rotatedAndMirrored = mirroredOnScreen(ROTATED_90, "horizontal");
+        const rotatedAndMirrored = mirroredAboutOwnAxis(
+            ROTATED_90,
+            "horizontal",
+        );
         await expect
             .poll(async () => getPictureRotation(page, picture))
             .toEqual(rotatedAndMirrored);
@@ -391,7 +394,7 @@ test.describe("rotating and flipping pictures", () => {
             .toBe(true);
         await expect
             .poll(async () => getPictureRotation(page, picture))
-            .toEqual(mirroredOnScreen(ROTATED_90, "horizontal"));
+            .toEqual(mirroredAboutOwnAxis(ROTATED_90, "horizontal"));
         expect(await isResetImageEnabled(page)).toBe(true);
         await saveMenuScreenshot(page, "14a-reset-enabled");
         await saveScreenshotIfAsked([canvas(page)], "14-before-reset");
@@ -410,7 +413,7 @@ test.describe("rotating and flipping pictures", () => {
         await saveScreenshotIfAsked([canvas(page)], "15-after-reset");
     });
 
-    test("on a box rotated with the knob, Flip horizontal still swaps left and right on screen [Test Case ID 827]", async ({
+    test("on a box rotated with the knob, Flip horizontal swaps the picture's own left and right, as it would before the rotation [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, itemsPage.id);
@@ -423,7 +426,7 @@ test.describe("rotating and flipping pictures", () => {
         await flipSelectedImage(page, "horizontal");
         await expect
             .poll(async () => getPictureRotation(page, picture))
-            .toEqual(mirroredOnScreen(ROTATED_90, "horizontal"));
+            .toEqual(mirroredAboutOwnAxis(ROTATED_90, "horizontal"));
         await saveScreenshotIfAsked([canvas(page)], "16-flip-rotated-overlay");
     });
 
@@ -589,7 +592,7 @@ test.describe("rotating and flipping pictures", () => {
         await saveScreenshotIfAsked([canvas(page)], "27-background-reset");
     });
 
-    test("on a background picture rotated by Rotate right, Flip horizontal still swaps left and right on screen [Test Case ID 827]", async ({
+    test("on a background picture rotated by Rotate right, Flip horizontal swaps the picture's own left and right, as it would before the rotation [Test Case ID 827]", async ({
         page,
     }) => {
         await goToPage(page, backgroundPage.id);
@@ -602,7 +605,7 @@ test.describe("rotating and flipping pictures", () => {
         await flipSelectedImage(page, "horizontal");
         await expect
             .poll(async () => getPictureRotation(page))
-            .toEqual(mirroredOnScreen(ROTATED_90, "horizontal"));
+            .toEqual(mirroredAboutOwnAxis(ROTATED_90, "horizontal"));
         await saveScreenshotIfAsked(
             [canvas(page)],
             "28-background-rotated-flipped",
@@ -643,7 +646,7 @@ test.describe("rotating and flipping pictures", () => {
             ),
         };
         expect(background.rotation).toEqual(
-            mirroredOnScreen(ROTATED_90, "horizontal"),
+            mirroredAboutOwnAxis(ROTATED_90, "horizontal"),
         );
 
         // Leaving a page is what saves it, and coming back loads what was saved. Three visits,

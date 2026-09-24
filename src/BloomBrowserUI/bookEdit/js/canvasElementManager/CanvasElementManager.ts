@@ -1411,13 +1411,7 @@ export class CanvasElementManager {
             return;
         }
         pushUndoForImageTransform(this.activeElement);
-        // The box may be rotated as well, which moves the picture on screen, so the axis the
-        // user asked for is found from the two rotations together; see flipImageContent.
-        flipImageContent(
-            img,
-            axis,
-            getCanvasElementRotation(this.activeElement),
-        );
+        flipImageContent(img, axis);
         this.adjustStuffRelatedToImage(this.activeElement, img);
     }
 

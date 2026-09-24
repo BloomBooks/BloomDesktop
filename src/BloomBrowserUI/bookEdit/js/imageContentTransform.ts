@@ -400,39 +400,24 @@ function mirrorCropInPlace(
     }
 }
 
-// Mirror the picture about the axis the user sees on screen. "Horizontal" means left and
-// right change places on screen, whichever way the picture has been rotated. After an odd
-// number of 90-degree rotations the picture's own x axis runs up and down the screen, so a
-// horizontal flip on screen is a flip of the picture's y axis.
-//
-// The canvas element box can be rotated as well, by the Rotate Right command or by the
-// rotation handle, and that rotation moves the picture on screen just as a rotation of the picture
-// itself does. The caller passes that angle as boxRotationDegrees. The handle rotates to any
-// angle, and no mirror of the picture's own axes equals a mirror about the screen axis at,
-// say, 37 degrees, so we take the box angle to the nearest multiple of 90 degrees and mirror about the
-// axis of the picture that lies nearest the one the user asked for.
-export function flipImageContent(
-    img: HTMLImageElement,
-    axis: FlipAxis,
-    boxRotationDegrees = 0,
-): void {
+// Mirror the picture about one of its own axes. "Horizontal" means the picture's own left and
+// right change places, and "vertical" its own top and bottom. No rotation, of the picture or of
+// its canvas element box, changes which axis that is, so flipping and then rotating gives the
+// same result as rotating and then flipping.
+export function flipImageContent(img: HTMLImageElement, axis: FlipAxis): void {
     const state = getImageContentTransform(img);
-    const boxQuarterRotations = Math.round(boxRotationDegrees / 90);
-    const isQuarterRotation =
-        (state.quarterRotations + boxQuarterRotations) % 2 !== 0;
-    const flipLocalX =
-        axis === "horizontal" ? !isQuarterRotation : isQuarterRotation;
-    // In the element's own frame, which the box rotation turns on screen, the mirror is
-    // left-right when the box rotation is a multiple of 180 degrees and up-down otherwise.
-    const boxIsQuarterRotated = Math.abs(boxQuarterRotations) % 2 === 1;
+    const flipOwnX = axis === "horizontal";
+    // After an odd number of 90-degree rotations the picture's own x axis runs up and down
+    // in the element's frame, which is the frame the crop is measured in.
+    const pictureIsQuarterRotated = Math.abs(state.quarterRotations) % 2 === 1;
     mirrorCropInPlace(
         img,
-        (axis === "horizontal") !== boxIsQuarterRotated,
+        flipOwnX !== pictureIsQuarterRotated,
         state.quarterRotations,
     );
     setImageContentTransform(img, {
         ...state,
-        flipX: flipLocalX ? !state.flipX : state.flipX,
-        flipY: flipLocalX ? state.flipY : !state.flipY,
+        flipX: flipOwnX ? !state.flipX : state.flipX,
+        flipY: flipOwnX ? state.flipY : !state.flipY,
     });
 }
