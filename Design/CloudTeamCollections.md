@@ -31,8 +31,9 @@ underneath Bloom produces a long tail of races (conflicted copies, half-delivere
 that look corrupt because they are still arriving). Cloud Team Collections replace the shared
 folder with a service Bloom controls:
 
-1. **Sharing is controlled by Bloom.** An admin invites people by email; each person signs in with
-   their BloomLibrary.org account. No Dropbox, no shared folder, no third-party account.
+1. **Sharing is controlled by Bloom.** An admin gives people access by entering the email address
+   of their BloomLibrary.org account; each person signs in to Bloom with that account. No Dropbox,
+   no shared folder, no third-party account.
 2. **Reliability comes from the database.** Locks, versions and history live in a transactional
    Postgres database, so most of the old races become impossible rather than merely handled. Every
    change of state is one atomic database transaction.
@@ -48,9 +49,12 @@ folder with a service Bloom controls:
 
 Non-goals for the first release: keeping old versions of books (S3 versioning is used only as a
 transactional safety net), sharing single books, and server-side subscription enforcement (the
-client's subscription-tier gate is the only check). The feature is hidden behind the experimental
-feature flag, and in the #8052 client the opt-in is also hidden unless the `cloudCollections`
-environment variable is `true`.
+client's subscription-tier gate is the only check).
+
+Cloud Team Collections are not part of Bloom 6.5. They are to be fully live in 6.6, though perhaps
+still marked experimental. No environment variable gates them; the `cloudCollections` variable
+that hides the old opt-in checkbox in the #8052 client goes away when the Share dialog replaces
+that checkbox.
 
 ## 2. Architecture
 
@@ -163,8 +167,10 @@ served by `src/BloomExe/web/controllers/SharingApi.cs`, with the model and rules
 
 - **Sign in first.** Signed out, the dialog asks you to sign in to BloomLibrary.org (through
   `AccountApi`); invitees use their own BloomLibrary.org accounts.
-- **Invite by email**, choosing Admin or Editor. An invitation is all-or-nothing: if any email in
-  a request already has access or appears twice, nothing is added. The email box and button are
+- **Invite by email address**, choosing Admin or Editor. Inviting only adds the address to the
+  list of people allowed to use the collection; no email is sent (see "Being invited" below for how
+  the person finds out). An invitation is all-or-nothing: if any address in a request already has
+  access or appears twice, nothing is added. The email box and button are
   disabled while an invitation is being saved.
 - **The member list** shows each person with their role. Under the role: **"Last seen &lt;when&gt;"**
   once Bloom knows they have used the collection (a signed-in member's visit is recorded when the
@@ -188,8 +194,8 @@ served by `src/BloomExe/web/controllers/SharingApi.cs`, with the model and rules
 
 **The backend behind this dialog is a stand-in.** `ICollectionSharingService` is implemented only
 by `LocalFileCollectionSharingService`, which keeps the record in `sharing.local.json` in the
-collection folder and enforces the rules the server will. Nobody actually receives an invitation,
-and a folder Team Collection does not sync the file. Sharing a Team Collection only sets up the
+collection folder and enforces the rules the server will. Nobody invited sees an invitation card
+yet, and a folder Team Collection does not sync the file. Sharing a Team Collection only sets up the
 list of people; its books do not move anywhere yet.
 
 ### Sharing UI (planned, from the Sharing cards)
@@ -204,9 +210,11 @@ These are designs on cards, not built:
   collection again. A pending invitation's menu offers **Cancel invitation** (no follow-up dialog)
   and marks the row "Invite pending". Races between showing the menu and choosing an item are
   handled in whatever way is simplest.
-- **Being invited** (BL-16675, Ready For Work; BL-16527, Open). An invitation appears pinned first
-  in Open/Create Collections, with **Download and Join** on the invitation card, and a badge on the
-  Other Collection button. A first-time user must be asked to sign in before this screen.
+- **Being invited** (BL-16675, Ready For Work; BL-16527, Open). Invitations are not emailed. When
+  someone signed in to Bloom is allowed to use a cloud collection they have not joined yet, a
+  special invitation card appears pinned first in Open/Create Collections, with **Download and
+  Join**, and a badge on the Other Collection button. A first-time user must be asked to sign in
+  before this screen.
 - **Moving a folder Team Collection to the cloud** (BL-16676, Ready For UI Review). A mocked
   five-step dialog: enable cloud sync; a preparation phase in which everyone must upgrade to 6.6
   and check in, and no new checkouts are allowed; invite the team (from "People found in this
@@ -660,8 +668,7 @@ them yet.
 
 **Sharing UI** (designed, not built): subscription-tier states (BL-16672); remove confirmation and
 cancel-invitation (BL-16674); receiving an invitation in Open/Create (BL-16675, BL-16527), including
-sign-in before that screen and whether invitations can be declined; whether invitations should also
-be emailed; what a removed-then-re-invited person gets (a second copy of the collection, or the
+sign-in before that screen and whether invitations can be declined; what a removed-then-re-invited person gets (a second copy of the collection, or the
 existing join-with-local-copy logic); what becomes of the Team Collection status button and dialog
 alongside the Share button.
 
