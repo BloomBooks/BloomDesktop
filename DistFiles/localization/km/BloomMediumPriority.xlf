@@ -127,20 +127,10 @@
         <target xml:lang="km" state="needs-translation">Objects that do not Move</target>
         <note>ID: EditTab.Toolbox.DragActivity.FixedInPlace</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.DraggableTargetInstructions">
-        <source xml:lang="en">Place the targets in the places needed for the correct answer.</source>
-        <target xml:lang="km" state="needs-translation">Place the targets in the places needed for the correct answer.</target>
-        <note>ID: EditTab.Toolbox.DragActivity.DraggableTargetInstructions</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.EditWordToSpell">
         <source xml:lang="en">Edit Word to Spell</source>
         <target xml:lang="km" state="needs-translation">Edit Word to Spell</target>
         <note>ID: EditTab.Toolbox.DragActivity.EditWordToSpell</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Instructions">
-        <source xml:lang="en">Instructions</source>
-        <target xml:lang="km" state="needs-translation">Instructions</target>
-        <note>ID: EditTab.Toolbox.DragActivity.Instructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Text">
         <source xml:lang="en">Text</source>
@@ -208,11 +198,6 @@
         <target xml:lang="km" state="needs-translation">Keep all targets the same size so students can't use size as a clue.</target>
         <note>ID: EditTab.Toolbox.DragActivity.TargetsSameSize</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.SceneInstructions">
-        <source xml:lang="en">Properties of the Scene</source>
-        <target xml:lang="km" state="needs-translation">Properties of the Scene</target>
-        <note>ID: EditTab.Toolbox.DragActivity.SceneInstructions</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint">
         <source xml:lang="en">Type a sentence. The reader will be asked to sort the words.</source>
         <target xml:lang="km" state="needs-translation">Type a sentence. The reader will be asked to sort the words.</target>
@@ -242,11 +227,6 @@
         <source xml:lang="en">Try it out!</source>
         <target xml:lang="km" state="needs-translation">Try it out!</target>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.TryAgain">
-        <source xml:lang="en">Try Again</source>
-        <target xml:lang="km" state="needs-translation">Try Again</target>
-        <note>ID: EditTab.Toolbox.DragActivity.TryAgain</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
@@ -464,11 +444,6 @@
         <note>ID: EditTab.Toolbox.LeveledReaderTool.WithinLevel</note>
       </trans-unit>
       <!-- Talking Book Advanced -->
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
-        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
-        <target xml:lang="km" state="needs-translation">Please split or clear the existing recording in this text box before changing modes.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
         <source xml:lang="en">Import Recording...</source>
         <target xml:lang="km" state="needs-translation">Import Recording...</target>
@@ -534,11 +509,6 @@
         <target xml:lang="km" state="needs-translation">Adjust Timings</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimings.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">This is disabled because there is not a whole text box recording</source>
-        <target xml:lang="km" state="needs-translation">This is disabled because there is not a whole text box recording</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.AdjustTimingsDisabledTip</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
         <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
         <target xml:lang="km" state="needs-translation">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</target>
@@ -578,21 +548,6 @@
         <source xml:lang="en">This is disabled because this box is not in `Record by Text Box` mode.</source>
         <target xml:lang="km" state="needs-translation">This is disabled because this box is not in `Record by Text Box` mode.</target>
         <note>EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip" sil:dynamic="true">
-        <source xml:lang="en">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</source>
-        <target xml:lang="km" state="needs-translation">Open the timing file in a text editor. After you save your changes, click the "Apply Timings File" button.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">This is only enabled after doing a "Split" of a recording of the whole text box.</source>
-        <target xml:lang="km" state="needs-translation">This is only enabled after doing a "Split" of a recording of the whole text box.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.SplitRecordingTip" sil:dynamic="true">
-        <source xml:lang="en">This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored.</source>
-        <target xml:lang="km" state="needs-translation">This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.SplitRecordingTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip" sil:dynamic="true">
         <source xml:lang="en">Control the order in which various boxes on the page are played back.</source>
@@ -674,11 +629,6 @@
         <source xml:lang="en">Navigation</source>
         <target xml:lang="km" state="needs-translation">Navigation</target>
         <note>ID: EditTab.Toolbox.CanvasTool.Navigation</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText" sil:dynamic="true">
-        <source xml:lang="en">Go Somewhere</source>
-        <target xml:lang="km" state="needs-translation">Go Somewhere</target>
-        <note>ID: EditTab.Toolbox.CanvasTool.NavigationButton.DefaultText</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.SetDest" sil:dynamic="true">
         <source xml:lang="en">Set Destination</source>
@@ -940,20 +890,10 @@
         <target xml:lang="km" state="needs-translation">Locked by {0} Branding</target>
         <note>BookSettings.LockedByBranding</note>
       </trans-unit>
-      <trans-unit id="BookSettings.LockedByLegacy" sil:dynamic="true">
-        <source xml:lang="en">Locked by Legacy-5-6 theme</source>
-        <target xml:lang="km" state="needs-translation">Locked by Legacy-5-6 theme</target>
-        <note>BookSettings.LockedByLegacy</note>
-      </trans-unit>
       <trans-unit id="BookSettings.LockedByXMatter" sil:dynamic="true">
         <source xml:lang="en">Locked by {0} Front/Back matter</source>
         <target xml:lang="km" state="needs-translation">Locked by {0} Front/Back matter</target>
         <note>BookSettings.LockedByXMatter</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.Title" sil:dynamic="true">
-        <source xml:lang="en">Book Settings</source>
-        <target xml:lang="km" state="needs-translation">Book Settings</target>
-        <note>BookSettings.Title</note>
       </trans-unit>
       <trans-unit id="BookAndPageSettings.Title" sil:dynamic="true">
         <source xml:lang="en">Book and Page Settings</source>
@@ -1020,16 +960,6 @@
         <target xml:lang="km" state="needs-translation">Cover</target>
         <note>BookSettings.CoverGroupLabel</note>
       </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage" sil:dynamic="true">
-        <source xml:lang="en">Fill the front cover with a single image</source>
-        <target xml:lang="km" state="needs-translation">Fill the front cover with a single image</target>
-        <note>BookSettings.CoverIsImage</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.CoverIsImage.Description.V2" sil:dynamic="true">
-        <source xml:lang="en">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</source>
-        <target xml:lang="km" state="needs-translation">Replace the front cover content with a single full-bleed image. See [Full Page Cover Images](https://docs.bloomlibrary.org/full-page-cover-images) for information on sizing your image to fit.</target>
-        <note>BookSettings.CoverIsImage.Description.V2</note>
-      </trans-unit>
       <trans-unit id="BookSettings.FullBleed" sil:dynamic="true">
         <source xml:lang="en">Use full bleed page layout</source>
         <target xml:lang="km" state="needs-translation">Use full bleed page layout</target>
@@ -1039,11 +969,6 @@
         <source xml:lang="en">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
         <target xml:lang="km" state="needs-translation">Enable full bleed layout for printing. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</target>
         <note>BookSettings.FullBleed.Description</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.ContentPagesGroupLabel" sil:dynamic="true">
-        <source xml:lang="en">Content Pages</source>
-        <target xml:lang="km" state="needs-translation">Content Pages</target>
-        <note>BookSettings.ContentPagesGroupLabel</note>
       </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
@@ -1149,16 +1074,6 @@
         <source xml:lang="en">Note: some Page Themes may not know how to change the location of the Page Number.</source>
         <target xml:lang="km" state="needs-translation">Note: some Page Themes may not know how to change the location of the Page Number.</target>
         <note>BookSettings.PageNumberLocationNote</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.FrontAndBackMatter" sil:dynamic="true">
-        <source xml:lang="en">Front &amp; Back Matter</source>
-        <target xml:lang="km" state="needs-translation">Front &amp; Back Matter</target>
-        <note>BookSettings.FrontAndBackMatter</note>
-      </trans-unit>
-      <trans-unit id="BookSettings.FrontAndBackMatter.Description" sil:dynamic="true">
-        <source xml:lang="en">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</source>
-        <target xml:lang="km" state="needs-translation">Normally, books use the front &amp; back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one.</target>
-        <note>BookSettings.FrontAndBackMatter.Description</note>
       </trans-unit>
       <trans-unit id="BookSettings.Resolution" sil:dynamic="true">
         <source xml:lang="en">Resolution</source>
