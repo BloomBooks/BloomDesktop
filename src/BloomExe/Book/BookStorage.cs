@@ -662,12 +662,16 @@ namespace Bloom.Book
             );
             // We are about to write this book with our editing code, so it cannot honestly claim a
             // browser maintenance level beyond what we know how to produce. See the method.
-            // Keep the way back: the clamp has to happen before we serialize Dom, but if the write
-            // never reaches disk we have to put it back, because the in-memory values are what
+            // Remember what it said: the clamp has to happen before we serialize Dom, but if the
+            // write never reaches disk we have to put it back, because the in-memory value is what
             // Book.SavePageToDisk consults to decide this book still needs the full save. Left
-            // lowered after a failed write, they would let later single-page saves go out over a
-            // file that still records the higher levels, and those would then stand for good.
-            var undoClamp = BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
+            // lowered after a failed write, it would let later single-page saves go out over a file
+            // whose head still records the higher level, and that level would then stand for good.
+            var levelBeforeClamp = Dom.GetMetaValue(
+                BookProcessor.kBrowserMaintenanceLevelMeta,
+                null
+            );
+            BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
             var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
             if (!Program.RunningUnitTests)
             {
@@ -694,7 +698,11 @@ namespace Bloom.Book
             catch
             {
                 // The book on disk still says whatever it said; make the DOM agree again.
-                undoClamp();
+                if (levelBeforeClamp != null)
+                    Dom.UpdateMetaElement(
+                        BookProcessor.kBrowserMaintenanceLevelMeta,
+                        levelBeforeClamp
+                    );
                 throw;
             }
 

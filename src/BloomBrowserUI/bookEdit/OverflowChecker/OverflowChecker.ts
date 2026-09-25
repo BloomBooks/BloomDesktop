@@ -391,18 +391,9 @@ export default class OverflowChecker {
             clearTimeout(timeOut);
         }
         (editable as any).overflowCheckTimeout = setTimeout(() => {
-            (editable as any).overflowCheckTimeout = undefined;
             this.CheckOnMinHeight(editable);
             OverflowChecker.AdjustSizeOrMarkOverflow(editable);
         }, 1000);
-    }
-
-    // True while any editable in the document is still waiting for the size adjustment that
-    // AdjustSizeOrMarkOverflowSoon schedules (which every editable gets when the page loads).
-    public static IsAnySizeAdjustmentPending(): boolean {
-        return Array.from(document.querySelectorAll(".bloom-editable")).some(
-            (e) => (e as any).overflowCheckTimeout,
-        );
     }
 
     // Checks for overflow on a bloom-page and adds/removes the proper class

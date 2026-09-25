@@ -593,7 +593,6 @@ namespace Bloom.Book
                 Storage.GetFileLocator()
             );
             UpdateMultilingualSettings(pageDom);
-            BookProcessor.AddStampTargetToEditablePage(this, pageDom);
 
             if (IsSuitableForMakingShells && !page.IsXMatter)
             {

@@ -1431,14 +1431,7 @@ export function requestPageContent() {
 // callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
 // navigates to the next page afterwards. Don't call this from a context where the page must stay
 // live and editable afterward.
-//
-// When stampAsUpdated is true, the page is first stamped as saved with its load-time fix-ups done
-// (see stampPageAsUpdated); callers pass true only when that work really has finished.
-function extractAndStripPageContentForSave(stampAsUpdated: boolean): string {
-    if (stampAsUpdated) {
-        stampPageAsUpdated();
-    }
-
+function extractAndStripPageContentForSave(): string {
     // Record how much of the page each image slot covers, while the page is still laid out.
     // That is the only record of it: the saved HTML otherwise says nothing about how big
     // anything ends up on screen, so without this the AI image editor could not tell what size
@@ -1467,10 +1460,7 @@ function requestPageContentInternal() {
     }
     requestPageContentTimeout = null;
     try {
-        postString(
-            "editView/pageContent",
-            extractAndStripPageContentForSave(isLoadTimeWorkSettled()),
-        );
+        postString("editView/pageContent", extractAndStripPageContentForSave());
     } catch (e) {
         postString(
             "editView/pageContent",
@@ -1485,39 +1475,6 @@ function requestPageContentInternal() {
                 document?.body?.innerHTML,
         );
     }
-}
-
-// True when nothing the page does to itself after loading is still pending: no registered delay
-// (image sizing and the like) and no editable still waiting for its deferred size adjustment.
-// A live save that happens before then (the user left the page quickly) must not claim the
-// page's load-time fix-ups are done.
-function isLoadTimeWorkSettled(): boolean {
-    return (
-        activeDelays.length === 0 &&
-        !OverflowChecker.IsAnySizeAdjustmentPending()
-    );
-}
-
-// Record on the page that it is being saved with its load-time fix-ups done, at the browser
-// maintenance level and page size C# put on <body> (BookProcessor.AddStampTargetToEditablePage).
-// C# reads these to decide which pages still need the off-screen pass (BookProcessor.PageNeedsFixup).
-// Never throws: a missing stamp only means the page gets processed again later.
-export function stampPageAsUpdated(): void {
-    const level = document.body.getAttribute(
-        "data-target-browser-maintenance-level",
-    );
-    const layout = document.body.getAttribute(
-        "data-target-browser-maintenance-layout",
-    );
-    const page = document.querySelector(".bloom-page");
-    if (!level || !layout || !page) {
-        console.error(
-            "stampPageAsUpdated: the page or its stamp target is missing; not stamping",
-        );
-        return;
-    }
-    page.setAttribute("data-browser-maintenance-level", level);
-    page.setAttribute("data-browser-maintenance-layout", layout);
 }
 
 // Caution: We don't want this to become an async method because we don't want
@@ -1662,13 +1619,11 @@ export function captureContentForExternalProcessing(
     }
 
     const start = Date.now();
-    // settled is false only when we gave up waiting for the delays; then the page is captured
-    // without being stamped, so it stays due for processing.
-    const finish = (settled: boolean) => {
+    const finish = () => {
         try {
             resizeCanvasElementsToFitContent();
             window.__bloomExternalPageContent =
-                extractAndStripPageContentForSave(settled);
+                extractAndStripPageContentForSave();
         } catch (e) {
             window.__bloomExternalPageContent =
                 "ERROR: " + (e && e.message) + "\n" + (e && e.stack);
@@ -1676,9 +1631,7 @@ export function captureContentForExternalProcessing(
     };
     const waitForDelaysThenFinish = () => {
         if (activeDelays.length === 0) {
-            // The deferred size adjustments may still be pending here. This capture has always
-            // stood in for them with resizeCanvasElementsToFitContent, so it counts as done.
-            finish(true);
+            finish();
             return;
         }
         if (Date.now() - start > kExternalCaptureMaxWaitMs) {
@@ -1692,7 +1645,7 @@ export function captureContentForExternalProcessing(
                     ", ",
                 )}]. Proceeding anyway.`,
             );
-            finish(false);
+            finish();
             return;
         }
         setTimeout(waitForDelaysThenFinish, 50);
