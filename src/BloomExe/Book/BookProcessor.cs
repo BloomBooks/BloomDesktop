@@ -55,13 +55,12 @@ namespace Bloom.Book
         // share of its own the bar would run nearly to the end and then drop back for the pages.
         private const int kWholeBookPercent = 5;
 
-        // A <meta> in the book's HTML recording the BookStorage.kBrowserMaintenanceLevel this book
-        // has successfully been brought to, alongside maintenanceLevel and mediaMaintenanceLevel,
-        // and one recording the page size/orientation (e.g. "A5Portrait") it was brought there at.
-        // Together they let us tell whether the fix-up still needs (re-)running for editing or
-        // publishing: see NeedsPerPageFixup.
-        internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
-        internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
+        // A <meta> in the book's HTML recording the BookStorage.kPageLayoutUpdateLevel this book's
+        // pages have successfully been brought to, alongside maintenanceLevel and
+        // mediaMaintenanceLevel. Anything that changes the pages' layout sets it back to 0
+        // (RecordPageLayoutChanged), so it also says whether the fix-ups' measurements still fit.
+        // See NeedsPerPageFixup.
+        internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
         // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
@@ -236,11 +235,11 @@ namespace Bloom.Book
                 }
             }
 
-            // Record that this book has been brought to the current browser maintenance level at its
-            // current page size, so NeedsPerPageFixup can tell it need not be done again unless we
-            // bump that level or the page size changes. Only reached when every page succeeded (a
-            // failure throws before here), so we never claim a half-done book is done.
-            StampPerPageFixupDone(book);
+            // Record that this book has been brought to the current page layout update level, so
+            // NeedsPerPageFixup can tell it need not be done again unless we bump that level or the
+            // pages' layout changes. Only reached when every page succeeded (a failure throws before
+            // here), so we never claim a half-done book is done.
+            StampPerPageFixupDone(book.OurHtmlDom);
 
             // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
             book.Save();
@@ -253,18 +252,14 @@ namespace Bloom.Book
 
         /// <summary>
         /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
-        /// this book before it is edited or published. A book records the browser maintenance level it
-        /// has been brought to, and the page size it was brought there at; this catches the books that
-        /// are behind — old books, books from before a fix-up we have since added, and books whose page
-        /// size changed since.
+        /// this book before it is edited or published. A book records the page layout update level
+        /// its pages have been brought to; this catches the books that are behind: old books, books
+        /// from before a fix-up we have since added, and books whose pages' layout has changed since
+        /// (a new page size or appearance sets the recorded level back to 0; see
+        /// RecordPageLayoutChanged).
         ///
-        /// It is "needed" when any of these holds:
-        ///  - the book records no browser maintenance level (an old book, or one made by a Bloom
-        ///    without this), or a level we cannot read;
-        ///  - the recorded level is below BookStorage.kBrowserMaintenanceLevel (we have since added
-        ///    fix-ups this book has not been through);
-        ///  - the recorded page size/orientation differs from the book's current one (the layout-derived
-        ///    measurements — image sizing, canvas-element geometry — need recomputing).
+        /// It is "needed" when the recorded level is missing, unreadable, or below
+        /// BookStorage.kPageLayoutUpdateLevel.
         ///
         /// Note that this deliberately does NOT compare Bloom versions. Version numbers are not
         /// comparable across channels (release, alpha and BetaInternal use different sequences), and
@@ -282,33 +277,40 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(book.CheckForErrors()))
                 return false;
 
-            var dom = book.OurHtmlDom;
-            if (!int.TryParse(dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "0"), out var level))
+            if (
+                !int.TryParse(
+                    book.OurHtmlDom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"),
+                    out var level
+                )
+            )
                 level = 0; // missing or unreadable: treat as never done
-            if (level < BookStorage.kBrowserMaintenanceLevel)
-                return true;
-
-            // The book is at (or beyond) the current level, so the only remaining reason to redo it
-            // is that the page size has changed since: the measurements the fix-up records are
-            // relative to the page, so they are stale at a new size.
-            var stampedLayout = dom.GetMetaValue(kBrowserMaintenanceLayoutMeta, "");
-            return stampedLayout != GetLayoutStamp(book);
+            return level < BookStorage.kPageLayoutUpdateLevel;
         }
 
         /// <summary>
-        /// True if the book records a browser maintenance level higher than this Bloom knows how to
+        /// Record in <paramref name="dom"/> that the pages' layout has changed (a new page size or
+        /// orientation, or a new appearance), so the measurements the per-page fix-up records no
+        /// longer fit and the book needs the fix-up again. Sets the recorded level to 0.
+        /// </summary>
+        internal static void RecordPageLayoutChanged(HtmlDom dom)
+        {
+            dom.UpdateMetaElement(kPageLayoutUpdateLevelMeta, "0");
+        }
+
+        /// <summary>
+        /// True if the book records a page layout update level higher than this Bloom knows how to
         /// produce. A missing or unreadable level is not "above ours"; NeedsPerPageFixup already
         /// treats that as never done, which is the safe answer.
         /// </summary>
-        internal static bool RecordsBrowserMaintenanceLevelAboveOurs(HtmlDom dom)
+        internal static bool RecordsPageLayoutUpdateLevelAboveOurs(HtmlDom dom)
         {
-            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
+            var recorded = dom.GetMetaValue(kPageLayoutUpdateLevelMeta, "");
             return int.TryParse(recorded, out var level)
-                && level > BookStorage.kBrowserMaintenanceLevel;
+                && level > BookStorage.kPageLayoutUpdateLevel;
         }
 
         /// <summary>
-        /// If the book records a browser maintenance level HIGHER than this Bloom knows how to
+        /// If the book records a page layout update level HIGHER than this Bloom knows how to
         /// produce, bring the record down to ours. Called as we save a book (BookStorage.Save).
         /// </summary>
         /// <remarks>
@@ -320,13 +322,13 @@ namespace Bloom.Book
         /// pass again. Deliberately one-way: a level at or below ours is left alone, because raising
         /// it would claim work we never did.
         /// </remarks>
-        internal static void ClampBrowserMaintenanceLevelToOurs(HtmlDom dom)
+        internal static void ClampPageLayoutUpdateLevelToOurs(HtmlDom dom)
         {
-            if (!RecordsBrowserMaintenanceLevelAboveOurs(dom))
+            if (!RecordsPageLayoutUpdateLevelAboveOurs(dom))
                 return;
             dom.UpdateMetaElement(
-                kBrowserMaintenanceLevelMeta,
-                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                kPageLayoutUpdateLevelMeta,
+                BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
             );
         }
 
@@ -521,34 +523,21 @@ namespace Bloom.Book
                 s_automaticFixupUnderway.Remove(book.ID);
         }
 
-        // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
-        // governs the layout-derived measurements the per-page fix-up computes, so a change to it is
-        // exactly when those measurements need recomputing.
-        private static string GetLayoutStamp(Book book)
-        {
-            return book.GetLayout().SizeAndOrientation.ClassName;
-        }
-
-        // Record, in the book's HTML, that the book has been brought to the current browser
-        // maintenance level at the current page size. Written just before ProcessBook's final Save
-        // so it is persisted with it.
-        private static void StampPerPageFixupDone(Book book)
-        {
-            StampPerPageFixupDone(book.OurHtmlDom, GetLayoutStamp(book));
-        }
-
         /// <summary>
-        /// Record in <paramref name="dom"/> that the book is at the current browser maintenance level
-        /// at page size <paramref name="layoutStamp"/> (e.g. "A5Portrait"). Also used by BookStarter for
-        /// a new book made from one of our own templates, which has nothing for the pass to do.
+        /// Record in <paramref name="dom"/> that the book's pages are at the current page layout
+        /// update level. Written just before ProcessBook's final Save, so it is persisted with it.
+        /// Also used by BookStarter for a new book made from one of our own templates, which has
+        /// nothing for the pass to do.
         /// </summary>
-        internal static void StampPerPageFixupDone(HtmlDom dom, string layoutStamp)
+        internal static void StampPerPageFixupDone(HtmlDom dom)
         {
             dom.UpdateMetaElement(
-                kBrowserMaintenanceLevelMeta,
-                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                kPageLayoutUpdateLevelMeta,
+                BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
             );
-            dom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, layoutStamp);
+            // Pre-release 6.5 builds recorded this under other names; nothing reads those.
+            dom.RemoveMetaElement("browserMaintenanceLevel");
+            dom.RemoveMetaElement("browserMaintenanceLayout");
         }
 
         /// <summary>

@@ -552,7 +552,7 @@ namespace BloomTests.Book
                 XmlHtmlConverter.GetXmlDomFromHtmlFile(Path.Combine(source, "Basic Book.html"))
             );
             Assert.That(
-                sourceDom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, ""),
+                sourceDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
                 Is.Empty,
                 "test setup: the template itself should not carry the record"
             );
@@ -561,12 +561,8 @@ namespace BloomTests.Book
 
             var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
             Assert.That(
-                dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, ""),
-                Is.EqualTo(BookStorage.kBrowserMaintenanceLevel.ToString())
-            );
-            Assert.That(
-                dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLayoutMeta, ""),
-                Is.EqualTo("A5Portrait")
+                dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString())
             );
             var book = CreateBookServer().GetBookFromBookInfo(new BookInfo(path, true));
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
@@ -588,7 +584,7 @@ namespace BloomTests.Book
 
                 var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
                 Assert.That(
-                    dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, ""),
+                    dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
                     Is.Empty
                 );
             }

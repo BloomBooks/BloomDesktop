@@ -900,7 +900,7 @@ namespace Bloom.Edit
         {
             // The measurements each page records (image sizing, canvas-element geometry) are
             // relative to the page, so the new size makes the book due for the per-page fix-up
-            // again: its recorded layout no longer matches (BL-16852). We do not run that pass
+            // again (Book.SetLayout records that; BL-16852). We do not run that pass
             // here; it runs when something needs the whole book (the AI image editor, a Publish
             // tool). Meanwhile each page gets the same fix-ups in the editor when it is opened.
             SaveThen(
