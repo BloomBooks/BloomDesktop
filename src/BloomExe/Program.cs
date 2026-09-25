@@ -19,6 +19,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
 using Bloom.FreezeDoctor;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -156,6 +157,7 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+            TagLibCultureFix.Register();
 
             // Parse our own startup arguments before anything reads Settings.Default:
             // --user-settings-folder decides where the settings live (the parser hands it to
