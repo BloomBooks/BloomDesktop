@@ -1,3 +1,4 @@
+using System.Linq;
 using Bloom;
 using Bloom.SubscriptionAndFeatures;
 using NUnit.Framework;
@@ -164,6 +165,86 @@ namespace BloomTests.FeatureStatusTests
             Assert.That(appBuilder.Enabled, Is.True);
             Assert.That(aiImageEditing.Visible, Is.True);
             Assert.That(aiImageEditing.Enabled, Is.True);
+        }
+
+        /// <summary>
+        /// A table follows the canvas rule: the author of the book has to be at Pro to
+        /// publish a table they made, but anyone may publish a translation of a book
+        /// that came with one. So below Pro an original is blocked outright, while a
+        /// derivative is not prevented at all.
+        /// </summary>
+        [Test]
+        public void Table_BelowPro_BlocksAnOriginalButNotADerivative()
+        {
+            var basic = Subscription.CreateTempSubscriptionForTier(SubscriptionTier.Basic);
+            // Sanity check: the tier is what makes this interesting. If Table were
+            // enabled at Basic, neither list below would mention it and the test would
+            // pass for the wrong reason.
+            Assert.That(
+                FeatureStatus.GetFeatureStatus(basic, FeatureName.Table).Enabled,
+                Is.False,
+                "Table should not be enabled at the Basic tier"
+            );
+
+            var blockedInOriginals = FeatureStatus.GetFeaturesToDisableUsingMethod(
+                basic,
+                forDerivative: false,
+                PreventionMethod.Block
+            );
+            Assert.That(
+                blockedInOriginals.Select(f => f.Feature),
+                Contains.Item(FeatureName.Table)
+            );
+
+            // Nothing is done to a derivative, so Table appears under no method at all.
+            foreach (PreventionMethod method in System.Enum.GetValues(typeof(PreventionMethod)))
+            {
+                if (method == PreventionMethod.None)
+                    continue;
+                Assert.That(
+                    FeatureStatus
+                        .GetFeaturesToDisableUsingMethod(basic, true, method)
+                        .Select(f => f.Feature),
+                    Has.No.Member(FeatureName.Table),
+                    $"a derivative should not have Table prevented by {method}"
+                );
+            }
+        }
+
+        /// <summary>
+        /// The page-scanning half of the rule above: a page holding a table is what
+        /// makes a below-Pro book unpublishable, and at Pro it is not.
+        /// </summary>
+        [TestCase(SubscriptionTier.Basic, true)]
+        [TestCase(SubscriptionTier.Pro, false)]
+        public void GetFirstFeatureThatIsInvalidForNewBooks_FindsATablePage(
+            SubscriptionTier tier,
+            bool expectBlocked
+        )
+        {
+            var subscription = Subscription.CreateTempSubscriptionForTier(tier);
+            var dom = new Bloom.Book.HtmlDom(
+                @"<html><body>
+				<div class='bloom-page' data-page-number='1'/>
+				<div class='bloom-page' data-page-number='2'><div class='bloom-table'/></div>
+			 </body></html>"
+            );
+
+            var featureStatus = FeatureStatus.GetFirstFeatureThatIsInvalidForNewBooks(
+                subscription,
+                dom.RawDom
+            );
+
+            if (expectBlocked)
+            {
+                Assert.That(featureStatus, Is.Not.Null);
+                Assert.That(featureStatus.FeatureName, Is.EqualTo(FeatureName.Table));
+                Assert.That(featureStatus.FirstPageNumber, Is.EqualTo("2"));
+            }
+            else
+            {
+                Assert.That(featureStatus, Is.Null);
+            }
         }
 
         [Test]

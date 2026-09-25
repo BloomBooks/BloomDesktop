@@ -317,6 +317,15 @@ body:has(#canvas-element-context-controls:hover) .bloom-page,
     }
 }
 
+// A table cell is often smaller than the 63 by 52 pixel image buttons, so a button
+// there hides the picture instead of helping the user edit it. In a cell the user
+// clicks the picture, which selects it and puts the canvas element toolbar below the
+// cell. See the matching test in SetupBloomCanvas (bloomImages.ts), which does not
+// even make the "change image" button for a cell.
+.bloom-cell .imageButton {
+    display: none !important;
+}
+
 /*....NB: we have 2 rules because some pageLabels may be within the margin box, some outside*/
 .marginBox div.pageLabel {
     /*+placement:anchor-top-left -1px -29px;*/

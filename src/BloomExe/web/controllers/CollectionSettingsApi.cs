@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
@@ -394,6 +394,8 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    allowTables = dialog?.PendingAllowTables
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTables),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -427,6 +429,12 @@ namespace Bloom.web.controllers
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
                     dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowTablesToken = data["allowTables"];
+            if (allowTablesToken != null)
+            {
+                dialog.PendingAllowTables = allowTablesToken.Value<bool>();
             }
 
             var showQrCodeToken = data["showQrCode"];
