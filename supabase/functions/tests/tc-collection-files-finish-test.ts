@@ -39,6 +39,7 @@ Deno.test(
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-1",
         });
 
@@ -107,6 +108,9 @@ Deno.test(
             "the transaction read must fetch the revision with the proposal",
         );
         assertEquals(finishCall.body?.p_expected_revision, 2);
+        assertEquals(finishCall.body?.p_captured, [
+            { path: "allowed.txt", s3VersionId: "v-1" },
+        ]);
 
         const headCalls = s3Mock.commandCalls(HeadObjectCommand);
         assertEquals(headCalls.length, 1);
@@ -120,11 +124,69 @@ Deno.test(
 );
 
 Deno.test(
+    "collection-files-finish: an upload older than the commit window is not committed; the 409 names it in stalePaths",
+    async () => {
+        const s3Mock = mockClient(S3Client);
+        s3Mock.on(HeadObjectCommand).resolves({
+            ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(Date.now() - 25 * 60 * 60 * 1000),
+            VersionId: "v-old",
+        });
+        const calls: RecordedCall[] = [];
+        const fetchStub = routedFetchStub(
+            [
+                { when: "rpc/current_caller", status: 200, body: TEST_CALLER },
+                {
+                    when: "collection_file_transactions",
+                    status: 200,
+                    body: [TX_ROW],
+                },
+                {
+                    when: "rpc/collection_files_finish_tx",
+                    status: 409,
+                    body: {
+                        message: JSON.stringify({
+                            error: "MissingOrBadUploads",
+                            paths: ["allowed.txt"],
+                        }),
+                    },
+                },
+            ],
+            calls,
+        );
+
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(handler, mockRequest({ transactionId: "tx-1" }), {
+                transactionId: "tx-1",
+            }),
+        );
+
+        const finishCall = calls.find((c) =>
+            c.url.includes("rpc/collection_files_finish_tx"),
+        );
+        assertEquals(
+            finishCall?.body?.p_captured,
+            [],
+            "a stale upload must not be captured",
+        );
+        assertEquals(res.status, 409);
+        assertEquals(await res.json(), {
+            error: "MissingOrBadUploads",
+            paths: ["allowed.txt"],
+            stalePaths: ["allowed.txt"],
+        });
+
+        s3Mock.restore();
+    },
+);
+
+Deno.test(
     "collection-files-finish: RPC 409 VersionConflict at finish time (repo-wins) passes through",
     async () => {
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-1",
         });
 

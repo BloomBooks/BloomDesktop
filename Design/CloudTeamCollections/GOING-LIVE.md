@@ -268,26 +268,44 @@ but giving the feature to real testers does:
     reference-aware worklist: per-file S3 keys touched by DEAD (aborted/expired) transactions, each
     with the currently-referenced `s3_version_id` as a "delete newer than this" watermark, and
     **excluding** any path a still-live transaction is uploading.
+  - `tc.list_stale_upload_keys(after_key, limit)` (service-role-only) — the same worklist, one
+    row per key, keyset-paged in byte ("C") order of the S3 key, at most 1000 per page (PostgREST's
+    `max_rows`). Dead transaction rows stay behind once their garbage is deleted, so the same keys
+    come back on every run; the sweep therefore reads *every* page per run (500 keys a page, the
+    last key of each page as the next cursor), and never stalls on the first page.
   - `sweep-stale-uploads` edge function — for each worklist key, deletes every S3 version newer
     than the referenced one (all of them if nothing references the key), restoring the committed
     version to *current*. Idempotent; service-role-only. Because check-ins continue while it
-    runs, it only deletes versions older than the 48 h transaction lifetime, and right before
+    runs, it only deletes versions older than `UPLOAD_SWEEP_GRACE_MS` (48 h), and right before
     deleting a key's candidates it re-reads that key (`tc.stale_upload_key_state`, service-role
     only), skipping it if a check-in has since committed a new version or a live transaction now
     touches it (counted as `keysChanged` in the response; harmless, the next run retries).
+  - The re-check and the deletes are not atomic (S3 and the database share no lock), and a
+    resumed check-in's transaction can be far older than its expiry suggests. What actually rules
+    out deleting a version as it is committed is a second, shorter window:
+    `checkin-finish` and `collection-files-finish` refuse to commit any upload whose S3
+    `LastModified` is older than `UPLOAD_COMMIT_WINDOW_MS` (24 h) — `409 MissingOrBadUploads`
+    with `stalePaths`, and the client uploads it again. Both constants live in
+    `supabase/functions/_shared/tc/uploadWindows.ts`; `tc-invariants-test.ts` fails unless commit
+    window + a 12 h safety margin (far above an edge function's run time plus clock skew) < sweep
+    grace, and the commit window < the 7 d noncurrent-expiry floor.
 
   **[OPS] Schedule it ~daily.** Any of: (a) `pg_cron` + `pg_net` job that `net.http_post`s the
   function URL with `Authorization: Bearer <service-role key>`; (b) an external cron (e.g. GitHub
-  Actions) POSTing the same. Daily is ample — the staleness threshold is the 48 h transaction
-  expiry and the lifecycle floor is 7 d, so there is a ~5-day margin. **Monitor the response**: a
+  Actions) POSTing the same. Daily is ample — the staleness threshold is the 48 h grace and the
+  lifecycle floor is 7 d, so there is a ~5-day margin. One run covers every page, so a run's time
+  grows with the number of stale keys (one ListObjectVersions per key); if it ever nears the edge
+  function's time limit, run it more often rather than less. **Monitor the response**: a
   non-zero `referencedMissing` means a referenced version was already gone when the sweep ran
   (i.e. it ran too late) — page on it.
 
   **Known residual (garbage leak, NOT data loss):** a *new book* whose very first commit fails is
   reaped by `_checkin_reap_book`, which deletes the phantom book row (cascading its transaction),
   so its uploads are no longer reachable via this sweep. Those objects are unreferenced *current*
-  versions the 7 d rule never touches — harmless orphans. Close later if wanted by sweeping before
-  the reaper deletes the book, or with a periodic full reference-aware GC.
+  versions the 7 d rule never touches — harmless orphans. Close later if wanted with an
+  inventory-based cleanup (e.g. S3 Inventory, or a periodic listing of `tc/*/books/*/`, deleting
+  prefixes/keys that no book row or manifest references and that are older than the sweep grace);
+  not built. Also recorded in CONTRACTS.md ("Orphaned uploads").
 - **[POLICY DECIDED 9 Jul 2026 → AGENT] Subscription-tier check timing.** John: cloud TCs
   require the SAME subscription tier as folder Team Collections — no new policy, reuse the
   existing FeatureName.TeamCollection gate. Remaining [AGENT] work is purely the timing bug:

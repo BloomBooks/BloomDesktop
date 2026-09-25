@@ -70,14 +70,62 @@ Deno.test(
             txHoursMatch,
             "could not find the transaction expires_at default",
         );
-        const { UPLOAD_GRACE_MS } = await import(
-            "../sweep-stale-uploads/index.ts"
+        const { UPLOAD_SWEEP_GRACE_MS } = await import(
+            "../_shared/tc/uploadWindows.ts"
         );
         assert(
-            UPLOAD_GRACE_MS >= Number(txHoursMatch[1]) * 60 * 60 * 1000,
-            `sweep-stale-uploads UPLOAD_GRACE_MS (${UPLOAD_GRACE_MS} ms) must cover the ` +
+            UPLOAD_SWEEP_GRACE_MS >= Number(txHoursMatch[1]) * 60 * 60 * 1000,
+            `UPLOAD_SWEEP_GRACE_MS (${UPLOAD_SWEEP_GRACE_MS} ms) must cover the ` +
                 `${txHoursMatch[1]}h transaction lifetime, or it could delete an upload a live ` +
                 `transaction is about to commit.`,
+        );
+    },
+);
+
+Deno.test(
+    "invariant: the finish commit window plus a safety margin is shorter than the sweep's grace",
+    async () => {
+        const {
+            UPLOAD_COMMIT_WINDOW_MS,
+            UPLOAD_SWEEP_GRACE_MS,
+            UPLOAD_WINDOW_SAFETY_MARGIN_MS,
+        } = await import("../_shared/tc/uploadWindows.ts");
+        assert(
+            UPLOAD_WINDOW_SAFETY_MARGIN_MS >= 60 * 60 * 1000,
+            `the safety margin (${UPLOAD_WINDOW_SAFETY_MARGIN_MS} ms) must cover the longest ` +
+                `finish run plus clock skew with room to spare (at least an hour)`,
+        );
+        assert(
+            UPLOAD_COMMIT_WINDOW_MS + UPLOAD_WINDOW_SAFETY_MARGIN_MS <
+                UPLOAD_SWEEP_GRACE_MS,
+            `commit window (${UPLOAD_COMMIT_WINDOW_MS} ms) + safety margin ` +
+                `(${UPLOAD_WINDOW_SAFETY_MARGIN_MS} ms) must be shorter than the sweep's grace ` +
+                `(${UPLOAD_SWEEP_GRACE_MS} ms), or the sweep could delete an upload a finish is ` +
+                `committing.`,
+        );
+    },
+);
+
+Deno.test(
+    "invariant: the finish commit window is shorter than the S3 noncurrent-version-expiry floor (local MinIO)",
+    async () => {
+        const compose = await readText("server/dev/docker-compose.yml");
+        const noncurrentDaysMatch = compose.match(
+            /--noncurrent-expire-days (\d+)/,
+        );
+        assert(
+            noncurrentDaysMatch,
+            "could not find --noncurrent-expire-days in server/dev/docker-compose.yml",
+        );
+        const { UPLOAD_COMMIT_WINDOW_MS } = await import(
+            "../_shared/tc/uploadWindows.ts"
+        );
+        assert(
+            UPLOAD_COMMIT_WINDOW_MS <
+                Number(noncurrentDaysMatch[1]) * 24 * 60 * 60 * 1000,
+            `the commit window (${UPLOAD_COMMIT_WINDOW_MS} ms) must be shorter than the ` +
+                `${noncurrentDaysMatch[1]}-day noncurrent expiry, or a finish could commit a ` +
+                `version the lifecycle rule is about to delete.`,
         );
     },
 );

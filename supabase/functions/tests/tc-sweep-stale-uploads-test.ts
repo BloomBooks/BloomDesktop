@@ -3,7 +3,8 @@
 // (01_tc_schema_test.sql §12); here we mock the worklist and pin down what the edge function
 // itself decides: delete only the versions newer than the referenced one, the referenced-null
 // and referenced-missing cases, the grace period and the just-before-delete re-check that keep
-// it from deleting work committed after the snapshot, and the service-role gate.
+// it from deleting work committed after the snapshot, the service-role gate, and reading the
+// worklist page by page (tc.list_stale_upload_keys) so a run reaches every key.
 import { assertEquals } from "@std/assert";
 import { mockClient } from "aws-sdk-client-mock";
 import {
@@ -21,7 +22,9 @@ import {
 } from "../_shared/tc/test_support.ts";
 
 setTestEnv();
-const { handler } = await import("../sweep-stale-uploads/index.ts");
+const { handler, SWEEP_PAGE_SIZE } = await import(
+    "../sweep-stale-uploads/index.ts"
+);
 
 const KEY = "tc/c1/books/i1/index.htm";
 
@@ -36,10 +39,23 @@ const serviceRoleToken = (() => {
 
 interface WorklistRow {
     transaction_kind: string;
-    transaction_id: string;
     s3_key: string;
     referenced_version_id: string | null;
 }
+
+// What tc.list_stale_upload_keys returns for one page: the rows after the cursor, in key
+// order, at most p_limit of them.
+const pageOf = (
+    rows: WorklistRow[],
+    requestBody: Record<string, unknown> | undefined,
+) => {
+    const after = requestBody?.p_after_key as string | null;
+    const limit = requestBody?.p_limit as number;
+    return [...rows]
+        .sort((a, b) => (a.s3_key < b.s3_key ? -1 : 1)) // keys are distinct
+        .filter((r) => after === null || r.s3_key > after)
+        .slice(0, limit);
+};
 
 // The worklist, plus the per-key re-check the sweep makes right before deleting. By default
 // the re-check reports the key unchanged (still stale, same referenced version as the row).
@@ -50,7 +66,12 @@ const worklistFetch = (
 ) =>
     routedFetchStub(
         [
-            { when: "rpc/list_stale_upload_garbage", status: 200, body: rows },
+            {
+                when: "rpc/list_stale_upload_keys",
+                status: 200,
+                body: (requestBody: Record<string, unknown> | undefined) =>
+                    pageOf(rows, requestBody),
+            },
             {
                 when: "rpc/stale_upload_key_state",
                 status: 200,
@@ -102,7 +123,6 @@ Deno.test(
             worklistFetch([
                 {
                     transaction_kind: "book",
-                    transaction_id: "t1",
                     s3_key: KEY,
                     referenced_version_id: "committed",
                 },
@@ -136,7 +156,6 @@ Deno.test(
             worklistFetch([
                 {
                     transaction_kind: "book",
-                    transaction_id: "t1",
                     s3_key: KEY,
                     referenced_version_id: null,
                 },
@@ -163,7 +182,6 @@ Deno.test(
             worklistFetch([
                 {
                     transaction_kind: "book",
-                    transaction_id: "t1",
                     s3_key: KEY,
                     referenced_version_id: "committed-but-gone",
                 },
@@ -187,8 +205,9 @@ Deno.test(
     async () => {
         const s3 = mockClient(S3Client);
         // The snapshot said "committed" is referenced, so "newer" looks like garbage. But by
-        // the time the sweep gets to this key someone has checked in "newer" (old upload of a
-        // long-resumed transaction, so the grace period alone would not protect it).
+        // the time the sweep gets to this key someone has checked in "newer". (A real finish
+        // would refuse an upload this old -- see uploadWindows.ts -- but the re-check must
+        // catch it on its own too.)
         s3.on(ListObjectVersionsCommand).resolves({
             Versions: [version("newer", true), version("committed")],
         });
@@ -200,7 +219,6 @@ Deno.test(
                 [
                     {
                         transaction_kind: "book",
-                        transaction_id: "t1",
                         s3_key: KEY,
                         referenced_version_id: "committed",
                     },
@@ -240,7 +258,6 @@ Deno.test(
                 [
                     {
                         transaction_kind: "book",
-                        transaction_id: "t1",
                         s3_key: KEY,
                         referenced_version_id: "committed",
                     },
@@ -276,7 +293,6 @@ Deno.test(
             worklistFetch([
                 {
                     transaction_kind: "book",
-                    transaction_id: "t1",
                     s3_key: KEY,
                     referenced_version_id: null,
                 },
@@ -305,7 +321,6 @@ Deno.test(
                 [
                     {
                         transaction_kind: "book",
-                        transaction_id: "t1",
                         s3_key: KEY,
                         referenced_version_id: "committed",
                     },
@@ -336,5 +351,137 @@ Deno.test(
         );
         assertEquals(res.status, 403);
         assertEquals((await res.json()).error, "service_role_required");
+    },
+);
+
+// Many keys, as after a busy stretch: every one's dead transaction rows stay behind once its
+// garbage is gone, so each run lists them all again.
+const manyKeys = (count: number): WorklistRow[] =>
+    Array.from({ length: count }, (_, i) => ({
+        transaction_kind: "book",
+        s3_key: `tc/c1/books/i1/file-${String(i).padStart(5, "0")}.htm`,
+        referenced_version_id: "committed",
+    }));
+
+Deno.test(
+    "sweep: reads the worklist page by page, with the last key of each page as the next cursor",
+    async () => {
+        const rows = manyKeys(2 * SWEEP_PAGE_SIZE + 3);
+        const lastKey = rows[rows.length - 1].s3_key;
+        const s3 = mockClient(S3Client);
+        // Only the very last key (on the third page) still has garbage; every earlier one is
+        // already clean, as it is on every run after the first.
+        s3.on(ListObjectVersionsCommand).callsFake(
+            (input: { Prefix: string }) => ({
+                Versions:
+                    input.Prefix === lastKey
+                        ? [
+                              {
+                                  Key: lastKey,
+                                  VersionId: "garbage",
+                                  IsLatest: true,
+                                  LastModified: OLD,
+                              },
+                              {
+                                  Key: lastKey,
+                                  VersionId: "committed",
+                                  IsLatest: false,
+                                  LastModified: OLD,
+                              },
+                          ]
+                        : [
+                              {
+                                  Key: input.Prefix,
+                                  VersionId: "committed",
+                                  IsLatest: true,
+                                  LastModified: OLD,
+                              },
+                          ],
+            }),
+        );
+        s3.on(DeleteObjectCommand).resolves({});
+        const calls: RecordedCall[] = [];
+
+        const res = await withMockFetch(
+            worklistFetch(
+                rows,
+                { stillStale: true, referencedVersionId: "committed" },
+                calls,
+            ),
+            () => callHandler(handler, mockRequest({}, serviceRoleToken), {}),
+        );
+
+        assertEquals(res.status, 200);
+        assertEquals(await res.json(), {
+            keysProcessed: rows.length,
+            versionsDeleted: 1,
+            referencedMissing: 0,
+            keysChanged: 0,
+        });
+        assertEquals(deletedVersionIds(s3), ["garbage"]);
+        const pageCalls = calls.filter((c) =>
+            c.url.includes("rpc/list_stale_upload_keys"),
+        );
+        assertEquals(
+            pageCalls.map((c) => c.body),
+            [
+                { p_after_key: null, p_limit: SWEEP_PAGE_SIZE },
+                {
+                    p_after_key: rows[SWEEP_PAGE_SIZE - 1].s3_key,
+                    p_limit: SWEEP_PAGE_SIZE,
+                },
+                {
+                    p_after_key: rows[2 * SWEEP_PAGE_SIZE - 1].s3_key,
+                    p_limit: SWEEP_PAGE_SIZE,
+                },
+            ],
+        );
+        assertEquals(
+            s3.commandCalls(ListObjectVersionsCommand).length,
+            rows.length,
+            "every key, on every page, is looked at exactly once",
+        );
+        s3.restore();
+    },
+);
+
+Deno.test(
+    "sweep: a worklist of exactly one full page ends with one more (empty) page read",
+    async () => {
+        const rows = manyKeys(SWEEP_PAGE_SIZE);
+        const s3 = mockClient(S3Client);
+        s3.on(ListObjectVersionsCommand).callsFake(
+            (input: { Prefix: string }) => ({
+                Versions: [
+                    {
+                        Key: input.Prefix,
+                        VersionId: "committed",
+                        IsLatest: true,
+                        LastModified: OLD,
+                    },
+                ],
+            }),
+        );
+        const calls: RecordedCall[] = [];
+
+        const res = await withMockFetch(
+            worklistFetch(rows, undefined, calls),
+            () => callHandler(handler, mockRequest({}, serviceRoleToken), {}),
+        );
+
+        assertEquals((await res.json()).keysProcessed, SWEEP_PAGE_SIZE);
+        assertEquals(
+            calls.filter((c) => c.url.includes("rpc/list_stale_upload_keys"))
+                .length,
+            2,
+        );
+        s3.restore();
+    },
+);
+
+Deno.test(
+    "sweep: a page fits in one PostgREST response (max_rows 1000)",
+    () => {
+        assertEquals(SWEEP_PAGE_SIZE > 0 && SWEEP_PAGE_SIZE <= 1000, true);
     },
 );

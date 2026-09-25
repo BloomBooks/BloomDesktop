@@ -3,8 +3,8 @@
 Everything under `schemas/`, `migrations/`, `tests/` and `functions/` here (plus the root
 `deno.json`/`deno.lock`, `build/regen-init-migration.sh`, `server/dev/seed.sql`,
 `server/provision-aws.ps1` and `Design/CloudTeamCollections/{CONTRACTS,SCHEMA,GOING-LIVE}.md`)
-is a copy of the backend in **BloomBooks/bloom-core-supabase**, taken at commit **d7caf31**
-("Let the client make the checkout GUID; no GUID from check-in (BL-16531)"). It is here only so the client's live tests and the E2E harness
+is a copy of the backend in **BloomBooks/bloom-core-supabase**, taken at commit **1d2359c**
+("Keep the upload sweep off committed versions and page its worklist (BL-16531)"). It is here only so the client's live tests and the E2E harness
 (`src/BloomTests/e2e`) can run a local stack from this repo.
 
 **Do not edit these files here.** Make changes in bloom-core-supabase, then refresh the mirror:

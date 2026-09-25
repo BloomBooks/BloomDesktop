@@ -3,7 +3,8 @@
 // Req: { transactionId, comment?, keepCheckedOut? }
 // Verifies each changed object's sha256 attribute server-side, captures S3
 // version-ids, then commits the single atomic DB transaction (tc.checkin_finish_tx).
-// 200: { versionId, seq } · 409 MissingOrBadUploads { paths[] } · 409 TransactionChanged (a
+// 200: { versionId, seq } · 409 MissingOrBadUploads { paths[], stalePaths? } (stalePaths:
+// uploads older than the commit window, see uploadWindows.ts) · 409 TransactionChanged (a
 // concurrent checkin-start resume rewrote the transaction while we verified it) · 410 expired.
 import {
     optionalField,
@@ -19,6 +20,7 @@ import {
 import {
     adminS3Client,
     captureVerifiedUploads,
+    withStalePaths,
     writeManifestBackup,
 } from "../_shared/tc/s3.ts";
 import { resolveBookPrefix } from "../_shared/tc/paths.ts";
@@ -72,8 +74,10 @@ export const handler = async (
 
     // Verify every changed path against S3; anything that fails is simply omitted
     // from `captured` — tc.checkin_finish_tx independently detects and reports the
-    // gap as 409 MissingOrBadUploads, so there is no duplicated logic here.
-    const captured = await captureVerifiedUploads(
+    // gap as 409 MissingOrBadUploads, so there is no duplicated logic here. An upload too
+    // old to commit safely (the stale-upload sweep may delete it; see uploadWindows.ts) is
+    // omitted too, and named in that error's `stalePaths`.
+    const { captured, stalePaths } = await captureVerifiedUploads(
         client,
         bucket,
         prefix,
@@ -98,7 +102,9 @@ export const handler = async (
             // the RPC refuses (409 TransactionChanged) rather than commit a mismatch.
             p_expected_revision: tx.revision,
         },
-    );
+    ).catch((e) => {
+        throw withStalePaths(e, stalePaths);
+    });
 
     if (result.manifest) {
         // Best-effort backup; never blocks the response (see writeManifestBackup).

@@ -22,7 +22,11 @@ locks the book for the send only, with NO hash, and `checkin-finish` always rele
 never-committed new book, or an existing book under one's own send-only lock) needs no GUID. A
 check-in of a book the caller has checked out still needs its GUID (else `CheckoutElsewhere`, which
 is also the answer to a GUID sent for a send-only lock). `checkout_book_takeover`, `unlock_book`,
-`delete_book` and `force_unlock` are unchanged. v1.9, 24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
+`delete_book` and `force_unlock` are unchanged. v1.10 follow-up, same day (BL-16531 review; no
+version bump, additive): `checkin-finish` and `collection-files-finish` never commit an upload
+older than a 24 h commit window — 409 `MissingOrBadUploads` then also carries `stalePaths[]`, and
+the client re-uploads as for any `MissingOrBadUploads` — so the orphaned-upload sweep (48 h grace,
+now paged through all its work each run) can never delete a version being committed. v1.9, 24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
 "seat" and the v1.8 takeover token are replaced by a **checkout GUID**, which says which local
 copy of a book holds its checkout, so check-in keeps working when a collection folder is moved,
 renamed or copied, and a second copy can no longer silently take the checkout from the first.
@@ -295,6 +299,14 @@ resume, which rewrites its file list) ran while this finish was verifying the up
 was verified is no longer what would be committed. Nothing is written and the transaction stays
 open; treat it like any other failed finish (start again, upload the returned `changedPaths`,
 finish).
+v1.10 follow-up (additive, no version bump): an upload whose S3 `LastModified` is older than the
+commit window (`UPLOAD_COMMIT_WINDOW_MS`, 24 h) is never committed, even though its checksum
+matches: it is left out, so the answer is 409 `MissingOrBadUploads`, whose `stalePaths[]` (present
+only then) names those paths as well as `paths[]`. The client handles it like any other
+`MissingOrBadUploads`: start again and upload the returned `changedPaths` (which re-uploads
+them, creating fresh versions), then finish. This is what keeps the orphaned-upload sweep (see
+"Orphaned uploads" below) from ever deleting a version that is being committed. A retry of a
+finish that already committed still returns its result, however old the uploads.
 
 *Internal (not called by the client):* the finish edge functions establish the caller from
 their own JWT via the `tc.current_caller()` RPC (validated by PostgREST, so this works for a
@@ -311,6 +323,24 @@ Removes a never-committed new book; v1.10: releases an existing book's send-only
 that the aborted check-in took; a checkout (with a GUID) is kept. An expired check-in's send-only
 lock is released the same way when it is reaped.
 
+#### Orphaned uploads (`sweep-stale-uploads`, ops only)
+Not called by the client: a service-role job (see GOING-LIVE.md "Orphaned-upload sweep") that
+deletes S3 versions uploaded by check-ins / collection-file sends that never committed. It reads
+its worklist a page at a time (`tc.list_stale_upload_keys(after_key, limit)`, keyset-paged by S3
+key, every page per run), deletes only versions older than `UPLOAD_SWEEP_GRACE_MS` (48 h), and
+re-checks each key just before deleting. Because the finish functions never commit an upload
+older than `UPLOAD_COMMIT_WINDOW_MS` (24 h; see `checkin-finish`), no version the sweep may delete
+can be committed while it runs; both constants are in
+`supabase/functions/_shared/tc/uploadWindows.ts`, and a test keeps the commit window plus a safety
+margin below the grace.
+
+**Known limitation:** the uploads of a first check-in (new book) that never commits are not
+swept: when that check-in expires, `_checkin_reap_book` deletes the uncommitted book row and its
+transaction, so the sweep's worklist never sees them. They are harmless orphans (unreferenced
+current versions the lifecycle rule never removes). Closing this needs an inventory-based cleanup
+(e.g. S3 Inventory or a periodic listing, deleting keys no book row or manifest references and
+older than the sweep grace); not built.
+
 #### `download-start` POST — `{ collectionId }` →
 200 `{ s3: {...} }` read-only creds (`GetObject` + `GetObjectVersion`) scoped `tc/{cid}/*`, 1 h.
 
@@ -321,7 +351,9 @@ two-phase like check-in; finish bumps the group version atomically; 409 `Version
 exactly as for checkin-start (400 `InvalidManifest`; upload to the returned `changedPaths`),
 and finish retries are idempotent (`{ version }` of the committed transaction). v1.9 follow-up:
 finish can also answer 409 `TransactionChanged` (a concurrent start resumed the transaction
-while finish was verifying it; nothing committed, retry as for any failed finish).
+while finish was verifying it; nothing committed, retry as for any failed finish). v1.10
+follow-up: as in `checkin-finish`, an upload older than the 24 h commit window is not committed
+(409 `MissingOrBadUploads` with `stalePaths[]`; upload again).
 
 ## Realtime
 

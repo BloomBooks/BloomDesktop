@@ -7,7 +7,7 @@
 --   7.   malformed / colliding manifests are refused at start
 --   8.   collection files: NFC at start, service-role finish, idempotent retry
 --   9.   the row locks that make start/finish race-safe are present
---   10.  the sweep's per-key re-check
+--   10.  the sweep's paged worklist and per-key re-check
 --   11.  aborting an expired new-book check-in
 --   12-13. the checkout GUID (CONTRACTS.md v1.9/v1.10) at start: required for one's own
 --        checkout, never issued; a free or new book is locked for the send only (no hash)
@@ -26,7 +26,7 @@
 
 BEGIN;
 
-SELECT plan(84);
+SELECT plan(89);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
@@ -499,6 +499,67 @@ SELECT is(
     tc.stale_upload_key_state(current_setting('tests.akey')),
     '{"stillStale": true, "referencedVersionId": "sv-a-1"}'::jsonb,
     '10a: a key only a dead transaction touched is still stale, with its current referenced version'
+);
+
+-- The sweep's paged worklist. Two more dead transactions: one touching a.png again (so that
+-- key has two rows) and two more keys, so paging by 2 needs several pages.
+INSERT INTO tc.checkin_transactions (collection_id, book_id, started_by, proposed_name,
+                                     changed_paths, status, aborted_at)
+VALUES ('c0000000-0000-0000-0000-00000000c401', current_setting('tests.book1')::uuid,
+        'user-alice-cif', 'Book One', ARRAY['images/a.png', 'images/b.png', 'z.htm'], 'aborted', now());
+
+-- Every key, reading page after page of p_limit keys with the last key as the cursor.
+CREATE OR REPLACE FUNCTION tests.all_stale_key_pages(p_limit integer)
+RETURNS text[]
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_all  text[] := '{}';
+    v_page text[];
+    v_after text := NULL;
+BEGIN
+    LOOP
+        SELECT COALESCE(array_agg(s3_key ORDER BY s3_key COLLATE "C"), '{}') INTO v_page
+        FROM tc.list_stale_upload_keys(v_after, p_limit);
+        IF cardinality(v_page) > p_limit THEN
+            RAISE EXCEPTION 'a page of % keys exceeded p_limit %', cardinality(v_page), p_limit;
+        END IF;
+        v_all := v_all || v_page;
+        EXIT WHEN cardinality(v_page) < p_limit;
+        v_after := v_page[cardinality(v_page)];
+    END LOOP;
+    RETURN v_all;
+END;
+$$;
+
+SELECT set_config('tests.distinct_keys',
+    (SELECT array_agg(k ORDER BY k)::text FROM (
+        SELECT DISTINCT s3_key COLLATE "C" AS k FROM tc.list_stale_upload_garbage()) d), true);
+
+SELECT ok(
+    cardinality(current_setting('tests.distinct_keys')::text[]) >= 3
+    AND (SELECT count(*) FROM tc.list_stale_upload_garbage() WHERE s3_key = current_setting('tests.akey')) = 2,
+    '10a1: sanity: at least three stale keys, and a.png is listed once per dead transaction'
+);
+SELECT is(
+    tests.all_stale_key_pages(2),
+    current_setting('tests.distinct_keys')::text[],
+    '10a2: paging 2 at a time returns every stale key exactly once, in key order'
+);
+SELECT is(
+    (SELECT referenced_version_id FROM tc.list_stale_upload_keys(NULL, 1000) WHERE s3_key = current_setting('tests.akey')),
+    'sv-a-1',
+    '10a3: a page row carries the key''s currently-referenced version'
+);
+SELECT throws_ok(
+    $$SELECT * FROM tc.list_stale_upload_keys(NULL, 1001)$$,
+    '22023', NULL,
+    '10a4: a page larger than PostgREST''s max_rows (1000) is refused'
+);
+SELECT ok(
+    NOT has_function_privilege('authenticated', 'tc.list_stale_upload_keys(text, integer)', 'EXECUTE')
+    AND has_function_privilege('service_role', 'tc.list_stale_upload_keys(text, integer)', 'EXECUTE'),
+    '10a5: list_stale_upload_keys is service-role only'
 );
 
 INSERT INTO tc.checkin_transactions (collection_id, book_id, started_by, proposed_name,

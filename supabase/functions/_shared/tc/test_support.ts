@@ -127,10 +127,18 @@ export interface RecordedCall {
 /** A `fetch` stub that dispatches by matching a substring against the request URL, in
  * order — the first match wins. Each route returns `{ status, body }`; `body` is
  * JSON-stringified (or `""` for `null`, matching how PostgREST responds to e.g. a
- * successful RPC with no return value). If `calls` is given, every matched request's
- * URL, apikey/Authorization headers and parsed JSON body are appended to it. */
+ * successful RPC with no return value). `body` may instead be a function of the request's
+ * parsed JSON body, for a route whose answer depends on what was asked (e.g. a paged RPC).
+ * If `calls` is given, every matched request's URL, apikey/Authorization headers and
+ * parsed JSON body are appended to it. */
 export const routedFetchStub = (
-    routes: { when: string; status: number; body: unknown }[],
+    routes: {
+        when: string;
+        status: number;
+        body:
+            | unknown
+            | ((requestBody: Record<string, unknown> | undefined) => unknown);
+    }[],
     calls?: RecordedCall[],
 ): FetchStub => {
     return (input, init) => {
@@ -144,16 +152,23 @@ export const routedFetchStub = (
         if (!route) {
             throw new Error(`routedFetchStub: no route matched for ${url}`);
         }
+        const requestBody: Record<string, unknown> | undefined = init?.body
+            ? JSON.parse(String(init.body))
+            : undefined;
         if (calls) {
             const headers = new Headers(init?.headers);
             calls.push({
                 url,
                 apikey: headers.get("apikey"),
                 authorization: headers.get("Authorization"),
-                body: init?.body ? JSON.parse(String(init.body)) : undefined,
+                body: requestBody,
             });
         }
-        const text = route.body === null ? "" : JSON.stringify(route.body);
+        const body =
+            typeof route.body === "function"
+                ? route.body(requestBody)
+                : route.body;
+        const text = body === null ? "" : JSON.stringify(body);
         return Promise.resolve(
             new Response(text, {
                 status: route.status,

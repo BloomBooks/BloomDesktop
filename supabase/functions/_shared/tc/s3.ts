@@ -18,6 +18,8 @@ import {
     prodBrokerConfig,
     s3Env,
 } from "./env.ts";
+import { HttpError } from "./errors.ts";
+import { UPLOAD_COMMIT_WINDOW_MS } from "./uploadWindows.ts";
 
 export interface ScopedCredentials {
     accessKeyId: string;
@@ -178,6 +180,8 @@ export const adminS3Client = (): S3Client => {
 export interface VerifiedUpload {
     s3VersionId: string;
     sha256Base64: string;
+    /** When S3 stored this version (undefined if S3 did not say). */
+    lastModified: Date | undefined;
 }
 
 /** Base64 <-> hex helpers. S3's x-amz-checksum-sha256 attribute is base64; the
@@ -213,7 +217,11 @@ export const verifyUploadedObject = async (
         if (!actual || actual !== expected || !head.VersionId) {
             return null;
         }
-        return { s3VersionId: head.VersionId, sha256Base64: actual };
+        return {
+            s3VersionId: head.VersionId,
+            sha256Base64: actual,
+            lastModified: head.LastModified,
+        };
     } catch {
         // NotFound (or any other S3 error) — treat as "not verified", let the caller
         // report it as a missing/bad upload rather than propagating a 5xx.
@@ -231,26 +239,40 @@ export interface CapturedUpload {
  * hammering the endpoint with an unbounded burst. */
 const VERIFY_CONCURRENCY = 8;
 
+export interface CaptureResult {
+    /** The verified, recent-enough uploads, in changedPaths order. */
+    captured: CapturedUpload[];
+    /** Paths whose upload verified but is too old to commit (see uploadWindows.ts), in
+     * changedPaths order; the client must upload them again. */
+    stalePaths: string[];
+}
+
 /** Verifies each changed path's uploaded object against its proposed sha256 (via
  * verifyUploadedObject) and returns the version-id captures for the ones that
  * verified, in changedPaths order. A path with no matching proposed file, or whose
  * object is missing/mismatched, is simply omitted — the DB-side finish RPC
  * independently detects the gap and reports it as 409 MissingOrBadUploads, so no
- * error handling is duplicated here. Verification runs with bounded concurrency
- * (VERIFY_CONCURRENCY workers) rather than one-at-a-time. */
+ * error handling is duplicated here. An upload that verified but whose S3 LastModified is
+ * older than UPLOAD_COMMIT_WINDOW_MS before `nowMs` (or unknown) is omitted too, and listed
+ * in stalePaths: the stale-upload sweep may delete such a version, so it must never be
+ * committed. Verification runs with bounded concurrency (VERIFY_CONCURRENCY workers)
+ * rather than one-at-a-time. */
 export const captureVerifiedUploads = async (
     client: S3Client,
     bucket: string,
     prefix: string,
     changedPaths: string[],
     proposedFiles: { path: string; sha256: string }[],
-): Promise<CapturedUpload[]> => {
+    nowMs: number = Date.now(),
+): Promise<CaptureResult> => {
     const proposedByPath = new Map(proposedFiles.map((f) => [f.path, f]));
+    const oldestCommittable = nowMs - UPLOAD_COMMIT_WINDOW_MS;
     // Filled by index so the output order matches changedPaths regardless of which
     // verification finishes first.
     const results: (CapturedUpload | null)[] = new Array(
         changedPaths.length,
     ).fill(null);
+    const stale: boolean[] = new Array(changedPaths.length).fill(false);
     let next = 0;
     const worker = async (): Promise<void> => {
         while (next < changedPaths.length) {
@@ -264,9 +286,15 @@ export const captureVerifiedUploads = async (
                 `${prefix}${path}`,
                 proposed.sha256,
             );
-            if (verified) {
-                results[i] = { path, s3VersionId: verified.s3VersionId };
+            if (!verified) continue;
+            if (
+                verified.lastModified === undefined ||
+                verified.lastModified.getTime() < oldestCommittable
+            ) {
+                stale[i] = true;
+                continue;
             }
+            results[i] = { path, s3VersionId: verified.s3VersionId };
         }
     };
     await Promise.all(
@@ -275,7 +303,29 @@ export const captureVerifiedUploads = async (
             worker,
         ),
     );
-    return results.filter((r): r is CapturedUpload => r !== null);
+    return {
+        captured: results.filter((r): r is CapturedUpload => r !== null),
+        stalePaths: changedPaths.filter((_, i) => stale[i]),
+    };
+};
+
+/** Adds `stalePaths` to a finish RPC's 409 MissingOrBadUploads (the RPC reports every path
+ * missing from p_captured; the stale ones were left out on purpose, see
+ * captureVerifiedUploads), so the client can tell they need uploading again. Any other error
+ * passes through unchanged. */
+export const withStalePaths = (
+    error: unknown,
+    stalePaths: string[],
+): unknown => {
+    if (
+        stalePaths.length > 0 &&
+        error instanceof HttpError &&
+        error.status === 409 &&
+        error.body.error === "MissingOrBadUploads"
+    ) {
+        return new HttpError(409, { ...error.body, stalePaths });
+    }
+    return error;
 };
 
 /** Best-effort `.manifest.json` backup write (CONTRACTS.md S3 layout). Never

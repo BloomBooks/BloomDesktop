@@ -1751,6 +1751,33 @@ CREATE OR REPLACE FUNCTION tc.list_stale_upload_garbage() RETURNS TABLE(transact
       );
 $$;
 
+CREATE OR REPLACE FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) RETURNS TABLE(transaction_kind text, s3_key text, referenced_version_id text)
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    AS $$
+BEGIN
+    -- Every page must fit in one PostgREST response (max_rows 1000), or it would be
+    -- truncated silently and the cursor would skip the missing rows.
+    IF p_limit IS NULL OR p_limit < 1 OR p_limit > 1000 THEN
+        RAISE EXCEPTION 'invalid_limit: p_limit must be between 1 and 1000' USING ERRCODE = '22023';
+    END IF;
+    -- One row per key (a key appears once per dead transaction that touched it), keyset-paged
+    -- in byte order ("C" collation, so the order and the > comparison agree on every server).
+    RETURN QUERY
+    SELECT g.kind, g.k::text, min(g.ref)
+    FROM (
+        SELECT l.transaction_kind AS kind, l.s3_key COLLATE "C" AS k,
+               l.referenced_version_id AS ref
+        FROM tc.list_stale_upload_garbage() l
+    ) g
+    WHERE p_after_key IS NULL OR g.k > (p_after_key COLLATE "C")
+    GROUP BY g.kind, g.k
+    ORDER BY g.k
+    LIMIT p_limit;
+END;
+$$;
+
+COMMENT ON FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) IS 'Paged worklist for the sweep-stale-uploads edge function: the distinct S3 keys of tc.list_stale_upload_garbage (with their kind and currently-referenced version), in "C"-collation key order, after p_after_key (NULL = from the start), at most p_limit (1..1000, else 22023 invalid_limit). The sweep passes the last key of each page as the next cursor and reads every page per run, so keys whose dead transaction rows remain after their garbage is deleted never stop it reaching later ones. service-role only.';
+
 CREATE OR REPLACE FUNCTION tc.stale_upload_key_state(p_s3_key text) RETURNS jsonb
     LANGUAGE sql STABLE SECURITY DEFINER
     AS $$
@@ -1766,7 +1793,7 @@ $$;
 
 COMMENT ON FUNCTION tc.stale_upload_key_state(p_s3_key text) IS 'For the sweep-stale-uploads edge function, immediately before it deletes versions of one key: {stillStale, referencedVersionId} re-read now. The sweep skips the key unless it is still stale (no live transaction touches it) and still references the same version it planned against, so a check-in that committed or started after the worklist snapshot never loses its upload. service-role only.';
 
-COMMENT ON FUNCTION tc.list_stale_upload_garbage() IS 'Worklist for the sweep-stale-uploads edge function: per-file S3 keys touched by DEAD (aborted/expired) check-in transactions, with the currently-referenced s3_version_id as the delete-newer-than watermark (NULL = nothing references the key). Excludes paths a live transaction is still uploading. service-role only. See GOING-LIVE.md "Orphaned-upload sweep".';
+COMMENT ON FUNCTION tc.list_stale_upload_garbage() IS 'The whole, unpaged worklist behind the sweep-stale-uploads edge function (which reads it a page at a time through tc.list_stale_upload_keys, and one key at a time through tc.stale_upload_key_state): per-file S3 keys touched by DEAD (aborted/expired) check-in transactions, with the currently-referenced s3_version_id as the delete-newer-than watermark (NULL = nothing references the key). Excludes paths a live transaction is still uploading. service-role only. See GOING-LIVE.md "Orphaned-upload sweep".';
 
 CREATE OR REPLACE FUNCTION tc.log_event(p_collection_id uuid, p_book_id uuid DEFAULT NULL::uuid, p_type integer DEFAULT NULL::integer, p_message text DEFAULT NULL::text, p_book_name text DEFAULT NULL::text, p_bloom_version text DEFAULT NULL::text) RETURNS bigint
     LANGUAGE plpgsql SECURITY DEFINER
@@ -2807,6 +2834,9 @@ GRANT ALL ON FUNCTION tc.get_collection_state(p_collection_id uuid, p_since_even
 
 REVOKE ALL ON FUNCTION tc.list_stale_upload_garbage() FROM PUBLIC;
 GRANT ALL ON FUNCTION tc.list_stale_upload_garbage() TO service_role;
+
+REVOKE ALL ON FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) TO service_role;
 
 REVOKE ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) FROM PUBLIC;
 GRANT ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) TO service_role;

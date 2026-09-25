@@ -121,6 +121,9 @@ GRANT ALL ON FUNCTION tc.get_collection_state(p_collection_id uuid, p_since_even
 REVOKE ALL ON FUNCTION tc.list_stale_upload_garbage() FROM PUBLIC;
 GRANT ALL ON FUNCTION tc.list_stale_upload_garbage() TO service_role;
 
+REVOKE ALL ON FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION tc.list_stale_upload_keys(p_after_key text, p_limit integer) TO service_role;
+
 REVOKE ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) FROM PUBLIC;
 GRANT ALL ON FUNCTION tc.stale_upload_key_state(p_s3_key text) TO service_role;
 

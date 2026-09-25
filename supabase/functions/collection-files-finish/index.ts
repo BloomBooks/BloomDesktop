@@ -1,6 +1,7 @@
 // POST /functions/v1/collection-files-finish — CONTRACTS.md §collection-files-start/finish
 // Req: { transactionId } -> bumps the group version atomically.
-// 409 VersionConflict ⇒ client pulls first (repo-wins rule); 409 MissingOrBadUploads.
+// 409 VersionConflict ⇒ client pulls first (repo-wins rule); 409 MissingOrBadUploads
+// { paths[], stalePaths? } (stalePaths: uploads older than the commit window, uploadWindows.ts).
 // 409 TransactionChanged: a concurrent collection-files-start resume rewrote the transaction.
 import { requireField, serveJsonPost } from "../_shared/tc/handler.ts";
 import { HttpError, jsonResponse } from "../_shared/tc/errors.ts";
@@ -12,6 +13,7 @@ import {
 import {
     adminS3Client,
     captureVerifiedUploads,
+    withStalePaths,
     writeManifestBackup,
 } from "../_shared/tc/s3.ts";
 import { collectionFilesPrefix } from "../_shared/tc/paths.ts";
@@ -55,8 +57,9 @@ export const handler = async (
     const { bucket } = s3Env();
     const client = adminS3Client();
 
-    // Same skip-unverified semantics as checkin-finish — see captureVerifiedUploads.
-    const captured = await captureVerifiedUploads(
+    // Same skip-unverified (and skip-too-old) semantics as checkin-finish — see
+    // captureVerifiedUploads.
+    const { captured, stalePaths } = await captureVerifiedUploads(
         client,
         bucket,
         prefix,
@@ -77,7 +80,9 @@ export const handler = async (
             // proposal we just verified.
             p_expected_revision: tx.revision,
         },
-    );
+    ).catch((e) => {
+        throw withStalePaths(e, stalePaths);
+    });
 
     if (result.manifest) {
         await writeManifestBackup(client, bucket, prefix, result.manifest);

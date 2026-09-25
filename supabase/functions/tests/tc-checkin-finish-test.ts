@@ -79,6 +79,7 @@ Deno.test(
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-42",
         });
 
@@ -173,6 +174,109 @@ Deno.test(
             [],
             "unverified path must not appear in p_captured",
         );
+        assertEquals("stalePaths" in json, false, "nothing was stale");
+
+        s3Mock.restore();
+    },
+);
+
+for (const [label, lastModified] of [
+    [
+        "older than the commit window",
+        new Date(Date.now() - 25 * 60 * 60 * 1000),
+    ],
+    ["with no LastModified", undefined],
+] as const) {
+    Deno.test(
+        `checkin-finish: a verified upload ${label} is not committed; the 409 names it in stalePaths`,
+        async () => {
+            const s3Mock = mockClient(S3Client);
+            s3Mock.on(HeadObjectCommand).resolves({
+                ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+                LastModified: lastModified,
+                VersionId: "v-old",
+            });
+            const calls: RecordedCall[] = [];
+            const fetchStub = routesFor(
+                TX_ROW,
+                BOOK_ROW,
+                409,
+                {
+                    message: JSON.stringify({
+                        error: "MissingOrBadUploads",
+                        paths: ["book.htm"],
+                    }),
+                },
+                calls,
+            );
+
+            const res = await withMockFetch(fetchStub, () =>
+                callHandler(handler, mockRequest({ transactionId: "tx-1" }), {
+                    transactionId: "tx-1",
+                }),
+            );
+
+            assertEquals(
+                s3Mock.commandCalls(HeadObjectCommand).length,
+                1,
+                "sanity check: the upload really was looked at (and its checksum matched)",
+            );
+            const rpcCall = calls.find((c) =>
+                c.url.includes("rpc/checkin_finish_tx"),
+            );
+            assertEquals(
+                rpcCall?.body?.p_captured,
+                [],
+                "a stale upload must not be captured",
+            );
+            assertEquals(res.status, 409);
+            assertEquals(await res.json(), {
+                error: "MissingOrBadUploads",
+                paths: ["book.htm"],
+                stalePaths: ["book.htm"],
+            });
+
+            s3Mock.restore();
+        },
+    );
+}
+
+Deno.test(
+    "checkin-finish: an upload just inside the commit window is still committed",
+    async () => {
+        const { UPLOAD_COMMIT_WINDOW_MS } = await import(
+            "../_shared/tc/uploadWindows.ts"
+        );
+        const s3Mock = mockClient(S3Client);
+        s3Mock.on(HeadObjectCommand).resolves({
+            ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(
+                Date.now() - UPLOAD_COMMIT_WINDOW_MS + 60 * 1000,
+            ),
+            VersionId: "v-recent",
+        });
+        const calls: RecordedCall[] = [];
+        const fetchStub = routesFor(
+            TX_ROW,
+            BOOK_ROW,
+            200,
+            { versionId: "ver-1", seq: 3 },
+            calls,
+        );
+
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(handler, mockRequest({ transactionId: "tx-1" }), {
+                transactionId: "tx-1",
+            }),
+        );
+
+        assertEquals(res.status, 200);
+        const rpcCall = calls.find((c) =>
+            c.url.includes("rpc/checkin_finish_tx"),
+        );
+        assertEquals(rpcCall?.body?.p_captured, [
+            { path: "book.htm", s3VersionId: "v-recent" },
+        ]);
 
         s3Mock.restore();
     },
@@ -208,6 +312,7 @@ Deno.test(
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-42",
         });
         const calls: RecordedCall[] = [];
@@ -316,6 +421,7 @@ Deno.test(
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-1",
         });
         s3Mock
@@ -355,6 +461,7 @@ Deno.test(
         const s3Mock = mockClient(S3Client);
         s3Mock.on(HeadObjectCommand).resolves({
             ChecksumSHA256: hexToBase64(TX_ROW.proposed_files[0].sha256),
+            LastModified: new Date(), // a fresh upload, inside the commit window
             VersionId: "v-42",
         });
 
