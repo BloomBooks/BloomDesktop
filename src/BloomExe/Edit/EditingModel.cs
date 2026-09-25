@@ -898,10 +898,11 @@ namespace Bloom.Edit
 
         public void SetLayout(Layout layout)
         {
-            // Set by the save callback for the benefit of doAfterSaveToDisk, which needs to know
-            // which page we left and whether the pass is actually going to run.
-            string pageIdWeLeft = null;
-            Book.Book bookToUpdate = null;
+            // The measurements each page records (image sizing, canvas-element geometry) are
+            // relative to the page, so the new size makes every page due for the per-page fix-up
+            // again: its recorded layout no longer matches (BL-16852). We do not run that pass
+            // here. Each page gets its fix-up when the user next edits it, and whatever is left
+            // runs when something needs the whole book (the AI image editor, a Publish tool).
             SaveThen(
                 () =>
                 {
@@ -927,32 +928,9 @@ namespace Bloom.Edit
                     }
                     CurrentBook.PrepareForEditing();
                     _view.UpdatePageList(true); //counting on this to redo the thumbnails
-
-                    // The measurements each page records (image sizing, canvas-element geometry) are
-                    // relative to the page, so changing its size leaves them stale and makes the book
-                    // due for the per-page pass again -- its recorded layout no longer matches
-                    // (BL-16852). When it is due, return null so the editor empties, and let
-                    // doAfterSaveToDisk run the pass and bring us back, exactly as the AI image
-                    // editor does. ProcessBook must have the book to itself: it rewrites the book's
-                    // DOM from a worker thread, and every page it loads off-screen is a full editing
-                    // page that announces itself as loaded -- including one carrying the very page id
-                    // a live editor would be waiting on, which the editor would then accept in place
-                    // of the real page. Emptying the editor first is what makes those announcements
-                    // ignorable. (Do NOT queue this with RunAfterNextPageLoad instead: that action
-                    // does not reliably fire for the page load that follows a layout change, so the
-                    // pass silently never ran.)
-                    pageIdWeLeft = pageId;
-                    if (!BookProcessor.NeedsPerPageFixup(CurrentBook))
-                        return pageId;
-                    bookToUpdate = CurrentBook;
-                    return null;
+                    return pageId;
                 },
-                () => { }, // wrong state, do nothing
-                doAfterSaveToDisk: () =>
-                {
-                    if (bookToUpdate != null)
-                        RunPerPageFixupThenReturnToPage(bookToUpdate, pageIdWeLeft, null);
-                }
+                () => { } // wrong state, do nothing
             );
         }
 
@@ -1079,9 +1057,7 @@ namespace Bloom.Edit
         /// Save the current page, bring the whole book up to the current browser maintenance level
         /// (BL-16852), and then come back to the page we were on and run
         /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
-        /// needs every page's recorded data, not just the pages someone happens to have visited,
-        /// (A page-size change also leaves the book due, but SetLayout runs the pass directly rather
-        /// than through here, because it has no page to return to afterwards.)
+        /// needs every page's recorded data, not just the pages someone happens to have visited.
         /// </summary>
         /// <remarks>
         /// The sequence exists to give BookProcessor.ProcessBook the book to itself. It rewrites the
@@ -1173,12 +1149,11 @@ namespace Bloom.Edit
             // ProcessBook rebuilt the pages, so the IPage objects and editable areas
             // need redoing before we show one again.
             book.PrepareForEditing();
-            // The page we left can be gone: ProcessBook starts with BringBookUpToDate, and a
-            // layout change may have run it too, which regenerates the xmatter pages with fresh
-            // ids. We returned null from the save callback, so the editor is empty and nothing
-            // else will put a page back in it -- landing on the first page is much better than
-            // leaving the user looking at a blank editor, which reads as Bloom having lost the
-            // book. (StartNavigationToEditPage falls back the same way.)
+            // The page we left can be gone: ProcessBook starts with BringBookUpToDate, which
+            // regenerates the xmatter pages with fresh ids. We returned null from the save
+            // callback, so the editor is empty and nothing else will put a page back in it --
+            // landing on the first page is much better than leaving the user looking at a blank
+            // editor, which reads as Bloom having lost the book. (StartNavigationToEditPage falls back the same way.)
             var page = book.GetPages().FirstOrDefault(p => p.Id == pageId);
             var pageToShow = page ?? book.FirstPage;
             if (pageToShow == null)

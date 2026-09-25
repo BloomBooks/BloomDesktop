@@ -13,14 +13,23 @@ namespace Bloom.ToPalaso
     /// appends every status as a permanent log line, so the same work there fills the dialog with
     /// lines that only duplicate the bar (BL-16893). Messages, warnings and errors still get
     /// through, and so does the percent.
+    ///
+    /// Given a percent range, the percent is mapped into it: the wrapped work's 0-100 becomes
+    /// <paramref name="percentFrom"/>-<paramref name="percentTo"/> of the bar. Use that when the work
+    /// is one part of a longer job, so its own 0-100 does not run the bar up to the end before the
+    /// rest of the job starts.
     /// </summary>
     public class QuietStatusProgress : IProgress
     {
         private readonly IProgress _inner;
+        private readonly int _percentFrom;
+        private readonly int _percentTo;
 
-        public QuietStatusProgress(IProgress inner)
+        public QuietStatusProgress(IProgress inner, int percentFrom = 0, int percentTo = 100)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+            _percentFrom = percentFrom;
+            _percentTo = percentTo;
         }
 
         public void WriteStatus(string message, params object[] args)
@@ -64,7 +73,13 @@ namespace Bloom.ToPalaso
 
         public IProgressIndicator ProgressIndicator
         {
-            get { return _inner.ProgressIndicator; }
+            get
+            {
+                var indicator = _inner.ProgressIndicator;
+                if (indicator == null || (_percentFrom == 0 && _percentTo == 100))
+                    return indicator;
+                return new RangeProgressIndicator(indicator, _percentFrom, _percentTo);
+            }
             set { _inner.ProgressIndicator = value; }
         }
 
@@ -72,6 +87,46 @@ namespace Bloom.ToPalaso
         {
             get { return _inner.SyncContext; }
             set { _inner.SyncContext = value; }
+        }
+
+        /// <summary>
+        /// Maps a percent in 0-100 into the range [from, to] of the indicator it wraps.
+        /// </summary>
+        private class RangeProgressIndicator : IProgressIndicator
+        {
+            private readonly IProgressIndicator _inner;
+            private readonly int _from;
+            private readonly int _to;
+            private int _percent;
+
+            public RangeProgressIndicator(IProgressIndicator inner, int from, int to)
+            {
+                _inner = inner;
+                _from = from;
+                _to = to;
+            }
+
+            public int PercentCompleted
+            {
+                get { return _percent; }
+                set
+                {
+                    _percent = value;
+                    _inner.PercentCompleted = _from + value * (_to - _from) / 100;
+                }
+            }
+
+            public SynchronizationContext SyncContext
+            {
+                get { return _inner.SyncContext; }
+                set { _inner.SyncContext = value; }
+            }
+
+            public void Finish() { }
+
+            public void IndicateUnknownProgress() => _inner.IndicateUnknownProgress();
+
+            public void Initialize() { }
         }
     }
 }

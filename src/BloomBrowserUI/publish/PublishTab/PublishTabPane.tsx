@@ -156,6 +156,15 @@ export const PublishTabPane: React.FunctionComponent = () => {
     useSubscribeToWebSocketForEvent("publish", "switchToPublishTab", () => {
         setup();
     });
+    // The tool the user chose while C# brings the book's pages up to date (see onSelect below).
+    const toolWaitingForPages = React.useRef<number>();
+    useSubscribeToWebSocketForEvent("publish", "pagesUpToDate", () => {
+        if (toolWaitingForPages.current === undefined) {
+            return;
+        }
+        setTabIndex(toolWaitingForPages.current);
+        toolWaitingForPages.current = undefined;
+    });
     // User is switching out of publish tab, clear the display so the the old stuff doesn't flash when the user comes back on another book
     useSubscribeToWebSocketForEvent("publish", "switchOutOfPublishTab", () => {
         setPublishTabReady(false);
@@ -272,9 +281,21 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 if (publishToolsLocked) {
                                     return false;
                                 }
-                                post("publish/switchingPublishMode");
                                 logPublishTabSelected(newIndex);
-                                setTabIndex(newIndex);
+                                // Every tool publishes the book's pages, so C# first brings any
+                                // that are still due up to date, behind its own progress dialog.
+                                // Hold the tool back until it says the pages are ready.
+                                post(
+                                    "publish/switchingPublishMode",
+                                    (result) => {
+                                        if (result.data.pagesBeingUpdated) {
+                                            toolWaitingForPages.current =
+                                                newIndex;
+                                            return;
+                                        }
+                                        setTabIndex(newIndex);
+                                    },
+                                );
                             }}
                             css={css`
                                 height: 100%;

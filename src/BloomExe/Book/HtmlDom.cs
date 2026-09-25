@@ -2275,6 +2275,8 @@ namespace Bloom.Book
             //back to the html in keeping with our goal of having the page look right if you were to just open the
             //html file in a browser.
             destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
+            // Whether the page was saved with its load-time fix-ups done (see BookProcessor.PageNeedsFixup).
+            BookProcessor.CopyPageStamp(destinationPageDiv, edittedPageDiv);
 
             // Save only the page color custom properties we manage in Page Settings.
             // If all are missing, remove any previously-saved page-level custom properties.

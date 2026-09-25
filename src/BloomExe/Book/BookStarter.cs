@@ -623,6 +623,7 @@ namespace Bloom.Book
 
         public static void SetupPage(SafeXmlElement pageDiv, BookData bookData) //, bool inShellMode)
         {
+            BookProcessor.ClearPageStamp(pageDiv);
             TranslationGroupManager.PrepareElementsInPageOrDocument(pageDiv, bookData);
 
             SetLanguageForElementsWithMetaLanguage(pageDiv, bookData);
