@@ -351,6 +351,20 @@ namespace Bloom.Book
         private const string kUpdateBookProgressDialogId = "updateBook";
 
         /// <summary>
+        /// Send everything reported to <paramref name="progress"/> to Bloom's log as well as to the
+        /// dialog. The compact dialog deliberately shows only its one sentence (plus any warning or
+        /// error), so without this the stage messages a book update reports would be seen by nobody
+        /// and kept nowhere -- and they are exactly what you want when a user reports that an update
+        /// went wrong. The per-image and per-page status lines never reach here at all; those are
+        /// logged by QuietStatusProgress, which is what drops them.
+        /// </summary>
+        public static void AlsoLogProgressMessages(IWebSocketProgress progress)
+        {
+            if (progress is WebSocketProgress webSocketProgress)
+                webSocketProgress.LogAllMessages = true;
+        }
+
+        /// <summary>
         /// The props that open that dialog. Shared so that the automatic update and the Collection
         /// tab's "Update Book" command cannot drift apart: to the user they are the same operation,
         /// one asked for and one not.
@@ -437,6 +451,7 @@ namespace Bloom.Book
                     MakeUpdateBookProgressProps(),
                     (progress, worker) =>
                     {
+                        AlsoLogProgressMessages(progress);
                         try
                         {
                             ProcessBook(book, progress: new WebProgressAdapter(progress));
@@ -519,11 +534,21 @@ namespace Bloom.Book
         // so it is persisted with it.
         private static void StampPerPageFixupDone(Book book)
         {
-            book.OurHtmlDom.UpdateMetaElement(
+            StampPerPageFixupDone(book.OurHtmlDom, GetLayoutStamp(book));
+        }
+
+        /// <summary>
+        /// Record in <paramref name="dom"/> that the book is at the current browser maintenance level
+        /// at page size <paramref name="layoutStamp"/> (e.g. "A5Portrait"). Also used by BookStarter for
+        /// a new book made from one of our own templates, which has nothing for the pass to do.
+        /// </summary>
+        internal static void StampPerPageFixupDone(HtmlDom dom, string layoutStamp)
+        {
+            dom.UpdateMetaElement(
                 kBrowserMaintenanceLevelMeta,
                 BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
             );
-            book.OurHtmlDom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, GetLayoutStamp(book));
+            dom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, layoutStamp);
         }
 
         /// <summary>

@@ -1,26 +1,66 @@
 using System;
 using Bloom.ToPalaso;
 using NUnit.Framework;
+using SIL.Reporting;
 
 namespace BloomTests.ToPalaso
 {
     /// <summary>
     /// QuietStatusProgress wraps another progress for a loop that would otherwise write a status
-    /// line per item (BL-16893). It must drop exactly the status lines and pass everything else,
-    /// including the percent, straight through.
+    /// line per item (BL-16893). It must keep exactly the status lines out of the progress it
+    /// wraps -- while still writing them to the log, since a failure report needs to say which
+    /// item the run had reached -- and pass everything else, including the percent, straight
+    /// through. The log has to be the main one: a problem report carries that and not the
+    /// separate minor-events buffer.
     /// </summary>
     [TestFixture]
     public class QuietStatusProgressTests
     {
         [Test]
-        public void WriteStatus_IsDropped()
+        public void WriteStatus_IsNotPassedOn_ButIsLogged()
         {
-            var inner = new RecordingProgress();
-            var quiet = new QuietStatusProgress(inner);
+            Logger.Init();
+            try
+            {
+                var inner = new RecordingProgress();
+                var quiet = new QuietStatusProgress(inner);
+                // Sanity check: nothing of ours is in the log before we write it.
+                Assert.That(
+                    Logger.LogText,
+                    Does.Not.Contain("Reading metadata from a.png"),
+                    "test setup: the log already mentioned this item"
+                );
 
-            quiet.WriteStatus("Reading metadata from {0}", "a.png");
+                quiet.WriteStatus("Reading metadata from {0}", "a.png");
 
-            Assert.That(inner.Statuses, Is.Empty);
+                // Not passed on: a line per image is what fills the progress dialog.
+                Assert.That(inner.Statuses, Is.Empty);
+                // But not lost either: "which image was it on?" is what a failure report needs.
+                Assert.That(Logger.LogText, Does.Contain("Reading metadata from a.png"));
+            }
+            finally
+            {
+                Logger.ShutDown();
+            }
+        }
+
+        [Test]
+        public void WriteStatus_WithBracesAndNoArguments_LogsItRatherThanThrowing()
+        {
+            Logger.Init();
+            try
+            {
+                var quiet = new QuietStatusProgress(new RecordingProgress());
+
+                // string.Format would throw on this; a progress report must not.
+                Assert.DoesNotThrow(() => quiet.WriteStatus("Shrinking {not a placeholder}"));
+
+                Assert.That(Logger.LogText, Does.Contain("Shrinking {not a placeholder}"));
+            }
+            finally
+            {
+                Logger.ShutDown();
+            }
         }
 
         [Test]

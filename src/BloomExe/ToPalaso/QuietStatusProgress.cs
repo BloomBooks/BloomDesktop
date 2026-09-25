@@ -34,7 +34,33 @@ namespace Bloom.ToPalaso
 
         public void WriteStatus(string message, params object[] args)
         {
-            // Deliberately nothing: the percent bar is the progress report for the loop this wraps.
+            // Not passed on: the percent bar is the progress report for the loop this wraps, and a
+            // line per image or per page only fills the dialog (see the class summary). It is worth
+            // keeping, though -- when someone reports that an update went wrong, which image or page
+            // it had reached is exactly what you want to know -- so it goes to the log rather than
+            // nowhere. WriteEvent, not WriteMinorEvent, even though a big book produces dozens of
+            // these: minor events are a separate buffer that SIL's Logger does not put in the main
+            // log, and a problem report carries only the main log (ProblemReportApi), so a minor
+            // event would be invisible in exactly the situation this is for.
+            SIL.Reporting.Logger.WriteEvent(Format(message, args));
+        }
+
+        /// <summary>
+        /// string.Format, but tolerant of a caller that passes no arguments and a message that
+        /// happens to contain braces -- which would otherwise throw, from a progress report.
+        /// </summary>
+        private static string Format(string message, object[] args)
+        {
+            if (args == null || args.Length == 0)
+                return message;
+            try
+            {
+                return string.Format(message, args);
+            }
+            catch (FormatException)
+            {
+                return message;
+            }
         }
 
         public void WriteMessage(string message, params object[] args) =>
