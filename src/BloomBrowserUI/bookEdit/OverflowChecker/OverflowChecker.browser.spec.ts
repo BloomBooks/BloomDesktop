@@ -57,7 +57,7 @@ function describeMeasurements(element: HTMLElement): string {
 describe("OverflowChecker.IsOverflowingSelf", () => {
     const cases = casesIn(OverflowFixture);
     it("found the fixture's test cases", () => {
-        expect(cases.length).toBe(6);
+        expect(cases.length).toBe(8);
     });
     it.each(cases)("$name", (testCase) => {
         const element = loadTestElement(OverflowFixture, testCase.index);
