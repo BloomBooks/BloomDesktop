@@ -63,26 +63,6 @@
         <target xml:lang="fr" state="final">Sélectionner Cible du Lien</target>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading" approved="yes">
-        <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="fr" state="final">Livres de cette Collection</target>
-        <note>ID: LinkTargetChooser.BookList.Heading</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.PageList.Heading" approved="yes">
-        <source xml:lang="en">Pages in the selected book</source>
-        <target xml:lang="fr" state="final">Pages dans le livre sélectionné</target>
-        <note>ID: LinkTargetChooser.PageList.Heading</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound" approved="yes">
-        <source xml:lang="en">Book not found: {0}</source>
-        <target xml:lang="fr" state="final">Livre introuvable : {0}</target>
-        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound" approved="yes">
-        <source xml:lang="en">Page {0} not found in book "{1}"</source>
-        <target xml:lang="fr" state="final">Page {0} introuvable dans le livre "{1}"</target>
-        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
-      </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt" approved="yes">
         <source xml:lang="en">Select a book to see its pages</source>
         <target xml:lang="fr" state="final">Sélectionnez un livre pour voir ses pages</target>
@@ -148,50 +128,45 @@
         <target xml:lang="fr" state="translated">Pour le moment, Bloom ne prend pas en charge l'inclusion de l'audio des vidéos en Langue des Signes dans la sortie vidéo.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.Title">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.Title" approved="yes">
         <source xml:lang="en">How to set up your Android phone to receive apps via USB</source>
-        <target xml:lang="fr" state="needs-translation">How to set up your Android phone to receive apps via USB</target>
+        <target xml:lang="fr" state="final">Comment configurer votre téléphone Android pour recevoir des applications via USB</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.Title</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenSettings">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenSettings" approved="yes">
         <source xml:lang="en">Open the Settings on your phone.</source>
-        <target xml:lang="fr" state="needs-translation">Open the Settings on your phone.</target>
+        <target xml:lang="fr" state="final">Ouvrez les Paramètres de votre téléphone.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenSettings</note>
       </trans-unit>
       <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone">
         <source xml:lang="en">Open &apos;About phone&apos;. On some phones, you may need to then open &apos;Software information&apos; to find the &apos;Build number&apos;.</source>
-        <target xml:lang="fr" state="needs-translation">Open 'About phone'. On some phones, you may need to then open 'Software information' to find the 'Build number'.</target>
+        <target xml:lang="fr" state="translated">Ouvrez "À propos du téléphone". Sur certains, il faut peut-être ouvrir "Infos sur le logiciel" pour trouver le "Numéro de Build".</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenAboutPhone</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber" approved="yes">
         <source xml:lang="en">Find &apos;Build number&apos; and tap it 7 times until Developer options are enabled.</source>
-        <target xml:lang="fr" state="needs-translation">Find 'Build number' and tap it 7 times until Developer options are enabled.</target>
+        <target xml:lang="fr" state="final">Trouvez le « Numéro de Build » et tapotez-le 7 fois jusqu'à ce que les Options Développeur soient activées.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TapBuildNumber</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions" approved="yes">
         <source xml:lang="en">Go back to Settings and open &apos;Developer options&apos;.</source>
-        <target xml:lang="fr" state="needs-translation">Go back to Settings and open 'Developer options'.</target>
+        <target xml:lang="fr" state="final">Retournez aux Paramètres et ouvrez « Options Développeur ».</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.OpenDeveloperOptions</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging" approved="yes">
         <source xml:lang="en">Turn on &apos;USB debugging&apos;.</source>
-        <target xml:lang="fr" state="needs-translation">Turn on 'USB debugging'.</target>
+        <target xml:lang="fr" state="final">Activer le "débogage USB".</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.TurnOnUsbDebugging</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.ConnectCable" approved="yes">
         <source xml:lang="en">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</source>
-        <target xml:lang="fr" state="needs-translation">Connect the phone to your computer with a USB cable and allow USB debugging if your phone asks.</target>
+        <target xml:lang="fr" state="final">Connectez le téléphone à votre ordinateur avec un câble USB et autorisez le débogage USB si votre téléphone le demande.</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.ConnectCable</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo">
+      <trans-unit id="PublishTab.Apps.UsbDebuggingDialog.HowToVideo" approved="yes">
         <source xml:lang="en">How to video</source>
-        <target xml:lang="fr" state="needs-translation">How to video</target>
+        <target xml:lang="fr" state="final">Tutoriel vidéo</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
-        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <target xml:lang="fr" state="final">Bloom doit vérifier votre courriel, mais notre tentative de renvoyer la demande a échoué, peut-être parce que vous avez fait trop de demandes trop rapprochées. Veuillez vérifier vos courriels et, si vous ne trouvez pas le message, réessayez plus tard.</target>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
@@ -359,10 +334,6 @@
         <target xml:lang="fr" state="final">Bloom ne peut pas exporter car les pages {0} contiennent des jeux du genre glisser-déposer.</target>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
       </trans-unit>
-      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
-        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
-        <target xml:lang="fr" state="final">Insérer la bonne réponse dans ce bouton. Bloom va aléatoirer l'ordre plus tard.</target>
-      </trans-unit>
       <trans-unit id="Download.PleaseSendLogFile" approved="yes">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
         <target xml:lang="fr" state="final">Veuillez également nous envoyer le dernier fichier de log situé sur {0}.</target>
@@ -528,9 +499,9 @@
         <target xml:lang="fr" state="final">Intermédiaire</target>
         <note>ID: AiImageEditor.Level.Medium</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.None">
+      <trans-unit id="AiImageEditor.Level.None" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="fr" state="translated">Aucun</target>
+        <target xml:lang="fr" state="final">Aucun</target>
         <note>ID: AiImageEditor.Level.None</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.Estimate" approved="yes">
@@ -553,9 +524,9 @@
         <target xml:lang="fr" state="final">recommandé pour cet outil</target>
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey" approved="yes">
         <source xml:lang="en">Forget Key</source>
-        <target xml:lang="fr" state="translated">Oublier la Clé</target>
+        <target xml:lang="fr" state="final">Oublier la Clé</target>
         <note>ID: AiImageEditor.OpenRouter.ForgetKey</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed" approved="yes">
@@ -568,14 +539,14 @@
         <target xml:lang="fr" state="final">Clé vérifiée{0}</target>
         <note>ID: AiImageEditor.OpenRouter.KeyVerified</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.Testing">
+      <trans-unit id="AiImageEditor.OpenRouter.Testing" approved="yes">
         <source xml:lang="en">Testing…</source>
-        <target xml:lang="fr" state="translated">Vérification en cours...</target>
+        <target xml:lang="fr" state="final">Vérification en cours...</target>
         <note>ID: AiImageEditor.OpenRouter.Testing</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Panel.OriginalComic">
+      <trans-unit id="AiImageEditor.Panel.OriginalComic" approved="yes">
         <source xml:lang="en">Original Comic</source>
-        <target xml:lang="fr" state="translated">BD originale</target>
+        <target xml:lang="fr" state="final">BD originale</target>
         <note>ID: AiImageEditor.Panel.OriginalComic</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Preview.ResetZoom" approved="yes">
@@ -598,14 +569,14 @@
         <target xml:lang="fr" state="final">En cours...</target>
         <note>ID: AiImageEditor.Settings.Working</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.ClearImage">
+      <trans-unit id="AiImageEditor.Slot.ClearImage" approved="yes">
         <source xml:lang="en">Clear Image</source>
-        <target xml:lang="fr" state="translated">Enlever l'image</target>
+        <target xml:lang="fr" state="final">Enlever l'image</target>
         <note>ID: AiImageEditor.Slot.ClearImage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Slot.DropImage">
+      <trans-unit id="AiImageEditor.Slot.DropImage" approved="yes">
         <source xml:lang="en">Drop image</source>
-        <target xml:lang="fr" state="translated">Déposer une image</target>
+        <target xml:lang="fr" state="final">Déposer une image</target>
         <note>ID: AiImageEditor.Slot.DropImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Source.BookImage" approved="yes">
@@ -683,9 +654,9 @@
         <target xml:lang="fr" state="final">Redessiner l'image sélectionnée dans un autre style.</target>
         <note>ID: AiImageEditor.Tool.change_style.Description</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.change_text.Description">
+      <trans-unit id="AiImageEditor.Tool.change_text.Description" approved="yes">
         <source xml:lang="en">Replace specific text in the image. Use this to localize images that contain text.</source>
-        <target xml:lang="fr" state="translated">Remplacer des éléments précis du texte dans l'image. Utiliser cet outil pour localiser les images qui contiennent du texte.</target>
+        <target xml:lang="fr" state="final">Remplacer des éléments précis du texte dans l'image. Utiliser cet outil pour localiser les images qui contiennent du texte.</target>
         <note>ID: AiImageEditor.Tool.change_text.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.make_gif.Description" approved="yes">
@@ -723,9 +694,9 @@
         <target xml:lang="fr" state="final">Choisir un PDF…</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.ActionButton</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title">
+      <trans-unit id="AiImageEditor.Tool.pdf_to_images.Title" approved="yes">
         <source xml:lang="en">PDF to Images</source>
-        <target xml:lang="fr" state="translated">PDF vers Images</target>
+        <target xml:lang="fr" state="final">PDF vers Images</target>
         <note>ID: AiImageEditor.Tool.pdf_to_images.Title</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.remove_background.Description" approved="yes">
