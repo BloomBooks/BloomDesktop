@@ -18,7 +18,7 @@ using SIL.Progress;
 namespace Bloom.Book
 {
     /// <summary>
-    /// Runs, off-screen, the same per-page "fix-up" that a user gets by opening a book in the Edit
+    /// Runs, off-screen, the same page layout update that a user gets by opening a book in the Edit
     /// tab and visiting every page, but without disturbing the live UI. It is driven by the
     /// external/process-book API and used by BloomBridge to finish a freshly-generated
     /// book whose raw HTML "isn't quite right" yet. Before the per-page work it also shrinks any
@@ -39,14 +39,14 @@ namespace Bloom.Book
     /// alone leave undone everything the editing JavaScript does to a page, so users used to be told
     /// to "go to the Edit tab and click on each page" (BL-16595). Doing that here, off-screen, is
     /// also safer than driving the live editor through the pages: the capture below waits for the
-    /// page's asynchronous fix-ups to finish and captures on a later timer tick, so it can never save
-    /// a page mid-fix-up. The live save path, triggered the instant a page loaded, could (BL-16870).
+    /// page's asynchronous changes to finish and captures on a later timer tick, so it can never save
+    /// a page halfway through them. The live save path, triggered the instant a page loaded, could (BL-16870).
     /// </remarks>
     public static class BookProcessor
     {
         // Generous per-page limit; this is a background automation step, not interactive editing.
         // Must stay comfortably above kExternalCaptureMaxWaitMs in pageContentCapturePolicy.ts (the
-        // browser's own cap on waiting for a page's async fix-ups before it captures or gives up),
+        // browser's own cap on waiting for a page's asynchronous changes before it captures or gives up),
         // or we would time out on a slow page just before the browser reported it.
         private const int kReadyTimeoutMs = 60000;
 
@@ -58,8 +58,8 @@ namespace Bloom.Book
         // A <meta> in the book's HTML recording the BookStorage.kPageLayoutUpdateLevel this book's
         // pages have successfully been brought to, alongside maintenanceLevel and
         // mediaMaintenanceLevel. Anything that changes the pages' layout sets it back to 0
-        // (RecordPageLayoutChanged), so it also says whether the fix-ups' measurements still fit.
-        // See NeedsPerPageFixup.
+        // (RecordPageLayoutChanged), so it also says whether the recorded measurements still fit.
+        // See NeedsPageLayoutUpdate.
         internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
         // Set through E2eTestingApi (registered only under --e2e) so a test can see what a failed
@@ -68,7 +68,7 @@ namespace Bloom.Book
         private static int s_failAtPageForTesting;
 
         /// <summary>
-        /// Make the next page pass fail when it reaches page <paramref name="pageNumber"/> (1-based).
+        /// Make the next page layout update fail when it reaches page <paramref name="pageNumber"/> (1-based).
         /// For e2e tests only; see s_failAtPageForTesting.
         /// </summary>
         internal static void FailAtPageForTesting(int pageNumber)
@@ -76,29 +76,22 @@ namespace Bloom.Book
             Interlocked.Exchange(ref s_failAtPageForTesting, pageNumber);
         }
 
-        // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
-        // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
-        // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
-        // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
-        // Guarded by s_automaticFixupLock.
-        private static readonly HashSet<string> s_perPageFixupFailedThisSession =
-            new HashSet<string>();
-
-        // Books whose automatic per-page fix-up has been started and has not yet finished. While a
+        // Books whose automatic page layout update has been started and has not yet finished. While a
         // book is here, its pass owns it: the pass rebuilds the book on a background thread, and
         // anything else that brought the book up to date meanwhile would do so at the same time.
-        // Keyed by book id. Guarded by s_automaticFixupLock.
-        private static readonly HashSet<string> s_automaticFixupUnderway = new HashSet<string>();
-        private static readonly object s_automaticFixupLock = new object();
+        // Keyed by book id. Guarded by s_automaticPageLayoutUpdateLock.
+        private static readonly HashSet<string> s_automaticPageLayoutUpdateUnderway =
+            new HashSet<string>();
+        private static readonly object s_automaticPageLayoutUpdateLock = new object();
 
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
         /// date (xmatter/layout migrations; this also ensures the needed CSS file links are present,
-        /// and on save the actual CSS files), then run the per-page browser fix-up over every page and
+        /// and on save the actual CSS files), then run the page layout update over every page and
         /// save the result to disk. Returns the number of pages processed.
         ///
         /// All-or-nothing for the HTML: a failure on any page (capture error or timeout) throws and
-        /// the save at the end is skipped, so none of the page fix-up is persisted. The caller
+        /// the save at the end is skipped, so none of the page layout update is persisted. The caller
         /// (external/process-book) surfaces this as an error so BloomBridge can re-run, rather than
         /// leaving a half-processed book on disk. (The up-front image shrink is the one exception:
         /// it rewrites image files in place before the page loop, and a later failure does not undo
@@ -124,7 +117,7 @@ namespace Bloom.Book
         /// update and its per-image passes write ("Updating pages...", one line per image), nor a
         /// per-page message: the bar already shows how far along we are, and those lines just fill
         /// the dialog's log (BL-16893). A caller that wants the dialog to say what is happening
-        /// writes that itself before calling (see EnsurePerPageFixupIfNeededThen). It may be called on
+        /// writes that itself before calling (see UpdatePageLayoutIfNeededThen). It may be called on
         /// whatever thread this runs on; the progress objects we use marshal for themselves.
         /// </summary>
         public static int ProcessBook(
@@ -169,7 +162,7 @@ namespace Bloom.Book
             // already carries a modern maintenance level, so BringBookUpToDate below treats that
             // migration as already done and skips it. So we do the shrink ourselves, unconditionally
             // (not gated by mediaMaintenanceLevel), and it must come BEFORE BringBookUpToDate so that
-            // the off-screen per-page fix-up measures and lays out against the final, already-shrunk
+            // the off-screen page layout update measures and lays out against the final, already-shrunk
             // images. (This used to have a second reason -- keeping the migration from creating its
             // modal progress dialog on this background thread, which WinForms forbids. Since BL-16646
             // the migration only creates that dialog when it is already on the UI thread, and reports
@@ -196,18 +189,20 @@ namespace Bloom.Book
                     : new QuietStatusProgress(progress, 0, kWholeBookPercent)
             );
 
-            // 2. Per-page browser fix-up.
+            // 2. Page layout update.
             // A book with structural errors cannot be shown for editing (the Edit tab displays an error
             // page instead), so there is nothing meaningful the per-page pass could do for it; the
             // whole-book update above (which has already saved) is all it gets.
             var errors = book.CheckForErrors();
             if (!string.IsNullOrEmpty(errors))
             {
-                Log($"skipping the per-page fix-up because the book has errors: {errors}");
+                Log($"skipping the page layout update because the book has errors: {errors}");
                 return 0;
             }
             var pages = book.GetPages().Where(p => p != null).ToList();
-            Log($"starting per-page fix-up of {pages.Count} pages (ckeditor stripped off-screen)");
+            Log(
+                $"starting page layout update of {pages.Count} pages (ckeditor stripped off-screen)"
+            );
 
             var pageIndex = 0;
 
@@ -257,12 +252,12 @@ namespace Bloom.Book
             }
 
             // Record that this book has been brought to the current page layout update level, so
-            // NeedsPerPageFixup can tell it need not be done again unless we bump that level or the
+            // NeedsPageLayoutUpdate can tell it need not be done again unless we bump that level or the
             // pages' layout changes. Only reached when every page succeeded (a failure throws before
             // here), so we never claim a half-done book is done.
-            StampPerPageFixupDone(book.OurHtmlDom);
+            RecordPageLayoutUpdateDone(book.OurHtmlDom);
 
-            // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
+            // 3. One full save now that every page's in-memory DOM (and the record above) has been updated.
             book.Save();
             if (progress.ProgressIndicator != null)
                 progress.ProgressIndicator.PercentCompleted = 100;
@@ -272,10 +267,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
+        /// True if the page layout update (ProcessBook's off-screen pass over the pages) should be run on
         /// this book before it is edited or published. A book records the page layout update level
         /// its pages have been brought to; this catches the books that are behind: old books, books
-        /// from before a fix-up we have since added, and books whose pages' layout has changed since
+        /// from before an update we have since added, and books whose pages' layout has changed since
         /// (a new page size or appearance sets the recorded level back to 0; see
         /// RecordPageLayoutChanged).
         ///
@@ -291,7 +286,7 @@ namespace Bloom.Book
         /// Team Collection book not checked out — EnsureUpToDate would refuse it too), or one with
         /// structural errors (it would show an error page rather than editable pages).
         /// </summary>
-        public static bool NeedsPerPageFixup(Book book)
+        public static bool NeedsPageLayoutUpdate(Book book)
         {
             if (book == null || !book.IsSaveable)
                 return false;
@@ -310,8 +305,8 @@ namespace Bloom.Book
 
         /// <summary>
         /// Record in <paramref name="dom"/> that the pages' layout has changed (a new page size or
-        /// orientation, or a new appearance), so the measurements the per-page fix-up records no
-        /// longer fit and the book needs the fix-up again. Sets the recorded level to 0.
+        /// orientation, or a new appearance), so the measurements the page layout update records no
+        /// longer fit and the book needs the update again. Sets the recorded level to 0.
         /// </summary>
         internal static void RecordPageLayoutChanged(HtmlDom dom)
         {
@@ -320,7 +315,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// True if the book records a page layout update level higher than this Bloom knows how to
-        /// produce. A missing or unreadable level is not "above ours"; NeedsPerPageFixup already
+        /// produce. A missing or unreadable level is not "above ours"; NeedsPageLayoutUpdate already
         /// treats that as never done, which is the safe answer.
         /// </summary>
         internal static bool RecordsPageLayoutUpdateLevelAboveOurs(HtmlDom dom)
@@ -336,11 +331,11 @@ namespace Bloom.Book
         /// </summary>
         /// <remarks>
         /// A newer Bloom may have taken the book past what our editing JavaScript does. The moment we
-        /// write the book ourselves we may have added or changed pages that its extra fix-ups would
+        /// write the book ourselves we may have added or changed pages that its extra updates would
         /// have handled, so the book is no longer really at that level -- but the recorded level would
         /// tell the newer Bloom there was nothing to do, and the pages we touched would stay behind
-        /// for good. Recording our own level instead makes that Bloom see the book as due and run its
-        /// pass again. Deliberately one-way: a level at or below ours is left alone, because raising
+        /// for good. Recording our own level instead makes that Bloom see that the book needs updating and run its
+        /// update again. Deliberately one-way: a level at or below ours is left alone, because raising
         /// it would claim work we never did.
         /// </remarks>
         internal static void ClampPageLayoutUpdateLevelToOurs(HtmlDom dom)
@@ -355,7 +350,7 @@ namespace Bloom.Book
 
         /// <summary>
         /// The one sentence the progress dialog shows while a book is being brought up to date,
-        /// whether the user asked for it ("Update Book") or Bloom decided it was due. It is all the
+        /// whether the user asked for it ("Update Book") or Bloom decided it needed it. It is all the
         /// user needs: the bar above it says how far along we are, and what the individual passes
         /// are called is of no interest to anyone but us (BL-16893).
         /// </summary>
@@ -409,9 +404,9 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
-        /// due, behind the top-level progress dialog, and then run <paramref name="doAfter"/>. Called
-        /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and
+        /// Run the page layout update on <paramref name="book"/> if NeedsPageLayoutUpdate says it
+        /// needs it, behind the top-level progress dialog, and then run <paramref name="doAfter"/>. Called
+        /// when the AI image editor is launched (EditingModel.UpdatePageLayoutIfNeededThen) and
         /// when a Publish tool is chosen (PublishApi, publish/switchingPublishMode).
         ///
         /// <paramref name="doAfter"/> runs whether or not there was anything to do -- the caller has
@@ -430,7 +425,7 @@ namespace Bloom.Book
         /// into Bloom's API server, so it must not run on the UI thread; this is exactly what the
         /// "Update Book" command it shares ProcessBook with does.
         /// </summary>
-        public static bool EnsurePerPageFixupIfNeededThen(
+        public static bool UpdatePageLayoutIfNeededThen(
             Book book,
             BloomWebSocketServer webSocketServer,
             Action doAfter
@@ -439,23 +434,22 @@ namespace Bloom.Book
             // A pass on this book is already running (a second click on a Publish tool, say). Leave
             // it to that pass, whose own doAfter brings its caller back when it is done. Check this
             // before anything reads the book: that pass is rewriting it on another thread.
-            bool alreadyFailed;
-            lock (s_automaticFixupLock)
+            lock (s_automaticPageLayoutUpdateLock)
             {
-                if (s_automaticFixupUnderway.Contains(book.ID))
+                if (s_automaticPageLayoutUpdateUnderway.Contains(book.ID))
                     return true;
-                alreadyFailed = s_perPageFixupFailedThisSession.Contains(book.ID);
             }
-            // Nothing to do, or a run already failed for this book this session (so we don't
-            // re-prompt every time). Either way the caller still has its page to get back to.
-            if (alreadyFailed || !NeedsPerPageFixup(book))
+            // Nothing to do, but the caller still has its page to get back to. A book whose last
+            // update failed still needs one, so it gets another try here: most failures users see
+            // are transient.
+            if (!NeedsPageLayoutUpdate(book))
             {
                 doAfter();
                 return false;
             }
-            lock (s_automaticFixupLock)
+            lock (s_automaticPageLayoutUpdateLock)
             {
-                if (!s_automaticFixupUnderway.Add(book.ID))
+                if (!s_automaticPageLayoutUpdateUnderway.Add(book.ID))
                     return true;
             }
 
@@ -467,7 +461,7 @@ namespace Bloom.Book
             // in the returned task instead of being thrown here, and simply discarding the task would
             // swallow it. Our callers have already emptied the editor and doAfter is the only thing
             // that puts a page back, so losing it would leave the user looking at a blank Edit tab
-            // with no dialog and no error: the very thing ReturnToPageAfterFixup exists to avoid.
+            // with no dialog and no error: the very thing ReturnToPageAfterPageLayoutUpdate exists to avoid.
             BrowserProgressDialog
                 .DoWorkWithProgressDialogAsync(
                     webSocketServer,
@@ -481,8 +475,7 @@ namespace Bloom.Book
                         }
                         catch (Exception e)
                         {
-                            // Don't retry this book until Bloom restarts (see s_perPageFixupFailedThisSession),
-                            // and make sure the details reach the log; the dialog shows the message to the user.
+                            // Make sure the details reach the log; the dialog shows the message to the user.
                             //
                             // Pages that were processed before the failure stay updated in the book's
                             // in-memory DOM on purpose. A page is replaced only after its capture
@@ -490,11 +483,10 @@ namespace Bloom.Book
                             // exactly what visiting it in the Edit tab produces, so a later ordinary save
                             // persisting some migrated pages alongside unmigrated ones loses nothing: that
                             // mixture is just the state every book was in before this feature. And since
-                            // the stamp is written only when every page succeeded, NeedsPerPageFixup stays
+                            // the level is recorded only when every page succeeded, NeedsPageLayoutUpdate stays
                             // true and a later run finishes the rest. (BloomBridge's process-book gets its
                             // all-or-nothing behavior by reloading its own separate book object; the live
                             // book has no need of that.)
-                            NoteAutomaticFixupFailed(book);
                             SIL.Reporting.Logger.WriteError(
                                 "Automatic page update failed for " + book.NameBestForUserDisplay,
                                 e
@@ -503,7 +495,7 @@ namespace Bloom.Book
                         }
                         finally
                         {
-                            NoteAutomaticFixupFinished(book);
+                            NoteAutomaticPageLayoutUpdateFinished(book);
                         }
                         // A warning or error can reach the dialog as a message, without stopping the run
                         // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
@@ -521,10 +513,8 @@ namespace Bloom.Book
                             "Could not show the update dialog for " + book.NameBestForUserDisplay,
                             t.Exception
                         );
-                        // Don't keep trying on a Bloom that cannot show it, and get the user's
-                        // page back rather than leaving the editor empty.
-                        NoteAutomaticFixupFailed(book);
-                        NoteAutomaticFixupFinished(book);
+                        // Get the user's page back rather than leaving the editor empty.
+                        NoteAutomaticPageLayoutUpdateFinished(book);
                         doAfter();
                     },
                     TaskContinuationOptions.OnlyOnFaulted
@@ -532,16 +522,10 @@ namespace Bloom.Book
             return true;
         }
 
-        private static void NoteAutomaticFixupFailed(Book book)
+        private static void NoteAutomaticPageLayoutUpdateFinished(Book book)
         {
-            lock (s_automaticFixupLock)
-                s_perPageFixupFailedThisSession.Add(book.ID);
-        }
-
-        private static void NoteAutomaticFixupFinished(Book book)
-        {
-            lock (s_automaticFixupLock)
-                s_automaticFixupUnderway.Remove(book.ID);
+            lock (s_automaticPageLayoutUpdateLock)
+                s_automaticPageLayoutUpdateUnderway.Remove(book.ID);
         }
 
         /// <summary>
@@ -550,7 +534,7 @@ namespace Bloom.Book
         /// Also used by BookStarter for a new book made from one of our own templates, which has
         /// nothing for the pass to do.
         /// </summary>
-        internal static void StampPerPageFixupDone(HtmlDom dom)
+        internal static void RecordPageLayoutUpdateDone(HtmlDom dom)
         {
             dom.UpdateMetaElement(
                 kPageLayoutUpdateLevelMeta,
@@ -604,7 +588,7 @@ namespace Bloom.Book
             // that AddJavaScriptForEditing injects for the live editor) is pure dead weight here:
             // ~346KB of script to download/parse into each fresh renderer, plus an editor instance
             // attached to every editable field during bootstrap(). None of it affects the load-time
-            // DOM fix-ups we capture. Strip the ckeditor <script> so it never loads; bootstrap()'s
+            // DOM changes we capture. Strip the ckeditor <script> so it never loads; bootstrap()'s
             // existing `typeof CKEDITOR === "undefined"` guard then skips all the attachment work.
             var ckeditorScripts = dom.SafeSelectNodes("//script[contains(@src,'ckeditor')]");
             foreach (var script in ckeditorScripts)
@@ -619,7 +603,7 @@ namespace Bloom.Book
             // never firing) even though bootstrap()/SetupElements() has fully run and there are no pending
             // sub-resources. Waiting for 'load' would just burn the whole timeout. Instead we fire the
             // navigation and then poll for __bloomEditablePageReady, which is the signal we actually care
-            // about (the load-time DOM fix-ups are in place). The browser is already ready to navigate (the
+            // about (the load-time DOM changes are in place). The browser is already ready to navigate (the
             // OffScreenBrowser blocked until it was) so there is no ready-wait to do here.
             //
             // The browser may still be showing the previous page, and the navigation call returns before
@@ -634,7 +618,7 @@ namespace Bloom.Book
 
             // Wait until bootstrap()/SetupElements() has actually run (signaled by
             // __bloomEditablePageReady), not merely until the bundle's exports exist, so the load-time
-            // DOM fix-ups are in place before we capture the page.
+            // DOM changes are in place before we capture the page.
             WaitForJavascriptResult(
                 browser,
                 "(window.__bloomEditablePageReady && window.editablePageBundle) ? 'ready' : ''",

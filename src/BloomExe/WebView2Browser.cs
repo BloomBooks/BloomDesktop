@@ -92,21 +92,23 @@ namespace Bloom
             return browser;
         }
 
-        // Set (via CreateForOffScreenUse) for a browser that only ever loads Bloom's own localhost pages;
-        // see where InitWebView reads it.
-        private bool _loadsOnlyLocalPages;
+        // Set (via CreateForOffScreenUse) for a browser whose pages send every HTTP request to Bloom's
+        // own server on localhost, and none to any other site; such a browser does not need the proxy.
+        // See where InitWebView reads it.
+        private bool _contactsOnlyBloomServer;
 
         /// <summary>
-        /// Create a browser, with its own new environment, for OffScreenBrowser, which only ever loads
-        /// pages from Bloom's own server. As with the default constructor, initialization is kicked off
-        /// unawaited; callers wait on <see cref="IsReadyToNavigate"/> before navigating.
+        /// Create a browser, with its own new environment, for OffScreenBrowser. The pages it shows send
+        /// requests only to Bloom's own server, so it skips the proxy (see InitWebView). As with the
+        /// default constructor, initialization is kicked off unawaited; callers wait on
+        /// <see cref="IsReadyToNavigate"/> before navigating.
         /// </summary>
         internal static WebView2Browser CreateForOffScreenUse()
         {
             // As in CreateWithInjectedEnvironment, the do-nothing constructor lets us set the fields
             // before InitWebView runs.
             var browser = new WebView2Browser("dummy");
-            browser._loadsOnlyLocalPages = true;
+            browser._contactsOnlyBloomServer = true;
             browser.InitializeComponent();
             _ = browser.InitWebView();
             return browser;
@@ -560,14 +562,17 @@ namespace Bloom
             // expect this to be an important factor for Bloom, as we don't have long-running
             // animations except for things like playing motion books, which probably want to continue to the end.
             additionalBrowserArgs += " --disable-renderer-backgrounding";
-            if (_loadsOnlyLocalPages)
+            if (_contactsOnlyBloomServer)
             {
                 // Without this, in some sessions, Chromium spends about 400ms working out whether to
-                // use a proxy before the first navigation of each newly created browser, even to
-                // localhost. Only for browsers that never go beyond Bloom's own server: Bloom's main
-                // browser hosts the AI Image Editor, which calls openrouter.ai directly, so it must
-                // keep honoring the user's proxy. It is safe to vary the arguments here because these
-                // browsers never share a user-data folder with the main browser.
+                // use a proxy before the first request of each newly created browser, even a request
+                // to localhost. This is not about which pages a browser shows: Bloom's browsers only
+                // ever show Bloom's own pages. It is about where those pages send HTTP requests. In
+                // Bloom's main browser some of them go to other sites (the AI Image Editor posts to
+                // openrouter.ai, for example), and those must go through the user's proxy if there
+                // is one. The pages in this browser send requests only to Bloom's own server. It is
+                // safe to vary the arguments here because these browsers never share a user-data
+                // folder with the main browser.
                 additionalBrowserArgs += " --no-proxy-server";
             }
             // Chromium only respects the last --disable-features argument, so we collect all features

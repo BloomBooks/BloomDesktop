@@ -9,7 +9,7 @@ namespace BloomTests.Book
 {
     /// <summary>
     /// The Sample Shells we ship (src/content/templates/Sample Shells) should already be fully
-    /// "updated": brought to our current maintenance levels, including the per-page browser fix-up.
+    /// "updated": brought to our current maintenance levels, including the page layout update.
     /// Otherwise every user who opens one (or makes a book from one) pays for that update, and the
     /// AI image editor and page-size changes stop to show the "Bloom needs to update the pages of
     /// this book" dialog (BL-16905).

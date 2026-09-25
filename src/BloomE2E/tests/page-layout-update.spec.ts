@@ -5,7 +5,7 @@
 // date. Changing the page size or the theme sets it back to 0, but does not run the update then:
 // Bloom waits until something needs the whole book, such as choosing a Publish tool. Books made
 // from Bloom's own templates and Sample Shells start up to date. If the update fails, Bloom says so
-// and leaves the book marked as needing it, but does not try again until it is restarted. Each test watches for the
+// and leaves the book marked as needing it, and the next Publish tool tries again. Each test watches for the
 // update's progress dialog while choosing a Publish tool, and reads the level from the saved book.
 
 import { expect, test } from "../fixtures/bloomTest";
@@ -95,7 +95,7 @@ test("a new book from The Moon and the Cap needs no update", async ({
     ).toBe(false);
 });
 
-test("a failed update is reported, the tool still opens, and Bloom does not retry it", async ({
+test("a failed update is reported, the tool still opens, and the next tool tries again", async ({
     page,
 }) => {
     const book = await makeBookFromTemplate(page, "Basic Book");
@@ -125,6 +125,7 @@ test("a failed update is reported, the tool still opens, and Bloom does not retr
 
     expect(
         await choosePublishToolAndSeeIfItUpdated(page, "Web"),
-        "Bloom should not try a failed update again until it is restarted",
-    ).toBe(false);
+        "the next Publish tool should try the failed update again",
+    ).toBe(true);
+    await waitForPageLayoutUpdateLevel(book, UP_TO_DATE);
 });

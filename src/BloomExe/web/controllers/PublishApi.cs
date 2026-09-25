@@ -98,15 +98,15 @@ namespace Bloom.web.controllers
                 {
                     // Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation)
                     PublishHelper.Cancel();
-                    // Every tool publishes the book's pages, so pages still due for the per-page
-                    // fix-up must have it before a tool opens. If they are, the pass runs behind
+                    // Every tool publishes the book's pages, so a book that needs its page layout
+                    // update must have it before a tool opens. If it does, the update runs behind
                     // its dialog and we tell the tab to hold the tool back; when the dialog closes
-                    // we send pagesUpToDate and the tab opens the tool. (When nothing is due the
+                    // we send pagesUpToDate and the tab opens the tool. (When no update is needed the
                     // event goes out at once, with no tool waiting for it.)
                     var book = _publishModel.BookSelection.CurrentSelection;
                     var pagesBeingUpdated =
                         book != null
-                        && BookProcessor.EnsurePerPageFixupIfNeededThen(
+                        && BookProcessor.UpdatePageLayoutIfNeededThen(
                             book,
                             (BloomWebSocketServer)_webSocketServer,
                             () => _webSocketServer.SendEvent("publish", "pagesUpToDate")

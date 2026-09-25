@@ -197,16 +197,16 @@ namespace Bloom.Book
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
         /// History of kPageLayoutUpdateLevel (introduced in 6.5)
         ///   The migrations above are all done by C# on the DOM. This one tracks the quite
-        ///   different set of fix-ups that only the editing JavaScript can do, because they need a
+        ///   different set of page changes that only the editing JavaScript can make, because they need a
         ///   real browser that has laid the page out: converting an old-style image to the
         ///   background canvas element, recording each image slot's share of its page, canvas
         ///   element geometry, and so on. They used to happen only when the user opened a page in
         ///   the Edit tab, so a book carried them on the pages someone had visited and nowhere
         ///   else. BookProcessor now applies them to every page off-screen when this level says
-        ///   the book is behind. See NeedsPerPageFixup. The book's value is also set back to 0
+        ///   the book is behind. See NeedsPageLayoutUpdate. The book's value is also set back to 0
         ///   whenever its pages' layout changes (BookProcessor.RecordPageLayoutChanged), because
         ///   the recorded measurements are relative to the page.
-        ///              0 = missing, or the layout has changed since: the pages need the fix-ups
+        ///              0 = missing, or the layout has changed since: the pages need the update
         ///   Bloom 6.5: 1 = every page has been through it (BL-16852)
         ///   BUMP THIS whenever a change to the editing JavaScript means existing books need to be
         ///   put through it again. Deliberately NOT tied to the Bloom version: version numbers are
@@ -4181,7 +4181,7 @@ namespace Bloom.Book
                 // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
                 // for the whole (potentially minutes-long) shrink. Today no UI-thread caller passes
                 // a real progress: "Update Book" (CollectionModel.BringBookUpToDateAsync) and the
-                // automatic per-page fix-up both run BookProcessor.ProcessBook on a worker thread
+                // automatic page layout update both run BookProcessor.ProcessBook on a worker thread
                 // behind the React progress dialog, and DoUpdatesOfAllBooks runs on
                 // ProgressDialogBackground's worker, so all of them arrive here with InvokeRequired
                 // true and simply use the progress they were given. A future UI-thread caller

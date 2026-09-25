@@ -7,14 +7,14 @@ using NUnit.Framework;
 namespace BloomTests.Book
 {
     /// <summary>
-    /// Tests for BookProcessor.NeedsPerPageFixup — the decision that governs whether the automatic
-    /// per-page browser fix-up (BL-16852) runs when a book is opened for editing or before publishing.
-    /// The heavy fix-up itself needs a real browser and is covered by a manual process-book run and by
-    /// BookProcessorTests; this fixture exercises only the pure "is it due?" logic, which needs no
+    /// Tests for BookProcessor.NeedsPageLayoutUpdate — the decision that governs whether the automatic
+    /// page layout update (BL-16852) runs when a book is opened for editing or before publishing.
+    /// The update itself needs a real browser and is covered by a manual process-book run and by
+    /// BookProcessorTests; this fixture exercises only the pure "does it need updating?" logic, which needs no
     /// browser, so it runs in CI.
     /// </summary>
     [TestFixture]
-    public class PerPageFixupDecisionTests : BookTestsBase
+    public class PageLayoutUpdateDecisionTests : BookTestsBase
     {
         // A single page whose size/orientation class we control, so GetLayout() is deterministic.
         private void SetSinglePageDom(string sizeClass)
@@ -26,7 +26,7 @@ namespace BloomTests.Book
             );
         }
 
-        private void Stamp(Bloom.Book.Book book, int level)
+        private void RecordLevel(Bloom.Book.Book book, int level)
         {
             book.OurHtmlDom.UpdateMetaElement(
                 BookProcessor.kPageLayoutUpdateLevelMeta,
@@ -35,12 +35,12 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void NeedsPerPageFixup_NeverStamped_IsTrue()
+        public void NeedsPageLayoutUpdate_NothingRecorded_IsTrue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
 
-            // SANITY: the book must be saveable and error-free, or NeedsPerPageFixup short-circuits
+            // SANITY: the book must be saveable and error-free, or NeedsPageLayoutUpdate short-circuits
             // to false for a reason unrelated to the level we are testing.
             Assert.That(book.IsSaveable, Is.True, "SANITY: test book should be saveable");
             Assert.That(book.CheckForErrors(), Is.Empty, "SANITY: test book should have no errors");
@@ -50,56 +50,56 @@ namespace BloomTests.Book
                 "SANITY: a fresh book should carry no page layout update level"
             );
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.True);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedCurrentLevel_IsFalse()
+        public void NeedsPageLayoutUpdate_RecordedCurrentLevel_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
+            RecordLevel(book, BookStorage.kPageLayoutUpdateLevel);
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedEarlierLevel_IsTrue()
+        public void NeedsPageLayoutUpdate_RecordedEarlierLevel_IsTrue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             // A book brought to an earlier level than this Bloom knows about needs redoing, which is
             // exactly what bumping kPageLayoutUpdateLevel is for.
-            Stamp(book, BookStorage.kPageLayoutUpdateLevel - 1);
+            RecordLevel(book, BookStorage.kPageLayoutUpdateLevel - 1);
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.True);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedLaterLevel_IsFalse()
+        public void NeedsPageLayoutUpdate_RecordedLaterLevel_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             // A newer Bloom took this book past what we know how to do; leave it alone rather than
             // dragging it back.
-            Stamp(book, BookStorage.kPageLayoutUpdateLevel + 1);
+            RecordLevel(book, BookStorage.kPageLayoutUpdateLevel + 1);
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
         }
 
         [Test]
-        public void NeedsPerPageFixup_UnreadableLevel_IsTrue()
+        public void NeedsPageLayoutUpdate_UnreadableLevel_IsTrue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             // Hand-edited or corrupt: we cannot tell what was done, so redo it.
-            Stamp(book, 0);
+            RecordLevel(book, 0);
             book.OurHtmlDom.UpdateMetaElement(
                 BookProcessor.kPageLayoutUpdateLevelMeta,
                 "not a number"
             );
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.True);
         }
 
         [Test]
@@ -107,20 +107,20 @@ namespace BloomTests.Book
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
+            RecordLevel(book, BookStorage.kPageLayoutUpdateLevel);
             Assert.That(
-                BookProcessor.NeedsPerPageFixup(book),
+                BookProcessor.NeedsPageLayoutUpdate(book),
                 Is.False,
-                "SANITY: a book at the current level is not due"
+                "SANITY: a book at the current level needs no update"
             );
 
-            // The measurements the fix-ups record are relative to the page, so they are stale at a
+            // The measurements the page layout update records are relative to the page, so they are stale at a
             // new size even though the level was current.
             book.SetLayout(
                 new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A4Landscape") }
             );
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.True);
         }
 
         [Test]
@@ -128,23 +128,23 @@ namespace BloomTests.Book
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
+            RecordLevel(book, BookStorage.kPageLayoutUpdateLevel);
 
             book.SetLayout(
                 new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait") }
             );
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
         }
 
         [Test]
-        public void StampPerPageFixupDone_RecordsOurLevel_AndDropsThePreReleaseNames()
+        public void RecordPageLayoutUpdateDone_RecordsOurLevel_AndDropsThePreReleaseNames()
         {
             var dom = new HtmlDom("<html><head></head><body></body></html>");
             dom.UpdateMetaElement("browserMaintenanceLevel", "1");
             dom.UpdateMetaElement("browserMaintenanceLayout", "A5Portrait");
 
-            BookProcessor.StampPerPageFixupDone(dom);
+            BookProcessor.RecordPageLayoutUpdateDone(dom);
 
             Assert.That(
                 dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
@@ -212,7 +212,7 @@ namespace BloomTests.Book
         [Test]
         public void ClampPageLayoutUpdateLevel_MissingOrUnreadable_StaysThatWay()
         {
-            // Absent means "never done", which NeedsPerPageFixup already handles; inventing a number
+            // Absent means "never done", which NeedsPageLayoutUpdate already handles; inventing a number
             // here would tell a later Bloom the pass had run when it had not.
             var domMissing = DomWithLevel(null);
             BookProcessor.ClampPageLayoutUpdateLevelToOurs(domMissing);
@@ -271,7 +271,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void NeedsPerPageFixup_BookWithErrors_IsFalse()
+        public void NeedsPageLayoutUpdate_BookWithErrors_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             // Make the storage report a validation error; such a book shows an error page rather than
@@ -284,7 +284,7 @@ namespace BloomTests.Book
                 Is.Not.Empty,
                 "SANITY: the storage should report the error we set up"
             );
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
         }
     }
 }

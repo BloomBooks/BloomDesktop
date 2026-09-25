@@ -512,7 +512,7 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_NeedsNoPerPageFixup()
+        public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_NeedsNoPageLayoutUpdate()
         {
             var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
             // The built template is "Basic Book.html" (generated from pug), not ".htm".
@@ -533,11 +533,11 @@ namespace BloomTests.Book
                 Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString())
             );
             var book = CreateBookServer().GetBookFromBookInfo(new BookInfo(path, true));
-            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
         }
 
         [Test]
-        public void CreateBookOnDiskFromTemplate_FromTemplateOutsideFactory_IsNotStampedAsFixedUp()
+        public void CreateBookOnDiskFromTemplate_FromTemplateOutsideFactory_IsNotRecordedAsUpdated()
         {
             // Stands in for a template the user made: its pages may really need the per-page pass.
             using (var userTemplates = new TemporaryFolder("BookStarterTestsUserTemplate"))
