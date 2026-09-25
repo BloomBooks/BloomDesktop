@@ -1,7 +1,9 @@
 doctype html
+// OverflowAncestorFixture.html is generated from OverflowAncestorFixture.pug. Don't edit the .html file by hand; change the .pug and regenerate it.
 //- This file is no longer directly used (was once imported by OverflowSpec.ts).
 //- As of October 2025, getting Vite to import pug was problematic. I decided to
-//- just check in the resulting html. Changes would be best made here and manually converted.
+//- just check in the resulting html. Make changes here, then regenerate the .html by running this in src/BloomBrowserUI:
+//-     pnpm exec pug --pretty bookEdit/OverflowChecker
 //- Tests of overflow feature in Bloom that puts a red background in a field if there's too much content
 //- This is modified from the page that tested marginBox, but here we test generic ancestor divs.
 mixin testTarget
