@@ -494,7 +494,21 @@ settings (the `.bloomCollection` in `Other/Other Collection Files.zip`):
   why the freeze does not use `MinimumBloomVersion`, which would lock them out entirely.
 - **`AllowCheckouts=False`**, for any 6.4 or 6.5 Bloom that missed the patch.
 
-6.6 Blooms still on the old system honor both. The admin's Bloom then creates the cloud
+6.6 Blooms still on the old system honor both.
+
+Right after setting them, the old shared folder is made **read-only for everyone except the admin
+doing the migration**, as a safeguard against Blooms too old to honor `AllowSharedFolderChanges`,
+`AllowCheckouts` or `MinimumBloomVersion`. On Dropbox, the folder's Dropbox owner (who may not be
+the Bloom admin) changes every other member to "Can view"; on a LAN share it is done with
+file-system permissions. Bloom can neither do nor verify this, so the migration UI lists it as a
+checklist step. Every later write to the old folder (the `Migration Keys` files, the cloud id in
+the settings) is the admin's, and 6.6 members that have switched only read it (the settings and
+their keys) and check in to the cloud, so the restriction doesn't affect them. Whether it makes an
+old Bloom fail fast depends on the sync service (see
+[section 9](#9-open-questions-and-planned-work)); even where it doesn't, it keeps very old Blooms
+from changing what everyone else sees.
+
+The admin's Bloom then creates the cloud
 collection in the database with its **initial upload in progress** flag set, and uploads the
 collection files.
 
@@ -595,7 +609,8 @@ sequenceDiagram
 If, say, the admin's computer dies mid-upload, a database admin deletes the incomplete cloud
 collection with a support script (by collection id: its database rows and its S3 prefix);
 `AllowSharedFolderChanges` and `AllowCheckouts` are reset in the old shared settings (or left for
-the next attempt); the `Migration Keys` folder is deleted; and someone else is made admin and
+the next attempt), and so is the other members' write access to the old folder; the
+`Migration Keys` folder is deleted; and someone else is made admin and
 starts again. There is no UI for this.
 
 ### Sharing an ordinary collection
@@ -827,6 +842,11 @@ BL-16928)
   check-ins; writing the `Migration Keys` files and placeholder locks; finishing (clearing the
   flag and writing the cloud id into the old shared settings); and each member's switch-over
   with its takeovers.
+- Whether making the old shared folder read-only makes an old Bloom fail fast depends on the sync
+  service. On a LAN share a write is refused with an error. On a Dropbox "Can view" folder the
+  desktop app may still let the local copy be written and just never upload it, so an old Bloom
+  could believe its check-in worked. This needs a quick test with two Dropbox accounts (and
+  separately OneDrive and Google Drive, if those are supported).
 - The UI of BL-16676 needs redesigning around this: there is no preparation phase to wait
   through, and each member's Bloom switches when the upload is done, so what members are shown
   then (the mockup's Accept / Not Now, or just a notice) is for the designer.
