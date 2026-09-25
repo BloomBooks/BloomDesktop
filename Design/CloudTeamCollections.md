@@ -130,7 +130,9 @@ sends is for display only.
 `tc.members` is the list of approved accounts for a collection. An admin adds a row by email
 (lowercased and NFC-normalized) with a role; the row has no `user_id` until the person signs in and
 `claim_memberships()` fills it in, which requires a verified email. So "invited" means a row with
-no `user_id`, and "joined" means a claimed row. `my_collections()` lists the collections an email
+no `user_id`, and "joined" means a claimed row. Adding the row is all that inviting someone
+involves: nothing is sent, and the invitation card the person sees in Bloom comes from
+`my_collections()` listing that row. `my_collections()` lists the collections an email
 has been approved for, claimed or not, which is what the join UI shows. `members_list` is visible
 to any member; `members_add`, `members_remove` and `members_set_role` are admin-only. Removing a
 member also force-unlocks everything they had checked out, with a ForcedUnlock event for each
