@@ -138,12 +138,12 @@ jobs:
     test:
         needs: matrix-setup
         runs-on: windows-latest
-        # The nightly's build-plus-C#-test phase, which is all this job does, takes about 20 minutes
-        # on a runner (6 to build, 13 for the tests). Roughly double that, because a culture bug
-        # does not always fail fast: PublishHelper gives the browser 10 seconds to load its
-        # visibility document and the epub tests then retry, so a culture that breaks that path
-        # makes the suite crawl rather than stop.
-        timeout-minutes: 45
+        # The first run showed why this needs slack: setup and build take about 10 minutes on a
+        # runner, the tests took 13 under tr-TR but 24 under fr-FR, and th-TH hit a 45-minute cap
+        # before finishing. A culture bug does not always fail fast: PublishHelper gives the browser
+        # 10 seconds to load its visibility document and the epub tests then retry, so a culture that
+        # breaks that path makes the suite crawl rather than stop (BL-16927).
+        timeout-minutes: 90
 
         strategy:
             # One culture failing must not cancel the others — they are independent questions, and
