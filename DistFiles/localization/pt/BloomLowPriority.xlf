@@ -63,26 +63,6 @@
         <target xml:lang="pt-PT" state="final">Escolher o Alvo do Link</target>
         <note>ID: LinkTargetChooser.Dialog.Title</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading" approved="yes">
-        <source xml:lang="en">Books in this Collection</source>
-        <target xml:lang="pt-PT" state="final">Livros nesta Coleção</target>
-        <note>ID: LinkTargetChooser.BookList.Heading</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.PageList.Heading" approved="yes">
-        <source xml:lang="en">Pages in the selected book</source>
-        <target xml:lang="pt-PT" state="final">Páginas no livro selecionado</target>
-        <note>ID: LinkTargetChooser.PageList.Heading</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound" approved="yes">
-        <source xml:lang="en">Book not found: {0}</source>
-        <target xml:lang="pt-PT" state="final">Livro não encontrado: {0}</target>
-        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound" approved="yes">
-        <source xml:lang="en">Page {0} not found in book "{1}"</source>
-        <target xml:lang="pt-PT" state="final">Página {0} não encontrada no livro "{1}"</target>
-        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
-      </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt" approved="yes">
         <source xml:lang="en">Select a book to see its pages</source>
         <target xml:lang="pt-PT" state="final">Selecione um livro para ver as páginas</target>
@@ -187,11 +167,6 @@
         <source xml:lang="en">How to video</source>
         <target xml:lang="pt-PT" state="needs-translation">How to video</target>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
-        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <target xml:lang="pt-PT" state="final">Bloom precisa verificar seu e-mail, mas nossa tentativa de reenviar a solicitação falhou, possivelmente porque você fez muitos solicitações muito próximas uma da outra. Por favor, verifique seu e-mail e se você não conseguir encontrar a mensagem, tente novamente mais tarde.</target>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError" approved="yes">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
@@ -358,10 +333,6 @@
         <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
         <target xml:lang="pt-PT" state="final">Bloom não pode exportar porque {0} páginas contêm jogos de arrastar-e-soltar.</target>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
-      </trans-unit>
-      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
-        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
-        <target xml:lang="pt-PT" state="final">Coloque a resposta correta neste botão. Bloom irá randomizar a ordem mais tarde.</target>
       </trans-unit>
       <trans-unit id="Download.PleaseSendLogFile" approved="yes">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
