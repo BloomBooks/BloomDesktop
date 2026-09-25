@@ -82,7 +82,7 @@ verify presence/enabled state only.
 - Prefer visible-only locators for context controls and menu lists (`:visible`), because hidden duplicate portal/menu nodes can appear during long headed runs.
 - Keep real drag/drop for tests that validate drag behavior.
 - Prefer close-to-user-behavior setup in specs: create the same element type the test is validating, using real drag/drop.
-- If a test is flaky, prefer bounded retries around the same user-like interaction. Any any non-user-like setup shortcuts require explicit human approval, recorded in a code comment. For example, avoid substituting different element types just to reduce flakiness unless explicitly approved and clearly documented in the spec.
+- Never accept a known-flaky test; working around one, retries included, needs the developer's permission first (see "Never accept a known-flaky test" in the root AGENTS.md). Any non-user-like setup shortcuts require explicit human approval, recorded in a code comment. For example, avoid substituting different element types just to reduce flakiness unless explicitly approved and clearly documented in the spec.
 - `specs/11-shared-mode-cleanup.spec.ts` is a regression check that shared-mode per-test cleanup restores baseline element count.
 
 
