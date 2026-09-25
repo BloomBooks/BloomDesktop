@@ -711,15 +711,15 @@ namespace Bloom.CollectionTab
 
         /// <summary>
         /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
-        /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind Bloom's
+        /// page layout update over every page (BookProcessor.ProcessBook) behind Bloom's
         /// top-level compact progress dialog -- the bar and the one housekeeping sentence, exactly
-        /// what the automatic update shows (BookProcessor.EnsurePerPageFixupIfNeededThen) -- and
+        /// what the automatic update shows (BookProcessor.UpdatePageLayoutIfNeededThen) -- and
         /// reselects the book once the dialog closes so the collection shows the result.
         /// </summary>
         /// <remarks>
         /// The per-page part used to be done by driving the live Edit tab through the pages
         /// (BL-16595). That saved each page the instant it loaded, which could capture a page in the
-        /// middle of an asynchronous fix-up (BL-16870). ProcessBook's off-screen capture waits for
+        /// middle of an asynchronous change (BL-16870). ProcessBook's off-screen capture waits for
         /// those to finish, and it is all-or-nothing: a failure on any page leaves the book as the
         /// whole-book update left it rather than half-processed.
         ///
@@ -739,7 +739,7 @@ namespace Bloom.CollectionTab
             SelectBookOnUiThread(null);
 
             // The same dialog, with the same words, as the automatic update
-            // (BookProcessor.EnsurePerPageFixupIfNeededThen): to the user this is one operation,
+            // (BookProcessor.UpdatePageLayoutIfNeededThen): to the user this is one operation,
             // here asked for rather than decided by Bloom.
             await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
                 _webSocketServer,
@@ -760,7 +760,7 @@ namespace Bloom.CollectionTab
                         Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
                         throw;
                     }
-                    // As with the automatic update (BookProcessor.EnsurePerPageFixupIfNeededThen): if a
+                    // As with the automatic update (BookProcessor.UpdatePageLayoutIfNeededThen): if a
                     // warning or error reached the dialog without stopping the run, keep the dialog
                     // up (true) so the user can read it, rather than closing the moment the work
                     // finishes. Either way the book is reselected when the dialog closes.
