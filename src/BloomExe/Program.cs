@@ -17,6 +17,7 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -130,6 +131,7 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+            TagLibCultureFix.Register();
             CheckForCorruptUserConfig();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
