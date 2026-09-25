@@ -92,6 +92,26 @@ namespace Bloom
             return browser;
         }
 
+        // Set (via CreateForOffScreenUse) for a browser that only ever loads Bloom's own localhost pages;
+        // see where InitWebView reads it.
+        private bool _loadsOnlyLocalPages;
+
+        /// <summary>
+        /// Create a browser, with its own new environment, for OffScreenBrowser, which only ever loads
+        /// pages from Bloom's own server. As with the default constructor, initialization is kicked off
+        /// unawaited; callers wait on <see cref="IsReadyToNavigate"/> before navigating.
+        /// </summary>
+        internal static WebView2Browser CreateForOffScreenUse()
+        {
+            // As in CreateWithInjectedEnvironment, the do-nothing constructor lets us set the fields
+            // before InitWebView runs.
+            var browser = new WebView2Browser("dummy");
+            browser._loadsOnlyLocalPages = true;
+            browser.InitializeComponent();
+            _ = browser.InitWebView();
+            return browser;
+        }
+
         /// <summary>
         /// The CoreWebView2Environment this browser was initialized with, or null if it is not yet ready.
         /// A caller can capture this from one browser and pass it to CreateWithInjectedEnvironment to make
@@ -540,6 +560,16 @@ namespace Bloom
             // expect this to be an important factor for Bloom, as we don't have long-running
             // animations except for things like playing motion books, which probably want to continue to the end.
             additionalBrowserArgs += " --disable-renderer-backgrounding";
+            if (_loadsOnlyLocalPages)
+            {
+                // Without this, in some sessions, Chromium spends about 400ms working out whether to
+                // use a proxy before the first navigation of each newly created browser, even to
+                // localhost. Only for browsers that never go beyond Bloom's own server: Bloom's main
+                // browser hosts the AI Image Editor, which calls openrouter.ai directly, so it must
+                // keep honoring the user's proxy. It is safe to vary the arguments here because these
+                // browsers never share a user-data folder with the main browser.
+                additionalBrowserArgs += " --no-proxy-server";
+            }
             // Chromium only respects the last --disable-features argument, so we collect all features
             // here and emit a single comma-separated value at the end.
             var featuresToDisable = new List<string>

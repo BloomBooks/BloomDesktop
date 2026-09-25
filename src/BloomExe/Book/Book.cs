@@ -2662,6 +2662,9 @@ namespace Bloom.Book
             //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
             // Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
             // Various things, especially publication, don't work with unknown page sizes.
+            var sizeClassBefore = Layout
+                .FromDom(bookDOM, Layout.A5Portrait)
+                .SizeAndOrientation.ClassName;
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
             var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
@@ -2669,6 +2672,11 @@ namespace Bloom.Book
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
             layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
+            // A size the xmatter or branding does not support, or one we do not know, was replaced
+            // above. VerifyLayout later spreads the new size to every page, but by then the first
+            // page already has it, so SetLayout sees no change; record it here instead.
+            if (layout.SizeAndOrientation.ClassName != sizeClassBefore)
+                BookProcessor.RecordPageLayoutChanged(bookDOM);
             helper.InjectXMatter(
                 _bookData.WritingSystemAliases,
                 layout,
@@ -4364,7 +4372,7 @@ namespace Bloom.Book
                     if (
                         pageToSaveToDisk != null
                         && !reallyNeedFullSave
-                        && !BookProcessor.RecordsBrowserMaintenanceLevelAboveOurs(OurHtmlDom)
+                        && !BookProcessor.RecordsPageLayoutUpdateLevelAboveOurs(OurHtmlDom)
                     )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
@@ -4907,6 +4915,10 @@ namespace Bloom.Book
 
         public void SetLayout(Layout layout)
         {
+            // The per-page fix-ups record measurements relative to the page, so a new size or
+            // orientation leaves them stale.
+            if (GetLayout().SizeAndOrientation.ClassName != layout.SizeAndOrientation.ClassName)
+                BookProcessor.RecordPageLayoutChanged(OurHtmlDom);
             SizeAndOrientation.AddClassesForLayout(OurHtmlDom, layout);
         }
 

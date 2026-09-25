@@ -26,17 +26,13 @@ namespace BloomTests.Book
             );
         }
 
-        private void Stamp(Bloom.Book.Book book, int level, string layout)
+        private void Stamp(Bloom.Book.Book book, int level)
         {
             book.OurHtmlDom.UpdateMetaElement(
-                BookProcessor.kBrowserMaintenanceLevelMeta,
+                BookProcessor.kPageLayoutUpdateLevelMeta,
                 level.ToString(CultureInfo.InvariantCulture)
             );
-            book.OurHtmlDom.UpdateMetaElement(BookProcessor.kBrowserMaintenanceLayoutMeta, layout);
         }
-
-        private static string CurrentLayoutOf(Bloom.Book.Book book) =>
-            book.GetLayout().SizeAndOrientation.ClassName;
 
         [Test]
         public void NeedsPerPageFixup_NeverStamped_IsTrue()
@@ -49,20 +45,20 @@ namespace BloomTests.Book
             Assert.That(book.IsSaveable, Is.True, "SANITY: test book should be saveable");
             Assert.That(book.CheckForErrors(), Is.Empty, "SANITY: test book should have no errors");
             Assert.That(
-                book.OurHtmlDom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, ""),
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
                 Is.Empty,
-                "SANITY: a fresh book should carry no browser maintenance level"
+                "SANITY: a fresh book should carry no page layout update level"
             );
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
         }
 
         [Test]
-        public void NeedsPerPageFixup_StampedCurrentLevelAndLayout_IsFalse()
+        public void NeedsPerPageFixup_StampedCurrentLevel_IsFalse()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, BookStorage.kBrowserMaintenanceLevel, CurrentLayoutOf(book));
+            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
         }
@@ -73,8 +69,8 @@ namespace BloomTests.Book
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             // A book brought to an earlier level than this Bloom knows about needs redoing, which is
-            // exactly what bumping kBrowserMaintenanceLevel is for.
-            Stamp(book, BookStorage.kBrowserMaintenanceLevel - 1, CurrentLayoutOf(book));
+            // exactly what bumping kPageLayoutUpdateLevel is for.
+            Stamp(book, BookStorage.kPageLayoutUpdateLevel - 1);
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
         }
@@ -86,7 +82,7 @@ namespace BloomTests.Book
             var book = CreateBook();
             // A newer Bloom took this book past what we know how to do; leave it alone rather than
             // dragging it back.
-            Stamp(book, BookStorage.kBrowserMaintenanceLevel + 1, CurrentLayoutOf(book));
+            Stamp(book, BookStorage.kPageLayoutUpdateLevel + 1);
 
             Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
         }
@@ -97,9 +93,9 @@ namespace BloomTests.Book
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             // Hand-edited or corrupt: we cannot tell what was done, so redo it.
-            Stamp(book, 0, CurrentLayoutOf(book));
+            Stamp(book, 0);
             book.OurHtmlDom.UpdateMetaElement(
-                BookProcessor.kBrowserMaintenanceLevelMeta,
+                BookProcessor.kPageLayoutUpdateLevelMeta,
                 "not a number"
             );
 
@@ -107,26 +103,57 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void NeedsPerPageFixup_CurrentLevelButLayoutChanged_IsTrue()
+        public void SetLayout_ToADifferentSize_MakesTheBookDue()
         {
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
-            Stamp(book, BookStorage.kBrowserMaintenanceLevel, "A5Portrait");
-
-            // SANITY: with a matching level and layout it is not due.
+            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
             Assert.That(
                 BookProcessor.NeedsPerPageFixup(book),
                 Is.False,
-                "SANITY: a book at the current level and its current layout is not due"
+                "SANITY: a book at the current level is not due"
             );
 
-            // ...but the page size has since changed, so the layout-derived measurements are stale
-            // even though the level is current.
-            SetSinglePageDom("A4Landscape");
-            var bookAtNewSize = CreateBook();
-            Stamp(bookAtNewSize, BookStorage.kBrowserMaintenanceLevel, "A5Portrait");
+            // The measurements the fix-ups record are relative to the page, so they are stale at a
+            // new size even though the level was current.
+            book.SetLayout(
+                new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A4Landscape") }
+            );
 
-            Assert.That(BookProcessor.NeedsPerPageFixup(bookAtNewSize), Is.True);
+            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.True);
+        }
+
+        [Test]
+        public void SetLayout_ToTheSameSize_LeavesTheBookAlone()
+        {
+            SetSinglePageDom("A5Portrait");
+            var book = CreateBook();
+            Stamp(book, BookStorage.kPageLayoutUpdateLevel);
+
+            book.SetLayout(
+                new Layout() { SizeAndOrientation = SizeAndOrientation.FromString("A5Portrait") }
+            );
+
+            Assert.That(BookProcessor.NeedsPerPageFixup(book), Is.False);
+        }
+
+        [Test]
+        public void StampPerPageFixupDone_RecordsOurLevel_AndDropsThePreReleaseNames()
+        {
+            var dom = new HtmlDom("<html><head></head><body></body></html>");
+            dom.UpdateMetaElement("browserMaintenanceLevel", "1");
+            dom.UpdateMetaElement("browserMaintenanceLayout", "A5Portrait");
+
+            BookProcessor.StampPerPageFixupDone(dom);
+
+            Assert.That(
+                dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(
+                    BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
+                )
+            );
+            Assert.That(dom.GetMetaValue("browserMaintenanceLevel", null), Is.Null);
+            Assert.That(dom.GetMetaValue("browserMaintenanceLayout", null), Is.Null);
         }
 
         // The clamp works on a DOM alone, so these need no book.
@@ -134,65 +161,65 @@ namespace BloomTests.Book
         {
             var dom = new HtmlDom("<html><head></head><body></body></html>");
             if (level != null)
-                dom.UpdateMetaElement(BookProcessor.kBrowserMaintenanceLevelMeta, level);
+                dom.UpdateMetaElement(BookProcessor.kPageLayoutUpdateLevelMeta, level);
             return dom;
         }
 
         private static string LevelIn(HtmlDom dom) =>
-            dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, "");
+            dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, "");
 
         [Test]
-        public void ClampBrowserMaintenanceLevel_HigherThanOurs_ComesDownToOurs()
+        public void ClampPageLayoutUpdateLevel_HigherThanOurs_ComesDownToOurs()
         {
-            var higher = BookStorage.kBrowserMaintenanceLevel + 7;
+            var higher = BookStorage.kPageLayoutUpdateLevel + 7;
             var dom = DomWithLevel(higher.ToString(CultureInfo.InvariantCulture));
 
             // SANITY: it really is above ours before we clamp, or this proves nothing.
             Assert.That(
                 int.Parse(LevelIn(dom)),
-                Is.GreaterThan(BookStorage.kBrowserMaintenanceLevel),
+                Is.GreaterThan(BookStorage.kPageLayoutUpdateLevel),
                 "SANITY: the test level should start above ours"
             );
 
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(dom);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(dom);
 
             Assert.That(
                 LevelIn(dom),
                 Is.EqualTo(
-                    BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                    BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
                 )
             );
         }
 
         [Test]
-        public void ClampBrowserMaintenanceLevel_AtOrBelowOurs_IsLeftAlone()
+        public void ClampPageLayoutUpdateLevel_AtOrBelowOurs_IsLeftAlone()
         {
             // The clamp is one-way. Raising a lower level would claim work we never did, and the
             // book would then never get the pass it still needs.
-            var lower = (BookStorage.kBrowserMaintenanceLevel - 1).ToString(
+            var lower = (BookStorage.kPageLayoutUpdateLevel - 1).ToString(
                 CultureInfo.InvariantCulture
             );
             var domLower = DomWithLevel(lower);
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domLower);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(domLower);
             Assert.That(LevelIn(domLower), Is.EqualTo(lower), "a lower level must not be raised");
 
-            var same = BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture);
+            var same = BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture);
             var domSame = DomWithLevel(same);
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domSame);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(domSame);
             Assert.That(LevelIn(domSame), Is.EqualTo(same));
         }
 
         [Test]
-        public void ClampBrowserMaintenanceLevel_MissingOrUnreadable_StaysThatWay()
+        public void ClampPageLayoutUpdateLevel_MissingOrUnreadable_StaysThatWay()
         {
             // Absent means "never done", which NeedsPerPageFixup already handles; inventing a number
             // here would tell a later Bloom the pass had run when it had not.
             var domMissing = DomWithLevel(null);
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domMissing);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(domMissing);
             Assert.That(LevelIn(domMissing), Is.Empty);
 
             var domJunk = DomWithLevel("not a number");
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(domJunk);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(domJunk);
             Assert.That(LevelIn(domJunk), Is.EqualTo("not a number"));
         }
 
@@ -204,7 +231,7 @@ namespace BloomTests.Book
             SetSinglePageDom("A5Portrait");
             var book = CreateBook();
             book.OurHtmlDom.UpdateMetaElement(
-                BookProcessor.kBrowserMaintenanceLevelMeta,
+                BookProcessor.kPageLayoutUpdateLevelMeta,
                 level.ToString(CultureInfo.InvariantCulture)
             );
             var page = book.OurHtmlDom.SelectSingleNode("//div[@id='guid1']");
@@ -217,7 +244,7 @@ namespace BloomTests.Book
         [Test]
         public void SavePageToDisk_LevelAboveOurs_TakesTheFullSavePath()
         {
-            SavePageWithRecordedLevel(BookStorage.kBrowserMaintenanceLevel + 1, out var storage);
+            SavePageWithRecordedLevel(BookStorage.kPageLayoutUpdateLevel + 1, out var storage);
 
             storage.Verify(
                 s => s.Save(),
@@ -234,7 +261,7 @@ namespace BloomTests.Book
         public void SavePageToDisk_LevelAtOrBelowOurs_KeepsTheFastPath()
         {
             // SANITY/contrast: the promotion above must not cost every book the efficient save.
-            SavePageWithRecordedLevel(BookStorage.kBrowserMaintenanceLevel, out var storage);
+            SavePageWithRecordedLevel(BookStorage.kPageLayoutUpdateLevel, out var storage);
 
             storage.Verify(
                 s => s.SaveForPageChanged(It.IsAny<string>(), It.IsAny<SafeXmlElement>()),

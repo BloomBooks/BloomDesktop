@@ -50,20 +50,32 @@ namespace Bloom.Book
         // or we would time out on a slow page just before the browser reported it.
         private const int kReadyTimeoutMs = 60000;
 
-        // A <meta> in the book's HTML recording the BookStorage.kBrowserMaintenanceLevel this book
-        // has successfully been brought to, alongside maintenanceLevel and mediaMaintenanceLevel,
-        // and one recording the page size/orientation (e.g. "A5Portrait") it was brought there at.
-        // Together they let us tell whether the fix-up still needs (re-)running for editing or
-        // publishing: see NeedsPerPageFixup.
-        internal const string kBrowserMaintenanceLevelMeta = "browserMaintenanceLevel";
-        internal const string kBrowserMaintenanceLayoutMeta = "browserMaintenanceLayout";
+        // How much of the progress bar the whole-book update (BringBookUpToDate) gets; the pages get
+        // the rest. The whole-book update's image passes each report their own 0-100, so without a
+        // share of its own the bar would run nearly to the end and then drop back for the pages.
+        private const int kWholeBookPercent = 5;
+
+        // A <meta> in the book's HTML recording the BookStorage.kPageLayoutUpdateLevel this book's
+        // pages have successfully been brought to, alongside maintenanceLevel and
+        // mediaMaintenanceLevel. Anything that changes the pages' layout sets it back to 0
+        // (RecordPageLayoutChanged), so it also says whether the fix-ups' measurements still fit.
+        // See NeedsPerPageFixup.
+        internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
         // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
         // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
         // pestering until Bloom is restarted (by when the cause may be gone). Keyed by book id.
+        // Guarded by s_automaticFixupLock.
         private static readonly HashSet<string> s_perPageFixupFailedThisSession =
             new HashSet<string>();
+
+        // Books whose automatic per-page fix-up has been started and has not yet finished. While a
+        // book is here, its pass owns it: the pass rebuilds the book on a background thread, and
+        // anything else that brought the book up to date meanwhile would do so at the same time.
+        // Keyed by book id. Guarded by s_automaticFixupLock.
+        private static readonly HashSet<string> s_automaticFixupUnderway = new HashSet<string>();
+        private static readonly object s_automaticFixupLock = new object();
 
         /// <summary>
         /// Shrink any oversized images sitting in the book folder, bring the book structurally up to
@@ -161,7 +173,14 @@ namespace Bloom.Book
                 Log($"done shrinking images ({shrinkTimer.ElapsedMilliseconds}ms)");
             }
 
-            book.BringBookUpToDate(progress);
+            // The whole-book update reports its own 0-100 (its image passes each run the bar to near
+            // the end), so give it only the start of the bar and the pages the rest; otherwise the bar
+            // shoots up and then drops back when the pages start.
+            book.BringBookUpToDate(
+                progress is NullProgress
+                    ? progress
+                    : new QuietStatusProgress(progress, 0, kWholeBookPercent)
+            );
 
             // 2. Per-page browser fix-up.
             // A book with structural errors cannot be shown for editing (the Edit tab displays an error
@@ -178,19 +197,12 @@ namespace Bloom.Book
 
             var pageIndex = 0;
 
-            // Process every page with an off-screen browser that lives on its own dedicated thread, so we can
-            // drive it with blocking calls that never pump the main UI message loop.
+            // Process the pages with an off-screen browser that lives on its own dedicated thread, so we
+            // can drive it with blocking calls that never pump the main UI message loop.
             //
-            // Fresh renderer per page: we must NOT reuse a single browser control. Each editing page is a full
-            // live-edit page (it opens the edit WebSocket channel and fires editView/* API calls on load);
-            // that residual state wedges the next top-level navigation in the same control, which hangs or
-            // crashes Bloom on the 2nd page. StartFreshBrowser() gives each page a clean renderer, so every
-            // page behaves like the always-working first one.
-            //
-            // Shared environment: OffScreenBrowser keeps ONE CoreWebView2Environment (one browser process,
-            // user-data folder, and HTTP cache) alive across those fresh renderers, so we don't pay
-            // environment creation per page and later pages navigate against a warm cache. (Measured, with the
-            // previous shared-environment approach, ~31s -> ~18s for a 22-page book.)
+            // The browser loads the pages one after another into the same control, so its renderer keeps
+            // the compiled editing bundle from one page to the next; a new renderer for every page roughly
+            // doubles the time per page. See ProcessOnePage for what that requires.
             using (var browser = new OffScreenBrowser())
             {
                 try
@@ -202,22 +214,16 @@ namespace Bloom.Book
                     foreach (var page in pages)
                     {
                         pageIndex++;
-                        // We deliberately do NOT write a per-page status message here. The progress
-                        // dialog is determinate, so the percent bar below already shows how far we
-                        // are; a "Updating page N of M" line per page just fills the log with dozens
-                        // of near-identical lines that duplicate the bar (BL-16852).
-                        if (progress.ProgressIndicator != null)
-                            progress.ProgressIndicator.PercentCompleted =
-                                (pageIndex - 1) * 100 / pages.Count;
-                        if (pageIndex > 1)
-                        {
-                            // Fresh renderer for this page (see above); the shared environment stays warm.
-                            browser.StartFreshBrowser();
-                            RestoreForeground(priorForeground);
-                        }
-
                         ProcessOnePage(book, browser, page, fitImageTextSplits);
 
+                        // We deliberately do NOT write a per-page status message here. The progress
+                        // dialog is determinate, so the percent bar already shows how far we are; a
+                        // "Updating page N of M" line per page just fills the log with dozens of
+                        // near-identical lines that duplicate the bar (BL-16852).
+                        if (progress.ProgressIndicator != null)
+                            progress.ProgressIndicator.PercentCompleted =
+                                kWholeBookPercent
+                                + pageIndex * (100 - kWholeBookPercent) / pages.Count;
                         Log($"page {pageIndex}/{pages.Count} [{page.Id}] done");
                     }
                 }
@@ -229,11 +235,11 @@ namespace Bloom.Book
                 }
             }
 
-            // Record that this book has been brought to the current browser maintenance level at its
-            // current page size, so NeedsPerPageFixup can tell it need not be done again unless we
-            // bump that level or the page size changes. Only reached when every page succeeded (a
-            // failure throws before here), so we never claim a half-done book is done.
-            StampPerPageFixupDone(book);
+            // Record that this book has been brought to the current page layout update level, so
+            // NeedsPerPageFixup can tell it need not be done again unless we bump that level or the
+            // pages' layout changes. Only reached when every page succeeded (a failure throws before
+            // here), so we never claim a half-done book is done.
+            StampPerPageFixupDone(book.OurHtmlDom);
 
             // 3. One full save now that every page's in-memory DOM (and the stamp above) has been updated.
             book.Save();
@@ -246,18 +252,14 @@ namespace Bloom.Book
 
         /// <summary>
         /// True if the per-page browser fix-up (ProcessBook's off-screen page pass) should be run on
-        /// this book before it is edited or published. A book records the browser maintenance level it
-        /// has been brought to, and the page size it was brought there at; this catches the books that
-        /// are behind — old books, books from before a fix-up we have since added, and books whose page
-        /// size changed since.
+        /// this book before it is edited or published. A book records the page layout update level
+        /// its pages have been brought to; this catches the books that are behind: old books, books
+        /// from before a fix-up we have since added, and books whose pages' layout has changed since
+        /// (a new page size or appearance sets the recorded level back to 0; see
+        /// RecordPageLayoutChanged).
         ///
-        /// It is "needed" when any of these holds:
-        ///  - the book records no browser maintenance level (an old book, or one made by a Bloom
-        ///    without this), or a level we cannot read;
-        ///  - the recorded level is below BookStorage.kBrowserMaintenanceLevel (we have since added
-        ///    fix-ups this book has not been through);
-        ///  - the recorded page size/orientation differs from the book's current one (the layout-derived
-        ///    measurements — image sizing, canvas-element geometry — need recomputing).
+        /// It is "needed" when the recorded level is missing, unreadable, or below
+        /// BookStorage.kPageLayoutUpdateLevel.
         ///
         /// Note that this deliberately does NOT compare Bloom versions. Version numbers are not
         /// comparable across channels (release, alpha and BetaInternal use different sequences), and
@@ -275,33 +277,40 @@ namespace Bloom.Book
             if (!string.IsNullOrEmpty(book.CheckForErrors()))
                 return false;
 
-            var dom = book.OurHtmlDom;
-            if (!int.TryParse(dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "0"), out var level))
+            if (
+                !int.TryParse(
+                    book.OurHtmlDom.GetMetaValue(kPageLayoutUpdateLevelMeta, "0"),
+                    out var level
+                )
+            )
                 level = 0; // missing or unreadable: treat as never done
-            if (level < BookStorage.kBrowserMaintenanceLevel)
-                return true;
-
-            // The book is at (or beyond) the current level, so the only remaining reason to redo it
-            // is that the page size has changed since: the measurements the fix-up records are
-            // relative to the page, so they are stale at a new size.
-            var stampedLayout = dom.GetMetaValue(kBrowserMaintenanceLayoutMeta, "");
-            return stampedLayout != GetLayoutStamp(book);
+            return level < BookStorage.kPageLayoutUpdateLevel;
         }
 
         /// <summary>
-        /// True if the book records a browser maintenance level higher than this Bloom knows how to
+        /// Record in <paramref name="dom"/> that the pages' layout has changed (a new page size or
+        /// orientation, or a new appearance), so the measurements the per-page fix-up records no
+        /// longer fit and the book needs the fix-up again. Sets the recorded level to 0.
+        /// </summary>
+        internal static void RecordPageLayoutChanged(HtmlDom dom)
+        {
+            dom.UpdateMetaElement(kPageLayoutUpdateLevelMeta, "0");
+        }
+
+        /// <summary>
+        /// True if the book records a page layout update level higher than this Bloom knows how to
         /// produce. A missing or unreadable level is not "above ours"; NeedsPerPageFixup already
         /// treats that as never done, which is the safe answer.
         /// </summary>
-        internal static bool RecordsBrowserMaintenanceLevelAboveOurs(HtmlDom dom)
+        internal static bool RecordsPageLayoutUpdateLevelAboveOurs(HtmlDom dom)
         {
-            var recorded = dom.GetMetaValue(kBrowserMaintenanceLevelMeta, "");
+            var recorded = dom.GetMetaValue(kPageLayoutUpdateLevelMeta, "");
             return int.TryParse(recorded, out var level)
-                && level > BookStorage.kBrowserMaintenanceLevel;
+                && level > BookStorage.kPageLayoutUpdateLevel;
         }
 
         /// <summary>
-        /// If the book records a browser maintenance level HIGHER than this Bloom knows how to
+        /// If the book records a page layout update level HIGHER than this Bloom knows how to
         /// produce, bring the record down to ours. Called as we save a book (BookStorage.Save).
         /// </summary>
         /// <remarks>
@@ -313,13 +322,13 @@ namespace Bloom.Book
         /// pass again. Deliberately one-way: a level at or below ours is left alone, because raising
         /// it would claim work we never did.
         /// </remarks>
-        internal static void ClampBrowserMaintenanceLevelToOurs(HtmlDom dom)
+        internal static void ClampPageLayoutUpdateLevelToOurs(HtmlDom dom)
         {
-            if (!RecordsBrowserMaintenanceLevelAboveOurs(dom))
+            if (!RecordsPageLayoutUpdateLevelAboveOurs(dom))
                 return;
             dom.UpdateMetaElement(
-                kBrowserMaintenanceLevelMeta,
-                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                kPageLayoutUpdateLevelMeta,
+                BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
             );
         }
 
@@ -382,31 +391,51 @@ namespace Bloom.Book
         /// Run the per-page browser fix-up on <paramref name="book"/> if NeedsPerPageFixup says it is
         /// due, behind the top-level progress dialog, and then run <paramref name="doAfter"/>. Called
         /// when the AI image editor is launched (EditingModel.BringBookToCurrentBrowserLevelThen) and
-        /// after a page-size change (EditingModel.SetLayout).
+        /// when a Publish tool is chosen (PublishApi, publish/switchingPublishMode).
         ///
-        /// <paramref name="doAfter"/> always runs, whether or not there was anything to do -- the
-        /// caller has a page to get back to either way. When the pass does run, it runs when the
-        /// dialog closes, which is on one of the API server's threads: a caller that touches the UI
-        /// must marshal for itself (EditingModel does that with RunOffTheApiLock). When there was
-        /// nothing to do it runs immediately, on whatever thread called us.
+        /// <paramref name="doAfter"/> runs whether or not there was anything to do -- the caller has
+        /// a page to get back to either way. The one exception is a call made while a pass on this
+        /// book is already running: that call does nothing, and only the running pass's doAfter
+        /// runs. When the pass does run, doAfter runs when the dialog closes, which is on one of the
+        /// API server's threads: a caller that touches the UI must marshal for itself (EditingModel
+        /// does that with RunOffTheApiLock). When there was nothing to do it runs immediately, on
+        /// whatever thread called us.
+        ///
+        /// Returns true if a pass on this book is now running, whether this call started it or an
+        /// earlier one did; false if there was nothing to do (and doAfter has already run).
         ///
         /// Nothing here blocks. The heavy work is on the dialog's background worker, because
         /// ProcessBook drives its own off-screen browser thread and the pages it loads call back
         /// into Bloom's API server, so it must not run on the UI thread; this is exactly what the
         /// "Update Book" command it shares ProcessBook with does.
         /// </summary>
-        public static void EnsurePerPageFixupIfNeededThen(
+        public static bool EnsurePerPageFixupIfNeededThen(
             Book book,
             BloomWebSocketServer webSocketServer,
             Action doAfter
         )
         {
+            // A pass on this book is already running (a second click on a Publish tool, say). Leave
+            // it to that pass, whose own doAfter brings its caller back when it is done. Check this
+            // before anything reads the book: that pass is rewriting it on another thread.
+            bool alreadyFailed;
+            lock (s_automaticFixupLock)
+            {
+                if (s_automaticFixupUnderway.Contains(book.ID))
+                    return true;
+                alreadyFailed = s_perPageFixupFailedThisSession.Contains(book.ID);
+            }
             // Nothing to do, or a run already failed for this book this session (so we don't
             // re-prompt every time). Either way the caller still has its page to get back to.
-            if (!NeedsPerPageFixup(book) || s_perPageFixupFailedThisSession.Contains(book.ID))
+            if (alreadyFailed || !NeedsPerPageFixup(book))
             {
                 doAfter();
-                return;
+                return false;
+            }
+            lock (s_automaticFixupLock)
+            {
+                if (!s_automaticFixupUnderway.Add(book.ID))
+                    return true;
             }
 
             // Deliberately not awaited: this returns as soon as the dialog is open, not when the
@@ -444,12 +473,16 @@ namespace Bloom.Book
                             // true and a later run finishes the rest. (BloomBridge's process-book gets its
                             // all-or-nothing behavior by reloading its own separate book object; the live
                             // book has no need of that.)
-                            s_perPageFixupFailedThisSession.Add(book.ID);
+                            NoteAutomaticFixupFailed(book);
                             SIL.Reporting.Logger.WriteError(
                                 "Automatic page update failed for " + book.NameBestForUserDisplay,
                                 e
                             );
                             throw;
+                        }
+                        finally
+                        {
+                            NoteAutomaticFixupFinished(book);
                         }
                         // A warning or error can reach the dialog as a message, without stopping the run
                         // (HaveProblemsBeenReported covers Warning, Error and Fatal alike). Nothing on
@@ -469,41 +502,42 @@ namespace Bloom.Book
                         );
                         // Don't keep trying on a Bloom that cannot show it, and get the user's
                         // page back rather than leaving the editor empty.
-                        s_perPageFixupFailedThisSession.Add(book.ID);
+                        NoteAutomaticFixupFailed(book);
+                        NoteAutomaticFixupFinished(book);
                         doAfter();
                     },
                     TaskContinuationOptions.OnlyOnFaulted
                 );
+            return true;
         }
 
-        // The page size + orientation class the book currently uses, e.g. "A5Portrait". This is what
-        // governs the layout-derived measurements the per-page fix-up computes, so a change to it is
-        // exactly when those measurements need recomputing.
-        private static string GetLayoutStamp(Book book)
+        private static void NoteAutomaticFixupFailed(Book book)
         {
-            return book.GetLayout().SizeAndOrientation.ClassName;
+            lock (s_automaticFixupLock)
+                s_perPageFixupFailedThisSession.Add(book.ID);
         }
 
-        // Record, in the book's HTML, that the book has been brought to the current browser
-        // maintenance level at the current page size. Written just before ProcessBook's final Save
-        // so it is persisted with it.
-        private static void StampPerPageFixupDone(Book book)
+        private static void NoteAutomaticFixupFinished(Book book)
         {
-            StampPerPageFixupDone(book.OurHtmlDom, GetLayoutStamp(book));
+            lock (s_automaticFixupLock)
+                s_automaticFixupUnderway.Remove(book.ID);
         }
 
         /// <summary>
-        /// Record in <paramref name="dom"/> that the book is at the current browser maintenance level
-        /// at page size <paramref name="layoutStamp"/> (e.g. "A5Portrait"). Also used by BookStarter for
-        /// a new book made from one of our own templates, which has nothing for the pass to do.
+        /// Record in <paramref name="dom"/> that the book's pages are at the current page layout
+        /// update level. Written just before ProcessBook's final Save, so it is persisted with it.
+        /// Also used by BookStarter for a new book made from one of our own templates, which has
+        /// nothing for the pass to do.
         /// </summary>
-        internal static void StampPerPageFixupDone(HtmlDom dom, string layoutStamp)
+        internal static void StampPerPageFixupDone(HtmlDom dom)
         {
             dom.UpdateMetaElement(
-                kBrowserMaintenanceLevelMeta,
-                BookStorage.kBrowserMaintenanceLevel.ToString(CultureInfo.InvariantCulture)
+                kPageLayoutUpdateLevelMeta,
+                BookStorage.kPageLayoutUpdateLevel.ToString(CultureInfo.InvariantCulture)
             );
-            dom.UpdateMetaElement(kBrowserMaintenanceLayoutMeta, layoutStamp);
+            // Pre-release 6.5 builds recorded this under other names; nothing reads those.
+            dom.RemoveMetaElement("browserMaintenanceLevel");
+            dom.RemoveMetaElement("browserMaintenanceLayout");
         }
 
         /// <summary>
@@ -566,6 +600,15 @@ namespace Bloom.Book
             // navigation and then poll for __bloomEditablePageReady, which is the signal we actually care
             // about (the load-time DOM fix-ups are in place). The browser is already ready to navigate (the
             // OffScreenBrowser blocked until it was) so there is no ready-wait to do here.
+            //
+            // The browser may still be showing the previous page, and the navigation call returns before
+            // the new document replaces it, so polling straight away would find that page's handshake
+            // globals already set and capture it a second time. Clear them first. Nothing on that old
+            // page sets them again: the ready flag is set once, as it loads, and the content only when
+            // asked to capture.
+            browser.RunJavascript(
+                "window.__bloomEditablePageReady = false; window.__bloomExternalPageContent = ''; window.editablePageBundle = undefined; 'cleared'"
+            );
             browser.NavigateWithoutWaitingForLoad(dom, InMemoryHtmlFileSource.Frame);
 
             // Wait until bootstrap()/SetupElements() has actually run (signaled by

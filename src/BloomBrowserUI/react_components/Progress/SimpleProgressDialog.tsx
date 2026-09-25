@@ -44,6 +44,21 @@ import { useMountEffect } from "../../utils/useMountEffect";
 // by this name (BookProcessor.kUpdateBookProgressDialogId); keep the two in step.
 export const kUpdateBookProgressDialogId = "updateBook";
 
+// Names the instance that shows BloomBridge's process-book runs (ExternalApi), and the websocket
+// context it listens on. It has a context of its own so that a BloomBridge run and an Update Book
+// the user started never touch each other's dialog.
+export const kBloomBridgeProgressDialogId = "bloomBridge";
+export const kBloomBridgeProgressContext = "externalProcessing";
+
+// The context BrowserProgressDialog drives. It alone waits for progress/ready before starting its
+// job and runs its follow-up on progress/closed, so only a dialog on this context posts those.
+const kBrowserProgressDialogContext = "progress";
+
+// How long a finished job's full bar stays up before the dialog goes. The bar takes 0.4s to slide
+// to a new value (MUI's LinearProgress transition), and the job closes us straight after sending
+// 100%, so without this the user never sees it full. This allows for the slide plus a moment at 100%.
+const kShowFullBarMs = 500;
+
 export interface ISimpleProgressDialogProps {
     title: string;
     titleColor?: string;
@@ -57,6 +72,8 @@ export interface ISimpleProgressDialogProps {
     onClose: () => void; // Fired when the dialog asks to be closed.
 
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    // The websocket context the job sends on; defaults to BrowserProgressDialog's.
+    socketContext?: string;
 }
 
 // A message worth interrupting the "please wait" for: something went wrong, or nearly did.
@@ -95,6 +112,10 @@ export const SimpleProgressDialog: React.FunctionComponent<
     // red title, and a live Close button, before our own job had done anything.
     const isShowing = useRef(false);
 
+    const socketContext = props.socketContext ?? kBrowserProgressDialogContext;
+    const tellBrowserProgressDialog =
+        socketContext === kBrowserProgressDialogContext;
+
     // This effect is required because the websocket is an external subscription outside React,
     // and it must be listening before C# starts sending (hence the progress/ready handshake below).
     useMountEffect(() => {
@@ -126,23 +147,12 @@ export const SimpleProgressDialog: React.FunctionComponent<
                 setDone(true);
             }
         };
-        WebSocketManager.addListener("progress", listener);
-        WebSocketManager.notifyReady("progress", () => setSocketReady(true));
+        WebSocketManager.addListener(socketContext, listener);
+        WebSocketManager.notifyReady(socketContext, () => setSocketReady(true));
         return () => {
-            WebSocketManager.removeListener("progress", listener);
+            WebSocketManager.removeListener(socketContext, listener);
         };
     });
-
-    // Keep the dialog-plumbing's idea of open/closed in sync with our controlling prop, the same
-    // way ProgressDialog does. This effect is required because showDialog/closeDialog drive state
-    // that lives inside useSetupBloomDialog rather than here.
-    useEffect(() => {
-        if (props.open) {
-            showDialog();
-        } else {
-            closeDialog();
-        }
-    }, [props.open, showDialog, closeDialog]);
 
     // Tell C# when we are ready to receive progress, and when we have gone away. The worker that
     // does the job waits for progress/ready before it starts, so that nothing is sent into the void
@@ -153,26 +163,49 @@ export const SimpleProgressDialog: React.FunctionComponent<
     const everOpened = useRef(false);
     useEffect(() => {
         if (props.open) {
+            showDialog();
             // Start listening before we say we are ready, never the other way round.
             isShowing.current = true;
             if (!socketReady) {
                 return; // we'll be back as soon as the socket opens
             }
             everOpened.current = true;
-            post("progress/ready");
-        } else {
-            isShowing.current = false;
-            if (everOpened.current) {
-                // Clear up as we go, rather than as we open, so that nothing from the last run
-                // flickers into view while the next one is opening. (The embedded dialog is
-                // mounted once and opened again and again.)
-                setPercent(0);
-                setProblems([]);
-                setDone(false);
-                messagesForErrorReporting.current = [];
+            if (tellBrowserProgressDialog) {
+                post("progress/ready");
+            }
+            return;
+        }
+        isShowing.current = false;
+        // Runs at most once per close: C# takes each progress/closed as the end of whatever job is
+        // current, so a second one (from the cleanup, after the timer already ran) would end the
+        // next job early.
+        let finished = false;
+        const finishClosing = () => {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            closeDialog();
+            if (everOpened.current && tellBrowserProgressDialog) {
                 post("progress/closed");
             }
+        };
+        // A job that finished without needing the user closes us itself; let them see it finish
+        // (see kShowFullBarMs). When the user closes us with the Close button, go at once.
+        if (percent !== 100 || done) {
+            finishClosing();
+            return;
         }
+        const timer = window.setTimeout(finishClosing, kShowFullBarMs);
+        return () => {
+            // Reopened, or unmounted, before the wait was over: finish closing now, so C# still
+            // hears progress/closed. (After the wait, this does nothing; see finished.)
+            window.clearTimeout(timer);
+            finishClosing();
+        };
+        // Only a change in open (or the socket opening) should run this; percent and done are read
+        // as they are at that moment.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.open, socketReady]);
 
     let titleColor = props.titleColor || "black";
@@ -325,8 +358,14 @@ interface IEmbeddedSimpleProgressDialogConfig {
  */
 export const EmbeddedSimpleProgressDialog: React.FunctionComponent<{
     id: string;
+    // The websocket context its job sends on; defaults to BrowserProgressDialog's.
+    socketContext?: string;
 }> = (props) => {
+    const socketContext = props.socketContext ?? kBrowserProgressDialogContext;
     const [isOpen, setIsOpen] = useState(false);
+    // Counts the runs, so that each one gets a SimpleProgressDialog of its own (see the key below)
+    // and starts from 0% with nothing left over from the last.
+    const [runCount, setRunCount] = useState(0);
     const [config, setConfig] = useState<IEmbeddedSimpleProgressDialogConfig>({
         which: "",
         // Only visible if something is wrong; the C# that opens the dialog supplies the real ones.
@@ -334,23 +373,26 @@ export const EmbeddedSimpleProgressDialog: React.FunctionComponent<{
         message: "",
     });
     useSubscribeToWebSocketForObject(
-        "progress",
+        socketContext,
         "open-progress",
         (args: IEmbeddedSimpleProgressDialogConfig) => {
             if (args.which !== props.id) {
                 return; // meant for some other progress dialog
             }
             setConfig({ ...args });
+            setRunCount((count) => count + 1);
             setIsOpen(true);
         },
     );
-    useSubscribeToWebSocketForEvent("progress", "close-progress", () => {
+    useSubscribeToWebSocketForEvent(socketContext, "close-progress", () => {
         setIsOpen(false);
     });
 
     return (
         <SimpleProgressDialog
+            key={runCount}
             {...config}
+            socketContext={socketContext}
             open={isOpen}
             onClose={() => {
                 setIsOpen(false);

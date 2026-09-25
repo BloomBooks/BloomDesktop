@@ -69,18 +69,9 @@ namespace BloomTests.Book
                     book + ": mediaMaintenanceLevel is behind." + howToFix
                 );
                 Assert.That(
-                    dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLevelMeta, "missing"),
-                    Is.EqualTo(BookStorage.kBrowserMaintenanceLevel.ToString()),
-                    book + ": browserMaintenanceLevel is behind." + howToFix
-                );
-                // The per-page fix-up is redone whenever the page size differs from the one it was
-                // stamped at (BookProcessor.NeedsPerPageFixup), so the stamp must match the book's.
-                Assert.That(
-                    dom.GetMetaValue(BookProcessor.kBrowserMaintenanceLayoutMeta, ""),
-                    Is.EqualTo(Layout.FromDom(dom, Layout.A5Portrait).SizeAndOrientation.ClassName),
-                    book
-                        + ": browserMaintenanceLayout does not match the book's page size."
-                        + howToFix
+                    dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, "missing"),
+                    Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString()),
+                    book + ": pageLayoutUpdateLevel is behind." + howToFix
                 );
             }
         }

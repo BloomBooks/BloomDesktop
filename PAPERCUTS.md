@@ -98,6 +98,10 @@ House rules:
   first URL match, and when the requested tab is absent say which tabs *are* present (and that a
   book may need selecting) instead of the generic not-found message.
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
+## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
+- **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
+- **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
+- **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
 
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
