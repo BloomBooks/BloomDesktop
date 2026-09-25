@@ -1159,7 +1159,10 @@ namespace Bloom.ImageProcessing
 
         /// <summary>
         /// Determine the largest image size that either matches the original width and height or
-        /// fits within the given maximums.  The aspect ratio of the original image is preserved.
+        /// fits within the given maximums.  The aspect ratio of the original image is preserved
+        /// as closely as whole pixels allow: the non-binding dimension is rounded, not truncated.
+        /// (Truncating made GraphicsMagick's fit-inside-the-box -scale treat the truncated dimension
+        /// as the tighter constraint and shave a pixel off the other one, BL-16829.)
         /// </summary>
         /// <param name="width">original width (unknown orientation)</param>
         /// <param name="height">original height (unknown orientation)</param>
@@ -1182,10 +1185,13 @@ namespace Bloom.ImageProcessing
                 {
                     if (aspect <= portraitAspect)
                         // closer to square than a standard page, the size is limited by the smaller dimension, the width of a portrait page
-                        return new Size(maxShortSide, (int)(aspect * (double)maxShortSide));
+                        return new Size(
+                            maxShortSide,
+                            (int)Math.Round(aspect * (double)maxShortSide)
+                        );
                     else
                         // Tall, skinny picture's size is limited by the larger dimension, the height of a portrait page
-                        return new Size((int)((double)maxLongSide / aspect), maxLongSide);
+                        return new Size((int)Math.Round((double)maxLongSide / aspect), maxLongSide);
                 }
             }
             else if (width > height)
@@ -1196,10 +1202,13 @@ namespace Bloom.ImageProcessing
                 {
                     if (aspect > landscapeAspect)
                         // Closer to square than the page, the size is limited by the smaller dimension of the page, which is the height in landscape
-                        return new Size((int)((double)maxShortSide / aspect), maxShortSide);
+                        return new Size(
+                            (int)Math.Round((double)maxShortSide / aspect),
+                            maxShortSide
+                        );
                     else
                         // Low, wide picture, the size is limited by the larger page dimension, which is the width in landscape.
-                        return new Size(maxLongSide, (int)(aspect * (double)maxLongSide));
+                        return new Size(maxLongSide, (int)Math.Round(aspect * (double)maxLongSide));
                 }
             }
             else
@@ -2297,8 +2306,13 @@ namespace Bloom.ImageProcessing
                             argsBldr.Append(" -density 96"); // GraphicsMagick defaults to 72 dpi, which is rather low
                             if (options.Size.Height > 0 && options.Size.Width > 0)
                                 // -resize would do a better job than -scale, but it can be much (~10x) slower on large images.
+                                // The trailing "!" makes GraphicsMagick produce exactly this size. Without it the
+                                // geometry is a box to fit inside while preserving the aspect ratio, and because our
+                                // size is already aspect-preserving to the nearest pixel, that "fit" could only lose
+                                // a pixel (3840x2156 came out 3839x2156, BL-16829). The distortion forced by "!" is
+                                // under half a pixel.
                                 argsBldr.AppendFormat(
-                                    " -scale {0}x{1}",
+                                    " -scale {0}x{1}!",
                                     options.Size.Width,
                                     options.Size.Height
                                 );
