@@ -613,11 +613,11 @@ export function restoreToolboxSettings() {
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
             $(contentWin.document).ready((_e) =>
-                restoreToolboxSettingsWhenPageReady(result.data),
+                restoreToolboxSettingsWhenPageReady(),
             );
             return;
         }
-        restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
+        restoreToolboxSettingsWhenPageReady(); // not loading, we can proceed immediately.
     });
 }
 
@@ -643,7 +643,7 @@ export function applyToolboxStateToUpdatedPage() {
             currentFromBook !== currentInToolbox ||
             shouldBeVisible !== isVisible
         ) {
-            restoreToolboxSettingsWhenPageReady(savedSettings);
+            restoreToolboxSettingsWhenPageReady();
             return;
         }
 
@@ -803,25 +803,33 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: ToolboxSettings) {
+// Once the page is ready, makes the toolbox's visibility and current tool match the book's saved
+// settings. The settings are read only then, not before waiting: while the page loads, the user
+// (or the page itself, e.g. one that requires a tool) may already have opened or closed the
+// toolbox or chosen a tool, and each of those is saved as it happens. Reading the settings after
+// the wait keeps those changes; applying a copy fetched earlier would undo them.
+function restoreToolboxSettingsWhenPageReady() {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
-        const opts = settings;
-        // currentTool is always set except for new books. For new books, it is undefined and we want
-        // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
-        // the first time the user opens the toolbox. (BL-16026)
-        const currentTool = opts["current"] || "talkingBookTool";
-        const shouldBeVisible = !!opts["visibility"];
+        get("toolbox/settings", (result) => {
+            savedSettings = result.data;
+            const opts = savedSettings;
+            // currentTool is always set except for new books. For new books, it is undefined and we want
+            // to treat that the same as if it were set to "talkingBookTool" so that the tool will display
+            // the first time the user opens the toolbox. (BL-16026)
+            const currentTool = opts["current"] || "talkingBookTool";
+            const shouldBeVisible = !!opts["visibility"];
 
-        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
-            toolbox.toggleToolbox();
-        }
+            if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+                toolbox.toggleToolbox();
+            }
 
-        // Before we set stage/level, as it initializes them to 1.
-        setCurrentTool(currentTool);
+            // Before we set stage/level, as it initializes them to 1.
+            setCurrentTool(currentTool);
 
-        // Note: the bulk of restoring the settings (everything but which if any tool is active)
-        // is done when a tool becomes current.
+            // Note: the bulk of restoring the settings (everything but which if any tool is active)
+            // is done when a tool becomes current.
+        });
     });
 }
 
