@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+// Runs in the browser vitest project: some of these tests read computed styles (getComputedStyle),
+// which jsdom does not really support.
 /// <reference path="./StyleEditor.ts" />
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 
@@ -283,11 +285,7 @@ describe("StyleEditor", () => {
         );
     });
 
-    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
-    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
-    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
-    // We may at some point try again to run this test using a real browser.
-    it.skip("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
+    it("When the element has an @lang, and already has a rule, MakeBigger replaces the existing rule", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt !important; }</style>",
         );
@@ -382,11 +380,7 @@ describe("StyleEditor", () => {
         expect(props.hiliteBgColor).toBe("rgb(4, 5, 6)");
     });
 
-    // Skipped because currently we're running in jsdom. Making use of the existing rule depends on
-    // getComputedStyle, which jsdom does not support. ChatGpt thinks it also depends on actual
-    // dom element sizes, which jsdom also does not support. Attempts to polyfill proved difficult.
-    // We may at some point try again to run this test using a real browser.
-    it.skip("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
+    it("When the element has an @lang, and already has a rule, ChangeSizeAbsolute replaces the existing rule", () => {
         $("head").append(
             "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 8pt ! important; }</style>",
         );
