@@ -127,6 +127,13 @@ function Invoke-Aws {
 
 function Write-Step([string]$msg) { Write-Host "`n--- $msg ---" -ForegroundColor Cyan }
 function Write-Ok([string]$msg)   { Write-Host "  [OK] $msg" -ForegroundColor Green }
+
+# Writes UTF-8 with no BOM (the aws CLI rejects a BOM at the start of a file:// JSON document).
+# Set-Content -Encoding utf8NoBOM needs PowerShell 6+, and this script supports 5.1, whose
+# utf8 encoding always writes a BOM.
+function Write-Utf8NoBom([string]$Path, [string]$Text) {
+    [System.IO.File]::WriteAllText($Path, $Text, (New-Object System.Text.UTF8Encoding $false))
+}
 function Write-Made([string]$msg) { Write-Host "  [CREATED] $msg" -ForegroundColor Yellow }
 
 # ===========================================================================
@@ -139,7 +146,9 @@ function Ensure-Bucket {
     # (AllowFailure suppresses the throw so a 404 "not found" isn't fatal here).
     $prevEap = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    & aws s3api head-bucket --bucket $BucketName --region $Region 2>$null | Out-Null
+    $probeArgs = @("s3api", "head-bucket", "--bucket", $BucketName, "--region", $Region)
+    if ($AwsProfile) { $probeArgs += @("--profile", $AwsProfile) }  # as Invoke-Aws does
+    & aws @probeArgs 2>$null | Out-Null
     $bucketExists = ($LASTEXITCODE -eq 0)
     $ErrorActionPreference = $prevEap
 
@@ -235,7 +244,7 @@ function Ensure-LifecycleRules {
     if ($PSCmdlet.ShouldProcess($BucketName, "set lifecycle configuration (idempotent - always re-applied)")) {
         $tempFile = [System.IO.Path]::GetTempFileName()
         try {
-            Set-Content -Path $tempFile -Value $json -Encoding utf8NoBOM
+            Write-Utf8NoBom -Path $tempFile -Text $json
             Invoke-Aws -Arguments @(
                 "s3api", "put-bucket-lifecycle-configuration", "--bucket", $BucketName,
                 "--lifecycle-configuration", "file://$tempFile"
@@ -328,7 +337,7 @@ function Ensure-BrokerRoleAndCaller {
         $roleArn = $existingRole.Role.Arn
         if ($PSCmdlet.ShouldProcess($BrokerRoleName, "refresh trust policy (idempotent)")) {
             $tempFile = [System.IO.Path]::GetTempFileName()
-            Set-Content -Path $tempFile -Value $trustPolicy -Encoding utf8NoBOM
+            Write-Utf8NoBom -Path $tempFile -Text $trustPolicy
             Invoke-Aws -Arguments @(
                 "iam", "update-assume-role-policy", "--role-name", $BrokerRoleName,
                 "--policy-document", "file://$tempFile"
@@ -337,7 +346,7 @@ function Ensure-BrokerRoleAndCaller {
         }
     } elseif ($PSCmdlet.ShouldProcess($BrokerRoleName, "create IAM role")) {
         $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $trustPolicy -Encoding utf8NoBOM
+        Write-Utf8NoBom -Path $tempFile -Text $trustPolicy
         $created = Invoke-Aws -Arguments @(
             "iam", "create-role", "--role-name", $BrokerRoleName,
             "--assume-role-policy-document", "file://$tempFile",
@@ -372,7 +381,7 @@ function Ensure-BrokerRoleAndCaller {
 
     if ($PSCmdlet.ShouldProcess($BrokerRoleName, "attach/refresh inline permission policy")) {
         $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $rolePermissionPolicy -Encoding utf8NoBOM
+        Write-Utf8NoBom -Path $tempFile -Text $rolePermissionPolicy
         Invoke-Aws -Arguments @(
             "iam", "put-role-policy", "--role-name", $BrokerRoleName,
             "--policy-name", "bloom-teams-broker-s3-access",
@@ -398,7 +407,7 @@ function Ensure-BrokerRoleAndCaller {
 
     if ($PSCmdlet.ShouldProcess($BrokerCallerName, "attach/refresh inline assume-only policy")) {
         $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $callerPolicy -Encoding utf8NoBOM
+        Write-Utf8NoBom -Path $tempFile -Text $callerPolicy
         Invoke-Aws -Arguments @(
             "iam", "put-user-policy", "--user-name", $BrokerCallerName,
             "--policy-name", "bloom-teams-assume-broker-only",
@@ -455,7 +464,7 @@ function Ensure-AdminUser {
 
     if ($PSCmdlet.ShouldProcess($AdminUserName, "attach/refresh inline admin policy")) {
         $tempFile = [System.IO.Path]::GetTempFileName()
-        Set-Content -Path $tempFile -Value $adminPolicy -Encoding utf8NoBOM
+        Write-Utf8NoBom -Path $tempFile -Text $adminPolicy
         Invoke-Aws -Arguments @(
             "iam", "put-user-policy", "--user-name", $AdminUserName,
             "--policy-name", "bloom-teams-admin-s3-access",

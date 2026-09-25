@@ -1947,12 +1947,18 @@ BEGIN
         RAISE EXCEPTION 'member_not_found' USING ERRCODE = 'P0002';
     END IF;
 
-    -- Force-unlock all books held by this user and emit ForcedUnlock events
+    -- Force-unlock all books held by this user and emit ForcedUnlock events. FOR UPDATE (in
+    -- id order, so two removals take the rows in the same order): a book whose lock changes
+    -- hands meanwhile is re-checked once its row lock is ours and skipped if no longer this
+    -- user's, so its new holder's checkout is never cleared or reported as the removed
+    -- member's.
     FOR v_book IN
         SELECT b.id, b.name, b.locked_by_machine, b.locked_at
         FROM tc.books b
         WHERE b.collection_id = p_collection_id
           AND b.locked_by     = v_target_user_id
+        ORDER BY b.id
+        FOR UPDATE OF b
     LOOP
         INSERT INTO tc.events (
             collection_id, book_id, type,
@@ -1975,7 +1981,8 @@ BEGIN
         SET    locked_by         = NULL,
                locked_by_machine = NULL,
                locked_at         = NULL
-        WHERE  id = v_book.id;
+        WHERE  id = v_book.id
+          AND  locked_by = v_target_user_id;
     END LOOP;
 
     -- Delete the member row (last-admin guard trigger will fire here if applicable)

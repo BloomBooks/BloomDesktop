@@ -14,7 +14,7 @@
 
 BEGIN;
 
-SELECT plan(50);
+SELECT plan(51);
 
 SELECT has_function('tc', 'checkout_book_takeover', 'tc.checkout_book_takeover() exists');
 
@@ -474,7 +474,13 @@ SELECT ok(
     '7a: Bob checks the free book out and gets a GUID'
 );
 
+-- A second book, checked out to Alice: removing Bob must leave it alone.
+INSERT INTO tc.books (id, collection_id, instance_id, name, created_by)
+VALUES ('b0000000-0000-0000-0000-00000000a007', 'c0000000-0000-0000-0000-00000000a001',
+        'b0000000-0000-0000-0000-00000000a008', 'Alice''s Other Book', 'user-alice-tko');
 SELECT tests.set_jwt('user-alice-tko', 'alice-tko@example.com', true);
+SELECT set_config('tests.alice_guid7',
+    tests.checkout('b0000000-0000-0000-0000-00000000a007', 'SharedMachine'), true);
 
 SELECT lives_ok(
     $$SELECT tc.members_remove('c0000000-0000-0000-0000-00000000a001',
@@ -487,6 +493,15 @@ SELECT ok(
     (SELECT locked_by IS NULL AND checkout_guid_hash IS NULL
        FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001'),
     '7c: removing the member clears his lock and its hash'
+);
+
+SELECT ok(
+    (SELECT locked_by = 'user-alice-tko'
+            AND checkout_guid_hash = tests.guid_hash(current_setting('tests.alice_guid7'))
+       FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a007')
+    AND NOT EXISTS (SELECT 1 FROM tc.events
+                     WHERE book_id = 'b0000000-0000-0000-0000-00000000a007' AND type = 5),
+    '7d: another member''s checkout survives the removal, with no ForcedUnlock event for it'
 );
 
 -- =============================================================================
