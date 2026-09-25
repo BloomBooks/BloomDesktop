@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -21,19 +21,6 @@ namespace Bloom.Sharing
     }
 
     /// <summary>
-    /// Whether a person has taken up their invitation. Serialized as lowercase strings.
-    /// </summary>
-    [JsonConverter(typeof(StringEnumConverter), typeof(CamelCaseNamingStrategy))]
-    public enum SharingMemberStatus
-    {
-        /// <summary>Invited by email, but nobody has yet signed in with that email.</summary>
-        Invited,
-
-        /// <summary>Someone has signed in with this email and used the collection.</summary>
-        Active,
-    }
-
-    /// <summary>
     /// One person with access to a shared collection.
     /// </summary>
     public class SharingMember
@@ -48,18 +35,21 @@ namespace Bloom.Sharing
         [JsonProperty("role")]
         public SharingRole Role;
 
-        [JsonProperty("status")]
-        public SharingMemberStatus Status;
-
-        /// <summary>When the invitation was made (UTC).</summary>
+        /// <summary>When an admin gave this person access (UTC).</summary>
         [JsonProperty("invitedAt")]
         public DateTime InvitedAt;
 
-        /// <summary>The email of the admin who made the invitation.</summary>
+        /// <summary>The email of the admin who gave this person access.</summary>
         [JsonProperty("invitedBy")]
         public string InvitedBy;
 
-        /// <summary>When this person last opened the collection (UTC); null if never.</summary>
+        /// <summary>
+        /// The last time we know this person used the collection (UTC): when they last opened it
+        /// while signed in, or, for someone who was given access because the old Team
+        /// Collection's history shows them working in it, their last action recorded there.
+        /// Null if we have no record of their ever using it; the UI then shows when they were
+        /// invited instead.
+        /// </summary>
         [JsonProperty("lastSeen")]
         public DateTime? LastSeen;
     }
@@ -83,13 +73,6 @@ namespace Bloom.Sharing
 
         [JsonProperty("members")]
         public List<SharingMember> Members = new List<SharingMember>();
-
-        /// <summary>
-        /// Emails an admin chose not to invite when offered the people found in the old Team
-        /// Collection's history, so we stop offering them.
-        /// </summary>
-        [JsonProperty("dismissedSuggestions")]
-        public List<string> DismissedSuggestions = new List<string>();
     }
 
     /// <summary>
@@ -105,23 +88,21 @@ namespace Bloom.Sharing
     }
 
     /// <summary>
-    /// Someone who has worked in the current (folder) Team Collection, found in its history,
-    /// whom an admin may want to invite to the shared collection.
+    /// Someone the current (folder) Team Collection's history shows has worked in it. When such
+    /// a collection starts being shared, each of them is given access along with the admin who
+    /// shares it.
     /// </summary>
-    public class SharingSuggestion
+    public class TeamCollectionHistoryMember
     {
-        [JsonProperty("email")]
         public string Email;
 
-        [JsonProperty("name")]
+        /// <summary>The name recorded with their most recent action that has one, if any.</summary>
         public string Name;
 
         /// <summary>Admin if the old Team Collection listed them as an administrator.</summary>
-        [JsonProperty("role")]
         public SharingRole Role;
 
         /// <summary>The time of their most recent recorded action (UTC).</summary>
-        [JsonProperty("lastActivity")]
         public DateTime LastActivity;
     }
 }

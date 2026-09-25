@@ -4,25 +4,34 @@ import { renderRoot, unmountRoot } from "../utils/reactRender";
 import { IShareDialogActions, ShareDialogContents } from "./ShareDialog";
 import { ISharingMember, ISharingState } from "./sharingApi";
 
+// Unmocked, useL10n gives back the key in tests; the English (with its parameter filled in)
+// lets tests check what a string says.
+vi.mock("../react_components/l10nHooks", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../react_components/l10nHooks")>()),
+    useL10n: (
+        english: string,
+        _key: string | null,
+        _comment?: string,
+        param0?: string,
+    ) => english.replace("%0", param0 ?? ""),
+}));
+
 const now = new Date(2026, 8, 23, 12, 0, 0);
 const ruth = "ruth@example.org";
 
+// A member invited on September 19th, who (if seen) last used the collection on the 21st.
 function member(
     email: string,
     role: "admin" | "editor",
-    status: "invited" | "active" = "active",
+    seen = true,
 ): ISharingMember {
     return {
         email,
-        name: status === "active" ? email.split("@")[0] : undefined,
+        name: seen ? email.split("@")[0] : undefined,
         role,
-        status,
         invitedAt: new Date(2026, 8, 19).toISOString(),
         invitedBy: ruth,
-        lastSeen:
-            status === "active"
-                ? new Date(2026, 8, 21).toISOString()
-                : undefined,
+        lastSeen: seen ? new Date(2026, 8, 21).toISOString() : undefined,
     };
 }
 
@@ -34,7 +43,6 @@ function makeState(overrides: Partial<ISharingState>): ISharingState {
         isShared: true,
         canManage: true,
         members: [member(ruth, "admin")],
-        suggestions: [],
         ...overrides,
     };
 }
@@ -44,7 +52,6 @@ function makeActions() {
         invite: vi.fn(() => Promise.resolve(true)),
         setRole: vi.fn(),
         remove: vi.fn(),
-        dismissSuggestions: vi.fn(),
         signIn: vi.fn(),
     } satisfies IShareDialogActions;
 }
@@ -209,19 +216,17 @@ describe("ShareDialogContents", () => {
         ]);
     });
 
-    it("marks invited people as invited", () => {
-        render(
-            makeState({
-                members: [
-                    member(ruth, "admin"),
-                    member("jm@example.org", "editor", "invited"),
-                ],
-            }),
+    it("shows when each person was last seen, or, if never, when they were invited", () => {
+        const neverSeen = member("jm@example.org", "editor", false);
+        // Sanity check: the test data really does distinguish the two.
+        expect(member(ruth, "admin").lastSeen).toBeDefined();
+        expect(neverSeen.lastSeen).toBeUndefined();
+        render(makeState({ members: [member(ruth, "admin"), neverSeen] }));
+        const when = findAll("share-member").map(
+            (row) => find("share-member-when", row)?.textContent,
         );
-        expect(findAll("share-member").map((r) => r.dataset.status)).toEqual([
-            "active",
-            "invited",
-        ]);
+        // now is September 23rd; seen on the 21st, invited on the 19th.
+        expect(when).toEqual(["Last seen 2 days ago", "Invited 4 days ago"]);
     });
 
     it("lets an admin change a role and remove someone", () => {
@@ -306,95 +311,5 @@ describe("ShareDialogContents", () => {
         expect(find("share-only-admins")).not.toBeNull();
         expect(find("share-invite-row")).toBeNull();
         expect(find("share-member-role")).toBeNull();
-    });
-
-    it("invites the checked suggestions, then stops suggesting the unchecked ones", async () => {
-        const actions = render(
-            makeState({
-                isShared: false,
-                members: [],
-                suggestions: [
-                    {
-                        email: "sam@example.org",
-                        name: "Sam",
-                        role: "admin",
-                        lastActivity: new Date(2026, 8, 1).toISOString(),
-                    },
-                    {
-                        email: "amina@example.org",
-                        name: "Amina",
-                        role: "editor",
-                        lastActivity: new Date(2026, 7, 1).toISOString(),
-                    },
-                ],
-            }),
-        );
-        const suggestions = findAll("share-suggestion");
-        expect(suggestions.map((s) => s.dataset.email)).toEqual([
-            "sam@example.org",
-            "amina@example.org",
-        ]);
-        click(
-            suggestions[1].querySelector("input"),
-            "Amina's suggestion checkbox",
-        );
-        click(find("share-invite-suggestions"), "the Invite Selected button");
-
-        expect(actions.invite).toHaveBeenCalledWith([
-            { email: "sam@example.org", role: "admin" },
-        ]);
-        // Dismissing waits for the invitation, which is what shares the collection.
-        expect(actions.dismissSuggestions).not.toHaveBeenCalled();
-        await act(async () => {});
-        expect(actions.dismissSuggestions).toHaveBeenCalledWith([
-            "amina@example.org",
-        ]);
-    });
-
-    it("does not dismiss the unchecked suggestions if inviting fails", async () => {
-        const actions = makeActions();
-        actions.invite.mockImplementation(() => Promise.resolve(false));
-        render(
-            makeState({
-                suggestions: [
-                    {
-                        email: "sam@example.org",
-                        role: "editor",
-                        lastActivity: new Date(2026, 8, 1).toISOString(),
-                    },
-                    {
-                        email: "amina@example.org",
-                        role: "editor",
-                        lastActivity: new Date(2026, 8, 1).toISOString(),
-                    },
-                ],
-            }),
-            actions,
-        );
-        click(
-            findAll("share-suggestion")[1].querySelector("input"),
-            "Amina's suggestion checkbox",
-        );
-        click(find("share-invite-suggestions"), "the Invite Selected button");
-        expect(actions.invite).toHaveBeenCalledTimes(1);
-        await act(async () => {});
-        expect(actions.dismissSuggestions).not.toHaveBeenCalled();
-    });
-    it("does not dismiss anyone when every suggestion is invited", async () => {
-        const actions = render(
-            makeState({
-                suggestions: [
-                    {
-                        email: "sam@example.org",
-                        role: "editor",
-                        lastActivity: new Date(2026, 8, 1).toISOString(),
-                    },
-                ],
-            }),
-        );
-        click(find("share-invite-suggestions"), "the Invite Selected button");
-        expect(actions.invite).toHaveBeenCalledTimes(1);
-        await act(async () => {});
-        expect(actions.dismissSuggestions).not.toHaveBeenCalled();
     });
 });

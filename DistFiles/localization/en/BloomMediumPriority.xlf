@@ -2591,9 +2591,9 @@
         <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown to people who are not administrators of the collection.</note>
       </trans-unit>
       <trans-unit id="Sharing.ShareDialog.OnlyAdminsCanShare" translate="no">
-        <source xml:lang="en">This collection is not shared yet. Only an administrator of this Team Collection can share it.</source>
+        <source xml:lang="en">This collection is not shared yet. Only an administrator of this collection can share it.</source>
         <note>ID: Sharing.ShareDialog.OnlyAdminsCanShare</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown to someone who is not an administrator of the Team Collection it is in.</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown to someone who is not an administrator of the collection, before it has been shared.</note>
       </trans-unit>
       <trans-unit id="Sharing.ShareDialog.EmailAddress" translate="no">
         <source xml:lang="en">Email address</source>
@@ -2615,21 +2615,6 @@
         <note>ID: Sharing.ShareDialog.Invite</note>
         <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that invites the person whose email address was typed.</note>
       </trans-unit>
-      <trans-unit id="Sharing.ShareDialog.SuggestionsHeading" translate="no">
-        <source xml:lang="en">These people have worked on this Team Collection. Do you want to invite them?</source>
-        <note>ID: Sharing.ShareDialog.SuggestionsHeading</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Heading over a list, with checkboxes, of the people who have used the Team Collection before.</note>
-      </trans-unit>
-      <trans-unit id="Sharing.ShareDialog.NotNow" translate="no">
-        <source xml:lang="en">Not Now</source>
-        <note>ID: Sharing.ShareDialog.NotNow</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that hides the list of suggested people for now, without inviting them.</note>
-      </trans-unit>
-      <trans-unit id="Sharing.ShareDialog.InviteSelected" translate="no">
-        <source xml:lang="en">Invite Selected</source>
-        <note>ID: Sharing.ShareDialog.InviteSelected</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that invites the people checked in the list of suggestions.</note>
-      </trans-unit>
       <trans-unit id="Sharing.ShareDialog.You" translate="no">
         <source xml:lang="en">(you)</source>
         <note>ID: Sharing.ShareDialog.You</note>
@@ -2638,12 +2623,12 @@
       <trans-unit id="Sharing.ShareDialog.LastSeen" translate="no">
         <source xml:lang="en">Last seen %0</source>
         <note>ID: Sharing.ShareDialog.LastSeen</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under a person's role. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under a person's role, saying when they last used the collection. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
       </trans-unit>
       <trans-unit id="Sharing.ShareDialog.InvitedWhen" translate="no">
         <source xml:lang="en">Invited %0</source>
         <note>ID: Sharing.ShareDialog.InvitedWhen</note>
-        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under the role of someone who has been invited but has not yet started using the collection. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under the role of someone whom Bloom has no record of using the collection yet, saying when they were given access. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
       </trans-unit>
       <trans-unit id="Sharing.ShareDialog.RemoveFromCollection" translate="no">
         <source xml:lang="en">Remove from collection</source>

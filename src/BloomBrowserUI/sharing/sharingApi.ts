@@ -5,28 +5,19 @@ import { postJson, useWatchApiData } from "../utils/bloomApi";
 
 export type SharingRole = "admin" | "editor";
 
-export type SharingMemberStatus = "invited" | "active";
-
 // One person with access to the collection.
 export interface ISharingMember {
     email: string;
     // Unknown until the person has used the collection; display falls back to the email.
     name?: string;
     role: SharingRole;
-    status: SharingMemberStatus;
-    // ISO dates, in UTC.
+    // ISO dates, in UTC. invitedAt is when an admin gave them access.
     invitedAt: string;
     invitedBy: string;
+    // The last time we know they used the collection: when they last opened it, or, for
+    // someone given access because an old Team Collection's history shows them working in it,
+    // their last action there. Missing if we have no record of their using it.
     lastSeen?: string;
-}
-
-// Someone the old Team Collection's history shows has worked in this collection, whom an
-// admin may want to invite.
-export interface ISharingSuggestion {
-    email: string;
-    name?: string;
-    role: SharingRole;
-    lastActivity: string;
 }
 
 export interface ISharingState {
@@ -35,13 +26,12 @@ export interface ISharingState {
     signedInEmail: string;
     // The name the user registered with Bloom.
     signedInName: string;
-    // False until someone first invites people.
+    // False until someone first invites people, or, for a Team Collection, until one of its
+    // administrators first opens the Share dialog.
     isShared: boolean;
     // Whether the signed-in person may invite people and change roles.
     canManage: boolean;
     members: ISharingMember[];
-    // Only filled in for someone who canManage.
-    suggestions: ISharingSuggestion[];
 }
 
 export interface IInvitation {
@@ -75,11 +65,6 @@ export function setRole(email: string, role: SharingRole) {
 
 export function removeMember(email: string) {
     return postJson("sharing/remove", { email });
-}
-
-// Stop suggesting these people (only possible once the collection is shared).
-export function dismissSuggestions(emails: string[]) {
-    return postJson("sharing/dismissSuggestions", { emails });
 }
 
 export function sameEmail(a: string, b: string): boolean {

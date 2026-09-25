@@ -2,7 +2,6 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { useState } from "react";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -23,26 +22,27 @@ import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useL10n } from "../react_components/l10nHooks";
 import { useLoginState } from "../react_components/useLoginState";
-import { kBloomBlue } from "../bloomMaterialUITheme";
+import {
+    kBannerGray,
+    kBloomBlue,
+    kBloomRed,
+    kMutedTextGray,
+} from "../bloomMaterialUITheme";
 import { useApiString } from "../utils/bloomApi";
+import { kFormBackground } from "../utils/colorUtils";
 import { isValidEmail } from "../utils/emailUtils";
 import { formatTimeAgo } from "./relativeTime";
 import {
     IInvitation,
     ISharingMember,
     ISharingState,
-    ISharingSuggestion,
     SharingRole,
-    dismissSuggestions,
     invite,
     removeMember,
     sameEmail,
     setRole,
     useSharingState,
 } from "./sharingApi";
-
-const kSecondaryTextColor = "#757575";
-const kDangerColor = "#d32f2f";
 
 // What the dialog asks the server to do. Separate from the component so tests can supply fakes.
 export interface IShareDialogActions {
@@ -51,7 +51,6 @@ export interface IShareDialogActions {
     invite: (invitations: IInvitation[]) => Promise<boolean>;
     setRole: (email: string, role: SharingRole) => void;
     remove: (email: string) => void;
-    dismissSuggestions: (emails: string[]) => void;
     signIn: () => void;
 }
 
@@ -97,7 +96,6 @@ const ShareDialogWithData: React.FunctionComponent<{
                 invite,
                 setRole,
                 remove: removeMember,
-                dismissSuggestions,
                 signIn: props.signIn,
             }}
             uiLanguage={uiLanguage}
@@ -124,7 +122,9 @@ export const ShareDialogContents: React.FunctionComponent<{
     );
     const signedIn = !!props.state.signedInEmail;
     // Before the collection is shared, show the signed-in admin as its future sole admin, so the
-    // list reads the same before and after the first invitation.
+    // list reads the same before and after the first invitation. (A Team Collection is already
+    // shared by the time an admin sees this, because the server shares it, with everyone its
+    // history shows working in it, the first time one of its admins asks for the state.)
     const members: ISharingMember[] =
         props.state.isShared || !signedIn || !props.state.canManage
             ? props.state.members
@@ -133,7 +133,6 @@ export const ShareDialogContents: React.FunctionComponent<{
                       email: props.state.signedInEmail,
                       name: props.state.signedInName,
                       role: "admin",
-                      status: "active",
                       invitedAt: props.now.toISOString(),
                       invitedBy: props.state.signedInEmail,
                       lastSeen: props.now.toISOString(),
@@ -166,23 +165,11 @@ export const ShareDialogContents: React.FunctionComponent<{
                 {signedIn && !props.state.canManage && (
                     <OnlyAdminsNote isShared={props.state.isShared} />
                 )}
-                {signedIn &&
-                    props.state.canManage &&
-                    props.state.suggestions.length > 0 && (
-                        <SuggestionsPanel
-                            // Remount when the list changes, so the checkboxes start over.
-                            key={props.state.suggestions
-                                .map((s) => s.email)
-                                .join()}
-                            suggestions={props.state.suggestions}
-                            actions={props.actions}
-                        />
-                    )}
                 {members.length > 0 && (
                     <div
                         data-testid="share-member-list"
                         css={css`
-                            border-top: 1px solid #e0e0e0;
+                            border-top: 1px solid ${kBannerGray};
                         `}
                     >
                         {members.map((member) => (
@@ -287,7 +274,7 @@ const OnlyAdminsNote: React.FunctionComponent<{ isShared: boolean }> = (
         "Sharing.ShareDialog.OnlyAdmins",
     );
     const notSharedNote = useL10n(
-        "This collection is not shared yet. Only an administrator of this Team Collection can share it.",
+        "This collection is not shared yet. Only an administrator of this collection can share it.",
         "Sharing.ShareDialog.OnlyAdminsCanShare",
     );
     return (
@@ -299,7 +286,7 @@ const OnlyAdminsNote: React.FunctionComponent<{ isShared: boolean }> = (
                 gap: 12px;
                 padding: 16px;
                 border-radius: 4px;
-                background-color: #f1f3f4;
+                background-color: ${kFormBackground};
             `}
         >
             <InfoOutlinedIcon
@@ -349,6 +336,8 @@ const InviteRow: React.FunctionComponent<{
             return;
         }
         setPending(true);
+        // Nothing is added to the list here: a successful invitation makes the server send
+        // its sharing/stateChanged event, and useSharingState then fetches the new list.
         void props.onInvite(trimmed, role).then((invited) => {
             setPending(false);
             // Keep what was typed if it failed, so the admin can try again.
@@ -414,118 +403,6 @@ const InviteRow: React.FunctionComponent<{
     );
 };
 
-// The offer to invite the people the old Team Collection's history shows have worked in it.
-const SuggestionsPanel: React.FunctionComponent<{
-    suggestions: ISharingSuggestion[];
-    actions: IShareDialogActions;
-}> = (props) => {
-    const [unchecked, setUnchecked] = useState<string[]>([]);
-    const [hidden, setHidden] = useState(false);
-    // True from clicking Invite Selected until the answer comes back, so the same people
-    // can't be sent twice. After a successful invite it stays true: the refreshed state
-    // replaces this panel (or removes it).
-    const [pending, setPending] = useState(false);
-    const heading = useL10n(
-        "These people have worked on this Team Collection. Do you want to invite them?",
-        "Sharing.ShareDialog.SuggestionsHeading",
-    );
-    if (hidden) return null;
-    const checked = props.suggestions.filter(
-        (s) => !unchecked.includes(s.email),
-    );
-
-    const inviteChecked = () => {
-        const declined = props.suggestions
-            .filter((s) => unchecked.includes(s.email))
-            .map((s) => s.email);
-        setPending(true);
-        void props.actions
-            .invite(checked.map((s) => ({ email: s.email, role: s.role })))
-            .then((invited) => {
-                if (!invited) setPending(false);
-                // Once the invitations are made the collection is certainly shared, so the
-                // ones left unchecked can be remembered as "don't suggest". If inviting failed,
-                // leave the suggestions alone so the admin can try again.
-                if (invited && declined.length > 0)
-                    props.actions.dismissSuggestions(declined);
-            });
-    };
-
-    return (
-        <div
-            data-testid="share-suggestions"
-            css={css`
-                padding: 12px 16px;
-                border-radius: 4px;
-                background-color: #eef7f8;
-            `}
-        >
-            <div
-                css={css`
-                    margin-bottom: 8px;
-                `}
-            >
-                {heading}
-            </div>
-            {props.suggestions.map((s) => (
-                <label
-                    key={s.email}
-                    data-testid="share-suggestion"
-                    data-email={s.email}
-                    css={css`
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        cursor: pointer;
-                    `}
-                >
-                    <Checkbox
-                        size="small"
-                        checked={!unchecked.includes(s.email)}
-                        onChange={(event) =>
-                            setUnchecked((old) =>
-                                event.target.checked
-                                    ? old.filter((e) => e !== s.email)
-                                    : [...old, s.email],
-                            )
-                        }
-                    />
-                    <PersonNameAndEmail name={s.name} email={s.email} />
-                    <RoleName role={s.role} />
-                </label>
-            ))}
-            <div
-                css={css`
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 8px;
-                    margin-top: 8px;
-                `}
-            >
-                <BloomButton
-                    l10nKey="Sharing.ShareDialog.NotNow"
-                    enabled={true}
-                    hasText={true}
-                    variant="text"
-                    onClick={() => setHidden(true)}
-                >
-                    Not Now
-                </BloomButton>
-                <BloomButton
-                    data-testid="share-invite-suggestions"
-                    l10nKey="Sharing.ShareDialog.InviteSelected"
-                    enabled={checked.length > 0 && !pending}
-                    hasText={true}
-                    variant="contained"
-                    onClick={inviteChecked}
-                >
-                    Invite Selected
-                </BloomButton>
-            </div>
-        </div>
-    );
-};
-
 const PersonNameAndEmail: React.FunctionComponent<{
     name?: string;
     email: string;
@@ -533,7 +410,7 @@ const PersonNameAndEmail: React.FunctionComponent<{
     faded?: boolean;
 }> = (props) => {
     const you = useL10n("(you)", "Sharing.ShareDialog.You");
-    const textColor = props.faded ? kSecondaryTextColor : "inherit";
+    const textColor = props.faded ? kMutedTextGray : "inherit";
     return (
         <div
             css={css`
@@ -550,7 +427,7 @@ const PersonNameAndEmail: React.FunctionComponent<{
                 {props.isYou && (
                     <span
                         css={css`
-                            color: ${kSecondaryTextColor};
+                            color: ${kMutedTextGray};
                         `}
                     >
                         {" " + you}
@@ -560,7 +437,7 @@ const PersonNameAndEmail: React.FunctionComponent<{
             {props.name && (
                 <span
                     css={css`
-                        color: ${kSecondaryTextColor};
+                        color: ${kMutedTextGray};
                         font-size: 0.9em;
                     `}
                 >
@@ -585,10 +462,12 @@ const MemberRow: React.FunctionComponent<{
     now: Date;
     actions: IShareDialogActions;
 }> = (props) => {
-    const invited = props.member.status === "invited";
+    // Everyone in the list has been invited; what we show is the last time we know they used
+    // the collection, or, if we have no record of that, when they were given access. Someone
+    // never seen is shown faded.
+    const neverSeen = !props.member.lastSeen;
     const when = formatTimeAgo(
-        (invited ? props.member.invitedAt : props.member.lastSeen) ??
-            props.member.invitedAt,
+        props.member.lastSeen ?? props.member.invitedAt,
         props.now,
         props.uiLanguage,
     );
@@ -612,18 +491,17 @@ const MemberRow: React.FunctionComponent<{
         <div
             data-testid="share-member"
             data-email={props.member.email}
-            data-status={props.member.status}
             css={css`
                 display: flex;
                 align-items: center;
                 gap: 16px;
                 padding: 10px 0;
-                border-bottom: 1px solid #e0e0e0;
+                border-bottom: 1px solid ${kBannerGray};
             `}
         >
             <div
                 css={css`
-                    opacity: ${invited ? 0.6 : 1};
+                    opacity: ${neverSeen ? 0.6 : 1};
                 `}
             >
                 <BloomAvatar
@@ -636,7 +514,7 @@ const MemberRow: React.FunctionComponent<{
                 name={props.member.name}
                 email={props.member.email}
                 isYou={props.isYou}
-                faded={invited}
+                faded={neverSeen}
             />
             <div
                 css={css`
@@ -678,11 +556,11 @@ const MemberRow: React.FunctionComponent<{
                     data-testid="share-member-when"
                     css={css`
                         font-size: 0.9em;
-                        color: ${invited ? kBloomBlue : kSecondaryTextColor};
-                        font-weight: ${invited ? 500 : "normal"};
+                        color: ${neverSeen ? kBloomBlue : kMutedTextGray};
+                        font-weight: ${neverSeen ? 500 : "normal"};
                     `}
                 >
-                    {invited ? invitedWhen : lastSeen}
+                    {neverSeen ? invitedWhen : lastSeen}
                 </span>
             </div>
         </div>
@@ -748,7 +626,7 @@ const RoleMenu: React.FunctionComponent<{
                     <div
                         css={css`
                             font-size: 0.9em;
-                            color: ${kSecondaryTextColor};
+                            color: ${kMutedTextGray};
                         `}
                     >
                         {description}
@@ -804,7 +682,7 @@ const RoleMenu: React.FunctionComponent<{
                             props.onRemove?.();
                         }}
                         css={css`
-                            color: ${kDangerColor};
+                            color: ${kBloomRed};
                             padding-left: 44px;
                         `}
                     >

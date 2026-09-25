@@ -68,7 +68,8 @@ namespace Bloom.Sharing
         public void StartSharing(
             string adminEmail,
             string adminName,
-            IEnumerable<SharingInvitation> invitations
+            IEnumerable<SharingInvitation> invitations,
+            IEnumerable<TeamCollectionHistoryMember> historyMembers
         )
         {
             lock (_lock)
@@ -88,14 +89,30 @@ namespace Bloom.Sharing
                             Email = adminEmail,
                             Name = adminName,
                             Role = SharingRole.Admin,
-                            Status = SharingMemberStatus.Active,
                             InvitedAt = now,
                             InvitedBy = adminEmail,
                             LastSeen = now,
                         },
                     },
                 };
-                // One write for both, so a bad invitation leaves the collection unshared.
+                foreach (var person in historyMembers)
+                {
+                    // The admin is already a member, and nobody can be one twice.
+                    if (FindMember(record, person.Email) != null)
+                        continue;
+                    record.Members.Add(
+                        new SharingMember
+                        {
+                            Email = person.Email.Trim(),
+                            Name = person.Name,
+                            Role = person.Role,
+                            InvitedAt = now,
+                            InvitedBy = adminEmail,
+                            LastSeen = person.LastActivity,
+                        }
+                    );
+                }
+                // One write for everything, so a bad invitation leaves the collection unshared.
                 AddInvitations(record, adminEmail, invitations.ToList());
                 Write(record);
             }
@@ -131,13 +148,10 @@ namespace Bloom.Sharing
                     {
                         Email = invitation.Email.Trim(),
                         Role = invitation.Role,
-                        Status = SharingMemberStatus.Invited,
                         InvitedAt = _utcNow(),
                         InvitedBy = byEmail,
                     }
                 );
-                // Inviting someone we were suggesting answers the suggestion.
-                record.DismissedSuggestions.RemoveAll(e => SameEmail(e, invitation.Email));
             }
         }
 
@@ -168,22 +182,6 @@ namespace Bloom.Sharing
         }
 
         /// <inheritdoc/>
-        public void DismissSuggestions(string byEmail, IEnumerable<string> emails)
-        {
-            Change(
-                byEmail,
-                record =>
-                {
-                    foreach (var email in emails)
-                    {
-                        if (!record.DismissedSuggestions.Any(e => SameEmail(e, email)))
-                            record.DismissedSuggestions.Add(email);
-                    }
-                }
-            );
-        }
-
-        /// <inheritdoc/>
         public void RecordVisit(string email, string name)
         {
             lock (_lock)
@@ -192,7 +190,6 @@ namespace Bloom.Sharing
                 var member = record == null ? null : FindMember(record, email);
                 if (member == null)
                     return;
-                member.Status = SharingMemberStatus.Active;
                 member.LastSeen = _utcNow();
                 if (!string.IsNullOrWhiteSpace(name))
                     member.Name = name;

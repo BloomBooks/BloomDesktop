@@ -52,22 +52,17 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Register the sharing/* endpoints: state (GET), invite, setRole, remove and
-        /// dismissSuggestions (all POST).
+        /// Register the sharing/* endpoints: state (GET), invite, setRole and remove (all POST).
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            // On the UI thread, like teamCollection/getHistory, because the suggestions it
-            // includes read the collection's book list (BookCollection.GetBookInfos).
+            // On the UI thread, like teamCollection/getHistory, because when it starts sharing a
+            // Team Collection it reads the history via the collection's book list
+            // (BookCollection.GetBookInfos).
             apiHandler.RegisterEndpointHandler("sharing/state", HandleState, true);
             apiHandler.RegisterEndpointHandler("sharing/invite", HandleInvite, false);
             apiHandler.RegisterEndpointHandler("sharing/setRole", HandleSetRole, false);
             apiHandler.RegisterEndpointHandler("sharing/remove", HandleRemove, false);
-            apiHandler.RegisterEndpointHandler(
-                "sharing/dismissSuggestions",
-                HandleDismissSuggestions,
-                false
-            );
             // This runs as the collection opens (after AccountApi has restored any saved
             // sign-in), which is when the cloud backend will note that a member is using it.
             RecordVisitIfSignedIn();
@@ -118,14 +113,27 @@ namespace Bloom.web.controllers
 
         /// <summary>
         /// GET sharing/state: everything the Share dialog shows. Also records that the signed-in
-        /// person (if a member) is using the collection; see RecordVisitIfSignedIn.
+        /// person (if a member) is using the collection; see RecordVisitIfSignedIn. And the
+        /// first time an administrator of a (folder) Team Collection looks, it shares the
+        /// collection, with everyone its history shows has worked in it; see
+        /// TeamCollectionHistoryMembers.StartSharingIfTeamCollection.
         /// </summary>
         private void HandleState(ApiRequest request)
         {
             var email = SignedInEmail;
             RecordVisitIfSignedIn();
+            if (_sharingService.GetRecord() == null && CanManage(null))
+            {
+                TeamCollectionHistoryMembers.StartSharingIfTeamCollection(
+                    _sharingService,
+                    _tcManager.CurrentCollectionEvenIfDisconnected != null,
+                    email,
+                    RegisteredName,
+                    () => CollectionHistory.GetAllEvents(_collectionSelection.CurrentSelection),
+                    _settings.Administrators
+                );
+            }
             var record = _sharingService.GetRecord();
-            var canManage = CanManage(record);
             request.ReplyWithJson(
                 new
                 {
@@ -133,29 +141,10 @@ namespace Bloom.web.controllers
                     signedInEmail = email,
                     signedInName = RegisteredName,
                     isShared = record != null,
-                    canManage,
+                    canManage = CanManage(record),
                     members = record?.Members ?? new List<SharingMember>(),
-                    suggestions = canManage
-                        ? GetSuggestions(record)
-                        : new List<SharingSuggestion>(),
                 }
             );
-        }
-
-        // The people the old Team Collection's history says have worked in this collection, for
-        // an admin to consider inviting. Empty if this is not a Team Collection.
-        private List<SharingSuggestion> GetSuggestions(CollectionSharingRecord record)
-        {
-            if (_tcManager.CurrentCollectionEvenIfDisconnected == null)
-                return new List<SharingSuggestion>();
-            var events = CollectionHistory.GetAllEvents(_collectionSelection.CurrentSelection);
-            var suggestions = SharingSuggestions.Find(events, _settings.Administrators, record);
-            // Before sharing starts, the signed-in admin will become a member automatically, so
-            // offering to invite them would be silly.
-            suggestions.RemoveAll(s =>
-                string.Equals(s.Email, SignedInEmail, System.StringComparison.OrdinalIgnoreCase)
-            );
-            return suggestions;
         }
 
         private class InviteBody
@@ -175,9 +164,14 @@ namespace Bloom.web.controllers
             {
                 if (!_tcManager.OkToEditCollectionSettings)
                     throw new SharingNotAllowedException(
-                        "Only an administrator of this Team Collection can share it."
+                        "Only an administrator of this collection can share it."
                     );
-                _sharingService.StartSharing(me, RegisteredName, body.invitations);
+                _sharingService.StartSharing(
+                    me,
+                    RegisteredName,
+                    body.invitations,
+                    new TeamCollectionHistoryMember[0]
+                );
             }
             else
                 _sharingService.Invite(me, body.invitations);
@@ -208,23 +202,6 @@ namespace Bloom.web.controllers
         {
             var body = request.RequiredPostObject<MemberBody>();
             _sharingService.Remove(RequireSignedInEmail(), body.email);
-            ReportChange(request);
-        }
-
-        private class EmailsBody
-        {
-            public List<string> emails { get; set; }
-        }
-
-        /// <summary>
-        /// POST sharing/dismissSuggestions {emails}: stop suggesting these people from the old
-        /// Team Collection's history. Only for a shared collection; before that there is nowhere
-        /// to remember it, and the dialog just hides the suggestions for the moment.
-        /// </summary>
-        private void HandleDismissSuggestions(ApiRequest request)
-        {
-            var body = request.RequiredPostObject<EmailsBody>();
-            _sharingService.DismissSuggestions(RequireSignedInEmail(), body.emails);
             ReportChange(request);
         }
 

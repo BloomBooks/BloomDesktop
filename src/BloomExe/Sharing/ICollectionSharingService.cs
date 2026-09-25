@@ -16,16 +16,19 @@ namespace Bloom.Sharing
         CollectionSharingRecord GetRecord();
 
         /// <summary>
-        /// Share the collection for the first time, with the given person as its only (active)
-        /// admin, together with the first invitations (which may be none), all or none: if any
-        /// invitation is bad, it throws and the collection stays unshared. Deciding who may do
-        /// this is the caller's job, since before a collection is shared the only authority is
-        /// the local one (e.g. the old Team Collection's admin list).
+        /// Share the collection for the first time, with the given person as its admin (seen
+        /// now), together with the people a Team Collection's history shows have worked in it
+        /// (in their history roles, last seen at their last recorded action; the admin is left
+        /// out of these, being there already) and the first invitations, either of which may be
+        /// none. All or none: if any invitation is bad, it throws and the collection stays
+        /// unshared. Deciding who may do this is the caller's job, since before a collection is
+        /// shared the only authority is the local one (e.g. the old Team Collection's admin list).
         /// </summary>
         void StartSharing(
             string adminEmail,
             string adminName,
-            IEnumerable<SharingInvitation> invitations
+            IEnumerable<SharingInvitation> invitations,
+            IEnumerable<TeamCollectionHistoryMember> historyMembers
         );
 
         /// <summary>
@@ -41,15 +44,8 @@ namespace Bloom.Sharing
         void Remove(string byEmail, string email);
 
         /// <summary>
-        /// Stop offering these people (found in the old Team Collection's history) as people
-        /// to invite (by an admin).
-        /// </summary>
-        void DismissSuggestions(string byEmail, IEnumerable<string> emails);
-
-        /// <summary>
-        /// Note that this signed-in person is using the collection now: a member who was only
-        /// invited becomes active, and their "last seen" time and name are updated. Does nothing
-        /// if they are not a member.
+        /// Note that this signed-in person is using the collection now: their "last seen" time
+        /// and name are updated. Does nothing if they are not a member.
         /// </summary>
         void RecordVisit(string email, string name);
     }

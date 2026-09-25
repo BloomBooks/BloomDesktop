@@ -56,7 +56,28 @@ namespace BloomTests.Sharing
 
         private void StartSharingAsRuth()
         {
-            _service.StartSharing(kAdmin, "Ruth Nakalema", new SharingInvitation[0]);
+            _service.StartSharing(
+                kAdmin,
+                "Ruth Nakalema",
+                new SharingInvitation[0],
+                new TeamCollectionHistoryMember[0]
+            );
+        }
+
+        // Someone a Team Collection's history shows last working in it on the given day.
+        private static TeamCollectionHistoryMember HistoryMember(
+            string email,
+            SharingRole role,
+            int day
+        )
+        {
+            return new TeamCollectionHistoryMember
+            {
+                Email = email,
+                Name = email.Split('@')[0],
+                Role = role,
+                LastActivity = new DateTime(2026, 8, day, 0, 0, 0, DateTimeKind.Utc),
+            };
         }
 
         [Test]
@@ -72,7 +93,7 @@ namespace BloomTests.Sharing
         }
 
         [Test]
-        public void StartSharing_MakesStarterTheOnlyActiveAdmin()
+        public void StartSharing_MakesStarterTheOnlyAdmin_SeenNow()
         {
             StartSharingAsRuth();
 
@@ -85,7 +106,7 @@ namespace BloomTests.Sharing
             Assert.That(member.Email, Is.EqualTo(kAdmin));
             Assert.That(member.Name, Is.EqualTo("Ruth Nakalema"));
             Assert.That(member.Role, Is.EqualTo(SharingRole.Admin));
-            Assert.That(member.Status, Is.EqualTo(SharingMemberStatus.Active));
+            Assert.That(member.InvitedAt, Is.EqualTo(_now));
             Assert.That(member.LastSeen, Is.EqualTo(_now));
         }
 
@@ -94,12 +115,17 @@ namespace BloomTests.Sharing
         {
             StartSharingAsRuth();
             Assert.Throws<SharingNotAllowedException>(() =>
-                _service.StartSharing("someone@example.org", "Someone", new SharingInvitation[0])
+                _service.StartSharing(
+                    "someone@example.org",
+                    "Someone",
+                    new SharingInvitation[0],
+                    new TeamCollectionHistoryMember[0]
+                )
             );
         }
 
         [Test]
-        public void StartSharing_WithInvitations_SavesThemTogether()
+        public void StartSharing_WithInvitations_SavesThemTogether_NotYetSeen()
         {
             _service.StartSharing(
                 kAdmin,
@@ -111,12 +137,70 @@ namespace BloomTests.Sharing
                         Email = "amina@example.org",
                         Role = SharingRole.Editor,
                     },
+                },
+                new TeamCollectionHistoryMember[0]
+            );
+            var members = MakeService().GetRecord().Members;
+            Assert.That(
+                members.Select(m => m.Email),
+                Is.EqualTo(new[] { kAdmin, "amina@example.org" })
+            );
+            Assert.That(members[1].InvitedAt, Is.EqualTo(_now));
+            Assert.That(members[1].LastSeen, Is.Null, "an invitation is not a visit");
+        }
+
+        [Test]
+        public void StartSharing_WithHistoryMembers_AddsThemInTheirRoles_LastSeenAtTheirLastActivity()
+        {
+            _service.StartSharing(
+                kAdmin,
+                "Ruth Nakalema",
+                new SharingInvitation[0],
+                new[]
+                {
+                    HistoryMember("sam@example.org", SharingRole.Admin, 20),
+                    HistoryMember("amina@example.org", SharingRole.Editor, 5),
                 }
             );
+
+            var members = MakeService().GetRecord().Members;
             Assert.That(
-                MakeService().GetRecord().Members.Select(m => $"{m.Email} {m.Status}"),
-                Is.EqualTo(new[] { $"{kAdmin} Active", "amina@example.org Invited" })
+                members.Select(m => $"{m.Email} {m.Role}"),
+                Is.EqualTo(
+                    new[] { $"{kAdmin} Admin", "sam@example.org Admin", "amina@example.org Editor" }
+                )
             );
+            var amina = members[2];
+            Assert.That(amina.Name, Is.EqualTo("amina"));
+            Assert.That(amina.InvitedAt, Is.EqualTo(_now));
+            Assert.That(amina.InvitedBy, Is.EqualTo(kAdmin));
+            Assert.That(
+                amina.LastSeen,
+                Is.EqualTo(new DateTime(2026, 8, 5, 0, 0, 0, DateTimeKind.Utc))
+            );
+        }
+
+        [Test]
+        public void StartSharing_AdminInHistory_IsNotAddedTwice()
+        {
+            _service.StartSharing(
+                kAdmin,
+                "Ruth Nakalema",
+                new SharingInvitation[0],
+                new[]
+                {
+                    HistoryMember(" RUTH@example.org", SharingRole.Editor, 3),
+                    HistoryMember("amina@example.org", SharingRole.Editor, 5),
+                }
+            );
+
+            var members = MakeService().GetRecord().Members;
+            Assert.That(
+                members.Select(m => m.Email),
+                Is.EqualTo(new[] { kAdmin, "amina@example.org" })
+            );
+            Assert.That(members[0].Role, Is.EqualTo(SharingRole.Admin));
+            Assert.That(members[0].LastSeen, Is.EqualTo(_now), "the admin is here now");
         }
 
         [Test]
@@ -130,14 +214,15 @@ namespace BloomTests.Sharing
                     new[]
                     {
                         new SharingInvitation { Email = kAdmin, Role = SharingRole.Editor },
-                    }
+                    },
+                    new[] { HistoryMember("amina@example.org", SharingRole.Editor, 5) }
                 )
             );
             Assert.That(MakeService().GetRecord(), Is.Null);
         }
 
         [Test]
-        public void File_UsesLowercaseRoleAndStatusNames()
+        public void File_UsesLowercaseRoleNames()
         {
             StartSharingAsRuth();
             Invite(kAdmin, "amina@example.org", SharingRole.Editor);
@@ -147,8 +232,6 @@ namespace BloomTests.Sharing
             );
             Assert.That(json, Does.Contain("\"role\": \"admin\""));
             Assert.That(json, Does.Contain("\"role\": \"editor\""));
-            Assert.That(json, Does.Contain("\"status\": \"invited\""));
-            Assert.That(json, Does.Contain("\"status\": \"active\""));
         }
 
         [Test]
@@ -164,7 +247,6 @@ namespace BloomTests.Sharing
             var amina = members[1];
             Assert.That(amina.Email, Is.EqualTo("amina@example.org"), "should be trimmed");
             Assert.That(amina.Role, Is.EqualTo(SharingRole.Editor));
-            Assert.That(amina.Status, Is.EqualTo(SharingMemberStatus.Invited));
             Assert.That(amina.InvitedAt, Is.EqualTo(_now));
             Assert.That(amina.InvitedBy, Is.EqualTo(kAdmin));
             Assert.That(amina.LastSeen, Is.Null);
@@ -197,18 +279,6 @@ namespace BloomTests.Sharing
             Assert.Throws<SharingNotAllowedException>(() =>
                 Invite(kAdmin, "amina@example.org", SharingRole.Editor)
             );
-        }
-
-        [Test]
-        public void Invite_ClearsAnyDismissalOfThatPerson()
-        {
-            StartSharingAsRuth();
-            _service.DismissSuggestions(kAdmin, new[] { "amina@example.org" });
-            Assert.That(_service.GetRecord().DismissedSuggestions, Has.Count.EqualTo(1));
-
-            Invite(kAdmin, "Amina@example.org", SharingRole.Editor);
-
-            Assert.That(_service.GetRecord().DismissedSuggestions, Is.Empty);
         }
 
         [Test]
@@ -357,35 +427,36 @@ namespace BloomTests.Sharing
         }
 
         [Test]
-        public void DismissSuggestions_RecordsEachEmailOnce()
-        {
-            StartSharingAsRuth();
-            _service.DismissSuggestions(kAdmin, new[] { "a@example.org", "b@example.org" });
-            _service.DismissSuggestions(kAdmin, new[] { "A@example.org" });
-
-            Assert.That(
-                MakeService().GetRecord().DismissedSuggestions,
-                Is.EqualTo(new[] { "a@example.org", "b@example.org" })
-            );
-        }
-
-        [Test]
-        public void RecordVisit_InvitedMember_BecomesActive()
+        public void RecordVisit_InvitedMember_GetsLastSeenAndName()
         {
             StartSharingAsRuth();
             Invite(kAdmin, "amina@example.org", SharingRole.Editor);
-            Assert.That(
-                _service.GetRecord().Members[1].Status,
-                Is.EqualTo(SharingMemberStatus.Invited)
-            );
+            var invitedAt = _now;
+            Assert.That(_service.GetRecord().Members[1].LastSeen, Is.Null);
             _now = _now.AddDays(3);
 
             _service.RecordVisit("Amina@example.org", "Amina Yusuf");
 
             var amina = MakeService().GetRecord().Members[1];
-            Assert.That(amina.Status, Is.EqualTo(SharingMemberStatus.Active));
             Assert.That(amina.LastSeen, Is.EqualTo(_now));
+            Assert.That(amina.InvitedAt, Is.EqualTo(invitedAt), "a visit is not an invitation");
             Assert.That(amina.Name, Is.EqualTo("Amina Yusuf"));
+        }
+
+        [Test]
+        public void RecordVisit_HistoryMember_ReplacesHistoryTimeWithNow()
+        {
+            _service.StartSharing(
+                kAdmin,
+                "Ruth Nakalema",
+                new SharingInvitation[0],
+                new[] { HistoryMember("amina@example.org", SharingRole.Editor, 5) }
+            );
+            Assert.That(_service.GetRecord().Members[1].LastSeen, Is.Not.EqualTo(_now));
+
+            _service.RecordVisit("amina@example.org", "Amina Yusuf");
+
+            Assert.That(MakeService().GetRecord().Members[1].LastSeen, Is.EqualTo(_now));
         }
 
         [Test]
