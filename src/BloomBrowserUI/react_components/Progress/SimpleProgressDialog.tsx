@@ -176,7 +176,15 @@ export const SimpleProgressDialog: React.FunctionComponent<
             return;
         }
         isShowing.current = false;
+        // Runs at most once per close: C# takes each progress/closed as the end of whatever job is
+        // current, so a second one (from the cleanup, after the timer already ran) would end the
+        // next job early.
+        let finished = false;
         const finishClosing = () => {
+            if (finished) {
+                return;
+            }
+            finished = true;
             closeDialog();
             if (everOpened.current && tellBrowserProgressDialog) {
                 post("progress/closed");
@@ -191,7 +199,7 @@ export const SimpleProgressDialog: React.FunctionComponent<
         const timer = window.setTimeout(finishClosing, kShowFullBarMs);
         return () => {
             // Reopened, or unmounted, before the wait was over: finish closing now, so C# still
-            // hears progress/closed.
+            // hears progress/closed. (After the wait, this does nothing; see finished.)
             window.clearTimeout(timer);
             finishClosing();
         };

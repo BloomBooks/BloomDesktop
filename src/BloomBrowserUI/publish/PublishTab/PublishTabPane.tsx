@@ -293,6 +293,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                                 newIndex;
                                             return;
                                         }
+                                        toolWaitingForPages.current = undefined;
                                         setTabIndex(newIndex);
                                     },
                                 );
