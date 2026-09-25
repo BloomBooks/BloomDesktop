@@ -19,7 +19,7 @@ import {
     SetupVideoEditing,
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
-import { setupOrigami, cleanupOrigami } from "./origami";
+import { setupOrigami, cleanupOrigami, origamiCanUndo } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1825,6 +1825,55 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     if (isCtrlV) {
         pasteHandler(e);
     }
+});
+
+// Where Ctrl+Z belongs to something other than the image undo: a text field or a rich-text
+// editable keeps the undo that comes with it (native for a form field, ckeditor for a
+// bloom-editable).
+export const kNotOurUndoSelector = "input, textarea, [contenteditable=true]";
+
+// Is a modal open over the page? While one is, the thing the user is typing into or looking
+// at is the modal, not the picture behind it, so Ctrl+Z must not reach past it and replace a
+// picture they cannot even see. Bloom puts modals up three ways and this has to catch all of
+// them: the React dialogs (MUI renders a .MuiDialog-container), the older jQuery UI ones such
+// as Reader Setup (.ui-dialog, with .ui-widget-overlay behind it), and the AI Image Editor,
+// whose own content is an iframe but whose frame and close button are elements of the host
+// document.
+export function isModalOpen(doc: Document): boolean {
+    return !!doc.querySelector(
+        ".MuiDialog-container, .ui-dialog, .ui-widget-overlay, #ai-image-editor-overlay",
+    );
+}
+
+// Ctrl+Z over a picture. Text gets its undo from the ckeditor instance that has focus, and
+// the origami layout mode binds its own handler, but an image change had neither: the only
+// way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
+// nothing (BL-16868). We take the key only when there is an image change to undo and the
+// keystroke did not come from inside text, so ckeditor keeps every case that is its own.
+document.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (!e.ctrlKey || e.altKey || e.shiftKey) return;
+    if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest?.(kNotOurUndoSelector)) return;
+    if (isModalOpen(document)) return;
+    // Origami and the toolbox both get first refusal, in the same order the Undo button's
+    // handleUndo gives them: while layout mode is on Ctrl+Z belongs to the layout undo, and a
+    // tool that has something to undo (the reader tools do) owns it over an image change.
+    // Origami's handler is bound to this frame's html element, so without that check one
+    // keystroke would run both undos.
+    if (origamiCanUndo()) return;
+    const toolbox = getToolboxBundleExports();
+    if (toolbox?.canUndo()) {
+        // Do the tool's undo here rather than just standing aside: no tool listens for the
+        // keystroke itself, so bowing out would leave Ctrl+Z doing nothing at all.
+        e.preventDefault();
+        toolbox.undo();
+        toolbox.updateMarkupAfterUndoOrRedo();
+        return;
+    }
+    if (!imageOperationCanUndo()) return;
+    e.preventDefault();
+    imageOperationUndo();
 });
 
 async function pasteImpl(imageAvailable: boolean) {
