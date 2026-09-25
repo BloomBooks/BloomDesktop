@@ -280,7 +280,7 @@ sequenceDiagram
         DB-->>C: success false (+ holder)
         C->>F: delete
     else no response after retries
-        C->>C: keep the file; next poll/open decides
+        C->>C: keep the file, the next poll or open decides
     end
 ```
 
