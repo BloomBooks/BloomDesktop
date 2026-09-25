@@ -268,14 +268,18 @@ export const SimpleProgressDialog: React.FunctionComponent<
                         {`${percent}%`}
                     </div>
                 </div>
-                <div
-                    css={css`
-                        margin-top: 20px;
-                        font-size: 16px;
-                    `}
-                >
-                    {props.message}
-                </div>
+                {/* The message asks the user to wait, which is no longer true once the job has
+                    ended with a problem; then the problem is the whole story. */}
+                {!(done && problems.length > 0) && (
+                    <div
+                        css={css`
+                            margin-top: 20px;
+                            font-size: 16px;
+                        `}
+                    >
+                        {props.message}
+                    </div>
+                )}
                 {problems.map((problem, index) => (
                     <div
                         // The list only grows, and nothing reorders it, so the index is a stable key.
