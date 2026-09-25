@@ -33,6 +33,12 @@ export const handler = async (
         });
     }
 
+    // Get the S3 credentials BEFORE collection_files_start_tx commits a transaction (as
+    // checkin-start does), so a credential failure cannot leave an open transaction the
+    // client never heard of. If the RPC refuses, these credentials are simply discarded.
+    const prefix = collectionFilesPrefix(collectionId, groupKey);
+    const s3 = await getScopedCredentials(prefix, S3_WRITE_ACTIONS);
+
     const result = await callTcRpc<CollectionFilesStartResult>(
         req,
         "collection_files_start_tx",
@@ -43,9 +49,6 @@ export const handler = async (
             p_files: files,
         },
     );
-
-    const prefix = collectionFilesPrefix(collectionId, groupKey);
-    const s3 = await getScopedCredentials(prefix, S3_WRITE_ACTIONS);
 
     return jsonResponse(200, {
         transactionId: result.transactionId,

@@ -195,3 +195,27 @@ GRANT SELECT ON TABLE tc.versions TO authenticated;
 
 -- Defense in depth: anon holds no privileges anywhere in tc.
 REVOKE ALL ON ALL TABLES IN SCHEMA tc FROM anon;
+
+-- Realtime (CONTRACTS.md §Realtime): tc.events_realtime_broadcast sends each event on the
+-- PRIVATE broadcast channel collection:{collection_id}; the Realtime server lets a signed-in
+-- user join a private channel only if this policy lets them read its messages, i.e. only a
+-- member of that collection. realtime.messages belongs to the Realtime service, so where it is
+-- not installed (a database started without Realtime) there is nothing to protect. The CASE
+-- keeps the uuid cast away from any other topic.
+DO $$
+BEGIN
+    IF to_regclass('realtime.messages') IS NOT NULL THEN
+        DROP POLICY IF EXISTS tc_members_receive_collection_broadcasts ON realtime.messages;
+        CREATE POLICY tc_members_receive_collection_broadcasts ON realtime.messages
+            FOR SELECT TO authenticated
+            USING (
+                realtime.messages.extension = 'broadcast'
+                AND CASE
+                    WHEN realtime.topic() ~ '^collection:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                        THEN tc.is_member(substr(realtime.topic(), 12)::uuid)
+                    ELSE false
+                END
+            );
+    END IF;
+END;
+$$;

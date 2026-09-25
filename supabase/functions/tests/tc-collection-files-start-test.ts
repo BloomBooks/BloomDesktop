@@ -1,10 +1,11 @@
 // Unit tests for collection-files-start's handler: groupKey validation, the
 // optimistic-version RPC call, and scoped S3 credential issuance.
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { AssumeRoleCommand } from "@aws-sdk/client-sts";
 import {
     callHandler,
     mockRequest,
+    type RecordedCall,
     routedFetchStub,
     setTestEnv,
     stubAssumeRole,
@@ -90,10 +91,57 @@ Deno.test(
         const json = await res.json();
         assertEquals(json.error, "VersionConflict");
         assertEquals(json.currentVersion, 5);
+        // Credentials are obtained before the RPC (see the STS-failure test below), but a
+        // refused start must never hand them out.
+        assertEquals(
+            "s3" in json,
+            false,
+            "must not return creds on a version conflict",
+        );
+
+        stsMock.restore();
+    },
+);
+
+Deno.test(
+    "collection-files-start: an STS failure happens before collection_files_start_tx, so no transaction is opened",
+    async () => {
+        const stsMock = stubAssumeRole();
+        stsMock
+            .on(AssumeRoleCommand)
+            .rejects(new Error("simulated STS outage"));
+        const calls: RecordedCall[] = [];
+        const fetchStub = routedFetchStub(
+            [
+                {
+                    when: "rpc/collection_files_start_tx",
+                    status: 200,
+                    body: {
+                        transactionId: "tx-1",
+                        changedPaths: ["allowed.txt"],
+                    },
+                },
+            ],
+            calls,
+        );
+
+        await assertRejects(
+            () =>
+                withMockFetch(fetchStub, () =>
+                    callHandler(handler, mockRequest(VALID_BODY), VALID_BODY),
+                ),
+            Error,
+            "simulated STS outage",
+        );
         assertEquals(
             stsMock.commandCalls(AssumeRoleCommand).length,
-            0,
-            "must not issue creds on a version conflict",
+            1,
+            "sanity check: STS was really asked (and failed)",
+        );
+        assertEquals(
+            calls.some((c) => c.url.includes("rpc/collection_files_start_tx")),
+            false,
+            "collection_files_start_tx must not run once STS has failed",
         );
 
         stsMock.restore();

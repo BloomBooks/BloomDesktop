@@ -306,6 +306,12 @@ but giving the feature to real testers does:
   inventory-based cleanup (e.g. S3 Inventory, or a periodic listing of `tc/*/books/*/`, deleting
   prefixes/keys that no book row or manifest references and that are older than the sweep grace);
   not built. Also recorded in CONTRACTS.md ("Orphaned uploads").
+- **[OPS, when clients start using realtime] Realtime private channels.** Events are broadcast
+  with `realtime.send` on the private channel `collection:{uuid}` (CONTRACTS.md §Realtime), and
+  `04_security.sql` adds the members-only read policy on `realtime.messages` only if that table
+  already exists when the migration runs (it belongs to the Realtime service). On the hosted
+  project, check the policy `tc_members_receive_collection_broadcasts` is present, and turn off
+  the project's "allow public access" Realtime setting so only private channels are allowed.
 - **[POLICY DECIDED 9 Jul 2026 → AGENT] Subscription-tier check timing.** John: cloud TCs
   require the SAME subscription tier as folder Team Collections — no new policy, reuse the
   existing FeatureName.TeamCollection gate. Remaining [AGENT] work is purely the timing bug:

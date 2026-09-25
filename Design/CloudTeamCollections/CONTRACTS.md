@@ -26,7 +26,17 @@ is also the answer to a GUID sent for a send-only lock). `checkout_book_takeover
 version bump, additive): `checkin-finish` and `collection-files-finish` never commit an upload
 older than a 24 h commit window — 409 `MissingOrBadUploads` then also carries `stalePaths[]`, and
 the client re-uploads as for any `MissingOrBadUploads` — so the orphaned-upload sweep (48 h grace,
-now paged through all its work each run) can never delete a version being committed. v1.9, 24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
+now paged through all its work each run) can never delete a version being committed. A second
+v1.10 follow-up (no version bump; nothing the client sends changes): realtime events now go out
+on the contracted private channel `collection:{uuid}` (they were on the wrong channel) as
+broadcast event `tc_event`, members only; `checkin-abort` of a transaction that no longer exists
+is a 200 no-op instead of 404 (a retried abort of a new book); `collection-files-start` gets its
+S3 credentials before opening the transaction. A third (no version bump; additive): `unlock_book`
+(and releasing an aborted or expired check-in's send-only lock) now records a new event type
+`101` CheckOutReleased, so polling clients see the book unlocked — the client should add it to
+`BookHistoryEventType` (see §Realtime); a resumed new-book check-in is name-checked at start
+(`409 NameConflict`) like a fresh one; manifest backups are kept per version and the latest one
+can no longer regress (see §S3 layout). v1.9, 24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
 "seat" and the v1.8 takeover token are replaced by a **checkout GUID**, which says which local
 copy of a book holds its checkout, so check-in keeps working when a collection folder is moved,
 renamed or copied, and a second copy can no longer silently take the checkout from the first.
@@ -208,7 +218,7 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `get_collection_file_manifest(collection_id, group_key)` | v1.7: per-file current manifest `{groupKey, version, files:[{path, sha256, size, s3VersionId}]}` for one collection-file group, so the download path fetches only changed files pinned to their committed `s3_version_id` (E9); a never-written group returns `version 0` / empty `files`. Mirrors `get_book_manifest`. |
 | `checkout_book(book_id, machine text, checkout_guid text)` | conditional lock of a FREE book; returns resulting status (winner's identity on failure). v1.10: `checkout_guid` is made by the client and saved in `.checkout` before the call (see "Checkout GUID" below); NULL or blank raises SQLSTATE 22023 `invalid_checkout_guid`. On success returns `{success: true, locked_by, locked_by_machine, locked_at}` (no GUID). A retry by the caller with the SAME GUID after it succeeded returns the same success, changing nothing and emitting no second event. A book the caller holds under a different GUID (another copy), or under a send-only check-in lock, returns `{success: false, locked_by_me: true, locked_by, locked_by_machine, locked_at}` and changes nothing, because replacing the GUID would orphan the copy holding the current one. Locked by someone else (or deleted): `{success: false, locked_by, locked_by_machine, locked_at}`. `machine` is for display only. |
 | `checkout_book_takeover(book_id, checkout_guid text, machine text)` | v1.4/v1.9: atomically reassigns a DIFFERENT account's lock to the caller ONLY when `checkout_guid` is the lock's current checkout GUID (account switch, batch item 9: account B opening the local copy account A checked the book out in, whose `.checkout` file holds the GUID). Presenting the member-readable hash does not work. The GUID is kept (not rotated), so the same copy goes on working under the new account. `machine` is recorded with the new lock for display. Returns `{success, locked_by, locked_by_machine, locked_at}`; emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, or the GUID is missing/wrong. |
-| `unlock_book(book_id, checkout_guid text)` | release own lock (undo checkout, no content change). v1.9: needs the current checkout GUID; otherwise raises `CheckoutElsewhere: ...` (SQLSTATE P0001; HTTP 400), as it does for the hash in place of the GUID. Not the holder: `lock_not_held: ...` as before |
+| `unlock_book(book_id, checkout_guid text)` | release own lock (undo checkout, no content change). v1.9: needs the current checkout GUID; otherwise raises `CheckoutElsewhere: ...` (SQLSTATE P0001; HTTP 400), as it does for the hash in place of the GUID. Not the holder: `lock_not_held: ...` as before. v1.10 follow-up: emits a CheckOutReleased (101) event |
 | `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event. Never needs the checkout GUID; clears it with the lock |
 | `delete_book(book_id, checkout_guid text)` | requires caller holds the lock and (v1.9) presents its checkout GUID (else `CheckoutElsewhere: ...`, SQLSTATE P0001); sets `deleted_at`; emits Deleted |
 | `undelete_book(book_id)` | admin; clears tombstone (name-uniqueness enforced) |
@@ -250,7 +260,8 @@ clientVersion, files: [{path, sha256, size}], checkoutGuid? }`
   row locked to caller with NO current version (invisible to teammates until first commit).
   v1.10: the lock is for the send only, with no checkout GUID (a first check-in never leaves the
   book checked out); re-calling for the same never-committed book (resume) needs only the same
-  user and `bookInstanceId` (any `checkoutGuid` sent is ignored).
+  user and `bookInstanceId` (any `checkoutGuid` sent is ignored); the resumed `proposedName` is
+  checked against other live books just as a fresh one is (409 `NameConflict`).
 - v1.9/v1.10, existing book: if the caller has it checked out, `checkoutGuid` must be its current
   checkout GUID, else 409 `CheckoutElsewhere` (the caller holds it in another copy); under the
   caller's own send-only lock (an unfinished check-in that took it while free) `checkoutGuid` must
@@ -319,7 +330,10 @@ along with the file list it verified; every start resume bumps `revision`, and a
 409 `TransactionChanged` above.
 
 #### `checkin-abort` POST — `{ transactionId }` → 200.
-Removes a never-committed new book; v1.10: releases an existing book's send-only lock (no GUID)
+Idempotent: v1.10 follow-up, a transaction id that does not exist (any longer) is also 200 — a
+no-op, not 404 — because aborting a never-committed new book removes the transaction with the
+book, and a retry after a lost response must still succeed. Someone else's transaction is still
+403. Removes a never-committed new book; v1.10: releases an existing book's send-only lock (no GUID)
 that the aborted check-in took; a checkout (with a GUID) is kept. An expired check-in's send-only
 lock is released the same way when it is reaped.
 
@@ -353,23 +367,45 @@ and finish retries are idempotent (`{ version }` of the committed transaction). 
 finish can also answer 409 `TransactionChanged` (a concurrent start resumed the transaction
 while finish was verifying it; nothing committed, retry as for any failed finish). v1.10
 follow-up: as in `checkin-finish`, an upload older than the 24 h commit window is not committed
-(409 `MissingOrBadUploads` with `stalePaths[]`; upload again).
+(409 `MissingOrBadUploads` with `stalePaths[]`; upload again). `collection-files-start` gets
+its S3 credentials before it opens (or resumes) the transaction, as `checkin-start` does, so a
+credential failure leaves no transaction the client never heard of; a refused start returns none.
 
 ## Realtime
 
 Private broadcast channel `collection:{uuid}` (events-table trigger). Message:
 `{ eventId, type, bookId?, versionSeq?, byUserName, byEmail, lock?, name?, groupKey? }`.
+v1.10 follow-up: the trigger sends it with Supabase Realtime's `realtime.send` as broadcast event
+`tc_event` (the payload also carries an `id` that `realtime.send` adds); only members of the
+collection may join the channel (RLS policy `tc_members_receive_collection_broadcasts` on
+`realtime.messages`). Subscribe with `private: true` and the user's JWT. (The Bloom client polls
+`get_changes` for now; realtime is a later wave.)
 Clients persist `last_seen_event_id`; on (re)connect always run one `get_changes` delta first.
-Event `type` values = existing `BookHistoryEventType` numerics + incident extensions
-(e.g. WorkPreservedLocally).
+Event `type` values = existing `BookHistoryEventType` numerics + cloud extensions from 100:
+`100` WorkPreservedLocally (client-logged incident) and, v1.10 follow-up, `101`
+**CheckOutReleased** — a lock released without a check-in by (or on behalf of) its holder:
+`unlock_book`, or the send-only lock of a check-in that was aborted or expired (only for a
+committed book; a new book is invisible). ForcedUnlock (5) stays the admin's `force_unlock` and
+member removal. Every lock change of a visible book now has an event, so a `get_changes` poll
+always returns the book's new lock state. **Client:** add `CheckOutReleased = 101` to
+`BookHistoryEventType` (and to CollectionHistoryTable.tsx's names / EventTypeEnumerationIsStable);
+no special handling is needed for the refresh (polling already diffs the returned book rows), and
+the history list may show it (e.g. "Checkout undone") or leave it out.
 
 ## S3 layout (bucket versioning ON; lifecycle: abort-multipart 7d, noncurrent expiry ~7d)
 
 ```
 tc/{collectionId}/books/{bookInstanceId}/{relativePath}     (NFC-normalized)
-tc/{collectionId}/books/{bookInstanceId}/.manifest.json     (current manifest backup)
+tc/{collectionId}/books/{bookInstanceId}/.manifest.json     (latest manifest backup)
+tc/{collectionId}/books/{bookInstanceId}/.manifests/{seq}.json   (backup of version seq)
 tc/{collectionId}/collectionFiles/{group}/{relativePath}
+tc/{collectionId}/collectionFiles/{group}/.manifest.json, .manifests/{version}.json
 ```
+Manifest backups are best-effort copies written after each commit (the DB is the source of truth;
+nothing reads them yet). v1.10 follow-up: each committed version gets its own immutable
+`.manifests/{seq}.json`, and `.manifest.json` carries its version in the `x-amz-meta-manifest-seq`
+metadata and is replaced only by a newer one (conditional PUT), so overlapping finishes that
+complete out of commit order can no longer leave an older manifest as the latest.
 Reads are ALWAYS by (path, s3VersionId) from the committed manifest — never "latest".
 Invariant: check-in transaction lifetime < noncurrent-expiry floor.
 

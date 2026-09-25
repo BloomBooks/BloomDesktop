@@ -73,25 +73,43 @@ Deno.test(
 );
 
 Deno.test(
-    "checkin-abort: RPC 404 transaction_not_found passes through",
+    "checkin-abort: a transaction that no longer exists (RPC no-op success) -> 200 {}",
+    async () => {
+        // checkin_abort_tx returns normally for an unknown id: aborting a never-committed new
+        // book deletes its transaction, so a retry after a lost response must still succeed.
+        const fetchStub = routedFetchStub([
+            { when: "rpc/checkin_abort_tx", status: 200, body: null },
+        ]);
+
+        const res = await withMockFetch(fetchStub, () =>
+            callHandler(handler, mockRequest({ transactionId: "gone" }), {
+                transactionId: "gone",
+            }),
+        );
+
+        assertEquals(res.status, 200);
+        assertEquals(await res.json(), {});
+    },
+);
+
+Deno.test(
+    "checkin-abort: RPC 403 forbidden (someone else's transaction) passes through",
     async () => {
         const fetchStub = routedFetchStub([
             {
                 when: "rpc/checkin_abort_tx",
-                status: 404,
-                body: {
-                    message: JSON.stringify({ error: "transaction_not_found" }),
-                },
+                status: 403,
+                body: { message: JSON.stringify({ error: "forbidden" }) },
             },
         ]);
 
         const res = await withMockFetch(fetchStub, () =>
-            callHandler(handler, mockRequest({ transactionId: "nope" }), {
-                transactionId: "nope",
+            callHandler(handler, mockRequest({ transactionId: "tx-other" }), {
+                transactionId: "tx-other",
             }),
         );
 
-        assertEquals(res.status, 404);
-        assertEquals((await res.json()).error, "transaction_not_found");
+        assertEquals(res.status, 403);
+        assertEquals((await res.json()).error, "forbidden");
     },
 );

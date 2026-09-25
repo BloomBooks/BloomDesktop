@@ -218,9 +218,178 @@ Deno.test(
         const client = new S3Client({ region: "us-east-1" });
         // Must resolve, not reject — checkin-finish's response to the client must not
         // depend on this backup write succeeding (see s3.ts's doc comment).
-        await writeManifestBackup(client, "bucket", "tc/col1/books/book1/", {
+        await writeManifestBackup(client, "bucket", "tc/col1/books/book1/", 1, {
             some: "manifest",
         });
+
+        s3Mock.restore();
+    },
+);
+
+// A tiny S3 stand-in for the manifest backup keys, honouring If-Match / If-None-Match the way
+// S3 does (412 PreconditionFailed). `beforeConditionalPut` lets a test slip another writer in
+// between our read and our write.
+interface StoredObject {
+    body: string;
+    seq: string | undefined;
+    etag: string;
+}
+const fakeManifestStore = (
+    s3Mock: ReturnType<typeof mockClient>,
+    beforeConditionalPut?: (store: Map<string, StoredObject>) => void,
+) => {
+    const store = new Map<string, StoredObject>();
+    let nextEtag = 1;
+    const preconditionFailed = () =>
+        Object.assign(new Error("PreconditionFailed"), {
+            name: "PreconditionFailed",
+            $metadata: { httpStatusCode: 412 },
+        });
+    s3Mock.on(HeadObjectCommand).callsFake((input: { Key: string }) => {
+        const o = store.get(input.Key);
+        if (!o) {
+            throw Object.assign(new Error("NotFound"), {
+                name: "NotFound",
+                $metadata: { httpStatusCode: 404 },
+            });
+        }
+        return {
+            ETag: o.etag,
+            Metadata: o.seq ? { "manifest-seq": o.seq } : {},
+        };
+    });
+    s3Mock
+        .on(PutObjectCommand)
+        .callsFake(
+            (input: {
+                Key: string;
+                Body: string;
+                Metadata?: Record<string, string>;
+                IfMatch?: string;
+                IfNoneMatch?: string;
+            }) => {
+                if (
+                    input.IfMatch !== undefined ||
+                    input.IfNoneMatch !== undefined
+                ) {
+                    beforeConditionalPut?.(store);
+                    const existing = store.get(input.Key);
+                    if (input.IfNoneMatch === "*" && existing)
+                        throw preconditionFailed();
+                    if (
+                        input.IfMatch !== undefined &&
+                        existing?.etag !== input.IfMatch
+                    ) {
+                        throw preconditionFailed();
+                    }
+                }
+                store.set(input.Key, {
+                    body: input.Body,
+                    seq: input.Metadata?.["manifest-seq"],
+                    etag: `"e${nextEtag++}"`,
+                });
+                return { ETag: `"e${nextEtag}"` };
+            },
+        );
+    return store;
+};
+
+const PREFIX = "tc/col1/books/book1/";
+
+Deno.test(
+    "writeManifestBackup: finishes completing out of commit order never regress the latest backup",
+    async () => {
+        const s3Mock = mockClient(S3Client);
+        const store = fakeManifestStore(s3Mock);
+        const client = new S3Client({ region: "us-east-1" });
+
+        // Version 5's finish writes its backup first; version 4's, which committed earlier,
+        // only gets there afterwards.
+        await writeManifestBackup(client, "bucket", PREFIX, 5, { v: 5 });
+        assertEquals(
+            store.get(`${PREFIX}.manifest.json`)?.seq,
+            "5",
+            "sanity check: v5 is latest",
+        );
+        await writeManifestBackup(client, "bucket", PREFIX, 4, { v: 4 });
+
+        const latest = store.get(`${PREFIX}.manifest.json`);
+        assertEquals(latest?.seq, "5");
+        assertEquals(JSON.parse(latest?.body ?? "null"), { v: 5 });
+        // Every committed version still has its own backup.
+        assertEquals(
+            JSON.parse(store.get(`${PREFIX}.manifests/4.json`)?.body ?? "null"),
+            { v: 4 },
+        );
+        assertEquals(
+            JSON.parse(store.get(`${PREFIX}.manifests/5.json`)?.body ?? "null"),
+            { v: 5 },
+        );
+
+        s3Mock.restore();
+    },
+);
+
+Deno.test(
+    "writeManifestBackup: a newer version is the latest backup, first time and after",
+    async () => {
+        const s3Mock = mockClient(S3Client);
+        const store = fakeManifestStore(s3Mock);
+        const client = new S3Client({ region: "us-east-1" });
+
+        await writeManifestBackup(client, "bucket", PREFIX, 1, { v: 1 });
+        assertEquals(
+            store.get(`${PREFIX}.manifest.json`)?.seq,
+            "1",
+            "created with If-None-Match",
+        );
+        await writeManifestBackup(client, "bucket", PREFIX, 2, { v: 2 });
+        assertEquals(
+            store.get(`${PREFIX}.manifest.json`)?.seq,
+            "2",
+            "replaced with If-Match",
+        );
+
+        s3Mock.restore();
+    },
+);
+
+Deno.test(
+    "writeManifestBackup: a newer backup written between our read and our write is not overwritten",
+    async () => {
+        const s3Mock = mockClient(S3Client);
+        let raced = false;
+        const store = fakeManifestStore(s3Mock, (s) => {
+            // The first time we try to replace v3, version 5's finish gets there first.
+            if (raced) return;
+            raced = true;
+            s.set(`${PREFIX}.manifest.json`, {
+                body: '{"v":5}',
+                seq: "5",
+                etag: '"other"',
+            });
+        });
+        store.set(`${PREFIX}.manifest.json`, {
+            body: '{"v":3}',
+            seq: "3",
+            etag: '"e0"',
+        });
+        const client = new S3Client({ region: "us-east-1" });
+
+        await writeManifestBackup(client, "bucket", PREFIX, 4, { v: 4 });
+
+        assertEquals(
+            raced,
+            true,
+            "sanity check: the other writer really slipped in",
+        );
+        assertEquals(store.get(`${PREFIX}.manifest.json`)?.seq, "5");
+        assertEquals(
+            s3Mock.commandCalls(HeadObjectCommand).length,
+            2,
+            "re-read after the 412",
+        );
+        assertExists(store.get(`${PREFIX}.manifests/4.json`));
 
         s3Mock.restore();
     },

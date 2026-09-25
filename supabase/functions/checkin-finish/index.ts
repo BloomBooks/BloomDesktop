@@ -108,7 +108,13 @@ export const handler = async (
 
     if (result.manifest) {
         // Best-effort backup; never blocks the response (see writeManifestBackup).
-        await writeManifestBackup(client, bucket, prefix, result.manifest);
+        await writeManifestBackup(
+            client,
+            bucket,
+            prefix,
+            result.seq,
+            result.manifest,
+        );
     }
 
     return jsonResponse(200, { versionId: result.versionId, seq: result.seq });

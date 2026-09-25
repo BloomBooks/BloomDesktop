@@ -450,6 +450,11 @@ Deno.test(
             false,
             "the internal `manifest` field must never leak to the client",
         );
+        // The backup is written under the committed seq first (see writeManifestBackup).
+        assertEquals(
+            s3Mock.commandCalls(PutObjectCommand)[0]?.args[0].input.Key,
+            "tc/col-1/books/instance-1/.manifests/9.json",
+        );
 
         s3Mock.restore();
     },

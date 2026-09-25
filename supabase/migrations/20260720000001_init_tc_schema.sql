@@ -38,13 +38,15 @@ CREATE OR REPLACE FUNCTION tc._checkin_reap_book(p_book_id uuid) RETURNS void
     AS $$
 DECLARE
     v_new_book boolean;
+    v_book     tc.books%ROWTYPE;
+    v_released integer;
 BEGIN
-    SELECT (current_version_id IS NULL) INTO v_new_book
-    FROM tc.books WHERE id = p_book_id;
+    SELECT * INTO v_book FROM tc.books WHERE id = p_book_id;
 
     IF NOT FOUND THEN
         RETURN;
     END IF;
+    v_new_book := v_book.current_version_id IS NULL;
 
     -- A send-only lock (no checkout GUID) exists only for its check-in, so it goes when
     -- that check-in expires; otherwise nobody could release it without an admin.
@@ -63,6 +65,15 @@ BEGIN
           WHERE t.book_id = p_book_id AND t.started_by = b.locked_by
             AND t.status = 'open' AND t.expires_at >= now()
       );
+    GET DIAGNOSTICS v_released = ROW_COUNT;
+
+    -- A committed book's lock was visible to teammates: record its release (CheckOutReleased,
+    -- type = 101, on behalf of the holder) so polling clients see it. A new book is invisible.
+    IF v_released > 0 AND NOT v_new_book THEN
+        INSERT INTO tc.events (collection_id, book_id, type, by_user_id, book_name, message)
+        VALUES (v_book.collection_id, v_book.id, 101, v_book.locked_by, v_book.name,
+                'check-in expired');
+    END IF;
 
     IF v_new_book THEN
         -- Deleting the book cascades its (expired, still-open) transactions.
@@ -226,7 +237,10 @@ BEGIN
     -- status instead of overwriting a just-finished transaction with 'aborted'.
     SELECT * INTO v_tx FROM tc.checkin_transactions WHERE id = p_transaction_id FOR UPDATE;
     IF NOT FOUND THEN
-        RAISE EXCEPTION '%', '{"error":"transaction_not_found"}' USING ERRCODE = 'PT404';
+        -- Nothing (any longer) to abort. Aborting a never-committed new book deletes the book,
+        -- and with it this very row, so a retry after a lost response lands here and must
+        -- succeed like any other repeat abort. It reveals nothing about anyone's transactions.
+        RETURN;
     END IF;
     IF v_tx.started_by <> v_user_id THEN
         RAISE EXCEPTION '%', '{"error":"forbidden"}' USING ERRCODE = 'PT403';
@@ -256,20 +270,29 @@ BEGIN
     -- A send-only lock (start took the free book, with no checkout GUID) exists only for
     -- this check-in, so it goes with it; a real checkout stays.
     IF v_tx.checkout_guid_hash IS NULL THEN
-        UPDATE tc.books
-        SET locked_by = NULL, locked_by_machine = NULL, locked_at = NULL
-        WHERE id = v_tx.book_id
-          AND locked_by = v_user_id
-          AND checkout_guid_hash IS NULL
-          AND NOT EXISTS (
-              SELECT 1 FROM tc.checkin_transactions
-              WHERE book_id = v_tx.book_id AND started_by = v_user_id AND status = 'open'
-          );
+        -- A committed book's lock was visible to teammates, so its release is recorded
+        -- (CheckOutReleased, type = 101) for polling clients to see; a new book is invisible.
+        WITH released AS (
+            UPDATE tc.books
+            SET locked_by = NULL, locked_by_machine = NULL, locked_at = NULL
+            WHERE id = v_tx.book_id
+              AND locked_by = v_user_id
+              AND checkout_guid_hash IS NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM tc.checkin_transactions
+                  WHERE book_id = v_tx.book_id AND started_by = v_user_id AND status = 'open'
+              )
+            RETURNING id, collection_id, name, current_version_id
+        )
+        INSERT INTO tc.events (collection_id, book_id, type, by_user_id, by_user_name, by_email, book_name)
+        SELECT r.collection_id, r.id, 101, v_user_id, (auth.jwt() ->> 'name'), tc.current_user_email(), r.name
+        FROM released r
+        WHERE r.current_version_id IS NOT NULL;
     END IF;
 END;
 $$;
 
-COMMENT ON FUNCTION tc.checkin_abort_tx(p_transaction_id uuid) IS 'Internal to the checkin-abort edge function. Idempotent. Rolls back a never-finished new book entirely; releases an existing book''s send-only lock (v1.10: taken by checkin-start with no checkout GUID); leaves a real checkout untouched.';
+COMMENT ON FUNCTION tc.checkin_abort_tx(p_transaction_id uuid) IS 'Internal to the checkin-abort edge function. Idempotent, including for a transaction id that no longer exists (e.g. removed with the new book a first abort rolled back): that is a no-op success, not 404. Rolls back a never-finished new book entirely; releases an existing book''s send-only lock (v1.10: taken by checkin-start with no checkout GUID); leaves a real checkout untouched.';
 
 CREATE OR REPLACE FUNCTION tc.checkin_finish_tx(p_transaction_id uuid, p_user_id text, p_user_email text, p_user_name text, p_comment text, p_keep_checked_out boolean, p_captured jsonb, p_expected_revision bigint) RETURNS jsonb
     LANGUAGE plpgsql SECURITY DEFINER
@@ -527,6 +550,19 @@ BEGIN
             END IF;
             -- else: our own resumable row. A first check-in is a send, not a checkout, so
             -- the row is locked to the sender with no checkout GUID and resuming needs none.
+            -- The resumed send may propose a different name from the first try (the book was
+            -- renamed locally meanwhile): refuse a clash with another live book here, as for a
+            -- fresh new book, rather than as a unique-index violation at finish.
+            IF EXISTS (
+                SELECT 1 FROM tc.books
+                WHERE collection_id = p_collection_id
+                  AND id <> v_book.id
+                  AND deleted_at IS NULL
+                  AND lower(normalize(name, NFC)) = lower(normalize(p_proposed_name, NFC))
+            ) THEN
+                RAISE EXCEPTION '%', json_build_object('error', 'NameConflict')::text
+                    USING ERRCODE = 'PT409';
+            END IF;
         ELSE
             IF EXISTS (
                 SELECT 1 FROM tc.books
@@ -1270,25 +1306,36 @@ CREATE OR REPLACE FUNCTION tc.events_realtime_broadcast() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    PERFORM pg_notify(
-        'realtime:' || NEW.collection_id::text,
-        json_build_object(
-            'eventId',     NEW.id,
-            'type',        NEW.type,
-            'bookId',      NEW.book_id,
-            'versionSeq',  NEW.book_version_seq,
-            'byUserName',  NEW.by_user_name,
-            'byEmail',     NEW.by_email,
-            'lock',        NEW.lock_info,
-            'name',        NEW.book_name,
-            'groupKey',    NEW.group_key
-        )::text
-    );
+    -- Supabase Realtime's broadcast-from-database: realtime.send stores the message in
+    -- realtime.messages, and the Realtime server delivers it to subscribers of the private
+    -- channel collection:{collection_id} whom the realtime.messages RLS policy lets read it
+    -- (04_security.sql). realtime.send only warns if it cannot deliver, so a Realtime problem
+    -- never blocks the check-in that logged the event. Where the Realtime schema is absent
+    -- (a database started without the Realtime service, as the pgTAP job does) there is
+    -- nothing to send to; clients catch up with get_changes either way.
+    IF to_regprocedure('realtime.send(jsonb,text,text,boolean)') IS NOT NULL THEN
+        PERFORM realtime.send(
+            jsonb_build_object(
+                'eventId',     NEW.id,
+                'type',        NEW.type,
+                'bookId',      NEW.book_id,
+                'versionSeq',  NEW.book_version_seq,
+                'byUserName',  NEW.by_user_name,
+                'byEmail',     NEW.by_email,
+                'lock',        NEW.lock_info,
+                'name',        NEW.book_name,
+                'groupKey',    NEW.group_key
+            ),
+            'tc_event',
+            'collection:' || NEW.collection_id::text,
+            true
+        );
+    END IF;
     RETURN NEW;
 END;
 $$;
 
-COMMENT ON FUNCTION tc.events_realtime_broadcast() IS 'Broadcasts a realtime notification on channel realtime:{collection_id} for every new event row. The message shape matches CONTRACTS.md §Realtime.';
+COMMENT ON FUNCTION tc.events_realtime_broadcast() IS 'Broadcasts every new event row with realtime.send (Supabase Realtime broadcast from the database) as event "tc_event" on the PRIVATE channel collection:{collection_id}, in the message shape of CONTRACTS.md §Realtime (realtime.send adds its own "id" key). A no-op where the realtime schema is not installed; delivery failures are only warnings.';
 
 CREATE OR REPLACE FUNCTION tc.force_unlock(p_book_id uuid) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
@@ -2288,10 +2335,16 @@ BEGIN
            locked_by_machine = NULL,
            locked_at         = NULL
     WHERE  id = p_book_id;
+
+    -- CheckOutReleased (type = 101): get_changes only returns books named by newer events,
+    -- so without one, polling teammates would go on seeing the book checked out.
+    INSERT INTO tc.events (collection_id, book_id, type, by_user_id, by_user_name, by_email, book_name)
+    SELECT b.collection_id, b.id, 101, v_user_id, (auth.jwt() ->> 'name'), tc.current_user_email(), b.name
+    FROM tc.books b WHERE b.id = p_book_id;
 END;
 $$;
 
-COMMENT ON FUNCTION tc.unlock_book(p_book_id uuid, p_checkout_guid text) IS 'CONTRACTS.md: unlock_book — release own lock (undo checkout, no content change). Only the lock holder may call this, and (v1.9) only with the current checkout GUID (else CheckoutElsewhere); use force_unlock for admin override. Releasing the lock clears the GUID.';
+COMMENT ON FUNCTION tc.unlock_book(p_book_id uuid, p_checkout_guid text) IS 'CONTRACTS.md: unlock_book — release own lock (undo checkout, no content change). Only the lock holder may call this, and (v1.9) only with the current checkout GUID (else CheckoutElsewhere); use force_unlock for admin override. Releasing the lock clears the GUID. Emits CheckOutReleased (type=101) so polling clients see the book unlocked.';
 
 
 -- ==== 03_tables.sql ====
@@ -2473,10 +2526,10 @@ CREATE TABLE IF NOT EXISTS tc.events (
     message text,
     bloom_version text,
     occurred_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT events_type_check CHECK ((type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100])))
+    CONSTRAINT events_type_check CHECK ((type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 101])))
 );
 
-COMMENT ON TABLE tc.events IS 'History log, realtime broadcast source, and polling cursor. type values mirror C# BookHistoryEventType (HistoryEvent.cs): 0=CheckOut, 1=CheckIn, 2=Created, 3=Renamed, 4=Uploaded(legacy), 5=ForcedUnlock, 6=ImportSpreadsheet, 7=SyncProblem(legacy), 8=Deleted, 9=Moved. Cloud-TC incident extensions start at 100 to avoid colliding with future C# additions: 100=WorkPreservedLocally.';
+COMMENT ON TABLE tc.events IS 'History log, realtime broadcast source, and polling cursor. type values mirror C# BookHistoryEventType (HistoryEvent.cs): 0=CheckOut, 1=CheckIn, 2=Created, 3=Renamed, 4=Uploaded(legacy), 5=ForcedUnlock, 6=ImportSpreadsheet, 7=SyncProblem(legacy), 8=Deleted, 9=Moved. Cloud-TC extensions start at 100 to avoid colliding with future C# additions: 100=WorkPreservedLocally, 101=CheckOutReleased (a lock released without a check-in by its holder: unlock_book, or an aborted or expired check-in''s send-only lock).';
 
 ALTER TABLE tc.events ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME tc.events_id_seq
@@ -2909,3 +2962,27 @@ GRANT SELECT ON TABLE tc.versions TO authenticated;
 
 -- Defense in depth: anon holds no privileges anywhere in tc.
 REVOKE ALL ON ALL TABLES IN SCHEMA tc FROM anon;
+
+-- Realtime (CONTRACTS.md §Realtime): tc.events_realtime_broadcast sends each event on the
+-- PRIVATE broadcast channel collection:{collection_id}; the Realtime server lets a signed-in
+-- user join a private channel only if this policy lets them read its messages, i.e. only a
+-- member of that collection. realtime.messages belongs to the Realtime service, so where it is
+-- not installed (a database started without Realtime) there is nothing to protect. The CASE
+-- keeps the uuid cast away from any other topic.
+DO $$
+BEGIN
+    IF to_regclass('realtime.messages') IS NOT NULL THEN
+        DROP POLICY IF EXISTS tc_members_receive_collection_broadcasts ON realtime.messages;
+        CREATE POLICY tc_members_receive_collection_broadcasts ON realtime.messages
+            FOR SELECT TO authenticated
+            USING (
+                realtime.messages.extension = 'broadcast'
+                AND CASE
+                    WHEN realtime.topic() ~ '^collection:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+                        THEN tc.is_member(substr(realtime.topic(), 12)::uuid)
+                    ELSE false
+                END
+            );
+    END IF;
+END;
+$$;

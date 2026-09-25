@@ -8,12 +8,16 @@
 --   8.   collection files: NFC at start, service-role finish, idempotent retry
 --   9.   the row locks that make start/finish race-safe are present
 --   10.  the sweep's paged worklist and per-key re-check
---   11.  aborting an expired new-book check-in
+--   11.  aborting an expired new-book check-in, and retrying that abort
 --   12-13. the checkout GUID (CONTRACTS.md v1.9/v1.10) at start: required for one's own
---        checkout, never issued; a free or new book is locked for the send only (no hash)
+--        checkout, never issued; a free or new book is locked for the send only (no hash);
+--        a resumed new book's name is conflict-checked (13e)
 --   14.  an admin force-unlocks without the GUID; the old holder's check-in is refused
 --   15-16. a start resume racing a finish is refused at finish (TransactionChanged)
 --   17.  start taking a free lock emits a CheckOut event; abort and expiry release it
+--   18.  a deleted book can't be checked in to
+--   19.  realtime broadcast on collection:{uuid} (skipped without the Realtime service)
+--   20.  undoing a checkout records CheckOutReleased, so polling sees the book unlocked
 --   (5 also covers the GUID at finish: it must not have changed since start, and
 --   keepCheckedOut keeps it.)
 -- (The edge functions call the finish RPCs with the service-role key; here the suite's
@@ -26,7 +30,7 @@
 
 BEGIN;
 
-SELECT plan(89);
+SELECT plan(98);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
@@ -598,6 +602,14 @@ SELECT ok(
     NOT EXISTS (SELECT 1 FROM tc.books WHERE instance_id = 'd0000000-0000-0000-0000-00000000c411'),
     '11b: and removes the never-finished book'
 );
+SELECT ok(
+    NOT EXISTS (SELECT 1 FROM tc.checkin_transactions WHERE id = current_setting('tests.tx11')::uuid),
+    '11c: sanity: removing the book removed its transaction too'
+);
+SELECT lives_ok(
+    format($$SELECT tc.checkin_abort_tx(%L)$$, current_setting('tests.tx11')),
+    '11d: a retried abort of that (now gone) transaction still succeeds, as a no-op'
+);
 
 -- =============================================================================
 -- 12. Existing book: starting a check-in of one's own lock needs its checkout GUID (the
@@ -698,6 +710,18 @@ SELECT ok(
     AND (SELECT count(*) = 1 AND bool_and(checkout_guid_hash IS NULL) FROM tc.checkin_transactions
           WHERE book_id = (SELECT id FROM tc.books WHERE instance_id = 'd0000000-0000-0000-0000-00000000c413')),
     '13d: after the resumes the new book and its one transaction still have no hash'
+);
+
+SELECT ok(
+    (SELECT count(*) = 1 FROM tc.books
+      WHERE collection_id = 'c0000000-0000-0000-0000-00000000c401' AND name = 'Book Two' AND deleted_at IS NULL),
+    '13e-sanity: another live book is called "Book Two"'
+);
+SELECT throws_like(
+    $$SELECT tc.checkin_start_tx('c0000000-0000-0000-0000-00000000c401', NULL, 'd0000000-0000-0000-0000-00000000c413',
+        'book two', NULL, 'cs-13', '6.5.0', '[]')$$,
+    '%NameConflict%',
+    '13e: resuming a never-committed new book under another live book''s name (any case) is a NameConflict'
 );
 
 -- =============================================================================
@@ -897,5 +921,84 @@ SELECT throws_like(
         current_setting('tests.tx18')),
     '%book_not_found%',
     '18b: finish refuses a book deleted after start (no invisible version)'
+);
+-- =============================================================================
+-- 19. Realtime: each event is broadcast on the private channel collection:{uuid}.
+--     realtime.messages and its daily partitions belong to the Realtime service, so these
+--     are skipped in a database started without it (as the db-only pgTAP job may be).
+-- =============================================================================
+
+-- Dynamic SQL, so this file still parses where realtime.messages does not exist.
+CREATE OR REPLACE FUNCTION tests.realtime_sent(p_event_id bigint, p_topic text)
+RETURNS boolean
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_found boolean;
+BEGIN
+    EXECUTE 'SELECT EXISTS (SELECT 1 FROM realtime.messages
+                             WHERE topic = $1 AND private AND event = ''tc_event''
+                               AND extension = ''broadcast'' AND payload ->> ''eventId'' = $2)'
+        INTO v_found USING p_topic, p_event_id::text;
+    RETURN v_found;
+END;
+$$;
+
+SELECT set_config('tests.ev19', tc.log_event('c0000000-0000-0000-0000-00000000c401', NULL, 3,
+    'realtime probe')::text, true);
+SELECT CASE
+    WHEN to_regprocedure('realtime.send(jsonb,text,text,boolean)') IS NULL
+         OR to_regclass('realtime.messages_' || to_char(now() AT TIME ZONE 'UTC', 'YYYY_MM_DD')) IS NULL
+        THEN skip('Realtime (realtime.send and today''s realtime.messages partition) is not installed here', 1)
+    ELSE ok(
+        tests.realtime_sent(current_setting('tests.ev19')::bigint,
+                            'collection:c0000000-0000-0000-0000-00000000c401'),
+        '19a: inserting an event puts a private tc_event broadcast on collection:{uuid} in realtime.messages')
+END;
+SELECT CASE
+    WHEN to_regclass('realtime.messages') IS NULL
+        THEN skip('realtime.messages is not installed here', 1)
+    ELSE ok(
+        EXISTS (SELECT 1 FROM pg_policies
+                WHERE schemaname = 'realtime' AND tablename = 'messages'
+                  AND policyname = 'tc_members_receive_collection_broadcasts'
+                  AND cmd = 'SELECT' AND 'authenticated' = ANY(roles)),
+        '19b: members-only receive policy on realtime.messages is in place')
+END;
+
+-- =============================================================================
+-- 20. Undoing a checkout is visible to polling: unlock_book records CheckOutReleased (101),
+--     so get_changes after the previous cursor returns the book, unlocked.
+-- =============================================================================
+
+SELECT tests.set_jwt('user-alice-cif', 'alice-cif@example.com', 'Alice');
+SELECT set_config('tests.tx20', tc.checkin_start_tx(
+    'c0000000-0000-0000-0000-00000000c401', NULL, 'd0000000-0000-0000-0000-00000000c420',
+    'Book Twenty', NULL, 'cs-20', '6.5.0', '[]') ->> 'transactionId', true);
+SELECT tc.checkin_finish_tx(current_setting('tests.tx20')::uuid, 'user-alice-cif', 'alice-cif@example.com',
+    'Alice', 'twenty', false, '[]', tests.rev(current_setting('tests.tx20')));
+SELECT set_config('tests.book20',
+    (SELECT id::text FROM tc.books WHERE instance_id = 'd0000000-0000-0000-0000-00000000c420'), true);
+SELECT set_config('tests.a20', tests.checkout(current_setting('tests.book20')::uuid, 'AliceMachine'), true);
+SELECT set_config('tests.ev20', (SELECT max(id) FROM tc.events)::text, true);
+SELECT ok(
+    (SELECT current_version_seq = 1 AND locked_by = 'user-alice-cif' FROM tc.books
+      WHERE id = current_setting('tests.book20')::uuid),
+    '20-sanity: book twenty is committed and checked out to Alice'
+);
+SELECT tc.unlock_book(current_setting('tests.book20')::uuid, current_setting('tests.a20'));
+SELECT ok(
+    (SELECT count(*) = 1 FROM tc.events
+      WHERE id > current_setting('tests.ev20')::bigint
+        AND book_id = current_setting('tests.book20')::uuid
+        AND type = 101 AND by_user_id = 'user-alice-cif' AND book_name = 'Book Twenty'),
+    '20a: unlock_book records one CheckOutReleased (type 101) event'
+);
+SELECT ok(
+    (SELECT (c -> 'books') @> jsonb_build_array(jsonb_build_object(
+                'id', current_setting('tests.book20'), 'locked_by', NULL))
+       FROM (SELECT tc.get_changes('c0000000-0000-0000-0000-00000000c401',
+                                   current_setting('tests.ev20')::bigint) AS c) s),
+    '20b: get_changes after the previous cursor returns the book, unlocked'
 );
 SELECT * FROM finish();ROLLBACK;

@@ -328,22 +328,85 @@ export const withStalePaths = (
     return error;
 };
 
-/** Best-effort `.manifest.json` backup write (CONTRACTS.md S3 layout). Never
- * throws — this is a convenience backup, not the source of truth (that's the DB). */
+/** The S3 user-metadata key (x-amz-meta-manifest-seq) that records which committed version a
+ * manifest backup is of. */
+const MANIFEST_SEQ_METADATA = "manifest-seq";
+
+/** How many times writeManifestBackup retries the conditional `.manifest.json` update when
+ * another finish changed that object between our read and our write. */
+const MANIFEST_POINTER_ATTEMPTS = 3;
+
+const httpStatusOf = (err: unknown): number | undefined =>
+    (err as { $metadata?: { httpStatusCode?: number } })?.$metadata
+        ?.httpStatusCode;
+
+/** Best-effort manifest backup (CONTRACTS.md S3 layout), written after the DB commit of
+ * version `seq` (a book's version seq, or a collection-file group's version). Never throws —
+ * this is a convenience backup, not the source of truth (that's the DB).
+ *
+ * Two overlapping finishes can reach this out of commit order, so the backup must never
+ * regress: every version gets its own immutable `.manifests/{seq}.json`, and `.manifest.json`
+ * (the latest) is replaced only by a newer seq, with a conditional PUT (If-Match on the ETag
+ * we read, or If-None-Match when there is none yet) so a concurrent writer is never
+ * overwritten blindly; on a lost race it re-reads and tries again. */
 export const writeManifestBackup = async (
     client: S3Client,
     bucket: string,
     prefix: string,
+    seq: number,
     manifest: unknown,
 ): Promise<void> => {
+    const body = JSON.stringify(manifest, null, 2);
+    const metadata = { [MANIFEST_SEQ_METADATA]: String(seq) };
     try {
         await client.send(
             new PutObjectCommand({
                 Bucket: bucket,
-                Key: `${prefix}.manifest.json`,
-                Body: JSON.stringify(manifest, null, 2),
+                Key: `${prefix}.manifests/${seq}.json`,
+                Body: body,
                 ContentType: "application/json",
+                Metadata: metadata,
             }),
+        );
+
+        const latestKey = `${prefix}.manifest.json`;
+        for (let attempt = 1; attempt <= MANIFEST_POINTER_ATTEMPTS; attempt++) {
+            let etag: string | undefined;
+            try {
+                const head = await client.send(
+                    new HeadObjectCommand({ Bucket: bucket, Key: latestKey }),
+                );
+                const existingSeq = Number(
+                    head.Metadata?.[MANIFEST_SEQ_METADATA],
+                );
+                if (Number.isFinite(existingSeq) && existingSeq >= seq) {
+                    return; // an equal or newer version is already the latest backup
+                }
+                etag = head.ETag;
+            } catch (err) {
+                if (httpStatusOf(err) !== 404) throw err;
+            }
+            try {
+                await client.send(
+                    new PutObjectCommand({
+                        Bucket: bucket,
+                        Key: latestKey,
+                        Body: body,
+                        ContentType: "application/json",
+                        Metadata: metadata,
+                        ...(etag ? { IfMatch: etag } : { IfNoneMatch: "*" }),
+                    }),
+                );
+                return;
+            } catch (err) {
+                // 412: someone replaced (or created) it since we read it; 409: a concurrent
+                // conditional write is in progress. Either way, look again.
+                const status = httpStatusOf(err);
+                if (status !== 412 && status !== 409) throw err;
+            }
+        }
+        console.error(
+            `writeManifestBackup: gave up updating ${latestKey} for seq ${seq} after ${MANIFEST_POINTER_ATTEMPTS} conflicting attempts (non-fatal; .manifests/${seq}.json was written)`,
         );
     } catch (err) {
         console.error("writeManifestBackup failed (non-fatal):", err);

@@ -175,10 +175,10 @@ CREATE TABLE IF NOT EXISTS tc.events (
     message text,
     bloom_version text,
     occurred_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT events_type_check CHECK ((type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100])))
+    CONSTRAINT events_type_check CHECK ((type = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 100, 101])))
 );
 
-COMMENT ON TABLE tc.events IS 'History log, realtime broadcast source, and polling cursor. type values mirror C# BookHistoryEventType (HistoryEvent.cs): 0=CheckOut, 1=CheckIn, 2=Created, 3=Renamed, 4=Uploaded(legacy), 5=ForcedUnlock, 6=ImportSpreadsheet, 7=SyncProblem(legacy), 8=Deleted, 9=Moved. Cloud-TC incident extensions start at 100 to avoid colliding with future C# additions: 100=WorkPreservedLocally.';
+COMMENT ON TABLE tc.events IS 'History log, realtime broadcast source, and polling cursor. type values mirror C# BookHistoryEventType (HistoryEvent.cs): 0=CheckOut, 1=CheckIn, 2=Created, 3=Renamed, 4=Uploaded(legacy), 5=ForcedUnlock, 6=ImportSpreadsheet, 7=SyncProblem(legacy), 8=Deleted, 9=Moved. Cloud-TC extensions start at 100 to avoid colliding with future C# additions: 100=WorkPreservedLocally, 101=CheckOutReleased (a lock released without a check-in by its holder: unlock_book, or an aborted or expired check-in''s send-only lock).';
 
 ALTER TABLE tc.events ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME tc.events_id_seq
