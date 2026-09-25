@@ -54,6 +54,15 @@ export class MeasureText {
             div.setAttribute("id", "measureTextDiv");
             block = document.createElement("div");
             // before we add block, otherwise it will wipe it out.
+            // Beware: if the text starts with a line break (\n or \r), this puts a <br> in the
+            // div instead of a text node. Then the reuse below (firstChild.nodeValue, and
+            // firstElementChild as the block) targets the <br>, and every measurement until
+            // the div is cleaned up comes out about a line too big, which hides real overflow.
+            // As far as we know that can't happen for a bloom-editable today. Such line breaks
+            // are whitespace between the editable's paragraphs (older books have it), and when a
+            // page is set up, BloomField.ManageField removes that whitespace before
+            // OverflowChecker ever measures the editable. Typing and pasting don't create it
+            // either (BL-16925).
             div.innerText = text.substring(0, 1);
 
             // It has to be in the document to get measured, but we don't want the
