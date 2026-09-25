@@ -845,8 +845,9 @@ BL-16928)
 - Whether making the old shared folder read-only makes an old Bloom fail fast depends on the sync
   service. On a LAN share a write is refused with an error. On a Dropbox "Can view" folder the
   desktop app may still let the local copy be written and just never upload it, so an old Bloom
-  could believe its check-in worked. This needs a quick test with two Dropbox accounts (and
-  separately OneDrive and Google Drive, if those are supported).
+  could believe its check-in worked. This needs a quick test with two Dropbox accounts. (Folder
+  Team Collections don't work over OneDrive or Google Drive, so only Dropbox and LAN shares
+  matter.)
 - The UI of BL-16676 needs redesigning around this: there is no preparation phase to wait
   through, and each member's Bloom switches when the upload is done, so what members are shown
   then (the mockup's Accept / Not Now, or just a notice) is for the designer.
