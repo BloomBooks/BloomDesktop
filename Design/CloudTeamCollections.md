@@ -198,7 +198,8 @@ served by `src/BloomExe/web/controllers/SharingApi.cs`, with the model and rules
 by `LocalFileCollectionSharingService`, which keeps the record in `sharing.local.json` in the
 collection folder and enforces the rules the server will. Nobody invited sees an invitation card
 yet, and a folder Team Collection does not sync the file. Sharing a Team Collection only sets up the
-list of people; its books do not move anywhere yet.
+list of people; its books do not move anywhere yet (the design for that is
+[section 5](#5-starting-a-cloud-collection-initial-upload-and-migration)).
 
 ### Sharing UI (planned, from the Sharing cards)
 
@@ -223,9 +224,13 @@ These are designs on cards, not built:
   collection's history", with roles); wait for everyone to accept; **Switch Now**, after which each
   Bloom disconnects from Dropbox for this collection, the old Dropbox folder is renamed "Old
   &lt;collection name&gt;", and checkouts are allowed again. Members see "Sharing has changed for
-  ..." with Accept / Not Now. A comment on the card questions whether accepting is needed at all
-  (6.6 could notice the state and switch automatically). The #8394 behavior of sharing a Team
-  Collection with its history's people is the first piece of this.
+  ..." with Accept / Not Now. The mechanism behind it is designed in
+  [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration), which replaces the
+  preparation phase and the waiting: the shared folder is frozen at once, the admin uploads in
+  the background, people keep editing what they have checked out, and each member's 6.6 Bloom
+  switches over by itself, carrying its checkouts with it, when the upload is done. The old
+  folder must stay until everyone who had checkouts has switched. The #8394 behavior of sharing a
+  Team Collection with its history's people is the first piece of this.
 
 The #8052 client has its own earlier sharing UI (a Sharing panel in Settings for the approved list,
 join cards in the collection chooser, a sign-in dialog). The Share dialog and the planned cards
@@ -462,7 +467,143 @@ The checkout belongs to the copy, not the account, and that is what lets it pass
   this copy a new GUID and make the other copy's checkout obsolete) was deliberately not built; it
   is with the UI designer (BL-16531 comment).
 
-## 5. Database schema
+## 5. Starting a cloud collection: initial upload and migration
+
+**Designed, not built yet.** What exists already is what it reuses: first check-in, checkout with
+a client-made GUID, `checkout_book_takeover`, `force_unlock`, `AllowCheckouts` (BL-16691, in 6.4
+and 6.5), `MinimumBloomVersion` (BL-16690) and the Share dialog's list of people from Team
+Collection history. The server and client work it needs is listed in
+[section 9](#9-open-questions-and-planned-work).
+
+The aims: a new cloud collection is set up and usable quickly; the admin doing the uploading is
+never frozen; and the temporary upload period needs as little special-case code as possible, even
+if things look slightly odd meanwhile. The same process serves sharing an ordinary collection and
+moving a folder Team Collection to the cloud, and the admin's 6.6 Bloom does all of it. It replaces
+the BL-16676 mockup's preparation phase: nobody has to check in, and nobody waits for anyone.
+
+### 1. Start
+
+(Migration only.) The admin's Bloom sets two values in the **old shared folder's** collection
+settings (the `.bloomCollection` in `Other/Other Collection Files.zip`):
+
+- **`AllowSharedFolderChanges=False`** (new, BL-16928, a 6.5 patch shipped well before 6.6). A
+  Bloom that sees it does nothing that writes to the shared folder: no check-in (including the
+  first check-in of a new book), no checkout (which records its status in the shared folder), no
+  rename, delete or force unlock, no pushing collection settings or other collection files. People
+  can go on editing, locally, the books already checked out to them, until they upgrade. That is
+  why the freeze does not use `MinimumBloomVersion`, which would lock them out entirely.
+- **`AllowCheckouts=False`**, for any 6.4 or 6.5 Bloom that missed the patch.
+
+6.6 Blooms still on the old system honor both. The admin's Bloom then creates the cloud
+collection in the database with its **initial upload in progress** flag set, and uploads the
+collection files.
+
+### 2. Upload
+
+From now on, on the admin's machine only, the collection is a cloud collection. Every book the
+server doesn't have yet is simply a new local book, editable as new books always are. The admin's
+Bloom sends them in the background, one at a time, as ordinary first check-ins, skipping the book
+that is open. An uploaded book is checked in; the admin checks it out normally to edit it. After a
+crash or a network loss the upload just resumes: what remains is the local books the server
+doesn't have, and a first check-in whose answer was lost is already reconciled by checksum.
+
+Which content is uploaded: for a book checked out to someone else in the old system, the old
+shared folder's checked-in version; for the admin's own checkouts, the admin's local copy.
+
+### 3. Books checked out to others in the old system
+
+Take Sally, whose old checkout email matches her BloomLibrary.org login, and Bob, whose old
+checkout says `bob-old@example.com` but who signs in as `bob-new@example.com`. They are the same
+case: the database lock stores an account id, and nobody knows a person's account id until they
+sign in and claim their membership. For each such book, after uploading it, the admin's Bloom:
+
+1. generates a checkout GUID;
+2. writes the **key file** `Migration Keys/<instanceId>.json` in the old shared folder, holding
+   `cloudCollectionId`, `instanceId`, `bookName` (informational), `checkoutGuid`, `oldEmail` and
+   `oldMachine`. `Migration Keys` is a new folder at the shared folder's root, beside `Books`,
+   `Other` and `Lost and Found`; 6.5 watches only `Books` and `Other` and ignores it. The key is
+   written **before** the lock is taken (write-ahead, like `.checkout`);
+3. locks the book, with a new admin-only RPC, to a **placeholder holder** `legacy:<old email>`,
+   with that GUID's hash and the old machine name. The RPC is allowed only while the upload flag
+   is set, and repeating it with the same GUID succeeds again (for resuming after a crash).
+
+The placeholder fits the data model. `locked_by` is plain text with no foreign key, and no real
+account id contains `:`, so nobody can check the book in or unlock it normally, while takeover (by
+GUID) and admin force unlock work unchanged. `resolve_member_display` falls back to the email in
+the placeholder, so the book shows as checked out to `bob-old@example.com`. Instance ids are
+unique within a collection (Bloom won't open a collection until duplicates are fixed), so one key
+per instance id needs no further check.
+
+### 4. Finish
+
+When every book is uploaded (including the checked-in versions of the books others hold) and every
+key is written, the admin's Bloom clears the flag, then writes the cloud collection's id into the
+old shared folder's collection settings. From then on it is an ordinary, fully working cloud
+collection with no pending states.
+
+### 5. Other members switch over
+
+A member's 6.6 Bloom switches when it sees the cloud id in the old shared settings, which appears
+only once the upload is done. `my_collections()`, the joinable list behind the invitation card in
+Open/Create Collections, skips collections whose flag is still set, which also keeps invitees who
+were never in the old Team Collection out until then. The patch's block on pushing collection
+settings stops a 6.5 admin overwriting the shared settings and dropping the cloud id.
+
+On switching, for each book whose old-system record says it is checked out to the old email on
+this machine, the client reads the key by the local book's instance id (so a local rename doesn't
+matter), writes the GUID into the book's `.checkout`, and calls `checkout_book_takeover`, which
+moves the lock to whichever account is signed in: Sally, or `bob-new`. Takeover doesn't care that
+the login differs. This happens before the usual startup reconciliation, which then sees an
+ordinary checkout in this copy based on the uploaded version; check-in, rename and delete go
+through the cloud as usual (delete presents the GUID).
+
+- **Membership.** The person must be a member. People from the Team Collection's history are added
+  when it is shared (see [Sharing UI](#sharing-ui-built)), with their last activity available to
+  seed `last_seen_at`; someone whose login differs, like Bob, is invited by their real
+  BloomLibrary.org email in the Share dialog. A non-member is refused by the existing open-time
+  check, which names the admins.
+- **A key that hasn't arrived.** A sync service can deliver files out of order, so a book whose key
+  is missing stays read-only, and the client retries on later polls.
+- **Keys are not cleaned up.** A GUID is useless once that checkout ends.
+- **An owner who never switches.** An admin force-unlocks the book. The old shared folder must stay
+  until everyone who had checkouts has switched.
+- **Security.** Anyone who can read the old shared folder could use a key, which is the same trust
+  the old Team Collection gave them. Bloom uses a key only for a book recorded as checked out to
+  that old email on this machine.
+
+```mermaid
+sequenceDiagram
+    participant A as Admin's Bloom (6.6)
+    participant F as Old shared folder
+    participant DB as Cloud (tc)
+    participant B as Bob's Bloom (6.6)
+    A->>F: AllowSharedFolderChanges=False, AllowCheckouts=False
+    A->>DB: create collection (upload flag set), collection files
+    A->>DB: first check-in of Bob's book (shared folder version)
+    A->>F: write Migration Keys/instanceId.json (guid, old email)
+    A->>DB: placeholder lock legacy:bob-old, sha256(guid)
+    A->>DB: clear upload flag
+    A->>F: write cloud collection id into settings
+    B->>F: sees the cloud id, reads the key
+    B->>B: write guid into the book's .checkout
+    B->>DB: checkout_book_takeover(book, guid, machine)
+    DB-->>B: lock now held by bob-new
+```
+
+### 6. If it goes badly wrong
+
+If, say, the admin's computer dies mid-upload, a database admin deletes the incomplete cloud
+collection with a support script (by collection id: its database rows and its S3 prefix);
+`AllowSharedFolderChanges` and `AllowCheckouts` are reset in the old shared settings (or left for
+the next attempt); the `Migration Keys` folder is deleted; and someone else is made admin and
+starts again. There is no UI for this.
+
+### Sharing an ordinary collection
+
+Steps 1, 2 and 4 without the parts about the old shared folder. Invitations can be added at any
+time, but invitees don't see them until the flag clears.
+
+## 6. Database schema
 
 The declarative source is `supabase/schemas/tc/01_schema.sql` to `04_security.sql` in
 `bloom-core-supabase`; the tables are in `03_tables.sql`. Key columns only; solid lines are enforced
@@ -607,10 +748,9 @@ erDiagram
   `group_key`, with optimistic concurrency on `version`.
 - **`color_palette_entries`**: union-merged palette colors.
 
-Triggers also NFC-normalize book names and file paths. Note that `tc.members` has no "last seen"
-column; see the open questions.
+Triggers also NFC-normalize book names and file paths.
 
-## 6. Server API surface (summary)
+## 7. Server API surface (summary)
 
 Full request and response shapes, error codes and version history are in `CONTRACTS.md`
 (`bloom-core-supabase`, `team-collections/docs/`). All RPCs take `p_`-prefixed JSON keys.
@@ -643,7 +783,7 @@ tc/{collectionId}/collectionFiles/{group}/...                   same pattern per
 The manifest backups are best-effort copies; the database is the source of truth and nothing reads
 them yet.
 
-## 7. Testing
+## 8. Testing
 
 - **Server** (`bloom-core-supabase`): about 160 pgTAP database tests (RLS matrix, checkout
   concurrency and the GUID rules, last-admin guard, event cursor, tombstones, sweep worklist), run
@@ -656,7 +796,7 @@ them yet.
 - **Share dialog** (#8394): C# tests of the sharing service and history-members logic, and vitest
   tests of the dialog.
 
-## 8. Open questions and planned work
+## 9. Open questions and planned work
 
 **Wiring and deployment**
 
@@ -668,12 +808,28 @@ them yet.
   a time and ignores an existing one, so all-or-nothing invitations need a batch RPC or a
   transaction. The rule that nobody changes their own role or removes themself exists only in the
   client and stand-in; the server has only the last-admin guard.
-- When a folder Team Collection's books are moved to the cloud, the last-activity times from its
-  history can be written into `tc.members.last_seen_at` for the people it brings in.
+- When a folder Team Collection is shared, the people its history brings in are added as members,
+  and the last-activity times from that history can be written into `tc.members.last_seen_at`.
 - If realtime ever replaces polling, `get_changes` would run only on reconnect, so "last seen"
   would need another touch point for members who stay connected.
-- Actually moving a folder Team Collection's books into a cloud collection once it is shared
-  (BL-16676), including what members on older Blooms see.
+
+**Starting a cloud collection** (designed in
+[section 5](#5-starting-a-cloud-collection-initial-upload-and-migration), not built; BL-16676,
+BL-16928)
+
+- Server: the collection's initial-upload flag (one column, set by `create_collection`, cleared by
+  the admin); `my_collections` skipping flagged collections; the admin-only RPC that locks a book
+  to a `legacy:<old email>` placeholder with a GUID hash, allowed only while the flag is set and
+  idempotent with the same GUID; the `resolve_member_display` fallback that shows the placeholder's
+  email; and the support script that deletes an incomplete collection's rows and S3 prefix.
+  Everything else reuses first check-in, checkout with a client GUID, takeover and force unlock.
+- Client: the BL-16928 patch for 6.5 (`AllowSharedFolderChanges`); the background sender of first
+  check-ins; writing the `Migration Keys` files and placeholder locks; finishing (clearing the
+  flag and writing the cloud id into the old shared settings); and each member's switch-over
+  with its takeovers.
+- The UI of BL-16676 needs redesigning around this: there is no preparation phase to wait
+  through, and each member's Bloom switches when the upload is done, so what members are shown
+  then (the mockup's Accept / Not Now, or just a notice) is for the designer.
 
 **Sharing UI** (designed, not built): subscription-tier states (BL-16672); remove confirmation and
 cancel-invitation (BL-16674); receiving an invitation in Open/Create (BL-16675, BL-16527), including
@@ -701,7 +857,7 @@ history and capturing a book for a problem report.
   cleanup exists.
 - The client polls every 60 seconds; subscribing to the realtime channel is later work.
 
-## 9. What changed since the previous version
+## 10. What changed since the previous version
 
 For readers of the July 2026 version of this file (on `cloud-tc-for-review`):
 
@@ -722,3 +878,6 @@ For readers of the July 2026 version of this file (on `cloud-tc-for-review`):
 - **The backend moved** to `bloom-core-supabase` PR #13, with pgTAP in CI.
 - **Sharing**: roles are presented as Admin and Editor, and the Share dialog (#8394) replaces the
   Settings sharing panel as the way to manage access, with further UI planned on the Sharing cards.
+- **Starting a cloud collection** (sharing an ordinary collection, or moving a folder Team
+  Collection with its checkouts) is designed; see
+  [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration).
