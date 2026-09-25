@@ -9,3 +9,7 @@ ThemaData.json
 
 # pnpm owns the lockfile's format; leave it exactly as pnpm writes it.
 pnpm-lock.yaml
+
+# Overflow test fixtures, generated from their .pug (see the note there). Prettier would add
+# whitespace inside the test boxes, which changes what the overflow tests measure.
+bookEdit/OverflowChecker/*Fixture.html
