@@ -850,3 +850,24 @@ How to react meanwhile: **do not re-run and move on without first looking for th
 artifact** (`component-tester-traces` on the nightly run). A second occurrence with no trace
 collected is a wasted one.
 (Found 2026-09-21.)
+
+## The suites test Bloom run from the source tree, not the app a user installs
+
+BloomE2E and the visual-regression suite launch a Release build from the repo
+(`output\Release\x64\Bloom.exe`, with the web UI in `output\browser`), never an installed Bloom.
+Roughly 15 places in `BloomExe` behave differently depending on where Bloom is running from:
+finding shipped files (`BloomFileLocator`), deciding which collections are Bloom's own
+(`IsInstalledFileOrDirectory`), PDF making and Ghostscript, Reading App Builder, and a few
+copyright and image checks. A mistake in any of those shows up only in the layout it affects.
+
+The cost cuts both ways. A mistake that affects only the source-tree layout fails the suites
+while no user ever sees it. A mistake that affects only the *installed* layout is the mirror
+image: every nightly green, only users hit it. Nothing covers install-only behaviour at all: the
+installed app's own layout and Velopack updates, what the installer actually ships, or
+channel-dependent behaviour (for example the release channel's 25% threshold for listing a UI
+language, which `ui-language.spec.ts` notes it cannot see).
+
+So read a green nightly as "Bloom run from source works", not "the installed app works".
+
+Idea: a periodic run of the suites against an installed Bloom.
+(Found 2026-09-25.)
