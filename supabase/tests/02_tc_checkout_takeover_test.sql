@@ -1,7 +1,8 @@
 -- =============================================================================
--- pgTAP tests: the checkout GUID (CONTRACTS.md v1.9). checkout_book issues a random GUID to
--- the account that checks a book out (its client keeps it in the book folder's .checkout
--- file); the server stores only its hash, which members can read. Unlock, delete and (in
+-- pgTAP tests: the checkout GUID (CONTRACTS.md v1.9/v1.10). The client that checks a book out
+-- makes a random GUID, keeps it in the book folder's .checkout file and sends it to
+-- checkout_book (idempotent for the same GUID); the server stores only its hash, which
+-- members can read. Unlock, delete and (in
 -- 04_tc_checkin_flow_test.sql) check-in by the holder require the GUID, and
 -- checkout_book_takeover lets a DIFFERENT account take the lock over only by presenting it
 -- (dogfood batch 1, item 9: account switch in the same local copy).
@@ -13,7 +14,7 @@
 
 BEGIN;
 
-SELECT plan(46);
+SELECT plan(50);
 
 SELECT has_function('tc', 'checkout_book_takeover', 'tc.checkout_book_takeover() exists');
 
@@ -61,6 +62,22 @@ AS $$
     SELECT checkout_guid_hash FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001'
 $$;
 
+-- What a client does to check a book out (v1.10): make a GUID, then send it. Returns the GUID
+-- when the checkout succeeded, else NULL.
+CREATE OR REPLACE FUNCTION tests.checkout(p_book_id uuid, p_machine text)
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_guid text := gen_random_uuid()::text;
+BEGIN
+    IF (tc.checkout_book(p_book_id, p_machine, v_guid) ->> 'success') = 'true' THEN
+        RETURN v_guid;
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
 -- =============================================================================
 -- Fixture: a collection with Alice (admin) and Bob (member, claimed), and a book Alice
 -- checks out on "SharedMachine". Uses the public RPCs (create_collection/members_add/
@@ -99,20 +116,58 @@ VALUES (
     'user-alice-tko'
 );
 
--- Alice checks the book out; keep the GUID her client would save in the .checkout file.
-SELECT set_config('tests.alice_guid',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine') ->> 'checkoutGuid',
+-- Alice's client makes a GUID (and would save it in the .checkout file) before checking out.
+SELECT set_config('tests.alice_guid', gen_random_uuid()::text, true);
+
+SELECT throws_ok(
+    $$SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', NULL)$$,
+    '22023', NULL,
+    '0d1: checkout_book with no GUID is refused'
+);
+
+SELECT throws_ok(
+    $$SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine', '  ')$$,
+    '22023', NULL,
+    '0d2: checkout_book with a blank GUID is refused'
+);
+
+SELECT set_config('tests.checkout1',
+    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine',
+        upper(current_setting('tests.alice_guid')))::text,
     true);
 
 SELECT ok(
-    current_setting('tests.alice_guid') ~ '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
-    '0d: a successful checkout returns a checkout GUID (lowercase random UUID)'
+    (current_setting('tests.checkout1')::jsonb ->> 'success') = 'true'
+    AND (current_setting('tests.checkout1')::jsonb ->> 'locked_by') = 'user-alice-tko'
+    AND NOT (current_setting('tests.checkout1')::jsonb ? 'checkoutGuid'),
+    '0d: a checkout with a client-supplied GUID succeeds and returns no GUID'
 );
 
 SELECT is(
     tests.stored_hash(),
     tests.guid_hash(current_setting('tests.alice_guid')),
-    '0e: the book row stores sha256 (lowercase hex) of the lowercase GUID'
+    '0e: the book row stores sha256 (lowercase hex) of the lowercase GUID (sent uppercase)'
+);
+
+-- A retry with the same GUID (the first response was lost) is the same success, changing nothing.
+SELECT set_config('tests.retry',
+    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'RetryMachine',
+        current_setting('tests.alice_guid'))::text,
+    true);
+
+SELECT ok(
+    (current_setting('tests.retry')::jsonb ->> 'success') = 'true'
+    AND NOT (current_setting('tests.retry')::jsonb ? 'locked_by_me')
+    AND (current_setting('tests.retry')::jsonb ->> 'locked_by_machine') = 'SharedMachine',
+    '0e1: a retry with the same GUID succeeds again, reporting the existing lock'
+);
+
+SELECT ok(
+    tests.stored_hash() = tests.guid_hash(current_setting('tests.alice_guid'))
+    AND (SELECT locked_by_machine FROM tc.books WHERE id = 'b0000000-0000-0000-0000-00000000a001') = 'SharedMachine'
+    AND (SELECT count(*) = 1 FROM tc.events
+         WHERE book_id = 'b0000000-0000-0000-0000-00000000a001' AND type = 0),
+    '0e2: the retry changes nothing and emits no second CheckOut event'
 );
 
 SELECT ok(
@@ -151,19 +206,19 @@ SELECT ok(
 );
 
 -- =============================================================================
--- 1. Checking out again as the holder is refused and re-issues nothing (the caller may be
---    in another copy; re-issuing would silently orphan the copy that has the GUID).
+-- 1. Checking out again as the holder with a DIFFERENT GUID is refused and replaces nothing
+--    (the caller is in another copy; replacing would silently orphan the copy that has the GUID).
 -- =============================================================================
 
 SELECT set_config('tests.recheckout',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'OtherMachine')::text,
+    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'OtherMachine', gen_random_uuid()::text)::text,
     true);
 
 SELECT ok(
     (current_setting('tests.recheckout')::jsonb ->> 'success') = 'false'
     AND (current_setting('tests.recheckout')::jsonb ->> 'locked_by_me') = 'true'
     AND NOT (current_setting('tests.recheckout')::jsonb ? 'checkoutGuid'),
-    '1a: re-checkout by the holder returns success false, locked_by_me true, and no GUID'
+    '1a: re-checkout by the holder with another GUID returns success false, locked_by_me true'
 );
 
 SELECT ok(
@@ -186,8 +241,9 @@ SELECT tests.set_jwt('user-bob-tko', 'bob-tko@example.com', true);
 
 SELECT ok(
     (SELECT r ->> 'success' = 'false' AND NOT (r ? 'checkoutGuid') AND NOT (r ? 'locked_by_me')
-       FROM (SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'BobsMachine') AS r) s),
-    '2a: Bob''s checkout_book fails, with no GUID and no locked_by_me'
+       FROM (SELECT tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'BobsMachine',
+                                     current_setting('tests.alice_guid')) AS r) s),
+    '2a: Bob''s checkout_book fails, even with Alice''s GUID, with no locked_by_me'
 );
 
 SELECT ok(
@@ -344,7 +400,7 @@ SELECT ok(
 SELECT tests.set_jwt('user-alice-tko', 'alice-tko@example.com', true);
 
 SELECT set_config('tests.alice_guid2',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine') ->> 'checkoutGuid',
+    tests.checkout('b0000000-0000-0000-0000-00000000a001', 'SharedMachine'),
     true);
 
 SELECT ok(
@@ -375,7 +431,7 @@ SELECT tc.undelete_book('b0000000-0000-0000-0000-00000000a001');
 SELECT tests.set_jwt('user-bob-tko', 'bob-tko@example.com', true);
 
 SELECT set_config('tests.bob_guid',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'BobsMachine') ->> 'checkoutGuid',
+    tests.checkout('b0000000-0000-0000-0000-00000000a001', 'BobsMachine'),
     true);
 
 -- Alice (admin) never saw Bob's GUID.
@@ -407,7 +463,7 @@ SELECT throws_like(
 -- =============================================================================
 
 SELECT set_config('tests.bob_guid2',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'BobsMachine') ->> 'checkoutGuid',
+    tests.checkout('b0000000-0000-0000-0000-00000000a001', 'BobsMachine'),
     true);
 
 SELECT ok(
@@ -439,7 +495,7 @@ SELECT ok(
 -- =============================================================================
 
 SELECT set_config('tests.alice_guid4',
-    tc.checkout_book('b0000000-0000-0000-0000-00000000a001', 'SharedMachine') ->> 'checkoutGuid',
+    tests.checkout('b0000000-0000-0000-0000-00000000a001', 'SharedMachine'),
     true);
 
 -- Simulate a GUID-less lock change (a different holder written without a new hash).

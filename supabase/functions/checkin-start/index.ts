@@ -2,8 +2,8 @@
 //
 // Req: { collectionId, bookId?, bookInstanceId, proposedName, baseVersionId?,
 //        checksum, clientVersion, files: [{path, sha256, size}], checkoutGuid? }
-// 200: { transactionId, changedPaths[], checkoutGuid?, s3: { bucket, region, prefix, credentials } }
-//      (checkoutGuid only when this call issued a new checkout: new book, or a free lock taken)
+// 200: { transactionId, changedPaths[], s3: { bucket, region, prefix, credentials } }
+//      (v1.10: check-in never issues a checkout GUID; the client makes its own for checkout_book)
 // Errors: 400 InvalidManifest · 401/403 · 409 LockHeldByOther/CheckoutElsewhere/BaseVersionSuperseded/
 //         NameConflict · 426 ClientOutOfDate.
 import {
@@ -20,7 +20,6 @@ interface CheckinStartResult {
     transactionId: string;
     bookId: string;
     changedPaths: string[];
-    checkoutGuid?: string;
 }
 
 // Exported (rather than only passed inline to serveJsonPost) so Deno tests can import
@@ -38,16 +37,12 @@ export const handler = async (
     const files = requireField<unknown[]>(body, "files");
     const bookId = optionalField<string>(body, "bookId");
     const baseVersionId = optionalField<string>(body, "baseVersionId");
-    // The book folder's .checkout GUID, if the client has one (CONTRACTS.md v1.9).
+    // The book folder's .checkout GUID, if the client holds the book (CONTRACTS.md v1.9).
     const checkoutGuid = optionalField<string>(body, "checkoutGuid");
 
-    // Get the S3 credentials BEFORE calling checkin_start_tx. That RPC can commit a new
-    // checkout GUID (taking a free lock, or creating a new book) which only this response
-    // carries back to the client; if anything could still fail after it (the books read,
-    // STS), the GUID would be lost, and every retry from this copy would then be refused
-    // with CheckoutElsewhere. So everything that can fail happens first, and the response
-    // is built as soon as the RPC returns. If the RPC refuses, these credentials are
-    // simply discarded (never returned).
+    // Get the S3 credentials BEFORE calling checkin_start_tx, so nothing that can fail
+    // happens after the RPC has committed (a lost response then only means a resumable
+    // start). If the RPC refuses, these credentials are simply discarded (never returned).
     //
     // Scope the credentials to the DB-canonical instance_id, never a caller-supplied one
     // for an existing book: checkin_start_tx validates/locks an existing book by bookId and
@@ -82,9 +77,6 @@ export const handler = async (
     return jsonResponse(200, {
         transactionId: result.transactionId,
         changedPaths: result.changedPaths,
-        // Present only when this call issued a new checkout; the client saves it in the
-        // book folder's .checkout file.
-        ...(result.checkoutGuid ? { checkoutGuid: result.checkoutGuid } : {}),
         s3,
     });
 };

@@ -182,10 +182,12 @@ erDiagram
   `expires_at` passes. They are not part of the durable data model. Start stores the proposed
   manifest with every path NFC-normalized, so the keys the client uploads to and the paths
   committed at finish are spelled the same way.
-- **Checkout GUID.** Every new checkout (`checkout_book`, or `checkin-start` creating a book or
-  taking a free lock) issues a random GUID, returned only to the client taking the lock, which keeps
-  it in the book folder's `.checkout` file. `books.checkout_guid_hash` holds only its hash (lowercase
-  hex SHA-256 of the lowercase GUID). The hash is member-readable and returned by
+- **Checkout GUID.** The client checking a book out makes a random GUID, keeps it in the book
+  folder's `.checkout` file and sends it to `checkout_book` (v1.10; a retry with the same GUID is
+  idempotent). `books.checkout_guid_hash` holds only its hash (lowercase hex SHA-256 of the
+  lowercase GUID). A book locked with a NULL hash is under a send-only lock: `checkin-start` took it
+  for a first check-in or a check-in of a free book, and finish (even with keepCheckedOut), abort
+  or expiry releases it. The hash is member-readable and returned by
   `get_collection_state`/`get_changes` as `checkoutGuidHash`, so a client can tell whether its local
   `.checkout` is still current; the GUID itself is stored nowhere. Check-in, unlock and delete by the
   holder, and `checkout_book_takeover` by another account, all require the GUID; `force_unlock`

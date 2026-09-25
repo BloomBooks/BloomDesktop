@@ -79,7 +79,7 @@ Deno.test(
         // what makes an uncommitted new book invisible until the client re-learns its id
         // via get_collection_state/checkout_book).
         assertEquals("bookId" in json, false);
-        // The RPC issued no checkout GUID (it returned none), so none is passed on.
+        // v1.10: check-in never issues a checkout GUID.
         assertEquals("checkoutGuid" in json, false);
 
         stsMock.restore();
@@ -203,7 +203,7 @@ Deno.test(
 );
 
 Deno.test(
-    "checkin-start: forwards checkoutGuid as p_checkout_guid and returns a newly issued checkoutGuid",
+    "checkin-start: forwards checkoutGuid as p_checkout_guid and never returns a checkoutGuid",
     async () => {
         const stsMock = stubAssumeRole();
         const calls: RecordedCall[] = [];
@@ -212,6 +212,8 @@ Deno.test(
                 {
                     when: "rpc/checkin_start_tx",
                     status: 200,
+                    // A stray checkoutGuid (v1.9's RPC returned one) must not be passed on:
+                    // the response carries only the contract's fields.
                     body: {
                         transactionId: "tx-1",
                         bookId: "book-1",
@@ -251,7 +253,12 @@ Deno.test(
             "3f2c9a1e-5b6d-4c7e-8f90-a1b2c3d4e5f6",
         );
         const json = await res.json();
-        assertEquals(json.checkoutGuid, "0b7c5d4e-1f2a-4b3c-8d9e-0a1b2c3d4e5f");
+        assertEquals(
+            json.transactionId,
+            "tx-1",
+            "sanity check: a real 200 body",
+        );
+        assertEquals("checkoutGuid" in json, false);
 
         stsMock.restore();
     },
@@ -380,7 +387,7 @@ Deno.test(
 // checkin_start_tx can commit a new checkout GUID that only this response carries back, so
 // everything that can fail (the books read, STS) must happen before it; see the handler.
 Deno.test(
-    "checkin-start: an STS failure happens before checkin_start_tx, so no checkout GUID can be stranded",
+    "checkin-start: an STS failure happens before checkin_start_tx, so nothing is committed",
     async () => {
         const stsMock = stubAssumeRole();
         stsMock
@@ -403,7 +410,6 @@ Deno.test(
                         transactionId: "tx-1",
                         bookId: "book-1",
                         changedPaths: [],
-                        checkoutGuid: "0b7c5d4e-1f2a-4b3c-8d9e-0a1b2c3d4e5f",
                     },
                 },
             ],
@@ -473,7 +479,6 @@ Deno.test(
                         transactionId: "tx-1",
                         bookId: "book-1",
                         changedPaths: ["book.htm"],
-                        checkoutGuid: "0b7c5d4e-1f2a-4b3c-8d9e-0a1b2c3d4e5f",
                     },
                 },
             ],
@@ -497,7 +502,7 @@ Deno.test(
             "STS must be called once, before the RPC",
         );
         const json = await res.json();
-        assertEquals(json.checkoutGuid, "0b7c5d4e-1f2a-4b3c-8d9e-0a1b2c3d4e5f");
+        assertEquals(json.changedPaths, ["book.htm"]);
         assertEquals(
             json.s3.prefix,
             "tc/11111111-1111-1111-1111-111111111111/books/99999999-9999-9999-9999-999999999999/",

@@ -88,7 +88,7 @@ GRANT ALL ON FUNCTION tc.checkin_finish_tx(p_transaction_id uuid, p_user_id text
 
 GRANT ALL ON FUNCTION tc.checkin_start_tx(p_collection_id uuid, p_book_id uuid, p_book_instance_id uuid, p_proposed_name text, p_base_version_id uuid, p_checksum text, p_client_version text, p_files jsonb, p_checkout_guid text) TO authenticated;
 
-GRANT ALL ON FUNCTION tc.checkout_book(p_book_id uuid, p_machine text) TO authenticated;
+GRANT ALL ON FUNCTION tc.checkout_book(p_book_id uuid, p_machine text, p_checkout_guid text) TO authenticated;
 
 GRANT ALL ON FUNCTION tc.checkout_book_takeover(p_book_id uuid, p_checkout_guid text, p_machine text) TO authenticated;
 

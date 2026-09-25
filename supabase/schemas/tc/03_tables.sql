@@ -26,7 +26,7 @@ COMMENT ON COLUMN tc.books.deleted_at IS 'Soft tombstone: non-NULL = deleted. To
 
 COMMENT ON COLUMN tc.books.locked_by_machine IS 'Name of the machine the lock was taken from. Display only: it grants nothing (the checkout GUID decides which local copy may check in).';
 
-COMMENT ON COLUMN tc.books.checkout_guid_hash IS 'Lowercase hex SHA-256 of the UTF-8 bytes of the current checkout GUID (canonical lowercase form), i.e. tc._checkout_guid_hash(guid). The GUID itself is never stored: the server returns it only to the client that took the lock, which keeps it in the book folder''s .checkout file. Check-in, unlock and delete by the holder, and takeover by another account, all require the GUID. Readable by members (a hash of 122 random bits cannot be reversed) and returned as checkoutGuidHash by get_collection_state/get_changes so a client can tell whether its local .checkout is still current. NULL = unlocked. Cleared by the books_clear_checkout_on_unlock trigger whenever the lock is released or changes hands without a new GUID.';
+COMMENT ON COLUMN tc.books.checkout_guid_hash IS 'Lowercase hex SHA-256 of the UTF-8 bytes of the current checkout GUID (canonical lowercase form), i.e. tc._checkout_guid_hash(guid). The GUID itself is never stored: the client that checks the book out makes it (v1.10), keeps it in the book folder''s .checkout file and sends it to checkout_book. NULL while locked = a send-only lock that checkin-start took for a first check-in or a check-in of a free book (released when that check-in finishes, aborts or expires). Check-in, unlock and delete by the holder, and takeover by another account, all require the GUID. Readable by members (a hash of 122 random bits cannot be reversed) and returned as checkoutGuidHash by get_collection_state/get_changes so a client can tell whether its local .checkout is still current. NULL = unlocked. Cleared by the books_clear_checkout_on_unlock trigger whenever the lock is released or changes hands without a new GUID.';
 
 CREATE TABLE IF NOT EXISTS tc.checkin_transactions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -59,7 +59,7 @@ COMMENT ON COLUMN tc.checkin_transactions.checksum IS 'SHA-256 checksum of the f
 
 COMMENT ON COLUMN tc.checkin_transactions.result_version_id IS 'Set on successful checkin-finish; makes a repeated checkin-finish call for an already-finished transaction idempotent (returns the same result).';
 
-COMMENT ON COLUMN tc.checkin_transactions.checkout_guid_hash IS 'The book''s checkout_guid_hash as checkin-start saw (or issued) it. checkin-finish refuses (CheckoutElsewhere) unless the book still has this hash, so a checkout that moved to another copy (takeover, force-unlock and re-checkout) in between cannot be committed over.';
+COMMENT ON COLUMN tc.checkin_transactions.checkout_guid_hash IS 'The book''s checkout_guid_hash as checkin-start saw it (NULL for a send-only lock). checkin-finish refuses (CheckoutElsewhere) unless the book still has this hash, so a checkout that moved to another copy (takeover, force-unlock and re-checkout) in between cannot be committed over.';
 
 COMMENT ON COLUMN tc.checkin_transactions.revision IS 'Bumped every time checkin-start resumes (rewrites) this open transaction. checkin-finish reads it together with changed_paths/proposed_files, verifies those uploads against S3, and passes it to checkin_finish_tx, which refuses (PT409 TransactionChanged) if a concurrent resume changed the proposal in between, so version-ids verified against one proposal are never committed with another''s checksums.';
 

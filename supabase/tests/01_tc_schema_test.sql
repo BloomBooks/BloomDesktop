@@ -47,6 +47,22 @@ SELECT has_function('tc', 'checkout_book',        'tc.checkout_book() exists');
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
+-- What a client does to check a book out (CONTRACTS.md v1.10): make a GUID, then send it.
+-- Returns the GUID when the checkout succeeded, else NULL.
+CREATE OR REPLACE FUNCTION tests.checkout(p_book_id uuid, p_machine text)
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_guid text := gen_random_uuid()::text;
+BEGIN
+    IF (tc.checkout_book(p_book_id, p_machine, v_guid) ->> 'success') = 'true' THEN
+        RETURN v_guid;
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
 -- Helper: set a fake JWT so auth.jwt() returns a known sub/email
 CREATE OR REPLACE FUNCTION tests.set_jwt(
     p_sub   text,
@@ -269,10 +285,10 @@ BEGIN
 END;
 $$;
 
--- Keep the checkout GUID Alice's client would save in the book's .checkout file; the
+-- Keep the checkout GUID Alice's client makes and saves in the book's .checkout file; the
 -- delete below needs it.
 SELECT set_config('tests.alice_guid',
-    tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine') ->> 'checkoutGuid',
+    tests.checkout('b0000000-0000-0000-0000-000000000001', 'AliceMachine'),
     true);
 
 SELECT ok(
@@ -291,7 +307,7 @@ END;
 $$;
 
 SELECT ok(
-    (SELECT (tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'BobMachine')) ->> 'success' = 'false'),
+    (SELECT (tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'BobMachine', gen_random_uuid()::text)) ->> 'success' = 'false'),
     '5b: Bob loses the checkout race (lock already held)'
 );
 
@@ -434,7 +450,7 @@ $$;
 
 -- Re-checkout so we can delete again
 SELECT tc.delete_book('b0000000-0000-0000-0000-000000000001',
-    tc.checkout_book('b0000000-0000-0000-0000-000000000001', 'AliceMachine') ->> 'checkoutGuid');
+    tests.checkout('b0000000-0000-0000-0000-000000000001', 'AliceMachine'));
 
 -- Inserting a new book with the same name should succeed (tombstone excluded from index)
 SELECT lives_ok(

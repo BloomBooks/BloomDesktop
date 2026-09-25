@@ -7,7 +7,22 @@
 > design notes live.
 
 Changes to this file require an orchestrator commit and a version-note bump here.
-**Contract version: 1.9** (24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
+**Contract version: 1.10** (24 Sep 2026, BL-16531 — BREAKING for the client: the **client makes
+the checkout GUID**, and check-in never issues one. A database change can commit and its response
+still be lost; with a server-made GUID that stranded the book (checked out, but no copy had the
+GUID to check in or unlock with). Now the client writes a new GUID to `.checkout` first, then
+calls `checkout_book(book_id, machine, checkout_guid)` (a third, required argument; NULL/blank ⇒
+SQLSTATE 22023 `invalid_checkout_guid`). A free book is locked with that GUID's hash; the same
+caller retrying with the SAME GUID gets the same success again with nothing changed (idempotent);
+the caller holding it under a different GUID (or a send-only lock, below) gets `{success: false,
+locked_by_me: true}` as before. Success no longer returns `checkoutGuid`. `checkin-start` no
+longer returns `checkoutGuid`: a first check-in (new book), or a check-in of a free existing book,
+locks the book for the send only, with NO hash, and `checkin-finish` always releases that lock
+(even with `keepCheckedOut`), as do `checkin-abort` and expiry; resuming such a send (a
+never-committed new book, or an existing book under one's own send-only lock) needs no GUID. A
+check-in of a book the caller has checked out still needs its GUID (else `CheckoutElsewhere`, which
+is also the answer to a GUID sent for a send-only lock). `checkout_book_takeover`, `unlock_book`,
+`delete_book` and `force_unlock` are unchanged. v1.9, 24 Sep 2026, BL-16531 — BREAKING for the client: the per-copy
 "seat" and the v1.8 takeover token are replaced by a **checkout GUID**, which says which local
 copy of a book holds its checkout, so check-in keeps working when a collection folder is moved,
 renamed or copied, and a second copy can no longer silently take the checkout from the first.
@@ -187,7 +202,7 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 | `get_changes(collection_id, since_event_id)` | events + touched book rows (polling/catch-up). v1.9: book rows carry `checkoutGuidHash` |
 | `get_book_manifest(book_id)` | v1.2: per-file current manifest `{bookId, versionId, seq, checksum, files:[{path, sha256, size, s3VersionId}]}` for pinned-version Receive; never-committed books invisible except to their mid-Send lock holder |
 | `get_collection_file_manifest(collection_id, group_key)` | v1.7: per-file current manifest `{groupKey, version, files:[{path, sha256, size, s3VersionId}]}` for one collection-file group, so the download path fetches only changed files pinned to their committed `s3_version_id` (E9); a never-written group returns `version 0` / empty `files`. Mirrors `get_book_manifest`. |
-| `checkout_book(book_id, machine text)` | conditional lock of a FREE book; returns resulting status (winner's identity on failure). v1.9: on success returns `{success: true, locked_by, locked_by_machine, locked_at, checkoutGuid}`, a new checkout GUID issued to this caller only (see "Checkout GUID" below). A book the caller already holds (in this copy or another) returns `{success: false, locked_by_me: true, locked_by, locked_by_machine, locked_at}` and changes nothing: no new GUID, because that would orphan the copy holding the current one. Locked by someone else (or deleted): `{success: false, locked_by, locked_by_machine, locked_at}`. `machine` is for display only. |
+| `checkout_book(book_id, machine text, checkout_guid text)` | conditional lock of a FREE book; returns resulting status (winner's identity on failure). v1.10: `checkout_guid` is made by the client and saved in `.checkout` before the call (see "Checkout GUID" below); NULL or blank raises SQLSTATE 22023 `invalid_checkout_guid`. On success returns `{success: true, locked_by, locked_by_machine, locked_at}` (no GUID). A retry by the caller with the SAME GUID after it succeeded returns the same success, changing nothing and emitting no second event. A book the caller holds under a different GUID (another copy), or under a send-only check-in lock, returns `{success: false, locked_by_me: true, locked_by, locked_by_machine, locked_at}` and changes nothing, because replacing the GUID would orphan the copy holding the current one. Locked by someone else (or deleted): `{success: false, locked_by, locked_by_machine, locked_at}`. `machine` is for display only. |
 | `checkout_book_takeover(book_id, checkout_guid text, machine text)` | v1.4/v1.9: atomically reassigns a DIFFERENT account's lock to the caller ONLY when `checkout_guid` is the lock's current checkout GUID (account switch, batch item 9: account B opening the local copy account A checked the book out in, whose `.checkout` file holds the GUID). Presenting the member-readable hash does not work. The GUID is kept (not rotated), so the same copy goes on working under the new account. `machine` is recorded with the new lock for display. Returns `{success, locked_by, locked_by_machine, locked_at}`; emits a CheckOut event only on a genuine handover; safe to call speculatively — no-ops (success:false) when unlocked, already the caller's, or the GUID is missing/wrong. |
 | `unlock_book(book_id, checkout_guid text)` | release own lock (undo checkout, no content change). v1.9: needs the current checkout GUID; otherwise raises `CheckoutElsewhere: ...` (SQLSTATE P0001; HTTP 400), as it does for the hash in place of the GUID. Not the holder: `lock_not_held: ...` as before |
 | `force_unlock(book_id)` | admin; audited; emits ForcedUnlock event. Never needs the checkout GUID; clears it with the lock |
@@ -201,12 +216,15 @@ with `p_`, and PostgREST matches JSON keys to parameter names — so clients sen
 
 All timestamps server-side. All RPCs RLS-gated; books/versions accept no direct writes.
 
-#### Checkout GUID (v1.9)
+#### Checkout GUID (v1.9, v1.10)
 
-Every new checkout — `checkout_book`, or `checkin-start` creating a new book or taking a free
-lock — issues a random GUID (canonical lowercase UUID text), returned only to the client that
-took the lock. The client keeps it in `<bookFolder>/.checkout`, which is never uploaded. The
-server stores only its hash in `tc.books.checkout_guid_hash`:
+v1.10: the client that checks a book out makes a random GUID (`Guid.NewGuid()`, lowercase "D"
+form), writes it to `<bookFolder>/.checkout` (never uploaded) and only then sends it to
+`checkout_book`; the server never makes or returns one. A lost response is recovered by retrying
+with the same GUID (idempotent) or by comparing the book row's `checkoutGuidHash` with the hash of
+the GUID on disk. Only `checkout_book` creates a checkout: the lock `checkin-start` takes on a new
+or free book is a send-only lock with no hash, which ends with that check-in. The server stores
+only the hash in `tc.books.checkout_guid_hash`:
 
     checkoutGuidHash = lowercase hex( SHA-256( UTF-8 bytes of lower(guid) ) )
 
@@ -226,16 +244,16 @@ Req: `{ collectionId, bookId?, bookInstanceId, proposedName, baseVersionId?, che
 clientVersion, files: [{path, sha256, size}], checkoutGuid? }`
 - `bookId` null ⇒ first Send of a new book: validates name/instance-id uniqueness; creates the
   row locked to caller with NO current version (invisible to teammates until first commit).
-  v1.9: this issues a checkout GUID. Re-calling for the same never-committed book (resume) needs
-  that GUID as `checkoutGuid` (else 409 `CheckoutElsewhere`), unless the row has none, in which
-  case a new one is issued.
-- v1.9, existing book: if the caller already holds the lock, `checkoutGuid` must be its current
-  checkout GUID, else 409 `CheckoutElsewhere` (the caller holds it in another copy); if the book is
-  free, start takes the lock, issues a new GUID and emits a CheckOut event (type 0, exactly as
-  `checkout_book` does, so other clients see the lock via realtime/`get_changes`); if someone
-  else holds it, 409 `LockHeldByOther` as before.
-- The S3 credentials are obtained before the lock is taken (so a failure there leaves no GUID
-  issued that the response never carried); a refused start returns none.
+  v1.10: the lock is for the send only, with no checkout GUID (a first check-in never leaves the
+  book checked out); re-calling for the same never-committed book (resume) needs only the same
+  user and `bookInstanceId` (any `checkoutGuid` sent is ignored).
+- v1.9/v1.10, existing book: if the caller has it checked out, `checkoutGuid` must be its current
+  checkout GUID, else 409 `CheckoutElsewhere` (the caller holds it in another copy); under the
+  caller's own send-only lock (an unfinished check-in that took it while free) `checkoutGuid` must
+  be absent. If the book is free, start takes a send-only lock (no GUID; finish, abort and expiry
+  release it) and emits a CheckOut event (type 0, as `checkout_book` does, so other clients see
+  the lock via realtime/`get_changes`); if someone else holds it, 409 `LockHeldByOther` as before.
+- The S3 credentials are obtained before the lock is taken; a refused start returns none.
 - Existing book: `proposedName` must not equal (case-insensitively, after NFC) another live
   book's name, else 409 `NameConflict` (v1.8; previously only caught at finish).
 - v1.8: every `files[].path` is NFC-normalized before anything else, and validated: it must be a
@@ -247,10 +265,10 @@ clientVersion, files: [{path, sha256, size}], checkoutGuid? }`
 - The transaction records the book's current version as its base (whether or not
   `baseVersionId` was sent); `checkin-finish` refuses to commit if the book has moved on.
 - Re-call with the same open transaction ⇒ refreshed credentials, same transactionId.
-200: `{ transactionId, changedPaths[], checkoutGuid?, s3: { bucket, region, prefix,
+200: `{ transactionId, changedPaths[], s3: { bucket, region, prefix,
 credentials: { accessKeyId, secretAccessKey, sessionToken, expiration } } }`
-(creds scoped `tc/{cid}/books/{bookInstanceId}/*`, 1 h; `checkoutGuid` only when this call
-issued a new checkout — the client must save it in the book's `.checkout` file)
+(creds scoped `tc/{cid}/books/{bookInstanceId}/*`, 1 h; v1.10: no `checkoutGuid` — a check-in
+never writes `.checkout`)
 Errors: 400 `InvalidManifest` · 401/403 · 409 `LockHeldByOther` (+holder) /
 `CheckoutElsewhere` / `BaseVersionSuperseded` / `NameConflict` · 426 `ClientOutOfDate`.
 
@@ -270,7 +288,8 @@ finish that already committed (even one racing it) returns the same `{ versionId
 v1.9: it also refuses with 409 `CheckoutElsewhere` unless the book still has the checkout GUID
 the transaction started under (checked after `LockHeldByOther`, before
 `BaseVersionSuperseded`). `keepCheckedOut: true` keeps the lock AND the GUID; otherwise both are
-released.
+released. v1.10: under a send-only lock (start created the book or took it while free; no GUID)
+the book must still have no GUID, and the lock is always released, `keepCheckedOut` or not.
 v1.9 follow-up: 409 `TransactionChanged` means a `checkin-start` for the same transaction (a
 resume, which rewrites its file list) ran while this finish was verifying the uploads, so what
 was verified is no longer what would be committed. Nothing is written and the transaction stays
@@ -288,6 +307,9 @@ along with the file list it verified; every start resume bumps `revision`, and a
 409 `TransactionChanged` above.
 
 #### `checkin-abort` POST — `{ transactionId }` → 200.
+Removes a never-committed new book; v1.10: releases an existing book's send-only lock (no GUID)
+that the aborted check-in took; a checkout (with a GUID) is kept. An expired check-in's send-only
+lock is released the same way when it is reaped.
 
 #### `download-start` POST — `{ collectionId }` →
 200 `{ s3: {...} }` read-only creds (`GetObject` + `GetObjectVersion`) scoped `tc/{cid}/*`, 1 h.
