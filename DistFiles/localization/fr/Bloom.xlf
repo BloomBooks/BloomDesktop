@@ -6213,9 +6213,9 @@ is mostly status, which shows on the Collection Tab -->
         <target xml:lang="fr" state="final">Langue des Signes</target>
         <note>ID: TemplateBooks.BookName.Sign Language</note>
       </trans-unit>
-      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true">
+      <trans-unit id="TemplateBooks.BookName.Sign Language Pages" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Sign Language Pages</source>
-        <target xml:lang="fr" state="needs-translation">Sign Language Pages</target>
+        <target xml:lang="fr" state="final">Pages en Langue des Signes</target>
         <note>ID: TemplateBooks.BookName.Sign Language Pages</note>
       </trans-unit>
       <trans-unit id="TemplateBooks.BookName.Special Pages" sil:dynamic="true" approved="yes">
