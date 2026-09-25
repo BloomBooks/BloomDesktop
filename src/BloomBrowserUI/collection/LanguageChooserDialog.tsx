@@ -6,7 +6,7 @@ import {
     parseLangtagFromLangChooser,
 } from "@ethnolib/language-chooser-react-mui";
 import * as React from "react";
-import { getLanguageData } from "./languageData";
+import { getLanguageData, ILanguageData } from "./languageData";
 
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {

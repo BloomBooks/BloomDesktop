@@ -330,6 +330,20 @@ content-copy steps the tests need.
   `taskkill //PID <testhost> //F` by hand. Killing the task is not enough; the wrapper should reap
   its own test host, or say that an orphan is still holding the tree.
 
+## 2026-07-15 — config-r draws a divider between every direct group child; label is string-typed
+- **Cut:** `@sillsdev/config-r`'s `ConfigrGroup` (in a focused page) inserts a horizontal
+  divider between *every* direct child of the group. So an engine block written as a
+  `<ConfigrBoolean/>` followed by a separate `{enabled && <>...fields...</>}` gets an unwanted
+  line between the checkbox and its own settings. Also, `IConfigrProps.label` is typed `string`,
+  so you can't cleanly put a logo/node before a label.
+- **Workaround:** Wrap each engine's checkbox + conditional fields in a single fragment so the
+  group sees one child per engine (dividers land only *between* engines). For a logo-in-label,
+  pass a ReactNode cast `as unknown as string` — config-r renders `label` straight into MUI
+  `ListItemText` `primary`, which accepts a node, so it works at runtime.
+- **Idea:** Ask config-r for a `label?: React.ReactNode` type and/or a per-row `hideDivider`
+  (or a "subgroup" that suppresses internal dividers). See `AiTranslationSettingsGroup.tsx`.
+- **Context:** BL-16549AiSourceBubbles AI Source Bubbles settings.
+
 ## 2026-07-13 — pnpm-lock.yaml reformats wholesale on any install (format drift)
 - **Cut:** The committed `src/BloomBrowserUI/pnpm-lock.yaml` (on master too) is in an
   older pnpm serialization style (double-quoted `lockfileVersion`, 4-space indent, and it

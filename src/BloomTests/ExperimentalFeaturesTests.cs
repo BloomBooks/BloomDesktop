@@ -170,18 +170,25 @@ namespace BloomTests
 
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, true);
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, true);
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, true);
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, true);
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, true);
             Assert.IsTrue(
                 ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks)
             );
             Assert.IsTrue(
                 ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
             );
+            Assert.IsTrue(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAiSourceBubbles)
+            );
             Assert.AreEqual(
                 ExperimentalFeatures.kExperimentalSourceBooks
                     + ","
-                    + ExperimentalFeatures.kTeamCollections,
+                    + ExperimentalFeatures.kTeamCollections
+                    + ","
+                    + ExperimentalFeatures.kAiSourceBubbles,
                 ExperimentalFeatures.TokensOfEnabledFeatures
             );
 
@@ -192,8 +199,11 @@ namespace BloomTests
             Assert.IsTrue(
                 ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
             );
+            Assert.IsTrue(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAiSourceBubbles)
+            );
             Assert.AreEqual(
-                ExperimentalFeatures.kTeamCollections,
+                ExperimentalFeatures.kTeamCollections + "," + ExperimentalFeatures.kAiSourceBubbles,
                 ExperimentalFeatures.TokensOfEnabledFeatures
             );
 
@@ -203,6 +213,18 @@ namespace BloomTests
             );
             Assert.IsFalse(
                 ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+            );
+            Assert.IsTrue(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAiSourceBubbles)
+            );
+            Assert.AreEqual(
+                ExperimentalFeatures.kAiSourceBubbles,
+                ExperimentalFeatures.TokensOfEnabledFeatures
+            );
+
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kAiSourceBubbles, false);
+            Assert.IsFalse(
+                ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kAiSourceBubbles)
             );
             Assert.AreEqual("", ExperimentalFeatures.TokensOfEnabledFeatures);
         }

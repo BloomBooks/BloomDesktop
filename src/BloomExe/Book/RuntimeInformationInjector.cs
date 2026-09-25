@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using Bloom.AiTranslation;
 using Bloom.Collection;
 using Bloom.Properties;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -459,7 +461,7 @@ namespace Bloom.Book
             var element = pageDom.RawDom.CreateElement("script");
             element.SetAttribute("type", "text/javascript");
             element.SetAttribute("id", "ui-settings");
-            var d = new Dictionary<string, string>();
+            var d = new Dictionary<string, object>();
 
             //d.Add("urlOfUIFiles", "file:///" + fileLocator.LocateDirectory("ui", "ui files directory"));
             if (!String.IsNullOrEmpty(Settings.Default.LastSourceLanguageViewed))
@@ -488,6 +490,22 @@ namespace Bloom.Book
                 FileLocationUtilities
                     .GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot)
                     .ToLocalhost()
+            );
+
+            var aiSourceBubblesFeatureStatus = FeatureStatus.GetFeatureStatus(
+                bookData.CollectionSettings.Subscription,
+                FeatureName.AiSourceBubbles
+            );
+            // At least one engine must be enabled and validated, with that validation still
+            // matching its current configuration (provider, target language, credentials).
+            var anyEngineReady = AiTranslationService
+                .GetActiveEngines(bookData.CollectionSettings)
+                .Any();
+            d.Add(
+                "allowAiSourceBubbles",
+                aiSourceBubblesFeatureStatus.Visible
+                    && aiSourceBubblesFeatureStatus.Enabled
+                    && anyEngineReady
             );
 
             element.InnerText = String.Format(

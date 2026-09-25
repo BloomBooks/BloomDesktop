@@ -30,6 +30,7 @@ namespace Bloom.SubscriptionAndFeatures
         Bookshelf,
         AppBuilder,
         AiImageEditing,
+        AiSourceBubbles,
     }
 
     public static class FeatureRegistry
@@ -203,6 +204,12 @@ namespace Bloom.SubscriptionAndFeatures
             {
                 Feature = FeatureName.AiImageEditing,
                 SubscriptionTier = SubscriptionTier.Pro,
+            },
+            new FeatureInfo
+            {
+                Feature = FeatureName.AiSourceBubbles,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kAiSourceBubbles,
             },
             // ----------------------------------------
             // Enterprise Tier Features

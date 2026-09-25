@@ -22,6 +22,7 @@ import {
 import {
     DialogCancelButton,
     DialogCloseButton,
+    DialogOkButton,
 } from "../BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import {
@@ -37,6 +38,9 @@ export interface IProgressDialogProps {
     // defaults to "never"
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
+    // When the work finishes, dismiss with an "OK" button instead of the default "Close" button.
+    // (The Cancel button, if any, is only shown while the work is in progress either way.)
+    showOkButtonWhenDone?: boolean;
 
     open: boolean; // Controls whether or not the dialog is open (visible). (Theoretically, initial value should match dialogEnvironment.initiallyOpen, but not strictly necessary)
     onClose: () => void; // Callback fired when the component requests to be closed.
@@ -214,6 +218,31 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
         titleColor = "white";
     }
 
+    // The primary button shown once the work has finished (while it is still running we instead
+    // show Cancel, or a hidden placeholder -- see the bottom buttons below). A fatal error forces a
+    // Quit button; otherwise the caller chooses OK (showOkButtonWhenDone) or the default Close.
+    let donePrimaryButton: JSX.Element;
+    if (sawFatalError) {
+        donePrimaryButton = (
+            <BloomButton
+                l10nKey="ReportProblemDialog.Quit"
+                hasText={true}
+                enabled={true}
+                variant="contained"
+                temporarilyDisableI18nWarning={true} // only used in TC context so far
+                onClick={props.onClose}
+            >
+                Quit
+            </BloomButton>
+        );
+    } else if (props.showOkButtonWhenDone) {
+        donePrimaryButton = (
+            <DialogOkButton onClick={props.onClose} default={true} />
+        );
+    } else {
+        donePrimaryButton = <DialogCloseButton onClick={props.onClose} />;
+    }
+
     return (
         <BloomDialog
             {...propsToPassToBloomDialog}
@@ -351,20 +380,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                                 </BloomButton>
                             </DialogBottomLeftButtons>
                         )}
-                        {sawFatalError ? (
-                            <BloomButton
-                                l10nKey="ReportProblemDialog.Quit"
-                                hasText={true}
-                                enabled={true}
-                                variant="contained"
-                                temporarilyDisableI18nWarning={true} // only used in TC context so far
-                                onClick={props.onClose}
-                            >
-                                Quit
-                            </BloomButton>
-                        ) : (
-                            <DialogCloseButton onClick={props.onClose} />
-                        )}
+                        {donePrimaryButton}
                     </React.Fragment>
                 ) : // if we're not done, show the cancel button if that was called for...
                 props.showCancelButton ? (
@@ -435,6 +451,7 @@ interface IEmbeddedProgressDialogConfig {
     // defaults means "never"
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
+    showOkButtonWhenDone?: boolean;
     // Show a percent-done bar (fed by "percent" events) instead of the spinner.
     determinate?: boolean;
     linearProgress?: boolean;

@@ -209,6 +209,15 @@ export const BookButton: React.FunctionComponent<{
             requiresSavePermission: true, // marginal, but it does change the content of the book folder
             hide: () => !props.collection.isEditableCollection,
         },
+        {
+            label: "Remove AI Source Translations",
+            l10nId: "CollectionTab.BookMenu.RemoveAiSourceTranslations",
+            command: "bookCommand/removeAiSourceTranslations",
+            requiresSavePermission: true, // changes the content of the book
+            // Deliberately NOT gated by subscription/feature: a user whose subscription no longer
+            // includes AI Source Bubbles must still be able to strip AI content out of a book.
+            hide: () => !props.collection.isEditableCollection,
+        },
     ];
 
     const editableCollectionName = useApiString(
