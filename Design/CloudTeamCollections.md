@@ -499,6 +499,7 @@ erDiagram
         text user_id "NULL until claimed"
         text display_name
         timestamptz claimed_at
+        timestamptz last_seen_at "NULL until seen"
     }
     books {
         uuid id PK
@@ -584,7 +585,11 @@ erDiagram
   as in `TeamCollectionLink.txt`. Everything else cascades from it.
 - **`members`**: the approved accounts and their roles (see
   [section 3](#3-identity-membership-and-roles)). Unique by `(collection_id, email)` and by `(collection_id, user_id)` for claimed rows. RLS decides
-  every other table's access from the caller's claimed `members` row.
+  every other table's access from the caller's claimed `members` row. `last_seen_at` (CONTRACTS
+  v1.11) records when that person last had this collection open: `get_collection_state` (opening
+  or syncing) and `get_changes` (the 60-second poll) set it to now, but at most once every 10
+  minutes, so an active member costs about one small write per 10 minutes and no events.
+  `members_list` returns it, and the Share dialog shows it as "Last seen".
 - **`books`**: authoritative state of each book: identity, name, the pointer to its current
   version, the lock (`locked_by`, `locked_by_machine`, `locked_at`), `checkout_guid_hash`, and the
   `deleted_at` tombstone. A book with no `current_version_id` is a first check-in in progress.
@@ -659,12 +664,14 @@ them yet.
   scheduling the sweep) and merge #13 and the client.
 - Implement `ICollectionSharingService` on the Supabase RPCs, replacing `sharing.local.json`, and
   reconcile the Share dialog's sign-in (`AccountApi`) with the #8052 client's `CloudAuth`.
-- The server does not yet match three of the Share dialog's rules. `members_add` adds one email at
+- The server does not yet match two of the Share dialog's rules. `members_add` adds one email at
   a time and ignores an existing one, so all-or-nothing invitations need a batch RPC or a
   transaction. The rule that nobody changes their own role or removes themself exists only in the
-  client and stand-in; the server has only the last-admin guard. And there is no "last seen":
-  `tc.members` has `added_at` and `claimed_at` but no visit time, so recording visits needs a column
-  (or deriving it from `events`, which record actions, not visits).
+  client and stand-in; the server has only the last-admin guard.
+- When a folder Team Collection's books are moved to the cloud, the last-activity times from its
+  history can be written into `tc.members.last_seen_at` for the people it brings in.
+- If realtime ever replaces polling, `get_changes` would run only on reconnect, so "last seen"
+  would need another touch point for members who stay connected.
 - Actually moving a folder Team Collection's books into a cloud collection once it is shared
   (BL-16676), including what members on older Blooms see.
 
