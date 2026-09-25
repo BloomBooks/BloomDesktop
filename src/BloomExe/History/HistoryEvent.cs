@@ -34,6 +34,11 @@ namespace Bloom.History
         // values are shared with the server's tc.events.type check constraint
         // (supabase/migrations) — keep the two in sync.
         WorkPreservedLocally = 100, // local work saved to Lost & Found as a .bloomSource
+
+        // A checkout released without a check-in (CONTRACTS v1.10): unlock_book (undo checkout),
+        // an aborted send of a committed book, or expiry releasing a send lock. Only the server
+        // emits it; like the other cloud events it has an explicit value.
+        CheckOutReleased = 101,
     }
 
     /// <summary>

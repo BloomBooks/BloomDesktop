@@ -19,6 +19,9 @@ namespace BloomTests.History
             Assert.That((int)BookHistoryEventType.SyncProblem, Is.EqualTo(7));
             Assert.That((int)BookHistoryEventType.Deleted, Is.EqualTo(8));
             Assert.That((int)BookHistoryEventType.Moved, Is.EqualTo(9));
+            // Cloud events: numeric values shared with the server's tc.events.type.
+            Assert.That((int)BookHistoryEventType.WorkPreservedLocally, Is.EqualTo(100));
+            Assert.That((int)BookHistoryEventType.CheckOutReleased, Is.EqualTo(101));
         }
     }
 }

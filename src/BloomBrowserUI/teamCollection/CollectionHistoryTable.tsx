@@ -81,6 +81,7 @@ const kEventTypes = [
 // be looked up by their exact numeric value -- otherwise they render blank in the table.
 const kCloudEventTypeLabels: { [type: number]: string } = {
     100: "Work Preserved Locally", // BookHistoryEventType.WorkPreservedLocally
+    101: "Checkout Undone", // BookHistoryEventType.CheckOutReleased (released without a check-in)
 };
 
 // Event types that represent an incident an admin should notice (per CONTRACTS.md: "recorded

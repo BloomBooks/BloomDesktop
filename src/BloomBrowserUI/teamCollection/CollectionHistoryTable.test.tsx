@@ -156,6 +156,30 @@ describe("CollectionHistoryTable: cloud Team Collection additions (Wave 2)", () 
         ).not.toBeNull();
     });
 
+    it.each([
+        [100, "Work Preserved Locally"],
+        [101, "Checkout Undone"],
+    ])(
+        "labels cloud event type %i (outside the positional list) as %s",
+        (type, label) => {
+            mockUseTeamCollectionCapabilities.mockReturnValue(
+                cloudCapabilities,
+            );
+            mockUseApiData.mockReturnValue([]);
+            mockGetBoolean.mockImplementation(
+                (_url: string, cb: (v: boolean) => void) => cb(false),
+            );
+            mockGet.mockImplementation(
+                (_url: string, cb: (r: unknown) => void) =>
+                    cb({ data: oneEvent(type) }),
+            );
+
+            const container = renderTable();
+
+            expect(container.textContent).toContain(label);
+        },
+    );
+
     it("does not mark a routine event (Check Out) with a warning icon", () => {
         mockUseTeamCollectionCapabilities.mockReturnValue(cloudCapabilities);
         mockUseApiData.mockReturnValue([]);
