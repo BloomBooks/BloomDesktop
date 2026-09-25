@@ -1,7 +1,8 @@
 // E2E-11: the checkout GUID (CONTRACTS v1.9) across moved and duplicated collection folders.
 //
-// A cloud checkout belongs to the copy of the collection whose book folder holds the server-
-// issued checkout GUID in `<book>/.checkout`; the server keeps only its hash
+// A cloud checkout belongs to the copy of the collection whose book folder holds the checkout
+// GUID in `<book>/.checkout` (v1.10: made by the client and written before it asks for the
+// checkout); the server keeps only its hash
 // (tc.books.checkout_guid_hash). These scenarios pin the behaviors that replaced the old
 // path-hash "seat", which broke whenever a collection folder moved or was copied:
 //   (a) a checked-out collection folder can be moved (or renamed) and still checks in;

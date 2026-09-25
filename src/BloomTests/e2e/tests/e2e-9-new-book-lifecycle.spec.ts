@@ -27,7 +27,6 @@
 // books (distinct bookInstanceId) with the identical display name directly on each side's local
 // folder instead.
 import { test, expect } from "@playwright/test";
-import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { resetStack } from "../harness/reset";
 import { setUpAliceAndBobOnSharedCollection } from "../harness/twoInstanceSetup";
@@ -176,35 +175,28 @@ test.describe("E2E-9 new-book lifecycle", () => {
                 "{}",
             ).catch(() => undefined);
 
-            // Kill Alice as soon as her Send has recorded the checkout GUID that checkin-start
-            // issued for the new book (`<book>/.checkout`, written right after checkin-start
-            // answers and before any upload). CONTRACTS v1.9: resuming one's own never-committed
-            // new book needs that GUID (pgTAP 04 case 13b), so a kill that lands BEFORE the
-            // client has it (between checkin_start_tx's commit and its response reaching Bloom)
-            // leaves a book that cannot be resumed until its transaction expires (48h) -- a
-            // known contract gap, not what this scenario is about. Poll the file tightly: the
-            // window from here to checkin_finish_tx's commit is a handful of small uploads to
-            // local MinIO.
-            const checkoutRecord = path.join(
-                aliceScratch.collectionFolder,
-                newBookFolder,
-                ".checkout",
-            );
-            let sawRecord = false;
+            // Kill Alice as soon as checkin_start_tx has created the new book's (still
+            // uncommitted) tc.books row. CONTRACTS v1.10: resuming one's own never-committed new
+            // book needs only the same user and book instance id -- no checkout GUID (a first
+            // check-in is a send, not a checkout, and never writes `<book>/.checkout`). Poll
+            // tightly: the window from here to checkin_finish_tx's commit is a handful of small
+            // uploads to local MinIO.
+            let sawRow = false;
             const deadline = Date.now() + 10_000;
-            while (!sawRecord && Date.now() < deadline) {
-                sawRecord = await fs.stat(checkoutRecord).then(
-                    () => true,
-                    () => false,
+            while (!sawRow && Date.now() < deadline) {
+                const started = await dbClient.query(
+                    "select id from tc.books where instance_id = $1",
+                    [bookInstanceId],
                 );
-                if (!sawRecord) {
+                sawRow = started.rows.length > 0;
+                if (!sawRow) {
                     await new Promise((resolve) => setTimeout(resolve, 2));
                 }
             }
-            if (!sawRecord) {
+            if (!sawRow) {
                 throw new Error(
-                    "the new book's .checkout record (written once checkin-start answers) never " +
-                        "appeared within 10s -- cannot exercise the kill-mid-Send race.",
+                    "checkin_start_tx never created the new book's row within 10s -- cannot " +
+                        "exercise the kill-mid-Send race.",
                 );
             }
             // A direct `process.kill()` (a synchronous OS call from right here in this process,
