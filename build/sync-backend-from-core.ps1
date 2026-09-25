@@ -26,8 +26,11 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$CoreRepo = (Resolve-Path $CoreRepo).Path
+# Long (not 8.3 short) paths: Copy-MirroredDir cuts each file's FullName (always long) by the
+# length of its source folder, so a short-form root (e.g. C:\Users\JOHNTH~1\...) would cut in
+# the wrong place and produce bogus relative paths.
+$repoRoot = (Get-Item (Resolve-Path (Join-Path $PSScriptRoot '..')).Path).FullName
+$CoreRepo = (Get-Item (Resolve-Path $CoreRepo).Path).FullName
 
 $dirty = git -C $CoreRepo status --porcelain
 if ($dirty) { throw "$CoreRepo has uncommitted changes; commit or discard them first." }
@@ -126,7 +129,11 @@ Push-Location $repoRoot
 try {
     $targets = @((Get-ChildItem 'supabase/functions/*/index.ts').FullName) +
         @((Get-ChildItem 'supabase/functions/tests/tc-*-test.ts').FullName)
-    & deno check @targets
+    # Deno reports progress ("Check ...") on stderr. Under Windows PowerShell 5.1 with
+    # ErrorActionPreference Stop, any native stderr line aborts the script, so only the exit
+    # code decides success here.
+    $ErrorActionPreference = 'Continue'
+    & deno check @targets 2>&1 | ForEach-Object { Write-Host $_ }
     if ($LASTEXITCODE -ne 0) { throw "deno check failed on the mirrored functions/tests" }
 }
 finally { Pop-Location }
