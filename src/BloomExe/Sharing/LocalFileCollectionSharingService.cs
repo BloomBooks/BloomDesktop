@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
+using SIL.IO;
+
+namespace Bloom.Sharing
+{
+    /// <summary>
+    /// Thrown when someone tries a sharing change the rules don't allow (a non-admin managing
+    /// sharing, changing their own role, inviting someone twice...). The UI is meant to prevent
+    /// all of these, so reaching one is a bug.
+    /// </summary>
+    public class SharingNotAllowedException : ApplicationException
+    {
+        public SharingNotAllowedException(string message)
+            : base(message) { }
+    }
+
+    /// <summary>
+    /// A stand-in for the cloud sharing backend, until that is deployed: keeps the collection's
+    /// sharing record in a JSON file in the collection folder, and enforces the rules the
+    /// backend's RPCs will enforce. Nobody but the people using this computer ever sees the file,
+    /// so invitations go nowhere; it just lets the Share dialog be built and used. (A folder Team
+    /// Collection does not sync this file; see TeamCollection.RootLevelCollectionFilesIn.)
+    /// </summary>
+    public class LocalFileCollectionSharingService : ICollectionSharingService
+    {
+        /// <summary>The name of the file, in the collection folder, that holds the record.</summary>
+        public const string kFileName = "sharing.local.json";
+
+        private readonly string _filePath;
+        private readonly string _collectionId;
+        private readonly string _collectionName;
+        private readonly Func<DateTime> _utcNow;
+
+        // API requests can arrive on several threads; this keeps each read-modify-write whole.
+        private readonly object _lock = new object();
+
+        /// <summary>
+        /// Create the service for the collection in the given folder. utcNow lets tests control
+        /// the clock; by default it is DateTime.UtcNow.
+        /// </summary>
+        public LocalFileCollectionSharingService(
+            string collectionFolder,
+            string collectionId,
+            string collectionName,
+            Func<DateTime> utcNow = null
+        )
+        {
+            _filePath = Path.Combine(collectionFolder, kFileName);
+            _collectionId = collectionId;
+            _collectionName = collectionName;
+            _utcNow = utcNow ?? (() => DateTime.UtcNow);
+        }
+
+        /// <inheritdoc/>
+        public CollectionSharingRecord GetRecord()
+        {
+            lock (_lock)
+            {
+                return Read();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void StartSharing(
+            string adminEmail,
+            string adminName,
+            IEnumerable<SharingInvitation> invitations,
+            IEnumerable<TeamCollectionHistoryMember> historyMembers
+        )
+        {
+            lock (_lock)
+            {
+                if (Read() != null)
+                    throw new SharingNotAllowedException("This collection is already shared.");
+                var now = _utcNow();
+                var record = new CollectionSharingRecord
+                {
+                    CollectionId = _collectionId,
+                    CollectionName = _collectionName,
+                    CreatedAt = now,
+                    Members = new List<SharingMember>
+                    {
+                        new SharingMember
+                        {
+                            Email = adminEmail,
+                            Name = adminName,
+                            Role = SharingRole.Admin,
+                            InvitedAt = now,
+                            InvitedBy = adminEmail,
+                            LastSeen = now,
+                        },
+                    },
+                };
+                foreach (var person in historyMembers)
+                {
+                    // The admin is already a member, and nobody can be one twice.
+                    if (FindMember(record, person.Email) != null)
+                        continue;
+                    record.Members.Add(
+                        new SharingMember
+                        {
+                            Email = person.Email.Trim(),
+                            Name = person.Name,
+                            Role = person.Role,
+                            InvitedAt = now,
+                            InvitedBy = adminEmail,
+                            LastSeen = person.LastActivity,
+                        }
+                    );
+                }
+                // One write for everything, so a bad invitation leaves the collection unshared.
+                AddInvitations(record, adminEmail, invitations.ToList());
+                Write(record);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Invite(string byEmail, IEnumerable<SharingInvitation> invitations)
+        {
+            var list = invitations.ToList();
+            Change(byEmail, record => AddInvitations(record, byEmail, list));
+        }
+
+        // Add the invitations to the record, all or none: they are all checked before any is
+        // added, so a bad one leaves the record as it was rather than half-updated.
+        private void AddInvitations(
+            CollectionSharingRecord record,
+            string byEmail,
+            List<SharingInvitation> list
+        )
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                var email = list[i].Email;
+                if (FindMember(record, email) != null)
+                    throw new SharingNotAllowedException($"{email} already has access.");
+                if (list.Skip(i + 1).Any(other => SameEmail(other.Email, email)))
+                    throw new SharingNotAllowedException($"{email} is in the list more than once.");
+            }
+            foreach (var invitation in list)
+            {
+                record.Members.Add(
+                    new SharingMember
+                    {
+                        Email = invitation.Email.Trim(),
+                        Role = invitation.Role,
+                        InvitedAt = _utcNow(),
+                        InvitedBy = byEmail,
+                    }
+                );
+            }
+        }
+
+        /// <inheritdoc/>
+        public void SetRole(string byEmail, string email, SharingRole role)
+        {
+            Change(
+                byEmail,
+                record =>
+                {
+                    RequireSomeoneElse(byEmail, email);
+                    RequireMember(record, email).Role = role;
+                }
+            );
+        }
+
+        /// <inheritdoc/>
+        public void Remove(string byEmail, string email)
+        {
+            Change(
+                byEmail,
+                record =>
+                {
+                    RequireSomeoneElse(byEmail, email);
+                    record.Members.Remove(RequireMember(record, email));
+                }
+            );
+        }
+
+        /// <inheritdoc/>
+        public void RecordVisit(string email, string name)
+        {
+            lock (_lock)
+            {
+                var record = Read();
+                var member = record == null ? null : FindMember(record, email);
+                if (member == null)
+                    return;
+                member.LastSeen = _utcNow();
+                if (!string.IsNullOrWhiteSpace(name))
+                    member.Name = name;
+                Write(record);
+            }
+        }
+
+        // Apply a change that only an admin of an already-shared collection may make.
+        private void Change(string byEmail, Action<CollectionSharingRecord> change)
+        {
+            lock (_lock)
+            {
+                var record = Read();
+                if (record == null)
+                    throw new SharingNotAllowedException("This collection is not shared.");
+                if (FindMember(record, byEmail)?.Role != SharingRole.Admin)
+                    throw new SharingNotAllowedException(
+                        $"{byEmail} is not an admin of this collection."
+                    );
+                change(record);
+                Write(record);
+            }
+        }
+
+        private static SharingMember RequireMember(CollectionSharingRecord record, string email)
+        {
+            return FindMember(record, email)
+                ?? throw new SharingNotAllowedException($"{email} is not a member.");
+        }
+
+        // Nobody may change their own role or remove themselves; another admin has to. So an
+        // admin can only step down once someone else has taken over as admin, which also means
+        // a shared collection always has an admin (only an admin can change anything, and the
+        // one doing it stays one).
+        private static void RequireSomeoneElse(string byEmail, string email)
+        {
+            if (SameEmail(byEmail, email))
+                throw new SharingNotAllowedException(
+                    "You can't change your own role or remove yourself."
+                );
+        }
+
+        private static SharingMember FindMember(CollectionSharingRecord record, string email)
+        {
+            return record.Members.FirstOrDefault(m => SameEmail(m.Email, email));
+        }
+
+        private static bool SameEmail(string a, string b)
+        {
+            return string.Equals(a?.Trim(), b?.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private CollectionSharingRecord Read()
+        {
+            if (!RobustFile.Exists(_filePath))
+                return null;
+            return JsonConvert.DeserializeObject<CollectionSharingRecord>(
+                RobustFile.ReadAllText(_filePath)
+            );
+        }
+
+        // Write via a temporary file that replaces the real one only once it is complete, so
+        // Bloom stopping part way through can't leave a truncated record that no longer reads.
+        private void Write(CollectionSharingRecord record)
+        {
+            var temp = new TempFileForSafeWriting(_filePath);
+            RobustFile.WriteAllText(
+                temp.TempFilePath,
+                JsonConvert.SerializeObject(record, Formatting.Indented)
+            );
+            temp.WriteWasSuccessful();
+        }
+    }
+}
