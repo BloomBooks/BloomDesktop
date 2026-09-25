@@ -29,6 +29,11 @@
 		<!-- NETSDK1206 is expected here: SQLitePCLRaw.lib.e_sqlite3 carries non-Windows RID assets
 		     (e.g., alpine-*), but this project targets Windows only. -->
 		<NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+		<!-- NU1701: Enchant.Net, ibusdotnet and KeymanLegacyBundle are transitive (via the
+		     SIL.Windows.Forms.Keyboarding stack) and only ship .NET Framework builds. Per-package
+		     NoWarn metadata on a PackageReference Update does not reach transitive packages, so
+		     the code has to be suppressed for the project. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
@@ -294,15 +299,6 @@
 		<!-- Version is sourced from the repo-wide Directory.Build.props (VelopackVersion) so that we always
 		 use the same version of the BloomBooks.Velopack and BloomBooks.Velopack.Cli  -->
 		<PackageReference Include="BloomBooks.Velopack" Version="$(VelopackVersion)" />
-	</ItemGroup>
-	<!-- These three are transitive (pulled in by the SIL.Windows.Forms.Keyboarding stack)
-	     and only ship .NET Framework builds, so they raise NU1701. They are not direct
-	     PackageReferences, so we silence NU1701 for just these packages via Update
-	     metadata rather than suppressing it for the whole project. -->
-	<ItemGroup>
-		<PackageReference Update="Enchant.Net" NoWarn="NU1701" />
-		<PackageReference Update="ibusdotnet" NoWarn="NU1701" />
-		<PackageReference Update="KeymanLegacyBundle" NoWarn="NU1701" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="PodcastUtilities.PortableDevices">
