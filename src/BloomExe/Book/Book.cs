@@ -4364,7 +4364,7 @@ namespace Bloom.Book
             {
                 try
                 {
-                    // A book still recording a browser maintenance level above ours has to go
+                    // A book still recording a page layout update level above ours has to go
                     // through the full Save, which is what brings that level down to what we can
                     // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
                     // and replaces one page, so it would leave the old level in the head. This costs
@@ -4915,7 +4915,7 @@ namespace Bloom.Book
 
         public void SetLayout(Layout layout)
         {
-            // The per-page fix-ups record measurements relative to the page, so a new size or
+            // The page layout update records measurements relative to the page, so a new size or
             // orientation leaves them stale.
             if (GetLayout().SizeAndOrientation.ClassName != layout.SizeAndOrientation.ClassName)
                 BookProcessor.RecordPageLayoutChanged(OurHtmlDom);

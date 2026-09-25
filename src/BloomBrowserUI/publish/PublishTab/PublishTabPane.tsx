@@ -282,8 +282,8 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                     return false;
                                 }
                                 logPublishTabSelected(newIndex);
-                                // Every tool publishes the book's pages, so C# first brings any
-                                // that are still due up to date, behind its own progress dialog.
+                                // Every tool publishes the book's pages, so C# first brings them
+                                // up to date if they need it, behind its own progress dialog.
                                 // Hold the tool back until it says the pages are ready. Record the
                                 // choice before asking, because the "pagesUpToDate" event can arrive
                                 // before this request's reply does.

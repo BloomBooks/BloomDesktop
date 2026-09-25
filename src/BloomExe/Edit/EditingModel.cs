@@ -899,10 +899,10 @@ namespace Bloom.Edit
         public void SetLayout(Layout layout)
         {
             // The measurements each page records (image sizing, canvas-element geometry) are
-            // relative to the page, so the new size makes the book due for the per-page fix-up
-            // again (Book.SetLayout records that; BL-16852). We do not run that pass
-            // here; it runs when something needs the whole book (the AI image editor, a Publish
-            // tool). Meanwhile each page gets the same fix-ups in the editor when it is opened.
+            // relative to the page, so after a new size the book needs its page layout update again
+            // (Book.SetLayout records that; BL-16852). We do not run the update here; it runs
+            // when something needs the whole book (the AI image editor, a Publish tool).
+            // Meanwhile each page gets the same changes in the editor when it is opened.
             SaveThen(
                 () =>
                 {
@@ -1054,7 +1054,7 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Save the current page, bring the whole book up to the current browser maintenance level
+        /// Save the current page, bring the whole book up to the current page layout update level
         /// (BL-16852), and then come back to the page we were on and run
         /// <paramref name="afterPageReloaded"/>. Used before launching the AI image editor, which
         /// needs every page's recorded data, not just the pages someone happens to have visited.
@@ -1068,7 +1068,7 @@ namespace Bloom.Edit
         /// off-screen pages it loads make their own sync-locked API calls and would otherwise block
         /// behind the handler that got us here. Finally we navigate back and hand control on.
         /// </remarks>
-        public void BringBookToCurrentBrowserLevelThen(string pageId, Action afterPageReloaded)
+        public void UpdatePageLayoutIfNeededThen(string pageId, Action afterPageReloaded)
         {
             var book = CurrentBook;
             // Deliberately no failureAction. It fires only on the exception paths, where leaving the
@@ -1097,12 +1097,12 @@ namespace Bloom.Edit
                     });
                 },
                 doAfterSaveToDisk: () =>
-                    RunPerPageFixupThenReturnToPage(book, pageId, afterPageReloaded)
+                    RunPageLayoutUpdateThenReturnToPage(book, pageId, afterPageReloaded)
             );
         }
 
         /// <summary>
-        /// Bring <paramref name="book"/> up to the current browser maintenance level, then go back to
+        /// Bring <paramref name="book"/> up to the current page layout update level, then go back to
         /// <paramref name="pageId"/> and, if one is given, run <paramref name="afterPageReloaded"/>
         /// once that page has loaded. Call this only from a save whose callback returned null, so the
         /// editor is empty by the time the pass starts.
@@ -1113,7 +1113,7 @@ namespace Bloom.Edit
         /// since the off-screen pages it loads make their own sync-locked API calls; that deferral is
         /// also what puts it after the state machine has finished emptying the editor.
         /// </remarks>
-        private void RunPerPageFixupThenReturnToPage(
+        private void RunPageLayoutUpdateThenReturnToPage(
             Book.Book book,
             string pageId,
             Action afterPageReloaded
@@ -1121,7 +1121,7 @@ namespace Bloom.Edit
         {
             RunOffTheApiLock(() =>
             {
-                BookProcessor.EnsurePerPageFixupIfNeededThen(
+                BookProcessor.UpdatePageLayoutIfNeededThen(
                     book,
                     _webSocketServer,
                     // The dialog reports itself closed on one of the API server's threads, so come
@@ -1130,18 +1130,22 @@ namespace Bloom.Edit
                     // the extra hop is harmless.)
                     () =>
                         RunOffTheApiLock(() =>
-                            ReturnToPageAfterFixup(book, pageId, afterPageReloaded)
+                            ReturnToPageAfterPageLayoutUpdate(book, pageId, afterPageReloaded)
                         )
                 );
             });
         }
 
         /// <summary>
-        /// Put the editor back together once the per-page fix-up has finished (or was not needed):
+        /// Put the editor back together once the page layout update has finished (or was not needed):
         /// show <paramref name="pageId"/> again, or the first page if it is gone, and then run
         /// <paramref name="afterPageReloaded"/>. Must run on the UI thread.
         /// </summary>
-        private void ReturnToPageAfterFixup(Book.Book book, string pageId, Action afterPageReloaded)
+        private void ReturnToPageAfterPageLayoutUpdate(
+            Book.Book book,
+            string pageId,
+            Action afterPageReloaded
+        )
         {
             // The user may have switched books or left the tab while the dialog was up.
             if (!Visible || CurrentBook != book)

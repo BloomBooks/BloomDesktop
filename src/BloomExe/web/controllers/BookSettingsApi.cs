@@ -220,7 +220,7 @@ namespace Bloom.Api
                         newAppearance
                     );
                     // A new theme, margins and so on change where things sit on the pages, which
-                    // leaves the per-page fix-ups' measurements stale.
+                    // leaves the measurements the page layout update recorded stale.
                     if (
                         JsonConvert.SerializeObject(
                             _bookSelection
