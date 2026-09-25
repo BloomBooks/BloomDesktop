@@ -445,7 +445,6 @@ namespace Bloom.Book
                 itemsToDelete,
                 info
             );
-            UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
             incomingData.UpdateGenericLanguageString(
                 "contentLanguage1",
                 XmlString.FromUnencoded(Language1.Tag),
@@ -497,9 +496,13 @@ namespace Bloom.Book
             if (info == null)
                 return; // only in tests
             var tools = info.Tools;
-            var bookClass = _dom.Body.GetAttribute("class");
+            // Test for the class as a whole word. The string "leveled-reader-off" contains
+            // "leveled-reader", so a substring test said a book was leveled when the user had
+            // just said it was not (BL-16775).
+            var isLeveled = _dom.Body.HasClass("leveled-reader");
+            var isDecodable = _dom.Body.HasClass("decodable-reader");
 
-            if (!bookClass.Contains("leveled-reader") && !bookClass.Contains("decodable-reader"))
+            if (!isLeveled && !isDecodable)
             {
                 incomingData.UpdateGenericLanguageString(
                     "levelOrStageNumber",
@@ -511,7 +514,7 @@ namespace Bloom.Book
             }
 
             var levelTool = tools.FirstOrDefault(t => t.ToolId == "leveledReader");
-            if (levelTool != null && bookClass.Contains("leveled-reader"))
+            if (levelTool != null && isLeveled)
             {
                 var level = levelTool.State;
                 incomingData.UpdateGenericLanguageString(
@@ -523,7 +526,7 @@ namespace Bloom.Book
             }
 
             var decodableTool = tools.FirstOrDefault(t => t.ToolId == "decodableReader");
-            if (decodableTool != null && bookClass.Contains("decodable-reader"))
+            if (decodableTool != null && isDecodable)
             {
                 var stageString = decodableTool
                     .State?.Split(';')
@@ -1330,6 +1333,12 @@ namespace Bloom.Book
             GatherDataItemsFromXElement(data, elementToReadFrom, itemsToDelete);
 
             MigrateData(data);
+
+            // This has to happen before we push the data out to the document. The gathered data
+            // holds whatever levelOrStageNumber the pages happen to show, so a book the user has
+            // just said is neither leveled nor decodable would otherwise be given its old number
+            // back, and go on showing that grade for ever (BL-16775).
+            UpdateToolRelatedDataFromBookInfo(info, data, itemsToDelete);
 
             //            SendDataToDebugConsole(data);
             UpdateDomFromDataSet(data, "*", _dom.RawDom, itemsToDelete);
