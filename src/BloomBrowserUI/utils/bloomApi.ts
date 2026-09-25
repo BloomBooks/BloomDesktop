@@ -580,7 +580,14 @@ export async function getWithConfigAsync<T>(
     return wrapAxios(axios.get<T>(getBloomApiPrefix() + urlSuffix, config));
 }
 
-export function postString(urlSuffix: string, value: string) {
+// Pass report: false for an endpoint whose failure is not worth a problem report, in the same
+// spirit as postThatMightNavigate: a request that asks Bloom to do something it may decline for
+// reasons of timing, where the user has nothing to fix and nothing to be told.
+export function postString(
+    urlSuffix: string,
+    value: string,
+    report: boolean = true,
+) {
     // Match post(): unit tests should not hit Bloom backend endpoints.
     const isTest =
         typeof process !== "undefined" && process.env.NODE_ENV === "test";
@@ -594,6 +601,7 @@ export function postString(urlSuffix: string, value: string) {
                 "Content-Type": "text/plain",
             },
         }),
+        report,
     );
 }
 
