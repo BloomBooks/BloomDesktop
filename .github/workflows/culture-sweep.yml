@@ -138,11 +138,9 @@ jobs:
     test:
         needs: matrix-setup
         runs-on: windows-latest
-        # The first run showed why this needs slack: setup and build take about 10 minutes on a
-        # runner, the tests took 13 under tr-TR but 24 under fr-FR, and th-TH hit a 45-minute cap
-        # before finishing. A culture bug does not always fail fast: PublishHelper gives the browser
-        # 10 seconds to load its visibility document and the epub tests then retry, so a culture that
-        # breaks that path makes the suite crawl rather than stop (BL-16927).
+        # Setup and build take about 10 minutes and the tests about 15, but runner speed varies a lot:
+        # on a slow runner the browser-driven tests (epub especially) can take three times as long.
+        # If one culture's leg is much slower than the others, re-run it before suspecting the culture.
         timeout-minutes: 90
 
         strategy:
