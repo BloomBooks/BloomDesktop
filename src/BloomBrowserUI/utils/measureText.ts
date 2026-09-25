@@ -47,14 +47,19 @@ export class MeasureText {
             clearTimeout(cleanupTimeout);
             cleanupTimeout = 0;
         }
+        // Whitespace would collapse to nothing, so use the first visible character.
+        const sample = text.trim().substring(0, 1);
         let div = document.getElementById("measureTextDiv");
         let block: HTMLElement | null = null;
         if (!div) {
             div = document.createElement("div");
             div.setAttribute("id", "measureTextDiv");
             block = document.createElement("div");
-            // before we add block, otherwise it will wipe it out.
-            div.innerText = text.substring(0, 1);
+            // Always a text node, even if sample is empty, so that the reuse below can
+            // set it. (Setting innerText to "" adds no node, and to "\n" adds a <br>,
+            // which pushes the block down a line and ruins every later measurement
+            // until the div is cleaned up; BL-16925.)
+            div.appendChild(document.createTextNode(sample));
 
             // It has to be in the document to get measured, but we don't want the
             // user to see it.
@@ -72,7 +77,7 @@ export class MeasureText {
             // measurements are zero.
             document.body.appendChild(div);
         } else {
-            div.firstChild!.nodeValue = text.substring(0, 1);
+            div.firstChild!.nodeValue = sample;
             block = div.firstElementChild as HTMLElement;
         }
         div.style.fontFamily = fontFamily;
@@ -143,7 +148,8 @@ export class MeasureText {
         // add other elements, and some layout performance cost.
         cleanupTimeout = setTimeout(() => {
             if (div) {
-                document.body.removeChild(div);
+                // remove(), not body.removeChild(), which throws if something else already removed it
+                div.remove();
             }
         }, 2000);
 

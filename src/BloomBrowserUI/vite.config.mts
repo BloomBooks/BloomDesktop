@@ -506,6 +506,19 @@ ${injectedCss.map((call) => `(function() { ${call} })();`).join("\n")}
         },
     };
 }
+
+// Files that neither vitest project (see `test.projects` below) should treat as tests.
+const testExcludes = [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/cypress/**",
+    "**/.{idea,git,cache,output,temp}/**",
+    "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+    "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
+    "**/react_components/component-tester/**", // Exclude playwright component tests
+    "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+];
+
 // Use dynamic imports so that if Vite/esbuild emits a CommonJS wrapper for this
 // config, Node can still load ESM-only plugins (like @vitejs/plugin-react) via
 // native dynamic import instead of require().
@@ -852,26 +865,59 @@ export default defineConfig(async ({ command }) => {
         // Vitest is Vite's test runner (replaces Karma + Jasmine)
         // See vitest.dev for full documentation
         test: {
-            setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
-            include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
             reporters: globalThis.process?.env?.TEAMCITY_VERSION
                 ? ["default", "junit"]
                 : ["default"],
             outputFile: "./bloombrowserui-test-results.xml",
             includeConsoleOutput: false,
-            // Uncomment to run only specific test files during development:
-            // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
-            exclude: [
-                "**/node_modules/**",
-                "**/dist/**",
-                "**/cypress/**",
-                "**/.{idea,git,cache,output,temp}/**",
-                "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
-                "**/bookEdit/canvas-e2e-tests/**", // Exclude Playwright e2e suite (run via pnpm e2e canvas)
-                "**/react_components/component-tester/**", // Exclude playwright component tests
-                "**/*.uitest.{ts,tsx}", // Exclude UI tests that use Playwright
+            // Two projects, both run by `pnpm test`.
+            projects: [
+                {
+                    extends: true,
+                    test: {
+                        name: "unit",
+                        setupFiles: ["./vitest.setup.ts"], // Run this file before each test file
+                        include: ["./**/*{test,spec,Spec}.{js,ts,jsx,tsx}"], // Which files are tests
+                        // Uncomment to run only specific test files during development:
+                        // include: ["./bookEdit/toolbox/talkingBook/audioRecordingSpec.ts"],
+                        exclude: [
+                            ...testExcludes,
+                            "**/*.browser.spec.ts", // Run by the browser project below
+                        ],
+                        environment: "jsdom", // Use jsdom to simulate browser DOM in Node
+                        environmentOptions: {
+                            jsdom: {},
+                        },
+                    },
+                },
+                {
+                    // Tests that need a real layout engine (scrollHeight, offsetTop, canvas
+                    // pixels, ...), which jsdom doesn't have. They run in headless Edge, which
+                    // is the engine behind WebView2 and is already installed on Windows.
+                    // This project deliberately does not extend the rest of this config.
+                    // The app's optimizeDeps and plugins stop Vite from pre-bundling the
+                    // CommonJS dependencies a browser needs, and the jsdom setup file (which
+                    // mocks canvas, innerText and more) would break real layout measurement.
+                    test: {
+                        name: "browser",
+                        setupFiles: ["./vitest.browser.setup.ts"],
+                        include: ["./**/*.browser.spec.ts"],
+                        exclude: testExcludes,
+                        browser: {
+                            enabled: true,
+                            headless: true,
+                            provider: playwright({
+                                launchOptions: { channel: "msedge" },
+                            }),
+                            instances: [
+                                {
+                                    browser: "chromium",
+                                },
+                            ],
+                        },
+                    },
+                },
             ],
-            environment: "jsdom", // Use jsdom to simulate browser DOM in Node
             globals: false, // Don't inject global test functions (use imports instead)
             testTimeout: 30000, // 30 second timeout for async operations
             teardownTimeout: 10000, // 10s max for after-test cleanup; prevents hung workers from blocking the pool
@@ -889,20 +935,6 @@ export default defineConfig(async ({ command }) => {
             maxWorkers: 4,
             minWorkers: 2,
             sourcemap: true, // Enable source maps for debugging test code
-            browser: {
-                // This whole block is unused since enabled is false. The settings are our current
-                // best guess for our next attempt to get browser mode working.
-                enabled: false, // Browser mode disabled (we use jsdom instead)
-                provider: playwright(),
-                instances: [
-                    {
-                        browser: "chromium",
-                    },
-                ],
-            },
-            environmentOptions: {
-                jsdom: {},
-            },
         },
 
         // DEPENDENCY OPTIMIZATION
