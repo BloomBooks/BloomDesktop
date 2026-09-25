@@ -62,6 +62,20 @@ namespace Bloom.Book
         // See NeedsPerPageFixup.
         internal const string kPageLayoutUpdateLevelMeta = "pageLayoutUpdateLevel";
 
+        // Set through E2eTestingApi (registered only under --e2e) so a test can see what a failed
+        // update looks like: when the pass reaches this 1-based page it throws, as a page whose
+        // capture failed would, and the setting clears itself. 0 means no failure is wanted.
+        private static int s_failAtPageForTesting;
+
+        /// <summary>
+        /// Make the next page pass fail when it reaches page <paramref name="pageNumber"/> (1-based).
+        /// For e2e tests only; see s_failAtPageForTesting.
+        /// </summary>
+        internal static void FailAtPageForTesting(int pageNumber)
+        {
+            Interlocked.Exchange(ref s_failAtPageForTesting, pageNumber);
+        }
+
         // Books for which the automatic per-page fix-up (EnsurePerPageFixupIfNeededThen) was tried this
         // session and threw. Since a failed run stamps nothing, NeedsPerPageFixup would keep saying
         // "yes" and we would re-prompt on every tab switch; remembering the failure lets us stop
@@ -214,6 +228,13 @@ namespace Bloom.Book
                     foreach (var page in pages)
                     {
                         pageIndex++;
+                        if (
+                            Interlocked.CompareExchange(ref s_failAtPageForTesting, 0, pageIndex)
+                            == pageIndex
+                        )
+                            throw new ApplicationException(
+                                $"Simulated failure updating page {pageIndex} ({page.Id}), requested by an e2e test"
+                            );
                         ProcessOnePage(book, browser, page, fitImageTextSplits);
 
                         // We deliberately do NOT write a per-page status message here. The progress
