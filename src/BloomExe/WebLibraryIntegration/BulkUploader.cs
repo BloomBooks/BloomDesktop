@@ -575,6 +575,13 @@ namespace Bloom.WebLibraryIntegration
                         "{0} has been uploaded",
                         uploadParams.Folder
                     );
+                    // Where its files went. Each upload gets a new location, and the book's record on
+                    // the server can later point somewhere else (BL-16921), so the log is the one
+                    // place that says which copy this upload made.
+                    progress.WriteMessage(
+                        "Uploaded files are at {0}",
+                        _singleBookUploader.LastUploadBaseUrl
+                    );
                     if (updatingBook)
                         ++_booksUpdated;
                     else

@@ -27,6 +27,12 @@ export interface IBulkUploadResult {
     updated: number;
     /** Books skipped because nothing had changed since the last upload. */
     skipped: number;
+    /**
+     * Where each book this upload sent put its files, as the log says (BulkUploader writes
+     * "Uploaded files are at <baseUrl>" after each one). Read uploaded files from these rather than
+     * from a book's record on the server, which can point at an older upload (BL-16921).
+     */
+    uploadedBaseUrls: string[];
     /** The whole log, for a failure message when the tally is not what a test expected. */
     log: string;
 }
@@ -138,6 +144,9 @@ export async function waitForBulkUploadResult(
         newBooks: count(/Uploaded (\d+) new books/),
         updated: count(/Updated (\d+) books/),
         skipped: count(/Skipped (\d+) books/),
+        uploadedBaseUrls: [...log.matchAll(/Uploaded files are at (\S+)/g)].map(
+            (match) => match[1],
+        ),
         log,
     };
 }
