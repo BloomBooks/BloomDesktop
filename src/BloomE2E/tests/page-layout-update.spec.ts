@@ -36,7 +36,7 @@ const UP_TO_DATE = "1";
 // The level a layout change leaves behind.
 const NEEDS_UPDATE = "0";
 
-test("a page size change makes the first Publish tool update the book, and the next one does not", async ({
+test("a page size change makes the first Publish tool update the book, and the next one does not [Test Case ID 834]", async ({
     page,
 }) => {
     const book = await makeBookFromTemplate(page, "Basic Book");
@@ -57,7 +57,7 @@ test("a page size change makes the first Publish tool update the book, and the n
     ).toBe(false);
 });
 
-test("a theme change makes the next Publish tool update the book", async ({
+test("a theme change makes the next Publish tool update the book [Test Case ID 834]", async ({
     page,
 }) => {
     const book = await makeBookFromTemplate(page, "Basic Book");
@@ -73,7 +73,9 @@ test("a theme change makes the next Publish tool update the book", async ({
     await waitForPageLayoutUpdateLevel(book, UP_TO_DATE);
 });
 
-test("a new book from Basic Book needs no update", async ({ page }) => {
+test("a new book from Basic Book needs no update [Test Case ID 834]", async ({
+    page,
+}) => {
     const book = await makeBookFromTemplate(page, "Basic Book");
     await waitForPageLayoutUpdateLevel(book, UP_TO_DATE);
 
@@ -83,7 +85,7 @@ test("a new book from Basic Book needs no update", async ({ page }) => {
     ).toBe(false);
 });
 
-test("a new book from The Moon and the Cap needs no update", async ({
+test("a new book from The Moon and the Cap needs no update [Test Case ID 834]", async ({
     page,
 }) => {
     const book = await makeBookFromSampleShell(page, "The Moon and the Cap");
@@ -95,7 +97,7 @@ test("a new book from The Moon and the Cap needs no update", async ({
     ).toBe(false);
 });
 
-test("a failed update is reported, the tool still opens, and the next tool tries again", async ({
+test("a failed update is reported, the tool still opens, and the next tool tries again [Test Case ID 834]", async ({
     page,
 }) => {
     const book = await makeBookFromTemplate(page, "Basic Book");
