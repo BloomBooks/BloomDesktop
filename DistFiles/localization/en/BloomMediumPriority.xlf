@@ -61,6 +61,16 @@
         <note>ID: EditTab.TextContextMenu.NoIndent</note>
         <note>Item on the menu you get by right-clicking a paragraph of text in the Edit tab. It is a checkable on/off command; when it is checked, this one paragraph loses the first-line indent that its style would otherwise give it. Typically used on a paragraph continued from the previous page.</note>
       </trans-unit>
+      <trans-unit id="EditTab.PageView.OnePage.Tooltip" translate="no">
+        <source xml:lang="en">Show one page at a time</source>
+        <note>ID: EditTab.PageView.OnePage.Tooltip</note>
+        <note>Tooltip on the left button of a two-button switch at the top right of the Edit tab. This button shows only the page being edited.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.AllPages.Tooltip" translate="no">
+        <source xml:lang="en">Show all pages</source>
+        <note>ID: EditTab.PageView.AllPages.Tooltip</note>
+        <note>Tooltip on the right button of a two-button switch at the top right of the Edit tab. This button shows all the pages of the book around the page being edited, as they would be laid out in the printed book.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>

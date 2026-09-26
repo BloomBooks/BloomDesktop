@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
+import { kWaitCursor } from "./js/waitCursor";
 import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
@@ -18,6 +19,7 @@ export interface IWorkspaceExports {
         options: JQueryUI.DialogOptions,
     ): JQuery;
     closeDialog(id: string): void;
+    pageFrameIsReadyToShow(pageWindow: Window | null): void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -165,6 +167,82 @@ export function switchThumbnailPage(newSource: string) {
     updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
+const kPageFrameId = "page";
+const kOutgoingPageFrameId = "page-outgoing";
+const kPageLoadingCoverId = "page-loading-cover";
+const kMaxWaitForPageReadyAfterLoadMs = 3000;
+
+/**
+ * Make the iframe that holds the page being edited. The Edit tab has one, except while it changes
+ * pages, when the page being left stays on screen over the new one until the new one is ready
+ * (see switchContentPage), so the view holds steady instead of blanking and rebuilding.
+ */
+export function createPageFrame(src: string): HTMLIFrameElement {
+    const frame = document.createElement("iframe");
+    frame.id = kPageFrameId;
+    // The name must be set before the frame is in the document, so the frame is created with it.
+    frame.name = kPageFrameId;
+    frame.title = "page";
+    frame.src = src;
+    frame.style.display = "block";
+    frame.style.width = "100%";
+    frame.style.height = "100%";
+    frame.style.border = "0 none";
+    return frame;
+}
+
+// Put a new page frame, loading newSource, underneath the one on screen, and return it. The old
+// frame keeps showing, frozen, until the new page calls pageFrameIsReadyToShow(). If an earlier
+// switch is still waiting, the frame the user sees is already the outgoing one, so the frame that
+// was loading underneath is simply replaced.
+function startLoadingPageFrameBehindCurrentOne(
+    newSource: string,
+): HTMLIFrameElement {
+    const current = document.getElementById(kPageFrameId) as HTMLIFrameElement;
+    const host = current.parentElement!;
+    if (document.getElementById(kOutgoingPageFrameId)) {
+        current.remove();
+    } else {
+        current.id = kOutgoingPageFrameId;
+        current.name = kOutgoingPageFrameId;
+        current.style.position = "absolute";
+        current.style.left = "0";
+        current.style.top = "0";
+        current.style.zIndex = "1";
+        current.style.pointerEvents = "none";
+        // What the page's own beforeunload handlers would do if it were really leaving now.
+        current.contentWindow?.dispatchEvent(new Event("beforeunload"));
+        // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
+        // is going away or one that is not ready.
+        const cover = document.createElement("div");
+        cover.id = kPageLoadingCoverId;
+        cover.style.position = "absolute";
+        cover.style.inset = "0";
+        cover.style.zIndex = "2";
+        cover.style.cursor = kWaitCursor;
+        host.appendChild(cover);
+    }
+    const frame = createPageFrame(newSource);
+    host.appendChild(frame);
+    return frame;
+}
+
+/**
+ * Called by a page frame once it looks the way it will (laid out, scrolled, and with the other
+ * pages drawn if they are showing), to replace the page that was covering it.
+ */
+export function pageFrameIsReadyToShow(pageWindow: Window | null): void {
+    const current = document.getElementById(kPageFrameId) as
+        | HTMLIFrameElement
+        | undefined;
+    if (!current || !pageWindow || current.contentWindow !== pageWindow) {
+        // A page that has already been replaced by a newer one.
+        return;
+    }
+    document.getElementById(kOutgoingPageFrameId)?.remove();
+    document.getElementById(kPageLoadingCoverId)?.remove();
+}
+
 export function switchContentPage(newSource: string) {
     try {
         const editablePageBundle = getEditablePageBundleExports();
@@ -184,7 +262,7 @@ export function switchContentPage(newSource: string) {
             // swallow
         }
     }
-    const iframe = <HTMLIFrameElement>document.getElementById("page");
+    const iframe = startLoadingPageFrameBehindCurrentOne(newSource);
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
@@ -203,7 +281,14 @@ export function switchContentPage(newSource: string) {
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
-    iframe.src = newSource;
+    iframe.addEventListener("load", () =>
+        // If the page never says it is ready (say an error stopped its script), don't leave the
+        // old page covering it for good.
+        window.setTimeout(
+            () => pageFrameIsReadyToShow(iframe.contentWindow),
+            kMaxWaitForPageReadyAfterLoadMs,
+        ),
+    );
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
@@ -441,6 +526,7 @@ interface WorkspaceBundleApi {
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
+    pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -487,6 +573,7 @@ window.workspaceBundle = {
     handleUndo,
     switchThumbnailPage,
     switchContentPage,
+    pageFrameIsReadyToShow,
     showDialog,
     closeDialog,
     setToolboxEnabled,
