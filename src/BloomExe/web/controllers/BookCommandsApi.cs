@@ -506,7 +506,7 @@ namespace Bloom.web.controllers
             {
                 // Currently this works on the current book, so the argument is ignored.
                 // That's OK for now as currently the book passed will always be the current one.
-                // Besides the whole-book migrations, this runs the edit-tab page fix-up code over
+                // Besides the whole-book migrations, this runs the page layout update over
                 // every page (off-screen), so users no longer have to "go to edit and click on each
                 // page" themselves (BL-16595). See CollectionModel.BringBookUpToDateAsync. Problems
                 // in the work itself are reported by its progress dialog; this catch is for failing

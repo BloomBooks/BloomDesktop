@@ -17,6 +17,8 @@ import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
 import {
     EmbeddedSimpleProgressDialog,
+    kBloomBridgeProgressContext,
+    kBloomBridgeProgressDialogId,
     kUpdateBookProgressDialogId,
 } from "../react_components/Progress/SimpleProgressDialog";
 
@@ -75,6 +77,12 @@ export const App: React.FunctionComponent = () => {
                 page while the work runs, so the dialog cannot live inside a tab. Being here
                 also means its backdrop covers the whole of Bloom while it is up. */}
             <EmbeddedSimpleProgressDialog id={kUpdateBookProgressDialogId} />
+            {/* The same dialog for BloomBridge's process-book runs, on a websocket context of its
+                own (see kBloomBridgeProgressContext). */}
+            <EmbeddedSimpleProgressDialog
+                id={kBloomBridgeProgressDialogId}
+                socketContext={kBloomBridgeProgressContext}
+            />
             <ToastHost />
         </div>
     );
