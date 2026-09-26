@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
-using Bloom.SubscriptionAndFeatures;
 using Bloom.TeamCollection;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
-using SIL.Extensions;
 using SIL.Reporting;
 
 namespace Bloom.Collection
@@ -21,52 +17,12 @@ namespace Bloom.Collection
     {
         public delegate CollectionSettingsDialog Factory(); //autofac uses this
 
-        public static event EventHandler DialogCancelled;
-
         private readonly CollectionSettings _collectionSettings;
         private readonly QueueRenameOfCollection _queueRenameOfCollection;
         private readonly XMatterPackFinder _xmatterPackFinder;
-        private bool _restartRequired;
+        private readonly PendingCollectionSettings _pendingSettings;
         private bool _loaded;
         private bool _currentCollectionIsTeamCollection;
-
-        // Pending values edited through the CollectionSettingsApi
-        private string _pendingBookshelf;
-        public string PendingDefaultBookshelf
-        {
-            set
-            {
-                if (value != _collectionSettings.DefaultBookshelf)
-                    Invoke((Action)ChangeThatRequiresRestart);
-                _pendingBookshelf = value;
-            }
-            get { return _pendingBookshelf; }
-        }
-
-        internal bool PendingAutomaticallyUpdate;
-        internal bool ShowAutomaticallyUpdateOption = true;
-
-        internal bool PendingShowExperimentalBookSources;
-        internal bool ShowExperimentalBookSourcesOption = false;
-
-        internal bool PendingAllowTeamCollection;
-        internal bool AllowTeamCollectionOptionEnabled = false;
-
-        // "Internal" so CollectionSettingsApi can update these.
-        internal readonly string[] PendingFontSelections = new[] { "", "", "" };
-        internal string PendingNumberingStyle { get; set; }
-        internal bool PendingShowQrCode;
-        internal string PendingBadgeQrCodeCaption;
-        internal string PendingXmatter { get; set; }
-        internal string PendingAdministrators { get; set; }
-
-        internal WritingSystem PendingLanguage1;
-        internal WritingSystem PendingLanguage2;
-        internal WritingSystem PendingLanguage3;
-        internal WritingSystem PendingSignLanguage;
-
-        // Ugly I know, but we need to be able to access these by an index number sometimes.
-        internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
         public CollectionSettingsDialog(
             CollectionSettings collectionSettings,
@@ -84,39 +40,26 @@ namespace Bloom.Collection
             _language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
             _language3Name.UseMnemonic = false; // See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
 
-            PendingLanguage1 = _collectionSettings.Language1.Clone();
-            PendingLanguage2 = _collectionSettings.Language2.Clone();
-            PendingLanguage3 = _collectionSettings.Language3.Clone();
-            PendingSignLanguage = _collectionSettings.SignLanguage.Clone();
-            PendingLanguages[0] = PendingLanguage1;
-            PendingLanguages[1] = PendingLanguage2;
-            PendingLanguages[2] = PendingLanguage3;
+            _pendingSettings = CollectionSettingsApi.BeginEditing(_collectionSettings);
+            // The React tabs record their edits through API endpoints, not all of which run on
+            // the UI thread, and some of which can arrive before this form has a handle.
+            _pendingSettings.RestartRequiredChanged = () =>
+            {
+                if (IsHandleCreated)
+                    Invoke((Action)UpdateDisplay);
+            };
+            CollectionSettingsApi.ShowScriptSettingsDialog = zeroBasedLanguageNumber =>
+            {
+                if (FontSettingsLinkClicked(zeroBasedLanguageNumber))
+                    ChangeThatRequiresRestart();
+            };
 
-            PendingFontSelections[0] = _collectionSettings.AllLanguages[0].FontName;
-            PendingFontSelections[1] = _collectionSettings.AllLanguages[1].FontName;
-            var have3rdLanguage = _collectionSettings.AllLanguages[2] != null;
-            PendingFontSelections[2] = have3rdLanguage
-                ? _collectionSettings.AllLanguages[2].FontName
-                : "";
-            PendingNumberingStyle = _collectionSettings.PageNumberStyle;
-            PendingShowQrCode = _collectionSettings.ShowBlorgLanguageQrCode;
-            PendingBadgeQrCodeCaption = _collectionSettings.BadgeQrCodeLabelLocalized;
-            PendingXmatter = _collectionSettings.XMatterPackName;
-            PendingAdministrators = _collectionSettings.AdministratorsDisplayString;
-            CollectionSettingsApi.DialogBeingEdited = this;
             // Currently, ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
             // can be false when we're in a team collection, as the user can open a preexisting TC
             // (and then access the TC tab in Collection Settings) without checking/enabling
             // Team Collections under Experimental Features
             _currentCollectionIsTeamCollection =
                 tcManager.CurrentCollectionEvenIfDisconnected != null;
-
-            PendingShowExperimentalBookSources = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kExperimentalSourceBooks
-            );
-            PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kTeamCollections
-            );
 
             if (
                 !ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
@@ -131,26 +74,10 @@ namespace Bloom.Collection
                 // Don't give the slightest encouragement to making a download-for-edit collection into a team collection.
                 _tab.Controls.Remove(this._teamCollectionTab);
             }
-            // Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
-            AllowTeamCollectionOptionEnabled = !(
-                PendingAllowTeamCollection && tcManager.CurrentCollectionEvenIfDisconnected != null
-            );
-
-            if (AutoUpdateSupportedOnThisPlatform)
-                PendingAutomaticallyUpdate = Settings.Default.AutoUpdate;
-            else
-                ShowAutomaticallyUpdateOption = false;
-
-            // Without this, PendingDefaultBookshelf stays null unless the user changes it.
-            // The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
-            PendingDefaultBookshelf = _collectionSettings.DefaultBookshelf;
-
-            SubscriptionSettingsEditorApi.NotifyPendingSubscriptionChange =
-                OnPendingSubscriptionChange;
 
             TeamCollectionApi.TheOneInstance.SetCallbackToReopenCollection(() =>
             {
-                _restartRequired = true;
+                _pendingSettings.ChangeThatRequiresRestart();
                 ReactDialog.CloseCurrentModal(); // close the top Create dialog
                 _okButton_Click(null, null); // close this dialog
             });
@@ -201,12 +128,20 @@ namespace Bloom.Collection
 
         private void UpdateDisplay()
         {
-            var lang1UiName = PendingLanguage1.Name;
-            var lang2UiName = PendingLanguage2.Name;
-            _language1Name.Text = string.Format("{0} ({1})", lang1UiName, PendingLanguage1.Tag);
-            _language2Name.Text = string.Format("{0} ({1})", lang2UiName, PendingLanguage2.Tag);
+            var lang1UiName = _pendingSettings.Language1.Name;
+            var lang2UiName = _pendingSettings.Language2.Name;
+            _language1Name.Text = string.Format(
+                "{0} ({1})",
+                lang1UiName,
+                _pendingSettings.Language1.Tag
+            );
+            _language2Name.Text = string.Format(
+                "{0} ({1})",
+                lang2UiName,
+                _pendingSettings.Language2.Tag
+            );
             const string unsetLanguageName = "--";
-            if (string.IsNullOrEmpty(PendingLanguage3.Tag))
+            if (string.IsNullOrEmpty(_pendingSettings.Language3.Tag))
             {
                 _language3Name.Text = unsetLanguageName;
                 _removeLanguage3Link.Visible = false;
@@ -218,8 +153,12 @@ namespace Bloom.Collection
             }
             else
             {
-                var lang3UiName = PendingLanguage3.Name;
-                _language3Name.Text = string.Format("{0} ({1})", lang3UiName, PendingLanguage3.Tag);
+                var lang3UiName = _pendingSettings.Language3.Name;
+                _language3Name.Text = string.Format(
+                    "{0} ({1})",
+                    lang3UiName,
+                    _pendingSettings.Language3.Tag
+                );
                 _removeLanguage3Link.Visible = true;
                 _changeLanguage3Link.Text = LocalizationManager.GetString(
                     "CollectionSettingsDialog.LanguageTab.ChangeLanguageLink",
@@ -227,7 +166,7 @@ namespace Bloom.Collection
                 );
             }
 
-            if (string.IsNullOrEmpty(PendingSignLanguage.Tag))
+            if (string.IsNullOrEmpty(_pendingSettings.SignLanguage.Tag))
             {
                 _signLanguageName.Text = unsetLanguageName;
                 _removeSignLanguageLink.Visible = false;
@@ -239,11 +178,11 @@ namespace Bloom.Collection
             }
             else
             {
-                var signLangUiName = PendingSignLanguage.Name;
+                var signLangUiName = _pendingSettings.SignLanguage.Name;
                 _signLanguageName.Text = string.Format(
                     "{0} ({1})",
                     signLangUiName,
-                    PendingSignLanguage.Tag
+                    _pendingSettings.SignLanguage.Tag
                 );
                 _removeSignLanguageLink.Visible = true;
                 _changeSignLanguageLink.Text = LocalizationManager.GetString(
@@ -267,17 +206,17 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            var potentiallyCustomName = PendingLanguage1.Name;
+            var potentiallyCustomName = _pendingSettings.Language1.Name;
 
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage1.Tag = args.LanguageTag;
+                _pendingSettings.Language1.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
-                    PendingLanguage1.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage1.SetName(args.DesiredName, args.IsCustomName);
+                    _pendingSettings.Language1.IsRightToLeft = args.IsRtl.Value;
+                _pendingSettings.Language1.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
-            ChangeLanguage(onLanguageChange, PendingLanguage1.Tag, potentiallyCustomName);
+            ChangeLanguage(onLanguageChange, _pendingSettings.Language1.Tag, potentiallyCustomName);
         }
 
         private void _language2ChangeLink_LinkClicked(
@@ -285,16 +224,16 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            var potentiallyCustomName = PendingLanguage2.Name;
+            var potentiallyCustomName = _pendingSettings.Language2.Name;
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage2.Tag = args.LanguageTag;
+                _pendingSettings.Language2.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
-                    PendingLanguage2.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage2.SetName(args.DesiredName, args.IsCustomName);
+                    _pendingSettings.Language2.IsRightToLeft = args.IsRtl.Value;
+                _pendingSettings.Language2.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
-            ChangeLanguage(onLanguageChange, PendingLanguage2.Tag, potentiallyCustomName);
+            ChangeLanguage(onLanguageChange, _pendingSettings.Language2.Tag, potentiallyCustomName);
         }
 
         private void _language3ChangeLink_LinkClicked(
@@ -302,16 +241,16 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            var potentiallyCustomName = PendingLanguage3.Name;
+            var potentiallyCustomName = _pendingSettings.Language3.Name;
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingLanguage3.Tag = args.LanguageTag;
+                _pendingSettings.Language3.Tag = args.LanguageTag;
                 if (args.IsRtl.HasValue)
-                    PendingLanguage3.IsRightToLeft = args.IsRtl.Value;
-                PendingLanguage3.SetName(args.DesiredName, args.IsCustomName);
+                    _pendingSettings.Language3.IsRightToLeft = args.IsRtl.Value;
+                _pendingSettings.Language3.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
-            ChangeLanguage(onLanguageChange, PendingLanguage3.Tag, potentiallyCustomName);
+            ChangeLanguage(onLanguageChange, _pendingSettings.Language3.Tag, potentiallyCustomName);
         }
 
         private void _removeSecondNationalLanguageButton_LinkClicked(
@@ -319,8 +258,8 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            PendingLanguage3.ChangeTag(string.Empty); // null causes a crash in trying to set it again (BL-5795)
-            PendingLanguage3.SetName(string.Empty, false);
+            _pendingSettings.Language3.ChangeTag(string.Empty); // null causes a crash in trying to set it again (BL-5795)
+            _pendingSettings.Language3.SetName(string.Empty, false);
             ChangeThatRequiresRestart();
         }
 
@@ -329,16 +268,20 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            var potentiallyCustomName = PendingSignLanguage.Name;
+            var potentiallyCustomName = _pendingSettings.SignLanguage.Name;
             void onLanguageChange(LanguageChangeEventArgs args)
             {
-                PendingSignLanguage.Tag = args.LanguageTag;
+                _pendingSettings.SignLanguage.Tag = args.LanguageTag;
                 // Unlike Language1-3 above, args.IsRtl is deliberately ignored: a sign language
                 // has no text direction.
-                PendingSignLanguage.SetName(args.DesiredName, args.IsCustomName);
+                _pendingSettings.SignLanguage.SetName(args.DesiredName, args.IsCustomName);
                 ChangeThatRequiresRestart();
             }
-            ChangeLanguage(onLanguageChange, PendingSignLanguage.Tag, potentiallyCustomName);
+            ChangeLanguage(
+                onLanguageChange,
+                _pendingSettings.SignLanguage.Tag,
+                potentiallyCustomName
+            );
         }
 
         private void _removeSignLanguageButton_LinkClicked(
@@ -346,8 +289,8 @@ namespace Bloom.Collection
             LinkLabelLinkClickedEventArgs e
         )
         {
-            PendingSignLanguage.ChangeTag(string.Empty);
-            PendingSignLanguage.SetName(string.Empty, false);
+            _pendingSettings.SignLanguage.ChangeTag(string.Empty);
+            _pendingSettings.SignLanguage.SetName(string.Empty, false);
             ChangeThatRequiresRestart();
         }
 
@@ -388,324 +331,59 @@ namespace Bloom.Collection
         {
             Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
+            _pendingSettings.Country = _countryText.Text;
+            _pendingSettings.Province = _provinceText.Text;
+            _pendingSettings.District = _districtText.Text;
+            _pendingSettings.CollectionName = _bloomCollectionName.Text;
+
             // Validate before we save the settings
-            if (_currentCollectionIsTeamCollection)
-            {
-                if (!CollectionSettings.ValidateAdministrators(PendingAdministrators))
-                {
-                    // The user has entered invalid email address(es)
-                    BloomMessageBox.ShowWarning(
-                        LocalizationManager.GetString(
-                            "TeamCollection.InvalidAdminEmails",
-                            "Please enter one or more valid administrator email addresses, separated by commas or spaces."
-                        )
-                    );
-                    return;
-                }
-
-                _collectionSettings.ModifyAdministrators(PendingAdministrators);
-            }
-
-            CollectionSettingsApi.DialogBeingEdited = null;
-
-            Settings.Default.AutoUpdate =
-                PendingAutomaticallyUpdate && AutoUpdateSupportedOnThisPlatform;
-            Settings.Default.Save();
-            UpdateExperimentalBookSources();
-            UpdateTeamCollectionAllowed();
-
-            _collectionSettings.Country = _countryText.Text.Trim();
-            _collectionSettings.Province = _provinceText.Text.Trim();
-            _collectionSettings.District = _districtText.Text.Trim();
-
-            _collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
-            _collectionSettings.ShowBlorgLanguageQrCode = PendingShowQrCode;
-            if (PendingBadgeQrCodeCaption != _collectionSettings.BadgeQrCodeLabelLocalized)
-            {
-                // Update the BadgeQrCodeLabel value only if the user has actually changed it.
-                // The default value displayed for BadgeQrCodeLabel is based on the current UI language,
-                // so if the user changes the UI language and then opens the Collection Settings dialog,
-                // we don't want to have the default BadgeQrCodeLabel frozen to the original UI language.
-                _collectionSettings.BadgeQrCodeLabel = PendingBadgeQrCodeCaption;
-            }
-
-            if (_pendingSubscription != null)
-            {
-                if (
-                    _pendingSubscription.Tier == SubscriptionTier.Pro
-                    && _currentCollectionIsTeamCollection
-                )
-                    // Pro tier is not allowed for team collections. It's a matter of policy that
-                    // Pro tier does not support the TC feature, but it's conceivable that someone wants
-                    // to do what is possible in a disconnected TC using Pro features. However, it
-                    // generates a mass of confusing corner cases, such as
-                    // - If we sync the collection settings with the Pro subscription to the repo,
-                    //   that encourages sharing a Pro subscription, which we don't want (and current code
-                    //   may not do the sync, if neither the old nor the new sub allow it).
-                    // - if we don't copy it to the repo, the change won't stick: the restart will sync
-                    //   whatever's in the repo to overwrite our collection settings with the old sub.
-                    // As we tried to think what special cases we might make to overcome those basic problems,
-                    // we just kept finding more and more corner cases. We decided to just not allow it.
-                    _pendingSubscription = null; // not allowed; dialog already explained this
-                else
-                {
-                    _originalSubscription = _collectionSettings.Subscription;
-                    _collectionSettings.Subscription = _pendingSubscription;
-
-                    if (
-                        _pendingSubscription.Descriptor
-                        != _collectionSettings.Subscription.Descriptor
-                    )
-                    {
-                        // The user has entered a different subscription code than what was previously saved.
-                        // We need to clear out the Bookshelf, since the new branding may not have the same bookshelf as the old one.
-                        // (We don't know if it does or not, so we have to assume it doesn't.)
-                        PendingDefaultBookshelf = string.Empty;
-                    }
-                }
-            }
-            string xmatterKeyForcedByBranding =
-                _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
-            PendingXmatter = this._xmatterPackFinder.GetValidXmatter(
-                xmatterKeyForcedByBranding,
-                PendingXmatter
+            var errorMessage = CollectionSettingsUpdater.Validate(
+                _pendingSettings,
+                _currentCollectionIsTeamCollection
             );
-            _collectionSettings.XMatterPackName = PendingXmatter;
-
-            //no point in letting them have the Nat lang 2 be the same as 1
-            if (PendingLanguage2.Tag == PendingLanguage3.Tag)
+            if (errorMessage != null)
             {
-                PendingLanguage3.ChangeTag(String.Empty);
-                PendingLanguage3.SetName(String.Empty, false);
+                BloomMessageBox.ShowWarning(errorMessage);
+                return;
             }
 
-            UpdateLanguageSettings(
-                _collectionSettings.AllLanguages,
-                PendingLanguages,
-                PendingFontSelections
+            CollectionSettingsApi.EndEditing();
+            CollectionSettingsApi.ShowScriptSettingsDialog = null;
+
+            var restartRequired = CollectionSettingsUpdater.Apply(
+                _pendingSettings,
+                _collectionSettings,
+                _currentCollectionIsTeamCollection,
+                _xmatterPackFinder,
+                newName => _queueRenameOfCollection.Raise(newName)
             );
-
-            _collectionSettings.SignLanguage.ChangeTag(PendingSignLanguage.Tag);
-            if (!String.IsNullOrEmpty(PendingSignLanguage.Tag))
-                _collectionSettings.SignLanguage.SetName(
-                    PendingSignLanguage.Name,
-                    PendingSignLanguage.IsCustomName
-                );
-
-            if (_bloomCollectionName.Text.Trim() != _collectionSettings.CollectionName)
-            {
-                _queueRenameOfCollection.Raise(_bloomCollectionName.Text.SanitizeFilename('-'));
-                //_collectionSettings.PrepareToRenameCollection(_bloomCollectionName.Text.SanitizeFilename('-'));
-            }
 
             Logger.WriteEvent("Closing Collection Settings Dialog");
 
-            _collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
-            // If the user has not changed the subscription code (signaled by a null pending Subscription
-            // object) and has not changed the bookshelf (signaled by an empty pending string), we want
-            // to keep the bookshelf that was set when a subscription expired.  We also want to keep the
-            // bookshelf if the user changes the subscription code to one that is for the same subscription,
-            // but has been renewed even if they misenter it. (BL-15056)
-            //
-            // _collectionSettings.ExpiredBookshelf is not written to the .bloomCollection file, but is
-            // set from _collectionSettings.DefaultBookshelf when the file is read if the subscription
-            // has expired.  (In which case, _collectionSettings.DefaultBookshelf is cleared.)  This is
-            // so that if the user has not changed the bookshelf or the subscription, we can restore the
-            // bookshelf when the user gets the subscription renewed.  But we don't want to start showing
-            // the user the expired bookshelf while the subscription is still expired since they can't
-            // make use of it until they renew the subscription.  So if we've written the expired value to
-            // the file, we want to clear it from memory to restore the status quo coming into the
-            // dialog.  We signal to do this by setting clearDefaultBookshelfAfterSaving. (BL-15056)
-            var clearDefaultBookshelfAfterSaving = false;
-            if (
-                String.IsNullOrEmpty(PendingDefaultBookshelf)
-                && !string.IsNullOrEmpty(_collectionSettings.ExpiredBookshelf)
-            )
-            {
-                if (_pendingSubscription == null)
-                {
-                    // The subscription has not changed, it's still the same one that expired.
-                    // We need to keep remembering the former bookshelf.
-                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
-                    clearDefaultBookshelfAfterSaving = true;
-                }
-                else if (IsPendingSubscriptionSameAsOriginalSubscription())
-                {
-                    // The subscription has changed, but the new one is for the same subscription, presumably renewed.
-                    // We restore the bookshelf that was set when the subscription expired.
-                    _collectionSettings.DefaultBookshelf = _collectionSettings.ExpiredBookshelf;
-                    if (_pendingSubscription.IsExpired())
-                    {
-                        // This could be partially entered as well as expired.
-                        clearDefaultBookshelfAfterSaving = true;
-                    }
-                    else
-                    {
-                        // If the new subscription is not expired, we can clear the expired bookshelf.
-                        _collectionSettings.ExpiredBookshelf = string.Empty;
-                    }
-                }
-                else
-                {
-                    // The subscription has changed, and the new one is for a different subscription.
-                    // The user has essentially told us to forget the expired bookshelf.
-                    _collectionSettings.ExpiredBookshelf = string.Empty;
-                }
-            }
-            _collectionSettings.Save();
-
-            if (clearDefaultBookshelfAfterSaving)
-                _collectionSettings.DefaultBookshelf = "";
-
             Close();
 
-            DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
-        }
-
-        /// <summary>
-        /// Check whether the pending subscription is the same as the original subscription, or
-        /// possibly a renewed version of the same subscription.
-        /// </summary>
-        /// <remarks>
-        /// Call this only if _pendingSubscription is not null.
-        /// </remarks>
-        private bool IsPendingSubscriptionSameAsOriginalSubscription()
-        {
-            if (_originalSubscription == null)
-                return false; // no subscription, so can't be the same
-            if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
-                return true;
-            if (
-                _pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-")
-                || _originalSubscription.Descriptor.StartsWith(
-                    _pendingSubscription.Descriptor + "-"
-                )
-            )
-            {
-                // This may be the case when the user has entered a new subscription code that is for
-                // the same subscription, but it is incorrectly entered.  An incorrectly entered
-                // subscription may have been persisted already.
-                return true;
-            }
-            return false;
-        }
-
-        // internal and static to facilitate unit testing
-        internal static void UpdateLanguageSettings(
-            List<WritingSystem> languages,
-            WritingSystem[] pendingLanguages,
-            string[] pendingFonts
-        )
-        {
-            Debug.Assert(languages.Count >= 3);
-            Debug.Assert(pendingLanguages.Length == 3);
-            Debug.Assert(pendingFonts.Length == 3);
-
-            // Provide some useful abbreviations for the first 3 languages.
-            // (This method is static so that it can be tested without creating a dialog.)
-            var Language1 = languages[0];
-            var Language2 = languages[1];
-            var Language3 = languages.Count > 2 ? languages[2] : null;
-            var PendingLanguage1 = pendingLanguages[0];
-            var PendingLanguage2 = pendingLanguages[1];
-            var PendingLanguage3 = pendingLanguages[2];
-
-            // NOTE: if one of the first 3 languages is replaced, we need to add it to
-            // the list after the first 3.  If one of the first 3 languages was already
-            // in the list, we need to remove it from its old position.
-
-            // Copy the old Language1 if it's not in the first 3 languages.
-            if (
-                Language1.Tag != PendingLanguage1.Tag
-                && Language1.Tag != PendingLanguage2.Tag
-                && Language1.Tag != PendingLanguage3.Tag
-            )
-            {
-                languages.Add(Language1.Clone()); // need a fresh copy
-            }
-            // Copy the old Language2 if it's not in the first 3 languages, and is not
-            // the same as the old Language1.
-            if (
-                Language2.Tag != PendingLanguage1.Tag
-                && Language2.Tag != PendingLanguage2.Tag
-                && Language2.Tag != PendingLanguage3.Tag
-                && Language2.Tag != Language1.Tag
-            )
-            {
-                languages.Add(Language2.Clone());
-            }
-            // Copy the old Language3 if it exists and is not in the first 3 languages, and
-            // is not the same as either the old Language1 or the old Language2.
-            if (
-                !String.IsNullOrEmpty(Language3.Tag)
-                && Language3.Tag != PendingLanguage1.Tag
-                && Language3.Tag != PendingLanguage2.Tag
-                && Language3.Tag != PendingLanguage3.Tag
-                && Language3.Tag != Language1.Tag
-                && Language3.Tag != Language2.Tag
-            )
-            {
-                languages.Add(Language3.Clone());
-            }
-            // Remove the languages that are now in the first 3 languages from later in the list
-            // if they were in the list after the first 3 languages.
-            for (int i = languages.Count - 1; i >= 3; i--)
-            {
-                if (languages[i].Tag == PendingLanguage1.Tag)
-                {
-                    languages.RemoveAt(i);
-                }
-                else if (languages[i].Tag == PendingLanguage2.Tag)
-                {
-                    languages.RemoveAt(i);
-                }
-                else if (languages[i].Tag == PendingLanguage3.Tag)
-                {
-                    languages.RemoveAt(i);
-                }
-            }
-            // Update the values in the first three languages.
-            for (int i = 0; i < 3; i++)
-            {
-                if (languages[i] == null)
-                    continue;
-                languages[i].FontName = pendingFonts[i];
-                languages[i].IsRightToLeft = pendingLanguages[i].IsRightToLeft;
-                languages[i].LineHeight = pendingLanguages[i].LineHeight;
-                languages[i].BaseUIFontSizeInPoints = pendingLanguages[i].BaseUIFontSizeInPoints;
-                languages[i].BreaksLinesOnlyAtSpaces = pendingLanguages[i].BreaksLinesOnlyAtSpaces;
-            }
-
-            Language1.ChangeTag(PendingLanguage1.Tag);
-            Language1.SetName(PendingLanguage1.Name, PendingLanguage1.IsCustomName);
-            Language2.ChangeTag(PendingLanguage2.Tag);
-            if (!String.IsNullOrEmpty(PendingLanguage2.Tag))
-                Language2.SetName(PendingLanguage2.Name, PendingLanguage2.IsCustomName);
-            Language3.ChangeTag(PendingLanguage3.Tag);
-            if (!String.IsNullOrEmpty(PendingLanguage3.Tag))
-                Language3.SetName(PendingLanguage3.Name, PendingLanguage3.IsCustomName);
+            DialogResult = restartRequired ? DialogResult.Yes : DialogResult.OK;
         }
 
         private bool XMatterChangePending
         {
-            get { return PendingXmatter != _collectionSettings.XMatterPackName; }
+            get { return _pendingSettings.Xmatter != _collectionSettings.XMatterPackName; }
         }
 
         /// <summary>
-        /// Internal so api can trigger this.
+        /// Records a change made by this dialog's own controls that needs a restart.
         /// </summary>
-        internal void ChangeThatRequiresRestart()
+        private void ChangeThatRequiresRestart()
         {
             if (!_loaded) //ignore false events that come while setting upt the dialog
                 return;
 
-            _restartRequired = true;
-            UpdateDisplay();
+            _pendingSettings.ChangeThatRequiresRestart();
         }
 
         private bool AnyReasonToRestart()
         {
-            return _restartRequired || XMatterChangePending;
+            return _pendingSettings.RestartRequired || XMatterChangePending;
         }
 
         /// <summary>
@@ -714,8 +392,6 @@ namespace Bloom.Collection
         /// the code is needed for.
         /// </summary>
         public bool FixingEnterpriseSubscriptionCode;
-        private Subscription _pendingSubscription;
-        private Subscription _originalSubscription;
 
         private void OnLoad(object sender, EventArgs e)
         {
@@ -731,9 +407,8 @@ namespace Bloom.Collection
         {
             DialogResult = DialogResult.Cancel;
 
-            DialogCancelled?.Invoke(this, EventArgs.Empty);
-
-            CollectionSettingsApi.DialogBeingEdited = null;
+            CollectionSettingsApi.CancelEditing();
+            CollectionSettingsApi.ShowScriptSettingsDialog = null;
             Close();
         }
 
@@ -762,17 +437,14 @@ namespace Bloom.Collection
             ChangeThatRequiresRestart();
         }
 
-        private void UpdateExperimentalBookSources()
+        /// <summary>
+        /// Lets the user edit the script settings of one (zero-based) language in the WinForms
+        /// ScriptSettingsDialog.
+        /// </summary>
+        /// <returns>true if the change needs a restart</returns>
+        private bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
         {
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kExperimentalSourceBooks,
-                PendingShowExperimentalBookSources
-            );
-        }
-
-        public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
-        {
-            var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
+            var pendingLanguage = _pendingSettings.Languages[zeroBasedLanguageNumber];
             using (LegacyDpiDialogLauncher.EnterLegacyDpiScope())
             using (var frm = new ScriptSettingsDialog())
             {
@@ -798,33 +470,9 @@ namespace Bloom.Collection
             }
         }
 
-        public void OnPendingSubscriptionChange(string subscriptionCode)
-        {
-            if (_collectionSettings.Subscription.IsDifferent(subscriptionCode))
-            {
-                _pendingSubscription = new Subscription(subscriptionCode);
-                Invoke((Action)ChangeThatRequiresRestart);
-            }
-        }
-
         private void _numberStyleCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             ChangeThatRequiresRestart();
-        }
-
-        private void UpdateTeamCollectionAllowed()
-        {
-            var wasTeamCollectionsEnabled = ExperimentalFeatures.IsFeatureEnabled(
-                ExperimentalFeatures.kTeamCollections
-            );
-
-            ExperimentalFeatures.SetValue(
-                ExperimentalFeatures.kTeamCollections,
-                PendingAllowTeamCollection
-            );
-
-            if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
-                ChangeThatRequiresRestart();
         }
     }
 }

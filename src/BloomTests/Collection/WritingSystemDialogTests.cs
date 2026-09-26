@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -53,7 +53,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(3, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -100,7 +100,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -159,7 +159,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("en", languages[0].Tag);
@@ -218,7 +218,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(6, languages.Count);
             Assert.AreEqual("es", languages[0].Tag);
@@ -273,7 +273,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(7, languages.Count);
             Assert.AreEqual("se", languages[0].Tag);
@@ -328,7 +328,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("de", languages[0].Tag);
@@ -379,7 +379,7 @@ namespace BloomTests.Collection
 
             var fonts = new string[3] { "Andika", "Andika", "Andika" };
 
-            CollectionSettingsDialog.UpdateLanguageSettings(languages, pending, fonts);
+            CollectionSettingsUpdater.UpdateLanguageSettings(languages, pending, fonts);
 
             Assert.AreEqual(5, languages.Count);
             Assert.AreEqual("fr", languages[0].Tag);
