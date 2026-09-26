@@ -741,13 +741,22 @@ window.showWorkspaceInitializationFailure = function(message) {
             return result;
         }
 
-        public static string MustBeAdminMessage(CollectionSettings collectionSettings)
+        /// <summary>
+        /// Tells a Team Collection member who is not an administrator that they may not change the
+        /// collection settings, and who can. BloomMessageBox wants HTML, so the paragraphs are
+        /// separated by &lt;br&gt; unless the caller asks for another line break.
+        /// </summary>
+        public static string MustBeAdminMessage(
+            CollectionSettings collectionSettings,
+            string lineBreak = "<br>"
+        )
         {
             return LocalizationManager.GetString(
                     "TeamCollection.MustBeAdmin",
                     "You must be an administrator to change collection settings"
                 )
-                + "<br><br>"
+                + lineBreak
+                + lineBreak
                 + LocalizationManager.GetString(
                     "TeamCollection.AdministratorEmails",
                     "Administrator Emails:"
@@ -1532,6 +1541,15 @@ window.showWorkspaceInitializationFailure = function(message) {
                     Invoke(ReopenCurrentProject);
                 }
             }
+        }
+
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
         }
 
         public void CheckForInvalidBranding()
