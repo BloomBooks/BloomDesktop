@@ -349,6 +349,12 @@ export function switchContentPage(newSource: string) {
     window.setTimeout(() => {
         if (!handlerCalled) {
             handler();
+            // Taking down the page being left waits for load too, both in the new page and in
+            // the fallback above, so it needs the same rescue.
+            window.setTimeout(
+                () => pageFrameIsReadyToShow(iframe.contentWindow),
+                kMaxWaitForPageReadyAfterLoadMs,
+            );
         }
     }, 1500);
 }

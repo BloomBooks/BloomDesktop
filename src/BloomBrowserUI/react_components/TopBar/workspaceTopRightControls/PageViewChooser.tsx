@@ -125,8 +125,13 @@ export const PageViewChooser: React.FunctionComponent = () => {
 function zoomOutToFitASpread(): void {
     const frame = document.getElementById("page") as HTMLIFrameElement;
     const pageDocument = frame.contentDocument!;
-    const pageWidth = (pageDocument.querySelector(".bloom-page") as HTMLElement)
-        .offsetWidth;
+    const page = pageDocument.querySelector(
+        ".bloom-page",
+    ) as HTMLElement | null;
+    // While the Edit tab is changing pages the frame does not hold a page yet. The choice itself
+    // is already stored, so all that is lost is the zoom.
+    if (!page) return;
+    const pageWidth = page.offsetWidth;
     // The width the zoomed page can use; see setZoom() in workspaceRoot.ts.
     const availableWidth = pageDocument.body.clientWidth - 5;
     get("workspace/topRight/zoom", (result) => {
