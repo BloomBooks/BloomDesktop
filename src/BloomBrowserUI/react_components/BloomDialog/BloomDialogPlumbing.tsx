@@ -52,7 +52,8 @@ export const StorybookDialogWrapper: React.FunctionComponent<{
     return <React.Fragment>{props.children}</React.Fragment>;
 };
 
-// Dialogs use this hook to wire up to launch events, both from the c# server (via websockets) and storybook (via window events)
+// Dialogs use this hook to wire up to launch events, both from the c# server (via websockets) and from the
+// browser side (via document events), which storybook and functions like showCollectionSettingsDialog use.
 export function useEventLaunchedBloomDialog(idForLaunchingFromServer: string) {
     const dialogEnvironment = useSetupBloomDialog({
         initiallyOpen: false,
