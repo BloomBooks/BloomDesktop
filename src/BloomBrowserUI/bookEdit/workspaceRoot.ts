@@ -258,6 +258,10 @@ function startLoadingPageFrameBehindCurrentOne(
     if (document.getElementById(kOutgoingPageFrameId)) {
         current.remove();
     } else {
+        // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
+        // is going away or one that is not ready. (It finds its place by the frame's id, so before
+        // that changes.)
+        showPageLoadingCover();
         current.id = kOutgoingPageFrameId;
         current.name = kOutgoingPageFrameId;
         current.style.position = "absolute";
@@ -267,9 +271,6 @@ function startLoadingPageFrameBehindCurrentOne(
         current.style.pointerEvents = "none";
         // What the page's own beforeunload handlers would do if it were really leaving now.
         current.contentWindow?.dispatchEvent(new Event("beforeunload"));
-        // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
-        // is going away or one that is not ready.
-        showPageLoadingCover();
     }
     const frame = createPageFrame(newSource);
     host.appendChild(frame);
