@@ -32,12 +32,12 @@ export const TopBarControls: React.FunctionComponent<{
             </div>
             <div
                 css={css`
-                    margin-left: 10px;
+                    margin-left: ${props.activeTab === "edit" ? 26 : 10}px;
                     display: flex;
                     align-items: flex-start;
                 `}
             >
-                <WorkspaceTopRightControls />
+                <WorkspaceTopRightControls activeTab={props.activeTab} />
             </div>
         </div>
     );
