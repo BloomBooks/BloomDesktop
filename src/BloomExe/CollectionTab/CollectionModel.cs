@@ -400,6 +400,10 @@ namespace Bloom.CollectionTab
                         $"{origCollection.Name} is a Team Collection. Please open {origCollection.Name} and check out {origBook.BookInfo.Title} before moving it."
                     );
                 }
+                // Moving a book out of a Team Collection deletes it from the shared folder.
+                // Check first, so we don't move it locally and then fail. See BL-16928.
+                if (tc.AreSharedFolderChangesPaused())
+                    throw new ApplicationException(tc.SharedFolderChangesPausedMessage());
             }
 
             var origBookFolderPath = origBook.FolderPath;
@@ -609,6 +613,7 @@ namespace Bloom.CollectionTab
             if (collection == null)
                 collection = TheOneEditableCollection;
             Debug.Assert(book.FolderPath == _bookSelection.CurrentSelection?.FolderPath);
+            var sharedFolderChangesArePaused = false;
 
             if (
                 _bookSelection.CurrentSelection != null
@@ -635,6 +640,20 @@ namespace Bloom.CollectionTab
                         BloomMessageBox.ShowInfo(msg);
                         return false;
                     }
+                    // A book the Team Collection knows about can't be deleted while changes to the
+                    // shared folder are paused, since deleting it means deleting it there. A new
+                    // book that was never checked in is only local, so it still can be. See BL-16928.
+                    sharedFolderChangesArePaused = _tcManager.SharedFolderChangesArePaused;
+                    if (
+                        sharedFolderChangesArePaused
+                        && TeamCollection.TeamCollection.IsBookKnownToTeamCollection(
+                            _bookSelection.CurrentSelection.FolderPath
+                        )
+                    )
+                    {
+                        BloomMessageBox.ShowInfo(_tcManager.SharedFolderChangesPausedMessage);
+                        return false;
+                    }
                 }
                 var bookName = _bookSelection.CurrentSelection.NameBestForUserDisplay;
                 var bookId = _bookSelection.CurrentSelection.ID;
@@ -659,7 +678,9 @@ namespace Bloom.CollectionTab
                     // been achieved and the local result won't be a surprise later. So it seems marginally
                     // better to do them in this order.
                     _bookSelection.SelectBook(null);
-                    if (collection == TheOneEditableCollection)
+                    // (If changes are paused, we got here only for a never-checked-in book, which
+                    // has nothing in the shared folder to delete, not even a tombstone to leave.)
+                    if (collection == TheOneEditableCollection && !sharedFolderChangesArePaused)
                         _tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
                     collection.DeleteBook(book.BookInfo);
                     // We only want history in the main collection. In particular, it causes problems

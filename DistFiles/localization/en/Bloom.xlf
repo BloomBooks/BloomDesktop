@@ -5726,6 +5726,16 @@ is mostly status, which shows on the Collection Tab -->
         <source xml:lang="en">This book is available for editing</source>
         <note>ID: TeamCollection.Available</note>
       </trans-unit>
+      <trans-unit id="TeamCollection.SharedFolderChangesPaused" sil:dynamic="true">
+        <source xml:lang="en">The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.</source>
+        <note>ID: TeamCollection.SharedFolderChangesPaused</note>
+        <note>Shown in the book status panel of a Team Collection, and when someone tries to delete a book or change collection settings, while the administrator has stopped all changes to the shared Team Collection folder. "Check in" and "check out" are the Team Collection actions of the same names.</note>
+      </trans-unit>
+      <trans-unit id="TeamCollection.MovedToCloud" sil:dynamic="true">
+        <source xml:lang="en">This collection has moved to Bloom's cloud sharing. To keep working with your team, you need Bloom 6.6 or later. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.</source>
+        <note>ID: TeamCollection.MovedToCloud</note>
+        <note>Shown in the same places as TeamCollection.SharedFolderChangesPaused, once the Team Collection has been replaced by a collection shared through Bloom's cloud service. "Bloom" is a product name and must not be translated; "6.6" is a Bloom version number.</note>
+      </trans-unit>
       <!--
 // Don't want these actually translated until things stabilize. Will need re-ordering.
 // NOTE: before uncommenting this section, verify the strings against the current code:
