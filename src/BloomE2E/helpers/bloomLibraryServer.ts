@@ -153,7 +153,7 @@ export function folderNameOfUploadedBook(baseUrl: string): string {
 /**
  * One file of a book as it was uploaded, read from the sandbox's S3 bucket. `baseUrl` is the folder
  * the upload wrote, in the form Bloom writes it (BloomS3Client.GetBaseUrl): take it from the
- * bulk-upload log (IBulkUploadResult.uploadedBaseUrls), not from the book's record, which can point
+ * bulk-upload results file (IBulkUploadBookResult.baseUrl), not from the book's record, which can point
  * at an older upload's folder once the harvester has written a stale record back (BL-16921).
  * `fileName` is a name inside that folder, or a function of the folder's name (the .htm is named
  * after the folder). The bucket is public-read; that is how the website shows books.

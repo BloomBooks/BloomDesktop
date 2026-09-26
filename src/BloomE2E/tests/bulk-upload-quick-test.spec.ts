@@ -149,7 +149,7 @@ async function restartReadyToUpload(
  * uploaded for this bookshelf alone, and each with this front/back matter pack.
  *
  * The bookshelf and the pack are both read from what this upload put on S3 (each book's meta.json and
- * HTML, at the folders the upload's log names), not from the books' records on the server. The
+ * HTML, at the locations the upload's results file gives), not from the books' records on the server. The
  * records are not Bloom's alone: the sandbox's harvester rewrites each one after an upload from the
  * copy it read when it started, so a re-upload that lands while the previous version is being
  * harvested loses its new bookshelf there, and the record's baseUrl can revert to the previous
@@ -168,13 +168,19 @@ async function expectBooksOnServer(
         onServer.map((b) => b.title).sort(),
         `dev.bloomlibrary.org should list the four uploaded books for ${TEST_ACCOUNT_EMAIL}.`,
     ).toEqual([...BOOK_TITLES].sort());
-    // One logged location per book, each for a different one of the four: an upload's folder is
-    // named after the book's folder.
+    // One uploaded book per book the test made, each with a location. Sanity check that each
+    // location really is that book's: Bloom names an upload's folder after the book's folder.
+    const uploaded = upload.books.filter((book) => book.baseUrl);
     expect(
-        upload.uploadedBaseUrls.map(folderNameOfUploadedBook).sort(),
-        `The upload's log should say where each of the four books went. Log:\n${upload.log}`,
+        uploaded.map((book) => Path.basename(book.folder)).sort(),
+        `The upload's results should give a location for each of the four books. Log:\n${upload.log}`,
     ).toEqual(bookFolders.map((folder) => Path.basename(folder)).sort());
-    for (const baseUrl of upload.uploadedBaseUrls) {
+    for (const book of uploaded)
+        expect(
+            folderNameOfUploadedBook(book.baseUrl!),
+            `${book.folder} should have been uploaded to a folder of its own name.`,
+        ).toBe(Path.basename(book.folder));
+    for (const baseUrl of uploaded.map((book) => book.baseUrl!)) {
         // Exactly this shelf: Bloom sends only the collection's current bookshelf tag, dropping
         // any earlier one (BookUpload.UploadBookAsync).
         expect(
@@ -238,7 +244,7 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         expect(
             firstUpload,
             `The first bulk upload should have sent all four books as new. Log:\n${firstUpload.log}`,
-        ).toMatchObject({ newBooks: 4, updated: 0, skipped: 0 });
+        ).toMatchObject({ newBooks: 4, updated: 0, skipped: 0, failed: 0 });
         // The four books really are on the sandbox now, on the shelf and with the pack the
         // collection had.
         await expectBooksOnServer(
@@ -256,7 +262,7 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         expect(
             secondUpload,
             `An unchanged re-upload should skip all four books. Log:\n${secondUpload.log}`,
-        ).toMatchObject({ newBooks: 0, updated: 0, skipped: 4 });
+        ).toMatchObject({ newBooks: 0, updated: 0, skipped: 4, failed: 0 });
 
         // ---- Change one book, upload again: one updated, three skipped --------------------------
         await selectBook(pageAfterRestart, bookFolders[0]);
@@ -278,7 +284,7 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         expect(
             thirdUpload,
             `After changing one book, only that book should be updated. Log:\n${thirdUpload.log}`,
-        ).toMatchObject({ newBooks: 0, updated: 1, skipped: 3 });
+        ).toMatchObject({ newBooks: 0, updated: 1, skipped: 3, failed: 0 });
 
         // ---- Move the collection to another bookshelf, with another front/back matter pack:
         //      all four updated, and each lands on the new shelf with the new pack --------------
@@ -306,7 +312,7 @@ test.describe("bulk uploading a collection to dev.bloomlibrary.org", () => {
         expect(
             fourthUpload,
             `Moving the collection to another bookshelf should update all four books. Log:\n${fourthUpload.log}`,
-        ).toMatchObject({ newBooks: 0, updated: 4, skipped: 0 });
+        ).toMatchObject({ newBooks: 0, updated: 4, skipped: 0, failed: 0 });
         await expectBooksOnServer(
             login!,
             fourthUpload,

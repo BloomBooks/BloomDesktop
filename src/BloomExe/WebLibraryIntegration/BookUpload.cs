@@ -46,9 +46,10 @@ namespace Bloom.WebLibraryIntegration
 
         /// <summary>
         /// Where the files of the book this object last uploaded went, as a baseUrl (the same form
-        /// the book's record holds), or null before any upload has finished. The bulk uploader logs
-        /// it, because each upload goes to a new place and the record can later point elsewhere:
-        /// the harvester can write an older record back over it (BL-16921).
+        /// the book's record holds), or null before any upload has finished. The bulk uploader puts
+        /// it in its results file (BulkUploader.ResultsFileName), because each upload goes to a new
+        /// place and the record can later point elsewhere: the harvester can write an older record
+        /// back over it (BL-16921).
         /// </summary>
         public string LastUploadBaseUrl { get; private set; }
 
