@@ -47,6 +47,31 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    return makeBookFromSource(page, "Templates", templateTitle);
+}
+
+/**
+ * Make a new book in the editable collection from one of the Sample Shells that ship with Bloom,
+ * e.g. "The Moon and the Cap", and return its folder. Bloom lands in the Edit tab, showing the new
+ * book's cover. This is the same action as selecting the shell in Sources For New Books and
+ * clicking MAKE A BOOK USING THIS SOURCE.
+ */
+export async function makeBookFromSampleShell(
+    page: Page,
+    shellTitle: string,
+): Promise<string> {
+    return makeBookFromSource(page, "Sample Shells", shellTitle);
+}
+
+/**
+ * Select the book called `title` in the source collection called `sourceCollectionName` and make a
+ * new book from it.
+ */
+async function makeBookFromSource(
+    page: Page,
+    sourceCollectionName: string,
+    title: string,
+): Promise<string> {
     // A person makes a book from the Collections tab, and so does this. Selecting the template
     // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
     // template, which has no page to edit, once the new book is made (every time the book being
@@ -55,27 +80,30 @@ export async function makeBookFromTemplate(
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
-        templateTitle,
+        title,
+        sourceCollectionName,
     );
     await apiPost(
         page,
         `collections/selected-book?path=${encodeURIComponent(template.folderPath)}` +
             `&collection-id=${encodeURIComponent(collectionId)}`,
     );
-    return makeBookFromSelectedBook(page, templateTitle);
+    return makeBookFromSelectedBook(page, title);
 }
 
 /**
- * The "Templates" source collection's entry for one factory template, e.g. "Basic Book", with the
- * id of that collection. Throws, listing what Bloom does offer, when there is no such template.
+ * A source collection's entry for one of its books, e.g. the "Templates" collection's "Basic
+ * Book", with the id of that collection. Throws, listing what Bloom does offer, when there is no
+ * such collection or book.
  */
 async function findFactoryTemplate(
     page: Page,
     templateTitle: string,
+    sourceCollectionName = "Templates",
 ): Promise<{ collectionId: string; template: IBookInfo }> {
     // collections/list leaves out every source collection whose books have not been read yet,
     // and Bloom reads the factory templates in the background after the collection opens. So
-    // wait for "Templates" to be listed rather than reading the list once.
+    // wait for the collection to be listed rather than reading the list once.
     let collections: ICollectionInfo[] = [];
     let templates: ICollectionInfo | undefined;
     try {
@@ -88,7 +116,9 @@ async function findFactoryTemplate(
                         page,
                         "collections/list",
                     );
-                    templates = collections.find((c) => c.name === "Templates");
+                    templates = collections.find(
+                        (c) => c.name === sourceCollectionName,
+                    );
                     return !!templates;
                 },
                 { timeout: 60000 },
@@ -96,14 +126,14 @@ async function findFactoryTemplate(
             .toBe(true);
     } catch {
         throw new Error(
-            `Bloom never listed a "Templates" source collection, so there is no ` +
+            `Bloom never listed a "${sourceCollectionName}" source collection, so there is no ` +
                 `"${templateTitle}" to make a book from. Collections: ` +
                 collections.map((c) => c.name).join(", "),
         );
     }
     if (!templates)
         throw new Error(
-            `Bloom listed "Templates" a moment ago and then lost it.`,
+            `Bloom listed "${sourceCollectionName}" a moment ago and then lost it.`,
         );
     const books = await apiGetJson<IBookInfo[]>(
         page,
@@ -112,8 +142,8 @@ async function findFactoryTemplate(
     const template = books.find((b) => b.title === templateTitle);
     if (!template)
         throw new Error(
-            `There is no factory template called "${templateTitle}". ` +
-                `Templates: ${books.map((b) => b.title).join(", ")}.`,
+            `There is no book called "${templateTitle}" in "${sourceCollectionName}". ` +
+                `It has: ${books.map((b) => b.title).join(", ")}.`,
         );
     return { collectionId: templates.id, template };
 }
