@@ -346,9 +346,10 @@ function layoutGrid(
     const pageHeight = editedPage.offsetHeight;
     const spreadWidth = 2 * pageWidth;
 
-    // How many spreads fit across, working out the width available as if there were no padding.
-    const paddingLeft = parseFloat(container.style.paddingLeft || "0");
-    const availableWidth = container.clientWidth - paddingLeft;
+    // How many spreads fit across. The container is border-box (see kGridStyles), so its clientWidth
+    // is the whole width, whatever padding this sets below. The answer must not depend on that
+    // padding: the padding depends on the answer, and the two would chase each other for ever.
+    const availableWidth = container.clientWidth;
     const spreadsPerRow = Math.max(
         1,
         Math.floor((availableWidth + kSpreadGap) / (spreadWidth + kSpreadGap)),
