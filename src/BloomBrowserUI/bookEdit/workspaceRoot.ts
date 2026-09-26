@@ -8,7 +8,6 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
-import { kWaitCursor } from "./js/waitCursor";
 import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
@@ -20,6 +19,9 @@ export interface IWorkspaceExports {
     ): JQuery;
     closeDialog(id: string): void;
     pageFrameIsReadyToShow(pageWindow: Window | null): void;
+    showPageLoadingCover(): void;
+    isShowingOtherPages(): boolean;
+    storeShowingOtherPages(show: boolean): void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -171,6 +173,59 @@ const kPageFrameId = "page";
 const kOutgoingPageFrameId = "page-outgoing";
 const kPageLoadingCoverId = "page-loading-cover";
 const kMaxWaitForPageReadyAfterLoadMs = 3000;
+const kMaxWaitForPageChangeToStartMs = 5000;
+const kShowOtherPagesKey = "bloom-edit-showOtherPages";
+
+// The cursor shown while the Edit tab changes pages: a plain clock face, rather than the spinning
+// circle Windows draws for the standard "wait" cursor. Falls back to that standard cursor.
+const kClockSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
+    '<circle cx="12" cy="12" r="10" fill="white" stroke="#333" stroke-width="2"/>' +
+    '<path d="M12 12V6.5M12 12l3.5 2" stroke="#333" stroke-width="2" stroke-linecap="round"/>' +
+    "</svg>";
+const kWaitCursor = `url("data:image/svg+xml,${encodeURIComponent(
+    kClockSvg,
+)}") 12 12, wait`;
+
+/**
+ * Whether the user wants to see the other pages of the book around the page being edited (see
+ * bookGridView.ts). Remembered for every page, and across Bloom sessions.
+ */
+export function isShowingOtherPages(): boolean {
+    try {
+        return localStorage.getItem(kShowOtherPagesKey) === "true";
+    } catch {
+        return false;
+    }
+}
+
+/** Remember whether the user wants to see the other pages of the book. */
+export function storeShowingOtherPages(show: boolean): void {
+    try {
+        localStorage.setItem(kShowOtherPagesKey, show ? "true" : "false");
+    } catch {
+        // Without storage the choice lasts only until the next page is loaded.
+    }
+}
+
+/**
+ * Cover the page frame with the wait cursor, and take its clicks, from a click on another page until
+ * that page shows (see pageFrameIsReadyToShow). If no page change follows, take the cover away again.
+ */
+export function showPageLoadingCover(): void {
+    if (document.getElementById(kPageLoadingCoverId)) return;
+    const host = document.getElementById(kPageFrameId)!.parentElement!;
+    const cover = document.createElement("div");
+    cover.id = kPageLoadingCoverId;
+    cover.style.position = "absolute";
+    cover.style.inset = "0";
+    cover.style.zIndex = "2";
+    cover.style.cursor = kWaitCursor;
+    host.appendChild(cover);
+    window.setTimeout(() => {
+        if (!document.getElementById(kOutgoingPageFrameId)) cover.remove();
+    }, kMaxWaitForPageChangeToStartMs);
+}
 
 /**
  * Make the iframe that holds the page being edited. The Edit tab has one, except while it changes
@@ -214,13 +269,7 @@ function startLoadingPageFrameBehindCurrentOne(
         current.contentWindow?.dispatchEvent(new Event("beforeunload"));
         // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
         // is going away or one that is not ready.
-        const cover = document.createElement("div");
-        cover.id = kPageLoadingCoverId;
-        cover.style.position = "absolute";
-        cover.style.inset = "0";
-        cover.style.zIndex = "2";
-        cover.style.cursor = kWaitCursor;
-        host.appendChild(cover);
+        showPageLoadingCover();
     }
     const frame = createPageFrame(newSource);
     host.appendChild(frame);
@@ -527,6 +576,9 @@ interface WorkspaceBundleApi {
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
+    showPageLoadingCover: typeof showPageLoadingCover;
+    isShowingOtherPages: typeof isShowingOtherPages;
+    storeShowingOtherPages: typeof storeShowingOtherPages;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -574,6 +626,9 @@ window.workspaceBundle = {
     switchThumbnailPage,
     switchContentPage,
     pageFrameIsReadyToShow,
+    showPageLoadingCover,
+    isShowingOtherPages,
+    storeShowingOtherPages,
     showDialog,
     closeDialog,
     setToolboxEnabled,

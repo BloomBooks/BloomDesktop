@@ -8,10 +8,9 @@ import {
     ViewOnePageIcon,
 } from "../../../bookEdit/js/PageViewIcons";
 import {
-    isShowingOtherPages,
-    storeShowingOtherPages,
-} from "../../../bookEdit/js/pageViewChoice";
-import { getEditablePageBundleExports } from "../../../bookEdit/js/workspaceFrames";
+    getEditablePageBundleExports,
+    getWorkspaceBundleExports,
+} from "../../../bookEdit/js/workspaceFrames";
 import { get, postJson } from "../../../utils/bloomApi";
 
 type PageView = "one" | "all";
@@ -20,17 +19,17 @@ const kBorder = "1px solid rgba(0, 0, 0, 0.4)";
 
 // In the Edit tab, chooses between editing one page by itself and seeing all the pages of the book
 // around it. The pages are drawn in the page frame (see bookGridView.ts), so the choice is stored
-// where the next page will find it and handed to the page being edited now.
+// where the next page will find it (workspaceRoot.ts) and handed to the page being edited now.
 export const PageViewChooser: React.FunctionComponent = () => {
     const [view, setView] = React.useState<PageView>(
-        isShowingOtherPages() ? "all" : "one",
+        getWorkspaceBundleExports().isShowingOtherPages() ? "all" : "one",
     );
 
     const choose = (newView: PageView | null) => {
         // Clicking the segment that is already chosen gives null; the choice stays as it is.
         if (!newView || newView === view) return;
         setView(newView);
-        storeShowingOtherPages(newView === "all");
+        getWorkspaceBundleExports().storeShowingOtherPages(newView === "all");
         getEditablePageBundleExports()?.setShowingOtherPages(newView === "all");
         if (newView === "all") zoomOutToFitASpread();
     };
@@ -44,6 +43,9 @@ export const PageViewChooser: React.FunctionComponent = () => {
             data-testid="page-view-control"
             css={css`
                 height: 20px;
+                margin-right: 3px;
+                // Level with the bottom of the zoom percentage, clear of the bar's edge.
+                margin-bottom: 2px;
                 border: ${kBorder};
                 border-radius: 3px;
                 overflow: hidden;

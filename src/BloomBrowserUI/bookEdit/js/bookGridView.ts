@@ -12,8 +12,7 @@
 import $ from "jquery";
 import { get, postJson } from "../../utils/bloomApi";
 import { collectCurrentPageContent } from "../pageThumbnailList/currentPageContent";
-import { kWaitCursor } from "./waitCursor";
-import { isShowingOtherPages, storeShowingOtherPages } from "./pageViewChoice";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
 
 interface IGridPage {
     key: string;
@@ -73,11 +72,6 @@ const kGridStyles = `
     position: absolute;
     inset: 0;
 }
-/* From a click on another page until the Edit tab covers this page to load that one. */
-html.bloom-book-grid-waiting,
-html.bloom-book-grid-waiting * {
-    cursor: ${kWaitCursor} !important;
-}
 `;
 
 // The controls Bloom shows above the page live in a bar fixed across the top of the page frame, so
@@ -111,7 +105,6 @@ let observers: { disconnect(): void }[] = [];
  * view chooser in the shell's top bar calls this through the page frame's exports.
  */
 export function setShowingOtherPages(show: boolean): void {
-    storeShowingOtherPages(show);
     if (show) {
         setupBookGridView();
     } else {
@@ -126,7 +119,10 @@ export function setShowingOtherPages(show: boolean): void {
  * and every page on screen is drawn (at once, if there is no grid to build).
  */
 export function setupBookGridView(): Promise<void> {
-    if (window.frameElement?.id !== "page" || !isShowingOtherPages()) {
+    if (
+        window.frameElement?.id !== "page" ||
+        !getWorkspaceBundleExports().isShowingOtherPages()
+    ) {
         return Promise.resolve();
     }
     if (gridLayer) {
@@ -135,7 +131,10 @@ export function setupBookGridView(): Promise<void> {
     return new Promise((resolve) => {
         get("pageList/pages", (response) => {
             const pages: IGridPage[] = response.data.pages;
-            if (!isShowingOtherPages() || gridLayer) {
+            if (
+                !getWorkspaceBundleExports().isShowingOtherPages() ||
+                gridLayer
+            ) {
                 resolve();
                 return;
             }
@@ -412,7 +411,7 @@ function renderPageInCell(
     cell.insertBefore(frame, cell.querySelector(".bloom-book-grid-veil"));
     return new Promise((resolve) =>
         get(
-            `pageList/pageContent?page-id=${encodeURIComponent(pageId)}&full-size=true`,
+            `pageList/pageContent?page-id=${encodeURIComponent(pageId)}`,
             (response) => {
                 // It may have scrolled away, and been dropped, while we waited.
                 if (!frame.isConnected) {
@@ -431,7 +430,9 @@ function renderPageInCell(
                     }">${headContent}<style>
                 html, body { margin: 0 !important; padding: 0 !important; overflow: hidden; background: transparent; }
                 .bloom-page { margin: 0 !important; }
-            </style></head><body ${bodyAttributes}>${response.data.content}</body></html>`,
+            </style></head><body ${bodyAttributes}>${fullSizePictures(
+                response.data.content,
+            )}</body></html>`,
                 );
                 frameDocument.close();
                 cell.classList.add("bloom-book-grid-rendered");
@@ -439,6 +440,13 @@ function renderPageInCell(
             () => resolve(),
         ),
     );
+}
+
+// The page content comes in the form made for the page list, whose pictures ask the server for small
+// versions by adding "thumbnail=1" to the query (see MarkImageNodesForThumbnail in PageListApi.cs).
+// These pages are shown at full size, so ask for the pictures themselves.
+function fullSizePictures(pageHtml: string): string {
+    return pageHtml.replace(/(\?|&amp;|&)thumbnail=1/g, "");
 }
 
 // The page frames show a page with the same stylesheets as the page being edited, but none of
@@ -466,7 +474,7 @@ function onClickOtherPage(
 ): void {
     e.preventDefault();
     e.stopPropagation();
-    document.documentElement.classList.add("bloom-book-grid-waiting");
+    getWorkspaceBundleExports().showPageLoadingCover();
     const rect = cell.getBoundingClientRect();
     const record: IClickedPageRecord = {
         pageId: page.key,

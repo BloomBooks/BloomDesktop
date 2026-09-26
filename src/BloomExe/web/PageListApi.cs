@@ -391,7 +391,6 @@ namespace Bloom.web
         // Parameters:
         //    page-id - the page ID
         //    book-id - the book ID (optional)
-        //    full-size - "true" to keep full-resolution images (optional)
         public void HandlePageContentRequest(ApiRequest request)
         {
             var id = request.RequiredParam("page-id");
@@ -411,19 +410,11 @@ namespace Bloom.web
                 return;
             }
             dynamic answer = new ExpandoObject();
-            answer.content = GetPageContentForThumbnail(
-                page,
-                request.GetParamOrNull("full-size") == "true"
-            );
+            answer.content = GetPageContentForThumbnail(page);
             request.ReplyWithJson(answer);
         }
 
-        /// <summary>
-        /// The HTML of a page, made inert so nothing in it can be interacted with. Normally the
-        /// images point at miniatures, for the page list; with fullSize they stay full resolution,
-        /// for showing the page at its real size beside the page being edited.
-        /// </summary>
-        private static string GetPageContentForThumbnail(IPage page, bool fullSize = false)
+        private static string GetPageContentForThumbnail(IPage page)
         {
             if (page == null)
             {
@@ -437,8 +428,7 @@ namespace Bloom.web
                 video.ParentNode.RemoveChild(video);
             }
 
-            if (!fullSize)
-                MarkImageNodesForThumbnail(pageElement);
+            MarkImageNodesForThumbnail(pageElement);
 
             var pageNeedsTransparent = HtmlDom.PageNeedsTransparentImages(pageElement);
             foreach (
