@@ -43,6 +43,16 @@ namespace Bloom.TeamCollection
         /// </summary>
         void SendBookStatusReload();
 
+        /// <summary>
+        /// True if Bloom must not change the Team Collection's shared folder just now. See BL-16928.
+        /// </summary>
+        bool SharedFolderChangesArePaused { get; }
+
+        /// <summary>
+        /// The explanation to show when SharedFolderChangesArePaused. See BL-16928.
+        /// </summary>
+        string SharedFolderChangesPausedMessage { get; }
+
         // ENHANCE: Add other properties and methods as needed
     }
 
@@ -192,6 +202,32 @@ namespace Bloom.TeamCollection
                 book.FolderPath
             );
         }
+
+        /// <summary>
+        /// True if this is a Team Collection whose shared folder Bloom must not change just now
+        /// (AllowSharedFolderChanges is false). When we are connected this also consults the repo's
+        /// own copy of the settings; when disconnected we can only go by our own. See BL-16928.
+        /// </summary>
+        public bool SharedFolderChangesArePaused
+        {
+            get
+            {
+                if (CurrentCollection != null)
+                    return CurrentCollection.AreSharedFolderChangesPaused();
+                return CurrentCollectionEvenIfDisconnected != null
+                    && Settings != null
+                    && !Settings.AllowSharedFolderChanges;
+            }
+        }
+
+        /// <summary>
+        /// The explanation to show when SharedFolderChangesArePaused. See BL-16928.
+        /// </summary>
+        public string SharedFolderChangesPausedMessage =>
+            CurrentCollection?.SharedFolderChangesPausedMessage()
+            ?? TeamCollection.GetSharedFolderChangesPausedMessage(
+                !string.IsNullOrEmpty(Settings?.CloudCollectionId)
+            );
 
         public TeamCollectionStatus CollectionStatus
         {

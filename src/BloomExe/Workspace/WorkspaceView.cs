@@ -1455,6 +1455,13 @@ window.showWorkspaceInitializationFailure = function(message) {
                 {
                     BloomMessageBox.ShowInfo(MustBeAdminMessage(_collectionSettings));
                 }
+                else if (_tcManager.SharedFolderChangesArePaused)
+                {
+                    // Changes made here could not be sent to the team, and at the next restart
+                    // (which most settings changes need) the shared folder's settings would win and
+                    // quietly undo them. Better to say so up front. See BL-16928.
+                    BloomMessageBox.ShowInfo(_tcManager.SharedFolderChangesPausedMessage);
+                }
                 else
                 {
                     _collectionSettingsApi.PrepareToShowDialog();

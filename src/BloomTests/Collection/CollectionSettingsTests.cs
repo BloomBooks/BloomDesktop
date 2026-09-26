@@ -534,6 +534,114 @@ namespace BloomTests.Collection
         }
 
         /// <summary>
+        /// Like AllowCheckouts, AllowSharedFolderChanges (BL-16928) must default to allowed, and
+        /// a collection without a cloud id must read as having none.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_ElementsMissing_DefaultToAllowedAndNoCloudId()
+        {
+            var settings = CreateSettingsFromFileContents(
+                "sharedFolderChangesMissing",
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowNewBooks>True</AllowNewBooks>
+</Collection>"
+            );
+            Assert.That(settings.AllowSharedFolderChanges, Is.True);
+            Assert.That(settings.CloudCollectionId, Is.Empty);
+        }
+
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void AllowSharedFolderChanges_ElementPresent_IsRead(
+            string valueInFile,
+            bool expected
+        )
+        {
+            var settings = CreateSettingsFromFileContents(
+                "sharedFolderChangesRead" + valueInFile,
+                $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>{valueInFile}</AllowSharedFolderChanges>
+</Collection>"
+            );
+            Assert.That(settings.AllowSharedFolderChanges, Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Save() rebuilds the file, so both values must be written back, or an ordinary save
+        /// would silently un-pause the collection (or forget that it moved). See BL-16928.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_FalseAndCloudId_SurviveSaveAndReload()
+        {
+            const string collectionName = "sharedFolderChangesRoundTrip";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>False</AllowSharedFolderChanges>
+	<CloudCollectionId>abc-123</CloudCollectionId>
+</Collection>"
+            );
+            Assert.That(
+                settings.AllowSharedFolderChanges,
+                Is.False,
+                "setup failed: AllowSharedFolderChanges should have been read as false"
+            );
+            Assert.That(
+                settings.CloudCollectionId,
+                Is.EqualTo("abc-123"),
+                "setup failed: CloudCollectionId should have been read"
+            );
+
+            settings.Save();
+
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowSharedFolderChanges, Is.False);
+            Assert.That(reloaded.CloudCollectionId, Is.EqualTo("abc-123"));
+        }
+
+        /// <summary>
+        /// Neither element is written for an ordinary collection. See BL-16928.
+        /// </summary>
+        [Test]
+        public void AllowSharedFolderChanges_TrueAndNoCloudId_AreNotWrittenToTheFile()
+        {
+            const string collectionName = "sharedFolderChangesNotWritten";
+            var settings = CreateSettingsFromFileContents(
+                collectionName,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<AllowSharedFolderChanges>False</AllowSharedFolderChanges>
+	<CloudCollectionId>abc-123</CloudCollectionId>
+</Collection>"
+            );
+            settings.Save();
+            var written = RobustFile.ReadAllText(settings.SettingsFilePath);
+            Assert.That(
+                written,
+                Does.Contain("AllowSharedFolderChanges"),
+                "setup failed: a paused collection should write the element"
+            );
+            Assert.That(
+                written,
+                Does.Contain("CloudCollectionId"),
+                "setup failed: a moved collection should write its cloud id"
+            );
+
+            settings.AllowSharedFolderChanges = true;
+            settings.CloudCollectionId = "";
+            settings.Save();
+
+            written = RobustFile.ReadAllText(settings.SettingsFilePath);
+            Assert.That(written, Does.Not.Contain("AllowSharedFolderChanges"));
+            Assert.That(written, Does.Not.Contain("CloudCollectionId"));
+            var reloaded = CreateCollectionSettings(_folder.Path, collectionName);
+            Assert.That(reloaded.AllowSharedFolderChanges, Is.True);
+        }
+
+        /// <summary>
         /// Writes the given .bloomCollection contents into a fresh collection folder and loads it.
         /// </summary>
         private CollectionSettings CreateSettingsFromFileContents(

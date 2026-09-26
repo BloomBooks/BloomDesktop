@@ -1707,6 +1707,444 @@ namespace BloomTests.TeamCollection
             );
         }
 
+        [TestCase("False", false)]
+        [TestCase("True", true)]
+        public void GetAllowSharedFolderChangesFromRepo_ReadsTheRepoCopy(
+            string valueInFile,
+            bool expected
+        )
+        {
+            WithRepoSettingsFile(
+                "GetAllowSharedFolderChanges" + valueInFile,
+                $"<Collection version=\"0.2\"><AllowSharedFolderChanges>{valueInFile}</AllowSharedFolderChanges></Collection>",
+                (tc, settings) =>
+                    Assert.That(tc.GetAllowSharedFolderChangesFromRepo(), Is.EqualTo(expected))
+            );
+        }
+
+        [Test]
+        public void GetAllowSharedFolderChangesFromRepo_ElementMissing_IsTrue()
+        {
+            WithRepoSettingsFile(
+                "GetAllowSharedFolderChangesMissing",
+                "<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>",
+                (tc, settings) => Assert.That(tc.GetAllowSharedFolderChangesFromRepo(), Is.True)
+            );
+        }
+
+        [Test]
+        public void GetAllowSharedFolderChangesAndCloudIdFromRepo_NoRepoSettings_AreNull()
+        {
+            WithRepoSettingsFile(
+                "GetAllowSharedFolderChangesNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    Assert.That(tc.GetAllowSharedFolderChangesFromRepo(), Is.Null);
+                    Assert.That(tc.GetCloudCollectionIdFromRepo(), Is.Null);
+                }
+            );
+        }
+
+        [Test]
+        public void GetCloudCollectionIdFromRepo_ReadsItOrEmpty()
+        {
+            WithRepoSettingsFile(
+                "GetCloudIdPresent",
+                "<Collection version=\"0.2\"><CloudCollectionId>cloud-42</CloudCollectionId></Collection>",
+                (tc, settings) =>
+                    Assert.That(tc.GetCloudCollectionIdFromRepo(), Is.EqualTo("cloud-42"))
+            );
+            WithRepoSettingsFile(
+                "GetCloudIdMissing",
+                "<Collection version=\"0.2\"><AllowNewBooks>True</AllowNewBooks></Collection>",
+                (tc, settings) => Assert.That(tc.GetCloudCollectionIdFromRepo(), Is.Empty)
+            );
+        }
+
+        /// <summary>
+        /// A pause, and later the cloud id, must reach a Bloom that is already running, through the
+        /// same path as AllowCheckouts, and the panel must be told to refresh. See BL-16928.
+        /// </summary>
+        [Test]
+        public void HandleCollectionSettingsChange_RepoPausedAndMoved_UpdatesLiveSettings()
+        {
+            WithRepoSettingsFile(
+                "SharedFolderChangesLiveUpdate",
+                "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges><CloudCollectionId>cloud-42</CloudCollectionId></Collection>",
+                (tc, settings) =>
+                {
+                    Assert.That(
+                        settings.AllowSharedFolderChanges,
+                        Is.True,
+                        "setup failed: the running Bloom should start out allowing changes"
+                    );
+                    Assert.That(
+                        settings.CloudCollectionId,
+                        Is.Empty,
+                        "setup failed: the running Bloom should not know about a cloud id yet"
+                    );
+
+                    var lockedOut = tc.HandleCollectionSettingsChange(new RepoChangeEventArgs());
+
+                    Assert.That(lockedOut, Is.False);
+                    Assert.That(settings.AllowSharedFolderChanges, Is.False);
+                    Assert.That(settings.CloudCollectionId, Is.EqualTo("cloud-42"));
+                    Assert.That(
+                        tc.SharedFolderChangesPausedMessage(),
+                        Does.Contain("6.6"),
+                        "once the cloud id is known, the message should say to upgrade"
+                    );
+                }
+            );
+        }
+
+        [Test]
+        public void UpdateAllowSharedFolderChangesFromRepo_NoRepoSettings_LeavesSettingsAlone()
+        {
+            WithRepoSettingsFile(
+                "UpdateSharedFolderChangesNoRepo",
+                null,
+                (tc, settings) =>
+                {
+                    settings.AllowSharedFolderChanges = false;
+                    settings.CloudCollectionId = "cloud-42";
+                    tc.UpdateAllowSharedFolderChangesFromRepo();
+                    Assert.That(settings.AllowSharedFolderChanges, Is.False);
+                    Assert.That(settings.CloudCollectionId, Is.EqualTo("cloud-42"));
+                }
+            );
+        }
+
+        /// <summary>
+        /// The operations that write to the shared folder, which must all refuse while changes to
+        /// it are paused. See BL-16928.
+        /// </summary>
+        private static readonly string[] kSharedFolderWrites =
+        {
+            "checkIn",
+            "firstCheckIn",
+            "checkOut",
+            "unlock",
+            "forceUnlock",
+            "forgetChanges",
+            "delete",
+            "rename",
+            "pushCollectionFiles",
+        };
+
+        /// <summary>
+        /// Each write, with our in-memory settings saying changes are paused, must refuse and leave
+        /// the shared folder exactly as it was. See BL-16928.
+        /// </summary>
+        [TestCaseSource(nameof(kSharedFolderWrites))]
+        public void SharedFolderWrite_Paused_RefusesAndChangesNothing(string operation)
+        {
+            WithSharedFolderWriteSetup(
+                "PausedWrite_" + operation,
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    settings.AllowSharedFolderChanges = false;
+                    var before = SnapshotFolder(repoFolder);
+
+                    Assert.Throws<SharedFolderChangesPausedException>(() =>
+                        DoSharedFolderWrite(tc, operation, collectionFolder)
+                    );
+
+                    Assert.That(
+                        SnapshotFolder(repoFolder),
+                        Is.EqualTo(before),
+                        "a refused operation must not have changed the shared folder"
+                    );
+                }
+            );
+        }
+
+        /// <summary>
+        /// The same writes work normally when changes are allowed. This also shows that each
+        /// operation really does write to the shared folder, so the test above means something.
+        /// </summary>
+        [TestCaseSource(nameof(kSharedFolderWrites))]
+        public void SharedFolderWrite_Allowed_WritesToTheSharedFolder(string operation)
+        {
+            WithSharedFolderWriteSetup(
+                "AllowedWrite_" + operation,
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    Assert.That(
+                        settings.AllowSharedFolderChanges,
+                        Is.True,
+                        "setup failed: changes should be allowed"
+                    );
+                    var before = SnapshotFolder(repoFolder);
+
+                    DoSharedFolderWrite(tc, operation, collectionFolder);
+
+                    Assert.That(SnapshotFolder(repoFolder), Is.Not.EqualTo(before));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Our in-memory settings can lag behind the repo, because noticing a change waits for the
+        /// file watcher. The write must still be refused, and our settings caught up so the UI
+        /// changes too. See BL-16928.
+        /// </summary>
+        [Test]
+        public void SharedFolderWrite_OnlyRepoSaysPaused_RefusesAndCatchesUp()
+        {
+            WithSharedFolderWriteSetup(
+                "RepoAheadPausedWrite",
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    // Pause it the way the administrator's Bloom does: in the shared folder.
+                    WriteLocalSettingsAndPush(
+                        tc,
+                        collectionFolder,
+                        "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges></Collection>"
+                    );
+                    Assert.That(
+                        settings.AllowSharedFolderChanges,
+                        Is.True,
+                        "setup failed: our in-memory settings should not know yet"
+                    );
+                    Assert.That(
+                        tc.GetAllowSharedFolderChangesFromRepo(),
+                        Is.False,
+                        "setup failed: the repo should say paused"
+                    );
+                    var before = SnapshotFolder(repoFolder);
+
+                    Assert.Throws<SharedFolderChangesPausedException>(() =>
+                        tc.AttemptLock("free book")
+                    );
+
+                    Assert.That(SnapshotFolder(repoFolder), Is.EqualTo(before));
+                    Assert.That(settings.AllowSharedFolderChanges, Is.False);
+                }
+            );
+        }
+
+        /// <summary>
+        /// The idle-time and closing-time sync must neither push local collection file changes up
+        /// nor throw while changes are paused. See BL-16928.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_Paused_DoesNotPushOrThrow()
+        {
+            WithSharedFolderWriteSetup(
+                "PausedCollectionFilesSync",
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    settings.AllowSharedFolderChanges = false;
+                    var before = SnapshotFolder(repoFolder);
+                    // A local change that would normally be pushed.
+                    File.WriteAllText(
+                        CollectionSettings.GetDefaultSettingsFilePath(collectionFolder),
+                        "<Collection version=\"0.2\"><Country>Changed</Country></Collection>"
+                    );
+
+                    Assert.DoesNotThrow(() => tc.SyncLocalAndRepoCollectionFiles(false));
+
+                    Assert.That(SnapshotFolder(repoFolder), Is.EqualTo(before));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Merging color palettes can copy the local palettes up to the repo; that must not happen
+        /// while changes are paused. Only the repo says paused here, which is the situation at
+        /// startup, before we have settings. See BL-16928.
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void SyncLocalAndRepoCollectionFiles_AtStartup_CopiesPalettesUpOnlyIfAllowed(
+            bool paused
+        )
+        {
+            WithSharedFolderWriteSetup(
+                "PalettesAtStartup" + paused,
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    WriteLocalSettingsAndPush(
+                        tc,
+                        collectionFolder,
+                        $"<Collection version=\"0.2\"><AllowSharedFolderChanges>{!paused}</AllowSharedFolderChanges></Collection>"
+                    );
+                    File.WriteAllText(
+                        Path.Combine(collectionFolder, "colorPalettes.json"),
+                        "{\"text\":\"#123456\"}"
+                    );
+                    var repoPalettes = Path.Combine(repoFolder, "Other", "colorPalettes.json");
+                    Assert.That(
+                        File.Exists(repoPalettes),
+                        Is.False,
+                        "setup failed: the repo should not have palettes yet"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(true);
+
+                    Assert.That(File.Exists(repoPalettes), Is.EqualTo(!paused));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Sets up a Team Collection whose repo has collection files and three books: "locked book",
+        /// checked out to the current user here; "free book", checked in; and "new book", which
+        /// exists only locally. See BL-16928.
+        /// </summary>
+        private void WithSharedFolderWriteSetup(
+            string testName,
+            Action<TestFolderTeamCollection, CollectionSettings, string, string> test
+        )
+        {
+            using (var collectionFolder = new TemporaryFolder(testName + "_Collection"))
+            using (var repoFolder = new TemporaryFolder(testName + "_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                var settings = new CollectionSettings();
+                mockTcManager.Setup(m => m.Settings).Returns(settings);
+                TeamCollectionManager.ForceCurrentUserForTests("me@somewhere.org");
+                try
+                {
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    );
+                    tc.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
+                    Directory.CreateDirectory(Path.Combine(repoFolder.FolderPath, "Books"));
+                    WriteLocalSettingsAndPush(
+                        tc,
+                        collectionFolder.FolderPath,
+                        "<Collection version=\"0.2\"></Collection>"
+                    );
+                    var lockedPath = SyncAtStartupTests.MakeFakeBook(
+                        collectionFolder.FolderPath,
+                        "locked book",
+                        "locked content"
+                    );
+                    tc.PutBook(lockedPath);
+                    tc.AttemptLock("locked book");
+                    tc.PutBook(
+                        SyncAtStartupTests.MakeFakeBook(
+                            collectionFolder.FolderPath,
+                            "free book",
+                            "free content"
+                        ),
+                        true
+                    );
+                    SyncAtStartupTests.MakeFakeBook(
+                        collectionFolder.FolderPath,
+                        "new book",
+                        "new content"
+                    );
+                    Assert.That(
+                        tc.IsCheckedOutHereBy(tc.GetStatus("locked book")),
+                        Is.True,
+                        "setup failed: 'locked book' should be checked out here"
+                    );
+                    Assert.That(
+                        tc.GetStatus("free book").lockedBy,
+                        Is.Null.Or.Empty,
+                        "setup failed: 'free book' should be checked in"
+                    );
+                    Assert.That(
+                        tc.IsBookPresentInRepo("new book"),
+                        Is.False,
+                        "setup failed: 'new book' should be only local"
+                    );
+                    test(tc, settings, collectionFolder.FolderPath, repoFolder.FolderPath);
+                }
+                finally
+                {
+                    TeamCollectionManager.ForceCurrentUserForTests(null);
+                }
+            }
+        }
+
+        private static void WriteLocalSettingsAndPush(
+            Bloom.TeamCollection.TeamCollection tc,
+            string collectionFolder,
+            string content
+        )
+        {
+            File.WriteAllText(
+                CollectionSettings.GetDefaultSettingsFilePath(collectionFolder),
+                content
+            );
+            tc.CopyRepoCollectionFilesFromLocal(collectionFolder);
+        }
+
+        /// <summary>
+        /// Perform one of the kSharedFolderWrites operations on the setup made by
+        /// WithSharedFolderWriteSetup.
+        /// </summary>
+        private static void DoSharedFolderWrite(
+            Bloom.TeamCollection.TeamCollection tc,
+            string operation,
+            string collectionFolder
+        )
+        {
+            switch (operation)
+            {
+                case "checkIn":
+                    tc.PutBook(Path.Combine(collectionFolder, "locked book"), true);
+                    break;
+                case "firstCheckIn":
+                    tc.PutBook(Path.Combine(collectionFolder, "new book"), true);
+                    break;
+                case "checkOut":
+                    tc.AttemptLock("free book");
+                    break;
+                case "unlock":
+                    tc.UnlockBook("locked book");
+                    break;
+                case "forceUnlock":
+                    tc.ForceUnlock("locked book");
+                    break;
+                case "forgetChanges":
+                    tc.ForgetChangesCheckin("locked book");
+                    break;
+                case "delete":
+                    tc.DeleteBookFromRepo(Path.Combine(collectionFolder, "locked book"));
+                    break;
+                case "rename":
+                    tc.RenameBookInRepo("renamed book", "locked book");
+                    break;
+                case "pushCollectionFiles":
+                    File.AppendAllText(
+                        CollectionSettings.GetDefaultSettingsFilePath(collectionFolder),
+                        " "
+                    );
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder);
+                    break;
+                default:
+                    Assert.Fail("unknown operation " + operation);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Every file under the folder, with its size and modification time, so we can tell whether
+        /// anything at all was written.
+        /// </summary>
+        private static string SnapshotFolder(string folder)
+        {
+            return string.Join(
+                "\n",
+                Directory
+                    .EnumerateFiles(folder, "*", SearchOption.AllDirectories)
+                    .OrderBy(f => f)
+                    .Select(f =>
+                    {
+                        var info = new FileInfo(f);
+                        return $"{f}|{info.Length}|{info.LastWriteTimeUtc.Ticks}";
+                    })
+            );
+        }
+
         /// <summary>
         /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
         /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still

@@ -318,6 +318,25 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         true,
     );
 
+    // While an administrator has paused all changes to the shared folder (BL-16928), nothing
+    // here that writes to it may be used: check in, check out, forget changes, force unlock.
+    // The C# side refuses too, so a stale status can't get around it.
+    const sharedFolderChangesPausedMessage = useL10n(
+        "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
+        "TeamCollection.SharedFolderChangesPaused",
+    );
+    const movedToCloudMessage = useL10n(
+        "This collection has moved to Bloom's cloud sharing. To keep working with your team, you need Bloom 6.6 or later. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
+        "TeamCollection.MovedToCloud",
+    );
+    const sharedFolderPausedNote = props.sharedFolderChangesArePaused ? (
+        <NoteBox>
+            {props.movedToCloud
+                ? movedToCloudMessage
+                : sharedFolderChangesPausedMessage}
+        </NoteBox>
+    ) : undefined;
+
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
             text: "About my Avatar...",
@@ -332,7 +351,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             text: "Forget Changes & Check in Book...",
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
-            disabled: props.isNewLocalBook,
+            disabled:
+                props.isNewLocalBook || props.sharedFolderChangesArePaused,
         });
     }
 
@@ -342,7 +362,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             text: "Force Unlock (Administrator Only)...",
             l10nKey: "TeamCollection.ForceUnlockMenuItem",
             action: () => setForceUnlockDialogOpen(true),
-            disabled: !props.isUserAdmin,
+            disabled: !props.isUserAdmin || props.sharedFolderChangesArePaused,
             icon: (
                 <WarningIcon
                     css={css`
@@ -470,10 +490,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             "checkout-button",
                             "/bloom/teamCollection/Check Out.svg",
                             checkoutHandler,
-                            props.checkoutsArePaused,
+                            props.checkoutsArePaused ||
+                                props.sharedFolderChangesArePaused,
                         )}
                         belowButton={
-                            props.checkoutsArePaused ? (
+                            // The broader pause, with its fuller explanation, wins.
+                            sharedFolderPausedNote ??
+                            (props.checkoutsArePaused ? (
                                 // Deliberately not localized yet: this is an
                                 // unreleased admin-only setting with no UI, so
                                 // per AGENTS.md we ship the English and add an
@@ -482,7 +505,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                     The administrator of this collection has
                                     paused checkouts.
                                 </NoteBox>
-                            ) : undefined
+                            ) : undefined)
                         }
                         menu={menu}
                     />
@@ -508,6 +531,16 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                     );
                 };
 
+                let lockedByMeSubTitle = "";
+                if (checkInFailed) {
+                    lockedByMeSubTitle = subTitleCheckInFailed;
+                } else if (props.sharedFolderChangesArePaused) {
+                    // "Click this button to send your changes" would be wrong; the note explains.
+                    lockedByMeSubTitle = "";
+                } else if (checkInProgress === 0) {
+                    lockedByMeSubTitle = subTitleLockedByMe;
+                }
+
                 return (
                     <StatusPanelCommon
                         css={css`
@@ -522,13 +555,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                 ? mainTitleLockedByMe
                                 : checkingIn
                         }
-                        subTitle={
-                            checkInFailed
-                                ? subTitleCheckInFailed
-                                : checkInProgress === 0
-                                  ? subTitleLockedByMe
-                                  : ""
-                        }
+                        subTitle={lockedByMeSubTitle}
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
                         button={
@@ -540,7 +567,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                         "checkin-button",
                                         "/bloom/teamCollection/Check In.svg",
                                         checkInHandler,
-                                        checkInProgress > 0,
+                                        checkInProgress > 0 ||
+                                            props.sharedFolderChangesArePaused,
                                         "primary",
                                     )}
                                 </ThemeProvider>
@@ -548,6 +576,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         }
                         useWarningColorForButton={true}
                         menu={menu}
+                        belowButton={sharedFolderPausedNote}
                     >
                         {checkInProgress === 0 ? (
                             <div
@@ -613,6 +642,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         subTitle={subTitleLockedElsewhere}
                         icon={avatar}
                         menu={menu}
+                        belowButton={sharedFolderPausedNote}
                     >
                         {getLockedInfoChild(lockedElsewhereInfo)}
                     </StatusPanelCommon>
@@ -624,6 +654,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         subTitle={subTitleLocked}
                         icon={avatar}
                         menu={menu}
+                        belowButton={sharedFolderPausedNote}
                     >
                         {getLockedInfoChild(lockedInfo)}
                     </StatusPanelCommon>

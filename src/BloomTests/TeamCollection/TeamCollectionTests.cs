@@ -52,6 +52,20 @@ namespace BloomTests.TeamCollection
             _collection.CollectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
         }
 
+        /// <summary>
+        /// The mock TC manager's RaiseBookStatusChanged calls, in order. Other calls on the mock,
+        /// such as reading its Settings (which every repo write now does, BL-16928), are left out
+        /// so that tests can count status changes without depending on them.
+        /// </summary>
+        private IInvocation[] StatusChangeInvocations()
+        {
+            return _mockTcManager
+                .Invocations.Where(i =>
+                    i.Method.Name == nameof(ITeamCollectionManager.RaiseBookStatusChanged)
+                )
+                .ToArray();
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -171,7 +185,7 @@ namespace BloomTests.TeamCollection
             );
 
             // Verification
-            var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+            var eventArgs = (BookStatusChangeEventArgs)StatusChangeInvocations()[0].Arguments[0];
             Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
 
             Assert.That(_tcLog.Messages.Count, Is.EqualTo(prevMessages));
@@ -210,7 +224,7 @@ namespace BloomTests.TeamCollection
             );
 
             // Verification
-            var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+            var eventArgs = (BookStatusChangeEventArgs)StatusChangeInvocations()[0].Arguments[0];
             Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
 
             Assert.That(
@@ -286,7 +300,7 @@ namespace BloomTests.TeamCollection
             _collection.HandleRemoteBookChangesOnIdle(null, new EventArgs());
 
             // Verification
-            var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[2].Arguments[0];
+            var eventArgs = (BookStatusChangeEventArgs)StatusChangeInvocations()[2].Arguments[0];
             Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.Other));
 
             Assert.That(
@@ -342,7 +356,7 @@ namespace BloomTests.TeamCollection
             );
 
             // Verification
-            var eventArgs = (BookStatusChangeEventArgs)_mockTcManager.Invocations[0].Arguments[0];
+            var eventArgs = (BookStatusChangeEventArgs)StatusChangeInvocations()[0].Arguments[0];
             Assert.That(eventArgs.CheckedOutByWhom, Is.EqualTo(CheckedOutBy.None));
 
             Assert.That(
