@@ -205,8 +205,9 @@ namespace Bloom.TeamCollection
 
         /// <summary>
         /// True if this is a Team Collection whose shared folder Bloom must not change just now
-        /// (AllowSharedFolderChanges is false). When we are connected this also consults the repo's
-        /// own copy of the settings; when disconnected we can only go by our own. See BL-16928.
+        /// (AllowSharedFolderChanges is false). When we are connected the repo's own copy of the
+        /// settings decides (see TeamCollection.AreSharedFolderChangesPaused); when disconnected we
+        /// can only go by our own. See BL-16928.
         /// </summary>
         public bool SharedFolderChangesArePaused
         {

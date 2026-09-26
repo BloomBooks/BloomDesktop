@@ -1680,20 +1680,40 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
-        /// True if Bloom must not write anything to the shared folder just now. We believe it if
-        /// either our settings or the repo's copy of them says so: the repo can be ahead of us,
-        /// since picking a change up mid-session waits for the file watcher, and this is the check
-        /// that stands between a stale "allowed" and a write. When the repo turns out to be ahead,
-        /// we catch our settings up so the UI changes too. See BL-16928.
+        /// True if Bloom must not write anything to the shared folder just now. The shared
+        /// folder's copy of the settings is the authority whenever we can read it. Our own copy
+        /// must not be: an administrator turns the pause on by editing their local settings, and
+        /// the push that carries that to the shared folder has to be allowed, or nobody else would
+        /// ever be paused. Once it arrives there, everyone is paused, the administrator included.
+        /// The repo can also be ahead of us, since picking a change up mid-session waits for the
+        /// file watcher; when it is, we catch our settings up so the UI changes too.
+        /// Only when the repo's settings exist but can't be read do we fall back on our own copy
+        /// (and then a write would most likely fail anyway). A shared folder with no settings at all
+        /// is a brand-new Team Collection being set up, which has nothing to protect yet. See BL-16928.
         /// </summary>
         public bool AreSharedFolderChangesPaused()
         {
-            var settings = _tcManager?.Settings;
-            if (settings != null && !settings.AllowSharedFolderChanges)
-                return true;
-            if (GetAllowSharedFolderChangesFromRepo() != false)
+            var repoValue = GetAllowSharedFolderChangesFromRepo();
+            if (repoValue == true)
                 return false;
-            UpdateAllowSharedFolderChangesFromRepo();
+            if (repoValue == false)
+            {
+                if (_tcManager?.Settings?.AllowSharedFolderChanges == true)
+                    UpdateAllowSharedFolderChangesFromRepo();
+                return true;
+            }
+            if (!RepoCollectionSettingsExist())
+                return false;
+            return _tcManager?.Settings?.AllowSharedFolderChanges == false;
+        }
+
+        /// <summary>
+        /// Whether the repo has a copy of the collection settings at all, readable or not. The
+        /// default, not knowing, says yes, so that AreSharedFolderChangesPaused falls back on our
+        /// own settings. See BL-16928.
+        /// </summary>
+        protected virtual bool RepoCollectionSettingsExist()
+        {
             return true;
         }
 

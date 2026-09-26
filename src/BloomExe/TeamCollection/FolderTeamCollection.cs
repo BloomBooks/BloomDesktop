@@ -352,6 +352,14 @@ namespace Bloom.TeamCollection
         }
 
         /// <summary>
+        /// Whether the repo has its zip of collection files at all. See BL-16928.
+        /// </summary>
+        protected override bool RepoCollectionSettingsExist()
+        {
+            return RobustFile.Exists(GetRepoProjectFilesZipPath(_repoFolderPath));
+        }
+
+        /// <summary>
         /// Read CloudCollectionId straight out of the repo's copy of the collection settings.
         /// Empty if the element is missing; null if we can't read the file. See BL-16928.
         /// </summary>
@@ -917,11 +925,15 @@ namespace Bloom.TeamCollection
             var repoColorPalettePath = Path.Combine(repoFolder, "Other", "colorPalettes.json");
             var localColorPalettePath = Path.Combine(localFolder, "colorPalettes.json");
             // Merging into the local copy is fine, but while changes to the shared folder are
-            // paused we must not copy the result back. Believe either our settings or the repo's,
-            // as TeamCollection.AreSharedFolderChangesPaused does. See BL-16928.
+            // paused we must not copy the result back. Decided as in
+            // TeamCollection.AreSharedFolderChangesPaused: the repo's value when we can read it,
+            // our own only when its settings exist but are unreadable. See BL-16928.
             var repoWritesAllowed =
-                collectionSettings?.AllowSharedFolderChanges != false
-                && GetAllowSharedFolderChangesFromRepoFolder(repoFolder) != false;
+                GetAllowSharedFolderChangesFromRepoFolder(repoFolder)
+                ?? (
+                    !RobustFile.Exists(GetRepoProjectFilesZipPath(repoFolder))
+                    || collectionSettings?.AllowSharedFolderChanges != false
+                );
             if (RobustFile.Exists(repoColorPalettePath))
             {
                 if (RobustFile.Exists(localColorPalettePath))

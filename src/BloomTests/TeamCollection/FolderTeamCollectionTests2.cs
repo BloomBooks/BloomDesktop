@@ -1834,8 +1834,8 @@ namespace BloomTests.TeamCollection
         };
 
         /// <summary>
-        /// Each write, with our in-memory settings saying changes are paused, must refuse and leave
-        /// the shared folder exactly as it was. See BL-16928.
+        /// Each write, with the shared folder's settings saying changes are paused, must refuse
+        /// and leave the shared folder exactly as it was. See BL-16928.
         /// </summary>
         [TestCaseSource(nameof(kSharedFolderWrites))]
         public void SharedFolderWrite_Paused_RefusesAndChangesNothing(string operation)
@@ -1844,7 +1844,7 @@ namespace BloomTests.TeamCollection
                 "PausedWrite_" + operation,
                 (tc, settings, collectionFolder, repoFolder) =>
                 {
-                    settings.AllowSharedFolderChanges = false;
+                    PauseInRepo(tc, collectionFolder);
                     var before = SnapshotFolder(repoFolder);
 
                     Assert.Throws<SharedFolderChangesPausedException>(() =>
@@ -1926,6 +1926,123 @@ namespace BloomTests.TeamCollection
         }
 
         /// <summary>
+        /// How an administrator turns the pause on: by editing their own local settings file. Our
+        /// own settings saying paused must not stop the push that carries that to the shared
+        /// folder, or nobody else would ever be paused. Once it has arrived, this Bloom is paused
+        /// like everyone else's. See BL-16928.
+        /// </summary>
+        [Test]
+        public void SyncLocalAndRepoCollectionFiles_LocalPausedRepoAllows_PushesThePauseThenRefuses()
+        {
+            WithSharedFolderWriteSetup(
+                "LocalPausePushedToRepo",
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    File.WriteAllText(
+                        CollectionSettings.GetDefaultSettingsFilePath(collectionFolder),
+                        "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges></Collection>"
+                    );
+                    settings.AllowSharedFolderChanges = false;
+                    Assert.That(
+                        tc.GetAllowSharedFolderChangesFromRepo(),
+                        Is.True,
+                        "setup failed: the shared folder should not have the pause yet"
+                    );
+                    Assert.That(
+                        tc.AreSharedFolderChangesPaused(),
+                        Is.False,
+                        "our own settings alone must not pause us while the shared folder allows changes"
+                    );
+
+                    tc.SyncLocalAndRepoCollectionFiles(false);
+
+                    Assert.That(
+                        tc.GetAllowSharedFolderChangesFromRepo(),
+                        Is.False,
+                        "the pause should have reached the shared folder"
+                    );
+                    Assert.That(settings.AllowSharedFolderChanges, Is.False);
+                    var before = SnapshotFolder(repoFolder);
+                    Assert.Throws<SharedFolderChangesPausedException>(() =>
+                        tc.AttemptLock("free book")
+                    );
+                    Assert.That(SnapshotFolder(repoFolder), Is.EqualTo(before));
+                }
+            );
+        }
+
+        /// <summary>
+        /// If the shared folder's settings exist but can't be read (mid-sync, say), we can only go
+        /// by our own settings. See BL-16928.
+        /// </summary>
+        [Test]
+        public void SharedFolderWrite_RepoSettingsUnreadableLocalPaused_Refuses()
+        {
+            WithSharedFolderWriteSetup(
+                "UnreadableRepoLocalPaused",
+                (tc, settings, collectionFolder, repoFolder) =>
+                {
+                    File.WriteAllText(
+                        FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder),
+                        "this is not a zip file"
+                    );
+                    settings.AllowSharedFolderChanges = false;
+                    Assert.That(
+                        tc.GetAllowSharedFolderChangesFromRepo(),
+                        Is.Null,
+                        "setup failed: the shared folder's settings should be unreadable"
+                    );
+                    var before = SnapshotFolder(repoFolder);
+
+                    Assert.Throws<SharedFolderChangesPausedException>(() =>
+                        tc.AttemptLock("free book")
+                    );
+
+                    Assert.That(SnapshotFolder(repoFolder), Is.EqualTo(before));
+                }
+            );
+        }
+
+        /// <summary>
+        /// Making a new Team Collection from a local collection whose settings say paused must
+        /// work: the new shared folder has no settings yet, so there is nothing to protect, and
+        /// the flag simply goes up with the rest. See BL-16928.
+        /// </summary>
+        [Test]
+        public void CopyRepoCollectionFilesFromLocal_NewRepoLocalPaused_PushesThePause()
+        {
+            using (var collectionFolder = new TemporaryFolder("NewRepoLocalPaused_Collection"))
+            using (var repoFolder = new TemporaryFolder("NewRepoLocalPaused_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                var settings = new CollectionSettings { AllowSharedFolderChanges = false };
+                mockTcManager.Setup(m => m.Settings).Returns(settings);
+                var tc = new TestFolderTeamCollection(
+                    mockTcManager.Object,
+                    collectionFolder.FolderPath,
+                    repoFolder.FolderPath
+                );
+                File.WriteAllText(
+                    CollectionSettings.GetDefaultSettingsFilePath(collectionFolder.FolderPath),
+                    "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges></Collection>"
+                );
+                Assert.That(
+                    File.Exists(
+                        FolderTeamCollection.GetRepoProjectFilesZipPath(repoFolder.FolderPath)
+                    ),
+                    Is.False,
+                    "setup failed: the new shared folder should have no settings yet"
+                );
+
+                Assert.DoesNotThrow(() =>
+                    tc.CopyRepoCollectionFilesFromLocal(collectionFolder.FolderPath)
+                );
+
+                Assert.That(tc.GetAllowSharedFolderChangesFromRepo(), Is.False);
+            }
+        }
+
+        /// <summary>
         /// The idle-time and closing-time sync must neither push local collection file changes up
         /// nor throw while changes are paused. See BL-16928.
         /// </summary>
@@ -1936,7 +2053,7 @@ namespace BloomTests.TeamCollection
                 "PausedCollectionFilesSync",
                 (tc, settings, collectionFolder, repoFolder) =>
                 {
-                    settings.AllowSharedFolderChanges = false;
+                    PauseInRepo(tc, collectionFolder);
                     var before = SnapshotFolder(repoFolder);
                     // A local change that would normally be pushed.
                     File.WriteAllText(
@@ -2062,6 +2179,27 @@ namespace BloomTests.TeamCollection
                     TeamCollectionManager.ForceCurrentUserForTests(null);
                 }
             }
+        }
+
+        /// <summary>
+        /// Pause changes the way the administrator's Bloom does, in the shared folder's settings,
+        /// and check that it took. Our in-memory settings are left behind, as they would be.
+        /// </summary>
+        private static void PauseInRepo(
+            Bloom.TeamCollection.TeamCollection tc,
+            string collectionFolder
+        )
+        {
+            WriteLocalSettingsAndPush(
+                tc,
+                collectionFolder,
+                "<Collection version=\"0.2\"><AllowSharedFolderChanges>False</AllowSharedFolderChanges></Collection>"
+            );
+            Assert.That(
+                tc.GetAllowSharedFolderChangesFromRepo(),
+                Is.False,
+                "setup failed: the shared folder should say paused"
+            );
         }
 
         private static void WriteLocalSettingsAndPush(
