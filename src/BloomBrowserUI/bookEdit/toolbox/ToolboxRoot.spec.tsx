@@ -47,14 +47,15 @@ vi.mock("axios", () => {
 
 // Imported after the mocks above are registered.
 const { ToolboxRoot } = await import("./ToolboxRoot");
+const { getToolboxReactAdapter } = await import("./toolboxReactAdapter");
 
 // The adapter object is rebuilt on every render, so always read the current one rather
 // than holding on to it.
 const getAdapter = () => {
-    const adapter = window.toolboxReactAdapter;
+    const adapter = getToolboxReactAdapter();
     if (!adapter) {
         throw new Error(
-            "ToolboxRoot did not publish window.toolboxReactAdapter; the component probably failed to render.",
+            "ToolboxRoot did not register an adapter; the component probably failed to render.",
         );
     }
     return adapter;
@@ -66,6 +67,18 @@ const getHeaderToolIds = (container: HTMLElement): string[] =>
     Array.from(
         container.querySelectorAll(".MuiAccordionSummary-root [data-toolid]"),
     ).map((element) => element.getAttribute("data-toolid") ?? "");
+
+// Which section the user actually has open.
+const getExpandedToolId = (container: HTMLElement): string | undefined => {
+    const expandedHeader = Array.from(
+        container.querySelectorAll(".MuiAccordionSummary-root"),
+    ).find((header) => header.getAttribute("aria-expanded") === "true");
+    return (
+        expandedHeader
+            ?.querySelector("[data-toolid]")
+            ?.getAttribute("data-toolid") ?? undefined
+    );
+};
 
 describe("ToolboxRoot", () => {
     let container: HTMLDivElement | null = null;
@@ -81,7 +94,6 @@ describe("ToolboxRoot", () => {
             container.remove();
             container = null;
         }
-        delete window.toolboxReactAdapter;
     });
 
     // BL-16602: visiting a game page auto-activates the Game tool; leaving the page removes
@@ -124,7 +136,7 @@ describe("ToolboxRoot", () => {
             "talkingBook",
             "settings",
         ]);
-        expect(getAdapter().getActiveToolId()).toBe("gameTool");
+        expect(getExpandedToolId(container)).toBe("game");
         expect(reportedToolIds).toEqual(["gameTool"]);
 
         // Leaving the game page: legacy code removes the Game tool it required.
@@ -140,7 +152,7 @@ describe("ToolboxRoot", () => {
             "talkingBook",
             "settings",
         ]);
-        expect(getAdapter().getActiveToolId()).toBe("talkingBookTool");
+        expect(getExpandedToolId(container)).toBe("talkingBook");
         expect(reportedToolIds).toEqual(["gameTool", "talkingBookTool"]);
     });
 
@@ -167,7 +179,7 @@ describe("ToolboxRoot", () => {
             getAdapter().setActiveToolByToolId("talkingBookTool");
         });
 
-        expect(getAdapter().getActiveToolId()).toBe("talkingBookTool");
+        expect(getExpandedToolId(container)).toBe("talkingBook");
         expect(reportedToolIds).toEqual(["talkingBookTool"]);
 
         await act(async () => {
@@ -183,7 +195,7 @@ describe("ToolboxRoot", () => {
             "settings",
         ]);
         // Removing a tool that wasn't active must not disturb the active tool.
-        expect(getAdapter().getActiveToolId()).toBe("talkingBookTool");
+        expect(getExpandedToolId(container)).toBe("talkingBook");
         expect(reportedToolIds).toEqual(["talkingBookTool"]);
     });
 });
