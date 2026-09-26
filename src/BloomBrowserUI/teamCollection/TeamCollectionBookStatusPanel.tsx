@@ -329,6 +329,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         "This collection has moved to Bloom's cloud sharing. To keep working with your team, you need Bloom 6.6 or later. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
         "TeamCollection.MovedToCloud",
     );
+    const checkoutsPausedMessage = useL10n(
+        "The administrator of this collection has paused checkouts.",
+        "TeamCollection.CheckoutsPaused",
+    );
     const sharedFolderPausedNote = props.sharedFolderChangesArePaused ? (
         <NoteBox>
             {props.movedToCloud
@@ -497,14 +501,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             // The broader pause, with its fuller explanation, wins.
                             sharedFolderPausedNote ??
                             (props.checkoutsArePaused ? (
-                                // Deliberately not localized yet: this is an
-                                // unreleased admin-only setting with no UI, so
-                                // per AGENTS.md we ship the English and add an
-                                // XLF entry once the feature stabilizes.
-                                <NoteBox>
-                                    The administrator of this collection has
-                                    paused checkouts.
-                                </NoteBox>
+                                <NoteBox>{checkoutsPausedMessage}</NoteBox>
                             ) : undefined)
                         }
                         menu={menu}
