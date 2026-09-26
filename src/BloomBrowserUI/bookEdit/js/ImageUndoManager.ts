@@ -4,6 +4,11 @@ import {
     notifyToolOfChangedImage,
 } from "./bloomEditing";
 import { normalizeCoverImageDesignation } from "./bloomImages";
+import {
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementManager/canvasElementRotation";
+import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 
 export interface IImageCropInfo {
     width: string;
@@ -12,12 +17,48 @@ export interface IImageCropInfo {
     top: string;
 }
 
-type ImageOperationUndoItem = {
-    kind: "restoreImage";
-    element: HTMLElement;
-    imageInfo: IImageInfo;
-    cropInfo: IImageCropInfo;
-};
+// The inline size and place of a canvas element box, as written, so that an undo can put back
+// exactly what was there, including nothing at all.
+export interface IElementGeometry {
+    width: string;
+    height: string;
+    left: string;
+    top: string;
+}
+
+type ImageOperationUndoItem =
+    | {
+          kind: "restoreImage";
+          element: HTMLElement;
+          imageInfo: IImageInfo;
+          cropInfo: IImageCropInfo;
+          // The img's inline transform: the rotation and mirror of the picture being replaced.
+          imageTransform: string;
+          // The size and place of the canvas element that holds the picture. A page
+          // background element takes the shape of its picture, crop and rotation, and the
+          // size code keeps a cropped picture's element shape, so Undo has to put this back
+          // before it runs. Undefined when the picture is in no canvas element.
+          elementGeometry: IElementGeometry | undefined;
+      }
+    // Rotate right, Flip, and a drag of the rotation handle. The picture keeps its file and
+    // its metadata, so the things to put back are the rotation of the canvas element box, the
+    // rotation and mirror of the picture, the crop, and the size and place of the box itself: a
+    // rotation of a page background picture changes the shape of its box, because the box takes the
+    // shape of the picture. There is no img when the rotation handle rotates a text box or a
+    // video.
+    | {
+          kind: "restoreImageTransform";
+          canvasElement: HTMLElement;
+          img: HTMLImageElement | undefined;
+          elementRotation: number;
+          imageTransform: string;
+          cropInfo: IImageCropInfo;
+          elementGeometry: IElementGeometry;
+          // The contents of the element's text boxes, formatting included, when the step was
+          // recorded. Typing or formatting afterwards is a newer step, which the text editor's
+          // own undo takes back first; see canUndoImageOperation.
+          textWhenRecorded: string;
+      };
 // | {
 //       kind: "removeElement";
 //       element: HTMLElement;
@@ -27,6 +68,13 @@ export interface ImageUndoManagerHost {
     updateCanvasElementForChangedImage(
         imgOrImageContainer: HTMLElement,
         cropInfo?: IImageCropInfo,
+        imageTransform?: string,
+    ): void;
+    // Put the frame, the game target and the tool panel back in step after an undo that only
+    // changed a rotation, a mirror or a crop.
+    updateCanvasElementAfterTransformChange(
+        canvasElement: HTMLElement,
+        img: HTMLImageElement | undefined,
     ): void;
     getActiveElement(): HTMLElement | undefined;
     setActiveElement(element: HTMLElement | undefined): void;
@@ -52,7 +100,62 @@ export class ImageUndoManager {
             element: imageOrContainer,
             imageInfo: this.getCurrentImageInfo(imageOrContainer),
             cropInfo: this.getCurrentImageCropInfo(imageOrContainer),
+            imageTransform:
+                this.getImageElement(imageOrContainer)?.style.transform ?? "",
+            elementGeometry: this.getElementGeometry(
+                this.getCanvasElement(imageOrContainer),
+            ),
         };
+    }
+
+    /**
+     * Record what Rotate right or Flip is about to change, so that Undo can put it back. This
+     * is one phase, not two: the command cannot fail or be canceled, so there is nothing to
+     * wait for before we keep the record.
+     */
+    public pushUndoForImageTransform(canvasElement: HTMLElement): void {
+        this.pushTransformUndo(
+            canvasElement,
+            getCanvasElementRotation(canvasElement),
+        );
+    }
+
+    /**
+     * Record a drag of the rotation handle, so that Undo can put the angle back. The caller
+     * gives the angle the element had when the drag started, because by the time the drag
+     * ends the element is already rotated. It calls this only when the angle really changed,
+     * so a click on the handle leaves nothing for Undo to do.
+     */
+    public pushUndoForCanvasElementRotation(
+        canvasElement: HTMLElement,
+        rotationBeforeDrag: number,
+    ): void {
+        this.pushTransformUndo(canvasElement, rotationBeforeDrag);
+    }
+
+    private pushTransformUndo(
+        canvasElement: HTMLElement,
+        elementRotation: number,
+    ): void {
+        this.clearImageOperationUndoOnPageChange();
+        // A rotation handle rotates text boxes as well, so there is not always a
+        // picture. The rotation and the crop of the picture are only in the record when there is.
+        const img = this.getImageElement(canvasElement);
+        this.imageOperationUndoStack.push({
+            kind: "restoreImageTransform",
+            canvasElement,
+            img,
+            elementRotation,
+            imageTransform: img?.style.transform ?? "",
+            cropInfo: {
+                width: img?.style.width ?? "",
+                height: img?.style.height ?? "",
+                left: img?.style.left ?? "",
+                top: img?.style.top ?? "",
+            },
+            elementGeometry: this.getElementGeometry(canvasElement),
+            textWhenRecorded: textBoxContents(canvasElement),
+        });
     }
 
     /** Clear all pending/recorded image operation undo state. */
@@ -89,6 +192,32 @@ export class ImageUndoManager {
     public canUndoImageOperation(): boolean {
         this.clearImageOperationUndoOnPageChange();
         const activeElement = this.host.getActiveElement();
+        const topOfStack =
+            this.imageOperationUndoStack[
+                this.imageOperationUndoStack.length - 1
+            ];
+        if (topOfStack?.kind === "restoreImageTransform") {
+            // The rotation handle rotates text boxes too, so this record does not
+            // need a picture. We ask instead that the element it belongs to is the selected
+            // one, which is the same idea as one undo stack for each text box. If its text has
+            // changed since, the typing is newer than the rotation, so we leave Undo to the text
+            // editor until the text is back the way it was.
+            return (
+                !!activeElement &&
+                activeElement === topOfStack.canvasElement &&
+                textBoxContents(activeElement) === topOfStack.textWhenRecorded
+            );
+        }
+        if (topOfStack?.kind === "restoreImage") {
+            // Undo puts back the picture of the element the record belongs to, so it is
+            // offered only while that element is selected; otherwise Undo with picture A
+            // selected would change picture B.
+            return (
+                !!activeElement &&
+                (activeElement.contains(topOfStack.element) ||
+                    topOfStack.element.contains(activeElement))
+            );
+        }
         let onImageContainer = false;
         if (activeElement) {
             onImageContainer =
@@ -110,9 +239,17 @@ export class ImageUndoManager {
         switch (undoItem.kind) {
             case "restoreImage": {
                 changeImageInfo(undoItem.element, undoItem.imageInfo);
+                const canvasElement = this.getCanvasElement(undoItem.element);
+                if (canvasElement && undoItem.elementGeometry) {
+                    this.setElementGeometry(
+                        canvasElement,
+                        undoItem.elementGeometry,
+                    );
+                }
                 this.host.updateCanvasElementForChangedImage(
                     undoItem.element,
                     undoItem.cropInfo,
+                    undoItem.imageTransform,
                 );
                 const page = undoItem.element.closest(
                     ".bloom-page",
@@ -122,6 +259,29 @@ export class ImageUndoManager {
                 }
                 const img = this.getImageElement(undoItem.element);
                 notifyToolOfChangedImage(img);
+                return true;
+            }
+            case "restoreImageTransform": {
+                setCanvasElementRotation(
+                    undoItem.canvasElement,
+                    undoItem.elementRotation,
+                );
+                if (undoItem.img) {
+                    undoItem.img.style.transform = undoItem.imageTransform;
+                    undoItem.img.style.width = undoItem.cropInfo.width;
+                    undoItem.img.style.height = undoItem.cropInfo.height;
+                    undoItem.img.style.left = undoItem.cropInfo.left;
+                    undoItem.img.style.top = undoItem.cropInfo.top;
+                }
+                this.setElementGeometry(
+                    undoItem.canvasElement,
+                    undoItem.elementGeometry,
+                );
+                // This also tells the tool panel about the change.
+                this.host.updateCanvasElementAfterTransformChange(
+                    undoItem.canvasElement,
+                    undoItem.img,
+                );
                 return true;
             }
             // case "removeElement": {
@@ -185,6 +345,47 @@ export class ImageUndoManager {
         };
     }
 
+    // The canvas element that holds this img or image container, if there is one.
+    private getCanvasElement(
+        imageOrContainer: HTMLElement,
+    ): HTMLElement | undefined {
+        return (
+            (imageOrContainer.closest(
+                kCanvasElementSelector,
+            ) as HTMLElement | null) ?? undefined
+        );
+    }
+
+    // The inline size and place of a canvas element, as written. Undefined for no element.
+    private getElementGeometry(canvasElement: HTMLElement): IElementGeometry;
+    private getElementGeometry(
+        canvasElement: HTMLElement | undefined,
+    ): IElementGeometry | undefined;
+    private getElementGeometry(
+        canvasElement: HTMLElement | undefined,
+    ): IElementGeometry | undefined {
+        if (!canvasElement) {
+            return undefined;
+        }
+        return {
+            width: canvasElement.style.width,
+            height: canvasElement.style.height,
+            left: canvasElement.style.left,
+            top: canvasElement.style.top,
+        };
+    }
+
+    // Write back a size and place that getElementGeometry recorded.
+    private setElementGeometry(
+        canvasElement: HTMLElement,
+        geometry: IElementGeometry,
+    ): void {
+        canvasElement.style.width = geometry.width;
+        canvasElement.style.height = geometry.height;
+        canvasElement.style.left = geometry.left;
+        canvasElement.style.top = geometry.top;
+    }
+
     private getImageElement(
         imageOrContainer: HTMLElement,
     ): HTMLImageElement | undefined {
@@ -214,6 +415,49 @@ export function prepareUndoForImageOperation(
     imageOrContainer: HTMLElement,
 ): void {
     getImageUndoManager().prepareUndoForImageOperation(imageOrContainer);
+}
+
+// The markup inside the element's text boxes, so that typing, formatting, links and line breaks
+// all change it. It leaves out only what the text editor adds and takes away with no difference
+// the user can see: the boxes' own attributes, which change on focus, its bookmark markers, and
+// the <br> it puts at the end of a paragraph to hold it open (its undo gives back <p></p> for
+// <p><br></p>).
+function textBoxContents(canvasElement: HTMLElement): string {
+    return Array.from(canvasElement.getElementsByClassName("bloom-editable"))
+        .map((editable) => {
+            const copy = editable.cloneNode(true) as HTMLElement;
+            copy.querySelectorAll("[data-cke-bookmark]").forEach((e) =>
+                e.remove(),
+            );
+            copy.querySelectorAll("br").forEach((br) => {
+                if (isLastInItsParent(br)) br.remove();
+            });
+            return copy.innerHTML;
+        })
+        .join("\n");
+}
+
+// True when nothing but empty text follows the node inside its parent.
+function isLastInItsParent(node: Node): boolean {
+    for (let next = node.nextSibling; next; next = next.nextSibling) {
+        if (next.nodeType !== Node.TEXT_NODE || next.textContent !== "")
+            return false;
+    }
+    return true;
+}
+
+export function pushUndoForImageTransform(canvasElement: HTMLElement): void {
+    getImageUndoManager().pushUndoForImageTransform(canvasElement);
+}
+
+export function pushUndoForCanvasElementRotation(
+    canvasElement: HTMLElement,
+    rotationBeforeDrag: number,
+): void {
+    getImageUndoManager().pushUndoForCanvasElementRotation(
+        canvasElement,
+        rotationBeforeDrag,
+    );
 }
 
 export function clearImageOperationUndoState(): void {

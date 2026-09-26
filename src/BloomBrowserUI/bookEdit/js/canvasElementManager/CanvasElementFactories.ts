@@ -41,6 +41,9 @@ export interface IFinishAddingCanvasElementOptions {
     size?: { width: number; height: number };
     doAfterElementCreated?: (newElement: HTMLElement) => void;
     limitToCanvasBounds?: boolean;
+    // Classes the new element has from the start, before it is selected. What the control frame
+    // offers depends on them: a navigation button, for one, gets no rotation knob.
+    classes?: string[];
 }
 
 export interface ICanvasElementFactoriesHost {
@@ -563,6 +566,7 @@ export class CanvasElementFactories {
         userDefinedStyleName?: string,
         rightTopOffset?: string,
         limitToCanvasBounds: boolean = false,
+        classes?: string[],
     ): HTMLElement {
         const transGroupHtml = this.makeTranslationGroup(userDefinedStyleName);
 
@@ -574,6 +578,7 @@ export class CanvasElementFactories {
                 comicalBubbleStyle: style,
                 rightTopOffset,
                 limitToCanvasBounds,
+                classes,
             },
         );
     }
@@ -689,9 +694,9 @@ export class CanvasElementFactories {
                 size: { width: 120, height: 120 },
                 doAfterElementCreated,
                 limitToCanvasBounds: true,
+                classes: [kBloomButtonClass],
             },
         );
-        result.classList.add(kBloomButtonClass);
         return result;
     }
 
@@ -720,10 +725,9 @@ export class CanvasElementFactories {
                 imageInfo,
                 size: { width: 120, height: 120 },
                 limitToCanvasBounds: true,
+                classes: [kBloomButtonClass, "bloom-noAutoHeight"],
             },
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
         return result;
     }
 
@@ -739,9 +743,8 @@ export class CanvasElementFactories {
             "navigation-label-button",
             rightTopOffset,
             true,
+            [kBloomButtonClass, "bloom-noAutoHeight"],
         );
-        result.classList.add(kBloomButtonClass);
-        result.classList.add("bloom-noAutoHeight");
         // The methods used in the other two get to set a size; here we just do it.
         // We need to make it a bit higher than the default so it doesn't overflow
         // with the additional padding that buttons get.
@@ -1039,6 +1042,7 @@ export class CanvasElementFactories {
             lastChildOfBloomCanvas,
         );
         const canvasElement = canvasElementJQuery.get(0);
+        canvasElement.classList.add(...(options?.classes ?? []));
         if (options?.imageInfo) {
             const img = canvasElement.getElementsByTagName("img")[0];
             if (img) {

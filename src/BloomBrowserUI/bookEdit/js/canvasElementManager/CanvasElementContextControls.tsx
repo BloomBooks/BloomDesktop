@@ -212,6 +212,30 @@ const CanvasElementContextControls: React.FunctionComponent<{
         };
     }, [props.canvasElement, props.menuOpen, hasText]);
 
+    // Close the menu on Escape. MUI closes a Menu on Escape only when the key goes to the menu
+    // itself, and this one never has the focus: it opens with disableAutoFocus so that the text
+    // box being edited keeps it. So listen on the page's document instead, in the capture phase,
+    // and stop the event there, so that nothing else acts on this Escape, including MUI's own
+    // handler on an open submenu, which would otherwise close something a second time.
+    // setMenuOpen is a new function on every render, so the listener reads the latest one
+    // through a ref rather than being registered again on every render.
+    const setMenuOpenRef = useRef(setMenuOpen);
+    setMenuOpenRef.current = setMenuOpen;
+    useEffect(() => {
+        if (!props.menuOpen) return;
+        const doc = props.canvasElement.ownerDocument;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            setMenuOpenRef.current(false);
+        };
+        doc.addEventListener("keydown", onKeyDown, { capture: true });
+        return () => {
+            doc.removeEventListener("keydown", onKeyDown, { capture: true });
+        };
+    }, [props.menuOpen, props.canvasElement]);
+
     if (!page) {
         // Probably right after deleting the canvas element. Wish we could return early sooner,
         // but has to be after all the hooks.
@@ -633,6 +657,9 @@ const CanvasElementContextControls: React.FunctionComponent<{
                                             {...option}
                                             key={option.l10nId}
                                             truncateMainLabel={true}
+                                            // The menu is keepMounted, so the row must hear
+                                            // that the menu shut, or its submenu stays drawn.
+                                            parentMenuOpen={props.menuOpen}
                                         >
                                             {option.subMenu.map(
                                                 (subOption, subIndex) => {
