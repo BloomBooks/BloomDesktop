@@ -6,6 +6,10 @@ namespace Bloom.Collection
 {
     public partial class ScriptSettingsDialog : Form
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public ScriptSettingsDialog()
         {
             InitializeComponent();

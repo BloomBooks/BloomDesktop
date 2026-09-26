@@ -312,6 +312,12 @@ jobs:
                   # src/BloomE2E/README.md. The runner has a desktop, so a visible window would
                   # also work, but asking for it here says what the run needs instead of leaving
                   # it to whatever the runner happens to do.
+                  #
+                  # Unlike a developer's run, this one launches Bloom WITHOUT --dont-disturb
+                  # (the fixture sees CI set), so Bloom's windows take the foreground as they would
+                  # for a user. A test that fails here but passes locally may depend on that; to
+                  # reproduce, run with BLOOM_E2E_DONT_DISTURB=0 and BLOOM_AUTOMATION_MONITOR=headless
+                  # (src/BloomE2E/README.md, "In CI").
                   BLOOM_AUTOMATION_MONITOR: headless
                   # The password of the Bloom Library test account (e2e-tester@example.org on
                   # dev.bloomlibrary.org), for the tests that sign in and upload for real. The

@@ -47,10 +47,11 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
-        // During an automation run (--automation, e.g. the Playwright suites) the window must
-        // not steal the user's keyboard focus when it is shown. That holds wherever the window
-        // is: on the developer's desktop, on a monitor of its own, or off every monitor.
-        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+        // When something other than the person at the keyboard is driving Bloom (--dont-disturb:
+        // an agent, or a test suite on a developer's machine) the window must not steal their
+        // keyboard focus when it is shown. That holds wherever the window is: on the developer's
+        // desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
 
         public Shell(
             Func<WorkspaceView> projectViewFactory,
@@ -109,6 +110,10 @@ namespace Bloom
             bookDownloadStartingEvent.Subscribe(
                 (x) =>
                 {
+                    // Not while something other than the person at the keyboard drives Bloom
+                    // (--dont-disturb): the download goes ahead, but the foreground stays theirs.
+                    if (Program.StartupDontDisturb)
+                        return;
                     try
                     {
                         this.Invoke((Action)this.Activate);
@@ -424,11 +429,11 @@ namespace Bloom
         /// </summary>
         public void FinishPuttingShellInFront()
         {
-            // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing while tests run, and a window placed off every
-            // monitor cannot come to the front at all: TopMost and taking the foreground on it
-            // would take the foreground away for nothing.
-            if (!Program.StartupAutomation)
+            // Under --dont-disturb, grabbing focus would yank the user's keyboard away from
+            // whatever they are doing while an agent or a test drives Bloom, and a window placed
+            // off every monitor cannot come to the front at all: TopMost and taking the
+            // foreground on it would take the foreground away for nothing.
+            if (!Program.StartupDontDisturb)
             {
                 // An instant topmost toggle is what we used to do here, and it is why Bloom could
                 // come up behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this

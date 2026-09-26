@@ -876,6 +876,33 @@ function populateTempCollections(dest: string) {
 // Populate a throwaway temp collection (see populateTempCollections) and launch a dedicated Bloom on
 // it, then wait until that instance is serving it. We always launch our own (rather than reusing a
 // developer's Bloom) so the run is deterministic and never touches the source collections.
+/**
+ * Whether to launch Bloom with --dont-disturb: yes on a developer's machine, no on CI (which sets
+ * CI), unless BLOOM_E2E_DONT_DISTURB is "1" or "0". The same rule as the BloomE2E suite's
+ * launchWithDontDisturb (src/BloomE2E/fixtures/launchBloom.ts), kept as a copy because the two
+ * suites are separate packages. Logs its choice, as that one does, so a run's output says whether
+ * Bloom's windows could take the foreground.
+ */
+function launchWithDontDisturb(): boolean {
+    const asked = process.env.BLOOM_E2E_DONT_DISTURB?.trim();
+    if (asked && asked !== "1" && asked !== "0")
+        throw new Error(
+            `BLOOM_E2E_DONT_DISTURB must be 1 or 0, not "${asked}". Unset, it means 1 on a ` +
+                `developer's machine and 0 on CI.`,
+        );
+    const choice = asked ? asked === "1" : !process.env.CI;
+    let reason: string;
+    if (asked) reason = `BLOOM_E2E_DONT_DISTURB=${asked}`;
+    else if (process.env.CI) reason = "CI is set";
+    else reason = "not on CI";
+    console.log(
+        choice
+            ? `Launching with --dont-disturb (${reason}): Bloom's windows will not take the foreground.`
+            : `Launching without --dont-disturb (${reason}): Bloom's windows take the foreground as they would for a user.`,
+    );
+    return choice;
+}
+
 async function launchDedicatedBloom() {
     // Canonicalize immediately: os.tmpdir() is an 8.3 short path on Windows, but Bloom reports the
     // long form, so we normalize here (and in samePath) to make the discovery match work.
@@ -916,6 +943,10 @@ async function launchDedicatedBloom() {
     // --user-settings-folder: keep this Bloom's user settings (user.config) in the temp folder, so
     // the run starts from default settings, as it does on a fresh CI runner, rather than from
     // whatever the developer's Bloom of the same version saved last, and leaves nothing behind.
+    // --dont-disturb: on a developer's machine, keep Bloom's windows from taking the foreground or
+    // the keyboard while the run goes on. Not on CI, where nobody is at the screen; and
+    // BLOOM_E2E_DONT_DISTURB (1 or 0) overrides it either way, exactly as for the BloomE2E suite
+    // (see launchWithDontDisturb in src/BloomE2E/fixtures/launchBloom.ts).
     const userSettingsDir = Path.join(tempCollectionsRoot, "user-settings");
     fs.mkdirSync(userSettingsDir);
     bloomProcess = execFile(exe, [
@@ -924,6 +955,7 @@ async function launchDedicatedBloom() {
         "--automation",
         "--user-settings-folder",
         userSettingsDir,
+        ...(launchWithDontDisturb() ? ["--dont-disturb"] : []),
     ]);
     // Capture Bloom's output and watch for an early exit. Without this a launch failure (crash on
     // startup, missing WebView2 runtime, first-run dialog) is invisible: the poll below just runs

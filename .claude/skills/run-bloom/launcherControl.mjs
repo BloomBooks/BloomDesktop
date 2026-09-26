@@ -15,6 +15,11 @@
 //            Bloom runs without "dotnet watch" - halves the time to a running Bloom, at the
 //            cost of C# edits no longer rebuilding by themselves; use --restart for those)
 //
+// --ensure-running always starts go.mjs with --dont-disturb: this script is how an agent starts
+// Bloom, and a Bloom an agent drives must not take the foreground or the keyboard from the person
+// at the machine. (A person testing by hand runs ./go.sh without it, and Bloom behaves as usual.)
+// A launcher that is already running keeps whatever it was started with.
+//
 // Exit codes: 0 = success; 2 = no live launcher found (fall back to
 // --ensure-running or launching go.sh yourself); 1 = other failure.
 
@@ -452,7 +457,10 @@ const ensureRunning = async (options, deadline) => {
             launch = { method: "waited-for-other-agent" };
         } else {
             try {
-                const goArgs = options.noWatch ? ["--nowatch"] : [];
+                const goArgs = [
+                    "--dont-disturb",
+                    ...(options.noWatch ? ["--nowatch"] : []),
+                ];
                 launch = isOrcaRuntimeReachable()
                     ? launchViaOrca(options.repoRoot, goArgs)
                     : launchDetached(options.repoRoot, goArgs);
