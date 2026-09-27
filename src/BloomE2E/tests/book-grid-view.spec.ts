@@ -4,6 +4,8 @@
 // edited, in the same place on screen. Pages far off screen are not rendered, so a long book stays
 // cheap.
 //
+// Automates the manual test "Show All Pages While Editing" (Test Case ID 835).
+//
 // The tests are serial because each one starts from the book the one before it left behind.
 
 import * as fs from "node:fs";
@@ -163,7 +165,7 @@ async function boxOf(locator: ReturnType<Page["locator"]>, what: string) {
     return box;
 }
 
-test.describe("showing the other pages of the book", () => {
+test.describe("showing the other pages of the book [Test Case ID 835]", () => {
     test("builds a book with six text pages", async ({ page }) => {
         test.setTimeout(300000);
         bookFolder = await makeBookFromTemplate(page, "Basic Book");
