@@ -129,17 +129,22 @@ export function setupBookGridView(): Promise<void> {
         return Promise.resolve();
     }
     return new Promise((resolve) => {
-        get("pageList/pages", (response) => {
-            const pages: IGridPage[] = response.data.pages;
-            if (
-                !getWorkspaceBundleExports().isShowingOtherPages() ||
-                gridLayer
-            ) {
-                resolve();
-                return;
-            }
-            buildGrid(pages).then(resolve);
-        });
+        get(
+            "pageList/pages",
+            (response) => {
+                const pages: IGridPage[] = response.data.pages;
+                if (
+                    !getWorkspaceBundleExports().isShowingOtherPages() ||
+                    gridLayer
+                ) {
+                    resolve();
+                    return;
+                }
+                buildGrid(pages).then(resolve);
+            },
+            // Without the page list there is no grid, but the page must still be shown.
+            () => resolve(),
+        );
     });
 }
 
@@ -408,6 +413,9 @@ function renderPageInCell(
     const frame = document.createElement("iframe");
     frame.classList.add("bloom-book-grid-frame");
     frame.setAttribute("tabindex", "-1");
+    // No scripts or event handlers in a book's page may run here, where the page is only shown.
+    // allow-same-origin still lets this document write the page into the frame.
+    frame.setAttribute("sandbox", "allow-same-origin");
     // Insert before the veil, so the veil stays on top to take the clicks.
     cell.insertBefore(frame, cell.querySelector(".bloom-book-grid-veil"));
     return getPageContent(pageId, () => frame.isConnected).then((content) => {
