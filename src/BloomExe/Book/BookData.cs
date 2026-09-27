@@ -1427,10 +1427,13 @@ namespace Bloom.Book
             }
         }
 
-        private static string TrimEnd(string source, string value)
+        /// <summary>
+        /// Remove every trailing copy of value from the end of source.
+        /// </summary>
+        internal static string TrimEnd(string source, string value)
         {
-            while (source.EndsWith(value))
-                source = source.Remove(source.LastIndexOf(value));
+            while (source.EndsWith(value, StringComparison.Ordinal))
+                source = source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
             return source;
         }
 

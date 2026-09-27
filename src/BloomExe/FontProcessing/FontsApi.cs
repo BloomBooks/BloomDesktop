@@ -167,7 +167,7 @@ namespace Bloom.FontProcessing
 
         internal static bool ProcessHostFontsRequest(IRequestInfo info, string localPath)
         {
-            var idx = localPath.IndexOf("/host/fonts/");
+            var idx = localPath.IndexOf("/host/fonts/", StringComparison.Ordinal);
             if (idx >= 0)
             {
                 // If the request is for an existing file, return it.

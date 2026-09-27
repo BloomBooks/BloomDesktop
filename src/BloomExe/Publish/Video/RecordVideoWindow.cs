@@ -434,7 +434,7 @@ namespace Bloom.Publish.Video
             }
 
             // If we added a param to force reloading, remove it.
-            var index = result.IndexOf("?");
+            var index = result.IndexOf("?", StringComparison.Ordinal);
             if (index >= 0)
                 result = result.Substring(0, index);
             return result;
