@@ -556,16 +556,24 @@ function onClickOtherPage(
 
 // The page list's frame can still be loading (Bloom reloads it along with a page change) after this
 // page is showing. Nothing can be queued in a page list that has not loaded, so waiting for it keeps
-// the click in order; the loading cover shows the wait cursor meanwhile.
+// the click in order; the loading cover shows the wait cursor meanwhile. A page list that has not
+// loaded in kMaxWaitForPageListMs is broken, which is reported rather than waited on for ever.
+const kMaxWaitForPageListMs = 10000;
 function whenPageListIsReady(
     task: (pageList: IPageListFrameExports) => void,
+    giveUpAt = Date.now() + kMaxWaitForPageListMs,
 ): void {
     const pageList = getPageListBundleExports();
     if (pageList) {
         task(pageList);
         return;
     }
-    window.setTimeout(() => whenPageListIsReady(task), 50);
+    if (Date.now() > giveUpAt) {
+        throw new Error(
+            "The page list never finished loading, so a click on another page could not be sent.",
+        );
+    }
+    window.setTimeout(() => whenPageListIsReady(task, giveUpAt), 50);
 }
 
 // When the user clicked a page in the grid, put the page, now being edited, back where it was on
