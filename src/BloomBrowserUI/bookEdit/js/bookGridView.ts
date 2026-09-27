@@ -15,6 +15,7 @@ import {
     getPageListBundleExports,
     getWorkspaceBundleExports,
 } from "./workspaceFrames";
+import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
 
 interface IGridPage {
     key: string;
@@ -548,7 +549,23 @@ function onClickOtherPage(
     }
     // Exactly as if the page had been clicked in the page list: queued behind any page-list request
     // still on its way, and sending the page being left so C# saves the freshest copy.
-    getPageListBundleExports()!.postPageClicked(page.key, page.caption);
+    whenPageListIsReady((pageList) =>
+        pageList.postPageClicked(page.key, page.caption),
+    );
+}
+
+// The page list's frame can still be loading (Bloom reloads it along with a page change) after this
+// page is showing. Nothing can be queued in a page list that has not loaded, so waiting for it keeps
+// the click in order; the loading cover shows the wait cursor meanwhile.
+function whenPageListIsReady(
+    task: (pageList: IPageListFrameExports) => void,
+): void {
+    const pageList = getPageListBundleExports();
+    if (pageList) {
+        task(pageList);
+        return;
+    }
+    window.setTimeout(() => whenPageListIsReady(task), 50);
 }
 
 // When the user clicked a page in the grid, put the page, now being edited, back where it was on
