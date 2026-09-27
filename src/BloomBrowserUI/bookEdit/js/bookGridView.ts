@@ -142,8 +142,12 @@ export function setupBookGridView(): Promise<void> {
                 }
                 buildGrid(pages).then(resolve);
             },
-            // Without the page list there is no grid, but the page must still be shown.
-            () => resolve(),
+            // get() also sends here anything buildGrid throws. Either way the page must still be
+            // shown, but only a failed request is expected: anything else is a bug to report.
+            (error) => {
+                resolve();
+                if (!error.isAxiosError) throw error;
+            },
         );
     });
 }
