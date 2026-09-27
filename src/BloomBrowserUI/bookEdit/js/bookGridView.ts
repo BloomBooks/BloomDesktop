@@ -410,44 +410,87 @@ function renderPageInCell(
     frame.setAttribute("tabindex", "-1");
     // Insert before the veil, so the veil stays on top to take the clicks.
     cell.insertBefore(frame, cell.querySelector(".bloom-book-grid-veil"));
-    return new Promise((resolve) =>
-        get(
-            `pageList/pageContent?page-id=${encodeURIComponent(pageId)}`,
-            (response) => {
-                // It may have scrolled away, and been dropped, while we waited.
-                if (!frame.isConnected) {
-                    resolve();
-                    return;
-                }
-                frame.addEventListener("load", () => resolve(), { once: true });
-                // Written into the frame rather than put in srcdoc, so that saving the page being
-                // edited, which serializes this whole document, does not carry every page's HTML
-                // along in an attribute.
-                const frameDocument = frame.contentDocument!;
-                frameDocument.open();
-                frameDocument.write(
-                    `<!DOCTYPE html><html><head><base href="${
-                        document.baseURI
-                    }">${headContent}<style>
+    return getPageContent(pageId, () => frame.isConnected).then((content) => {
+        // It may have scrolled away, and been dropped, while we waited.
+        if (!frame.isConnected) return;
+        if (content === undefined) {
+            // The request failed. Without the frame, the page is tried again when it next comes
+            // near the screen.
+            frame.remove();
+            return;
+        }
+        return new Promise<void>((resolve) => {
+            frame.addEventListener("load", () => resolve(), { once: true });
+            // Written into the frame rather than put in srcdoc, so that saving the page being
+            // edited, which serializes this whole document, does not carry every page's HTML
+            // along in an attribute.
+            const frameDocument = frame.contentDocument!;
+            frameDocument.open();
+            frameDocument.write(
+                `<!DOCTYPE html><html><head><base href="${
+                    document.baseURI
+                }">${headContent}<style>
                 html, body { margin: 0 !important; padding: 0 !important; overflow: hidden; background: transparent; }
                 .bloom-page { margin: 0 !important; }
             </style></head><body ${bodyAttributes}>${fullSizePictures(
-                response.data.content,
+                content,
             )}</body></html>`,
-                );
-                frameDocument.close();
-                cell.classList.add("bloom-book-grid-rendered");
-            },
-            () => resolve(),
-        ),
-    );
+            );
+            frameDocument.close();
+            cell.classList.add("bloom-book-grid-rendered");
+        });
+    });
+}
+
+// No more than this many page requests at once, as in the page list (see PageThumbnail.tsx): more
+// would starve the page being edited and the toolbox, which are often loading at the same time.
+const kMaxPageRequests = 4;
+let activePageRequests = 0;
+const queuedPageRequests: (() => void)[] = [];
+
+// Get a page's content, as made for the page list, once a request slot is free. Resolves to
+// undefined if the request fails, or if stillWanted() says no by the time a slot is free.
+function getPageContent(
+    pageId: string,
+    stillWanted: () => boolean,
+): Promise<string | undefined> {
+    return new Promise((resolve) => {
+        const start = () => {
+            if (!stillWanted()) {
+                resolve(undefined);
+                startNextPageRequest();
+                return;
+            }
+            activePageRequests++;
+            const finish = (content: string | undefined) => {
+                activePageRequests--;
+                resolve(content);
+                startNextPageRequest();
+            };
+            get(
+                `pageList/pageContent?page-id=${encodeURIComponent(pageId)}`,
+                (response) => finish(response.data.content),
+                () => finish(undefined),
+            );
+        };
+        if (activePageRequests < kMaxPageRequests) start();
+        else queuedPageRequests.push(start);
+    });
+}
+
+function startNextPageRequest(): void {
+    if (activePageRequests < kMaxPageRequests) queuedPageRequests.shift()?.();
 }
 
 // The page content comes in the form made for the page list, whose pictures ask the server for small
-// versions by adding "thumbnail=1" to the query (see MarkImageNodesForThumbnail in PageListApi.cs).
-// These pages are shown at full size, so ask for the pictures themselves.
+// versions by adding "thumbnail=1" to the query (see MarkImageNodesForThumbnail in PageListApi.cs),
+// sometimes followed by "&transparent=...". These pages are shown at full size, so ask for the
+// pictures themselves, keeping any other parameters: "x.png?thumbnail=1&transparent=yes" becomes
+// "x.png?transparent=yes", and "x.png?optional=true&thumbnail=1" becomes "x.png?optional=true".
 function fullSizePictures(pageHtml: string): string {
-    return pageHtml.replace(/(\?|&amp;|&)thumbnail=1/g, "");
+    return pageHtml
+        .replace(/\?thumbnail=1(&amp;|&)/g, "?")
+        .replace(/(\?|&amp;|&)thumbnail=1/g, "");
 }
 
 // The page frames show a page with the same stylesheets as the page being edited, but none of
