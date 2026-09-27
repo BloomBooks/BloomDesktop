@@ -1,11 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.web;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.TestUtilities;
 
 namespace BloomTests.web
 {
@@ -95,6 +99,245 @@ namespace BloomTests.web
             var requestInfo = new RequestInfo(context);
 
             Assert.AreEqual(body, requestInfo.GetPostJson());
+        }
+
+        public enum LargeFileChange
+        {
+            FileDeleted,
+            FolderDeleted,
+            FileTruncated,
+            FileGrown,
+        }
+
+        /// <summary>
+        /// BL-16931: files of 2MB or more are sent in pieces, reopening the file between pieces so
+        /// it is never held locked, after promising the original length in Content-Length. Deleting,
+        /// truncating or growing the file part way through used to make an exception escape from
+        /// ReplyWithFileContent (e.g. "Cannot close stream until all bytes are written"). This
+        /// serves such a file through a real HttpListener, since HttpListenerResponse can't be faked.
+        /// </summary>
+        [TestCase(LargeFileChange.FileDeleted)]
+        [TestCase(LargeFileChange.FolderDeleted)]
+        [TestCase(LargeFileChange.FileTruncated)]
+        [TestCase(LargeFileChange.FileGrown)]
+        public void ReplyWithFileContent_LargeFileChangesWhileSending_NoExceptionEscapes(
+            LargeFileChange change
+        )
+        {
+            // Big enough that the server cannot have handed it all to the socket before the client
+            // has read its first bytes, so the change always lands between two pieces. Not a multiple
+            // of the 512KB piece size: once exactly Content-Length bytes are written, HttpResponseStream
+            // ignores further writes, so a grown file only causes trouble when a piece crosses that limit.
+            const int fileLength = 32 * 1024 * 1024 + 1000;
+            var contents = new byte[fileLength];
+            for (var i = 0; i < fileLength; i++)
+                contents[i] = (byte)(i % 251);
+
+            using (var folder = new TemporaryFolder("RequestInfoTests_LargeFile"))
+            {
+                var path = Path.Combine(folder.Path, "large.jpg");
+                File.WriteAllBytes(path, contents);
+                Assert.That(
+                    new FileInfo(path).Length,
+                    Is.GreaterThanOrEqualTo(2 * 1024 * 1024),
+                    "the file must be big enough to be sent in pieces"
+                );
+
+                var (listener, port) = StartListenerOnFreePort();
+                try
+                {
+                    Exception serverException = null;
+                    var serverTask = Task.Run(() =>
+                    {
+                        var context = listener.GetContext();
+                        try
+                        {
+                            new RequestInfo(
+                                new BloomHttpListenerContext(context)
+                            ).ReplyWithFileContent(path);
+                        }
+                        catch (Exception e)
+                        {
+                            serverException = e;
+                        }
+                    });
+
+                    // Task.Run keeps the client's awaits off NUnit's test synchronization context. If
+                    // an assertion below fails while the client is still reading, a continuation
+                    // posted to that context after the test ends crashes the whole test host.
+                    var clientTask = Task.Run(() =>
+                        ReadWhileChangingFileAsync(
+                            $"http://localhost:{port}/large.jpg",
+                            path,
+                            folder.Path,
+                            change,
+                            serverTask
+                        )
+                    );
+
+                    Assert.That(
+                        serverTask.Wait(TimeSpan.FromSeconds(60)),
+                        Is.True,
+                        "the server should finish its reply"
+                    );
+                    Assert.That(
+                        serverException,
+                        Is.Null,
+                        "ReplyWithFileContent should not throw: " + serverException
+                    );
+
+                    Assert.That(
+                        clientTask.Wait(TimeSpan.FromSeconds(60)),
+                        Is.True,
+                        "the client should finish reading"
+                    );
+                    var (promisedLength, received, clientException, serverWasStillSending) =
+                        clientTask.Result;
+                    Assert.That(
+                        serverWasStillSending,
+                        Is.True,
+                        "the file must change while the reply is still being sent, or this test proves nothing"
+                    );
+                    Assert.That(
+                        promisedLength,
+                        Is.EqualTo(fileLength),
+                        "Content-Length should be the length when the reply started"
+                    );
+                    if (change == LargeFileChange.FileGrown)
+                    {
+                        Assert.That(
+                            clientException,
+                            Is.Null,
+                            "a grown file should still give a complete reply"
+                        );
+                        Assert.That(received, Is.EqualTo(fileLength));
+                    }
+                    else
+                    {
+                        // The server dropped the connection, so the client gets fewer bytes than
+                        // it was promised, and HttpClient reports that as an error.
+                        Assert.That(received, Is.LessThan(fileLength));
+                        Assert.That(
+                            clientException,
+                            Is.Not.Null,
+                            "the client should see the reply fail, not end quietly short"
+                        );
+                    }
+                }
+                finally
+                {
+                    listener.Close();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Request the file, read its first bytes, make the requested change to the file on disk,
+        /// then read the rest. Returns the Content-Length the server sent, the number of body bytes
+        /// received, the exception (if any) that ended the read, and whether the server was still
+        /// sending when the file was changed.
+        /// </summary>
+        private static async Task<(
+            long? promisedLength,
+            long received,
+            Exception exception,
+            bool serverWasStillSending
+        )> ReadWhileChangingFileAsync(
+            string url,
+            string path,
+            string folderPath,
+            LargeFileChange change,
+            Task serverTask
+        )
+        {
+            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(60) })
+            using (
+                var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead)
+            )
+            using (var body = await response.Content.ReadAsStreamAsync())
+            {
+                var promisedLength = response.Content.Headers.ContentLength;
+                var buffer = new byte[64 * 1024];
+                long received = await body.ReadAsync(buffer, 0, buffer.Length);
+                Assert.That(received, Is.GreaterThan(0), "the reply should have started");
+
+                var serverWasStillSending = !serverTask.IsCompleted;
+                switch (change)
+                {
+                    case LargeFileChange.FileDeleted:
+                        File.Delete(path);
+                        break;
+                    case LargeFileChange.FolderDeleted:
+                        Directory.Delete(folderPath, true);
+                        break;
+                    case LargeFileChange.FileTruncated:
+                        using (
+                            var fs = new FileStream(
+                                path,
+                                FileMode.Open,
+                                FileAccess.Write,
+                                FileShare.ReadWrite | FileShare.Delete
+                            )
+                        )
+                            fs.SetLength(0);
+                        break;
+                    case LargeFileChange.FileGrown:
+                        using (
+                            var fs = new FileStream(
+                                path,
+                                FileMode.Append,
+                                FileAccess.Write,
+                                FileShare.ReadWrite | FileShare.Delete
+                            )
+                        )
+                            fs.Write(new byte[1024 * 1024], 0, 1024 * 1024);
+                        break;
+                }
+
+                try
+                {
+                    int read;
+                    while ((read = await body.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        received += read;
+                    return (promisedLength, received, null, serverWasStillSending);
+                }
+                catch (Exception e)
+                {
+                    return (promisedLength, received, e, serverWasStillSending);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Start an HttpListener on a loopback port nothing else is using. Another process can take
+        /// the port between our finding it and the listener starting, so try a few ports.
+        /// </summary>
+        private static (HttpListener listener, int port) StartListenerOnFreePort()
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                var port = GetFreeLoopbackPort();
+                var listener = new HttpListener();
+                listener.Prefixes.Add($"http://localhost:{port}/");
+                try
+                {
+                    listener.Start();
+                    return (listener, port);
+                }
+                catch (HttpListenerException) when (attempt < 5)
+                {
+                    listener.Close();
+                }
+            }
+        }
+
+        private static int GetFreeLoopbackPort()
+        {
+            var tcpListener = new TcpListener(IPAddress.Loopback, 0);
+            tcpListener.Start();
+            var port = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+            tcpListener.Stop();
+            return port;
         }
 
         private TempFile MakeTempFile(byte[] contents)
