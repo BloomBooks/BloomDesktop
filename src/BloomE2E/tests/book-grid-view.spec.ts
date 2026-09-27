@@ -165,8 +165,10 @@ async function boxOf(locator: ReturnType<Page["locator"]>, what: string) {
     return box;
 }
 
-test.describe("showing the other pages of the book [Test Case ID 835]", () => {
-    test("builds a book with six text pages", async ({ page }) => {
+test.describe("showing the other pages of the book", () => {
+    test("builds a book with six text pages [Test Case ID 835]", async ({
+        page,
+    }) => {
         test.setTimeout(300000);
         bookFolder = await makeBookFromTemplate(page, "Basic Book");
         await addPage(page, "Just Text", 6);
@@ -185,7 +187,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         await goToPage(page, contentPages[0].id);
     });
 
-    test("All Pages shows every page, with the facing page beside the page being edited", async ({
+    test("All Pages shows every page, with the facing page beside the page being edited [Test Case ID 835]", async ({
         page,
     }) => {
         const pages = await getPages(page);
@@ -271,7 +273,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         ).toHaveText(textOfPage(facingContentIndex), { timeout: 15000 });
     });
 
-    test("All Pages stays chosen for the next page, and saving a page leaves the others out of the book", async ({
+    test("All Pages stays chosen for the next page, and saving a page leaves the others out of the book [Test Case ID 835]", async ({
         page,
     }) => {
         const contentPages = await getContentPages(page);
@@ -296,7 +298,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         );
     });
 
-    test("clicking another page makes it the page being edited, where it was on screen", async ({
+    test("clicking another page makes it the page being edited, where it was on screen [Test Case ID 835]", async ({
         page,
     }) => {
         const pages = await getPages(page);
@@ -355,7 +357,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
             .toBe("en");
     });
 
-    test("the view holds steady while the clicked page becomes the page being edited", async ({
+    test("the view holds steady while the clicked page becomes the page being edited [Test Case ID 835]", async ({
         page,
     }) => {
         const pages = await getPages(page);
@@ -481,7 +483,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         });
     });
 
-    test("clicking a picture on another page selects that picture on the page being edited", async ({
+    test("clicking a picture on another page selects that picture on the page being edited [Test Case ID 835]", async ({
         page,
     }) => {
         // A picture page, and a page facing it to start from.
@@ -526,7 +528,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         expect(Math.abs(selectedBox.y - pictureBox.y)).toBeLessThan(3);
     });
 
-    test("in a long book only the pages near the screen are rendered", async ({
+    test("in a long book only the pages near the screen are rendered [Test Case ID 835]", async ({
         page,
     }) => {
         test.setTimeout(300000);
@@ -560,7 +562,7 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         );
     });
 
-    test("the page's bubbles stay beside it in All Pages and after going back to One Page", async ({
+    test("the page's bubbles stay beside it in All Pages and after going back to One Page [Test Case ID 835]", async ({
         page,
     }) => {
         const credits = (await getPages(page)).find(
@@ -584,7 +586,9 @@ test.describe("showing the other pages of the book [Test Case ID 835]", () => {
         await expectBubblesBesidePage(page, "After choosing All Pages again");
     });
 
-    test("choosing One Page removes the other pages", async ({ page }) => {
+    test("choosing One Page removes the other pages [Test Case ID 835]", async ({
+        page,
+    }) => {
         const contentPages: IBookPage[] = await getContentPages(page);
         await goToPage(page, contentPages[0].id);
         expect(await chosenPageView(page)).toBe("all");
