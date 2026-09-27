@@ -10,9 +10,11 @@
 // screen; the rest are empty boxes of the right size.
 
 import $ from "jquery";
-import { get, postJson } from "../../utils/bloomApi";
-import { collectCurrentPageContent } from "../pageThumbnailList/currentPageContent";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { get } from "../../utils/bloomApi";
+import {
+    getPageListBundleExports,
+    getWorkspaceBundleExports,
+} from "./workspaceFrames";
 
 interface IGridPage {
     key: string;
@@ -544,14 +546,9 @@ function onClickOtherPage(
     } catch {
         // Without storage the new page just scrolls into view.
     }
-    // Send the page being left along, as the page list does, so C# saves the freshest copy.
-    collectCurrentPageContent("the page change").then((pageContent) =>
-        postJson("pageList/pageClicked", {
-            pageId: page.key,
-            detail: page.caption,
-            pageContent,
-        }),
-    );
+    // Exactly as if the page had been clicked in the page list: queued behind any page-list request
+    // still on its way, and sending the page being left so C# saves the freshest copy.
+    getPageListBundleExports()!.postPageClicked(page.key, page.caption);
 }
 
 // When the user clicked a page in the grid, put the page, now being edited, back where it was on
