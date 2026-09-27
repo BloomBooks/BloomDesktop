@@ -10,8 +10,11 @@
 // screen; the rest are empty boxes of the right size.
 
 import $ from "jquery";
-import { get, postJson } from "../../utils/bloomApi";
-import { getWorkspaceBundleExports } from "./workspaceFrames";
+import { get } from "../../utils/bloomApi";
+import {
+    getPageListBundleExports,
+    getWorkspaceBundleExports,
+} from "./workspaceFrames";
 
 interface IGridPage {
     key: string;
@@ -543,10 +546,8 @@ function onClickOtherPage(
     } catch {
         // Without storage the new page just scrolls into view.
     }
-    postJson("pageList/pageClicked", {
-        pageId: page.key,
-        detail: page.caption,
-    });
+    // Exactly as if the page had been clicked in the page list.
+    getPageListBundleExports()!.postPageClicked(page.key, page.caption);
 }
 
 // When the user clicked a page in the grid, put the page, now being edited, back where it was on
