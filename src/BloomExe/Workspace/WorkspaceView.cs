@@ -1196,6 +1196,10 @@ window.showWorkspaceInitializationFailure = function(message) {
             return (float)translatedCount / (float)totalCount;
         }
 
+        /// <summary>
+        /// Shorten a UI-language menu entry for the language button by dropping the part in
+        /// parentheses, e.g. "ไทย (Thai)" becomes "ไทย".
+        /// </summary>
         public static string GetShortenedLanguageName(string itemText)
         {
             var idxChinese = itemText.IndexOf(" (Chinese", StringComparison.Ordinal);

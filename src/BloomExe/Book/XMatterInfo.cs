@@ -36,6 +36,9 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// The key split into words for display, e.g. "Paper Saver" for "Factory-XMatter".
+        /// </summary>
         public string EnglishLabel
         {
             get
