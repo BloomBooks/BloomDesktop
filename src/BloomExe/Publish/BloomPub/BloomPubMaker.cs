@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -480,7 +480,11 @@ namespace Bloom.Publish.BloomPub
             return preservedImages;
         }
 
-        private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+        /// <summary>
+        /// Get the image file name out of a background-image style, e.g. "cover.jpg" from
+        /// "background-image:url('cover.jpg')". Internal so a test can reach it.
+        /// </summary>
+        internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
             // The url in the style is URL-encoded (HtmlDom.SetImageElementUrl wrote it with
             // UrlPathString.UrlEncoded), so decode it the matching way. HttpUtility.UrlDecode is
@@ -496,8 +500,13 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         private static string ExtractEncodedUrlFromStyle(string style, out int start, out int end)
         {
-            start = style.IndexOf(kBackgroundImage) + kBackgroundImage.Length;
-            end = style.IndexOf("'", start);
+            // Both searches must be ordinal. Adding kBackgroundImage.Length is only right if the
+            // match consumed exactly that many characters, which a culture-sensitive match need
+            // not do; and under th-TH a search for a punctuation-only string such as "'"
+            // "matches" right where the search starts, which would leave us with an empty file name.
+            start =
+                style.IndexOf(kBackgroundImage, StringComparison.Ordinal) + kBackgroundImage.Length;
+            end = style.IndexOf("'", start, StringComparison.Ordinal);
             return style.Substring(start, end - start);
         }
 
