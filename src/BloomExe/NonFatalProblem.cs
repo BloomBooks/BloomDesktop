@@ -415,8 +415,11 @@ namespace Bloom
                             null,
                             default(ErrorResult),
                             "{0}",
+                            // NotifyDialog renders the message as HTML, so each line needs a <br>
+                            // to show on its own line (BL-16915). Splitting on both characters
+                            // also handles Linux newlines on Windows (and vice-versa).
                             string.Join(
-                                Environment.NewLine, // handle Linux newlines on Windows (and vice-versa)
+                                "<br>",
                                 fullDetailedMessage.Split(
                                     new[] { '\r', '\n' },
                                     StringSplitOptions.RemoveEmptyEntries
