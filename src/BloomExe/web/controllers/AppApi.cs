@@ -280,9 +280,10 @@ namespace Bloom.Api
             //nb: don't move this to after the raise command, as the selection changes
             // var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
 
+            var source = _bookSelection.CurrentSelection;
             try
             {
-                _createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
+                _createFromSourceBookCommand.Raise(source);
             }
             catch (Exception error)
             {
@@ -293,10 +294,14 @@ namespace Bloom.Api
             }
 
             // On success the command selected the new book, which (being in the editable collection)
-            // is saveable; on failure the selection is still the source, which is not. So this also
-            // answers "did we actually make one?" without the command having to report back.
+            // is saveable; on failure or cancellation the selection is still the source. So this also
+            // answers "did we actually make one?" without the command having to report back. It has
+            // to compare with the source, not just test saveability: a template in the editable
+            // collection is itself saveable, and cancelling its configuration dialog must not open
+            // the template for editing.
+            var current = _bookSelection.CurrentSelection;
             request.ReplyWithJson(
-                new { goToEditTab = _bookSelection.CurrentSelection?.IsSaveable == true }
+                new { goToEditTab = current != source && current?.IsSaveable == true }
             );
         }
 
