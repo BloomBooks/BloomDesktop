@@ -636,6 +636,18 @@ namespace Bloom.TeamCollection
             );
             CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
             CurrentCollectionEvenIfDisconnected.TCManager = this;
+            // BL-16729: the stand-in answers book-status questions out of the local status
+            // files, and DisconnectedTeamCollection.GetBookStatusJsonFromRepo only trusts a
+            // local status whose collectionId matches this collection's. SetCollectionId runs
+            // once, when the collection is opened (WorkspaceModel), so before we could
+            // disconnect part way through a session the stand-in was always built early enough
+            // for that call to reach it. Now that we can, a stand-in built mid-session would
+            // keep a null CollectionId, every book's local status would look like it belonged
+            // to some other collection, and the whole collection would present as newly created
+            // local books -- no checkout status, nothing shown as being in the repo. Carry the
+            // id across from the collection we are replacing.
+            CurrentCollectionEvenIfDisconnected.CollectionId =
+                previousCollection?.CollectionId ?? Settings?.CollectionId;
             // Every call to MessageLog.WriteMessage() also raises the TeamCollectionStatusChanged event.
             CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(message);
             CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(

@@ -160,5 +160,79 @@ namespace BloomTests.TeamCollection
                 Assert.That(tcManager.OkToEditCollectionSettings, Is.True);
             }
         }
+
+        /// <summary>
+        /// The DisconnectedTeamCollection that stands in after a disconnect answers book-status
+        /// questions from the local status files, and only trusts a local status whose
+        /// collectionId matches its own CollectionId. Nothing sets that id after the collection
+        /// has been opened, so a stand-in built part way through a session must inherit it from
+        /// the collection it replaces; otherwise every book looks like a new local book that was
+        /// never in the repo. See BL-16729.
+        /// </summary>
+        [Test]
+        public void MakeDisconnected_MidSession_StandInInheritsTheCollectionId()
+        {
+            using (var collectionFolder = new TemporaryFolder("DisconnectKeepsId_Collection"))
+            using (var sharedFolder = new TemporaryFolder("DisconnectKeepsId_Shared"))
+            {
+                var settingsPath = Path.Combine(
+                    collectionFolder.FolderPath,
+                    Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                );
+                RobustFile.WriteAllText(settingsPath, "<Collection version=\"0.2\"/>");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    sharedFolder.FolderPath
+                );
+                var tcManager = new TeamCollectionManager(
+                    settingsPath,
+                    null,
+                    new BookStatusChangeEvent(),
+                    null,
+                    null,
+                    null
+                );
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Not.Null,
+                    "setup problem: it should have connected, or there is nothing to disconnect"
+                );
+                // What WorkspaceModel does once, when the collection is opened.
+                var collectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
+                tcManager.SetCollectionId(collectionId);
+                Assert.That(
+                    tcManager.CurrentCollection.CollectionId,
+                    Is.EqualTo(collectionId),
+                    "setup problem: the live collection should be carrying the id we are about to lose"
+                );
+
+                // sut
+                tcManager.MakeDisconnected(
+                    new TeamCollectionMessage(
+                        MessageAndMilestoneType.Error,
+                        "TeamCollection.NoNetwork",
+                        "No network is available on this computer."
+                    ),
+                    "test repo"
+                );
+
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Null,
+                    "setup problem: it should now be disconnected"
+                );
+                Assert.That(
+                    tcManager.CurrentCollectionEvenIfDisconnected,
+                    Is.TypeOf<DisconnectedTeamCollection>(),
+                    "setup problem: a stand-in should have replaced the live collection"
+                );
+                Assert.That(
+                    tcManager.CurrentCollectionEvenIfDisconnected.CollectionId,
+                    Is.EqualTo(collectionId),
+                    "the stand-in must keep the collection id, or every book's local status looks "
+                        + "like it belongs to a different collection"
+                );
+            }
+        }
     }
 }
