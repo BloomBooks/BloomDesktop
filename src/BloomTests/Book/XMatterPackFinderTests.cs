@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -23,12 +23,15 @@ namespace BloomTests.Book
         [SetUp]
         public void Setup()
         {
+            // Capture the culture first: NUnit runs TearDown even when Setup throws, and it
+            // would otherwise restore a null culture and hide the real failure.
+            _originalCulture = CultureInfo.CurrentCulture;
+
             _xMatterFolder = new TemporaryFolder("XMatterPackFinderTests");
             Directory.CreateDirectory(Path.Combine(_xMatterFolder.Path, "Factory-XMatter"));
             Directory.CreateDirectory(Path.Combine(_xMatterFolder.Path, "Traditional-XMatter"));
             _finder = new XMatterPackFinder(new[] { _xMatterFolder.Path });
 
-            _originalCulture = CultureInfo.CurrentCulture;
             CultureInfo.CurrentCulture = new CultureInfo("th-TH");
         }
 

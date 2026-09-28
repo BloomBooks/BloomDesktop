@@ -367,11 +367,13 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
+            // Both searches must be ordinal. Adding kBackgroundImage.Length is only right if the
+            // match consumed exactly that many characters, which a culture-sensitive match need
+            // not do; and under th-TH a search for a punctuation-only string such as "'"
+            // "matches" at position 0, which would leave us with an empty file name.
             var filename = style.Substring(
-                style.IndexOf(kBackgroundImage) + kBackgroundImage.Length
+                style.IndexOf(kBackgroundImage, StringComparison.Ordinal) + kBackgroundImage.Length
             );
-            // Must be ordinal: under th-TH a culture-sensitive search for a punctuation-only
-            // string "matches" at position 0, which would leave us with an empty file name.
             filename = filename.Substring(0, filename.IndexOf("'", StringComparison.Ordinal));
             return System.Web.HttpUtility.UrlDecode(filename);
         }
