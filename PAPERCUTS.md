@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
+- **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
+- **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
+- **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
+
 ## 2026-09-17 — A running Bloom locks Bloom.xlf and fails the C# suite
 - **Cut:** `LocalizationManager.Create` writes `%LOCALAPPDATA%\SIL\Bloom\localizations\en\Bloom.xlf`,
   a machine-global path outside the per-run temp isolation, so the developer's own running Bloom.exe

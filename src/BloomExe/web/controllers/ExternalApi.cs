@@ -7,6 +7,7 @@ using Bloom.Edit;
 using Bloom.web;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
+using SIL.Progress;
 using SIL.Reporting;
 
 namespace Bloom.web.controllers
@@ -41,6 +42,13 @@ namespace Bloom.web.controllers
         // (which would wrongly reject every later process-book). A full lock isn't needed because the
         // only cross-thread write is that release to false.
         private volatile bool _processBookInProgress;
+
+        // The progress dialog that shows process-book runs, and the websocket context it listens on.
+        // Its own context, not BrowserProgressDialog's "progress", so that a run here and an Update
+        // Book the user started never touch each other's dialog. Keep in step with
+        // kBloomBridgeProgressDialogId and kBloomBridgeProgressContext in SimpleProgressDialog.tsx.
+        private const string kProgressDialogId = "bloomBridge";
+        private const string kProgressContext = "externalProcessing";
 
         // The most recent (or in-progress) external/process-book job. process-book replies
         // immediately with a jobId and runs the heavy work asynchronously on the UI thread; the
@@ -258,7 +266,7 @@ namespace Bloom.web.controllers
             // dependent requests (which also default to requiresSync) would block behind us while we
             // block waiting for them to complete the page — a deadlock. We don't need the global lock
             // anyway: process-book is already serialized against itself by _processBookInProgress, and
-            // the user is blocked behind the opaque ExternalBusyOverlay for the duration, so there is no
+            // the user is blocked behind the modal progress dialog for the duration, so there is no
             // competing user-driven API traffic to race with.
             apiHandler.RegisterEndpointHandler(
                 "external/process-book",
@@ -407,7 +415,7 @@ namespace Bloom.web.controllers
 
             // Run on a background thread, NOT the UI thread: ProcessBook drives its WebView2 on the
             // OffScreenBrowser's own thread and just blocks on it, so keeping this off the UI thread leaves
-            // the UI free to paint the "processing" overlay and stay responsive for the whole run.
+            // the UI free to show the progress dialog and stay responsive for the whole run.
             // The parts of the job that touch WinForms (the editor/collection refresh) are marshaled
             // back to the UI thread via InvokeOnUiThread.
             _ = System.Threading.Tasks.Task.Run(() =>
@@ -430,27 +438,36 @@ namespace Bloom.web.controllers
         {
             try
             {
-                // The overlay 'show' and the processing both run inside this try so that an exception anywhere
-                // after we raise the overlay still runs the finally and sends 'hide'; otherwise the modal
-                // overlay would be stuck opaque until the user navigates away. (Sending 'hide' when 'show'
-                // never succeeded is a harmless no-op.)
+                // Opening the dialog and the processing both run inside this try so that an exception
+                // anywhere after we open it still runs the finally and closes it. (Closing it when the
+                // open never arrived is a harmless no-op.)
+                var socketServer = BloomWebSocketServer.Instance;
                 try
                 {
-                    // Let the user know Bloom is busy. We run off the UI thread, so the UI thread is free to
-                    // paint this overlay (with its CSS spinner) and keep it animated for the whole run.
-                    dynamic overlay = new DynamicJson();
-                    // Intentionally NOT localized, like the add-book/update-book toasts: this is an
-                    // operator-facing message shown only during a BloomBridge-driven processing run.
-                    overlay.message = "Bloom is processing a book for BloomBridge, please wait…";
-                    BloomWebSocketServer.Instance?.SendBundle(
-                        "externalProcessing",
-                        "show",
-                        overlay
-                    );
+                    // Show the user what Bloom is busy with: the same dialog, with its percent bar, as
+                    // Update Book. This job only ever tells the dialog things and never waits for it, so
+                    // what the caller sees from process-book and process-book-status does not depend on
+                    // it. In particular this does not go through BrowserProgressDialog, which waits for
+                    // the dialog to say it is ready, and on a failure keeps it open until someone clicks
+                    // Close; nobody may be watching a BloomBridge run.
+                    IProgress progress = null;
+                    if (socketServer != null)
+                    {
+                        var props = BookProcessor.MakeUpdateBookProgressProps();
+                        dynamic props1 = props;
+                        props1.which = kProgressDialogId;
+                        // Intentionally NOT localized, like the add-book/update-book toasts: this is an
+                        // operator-facing message shown only during a BloomBridge-driven processing run.
+                        props1.message = "Bloom is processing a book for BloomBridge, please wait…";
+                        socketServer.SendBundle(kProgressContext, "open-progress", props);
+                        progress = new WebProgressAdapter(
+                            new WebSocketProgress(socketServer, kProgressContext)
+                        );
+                    }
 
                     var result = !string.IsNullOrEmpty(folderPath)
-                        ? ProcessBookByPath(folderPath, fitImageTextSplits)
-                        : ProcessBookById(id, fitImageTextSplits);
+                        ? ProcessBookByPath(folderPath, fitImageTextSplits, progress)
+                        : ProcessBookById(id, fitImageTextSplits, progress);
 
                     lock (_processBookJobLock)
                     {
@@ -465,7 +482,7 @@ namespace Bloom.web.controllers
                 }
                 finally
                 {
-                    BloomWebSocketServer.Instance?.SendEvent("externalProcessing", "hide");
+                    socketServer?.SendBundle(kProgressContext, "close-progress", new DynamicJson());
                 }
             }
             catch (Exception e)
@@ -556,7 +573,11 @@ namespace Bloom.web.controllers
         /// nothing is added to the open collection. This is what BloomBridge uses, so its staging
         /// books no longer have to be copied into the collection just to be processed.
         /// </summary>
-        private ProcessBookResult ProcessBookByPath(string folderPath, bool fitImageTextSplits)
+        private ProcessBookResult ProcessBookByPath(
+            string folderPath,
+            bool fitImageTextSplits,
+            IProgress progress
+        )
         {
             if (
                 !System.IO.Directory.Exists(folderPath)
@@ -591,7 +612,7 @@ namespace Bloom.web.controllers
 
             var bookInfo = new BookInfo(folderPath, true, new AlwaysEditSaveContext());
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
-            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits);
+            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits, progress);
 
             // If the folder we just rewrote is the book currently open in the Edit tab, the live
             // EditingModel still holds the pre-processed in-memory DOM; the next time the user leaves the
@@ -662,7 +683,11 @@ namespace Bloom.web.controllers
         /// Legacy flow: process a book that is a member of the open editable collection, found by its
         /// bookInstanceId.
         /// </summary>
-        private ProcessBookResult ProcessBookById(string id, bool fitImageTextSplits)
+        private ProcessBookResult ProcessBookById(
+            string id,
+            bool fitImageTextSplits,
+            IProgress progress
+        )
         {
             // Look up the book's BookInfo in the editable collection. Read _collectionModel's collection
             // state on the UI thread that owns it; this job otherwise runs on a background thread (only the
@@ -697,7 +722,7 @@ namespace Bloom.web.controllers
             // Process a fresh Book read from disk rather than any in-memory selection, so we
             // don't disturb the state of the currently-selected book object.
             var book = _bookServer.GetBookFromBookInfo(bookInfo);
-            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits);
+            var pageCount = BookProcessor.ProcessBook(book, fitImageTextSplits, progress);
 
             // The book is now processed and saved on disk: the operation the caller asked for has
             // succeeded. Everything below only reconciles in-memory UI state, so wrap it so a refresh

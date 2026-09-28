@@ -92,6 +92,28 @@ namespace Bloom
             return browser;
         }
 
+        // Set (via CreateForOffScreenUse) for a browser whose pages send every HTTP request to Bloom's
+        // own server on localhost, and none to any other site; such a browser does not need the proxy.
+        // See where InitWebView reads it.
+        private bool _contactsOnlyBloomServer;
+
+        /// <summary>
+        /// Create a browser, with its own new environment, for OffScreenBrowser. The pages it shows send
+        /// requests only to Bloom's own server, so it skips the proxy (see InitWebView). As with the
+        /// default constructor, initialization is kicked off unawaited; callers wait on
+        /// <see cref="IsReadyToNavigate"/> before navigating.
+        /// </summary>
+        internal static WebView2Browser CreateForOffScreenUse()
+        {
+            // As in CreateWithInjectedEnvironment, the do-nothing constructor lets us set the fields
+            // before InitWebView runs.
+            var browser = new WebView2Browser("dummy");
+            browser._contactsOnlyBloomServer = true;
+            browser.InitializeComponent();
+            _ = browser.InitWebView();
+            return browser;
+        }
+
         /// <summary>
         /// The CoreWebView2Environment this browser was initialized with, or null if it is not yet ready.
         /// A caller can capture this from one browser and pass it to CreateWithInjectedEnvironment to make
@@ -540,6 +562,19 @@ namespace Bloom
             // expect this to be an important factor for Bloom, as we don't have long-running
             // animations except for things like playing motion books, which probably want to continue to the end.
             additionalBrowserArgs += " --disable-renderer-backgrounding";
+            if (_contactsOnlyBloomServer)
+            {
+                // Without this, in some sessions, Chromium spends about 400ms working out whether to
+                // use a proxy before the first request of each newly created browser, even a request
+                // to localhost. This is not about which pages a browser shows: Bloom's browsers only
+                // ever show Bloom's own pages. It is about where those pages send HTTP requests. In
+                // Bloom's main browser some of them go to other sites (the AI Image Editor posts to
+                // openrouter.ai, for example), and those must go through the user's proxy if there
+                // is one. The pages in this browser send requests only to Bloom's own server. It is
+                // safe to vary the arguments here because these browsers never share a user-data
+                // folder with the main browser.
+                additionalBrowserArgs += " --no-proxy-server";
+            }
             // Chromium only respects the last --disable-features argument, so we collect all features
             // here and emit a single comma-separated value at the end.
             var featuresToDisable = new List<string>
