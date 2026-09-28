@@ -1676,52 +1676,52 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name">
         <source xml:lang="en">Abstract Illustration Style</source>
-        <target xml:lang="es-ES" state="translated">Ilustración abstracta</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo abstracto</target>
         <note>ID: AiImageEditor.ArtStyle.abstract-illustration.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.cartoon-style.Name">
         <source xml:lang="en">Cartoon Style Illustrations</source>
-        <target xml:lang="es-ES" state="translated">Ilustraciones de dibujos animados</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo caricatura</target>
         <note>ID: AiImageEditor.ArtStyle.cartoon-style.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.chalkboard-sketch.Name">
         <source xml:lang="en">Chalkboard Sketch</source>
-        <target xml:lang="es-ES" state="translated">Boceto de tiza</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo de dibujo en pizarrón</target>
         <note>ID: AiImageEditor.ArtStyle.chalkboard-sketch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.classic-ink-wash.Name">
         <source xml:lang="en">Classic Ink &amp; Watercolor</source>
-        <target xml:lang="es-ES" state="translated">Tinta y acuarela clásicas</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo clásico en tinta &amp; acuarela</target>
         <note>ID: AiImageEditor.ArtStyle.classic-ink-wash.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clay-stopmotion.Name">
         <source xml:lang="en">Clay Stop-Motion</source>
-        <target xml:lang="es-ES" state="translated">Plastilina en stop-motion</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo animación en plastilina</target>
         <note>ID: AiImageEditor.ArtStyle.clay-stopmotion.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.clear-line-flat-color.Name">
         <source xml:lang="en">Clear Line &amp; Flat Color</source>
-        <target xml:lang="es-ES" state="translated">Línea clara y color plano</target>
+        <target xml:lang="es-ES" state="translated">Imagen de línea clara &amp; color sólido</target>
         <note>ID: AiImageEditor.ArtStyle.clear-line-flat-color.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.coloring-book-page.Name">
         <source xml:lang="en">Coloring Book Outline</source>
-        <target xml:lang="es-ES" state="translated">Contorno para colorear</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo de libro para colorear</target>
         <note>ID: AiImageEditor.ArtStyle.coloring-book-page.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.comic-halftone.Name">
         <source xml:lang="en">Comic Halftone</source>
-        <target xml:lang="es-ES" state="translated">Trama de cómic</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo semitonos de cómic</target>
         <note>ID: AiImageEditor.ArtStyle.comic-halftone.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.crayon-scribble.Name">
         <source xml:lang="en">Crayon &amp; Childlike Scribble</source>
-        <target xml:lang="es-ES" state="translated">Garabato infantil con crayón</target>
+        <target xml:lang="es-ES" state="translated">Imagen con crayón &amp; de estilo garabato infantil</target>
         <note>ID: AiImageEditor.ArtStyle.crayon-scribble.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.flat-instructional.Name">
         <source xml:lang="en">Flat Instructional</source>
-        <target xml:lang="es-ES" state="translated">Esquema didáctico plano</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo didáctico sólido</target>
         <note>ID: AiImageEditor.ArtStyle.flat-instructional.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name">
