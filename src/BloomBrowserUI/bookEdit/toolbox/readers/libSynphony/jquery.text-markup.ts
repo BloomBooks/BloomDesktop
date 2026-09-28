@@ -108,8 +108,11 @@ import {
                 const fragment = fragments[i];
 
                 if (fragment.isSpace) {
-                    // this is inter-sentence space
-                    allWords += " ";
+                    // This is inter-sentence space. Keep it as it is rather than flattening it to
+                    // " ": it may be the newline of a <br> or bloom-linebreak, and allWords
+                    // becomes this page's text in the whole-book statistics, where losing the
+                    // break can merge two sentences back into one (BL-16625).
+                    allWords += fragment.text;
                 } else {
                     const words = theOneLibSynphony.getWordsFromHtmlString(
                         fragment.text,

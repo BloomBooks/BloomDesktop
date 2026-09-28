@@ -462,6 +462,16 @@ describe("jquery.text-markup", function () {
         // Sanity/positive control: strip the span the way the old code did and the very same
         // assertions fail, so the ones above are meaningful.
         expect(sentencesIn("One two three.four five six").length).toBe(1);
+
+        // The current page's book-total entry is not its raw markup but the allWords text that
+        // checkLeveledReader builds (see readerToolsModel's pageIDToText). That must keep the
+        // break too; flattening the inter-sentence newline to a space gave "three. four", which
+        // the splitter reads as one sentence.
+        const leveled = $("#text_entry1").checkLeveledReader({
+            maxWordsPerSentence: 10,
+        });
+        const allWordsText = visibleTextOfHtmlString(leveled["allWords"]);
+        expect(sentencesIn(allWordsText).length).toBe(2);
     });
 
     it("removeCkEditorMarkup unwraps spans with background-color in style", function () {
