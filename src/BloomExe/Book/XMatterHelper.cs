@@ -238,7 +238,7 @@ namespace Bloom.Book
         /// <returns></returns>
         public static string GetXMatterFromStyleSheetFileName(string filename)
         {
-            var prefixEndIndex = filename.IndexOf(kStylesheetSuffix);
+            var prefixEndIndex = filename.IndexOf(kStylesheetSuffix, StringComparison.Ordinal);
             if (prefixEndIndex < 0)
             {
                 return null;

@@ -236,8 +236,13 @@ namespace Bloom.Utils
                 bldr.AppendLine(firstLine);
             if (FileAccessDiagnostics.FileIsPresent(path))
             {
+                // The user sees this text in NotifyDialog, which renders it as HTML, so the URL
+                // must be an anchor to be clickable, and the line breaks must be <br> to show
+                // (BL-16915). Logs just get the markup.
+                const string helpUrl =
+                    "https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445";
                 bldr.AppendLine(
-                    $"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445."
+                    $"<br>You may find help for this problem at <a href='{helpUrl}'>{helpUrl}</a>.<br>"
                 );
                 bldr.AppendLine($"The following specific information may also be helpful.");
                 bldr.Append(CollectFilePermissionInformation(path));

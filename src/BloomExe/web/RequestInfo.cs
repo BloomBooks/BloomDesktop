@@ -275,28 +275,51 @@ namespace Bloom.Api
                     {
                         var buffer = new byte[1024 * 512]; //512KB
                         int read;
-                        while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        long promised = _actualContext.Response.ContentLength64;
+                        long written = 0;
+                        // Never read past the length we promised: if the file grew while we were sending it,
+                        // writing more than ContentLength64 bytes would throw.
+                        int NextPieceLength() => (int)Math.Min(buffer.Length, promised - written);
+                        while ((read = fs.Read(buffer, 0, NextPieceLength())) > 0)
                         {
                             long pos = fs.Position;
                             fs.Dispose();
                             fs = null; // prevent double dispose
                             _actualContext.Response.OutputStream.Write(buffer, 0, read);
+                            written += read;
                             try
                             {
                                 fs = OpenSharedReadStreamWithRetry(path);
                             }
-                            catch (FileNotFoundException)
+                            catch (Exception e)
+                                when (e is IOException || e is UnauthorizedAccessException)
                             {
-                                // and we've made it possible to delete (or move) the file in the middle
-                                // of our read, so it may be gone. If so, just pretend it ended with
-                                // what we already returned.
+                                // and we've made it possible to delete (or move) the file, or even its folder,
+                                // in the middle of our read, so it may be gone. If so, stop here; the check
+                                // below deals with the reply being shorter than we promised.
+                                // (A deleted file that some other process still has open is "delete pending",
+                                // and opening it gives UnauthorizedAccessException rather than FileNotFound.)
+                                // IOException also covers a file some other process has kept locked for longer
+                                // than OpenSharedReadStreamWithRetry keeps trying.
                                 break;
                             }
 
                             fs.Seek(pos, SeekOrigin.Begin);
                         }
 
-                        _actualContext.Response.OutputStream.Close();
+                        if (written < promised)
+                        {
+                            // The file was deleted, shrank or stayed locked while we were sending it (e.g. the
+                            // image cache was cleared because the user selected another book). We already promised
+                            // ContentLength64 bytes, and Close() throws "Cannot close stream until all bytes
+                            // are written" if we send fewer, so drop the connection instead.
+                            Logger.WriteEvent(
+                                $"Aborted reply for {path}: sent {written} of {promised} bytes before the file went away or could no longer be read."
+                            );
+                            _actualContext.Response.Abort();
+                        }
+                        else
+                            _actualContext.Response.OutputStream.Close();
                     }
                     catch (HttpListenerException e)
                     {

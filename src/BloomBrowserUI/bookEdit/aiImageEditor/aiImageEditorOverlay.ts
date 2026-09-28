@@ -80,7 +80,7 @@ function applyOnThePageBeingEdited(
 // C# hands that back with each book image. By the time this editor opens, every page carries the
 // value: launching it on a book that has not been through the off-screen per-page pass runs that
 // pass first, re-saving every page, and only then opens the editor (HandleSaveThenLaunch, via
-// EditingModel.BringBookToCurrentBrowserLevelThen; BL-16852). A slot with no value is therefore
+// EditingModel.UpdatePageLayoutIfNeededThen; BL-16852). A slot with no value is therefore
 // not the ordinary state of an unvisited page but a sign that the pass did not run or failed; the
 // editor then offers that slot no "Auto" option rather than a guess. Every editor launch also
 // saves the page being edited first, so that page at least always has it.
