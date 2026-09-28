@@ -19,6 +19,10 @@ namespace Bloom.CollectionCreating
     public partial class NewCollectionWizard
         : SIL.Windows.Forms.Miscellaneous.FormForUsingPortableClipboard
     {
+        // Under --dont-disturb this dialog must not take the keyboard from the person at the machine
+        // while something else drives Bloom (see Program.StartupDontDisturb).
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
+
         public Action UiLanguageChanged;
 
         private NewCollectionSettings _collectionInfo;
