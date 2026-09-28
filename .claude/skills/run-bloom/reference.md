@@ -47,7 +47,19 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
 - **The human closing Bloom tears the whole stack down**: launcher, dotnet watch and Vite exit so
   an idle stack stops holding memory. The launcher tells that apart from a dotnet-watch rebuild
   by the watcher's file-changed output, so C# edits do not kill the stack. Only `--quit-bloom`
-  leaves the launcher parked in `awaiting-restart`.
+  leaves the launcher parked in `awaiting-restart`. Bloom relaunching itself counts as closing:
+  renaming a collection in Settings starts a new `Bloom.exe --rename ...` and exits (`Program.cs`),
+  so the rename completes but the stack goes down; `--ensure-running` again afterwards.
+- **Which collection opens.** The launcher cannot name a collection; Bloom opens the first entry
+  of the `MruProjects` list in `%LOCALAPPDATA%\SIL\Bloom\<version>\user.config` (`6.6.0.0` on
+  master), which every dev build on the machine shares. Before a test that saves settings,
+  restarts or renames, copy a small collection to your scratchpad, back that `user.config` up,
+  put the copy's `.bloomCollection` path first in the list, and restore the backup after the
+  stack is down (Bloom rewrites the list when it exits). Editing that shared file needs the
+  developer's say-so.
+- **The workspace page's URL changes.** Each launch and each collection reopen serves the shell
+  from a new `Temp/bloomXXXX.htm`, so find the page by its title, `ReactControl (Vite
+  appBundle)`, not by a remembered URL.
 - `/status` reports `sourceChangedSinceReady`: whether dotnet watch has seen C# changes since the
   current Bloom became ready, so whether `--restart` would incorporate anything. Bloom polls the
   same field (when launched via `--launcher-port`, see `DevLauncher.cs`) for its dev-only restart
@@ -203,7 +215,26 @@ What to know:
   `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
   the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
   closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
-  dialog opens or closes rather than holding on to a page handle.
+  dialog opens or closes rather than holding on to a page handle. Equally, the dialog's page
+  may never show up: with the Settings dialog on its Bloom Subscription tab, repeated listings
+  showed only the shell page. When that happens, drive the dialog's page with the mouse (next
+  bullet); its Paste button next to the code field takes a value from the clipboard without any
+  keyboard input (save and restore the developer's clipboard around it).
+- **When `select` lands on the wrong tab, click instead, DPI-aware.** On a machine with display
+  scaling, `select -Control "Project Information"` in the Settings dialog reported success
+  while the dialog showed the Bloom Subscription page, so the Project Information text boxes
+  were not in the tree; a real mouse click on the same tab item worked every time. Windows
+  PowerShell 5.1 is DPI-unaware, so the `BoundingRectangle` it gets from UIA and the
+  coordinates `SetCursorPos`/`CopyFromScreen` take are scaled differently (a window capture
+  comes out shifted and cropped). Call `SetProcessDpiAwarenessContext(-4)` (per-monitor v2,
+  from `user32.dll` via `Add-Type`) before touching UIA; after that the rectangle, the cursor
+  and screen capture all agree in physical pixels, a click at the rectangle's center hits, and
+  capturing the rectangle gives a true picture of the dialog. Only click with the pointer when
+  the developer has allowed it, and put the cursor back where it was afterwards.
+- **A tab strip lists only the tabs scrolled into view.** When the Settings dialog's tab strip
+  is scrolled (its `Spin` control is present), UIA shows only the visible `TabItem`s, and
+  `select` on an off-screen one says "No control". Reopen the dialog, or scroll with
+  `invoke -Control Forward`/`Backward`.
 - **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
   are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
   awareness mismatch against the shared e2e environment) before writing a test that opens it.
