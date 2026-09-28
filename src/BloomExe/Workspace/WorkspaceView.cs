@@ -1376,16 +1376,20 @@ window.showWorkspaceInitializationFailure = function(message) {
             return (float)translatedCount / (float)totalCount;
         }
 
+        /// <summary>
+        /// Shorten a UI-language menu entry for the language button by dropping the part in
+        /// parentheses, e.g. "ไทย (Thai)" becomes "ไทย".
+        /// </summary>
         public static string GetShortenedLanguageName(string itemText)
         {
-            var idxChinese = itemText.IndexOf(" (Chinese");
+            var idxChinese = itemText.IndexOf(" (Chinese", StringComparison.Ordinal);
             if (idxChinese > 0)
             {
                 return itemText.Substring(0, idxChinese);
             }
             else
             {
-                var idxCountry = itemText.IndexOf(" (");
+                var idxCountry = itemText.IndexOf(" (", StringComparison.Ordinal);
                 if (idxCountry > 0)
                     return itemText.Substring(0, idxCountry);
                 else

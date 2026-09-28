@@ -2751,7 +2751,7 @@ namespace Bloom.Book
                 int idxEnd = 0;
                 if (cssContent[idxStart + 1] == '*')
                 {
-                    idxEnd = cssContent.IndexOf("*/", idxStart + 2);
+                    idxEnd = cssContent.IndexOf("*/", idxStart + 2, StringComparison.Ordinal);
                     if (idxEnd < 0)
                         idxEnd = cssContent.Length;
                     else
@@ -2759,7 +2759,7 @@ namespace Bloom.Book
                 }
                 else
                 {
-                    idxEnd = cssContent.IndexOf("\n", idxStart + 2);
+                    idxEnd = cssContent.IndexOf("\n", idxStart + 2, StringComparison.Ordinal);
                     if (idxEnd < 0)
                         idxEnd = cssContent.Length;
                 }
@@ -2771,8 +2771,8 @@ namespace Bloom.Book
         private static int FindCommentStartOutsideQuotes(string content, int start)
         {
             char[] quotes = { '"', '\'' };
-            var idxComment = content.IndexOf("//", start);
-            var idxComment2 = content.IndexOf("/*", start);
+            var idxComment = content.IndexOf("//", start, StringComparison.Ordinal);
+            var idxComment2 = content.IndexOf("/*", start, StringComparison.Ordinal);
             if (idxComment2 >= 0 && (idxComment2 < idxComment || idxComment < 0))
                 idxComment = idxComment2;
             if (idxComment < 0)

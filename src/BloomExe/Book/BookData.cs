@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1427,10 +1427,18 @@ namespace Bloom.Book
             }
         }
 
-        private static string TrimEnd(string source, string value)
+        /// <summary>
+        /// Remove every trailing copy of value from the end of source.
+        /// </summary>
+        internal static string TrimEnd(string source, string value)
         {
-            while (source.EndsWith(value))
-                source = source.Remove(source.LastIndexOf(value));
+            // Every string ends with the empty string, and removing it changes nothing, so the
+            // loop below would never end. The separator we are called with is translated, so a
+            // translator really can hand us one.
+            if (string.IsNullOrEmpty(value))
+                return source;
+            while (source.EndsWith(value, StringComparison.Ordinal))
+                source = source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
             return source;
         }
 

@@ -29,17 +29,22 @@ namespace Bloom.Book
             get
             {
                 var x = Path.GetFileName(PathToFolder);
-                var end = x.ToLowerInvariant().IndexOf("-xmatter");
+                // Must be ordinal: a culture-sensitive search under th-TH ignores the hyphen
+                // and leaves it on the end of the key.
+                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
                 return x.Substring(0, end);
             }
         }
 
+        /// <summary>
+        /// The key split into words for display, e.g. "Paper Saver" for "Factory-XMatter".
+        /// </summary>
         public string EnglishLabel
         {
             get
             {
                 var x = Path.GetFileName(PathToFolder);
-                var end = x.ToLowerInvariant().IndexOf("-xmatter");
+                var end = x.IndexOf("-xmatter", StringComparison.OrdinalIgnoreCase);
                 var label = x.Substring(0, end);
                 if (label == "Factory") //historical name
                 {
