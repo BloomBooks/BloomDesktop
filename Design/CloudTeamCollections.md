@@ -523,11 +523,14 @@ settings (the `.bloomCollection` in `Other/Other Collection Files.zip`):
   checked out on an older Bloom keeps their edits on disk but can't touch them until they have
   upgraded; their 6.6 Bloom then carries those checkouts over (step 5).
 - **`AllowSharedFolderChanges=False`** (BL-16928, new in 6.6). A 6.6 Bloom that is still on the
-  old system, because the upload isn't finished, does nothing that writes to the shared folder:
-  no check-in (including the first check-in of a new book), no checkout (which records its status
-  in the shared folder), no rename, delete or force unlock, no pushing collection settings or
-  other collection files. Its user can go on editing, locally, the books already checked out to
-  them.
+  old system, because the upload isn't finished, treats the Team Collection as **Disconnected**:
+  `FolderTeamCollection.CheckConnection()`, which runs at startup and before every check-out,
+  check-in, Forget Changes and Force Unlock, reports the pause as the connection problem, and a
+  running Bloom switches as soon as it notices the shared settings change. Disconnected mode
+  already blocks every write to the shared folder while leaving books checked out here and new
+  local books editable. The status dialog and book panel say why: changes are paused, or, once
+  `CloudCollectionId` is there, the collection has moved to cloud sharing and reopening it
+  switches over.
 
 Right after setting them, the old shared folder is made **read-only for everyone except the admin
 doing the migration**, as a safeguard against Blooms too old to honor `MinimumBloomVersion`
