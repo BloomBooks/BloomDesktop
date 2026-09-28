@@ -137,6 +137,7 @@ class PageControls extends React.Component<unknown, IPageControlsState> {
                         l10nKey="EditTab.DeletePageButton"
                         transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
+                        data-testid="remove-page-button"
                         enabled={this.state.canDeleteState}
                         onClick={() =>
                             confirmRemovePage(() =>
