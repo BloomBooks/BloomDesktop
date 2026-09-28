@@ -70,14 +70,13 @@ comment on the card assumed the stub already did this; it does not).
   endpoints and the POST is what applies everything pending.
 - **Launch and permission.** No flag (Q4) and no C# launch endpoint: see step 6 of §3.1. A
   non-administrator in a Team Collection gets `notAllowedMessage` in a small dialog with Close.
-- **Session rules.** Each open's GET starts a fresh `PendingCollectionSettings`; a reply that
-  arrives after its open has closed is discarded. Cancel is ignored while a save is in flight.
-  A failed save re-enables OK and is reported through Bloom's normal error dialog; the edits
-  stay for a retry. Tab endpoints ignore a post that arrives with no session open; the save
-  endpoint assumes one (deliberately, since the dialog cannot send it without one).
-- **Restart bookkeeping.** `PendingCollectionSettings.RestartRequired` counts a pending
-  subscription directly, so undoing a subscription edit also takes back its restart; every other
-  restart reason is latched by `ChangeThatRequiresRestart`.
+- **The WinForms dialog is untouched.** It, its `DialogBeingEdited` pointer and the `settings/*`
+  endpoints its tabs post to are exactly as on master. `CollectionSettingsUpdater` started as a
+  copy of its OK handler; the two copies coexist only until cutover, when the WinForms one goes.
+- **Session rules.** Each open's GET starts a fresh `CollectionSettingsApi.PendingSettings`, used
+  only by the React dialog; a reply that arrives after its open has closed is discarded. Cancel is
+  ignored while a save is in flight. A failed save re-enables OK and is reported through Bloom's
+  normal error dialog; the edits stay for a retry.
 - **Strings.** Page labels reuse existing ids where the text matches; the new ones
   (`CollectionSettingsDialog.*Page`) are `translate="no"` in `Bloom.xlf`.
 
@@ -132,7 +131,7 @@ This is the piece that unblocks every tab card, and the biggest design decision 
    xmatter, numbering styles, `showAutoUpdate`, `isTeamCollection`, `editingBlorgBook`,
    `restartKeys`). Keys are the Config-R `path`s. Serialize with a real DTO class rather than
    `dynamic` so the TS interface and C# stay in step (compare `BookSettingsApi.cs`).
-2. **One apply method.** Extract the body of `_okButton_Click` (`CollectionSettingsDialog.cs:387-563`)
+2. **One apply method.** *Done as a copy rather than an extraction; see §3.0.* Extract the body of `_okButton_Click` (`CollectionSettingsDialog.cs:387-563`)
    into a class the WinForms dialog and the new API both call, say
    `CollectionSettingsUpdater.Apply(CollectionSettings current, PendingCollectionSettings pending)`
    returning whether a restart is needed. It already has one reusable static piece,
@@ -142,7 +141,11 @@ This is the piece that unblocks every tab card, and the biggest design decision 
    `Settings.Default.AutoUpdate`, `ExperimentalFeatures.SetValue`) moves with it. The existing
    `UpdateLanguageSettings` tests in `src/BloomTests/Collection/WritingSystemDialogTests.cs`
    retarget to the new class, and the rest of the apply logic gets tests for the first time.
-3. **Retire `DialogBeingEdited`.** Replace the static WinForms pointer with a
+3. **Retire `DialogBeingEdited`.** *Not done in BL-16902, on purpose: the WinForms dialog stays
+   exactly as on master while the two coexist on alpha. The first tab card that embeds a reused
+   component (Subscription, Team Collection, bookshelf) makes its endpoints write to
+   `PendingSettings` while the React dialog is open, and to `DialogBeingEdited` otherwise; the
+   cutover removes the second branch.* The original proposal: replace the static WinForms pointer with a
    `PendingCollectionSettings` session object owned by `CollectionSettingsApi`, created when
    either dialog opens and discarded on cancel. Endpoints that today write to `DialogBeingEdited`
    (`settings/setFontForLanguage`, `numberingStyle`, `xmatter`, `bookShelfData`,
@@ -323,7 +326,8 @@ independent of each other once step 0 lands, so they can be parallelized across 
 
 **Step 0. BL-16902 Shell and save pipeline** (see §3). Everything else depends on it. Done in
 PR #8388 (see §3.0): seven empty localized pages, a second launch button with no flag (Q4), real
-GET/POST, extracted `CollectionSettingsUpdater` with tests, restart plumbing, deep link to a page.
+GET/POST, `CollectionSettingsUpdater` (a copy of the WinForms apply logic) with tests, restart
+plumbing, deep link to a page. The WinForms dialog is unchanged.
 
 **Step 1. BL-16733 Settings: Front & Back Matter.** Style `ConfigrSelect` (options from the
 existing `settings/xmatter` data, honoring the branding-forced pack; description under the

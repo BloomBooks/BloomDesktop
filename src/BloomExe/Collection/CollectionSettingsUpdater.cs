@@ -10,9 +10,9 @@ using SIL.Extensions;
 namespace Bloom.Collection
 {
     /// <summary>
-    /// Validates and applies the edits gathered in a PendingCollectionSettings. Both the WinForms
-    /// Collection Settings dialog and the React one go through here, so that whichever the user
-    /// used, the collection is saved in exactly the same way.
+    /// Validates and applies the edits gathered in a PendingCollectionSettings, for the React
+    /// Collection Settings dialog. It started as a copy of the WinForms dialog's OK handler, which
+    /// keeps its own copy until the React dialog replaces it.
     /// </summary>
     public static class CollectionSettingsUpdater
     {

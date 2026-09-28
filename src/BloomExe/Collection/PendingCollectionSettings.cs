@@ -1,13 +1,12 @@
-using System;
 using Bloom.Properties;
 using Bloom.SubscriptionAndFeatures;
 
 namespace Bloom.Collection
 {
     /// <summary>
-    /// The edits a user has made in a Collection Settings dialog but has not applied yet.
-    /// Both the WinForms dialog and the React one record their edits here, and
-    /// CollectionSettingsUpdater applies them when the user clicks OK.
+    /// The edits a user has made in the React Collection Settings dialog but has not applied yet;
+    /// CollectionSettingsUpdater applies them when the user clicks OK. The WinForms dialog keeps
+    /// its own pending values until the React dialog replaces it.
     /// </summary>
     public class PendingCollectionSettings
     {
@@ -47,21 +46,7 @@ namespace Bloom.Collection
         /// </summary>
         public Subscription Subscription;
 
-        private bool _otherChangeRequiresRestart;
-
-        /// <summary>
-        /// Whether Bloom has to restart for the pending changes to take effect. A changed
-        /// subscription always does; it is counted here directly rather than latched, so that
-        /// putting the saved code back also takes back the restart.
-        /// </summary>
-        public bool RestartRequired => _otherChangeRequiresRestart || Subscription != null;
-
-        /// <summary>
-        /// Called whenever a change is recorded that needs a restart, so a dialog showing a
-        /// restart reminder can update it. Not every API endpoint that records a pending change
-        /// runs on the UI thread, so a WinForms listener has to marshal.
-        /// </summary>
-        public Action RestartRequiredChanged;
+        public bool RestartRequired { get; private set; }
 
         /// <summary>
         /// Starts a session whose values are those the collection currently has.
@@ -112,8 +97,7 @@ namespace Bloom.Collection
         /// </summary>
         public void ChangeThatRequiresRestart()
         {
-            _otherChangeRequiresRestart = true;
-            RestartRequiredChanged?.Invoke();
+            RestartRequired = true;
         }
     }
 }

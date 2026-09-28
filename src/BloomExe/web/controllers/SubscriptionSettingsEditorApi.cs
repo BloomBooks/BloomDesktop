@@ -25,7 +25,7 @@ namespace Bloom.web.controllers
             _collectionSettings = collectionSettings;
             _subscription = collectionSettings.Subscription;
 
-            CollectionSettingsApi.EditingCancelled += (sender, e) =>
+            CollectionSettingsDialog.DialogCancelled += (sender, e) =>
             {
                 _subscription = collectionSettings.Subscription;
             };
@@ -90,9 +90,7 @@ namespace Bloom.web.controllers
                     {
                         var codeString = request.RequiredPostString();
                         _subscription = new Subscription(codeString);
-                        var pending = CollectionSettingsApi.PendingSettings;
-                        if (pending != null)
-                            RecordPendingSubscription(pending, _collectionSettings, _subscription);
+                        NotifyPendingSubscriptionChange?.Invoke(codeString);
                         request.PostSucceeded();
                     }
                 },
@@ -100,24 +98,6 @@ namespace Bloom.web.controllers
             );
         }
 
-        /// <summary>
-        /// Records the code the user has typed as the session's pending subscription. Only a code
-        /// that differs from the collection's own counts as a change (see the Subscription field of
-        /// PendingCollectionSettings); going back to the saved code withdraws an earlier edit, or
-        /// OK would save a code the user had already undone.
-        /// </summary>
-        internal static void RecordPendingSubscription(
-            PendingCollectionSettings pending,
-            CollectionSettings collectionSettings,
-            Subscription subscription
-        )
-        {
-            // A pending subscription is itself a reason to restart (see RestartRequired), so
-            // setting or clearing it is all it takes; the notice just refreshes the reminder.
-            pending.Subscription = collectionSettings.Subscription.IsDifferent(subscription.Code)
-                ? subscription
-                : null;
-            pending.RestartRequiredChanged?.Invoke();
-        }
+        public static Action<string> NotifyPendingSubscriptionChange;
     }
 }

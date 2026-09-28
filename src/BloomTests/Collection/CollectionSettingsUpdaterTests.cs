@@ -4,16 +4,14 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.SubscriptionAndFeatures;
-using Bloom.web.controllers;
 using NUnit.Framework;
 using SIL.TestUtilities;
 
 namespace BloomTests.Collection
 {
     /// <summary>
-    /// Covers the save half of the Collection Settings dialogs: both the WinForms one and the
-    /// React one hand their pending edits to CollectionSettingsUpdater.
+    /// Covers the save half of the React Collection Settings dialog, which hands its pending edits to
+    /// CollectionSettingsUpdater.
     /// </summary>
     [TestFixture]
     public class CollectionSettingsUpdaterTests
@@ -83,77 +81,6 @@ namespace BloomTests.Collection
                 _xmatterPackFinder,
                 newName => _renameRequests.Add(newName)
             );
-        }
-
-        /// <summary>
-        /// The subscription tab posts every change to the code field. Typing a new code and then
-        /// putting the saved one back must leave nothing pending, or OK saves the undone code.
-        /// </summary>
-        [Test]
-        public void RecordPendingSubscription_CodeChangedThenReverted_NothingPending()
-        {
-            var settings = CreateCollectionSettings("SubscriptionRevert");
-            var pending = new PendingCollectionSettings(settings);
-            var savedCode = settings.Subscription.Code;
-            Assert.That(
-                settings.Subscription.IsDifferent("Other-Code-123456-7890"),
-                Is.True,
-                "Sanity check: the new code has to differ from the saved one"
-            );
-
-            SubscriptionSettingsEditorApi.RecordPendingSubscription(
-                pending,
-                settings,
-                new Subscription("Other-Code-123456-7890")
-            );
-            Assert.That(
-                pending.Subscription?.Code,
-                Is.EqualTo("Other-Code-123456-7890"),
-                "Sanity check: a different code should be pending"
-            );
-            Assert.That(
-                pending.RestartRequired,
-                Is.True,
-                "Sanity check: a changed subscription should need a restart"
-            );
-
-            SubscriptionSettingsEditorApi.RecordPendingSubscription(
-                pending,
-                settings,
-                new Subscription(savedCode)
-            );
-
-            Assert.That(pending.Subscription, Is.Null);
-            Assert.That(
-                pending.RestartRequired,
-                Is.False,
-                "Undoing the only change should take back the restart too"
-            );
-        }
-
-        /// <summary>
-        /// Undoing a subscription edit must not take back a restart that some other change needs.
-        /// </summary>
-        [Test]
-        public void RecordPendingSubscription_RevertedWithAnotherRestartChange_StillRestarts()
-        {
-            var settings = CreateCollectionSettings("SubscriptionRevertOtherChange");
-            var pending = new PendingCollectionSettings(settings);
-            pending.ChangeThatRequiresRestart();
-
-            SubscriptionSettingsEditorApi.RecordPendingSubscription(
-                pending,
-                settings,
-                new Subscription("Other-Code-123456-7890")
-            );
-            SubscriptionSettingsEditorApi.RecordPendingSubscription(
-                pending,
-                settings,
-                new Subscription(settings.Subscription.Code)
-            );
-
-            Assert.That(pending.Subscription, Is.Null);
-            Assert.That(pending.RestartRequired, Is.True);
         }
 
         [Test]
