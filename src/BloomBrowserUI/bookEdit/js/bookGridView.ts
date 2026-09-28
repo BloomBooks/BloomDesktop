@@ -280,7 +280,6 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
     container.prepend(gridLayer);
 
     // Collected before adding our own styles, which the page frames do not need.
-    const headContent = getStylesheetsForPageFrames();
     const bodyAttributes = getBodyAttributesForPageFrames();
     gridStyle = document.createElement("style");
     gridStyle.textContent = kGridStyles;
@@ -324,9 +323,7 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
             isOnScreen(cell),
     );
     const drawn = Promise.all(
-        onScreen.map((cell) =>
-            renderPageInCell(cell, headContent, bodyAttributes),
-        ),
+        onScreen.map((cell) => renderPageInCell(cell, bodyAttributes)),
     );
 
     // Anything that moves or resizes the page being edited (the controls rendered above it, a
@@ -346,7 +343,7 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
             entries.forEach((entry) => {
                 const cell = entry.target as HTMLElement;
                 if (entry.isIntersecting) {
-                    renderPageInCell(cell, headContent, bodyAttributes);
+                    renderPageInCell(cell, bodyAttributes);
                 } else {
                     cell.querySelector("iframe")?.remove();
                     cell.classList.remove("bloom-book-grid-rendered");
@@ -475,7 +472,6 @@ function keepEditedPageInPlace(): void {
 // when the cell has scrolled away and been dropped before that.
 function renderPageInCell(
     cell: HTMLElement,
-    headContent: string,
     bodyAttributes: string,
 ): Promise<void> {
     if (cell.querySelector("iframe")) return Promise.resolve();
@@ -507,7 +503,7 @@ function renderPageInCell(
             frameDocument.write(
                 `<!DOCTYPE html><html><head><base href="${
                     document.baseURI
-                }">${headContent}<style>
+                }">${getStylesheetsForPageFrames()}<style>
                 html, body { margin: 0 !important; padding: 0 !important; overflow: hidden; background: transparent; }
                 .bloom-page { margin: 0 !important; }
             </style></head><body ${bodyAttributes}>${fullSizePictures(
@@ -584,12 +580,46 @@ function getStylesheetsForPageFrames(): string {
                 return element.outerHTML;
             }
             const copy = element.cloneNode() as HTMLStyleElement;
-            copy.textContent = Array.from(element.sheet.cssRules)
-                .map((rule) => rule.cssText)
-                .join("\n");
+            copy.textContent = getRulesText(element.sheet);
             return copy.outerHTML;
         })
         .join("");
+}
+
+function getRulesText(sheet: CSSStyleSheet): string {
+    return Array.from(sheet.cssRules)
+        .map((rule) => rule.cssText)
+        .join("\n");
+}
+
+/**
+ * Give the other pages the book's userModifiedStyles as they are now. The Format dialog calls this
+ * after each change it makes to them (see cleanupAfterStyleChange() in StyleEditor.ts), so the
+ * pages around the one being edited change along with it.
+ */
+export function updateOtherPagesUserModifiedStyles(): void {
+    if (!gridLayer) return;
+    const source = Array.from(document.head.querySelectorAll("style")).find(
+        (style) => style.title === "userModifiedStyles",
+    );
+    if (!source?.sheet) return;
+    const rules = getRulesText(source.sheet);
+    gridLayer
+        .querySelectorAll<HTMLIFrameElement>("iframe.bloom-book-grid-frame")
+        .forEach((frame) => {
+            const head = frame.contentDocument?.head;
+            // A frame still waiting for its page gets the styles as they are when the page arrives.
+            if (!head) return;
+            let target = Array.from(head.querySelectorAll("style")).find(
+                (style) => style.title === "userModifiedStyles",
+            );
+            if (!target) {
+                // The Format dialog made the stylesheet after this frame was drawn.
+                target = source.cloneNode() as HTMLStyleElement;
+                head.appendChild(target);
+            }
+            target.textContent = rules;
+        });
 }
 
 // The body's classes and data attributes affect how a page displays (e.g. which languages show).
