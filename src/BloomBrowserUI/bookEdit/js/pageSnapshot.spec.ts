@@ -767,6 +767,44 @@ describe("pageSnapshot", () => {
         ).toEqual(["typed", "typed"]);
     });
 
+    it("offers a change made while a post was failing straight away, not after the backoff", async () => {
+        // The backoff exists to spare a server that is not answering; it must not hold back
+        // content the user has changed since. A save in that window would otherwise use the
+        // older snapshot, and the newer edit would be missing from it.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheBaselineSettle();
+
+        let release: (value: unknown) => void = () => {};
+        postHook = () =>
+            new Promise((resolve) => {
+                release = resolve;
+            });
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(posted.length, "sanity: a post is in flight").toBe(1);
+
+        // While it is in flight the user types again, and then the post fails.
+        contentToReport = "typed more";
+        changeThePage("typed more");
+        await Promise.resolve();
+        postHook = undefined;
+        postReply = { data: true }; // the server is back for the next attempt
+        release(undefined); // no response: the post failed
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        // The next attempt must come after the ordinary quiet time, not the retry time.
+        vi.advanceTimersByTime(quietMsForTests);
+        await vi.runAllTicks();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(posted.length, "the newer content is offered at once").toBe(2);
+        expect(posted[1].body).toBe("typed more");
+    });
+
     it("keeps offering a failing post, backing off, and tells the user only once", async () => {
         // Two things have to be true at the same time here, and they pull against each other.
         //

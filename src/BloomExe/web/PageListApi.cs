@@ -134,9 +134,15 @@ namespace Bloom.web
                     // command would find the editor mid-navigation and be declined. When nothing is
                     // pending, the click runs right here, as it always has.
                     if (DeferredWorkIsPending)
+                    {
+                        var pageTheContentIsFor = SelectedPage;
                         RunOnUiThreadAfterDeferredWork(() =>
-                            PageList.PageClicked(page, pageContent)
+                            PageList.PageClicked(
+                                page,
+                                ContentIfStillCurrent(pageContent, pageTheContentIsFor)
+                            )
                         );
+                    }
                     else
                         PageList.PageClicked(page, pageContent);
                 }
@@ -153,6 +159,24 @@ namespace Bloom.web
         // _deferredWorkLock; the handlers run on the UI thread but the chain's continuations do not.
         private Task _deferredWork = Task.CompletedTask;
         private readonly object _deferredWorkLock = new object();
+
+        /// <summary>
+        /// The page content a queued page-list request brought with it, if the page it was
+        /// gathered from is still the selected page now that the request is running; otherwise
+        /// null, so that the save takes the current page's own snapshot instead.
+        /// </summary>
+        /// <remarks>
+        /// A request that queued behind a context-menu command carries the content of the page the
+        /// user was on when the browser sent it. If the command it waited for changed pages
+        /// (Duplicate and Delete both do), that page was saved by the command's own navigation,
+        /// and the selected page is now a different one whose latest content is in its snapshot.
+        /// Handing the save the old page's content would skip that snapshot -- the save takes the
+        /// snapshot only when it is given no content -- and anything typed on the new page in the
+        /// meantime would be lost when the request navigated away from it. Compared by id, since
+        /// the page objects can be rebuilt.
+        /// </remarks>
+        private string ContentIfStillCurrent(string pageContent, IPage pageItWasGatheredFrom) =>
+            SelectedPage?.Id == pageItWasGatheredFrom?.Id ? pageContent : null;
 
         private bool DeferredWorkIsPending
         {
@@ -284,9 +308,16 @@ namespace Bloom.web
                 ? requestData.pageContent
                 : null;
             if (DeferredWorkIsPending)
+            {
+                var pageTheContentIsFor = SelectedPage;
                 RunOnUiThreadAfterDeferredWork(() =>
-                    PageList.PageMoved(movedPage, newIndex, pageContent)
+                    PageList.PageMoved(
+                        movedPage,
+                        newIndex,
+                        ContentIfStillCurrent(pageContent, pageTheContentIsFor)
+                    )
                 );
+            }
             else
                 PageList.PageMoved(movedPage, newIndex, pageContent);
             request.PostSucceeded();

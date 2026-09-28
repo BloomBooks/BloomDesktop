@@ -277,10 +277,16 @@ async function takeSnapshot(): Promise<void> {
         // be safe to restart and this is what makes that true.
         if (pageIdBeingWatched === pageId) busy = false;
         markRunDone();
+        // Something changed while we were gathering or posting: that change is not in what we
+        // just sent (or failed to send), so go round again -- soon. This is in the finally so
+        // that it runs on EVERY way out, refusal and failure included: those branches have just
+        // scheduled a slower retry, and this replaces it with the quick one, because a change the
+        // user made must not wait out a backoff that was only meant to spare a server that is not
+        // answering. The change's own timer cannot do this for us: it fired while we were busy and
+        // was turned away at the top of this function.
+        if (pageIdBeingWatched === pageId && changeCount !== countWhenStarted)
+            scheduleSnapshot();
     }
-    // Something changed while we were gathering or posting: that change is not in what we just
-    // sent, so go round again.
-    if (changeCount !== countWhenStarted) scheduleSnapshot();
 }
 
 // The delay register (pageContentDelays.ts) has gone busy or idle. C# needs to know, because a
