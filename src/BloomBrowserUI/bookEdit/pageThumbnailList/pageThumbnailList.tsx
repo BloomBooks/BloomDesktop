@@ -833,7 +833,7 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
                 }),
             );
         if (commandId === "removePage") {
-            confirmRemovePage(postCommand, pageId);
+            confirmRemovePage(postCommand);
         } else {
             postCommand();
         }

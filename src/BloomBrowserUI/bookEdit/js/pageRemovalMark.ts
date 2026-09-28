@@ -1,6 +1,6 @@
-// While the user is asked to confirm removing a page, show them which page it is: bring it into view
-// in the page frame and draw a big red X across it. The page may be the one being edited or, when the
-// other pages of the book are showing (see bookGridView.ts), any of them.
+// While the user is asked to confirm removing the page being edited (the only page Remove Page
+// removes), show them which page that is: bring it into view in the page frame and draw a big red X
+// across it. With the other pages of the book showing (see bookGridView.ts), it can be anywhere.
 
 const kSvgNamespace = "http://www.w3.org/2000/svg";
 const kLineWidth = 4;
@@ -11,26 +11,15 @@ const kLineColor = "#ff0000";
 const kZIndex = 999;
 
 /**
- * Scroll the page with this id into view and draw a red X across it; with no id, the page being
- * edited. Returns a function that takes the X away again. A page this frame is not showing (another
- * page, while the other pages are hidden) gets no X.
+ * Scroll the page being edited into view and draw a red X across it. Returns a function that takes
+ * the X away again.
  */
-export function markPageForRemoval(pageId?: string): () => void {
-    const pageBox = findPageBox(pageId);
-    if (!pageBox) return () => undefined;
-    bringIntoView(pageBox);
-    const mark = makeX(pageBox.getBoundingClientRect());
+export function markPageForRemoval(): () => void {
+    const page = document.querySelector(".bloom-page") as HTMLElement;
+    bringIntoView(page);
+    const mark = makeX(page.getBoundingClientRect());
     document.body.appendChild(mark);
     return () => mark.remove();
-}
-
-// The page being edited itself, or the grid cell that shows another page.
-function findPageBox(pageId: string | undefined): HTMLElement | null {
-    const editedPage = document.querySelector(".bloom-page") as HTMLElement;
-    if (!pageId || editedPage.id === pageId) return editedPage;
-    return document.querySelector(
-        `.bloom-book-grid-cell[data-page-id="${CSS.escape(pageId)}"]`,
-    );
 }
 
 // Scroll this document only. scrollIntoView would also scroll the Edit tab's own containers, outside
