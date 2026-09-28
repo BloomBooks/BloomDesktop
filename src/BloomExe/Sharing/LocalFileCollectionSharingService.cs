@@ -68,7 +68,6 @@ namespace Bloom.Sharing
         public void StartSharing(
             string adminEmail,
             string adminName,
-            IEnumerable<SharingInvitation> invitations,
             IEnumerable<TeamCollectionHistoryMember> historyMembers
         )
         {
@@ -77,44 +76,21 @@ namespace Bloom.Sharing
                 if (Read() != null)
                     throw new SharingNotAllowedException("This collection is already shared.");
                 var now = _utcNow();
-                var record = new CollectionSharingRecord
-                {
-                    CollectionId = _collectionId,
-                    CollectionName = _collectionName,
-                    CreatedAt = now,
-                    Members = new List<SharingMember>
+                // One write for everyone, so the collection is shared with all of them or none.
+                Write(
+                    new CollectionSharingRecord
                     {
-                        new SharingMember
-                        {
-                            Email = adminEmail,
-                            Name = adminName,
-                            Role = SharingRole.Admin,
-                            InvitedAt = now,
-                            InvitedBy = adminEmail,
-                            LastSeen = now,
-                        },
-                    },
-                };
-                foreach (var person in historyMembers)
-                {
-                    // The admin is already a member, and nobody can be one twice.
-                    if (FindMember(record, person.Email) != null)
-                        continue;
-                    record.Members.Add(
-                        new SharingMember
-                        {
-                            Email = person.Email.Trim(),
-                            Name = person.Name,
-                            Role = person.Role,
-                            InvitedAt = now,
-                            InvitedBy = adminEmail,
-                            LastSeen = person.LastActivity,
-                        }
-                    );
-                }
-                // One write for everything, so a bad invitation leaves the collection unshared.
-                AddInvitations(record, adminEmail, invitations.ToList());
-                Write(record);
+                        CollectionId = _collectionId,
+                        CollectionName = _collectionName,
+                        CreatedAt = now,
+                        Members = CollectionSharingRecord.StartingMembers(
+                            adminEmail,
+                            adminName,
+                            historyMembers,
+                            now
+                        ),
+                    }
+                );
             }
         }
 

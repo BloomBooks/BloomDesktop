@@ -2645,6 +2645,51 @@
         <note>ID: Sharing.ShareDialog.LearnAboutSharing</note>
         <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Link at the top right of the dialog that opens a help page in the web browser.</note>
       </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.StartExplanation" translate="no">
+        <source xml:lang="en">When you start sharing, Bloom copies this collection to the cloud, and the people you share it with can open it and work on it with you. After that, you can invite more people and change what each person may do.</source>
+        <note>ID: Sharing.ShareDialog.StartExplanation</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown before the collection has been shared, above the Start sharing button.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.WhoWillHaveAccess" translate="no">
+        <source xml:lang="en">Who will have access</source>
+        <note>ID: Sharing.ShareDialog.WhoWillHaveAccess</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Heading above the list of people who will be able to use the collection once the administrator presses Start sharing.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.StartSharing" translate="no">
+        <source xml:lang="en">Start sharing</source>
+        <note>ID: Sharing.ShareDialog.StartSharing</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that shares the collection for the first time, with the people listed. Also the confirming button of the dialog that asks whether to go ahead, for a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.Heading" translate="no">
+        <source xml:lang="en">What happens to the Team Collection</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.Heading</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Heading of a warning, shown before sharing starts, listing what starting to share does to the collection's existing Team Collection (Bloom's older way of sharing a collection through a shared folder such as Dropbox).</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.Frozen" translate="no">
+        <source xml:lang="en">The Team Collection will be frozen for everyone. Nobody will be able to check books in or out of it any more.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.Frozen</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. One point of the warning about what happens to the Team Collection (Bloom's older way of sharing through a shared folder) when sharing starts.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.KeepCheckedOutWork" translate="no">
+        <source xml:lang="en">People keep the books they have checked out, but they will need Bloom %0 or later to go on working on them. Older versions of Bloom will not open this collection.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.KeepCheckedOutWork</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. One point of the warning about what happens to the Team Collection when sharing starts. %0 is replaced by a Bloom version number such as 6.6.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.CannotUndo" translate="no">
+        <source xml:lang="en">This can't be undone from Bloom.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.CannotUndo</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. The last point of the warning about what happens to the Team Collection when sharing starts.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.ConfirmStart.Title" translate="no">
+        <source xml:lang="en">Start sharing this collection?</source>
+        <note>ID: Sharing.ShareDialog.ConfirmStart.Title</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Title of the small dialog that asks an administrator to confirm starting to share a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.ConfirmStart.Message" translate="no">
+        <source xml:lang="en">The Team Collection will be frozen for everyone, and everyone will need Bloom %0 or later to open this collection. People keep the books they have checked out. This can't be undone from Bloom.</source>
+        <note>ID: Sharing.ShareDialog.ConfirmStart.Message</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. The message of the small dialog that asks an administrator to confirm starting to share a Team Collection (Bloom's older way of sharing through a shared folder). %0 is replaced by a Bloom version number such as 6.6.</note>
+      </trans-unit>
       <trans-unit id="Sharing.Role.Admin" translate="no">
         <source xml:lang="en">Admin</source>
         <note>ID: Sharing.Role.Admin</note>

@@ -52,14 +52,16 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// Register the sharing/* endpoints: state (GET), invite, setRole and remove (all POST).
+        /// Register the sharing/* endpoints: state (GET), start, invite, setRole and remove (all
+        /// POST).
         /// </summary>
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
-            // On the UI thread, like teamCollection/getHistory, because when it starts sharing a
-            // Team Collection it reads the history via the collection's book list
-            // (BookCollection.GetBookInfos).
+            // These two on the UI thread, like teamCollection/getHistory, because for a Team
+            // Collection that is not shared yet they read the history via the collection's book
+            // list (BookCollection.GetBookInfos).
             apiHandler.RegisterEndpointHandler("sharing/state", HandleState, true);
+            apiHandler.RegisterEndpointHandler("sharing/start", HandleStart, true);
             apiHandler.RegisterEndpointHandler("sharing/invite", HandleInvite, false);
             apiHandler.RegisterEndpointHandler("sharing/setRole", HandleSetRole, false);
             apiHandler.RegisterEndpointHandler("sharing/remove", HandleRemove, false);
@@ -111,29 +113,41 @@ namespace Bloom.web.controllers
             );
         }
 
+        // Whether this is a folder Team Collection (connected or not).
+        private bool IsTeamCollection => _tcManager.CurrentCollectionEvenIfDisconnected != null;
+
+        // What previews and starts sharing this collection.
+        private CollectionSharingStarter MakeStarter()
+        {
+            return new CollectionSharingStarter(
+                _sharingService,
+                IsTeamCollection,
+                () => CollectionHistory.GetAllEvents(_collectionSelection.CurrentSelection),
+                _settings.Administrators
+            );
+        }
+
+        // Whether the signed-in person may press Start sharing now: the collection is not shared
+        // yet and they may manage it (which includes being signed in). This is where later
+        // conditions belong, each also needing its own explanation in the dialog: that their
+        // subscription allows sharing (BL-16672), and that Bloom is online.
+        private bool CanStart(CollectionSharingRecord record)
+        {
+            return record == null && CanManage(null);
+        }
+
         /// <summary>
         /// GET sharing/state: everything the Share dialog shows. Also records that the signed-in
-        /// person (if a member) is using the collection; see RecordVisitIfSignedIn. And the
-        /// first time an administrator of a (folder) Team Collection looks, it shares the
-        /// collection, with everyone its history shows has worked in it; see
-        /// TeamCollectionHistoryMembers.StartSharingIfTeamCollection.
+        /// person (if a member) is using the collection; see RecordVisitIfSignedIn. Before the
+        /// collection is shared it saves nothing, and, for someone who may start sharing, gives
+        /// the preview of who will have access (previewMembers).
         /// </summary>
         private void HandleState(ApiRequest request)
         {
             var email = SignedInEmail;
             RecordVisitIfSignedIn();
-            if (_sharingService.GetRecord() == null && CanManage(null))
-            {
-                TeamCollectionHistoryMembers.StartSharingIfTeamCollection(
-                    _sharingService,
-                    _tcManager.CurrentCollectionEvenIfDisconnected != null,
-                    email,
-                    RegisteredName,
-                    () => CollectionHistory.GetAllEvents(_collectionSelection.CurrentSelection),
-                    _settings.Administrators
-                );
-            }
             var record = _sharingService.GetRecord();
+            var canStart = CanStart(record);
             request.ReplyWithJson(
                 new
                 {
@@ -141,10 +155,27 @@ namespace Bloom.web.controllers
                     signedInEmail = email,
                     signedInName = RegisteredName,
                     isShared = record != null,
+                    isTeamCollection = IsTeamCollection,
                     canManage = CanManage(record),
+                    canStart,
                     members = record?.Members ?? new List<SharingMember>(),
+                    previewMembers = canStart
+                        ? MakeStarter().PreviewMembers(email, RegisteredName)
+                        : new List<SharingMember>(),
                 }
             );
+        }
+
+        /// <summary>
+        /// POST sharing/start: start sharing the collection, with the signed-in person as its
+        /// admin and, for a Team Collection, everyone its history shows; see
+        /// CollectionSharingStarter.Start. Refused if the collection is already shared.
+        /// </summary>
+        private void HandleStart(ApiRequest request)
+        {
+            var me = RequireSignedInEmail();
+            MakeStarter().Start(me, RegisteredName, CanManage(null));
+            ReportChange(request);
         }
 
         private class InviteBody
@@ -153,28 +184,13 @@ namespace Bloom.web.controllers
         }
 
         /// <summary>
-        /// POST sharing/invite {invitations: [{email, role}]}: invite people. If the collection
-        /// is not shared yet, this is what shares it, with the signed-in person as its admin.
+        /// POST sharing/invite {invitations: [{email, role}]}: invite people to a collection that
+        /// is already shared (the dialog offers inviting only once sharing has started).
         /// </summary>
         private void HandleInvite(ApiRequest request)
         {
             var body = request.RequiredPostObject<InviteBody>();
-            var me = RequireSignedInEmail();
-            if (_sharingService.GetRecord() == null)
-            {
-                if (!_tcManager.OkToEditCollectionSettings)
-                    throw new SharingNotAllowedException(
-                        "Only an administrator of this collection can share it."
-                    );
-                _sharingService.StartSharing(
-                    me,
-                    RegisteredName,
-                    body.invitations,
-                    new TeamCollectionHistoryMember[0]
-                );
-            }
-            else
-                _sharingService.Invite(me, body.invitations);
+            _sharingService.Invite(RequireSignedInEmail(), body.invitations);
             ReportChange(request);
         }
 

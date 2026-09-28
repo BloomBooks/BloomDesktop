@@ -11,13 +11,17 @@ import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import CheckIcon from "@mui/icons-material/Check";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
     DialogTitle,
 } from "../react_components/BloomDialog/BloomDialog";
-import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
+import {
+    DialogCancelButton,
+    DialogCloseButton,
+} from "../react_components/BloomDialog/commonDialogComponents";
 import BloomButton from "../react_components/bloomButton";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useL10n } from "../react_components/l10nHooks";
@@ -41,21 +45,29 @@ import {
     removeMember,
     sameEmail,
     setRole,
+    startSharing,
     useSharingState,
 } from "./sharingApi";
 
 // What the dialog asks the server to do. Separate from the component so tests can supply fakes.
 export interface IShareDialogActions {
-    // Resolves once the server has answered: true if it made the invitations (and so shared
-    // the collection), false if it failed (the failure has already been reported).
+    // Resolves once the server has answered: true if it started sharing, false if it failed
+    // (the failure has already been reported).
+    startSharing: () => Promise<boolean>;
+    // Resolves once the server has answered: true if it made the invitations, false if it
+    // failed (the failure has already been reported).
     invite: (invitations: IInvitation[]) => Promise<boolean>;
     setRole: (email: string, role: SharingRole) => void;
     remove: (email: string) => void;
     signIn: () => void;
 }
 
+// The version of Bloom that everyone needs once a collection is shared (and, for a Team
+// Collection, frozen). Matches CollectionSharingStarter.kCloudCollectionMinimumBloomVersion.
+const kSharedCollectionMinimumBloomVersion = "6.6";
+
 // The dialog the Collection tab's Share button opens: who has access to this collection, and,
-// for its admins, inviting people and changing what they may do.
+// for its admins, starting to share it, inviting people and changing what they may do.
 export const ShareDialog: React.FunctionComponent<{
     open: boolean;
     onClose: () => void;
@@ -93,6 +105,7 @@ const ShareDialogWithData: React.FunctionComponent<{
         <ShareDialogContents
             state={state}
             actions={{
+                startSharing,
                 invite,
                 setRole,
                 remove: removeMember,
@@ -120,24 +133,6 @@ export const ShareDialogContents: React.FunctionComponent<{
         undefined,
         props.state.collectionName,
     );
-    const signedIn = !!props.state.signedInEmail;
-    // Before the collection is shared, show the signed-in admin as its future sole admin, so the
-    // list reads the same before and after the first invitation. (A Team Collection is already
-    // shared by the time an admin sees this, because the server shares it, with everyone its
-    // history shows working in it, the first time one of its admins asks for the state.)
-    const members: ISharingMember[] =
-        props.state.isShared || !signedIn || !props.state.canManage
-            ? props.state.members
-            : [
-                  {
-                      email: props.state.signedInEmail,
-                      name: props.state.signedInName,
-                      role: "admin",
-                      invitedAt: props.now.toISOString(),
-                      invitedBy: props.state.signedInEmail,
-                      lastSeen: props.now.toISOString(),
-                  },
-              ];
 
     return (
         <>
@@ -153,46 +148,289 @@ export const ShareDialogContents: React.FunctionComponent<{
                     overflow-x: hidden;
                 `}
             >
-                {!signedIn && <SignInPrompt signIn={props.actions.signIn} />}
-                {signedIn && props.state.canManage && (
-                    <InviteRow
-                        members={members}
-                        onInvite={(email, role) =>
-                            props.actions.invite([{ email, role }])
-                        }
+                {props.state.isShared ? (
+                    <SharedContents
+                        state={props.state}
+                        actions={props.actions}
+                        uiLanguage={props.uiLanguage}
+                        now={props.now}
                     />
-                )}
-                {signedIn && !props.state.canManage && (
-                    <OnlyAdminsNote isShared={props.state.isShared} />
-                )}
-                {members.length > 0 && (
-                    <div
-                        data-testid="share-member-list"
-                        css={css`
-                            border-top: 1px solid ${kBannerGray};
-                        `}
-                    >
-                        {members.map((member) => (
-                            <MemberRow
-                                key={member.email}
-                                member={member}
-                                isYou={sameEmail(
-                                    member.email,
-                                    props.state.signedInEmail,
-                                )}
-                                canManage={props.state.canManage}
-                                uiLanguage={props.uiLanguage}
-                                now={props.now}
-                                actions={props.actions}
-                            />
-                        ))}
-                    </div>
+                ) : (
+                    <NotSharedContents
+                        state={props.state}
+                        actions={props.actions}
+                        uiLanguage={props.uiLanguage}
+                        now={props.now}
+                    />
                 )}
             </DialogMiddle>
             <DialogBottomButtons>
                 <DialogCloseButton onClick={props.onClose} default={true} />
             </DialogBottomButtons>
         </>
+    );
+};
+
+// Once the collection is shared: who has access, and, for its admins, inviting people and
+// changing what they may do. Every change takes effect at once.
+const SharedContents: React.FunctionComponent<{
+    state: ISharingState;
+    actions: IShareDialogActions;
+    uiLanguage: string;
+    now: Date;
+}> = (props) => {
+    const signedIn = !!props.state.signedInEmail;
+    // While the admin's Bloom is still uploading the books of a newly shared collection, this is
+    // where a line such as "Uploading 3 of 40 books" belongs, driven by progress that
+    // sharing/state reports. There is no upload yet (see CollectionSharingStarter), so nothing
+    // is shown.
+    return (
+        <>
+            {!signedIn && <SignInPrompt signIn={props.actions.signIn} />}
+            {signedIn && props.state.canManage && (
+                <InviteRow
+                    members={props.state.members}
+                    onInvite={(email, role) =>
+                        props.actions.invite([{ email, role }])
+                    }
+                />
+            )}
+            {signedIn && !props.state.canManage && (
+                <OnlyAdminsNote isShared={true} />
+            )}
+            <MemberList
+                members={props.state.members}
+                signedInEmail={props.state.signedInEmail}
+                canManage={props.state.canManage}
+                uiLanguage={props.uiLanguage}
+                now={props.now}
+                actions={props.actions}
+            />
+        </>
+    );
+};
+
+// Before the collection is shared: what sharing does, who will have access, what happens to a
+// Team Collection, and the Start sharing button. Nothing is saved until that is pressed, so
+// closing the dialog leaves everything as it was.
+const NotSharedContents: React.FunctionComponent<{
+    state: ISharingState;
+    actions: IShareDialogActions;
+    uiLanguage: string;
+    now: Date;
+}> = (props) => {
+    const signedIn = !!props.state.signedInEmail;
+    // True while the request to start is on its way, so it can't be sent twice.
+    const [pending, setPending] = useState(false);
+    const [confirming, setConfirming] = useState(false);
+    const explanation = useL10n(
+        "When you start sharing, Bloom copies this collection to the cloud, and the people you share it with can open it and work on it with you. After that, you can invite more people and change what each person may do.",
+        "Sharing.ShareDialog.StartExplanation",
+    );
+    const whoWillHaveAccess = useL10n(
+        "Who will have access",
+        "Sharing.ShareDialog.WhoWillHaveAccess",
+    );
+
+    const start = () => {
+        setConfirming(false);
+        setPending(true);
+        // A successful start makes the server send its sharing/stateChanged event, and
+        // useSharingState then fetches the shared state, which replaces all of this.
+        void props.actions.startSharing().then(() => setPending(false));
+    };
+
+    // Why Start is disabled, when it is, is shown by the sign-in prompt or the note that only
+    // an administrator can share. Later conditions of canStart (a subscription that allows
+    // sharing, BL-16672; being online) will each need their own explanation here.
+    return (
+        <>
+            <div data-testid="share-start-explanation">{explanation}</div>
+            {!signedIn && <SignInPrompt signIn={props.actions.signIn} />}
+            {signedIn && !props.state.canManage && (
+                <OnlyAdminsNote isShared={false} />
+            )}
+            {props.state.previewMembers.length > 0 && (
+                <div data-testid="share-preview">
+                    <div
+                        css={css`
+                            font-weight: 500;
+                            margin-bottom: 4px;
+                        `}
+                    >
+                        {whoWillHaveAccess}
+                    </div>
+                    {/* Read-only: once sharing has started, an admin can remove anyone who
+                        should not be here. */}
+                    <MemberList
+                        members={props.state.previewMembers}
+                        signedInEmail={props.state.signedInEmail}
+                        canManage={false}
+                        uiLanguage={props.uiLanguage}
+                        now={props.now}
+                        actions={props.actions}
+                    />
+                </div>
+            )}
+            {props.state.isTeamCollection && <TeamCollectionConsequences />}
+            <div>
+                <BloomButton
+                    data-testid="share-start-button"
+                    l10nKey="Sharing.ShareDialog.StartSharing"
+                    enabled={props.state.canStart && !pending}
+                    hasText={true}
+                    variant="contained"
+                    onClick={() => {
+                        // Freezing a Team Collection can't be undone, so that needs a second
+                        // yes; an ordinary collection just starts.
+                        if (props.state.isTeamCollection) setConfirming(true);
+                        else start();
+                    }}
+                >
+                    Start sharing
+                </BloomButton>
+            </div>
+            {confirming && (
+                <ConfirmStartDialog
+                    onConfirm={start}
+                    onCancel={() => setConfirming(false)}
+                />
+            )}
+        </>
+    );
+};
+
+// What starting to share does to a folder Team Collection, stated plainly before the admin
+// presses Start sharing.
+const TeamCollectionConsequences: React.FunctionComponent = () => {
+    const heading = useL10n(
+        "What happens to the Team Collection",
+        "Sharing.ShareDialog.TeamCollection.Heading",
+    );
+    const frozen = useL10n(
+        "The Team Collection will be frozen for everyone. Nobody will be able to check books in or out of it any more.",
+        "Sharing.ShareDialog.TeamCollection.Frozen",
+    );
+    const keepWork = useL10n(
+        "People keep the books they have checked out, but they will need Bloom %0 or later to go on working on them. Older versions of Bloom will not open this collection.",
+        "Sharing.ShareDialog.TeamCollection.KeepCheckedOutWork",
+        undefined,
+        kSharedCollectionMinimumBloomVersion,
+    );
+    const cannotUndo = useL10n(
+        "This can't be undone from Bloom.",
+        "Sharing.ShareDialog.TeamCollection.CannotUndo",
+    );
+    return (
+        <div
+            data-testid="share-team-collection-consequences"
+            css={css`
+                display: flex;
+                gap: 12px;
+                padding: 16px;
+                border-radius: 4px;
+                background-color: ${kFormBackground};
+            `}
+        >
+            <WarningAmberIcon
+                css={css`
+                    color: ${kBloomRed};
+                `}
+            />
+            <div>
+                <div
+                    css={css`
+                        font-weight: 500;
+                    `}
+                >
+                    {heading}
+                </div>
+                <ul
+                    css={css`
+                        margin: 4px 0 0 0;
+                        padding-left: 20px;
+                    `}
+                >
+                    <li>{frozen}</li>
+                    <li>{keepWork}</li>
+                    <li>{cannotUndo}</li>
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+// The second yes before a Team Collection is frozen and shared.
+const ConfirmStartDialog: React.FunctionComponent<{
+    onConfirm: () => void;
+    onCancel: () => void;
+}> = (props) => {
+    const title = useL10n(
+        "Start sharing this collection?",
+        "Sharing.ShareDialog.ConfirmStart.Title",
+    );
+    const message = useL10n(
+        "The Team Collection will be frozen for everyone, and everyone will need Bloom %0 or later to open this collection. People keep the books they have checked out. This can't be undone from Bloom.",
+        "Sharing.ShareDialog.ConfirmStart.Message",
+        undefined,
+        kSharedCollectionMinimumBloomVersion,
+    );
+    return (
+        <BloomDialog
+            open={true}
+            onClose={props.onCancel}
+            onCancel={props.onCancel}
+            maxWidth="xs"
+        >
+            <DialogTitle title={title} />
+            <DialogMiddle>
+                <div data-testid="share-confirm-start">{message}</div>
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <BloomButton
+                    data-testid="share-confirm-start-button"
+                    l10nKey="Sharing.ShareDialog.StartSharing"
+                    enabled={true}
+                    hasText={true}
+                    variant="contained"
+                    onClick={props.onConfirm}
+                >
+                    Start sharing
+                </BloomButton>
+                <DialogCancelButton />
+            </DialogBottomButtons>
+        </BloomDialog>
+    );
+};
+
+const MemberList: React.FunctionComponent<{
+    members: ISharingMember[];
+    signedInEmail: string;
+    canManage: boolean;
+    uiLanguage: string;
+    now: Date;
+    actions: IShareDialogActions;
+}> = (props) => {
+    if (props.members.length === 0) return null;
+    return (
+        <div
+            data-testid="share-member-list"
+            css={css`
+                border-top: 1px solid ${kBannerGray};
+            `}
+        >
+            {props.members.map((member) => (
+                <MemberRow
+                    key={member.email}
+                    member={member}
+                    isYou={sameEmail(member.email, props.signedInEmail)}
+                    canManage={props.canManage}
+                    uiLanguage={props.uiLanguage}
+                    now={props.now}
+                    actions={props.actions}
+                />
+            ))}
+        </div>
     );
 };
 

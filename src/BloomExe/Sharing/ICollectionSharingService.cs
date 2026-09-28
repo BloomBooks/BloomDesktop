@@ -18,16 +18,16 @@ namespace Bloom.Sharing
         /// <summary>
         /// Share the collection for the first time, with the given person as its admin (seen
         /// now), together with the people a Team Collection's history shows have worked in it
-        /// (in their history roles, last seen at their last recorded action; the admin is left
-        /// out of these, being there already) and the first invitations, either of which may be
-        /// none. All or none: if any invitation is bad, it throws and the collection stays
-        /// unshared. Deciding who may do this is the caller's job, since before a collection is
-        /// shared the only authority is the local one (e.g. the old Team Collection's admin list).
+        /// (none for an ordinary collection); see CollectionSharingRecord.StartingMembers. All or
+        /// none. Throws if the collection is already shared. The cloud implementation does this
+        /// by creating the cloud collection, with its "initial upload in progress" flag set, and
+        /// its members (Design/CloudTeamCollections.md, section 5). Deciding who may do this is
+        /// the caller's job (CollectionSharingStarter), since before a collection is shared the
+        /// only authority is the local one (e.g. the old Team Collection's admin list).
         /// </summary>
         void StartSharing(
             string adminEmail,
             string adminName,
-            IEnumerable<SharingInvitation> invitations,
             IEnumerable<TeamCollectionHistoryMember> historyMembers
         );
 

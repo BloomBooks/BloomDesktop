@@ -53,32 +53,5 @@ namespace Bloom.Sharing
                 .OrderByDescending(m => m.LastActivity)
                 .ToList();
         }
-
-        /// <summary>
-        /// Called when a signed-in person who may manage sharing (see SharingApi.CanManage) looks
-        /// at the sharing of a collection that is not shared yet. If it is a Team Collection,
-        /// share it now, with that person as admin and everyone its history shows has worked in
-        /// it as members, in one write. An ordinary collection is left alone: it starts being
-        /// shared with the first invitation. getEvents is only called for a Team Collection,
-        /// since reading the history is not free.
-        /// </summary>
-        public static void StartSharingIfTeamCollection(
-            ICollectionSharingService service,
-            bool isTeamCollection,
-            string adminEmail,
-            string adminName,
-            Func<IEnumerable<HistoryEvent>> getEvents,
-            IEnumerable<string> administrators
-        )
-        {
-            if (!isTeamCollection || service.GetRecord() != null)
-                return;
-            service.StartSharing(
-                adminEmail,
-                adminName,
-                new SharingInvitation[0],
-                Find(getEvents(), administrators)
-            );
-        }
     }
 }

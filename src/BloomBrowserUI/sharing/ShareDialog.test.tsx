@@ -41,14 +41,18 @@ function makeState(overrides: Partial<ISharingState>): ISharingState {
         signedInEmail: ruth,
         signedInName: "Ruth Nakalema",
         isShared: true,
+        isTeamCollection: false,
         canManage: true,
+        canStart: false,
         members: [member(ruth, "admin")],
+        previewMembers: [],
         ...overrides,
     };
 }
 
 function makeActions() {
     return {
+        startSharing: vi.fn(() => Promise.resolve(true)),
         invite: vi.fn(() => Promise.resolve(true)),
         setRole: vi.fn(),
         remove: vi.fn(),
@@ -149,11 +153,8 @@ describe("ShareDialogContents", () => {
         expect(actions.signIn).toHaveBeenCalledTimes(1);
     });
 
-    it("before sharing, shows the admin as the sole admin and lets them invite", async () => {
-        const actions = render(makeState({ isShared: false, members: [] }));
-        const rows = findAll("share-member");
-        expect(rows.map((r) => r.dataset.email)).toEqual([ruth]);
-
+    it("lets an admin invite someone once the collection is shared", async () => {
+        const actions = render(makeState({}));
         expect(inviteButton()?.disabled).toBe(true);
         typeInto(emailInput(), " amina@example.org ");
         expect(inviteButton()?.disabled).toBe(false);
@@ -169,7 +170,6 @@ describe("ShareDialogContents", () => {
         await act(async () => {});
         expect(emailInput()?.value).toBe("");
     });
-
     it("keeps the typed email if the invitation fails", async () => {
         const actions = makeActions();
         actions.invite.mockImplementation(() => Promise.resolve(false));
@@ -311,5 +311,142 @@ describe("ShareDialogContents", () => {
         expect(find("share-only-admins")).not.toBeNull();
         expect(find("share-invite-row")).toBeNull();
         expect(find("share-member-role")).toBeNull();
+    });
+});
+
+describe("ShareDialogContents before sharing starts", () => {
+    // What the server previews for an admin of a Team Collection whose history shows Amina.
+    function notSharedState(overrides: Partial<ISharingState>): ISharingState {
+        return makeState({
+            isShared: false,
+            canStart: true,
+            members: [],
+            previewMembers: [
+                member(ruth, "admin"),
+                member("amina@example.org", "editor"),
+            ],
+            ...overrides,
+        });
+    }
+
+    function startButton() {
+        return find("share-start-button") as HTMLButtonElement | null;
+    }
+
+    it("explains sharing, lists who will have access read-only, and offers Start but no invite box", () => {
+        render(notSharedState({}));
+        expect(find("share-start-explanation")?.textContent).toContain(
+            "copies this collection to the cloud",
+        );
+        const preview = find("share-preview");
+        if (!preview) fail("There should be a list of who will have access.");
+        expect(
+            Array.from(
+                preview.querySelectorAll<HTMLElement>(
+                    '[data-testid="share-member"]',
+                ),
+            ).map((r) => r.dataset.email),
+        ).toEqual([ruth, "amina@example.org"]);
+        expect(find("share-member-role")).toBeNull();
+        expect(find("share-invite-row")).toBeNull();
+        expect(startButton()?.disabled).toBe(false);
+        // An ordinary collection has no Team Collection to freeze.
+        expect(find("share-team-collection-consequences")).toBeNull();
+    });
+
+    it("starts an ordinary collection without asking again, and only once", async () => {
+        const actions = render(notSharedState({}));
+        click(startButton(), "the Start sharing button");
+        expect(actions.startSharing).toHaveBeenCalledTimes(1);
+        expect(find("share-confirm-start")).toBeNull();
+        expect(startButton()?.disabled).toBe(true);
+        await act(async () => {});
+    });
+
+    it("for a Team Collection, states the consequences and asks for confirmation", () => {
+        const actions = render(notSharedState({ isTeamCollection: true }));
+        const consequences = find("share-team-collection-consequences");
+        if (!consequences)
+            fail("The Team Collection's consequences should show.");
+        expect(consequences.textContent).toContain("frozen for everyone");
+        expect(consequences.textContent).toContain("Bloom 6.6 or later");
+        expect(consequences.textContent).toContain("can't be undone");
+
+        click(startButton(), "the Start sharing button");
+        expect(actions.startSharing).not.toHaveBeenCalled();
+        expect(find("share-confirm-start")?.textContent).toContain(
+            "frozen for everyone",
+        );
+
+        click(
+            find("share-confirm-start-button"),
+            "the confirming Start button",
+        );
+        expect(actions.startSharing).toHaveBeenCalledTimes(1);
+        expect(find("share-confirm-start")).toBeNull();
+    });
+
+    it("for a Team Collection, Cancel in the confirmation starts nothing", () => {
+        const actions = render(notSharedState({ isTeamCollection: true }));
+        click(startButton(), "the Start sharing button");
+        const confirm = find("share-confirm-start");
+        if (!confirm) fail("The confirmation should be showing.");
+        const cancel = Array.from(
+            confirm
+                .closest(".MuiDialog-root")!
+                .querySelectorAll<HTMLButtonElement>("button"),
+        ).find((b) => b.dataset.testid !== "share-confirm-start-button");
+        click(cancel ?? null, "the Cancel button");
+        expect(actions.startSharing).not.toHaveBeenCalled();
+        expect(find("share-confirm-start")).toBeNull();
+        expect(startButton()?.disabled).toBe(false);
+    });
+
+    it("disables Start, saying why, for someone who is not an administrator", () => {
+        render(
+            notSharedState({
+                signedInEmail: "amina@example.org",
+                canManage: false,
+                canStart: false,
+                previewMembers: [],
+            }),
+        );
+        expect(startButton()?.disabled).toBe(true);
+        expect(find("share-only-admins")?.textContent).toContain(
+            "Only an administrator of this collection can share it.",
+        );
+        expect(find("share-preview")).toBeNull();
+    });
+
+    it("disables Start, asking them to sign in, for someone signed out", () => {
+        render(
+            notSharedState({
+                signedInEmail: "",
+                canManage: false,
+                canStart: false,
+                previewMembers: [],
+            }),
+        );
+        expect(startButton()?.disabled).toBe(true);
+        expect(find("share-sign-in")).not.toBeNull();
+    });
+
+    it("shows the invite box once sharing has started", () => {
+        render(notSharedState({}));
+        expect(find("share-invite-row")).toBeNull();
+        act(() => unmountRoot(container!));
+        container!.remove();
+        container = undefined;
+
+        render(
+            makeState({
+                members: [
+                    member(ruth, "admin"),
+                    member("amina@example.org", "editor"),
+                ],
+            }),
+        );
+        expect(find("share-invite-row")).not.toBeNull();
+        expect(find("share-start-button")).toBeNull();
     });
 });

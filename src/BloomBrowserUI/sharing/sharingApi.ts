@@ -26,12 +26,20 @@ export interface ISharingState {
     signedInEmail: string;
     // The name the user registered with Bloom.
     signedInName: string;
-    // False until someone first invites people, or, for a Team Collection, until one of its
-    // administrators first opens the Share dialog.
+    // False until an admin presses Start sharing.
     isShared: boolean;
-    // Whether the signed-in person may invite people and change roles.
+    // Whether this is a folder Team Collection, which starting to share freezes.
+    isTeamCollection: boolean;
+    // Whether the signed-in person may invite people and change roles (once shared), or start
+    // sharing (before).
     canManage: boolean;
+    // Whether the signed-in person may press Start sharing now (never once it is shared).
+    canStart: boolean;
+    // Once shared, who has access.
     members: ISharingMember[];
+    // Before sharing starts, and only for someone who may start it: who will have access once
+    // they do. Nothing has been saved.
+    previewMembers: ISharingMember[];
 }
 
 export interface IInvitation {
@@ -50,9 +58,15 @@ export function useSharingState(): ISharingState | undefined {
     );
 }
 
-// Invite people. If the collection is not shared yet, this shares it, with the signed-in user
-// as its admin. Resolves to whether it worked: postJson reports a failure to the user itself
-// and then resolves with no response rather than rejecting.
+// Start sharing the collection, with the people previewMembers listed. Resolves to whether it
+// worked: postJson reports a failure to the user itself and then resolves with no response
+// rather than rejecting.
+export function startSharing(): Promise<boolean> {
+    return postJson("sharing/start", {}).then((response) => !!response);
+}
+
+// Invite people to the (already shared) collection. Resolves to whether it worked, as
+// startSharing does.
 export function invite(invitations: IInvitation[]): Promise<boolean> {
     return postJson("sharing/invite", { invitations }).then(
         (response) => !!response,

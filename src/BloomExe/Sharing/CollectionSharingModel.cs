@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -73,6 +74,60 @@ namespace Bloom.Sharing
 
         [JsonProperty("members")]
         public List<SharingMember> Members = new List<SharingMember>();
+
+        /// <summary>
+        /// The members a collection starts being shared with: the admin starting it (Admin, seen
+        /// now), then the people a Team Collection's history shows have worked in it, in their
+        /// history roles, last seen at their last recorded action. The admin is not added again
+        /// from the history, and nobody appears twice. Both the preview the Share dialog shows
+        /// before sharing starts and the record saved when it does start come from this, so what
+        /// the admin is shown is what is saved.
+        /// </summary>
+        public static List<SharingMember> StartingMembers(
+            string adminEmail,
+            string adminName,
+            IEnumerable<TeamCollectionHistoryMember> historyMembers,
+            DateTime now
+        )
+        {
+            var members = new List<SharingMember>
+            {
+                new SharingMember
+                {
+                    Email = adminEmail,
+                    Name = adminName,
+                    Role = SharingRole.Admin,
+                    InvitedAt = now,
+                    InvitedBy = adminEmail,
+                    LastSeen = now,
+                },
+            };
+            foreach (var person in historyMembers)
+            {
+                if (
+                    members.Any(m =>
+                        string.Equals(
+                            m.Email.Trim(),
+                            person.Email.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                )
+                    continue;
+                members.Add(
+                    new SharingMember
+                    {
+                        Email = person.Email.Trim(),
+                        Name = person.Name,
+                        Role = person.Role,
+                        InvitedAt = now,
+                        InvitedBy = adminEmail,
+                        LastSeen = person.LastActivity,
+                    }
+                );
+            }
+            return members;
+        }
     }
 
     /// <summary>

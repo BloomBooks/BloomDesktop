@@ -172,6 +172,23 @@ served by `src/BloomExe/web/controllers/SharingApi.cs`, with the model and rules
 
 - **Sign in first.** Signed out, the dialog asks you to sign in to BloomLibrary.org (through
   `AccountApi`); invitees use their own BloomLibrary.org accounts.
+- **Start sharing.** A collection is shared only when an admin presses **Start sharing**. Until
+  then the dialog is a preview and saves nothing (`GET sharing/state` writes nothing), so closing
+  it leaves everything as it was. It explains what sharing does, lists read-only **who will have
+  access** (you, as Admin, and, for a folder Team Collection, everyone its history shows has
+  worked in it: **Admin** if they are in the Team Collection's administrators list, **Editor**
+  otherwise, each "last seen" at their last recorded action), and, for a Team Collection, states
+  what happens to it: it is frozen for everyone, people keep what they have checked out but need
+  Bloom 6.6 to go on, older Blooms won't open it, and this can't be undone from Bloom. Start is
+  enabled only for someone signed in who may edit the collection's settings (for a Team
+  Collection, one of its administrators); otherwise the sign-in prompt, or a note that only an
+  administrator can share it, says why. `SharingApi.CanStart` is where the later conditions go
+  (a subscription that allows sharing, BL-16672; being online). For a Team Collection, Start asks
+  for confirmation in a small dialog (Start sharing / Cancel); an ordinary collection starts at
+  once. `POST sharing/start` then saves the previewed people as the members, all or none, and is
+  refused if the collection is already shared. The invite box appears only after that; inviting
+  to an unshared collection is refused. Removing someone who should not be there is done
+  afterwards, like any other change.
 - **Invite by email address**, choosing Admin or Editor. Inviting only adds the address to the
   list of people allowed to use the collection; no email is sent (see "Being invited" below for how
   the person finds out). An invitation is all-or-nothing: if any address in a request already has
@@ -185,24 +202,34 @@ served by `src/BloomExe/web/controllers/SharingApi.cs`, with the model and rules
   themself (a tooltip explains that another admin must do it). Because only admins can change
   anything and the one doing it stays an admin, a shared collection always has an admin. Editors
   see the same list read-only. Changes take effect immediately; the dialog has Close, not OK and
-  Cancel (the pattern of Google Drive, Figma and Notion).
-- **When a collection becomes shared.** An ordinary collection becomes shared with its first
-  invitation, with the inviter as its admin; before that, only someone who may edit its settings
-  can share it. A **folder Team Collection** becomes shared the first time one of its
-  administrators opens Share. It starts with everyone its history shows has worked in it:
-  **Admin** if they are in the Team Collection's administrators list, **Editor** otherwise, each
-  "last seen" at their last recorded action. The admin removes anyone who should not be there.
-  Removed people stay removed; opening Share again never re-adds them. A non-administrator who
-  opens Share on an unshared Team Collection is told only an administrator can share it.
+  Cancel (the pattern of Google Drive, Figma and Notion). Removed people stay removed; nothing
+  re-adds the Team Collection's history people once sharing has started.
 - **Learn about sharing** opens the Team Collections introduction in the browser until a sharing
   page exists.
 
 **The backend behind this dialog is a stand-in.** `ICollectionSharingService` is implemented only
 by `LocalFileCollectionSharingService`, which keeps the record in `sharing.local.json` in the
 collection folder and enforces the rules the server will. Nobody invited sees an invitation card
-yet, and a folder Team Collection does not sync the file. Sharing a Team Collection only sets up the
+yet, and a folder Team Collection does not sync the file. Starting to share only sets up the
 list of people; its books do not move anywhere yet (the design for that is
 [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration)).
+`src/BloomExe/Sharing/CollectionSharingStarter.cs` runs the steps of starting in section 5's
+order, and those that need what isn't built yet are separate methods that do nothing:
+
+- `FreezeOldTeamCollection` (Team Collection only): set `AllowSharedFolderChanges=False` and
+  `MinimumBloomVersion=6.6` in the old shared folder's settings. Waits for #8414, and for a cloud
+  collection that really replaces the old one.
+- `RequireNewerBloomForCloudCollection` (every collection): set `MinimumBloomVersion=6.6` in the
+  collection's own settings before they are uploaded. Deliberately not done by the stand-in:
+  with no real cloud collection it would only lock this collection away from older Blooms on
+  this computer, and a Team Collection pushes its settings to the shared folder when they are
+  saved, so it would lock every teammate still on 6.5 out of a collection that has not moved.
+- `ICollectionSharingService.StartSharing`: create the cloud collection, with its initial-upload
+  flag set, and its members. The stand-in writes the members to `sharing.local.json`.
+- `StartInitialUpload`: the background sender of first check-ins (with, for a Team Collection,
+  the `Migration Keys` and placeholder locks), then clearing the flag. When it exists,
+  `sharing/state` is where its progress would come from for an "Uploading N of M books" line in
+  the dialog, which shows nothing about uploading yet.
 
 ### Sharing UI (planned, from the Sharing cards)
 
@@ -232,8 +259,9 @@ These are designs on cards, not built:
   preparation phase and the waiting: the shared folder is frozen at once, the admin uploads in
   the background, people keep editing what they have checked out, and each member's 6.6 Bloom
   switches over by itself, carrying its checkouts with it, when the upload is done. The old
-  folder must stay until everyone who had checkouts has switched. The #8394 behavior of sharing a
-  Team Collection with its history's people is the first piece of this.
+  folder must stay until everyone who had checkouts has switched. The #8394 Start sharing step,
+  with its preview of the history's people and its statement of what happens to the Team
+  Collection, is the first piece of this.
 
 The #8052 client has its own earlier sharing UI (a Sharing panel in Settings for the approved list,
 join cards in the collection chooser, a sign-in dialog). The Share dialog and the planned cards
@@ -587,7 +615,7 @@ ordinary checkout in this copy based on the uploaded version; check-in, rename a
 through the cloud as usual (delete presents the GUID).
 
 - **Membership.** The person must be a member. People from the Team Collection's history are added
-  when it is shared (see [Sharing UI](#sharing-ui-built)), with their last activity available to
+  when the admin starts sharing it (see [Sharing UI](#sharing-ui-built)), with their last activity available to
   seed `last_seen_at`; someone whose login differs, like Bob, is invited by their real
   BloomLibrary.org email in the Share dialog. A non-member is refused by the existing open-time
   check, which names the admins.
@@ -855,7 +883,8 @@ them yet.
   GOING-LIVE runbook entry. The script should run only once the admin's Bloom has stopped, since
   S3 credentials already handed out stay valid for up to an hour. Everything else reuses first
   check-in, checkout with a client GUID, takeover and force unlock.
-- Client: `AllowSharedFolderChanges` (BL-16928, #8414); setting `MinimumBloomVersion=6.6` on every collection that becomes a cloud collection; the background sender of first
+- Client (filling in the empty steps of `CollectionSharingStarter`, see
+  [Sharing UI](#sharing-ui-built)): `AllowSharedFolderChanges` (BL-16928, #8414); setting `MinimumBloomVersion=6.6` on every collection that becomes a cloud collection; the background sender of first
   check-ins; writing the `Migration Keys` files and placeholder locks; finishing (clearing the
   flag and writing the cloud id into the old shared settings); and each member's switch-over
   with its takeovers.

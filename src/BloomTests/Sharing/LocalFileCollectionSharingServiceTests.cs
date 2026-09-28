@@ -56,12 +56,7 @@ namespace BloomTests.Sharing
 
         private void StartSharingAsRuth()
         {
-            _service.StartSharing(
-                kAdmin,
-                "Ruth Nakalema",
-                new SharingInvitation[0],
-                new TeamCollectionHistoryMember[0]
-            );
+            _service.StartSharing(kAdmin, "Ruth Nakalema", new TeamCollectionHistoryMember[0]);
         }
 
         // Someone a Team Collection's history shows last working in it on the given day.
@@ -118,35 +113,9 @@ namespace BloomTests.Sharing
                 _service.StartSharing(
                     "someone@example.org",
                     "Someone",
-                    new SharingInvitation[0],
                     new TeamCollectionHistoryMember[0]
                 )
             );
-        }
-
-        [Test]
-        public void StartSharing_WithInvitations_SavesThemTogether_NotYetSeen()
-        {
-            _service.StartSharing(
-                kAdmin,
-                "Ruth Nakalema",
-                new[]
-                {
-                    new SharingInvitation
-                    {
-                        Email = "amina@example.org",
-                        Role = SharingRole.Editor,
-                    },
-                },
-                new TeamCollectionHistoryMember[0]
-            );
-            var members = MakeService().GetRecord().Members;
-            Assert.That(
-                members.Select(m => m.Email),
-                Is.EqualTo(new[] { kAdmin, "amina@example.org" })
-            );
-            Assert.That(members[1].InvitedAt, Is.EqualTo(_now));
-            Assert.That(members[1].LastSeen, Is.Null, "an invitation is not a visit");
         }
 
         [Test]
@@ -155,7 +124,6 @@ namespace BloomTests.Sharing
             _service.StartSharing(
                 kAdmin,
                 "Ruth Nakalema",
-                new SharingInvitation[0],
                 new[]
                 {
                     HistoryMember("sam@example.org", SharingRole.Admin, 20),
@@ -186,7 +154,6 @@ namespace BloomTests.Sharing
             _service.StartSharing(
                 kAdmin,
                 "Ruth Nakalema",
-                new SharingInvitation[0],
                 new[]
                 {
                     HistoryMember(" RUTH@example.org", SharingRole.Editor, 3),
@@ -201,24 +168,6 @@ namespace BloomTests.Sharing
             );
             Assert.That(members[0].Role, Is.EqualTo(SharingRole.Admin));
             Assert.That(members[0].LastSeen, Is.EqualTo(_now), "the admin is here now");
-        }
-
-        [Test]
-        public void StartSharing_BadInvitation_LeavesCollectionUnshared()
-        {
-            // Inviting yourself is bad: you already have access as the new admin.
-            Assert.Throws<SharingNotAllowedException>(() =>
-                _service.StartSharing(
-                    kAdmin,
-                    "Ruth Nakalema",
-                    new[]
-                    {
-                        new SharingInvitation { Email = kAdmin, Role = SharingRole.Editor },
-                    },
-                    new[] { HistoryMember("amina@example.org", SharingRole.Editor, 5) }
-                )
-            );
-            Assert.That(MakeService().GetRecord(), Is.Null);
         }
 
         [Test]
@@ -449,7 +398,6 @@ namespace BloomTests.Sharing
             _service.StartSharing(
                 kAdmin,
                 "Ruth Nakalema",
-                new SharingInvitation[0],
                 new[] { HistoryMember("amina@example.org", SharingRole.Editor, 5) }
             );
             Assert.That(_service.GetRecord().Members[1].LastSeen, Is.Not.EqualTo(_now));

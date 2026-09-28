@@ -4,7 +4,6 @@ using System.Linq;
 using Bloom.History;
 using Bloom.Sharing;
 using NUnit.Framework;
-using SIL.TestUtilities;
 
 namespace BloomTests.Sharing
 {
@@ -82,126 +81,6 @@ namespace BloomTests.Sharing
                 result.Single(m => m.Email == "amina@example.org").Role,
                 Is.EqualTo(SharingRole.Editor)
             );
-        }
-
-        /// <summary>
-        /// Tests of StartSharingIfTeamCollection, which the Share dialog's first look at a
-        /// collection's sharing (GET sharing/state, by someone who may manage it) calls.
-        /// </summary>
-        [TestFixture]
-        public class StartSharingIfTeamCollectionTests
-        {
-            private TemporaryFolder _folder;
-            private DateTime _now;
-            private LocalFileCollectionSharingService _service;
-            private int _historyReads;
-
-            [SetUp]
-            public void Setup()
-            {
-                _folder = new TemporaryFolder("StartSharingIfTeamCollectionTests");
-                _now = new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc);
-                _service = new LocalFileCollectionSharingService(
-                    _folder.Path,
-                    "collection-id",
-                    "Bantu Readers",
-                    () => _now
-                );
-                _historyReads = 0;
-            }
-
-            [TearDown]
-            public void TearDown()
-            {
-                _folder.Dispose();
-            }
-
-            // The history of a Team Collection that Ruth (its administrator, who shares it),
-            // Sam (another administrator) and Amina have worked in.
-            private IEnumerable<HistoryEvent> History()
-            {
-                _historyReads++;
-                return new List<HistoryEvent>
-                {
-                    MakeEvent("amina@example.org", "Amina", 5),
-                    MakeEvent(kAdmin, "Ruth", 25),
-                    MakeEvent("sam@example.org", "Sam", 20),
-                };
-            }
-
-            private static readonly string[] kAdministrators = { kAdmin, "sam@example.org" };
-
-            private void LookAtSharing(bool isTeamCollection)
-            {
-                TeamCollectionHistoryMembers.StartSharingIfTeamCollection(
-                    _service,
-                    isTeamCollection,
-                    kAdmin,
-                    "Ruth Nakalema",
-                    History,
-                    kAdministrators
-                );
-            }
-
-            [Test]
-            public void TeamCollection_SharesWithEveryoneInHistory_InTheirRoles()
-            {
-                Assert.That(_service.GetRecord(), Is.Null, "should start unshared");
-
-                LookAtSharing(true);
-
-                var members = _service.GetRecord().Members;
-                Assert.That(
-                    members.Select(m => $"{m.Email} {m.Role}"),
-                    Is.EqualTo(
-                        new[]
-                        {
-                            $"{kAdmin} Admin",
-                            "sam@example.org Admin",
-                            "amina@example.org Editor",
-                        }
-                    ),
-                    "Ruth should be there once, as the admin sharing it, not again from history"
-                );
-                Assert.That(members[0].LastSeen, Is.EqualTo(_now));
-                Assert.That(members[0].Name, Is.EqualTo("Ruth Nakalema"));
-                Assert.That(
-                    members[1].LastSeen,
-                    Is.EqualTo(new DateTime(2026, 8, 20, 0, 0, 0, DateTimeKind.Utc))
-                );
-                Assert.That(
-                    members[2].LastSeen,
-                    Is.EqualTo(new DateTime(2026, 8, 5, 0, 0, 0, DateTimeKind.Utc))
-                );
-                Assert.That(members.All(m => m.InvitedAt == _now && m.InvitedBy == kAdmin));
-            }
-
-            [Test]
-            public void TeamCollection_AlreadyShared_ChangesNothing()
-            {
-                LookAtSharing(true);
-                _service.Remove(kAdmin, "amina@example.org");
-                Assert.That(_service.GetRecord().Members.Count, Is.EqualTo(2));
-                Assert.That(_historyReads, Is.EqualTo(1));
-
-                LookAtSharing(true);
-
-                Assert.That(
-                    _service.GetRecord().Members.Count,
-                    Is.EqualTo(2),
-                    "someone the admin removed must not come back"
-                );
-                Assert.That(_historyReads, Is.EqualTo(1));
-            }
-
-            [Test]
-            public void OrdinaryCollection_StaysUnshared()
-            {
-                LookAtSharing(false);
-
-                Assert.That(_service.GetRecord(), Is.Null);
-                Assert.That(_historyReads, Is.EqualTo(0), "no need to read any history");
-            }
         }
     }
 }
