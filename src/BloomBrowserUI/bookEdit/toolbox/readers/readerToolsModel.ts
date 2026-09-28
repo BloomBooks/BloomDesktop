@@ -10,7 +10,7 @@ import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import "./libSynphony/jquery.text-markup";
-import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
+import { visibleTextOfHtmlString } from "./libSynphony/jquery.text-markup";
 import "./jquery.div-columns";
 import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
@@ -33,7 +33,10 @@ import {
     postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { theOneReaderHighlightManager } from "./readerHighlights";
+import {
+    mapReaderText,
+    theOneReaderHighlightManager,
+} from "./readerHighlights";
 import {
     allPromiseSettled,
     setTimeoutPromise,
@@ -970,13 +973,15 @@ export class ReaderToolsModel {
         this.bookStatistics = {};
         this.bookStatsReady = false;
         const pageStrings = _.values(this.pageIDToText).map((x) =>
-            removeAllHtmlMarkupFromString(x),
+            visibleTextOfHtmlString(x),
         );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
             .toArray()
-            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
+            // The same snapshot the on-page marking and the other statistics use, so every
+            // number the tool reports is derived from one idea of what the text is.
+            .map((x) => mapReaderText(x).text)
             .join(" ");
 
         const sentences = theOneLibSynphony

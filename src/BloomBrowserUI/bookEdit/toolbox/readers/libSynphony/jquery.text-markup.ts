@@ -8,7 +8,6 @@
  */
 
 import jQuery from "jquery";
-import $ from "jquery";
 import * as _ from "underscore";
 import { theOneLibSynphony, LibSynphony } from "./synphony_lib";
 import "./bloomSynphonyExtensions"; //add several functions to LanguageData
@@ -320,7 +319,7 @@ import {
         this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
-                removeAllHtmlMarkupFromString($(this).html()),
+                mapReaderText(this).text,
             );
 
             if (!fragments || fragments.length === 0) return;
@@ -352,7 +351,7 @@ import {
         this.each(function () {
             // split into sentences
             let fragments = theOneLibSynphony.stringToSentences(
-                removeAllHtmlMarkupFromString($(this).html()),
+                mapReaderText(this).text,
             );
 
             // remove inter-sentence space
@@ -487,41 +486,24 @@ import {
 })(jQuery);
 
 /**
- * Strip the HTML markup from a string
+ * The plain text a reader sees in a string of HTML: markup removed, entities decoded, and a
+ * newline wherever the markup makes a visual break (a <br>, a bloom-linebreak span, a paragraph
+ * or other block boundary).
+ *
+ * This is for callers who only have HTML - notably the whole-book statistics, which fetch the
+ * text of pages that are not in the DOM. Callers holding a real element should use
+ * mapReaderText() directly, which additionally maps offsets back to Ranges. Both go through the
+ * same walker, so the marking on the page and the statistics for the book can never disagree
+ * about what the text is (BL-16625).
+ *
  * @param {string} textHtml
  * @returns {string}
  */
-export function removeAllHtmlMarkupFromString(textHtml: string): string {
-    // ensure spaces after line breaks and paragraph breaks
-    const regex = /(<br><\/br>|<br>|<br ?\/>|<p><\/p>|<\/?p>|<p ?\/>|\n)/g;
-    textHtml = textHtml.replace(regex, " ");
-
-    // This regex is rather specific to the spans ckeditor sticks in as
-    // 'landmarks' so the selection can be restored after manipulating the
-    // markup. In principle we could have a more complex regex that would
-    // remove all display:none spans, even if there are other explicit styles
-    // or with single quotes around the style or with different white space.
-    // However, we don't have a current need for it, so the extra
-    // complication doesn't seem worthwhile.
-    const ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
-    textHtml = textHtml.replace(ckeRegex, "");
-
-    // Remove phrase delimiters used by the talking book tool.
-    const phraseDelimeterRegex =
-        /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
-    textHtml = textHtml.replace(phraseDelimeterRegex, "");
-
-    // Both open and close tags for markup
-    const markupRegex = /<\/?(strong|em|sup|u|i|b|a|span)>/g;
-    textHtml = textHtml.replace(markupRegex, "");
-
-    // Open tags for more complex markup (ie, span and a tags).
-    const complexMarkupRegex = /<(span|a)[ \r\n\t][^>]*>/g;
-    textHtml = textHtml.replace(complexMarkupRegex, "");
-
-    // This can sneak in on the current page.
-    const divCogRegex = /<div id="formatButton"[^>]*><img[^>]*><\/div>/g;
-    textHtml = textHtml.replace(divCogRegex, "");
-
-    return $("<div>" + textHtml + "</div>").text();
+export function visibleTextOfHtmlString(textHtml: string): string {
+    // Parsing rather than stripping with regexes is what lets one implementation serve both
+    // callers; it also decodes entities and drops the transient UI/bookmark markup for free,
+    // because mapReaderText() skips those elements.
+    const holder = document.createElement("div");
+    holder.innerHTML = textHtml;
+    return mapReaderText(holder).text;
 }

@@ -7,11 +7,12 @@
  *
  */
 import { theOneLibSynphony } from "./synphony_lib";
-import { removeAllHtmlMarkupFromString } from "./jquery.text-markup.ts";
+import { visibleTextOfHtmlString } from "./jquery.text-markup.ts";
 import {
     kSentenceTooLongHighlight,
     kWordNotDecodableHighlight,
     kWordTooLongHighlight,
+    mapReaderText,
 } from "../readerHighlights";
 import {
     getHighlightTexts,
@@ -166,6 +167,33 @@ describe("jquery.text-markup", function () {
         expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
 
         // Sanity/positive control: a limit of 2 marks each line separately.
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 2 });
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([
+            "One two three",
+            "four five six",
+        ]);
+    });
+
+    // BL-16625: Shift+Enter gives us <span class="bloom-linebreak"></span>, an empty inline
+    // element whose line break comes entirely from CSS. It has to end a sentence exactly as a
+    // <br> does; otherwise it not only fails to end the sentence, it glues the words on either
+    // side of it into one.
+    it("checkLeveledReader treats each bloom-linebreak line as its own sentence", function () {
+        const input =
+            '<p>One two three<span class="bloom-linebreak"></span>four five six</p>';
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 4 });
+
+        expect($("#text_entry1").html()).toBe(input);
+        // Two 3-word sentences, so neither exceeds 4.
+        expect(highlighted(kSentenceTooLongHighlight)).toEqual([]);
+
+        // Sanity/positive control: a limit of 2 marks each line separately. This also shows the
+        // words are not being joined: were they, "threefour" would appear in a single 5-word
+        // sentence instead of the two lines below.
         $("#text_entry1")
             .html(input)
             .checkLeveledReader({ maxWordsPerSentence: 2 });
@@ -334,6 +362,22 @@ describe("jquery.text-markup", function () {
         expect(result).toBe(22);
     });
 
+    // BL-16625: the count used to be 5, because the empty bloom-linebreak span was stripped
+    // with nothing in its place and "three" and "four" became one word "threefour".
+    it("getTotalWordCount counts across a bloom-linebreak span", function () {
+        // Sanity check: without the span this is plainly six words in one sentence.
+        $("#text_entry1").html("<p>One two three four five six</p>");
+        expect($("div").getTotalWordCount()).toBe(6);
+        expect($("div").getMaxSentenceLength()).toBe(6);
+
+        $("#text_entry1").html(
+            '<p>One two three<span class="bloom-linebreak"></span>four five six</p>',
+        );
+        // Still six words, but now two sentences of three, as with a <br>.
+        expect($("div").getTotalWordCount()).toBe(6);
+        expect($("div").getMaxSentenceLength()).toBe(3);
+    });
+
     it("getTotalWordCount in Nepali", function () {
         // Two sentences w/ six words each. Between the two sentences there are 8 zero-width joiners.
         // The second sentence also contains a zero-width non-joiner, which should also not create a word break.
@@ -345,33 +389,79 @@ describe("jquery.text-markup", function () {
         expect(result).toBe(12);
     });
 
-    it("removeAllHtmlMarkup testing", function () {
-        var out1 = removeAllHtmlMarkupFromString(
+    // A visual break - a <br>, a block boundary, or a bloom-linebreak span - contributes a
+    // newline, which the sentence splitter counts as paragraph-ending. That is the same thing
+    // mapReaderText() gives the on-page marking, which is the point: one implementation, so the
+    // page marking and the book statistics cannot disagree about the text (BL-16625).
+    it("visibleTextOfHtmlString testing", function () {
+        var out1 = visibleTextOfHtmlString(
             '<p>An malipayon na adlaw ni Mando nabalyuh<span data-cke-bookmark="1" style="display: none;" id="cke_bm_78C">&nbsp;</span>an san pagkahanda kan Ondo.<span data-cke-bookmark="1" style="display: none;" id="cke_bm_36C">&nbsp;</span> <span data-cke-bookmark="1" style="display: none;" id="cke_bm_47C"></span></p>',
         );
+        // The CKEditor bookmark spans are dropped without breaking "nabalyuhan" in two.
         expect(out1).toBe(
-            " An malipayon na adlaw ni Mando nabalyuhan san pagkahanda kan Ondo.  ",
+            "An malipayon na adlaw ni Mando nabalyuhan san pagkahanda kan Ondo. \n",
         );
 
-        var out2 = removeAllHtmlMarkupFromString(
+        var out2 = visibleTextOfHtmlString(
             "<p>This <strong>is</strong> <em>a</em> <u>test</u> of <sup>some</sup> sort.</p>",
         );
-        expect(out2).toBe(" This is a test of some sort. ");
+        expect(out2).toBe("This is a test of some sort.\n");
 
-        var out3 = removeAllHtmlMarkupFromString(
+        var out3 = visibleTextOfHtmlString(
             "W<p></p>X<p/>Y<p />Z<p>A<br></br>B<br/>C<br />D</p>E",
         );
-        expect(out3).toBe("W X Y Z A B C D E");
+        expect(out3).toBe("W\nX\nY\nZ\nA\nB\nC\nD\nE");
 
-        var out4 = removeAllHtmlMarkupFromString(
+        var out4 = visibleTextOfHtmlString(
             "A sti<span class='something'>tch</span> in <a href='https://somewhere.com/abcde/'>time</a> saves <i><b>nine</b></i>!",
         );
+        // An ordinary span must still NOT separate words.
         expect(out4).toBe("A stitch in time saves nine!");
 
-        var out5 = removeAllHtmlMarkupFromString(
+        var out5 = visibleTextOfHtmlString(
             "<p><span id='xyzzy1' class='bloom-highlightSegment'>This is a test,<span class='bloom-audio-split-marker'>|</span></span> <span id='xyzzy2' class='bloom-highlightSegment'>this is only a test.</span></p>",
         );
-        expect(out5).toBe(" This is a test, this is only a test. ");
+        expect(out5).toBe("This is a test, this is only a test.\n");
+
+        // ...but the bloom-linebreak span, alone among spans, does - and with a newline, not a
+        // space, so the two lines are two sentences.
+        var out6 = visibleTextOfHtmlString(
+            '<p>One two three<span class="bloom-linebreak"></span>four five six</p>',
+        );
+        expect(out6).toBe("One two three\nfour five six\n");
+    });
+
+    // BL-16625: the whole-book statistics and the on-page marking must derive their sentences
+    // from the same text. A period immediately before a soft line break is where they used to
+    // part company most visibly: the marking saw "three." end a line and counted two sentences,
+    // while the book totals had the span stripped to nothing, leaving "three.four" - a period
+    // followed directly by a lower-case letter, which the splitter refuses to break on - and
+    // counted one. The book total for a one-page book then came out LESS than the page count.
+    it("counts the same sentences for the book as for the page across a soft line break", function () {
+        const inner =
+            'One two three.<span class="bloom-linebreak"></span>four five six';
+
+        function sentencesIn(text) {
+            return theOneLibSynphony
+                .stringToSentences(text)
+                .filter((fragment) => fragment.isSentence)
+                .filter((fragment) => fragment.words.length > 0);
+        }
+
+        // What the whole-book statistics analyze: the page's markup, straight from the server.
+        const bookText = visibleTextOfHtmlString("<p>" + inner + "</p>");
+        // What the on-page marking analyzes: the same content as a live element.
+        $("#text_entry1").html("<p>" + inner + "</p>");
+        const pageText = mapReaderText($("#text_entry1").get(0)).text;
+
+        expect(bookText).toBe(pageText);
+        expect(bookText).toBe("One two three.\nfour five six\n");
+        expect(sentencesIn(bookText).length).toBe(2);
+        expect(sentencesIn(pageText).length).toBe(2);
+
+        // Sanity/positive control: strip the span the way the old code did and the very same
+        // assertions fail, so the ones above are meaningful.
+        expect(sentencesIn("One two three.four five six").length).toBe(1);
     });
 
     it("removeCkEditorMarkup unwraps spans with background-color in style", function () {
