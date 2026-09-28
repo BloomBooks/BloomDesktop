@@ -78,10 +78,7 @@ namespace BloomTests.Book
                 "Foobar"
             );
 
-            Assert.That(
-                captionDiv.InnerXml,
-                Is.EqualTo("More books in <b>Foobar</b> language:")
-            );
+            Assert.That(captionDiv.InnerXml, Is.EqualTo("More books in <b>Foobar</b> language:"));
         }
 
         [Test]
@@ -99,6 +96,53 @@ namespace BloomTests.Book
 
             // With no {0} there is nothing to bold, so the language name must not appear.
             Assert.That(captionDiv.InnerXml, Is.EqualTo("A caption with no placeholder"));
+        }
+
+        /// <summary>
+        /// When Windows refuses the write of the QR code image (antivirus, another process holding
+        /// the file), UpdateQrCode must report a NonFatalProblem rather than throw, because the
+        /// exception stops the user from selecting or opening the book (BL-16930).
+        /// </summary>
+        [Test]
+        public void UpdateQrCode_QrFileCannotBeWritten_ReportsProblemAndStillUpdatesHtml()
+        {
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-branding-wrapper'><a>"
+                    + "<img class='branding' src='badge.png'/>"
+                    + "</a></div></body></html>"
+            );
+            var qrPath = _folder.Combine("lang-qr-code.png");
+            RobustFile.WriteAllText(qrPath, "stand-in for an old QR code image");
+            Assert.That(
+                dom.SafeSelectNodes("//img[@class='bloom-qrcode']").Length,
+                Is.EqualTo(0),
+                "sanity check: the badge starts without a QR code image"
+            );
+
+            // An exclusive handle makes the write fail the same way a blocking antivirus does.
+            using (new FileStream(qrPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (new NonFatalProblem.ExpectedByUnitTest())
+                {
+                    BookStorage.UpdateQrCode(
+                        dom,
+                        true,
+                        "en",
+                        "More books in {0}:",
+                        "English",
+                        _folder.Path
+                    );
+                }
+            }
+
+            var qrImages = dom.SafeSelectNodes("//img[@class='bloom-qrcode']");
+            Assert.That(qrImages.Length, Is.EqualTo(1));
+            Assert.That(qrImages[0].GetAttribute("src"), Is.EqualTo("lang-qr-code.png"));
+            Assert.That(
+                RobustFile.ReadAllText(qrPath),
+                Is.EqualTo("stand-in for an old QR code image"),
+                "the locked file should be left as it was"
+            );
         }
 
         [Test]
