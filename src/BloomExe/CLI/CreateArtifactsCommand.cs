@@ -284,6 +284,16 @@ namespace Bloom.CLI
                         ?? new AlwaysEditSaveContext() as ISaveContext
                 )
             );
+            // Artifacts harvested here must match what a local publish produces, so the book gets the
+            // same preparation: the structural update, and the per-page browser fix-up when it is due
+            // (BL-16877). Without this, a book harvested without ever having been opened for editing
+            // yields artifacts built from pages that were never migrated. A no-op for a book already
+            // at the current level.
+            //
+            // This works here, unlike in HydrateBookCommand, because HandleInternal has built a
+            // ProjectContext: that starts a listening BloomServer and registers EditingViewApi, which
+            // is what the off-screen editing pages need in order to load and initialize.
+            s_book.EnsureReadyForUserWork();
         }
 
         /// <summary>

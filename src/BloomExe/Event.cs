@@ -182,12 +182,6 @@ namespace Bloom
         }
     }
 
-    public class EditBookCommand : Event<Book.Book>
-    {
-        public EditBookCommand()
-            : base("EditBookCommand", LoggingLevel.Major) { }
-    }
-
     //	public class BookCollectionChangedEvent : Event<BookCollection>
     //	{ }
 
