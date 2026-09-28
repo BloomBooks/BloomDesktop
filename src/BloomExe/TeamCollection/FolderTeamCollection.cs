@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -1141,23 +1141,26 @@ namespace Bloom.TeamCollection
                     return;
                 }
                 if (!startedWatching)
+                {
+                    // The watcher threw an exception instead of starting, which is already reported to
+                    // the user, changing the state of the program and display.  It's too tricky to try
+                    // again later, so give up on watching for the rest of this session.
                     return;
+                }
                 Logger.WriteEvent(
                     $"Team Collection: \"{booksPath}\" has appeared; now watching it for book changes."
                 );
-                NoticeBooksThatArrivedBeforeWeStartedWatching();
+                NoticeChangesToTheRepoBeforeWeStartedWatching();
             });
         }
 
         /// <summary>
-        /// Whatever is in the Books folder now got there while we had no watcher on it, so no
-        /// Created event was ever raised for any of it. From the point of view of watching that
-        /// folder these books are all new since Bloom started, so tell the rest of Bloom about
-        /// them exactly as the watcher would have. Books that went away while we were not
-        /// watching need the same treatment; see
-        /// NoticeBooksThatLeftTheRepoBeforeWeStartedWatching.
+        /// We have just started watching the Books folder, having not been watching it since
+        /// Bloom started. No Created or Deleted event was raised for anything that happened in
+        /// the meantime, so work out what changed and raise those events now, in both
+        /// directions: books that arrived, and books that went away.
         /// </summary>
-        private void NoticeBooksThatArrivedBeforeWeStartedWatching()
+        private void NoticeChangesToTheRepoBeforeWeStartedWatching()
         {
             string[] bookNames;
             try
@@ -1171,6 +1174,18 @@ namespace Bloom.TeamCollection
                 NonFatalProblem.ReportSentryOnly(ex);
                 return;
             }
+            NoticeBooksThatArrivedBeforeWeStartedWatching(bookNames);
+            NoticeBooksThatLeftTheRepoBeforeWeStartedWatching(bookNames);
+        }
+
+        /// <summary>
+        /// Whatever is in the Books folder now got there while we had no watcher on it, so no
+        /// Created event was ever raised for any of it. From the point of view of watching that
+        /// folder these books are all new since Bloom started, so tell the rest of Bloom about
+        /// them exactly as the watcher would have.
+        /// </summary>
+        private void NoticeBooksThatArrivedBeforeWeStartedWatching(string[] bookNames)
+        {
             foreach (var bookName in bookNames)
             {
                 if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
@@ -1180,12 +1195,10 @@ namespace Bloom.TeamCollection
                         new BookRepoChangeEventArgs { BookFileName = bookName + ".bloom" }
                     );
             }
-
-            NoticeBooksThatLeftTheRepoBeforeWeStartedWatching(bookNames);
         }
 
         /// <summary>
-        /// The other half of NoticeBooksThatArrivedBeforeWeStartedWatching: a book that was
+        /// The other half of NoticeChangesToTheRepoBeforeWeStartedWatching: a book that was
         /// deleted from the repo while we had no watcher raised no Deleted event either, so
         /// nothing has told us the local copy is obsolete. Raise the event for each local book
         /// whose repo counterpart is missing, exactly as OnDeleted would have.

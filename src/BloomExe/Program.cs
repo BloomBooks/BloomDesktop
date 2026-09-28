@@ -2941,10 +2941,11 @@ namespace Bloom
             }
             catch (Exception ex)
             {
-                // The context is torn down, i.e. we are shutting down. Deliberately NOT falling
-                // back to running inline: this work exists to be done on the UI thread, and
-                // doing it on a watcher thread instead would trade a missed notification for a
-                // data race. At this point there is nobody left to notify anyway.
+                // Each action() is responsible for its own exception handling as needed.
+                // This catch is largely a safety net for the Post itself, handling the case where
+                // the uiContext has been disposed just as the Post is being called.  We don't want
+                // to crash the app because of that, and we do want to report it to Sentry because
+                // it is unexpected and should be investigated.
                 NonFatalProblem.ReportSentryOnly(ex);
             }
         }
