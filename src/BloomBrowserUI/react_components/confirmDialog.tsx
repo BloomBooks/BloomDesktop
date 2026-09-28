@@ -55,7 +55,11 @@ export const ConfirmDialog: React.FC<IConfirmDialogProps> = (props) => {
             // Escape and a click outside the dialog cancel it, and the caller must hear about that too.
             onCancel={() => onClose(DialogResult.Cancel)}
         >
-            <DialogTitle title={useL10n(props.title, props.titleL10nKey)} />
+            {/* The Cancel button is the way out; onCancel above would otherwise add a close X here. */}
+            <DialogTitle
+                title={useL10n(props.title, props.titleL10nKey)}
+                preventCloseButton={true}
+            />
             <DialogMiddle>
                 {useL10n(props.message, props.messageL10nKey)}
             </DialogMiddle>

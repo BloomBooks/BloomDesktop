@@ -4,6 +4,7 @@ import * as React from "react";
 // pages of the book around it (see bookGridView.ts). Drawn in currentColor, so the control can show
 // which one is chosen.
 
+/** A single page: edit one page by itself. */
 export const ViewOnePageIcon: React.FunctionComponent = () => (
     <svg
         width="16"
@@ -16,6 +17,7 @@ export const ViewOnePageIcon: React.FunctionComponent = () => (
     </svg>
 );
 
+/** Several pages: see all the pages of the book around the one being edited. */
 export const ViewAllPagesIcon: React.FunctionComponent = () => (
     <svg
         width="18"
