@@ -6,10 +6,8 @@ import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
-import {
-    isLongPressEvaluating,
-    updateMarkupAfterUndoOrRedo,
-} from "../../toolbox";
+import { isLongPressEvaluating } from "../../toolbox";
+import { updateMarkupAfterUndoOrRedo } from "../../pageEditingMarkup";
 import StyleEditor from "../../../StyleEditor/StyleEditor";
 import $ from "jquery";
 

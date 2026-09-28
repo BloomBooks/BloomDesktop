@@ -924,6 +924,8 @@ window.showWorkspaceInitializationFailure = function(message) {
             {
                 foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
                 {
+                    if (lang == LocalizationManager.PseudoLocalizationLanguageId)
+                        continue; // handled below, so that it sorts to the end rather than by name
                     var approved = FractionApproved(lang);
                     if (Settings.Default.ShowUnapprovedLocalizations)
                         approved = FractionTranslated(lang);
@@ -935,6 +937,22 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
 
             items.Sort(compareLangItems);
+
+            // The pseudo-locale is not a translation, so it does not belong in the alphabetical
+            // list of real languages; put it last. (It is only in
+            // GetAvailableLocalizedLanguages() at all when LocalizationManager.
+            // OfferPseudoLocalization is on, which Program.SetUpLocalization limits to the
+            // developer, alpha and internal channels. See BL-16748.)
+            if (
+                !onlyActiveItem
+                && LocalizationManager.OfferPseudoLocalization
+                && LocalizationManager
+                    .GetAvailableLocalizedLanguages()
+                    .Contains(LocalizationManager.PseudoLocalizationLanguageId)
+            )
+            {
+                items.Add(CreateLanguageItem(LocalizationManager.PseudoLocalizationLanguageId));
+            }
             return items;
         }
 
@@ -1135,7 +1153,13 @@ window.showWorkspaceInitializationFailure = function(message) {
             // until L10nSharp changes to allow dynamic response to setting change
             // Skip the restart at startup (no project loaded); CollectionChooserApi
             // handles that case by reopening the dialog to refresh the language list.
-            if (Current != null)
+            // Skip it in e2e test mode too: a self-restart would relaunch Bloom without the
+            // --e2e/--automation flags, the --user-settings-folder and the collection argument
+            // it was started with, giving the test an instance it cannot track (and, without
+            // --automation, one that collides with any Bloom the developer has open). The e2e fixture provides the
+            // restart instead (bloomApp.restart in src/BloomE2E), and the setting is already
+            // saved above, so the relaunched Bloom picks it up at startup.
+            if (Current != null && !Program.RunningE2eTests)
                 Program.RestartBloom(false);
         }
 
@@ -1279,8 +1303,32 @@ window.showWorkspaceInitializationFailure = function(message) {
             );
         }
 
+        /// <summary>
+        /// What we call the pseudo-locale in the UI language menu. Deliberately not localizable:
+        /// it is an internationalization-testing tool for developers and testers, and it must
+        /// stay recognizable in whatever (possibly pseudolocalized) UI language is current, so
+        /// that whoever turned it on can find their way back out. See BL-16748.
+        /// </summary>
+        internal const string kPseudoLocalizationMenuText = "Pseudo-English (i18n test)";
+
         public static LanguageItem CreateLanguageItem(string code)
         {
+            // The pseudo-locale is not a real language, so Palaso's language-name lookup has
+            // nothing useful to say about it; name it ourselves.
+            if (code == LocalizationManager.PseudoLocalizationLanguageId)
+            {
+                return new LanguageItem
+                {
+                    EnglishName = kPseudoLocalizationMenuText,
+                    LangTag = code,
+                    MenuText = kPseudoLocalizationMenuText,
+                    // It is derived from the English at lookup time, so it is by definition
+                    // exactly as complete as English is.
+                    FractionApproved = 1.0F,
+                    FractionTranslated = 1.0F,
+                };
+            }
+
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
             var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);

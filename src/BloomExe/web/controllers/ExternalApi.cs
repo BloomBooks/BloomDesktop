@@ -27,9 +27,11 @@ namespace Bloom.web.controllers
         // Re-entrancy guard for process-book. A process-book request is validated and dispatched on
         // the UI thread (HandleProcessBook), which sets this flag true, kicks off the heavy work on a
         // background thread (see the Task.Run in HandleProcessBook), and returns immediately. We
-        // reject a second process-book that arrives while one is still running, because the
-        // shared-environment statics in WebView2Browser (_useSharedEnvironment/_sharedEnvironment) are
-        // explicitly NOT designed for overlapping batches and would corrupt each other.
+        // reject a second process-book that arrives while one is still running. The job status this API
+        // exposes is a single most-recent-job model (see the status endpoint below), so a second
+        // overlapping run would have nowhere to report itself and would leave callers watching the
+        // wrong job; on top of that the user is blocked behind the opaque busy overlay for the whole
+        // 20-30s, so a second concurrent browser-driven pass buys nothing and just contends for CPU.
         //
         // The UI thread is the only writer of 'true', and it reads the flag (to reject overlaps) and
         // then sets it with no message pumping in between, so that check-then-set is atomic against
@@ -244,7 +246,11 @@ namespace Bloom.web.controllers
             // applies the browser-only fix-ups (image sizing, canvas-element layout, etc.) that raw
             // generated HTML is missing. The call blocks until processing is complete.
             //
-            // This must run on the UI thread because it creates and pumps an off-screen WebView2.
+            // handleOnUiThread applies to the DISPATCH only, and not because of the browser: the heavy
+            // work runs on a background thread, and the browser it drives lives on the OffScreenBrowser's
+            // own thread (see the Task.Run in HandleProcessBook). The dispatch needs the UI thread because
+            // it reads UI-owned _bookSelection/_collectionModel state, and because its check-then-set of
+            // the re-entrancy flag is only atomic while nothing pumps in between.
             //
             // requiresSync: false is essential here. The off-screen editable page this handler loads
             // makes its own /bloom/api/* calls during bootstrap (image/info to size images, bubble
@@ -324,7 +330,7 @@ namespace Bloom.web.controllers
 
             // Reject a process-book that arrives while one is already running (see field comment).
             // BloomBridge sends these sequentially so in practice this never trips, but it makes the
-            // re-entrancy contract explicit and protects the shared-environment statics if it ever does.
+            // re-entrancy contract explicit and keeps the single-job status model honest if it ever does.
             if (_processBookInProgress)
             {
                 request.Failed(

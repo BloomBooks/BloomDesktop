@@ -17,8 +17,9 @@ namespace Bloom
     /// to stop the developer in their tracks, not the program, so this listener replaces the default
     /// one and restores the old behaviour: write the failure to Bloom's log, break into a debugger if
     /// there is one, and otherwise put up a dialog offering to quit, attach a debugger, or carry on.
-    /// Automated runs (e2e, harvester, console verbs) have nobody to answer a dialog, so they log and
-    /// carry on.
+    /// E2e runs have nobody to answer a dialog, so they log and carry on. Other automated modes
+    /// (harvester, console verbs) run Release builds, where this listener does not exist; a Debug
+    /// build in one of those modes has a developer behind it who wants to see the assert.
     ///
     /// This exists only in Debug builds. Debug.Assert itself compiles out of Release, and Install is
     /// [Conditional("DEBUG")] as well, so a Release Bloom never has this listener: whatever the runtime
@@ -49,6 +50,12 @@ namespace Bloom
                 : message + Environment.NewLine + detailMessage;
             var stack = CallerStack();
             Logger.WriteEvent("Debug.Assert failed: " + text + Environment.NewLine + stack);
+            // A command-line verb is attached to the console it was run from, so say there why the
+            // command is about to stop and wait: the dialog alone would look like a hang.
+            if (Program.RunningInConsoleMode)
+                Console.Error.WriteLine(
+                    "Debug.Assert failed: " + text + Environment.NewLine + stack
+                );
 
             if (Debugger.IsAttached)
             {
@@ -58,12 +65,7 @@ namespace Bloom
             // The flags are set during argument parsing, some way into Main; the command line itself
             // is there from the first instruction, so an e2e run is recognized even for an assert
             // that fires during early startup.
-            if (
-                Program.RunningE2eTests
-                || Program.RunningHarvesterMode
-                || Program.RunningInConsoleMode
-                || Environment.GetCommandLineArgs().Contains("--e2e")
-            )
+            if (Program.RunningE2eTests || Environment.GetCommandLineArgs().Contains("--e2e"))
                 return;
 
             // ServiceNotification: no owner window, so this works from the server worker threads

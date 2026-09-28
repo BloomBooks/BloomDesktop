@@ -13,6 +13,8 @@
 		<Version>6.6.0.0</Version>
 		<BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
 		<TargetFramework>net8.0-windows</TargetFramework>
+		<!-- NU1701: transitive .NET Framework-only packages from BloomExe's keyboarding stack; see BloomExe.csproj. -->
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
 		<LangVersion>11.0</LangVersion>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -118,7 +120,7 @@
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="6.2.4" />
-		<PackageReference Include="L10NSharp" Version="10.0.0-beta0005" />
+		<PackageReference Include="L10NSharp" Version="11.0.1" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
 		<PackageReference Include="Moq" Version="4.14.7" />
@@ -142,10 +144,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<Reference Include="System.Windows.Forms" />
-		<Reference Include="System.Web" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\BloomExe\BloomExe.csproj" />

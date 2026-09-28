@@ -71,6 +71,7 @@ and whatever tab is showing. Most tests need nothing else.
 | `collectionDir` | The temp copy of the collection. Build book paths from this, never from `output/testing-inputs`. |
 | `userSettingsDir` | The folder this Bloom keeps its user settings in (its `user.config`), beside the collection in the temp folder. |
 | `restart`       | Stop Bloom, run an optional callback, start it again on the same collection, and return the new page. |
+| `reattachToShell` | Find the shell page again after Bloom rebuilt it in the same process (changing the UI language reopens the project), and return it. |
 
 Every Bloom the fixture launches keeps its user settings, the contents of `user.config` (UI
 language, page zoom, the Bloom Library login, and the rest of `Settings.Default`), in
@@ -90,6 +91,18 @@ is open, so the way to change a language is to stop Bloom, rewrite the `.bloomCo
 `makeCollectionXml`, and start again. Bloom is killed rather than asked to quit, so leave the
 page being edited before restarting or what was typed on it is lost. Use the page `restart`
 returns; the old one is closed.
+
+`reattachToShell()` is for the other way the shell page dies: Bloom replaces it without
+restarting, as it does when the UI language changes. Wait for the old page's `close` event first,
+or it can find the outgoing page. `helpers/uiLanguage.ts` does both for a language change.
+
+A test of the Choose Collection dialog sets `test.use({ startAtChooser: true, collectionSpec })`.
+Bloom then starts with no collection named and, with an empty settings folder, nothing to reopen,
+so it shows the dialog. The test uses the `chooserApp` fixture instead of `bloomApp`: its `page` is
+the dialog's document, `collectionToOpen` is the collection made from `collectionSpec` for the test
+to open from the dialog, and `reattachToChooser()` and `reattachToShell()` find the dialog again
+after it is rebuilt, or the workspace once a collection is open. Using the fixture that does not
+match the launch mode fails at once and says which one to use.
 
 Teardown kills the process tree, waits for the HTTP port to go dark, and deletes the temp copy.
 
@@ -160,6 +173,11 @@ real bug in the code under test; read the message and fix it rather than working
   `sections`, `splitSection`, `getSectionTypesOffered`, `chooseSectionType`.
 - `helpers/pageSize.ts` — `getPageSize`, `getPageSizeChoices`, `setPageSize`: read and change
   the book's page size and orientation through the Edit tab's layout-choice API.
+- `helpers/uiLanguage.ts` — the UI language menu, in the top bar and in the Choose Collection
+  dialog: read what it offers (`getOfferedUiLanguages`, `getUiLanguageMenuEntries`,
+  `getCurrentUiLanguageTag`), change the language through it (`chooseUiLanguage`,
+  `chooseUiLanguageInChooser`), toggle unapproved translations (`setShowUnapprovedTranslations`),
+  and check one string per localization pathway (`expectUiStrings`, `expectChooserStrings`).
 
 Two things a test must never do: trigger a native OS dialog (file pickers, the WinForms Image
 Toolbox, video capture), because Playwright cannot dismiss one and the run hangs; and wait on a

@@ -15,6 +15,10 @@ import { PublishTabPane } from "../publish/PublishTab/PublishTabPane";
 import { kPanelBackground } from "../bloomMaterialUITheme";
 import { EditTabPane } from "./EditTabPane";
 import { ToastHost } from "../toast/ToastHost";
+import {
+    EmbeddedSimpleProgressDialog,
+    kUpdateBookProgressDialogId,
+} from "../react_components/Progress/SimpleProgressDialog";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -65,6 +69,12 @@ export const App: React.FunctionComponent = () => {
                 {renderActiveTab()}
             </div>
             <div id="modal-dialog-container" />
+            {/* Bringing a book up to date ("Update Book", and the automatic pass before the AI
+                image editor or after a page-size change) shows its progress here, at the top
+                level: it is started from more than one tab, and the Edit tab empties its own
+                page while the work runs, so the dialog cannot live inside a tab. Being here
+                also means its backdrop covers the whole of Bloom while it is up. */}
+            <EmbeddedSimpleProgressDialog id={kUpdateBookProgressDialogId} />
             <ToastHost />
         </div>
     );

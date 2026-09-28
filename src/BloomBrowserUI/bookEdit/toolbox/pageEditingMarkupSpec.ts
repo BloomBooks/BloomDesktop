@@ -3,9 +3,9 @@ import {
     cleanUpNbsps,
     editableMightBeRewritten,
     removeCommentsFromEditableHtml,
-} from "./toolbox";
+} from "./pageEditingMarkup";
 
-describe("toolbox tests", () => {
+describe("pageEditingMarkup tests", () => {
     // This gate decides whether we take a ckeditor bookmark, which splits the text node the
     // user is typing in. Saying "no" when one of the clean-ups would in fact rewrite the box
     // would lose the user's insertion point, so it must catch everything they act on.

@@ -189,6 +189,3 @@ build/check-csharp-xmlclasses.sh || exit 1
 build/check-csharp-ApplicationExit.sh || exit 1
 build/check-csharp-analytics.sh || exit 1
 build/run-csharpier.sh || exit 1
-
-# Agent guidance: every nested AGENTS.md needs a CLAUDE.md sibling importing it
-build/check-agents-md-siblings.sh || exit 1

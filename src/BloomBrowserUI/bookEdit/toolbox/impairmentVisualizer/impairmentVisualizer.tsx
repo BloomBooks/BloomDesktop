@@ -373,12 +373,4 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         super.detachFromPage(); // removeToolMarkup: the overlays
         ImpairmentVisualizerControls.removeSimulationClassesFromBody();
     }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
-    }
 }

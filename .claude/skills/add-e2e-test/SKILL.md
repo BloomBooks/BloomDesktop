@@ -159,6 +159,12 @@ carries the API mechanics.
   `BLOOM_TESTING_INPUTS_DIR=<path>` instead of re-pinning on every edit.
 - Tests must never modify `output/testing-inputs/` — the fixture copies the
   collection to a temp folder and Bloom runs against the copy.
+- **A new collection is not entirely clean.** Bloom copies
+  `ReaderToolsSettings-<language>.json` into it from `%LOCALAPPDATA%\SIL\Bloom` when that file
+  exists, which it does wherever a Reader Tools BloomPack has been installed, and the fixture does
+  not isolate that folder. So a collection can arrive with decodable stages on your machine and
+  with a single empty stage on the CI runner. A test that depends on reader settings sets them
+  itself (`useKnownReaderStages` in `helpers/readerSetup.ts`).
 
 ## Writing the test
 

@@ -1,17 +1,3 @@
-# ⚠️ TEMPORARY (as of 2026-08-27): new work targets Version6.5, not master
-
-We are in a transition phase. Unless the user says otherwise:
-
-- Branch new work off **`Version6.5`**, not `master`, even if you are sitting on `master` now.
-- Open PRs with **`Version6.5`** as the base branch.
-- Assume `Version6.5` is the right target rather than asking just to confirm it. If something
-  about the task genuinely makes the target unclear, it is fine to ask — but say that you are
-  assuming `Version6.5` when you do.
-
-Delete this whole section (it exists only on master) once master is the normal target again.
-
----
-
 This project has a web front-end at src/BloomBrowserUI.
 The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 
@@ -47,6 +33,16 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Fail Fast. Don't write code that silently works around failed dependencies. If a dependency is missing we should fail. Javascript itself will fail if we try to use a missing dependency, and that's fine. E.g. if you expect a foo to be defined, don't write "if(foo){}". Just use foo and if it's null, fine, we'll get an error, which is good.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
+- **Never accept a known-flaky test.** A test that sometimes fails is reporting a real race, in Bloom or in the test: find out which and fix the cause. Any way of working around the flakiness instead (retries, re-running until it passes, a longer timeout, a fixed delay, looser assertions, skipping the test, a test hook added to Bloom) needs the developer's permission first.
+
+## Don't assume the machine is running in English
+
+Many users' machines use a comma decimal separator or Turkish casing (where `"IMG".ToLower()` is
+`"ımg"`). **Parse and format machine data invariantly** — CSS measurements, version numbers, tool
+output, anything going into a file or a log — with `CultureInfo.InvariantCulture`,
+`FormattableString.Invariant`, `ToUpperInvariant`, or `StringComparison.OrdinalIgnoreCase`. Use the
+current culture only for numbers and dates shown to the user. Tests must not assume English either;
+see `src/BloomTests/AGENTS.md`.
 
 ## Building and testing while a Bloom is running
 
@@ -108,10 +104,7 @@ In-progress plans, refactoring proposals, and other short-lived repo-level guida
 
 # Nested AGENTS.md files
 Guidance that only matters in one part of the tree lives in an `AGENTS.md` in that folder
-(`src/BloomBrowserUI`, `src/BloomTests`, `src/content/branding`, …). Claude Code auto-loads a
-nested `CLAUDE.md` but never a nested `AGENTS.md`, so every nested `AGENTS.md` has a `CLAUDE.md`
-beside it whose whole content is `@AGENTS.md`. The pre-commit hook
-(`build/check-agents-md-siblings.sh`) refuses a commit that adds one without the other.
+(`src/BloomBrowserUI`, `src/BloomTests`, `src/content/branding`, …).
 
 # Skills
 Reusable, task-specific procedures for this repo live in `.claude/skills/<name>/SKILL.md`, a

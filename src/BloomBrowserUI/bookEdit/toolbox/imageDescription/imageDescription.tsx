@@ -252,6 +252,14 @@ export function setupImageDescriptions(
             // Preferable to only send a request for the info we need and not save and refresh the whole page.
             //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
             post("editView/requestTranslationGroupContent", (result) => {
+                // The Edit tab may have moved to another page while we waited. Then the page frame
+                // holds that page, which may not have its script yet, and it gets its own
+                // newPageReady() once it loads. The container belongs to a page that is going away.
+                if (
+                    container.ownerDocument !== ToolBox.getPage()?.ownerDocument
+                ) {
+                    return;
+                }
                 // newPageReady() can be called twice, and both calls might occur before this async
                 // callback happens for either of them, so both may take this "no translation groups"
                 // branch and start to create them.  So check again before actually adding the new
@@ -374,14 +382,6 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         bodyOfPageIframe.classList.remove("bloom-showImageDescriptions");
         super.detachFromPage(); // removeToolMarkup: unwraps the bloom-describedImage wrappers
         getCanvasElementManager()?.resumeComicEditing();
-    }
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return false;
     }
 
     public id(): string {

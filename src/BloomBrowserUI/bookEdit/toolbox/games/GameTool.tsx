@@ -74,7 +74,6 @@ import { CanvasSnapProvider } from "../../js/canvasElementManager/CanvasSnapProv
 import { CanvasGuideProvider } from "../../js/canvasElementManager/CanvasGuideProvider";
 import { kIdForDragActivityTabControl } from "./DragActivityTabControl";
 import { RequiresSubscriptionOverlayWrapper } from "../../../react_components/requiresSubscription";
-import $ from "jquery";
 
 // This is the main code that manages the Bloom Games, including Drag Activities.
 // See especially DragActivityControls, which is the main React component for the tool,
@@ -1774,21 +1773,6 @@ export class GameTool extends ToolboxToolReactAdaptor {
 
     public id(): string {
         return kGameToolId;
-    }
-
-    public isExperimental(): boolean {
-        return false; // Todo: probably soon true, but first we need to make a control to turn it on
-    }
-
-    public toolRequiresEnterprise(): boolean {
-        return true; // Todo: implement this more fully, probably using RequiresBloomEnterprise
-    }
-
-    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
     }
 
     private lastPageId = "";
