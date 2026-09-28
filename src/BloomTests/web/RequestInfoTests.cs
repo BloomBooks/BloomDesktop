@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -109,7 +109,12 @@ namespace BloomTests.web
                 var path = MakePiecedFile(folder.Path);
                 var output = new StreamWithWriteCallback(null);
 
-                var wroteWholeFile = RequestInfo.WriteFileInPieces(path, OpenShared(path), output);
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
 
                 Assert.That(wroteWholeFile, Is.True);
                 Assert.That(output.ToArray(), Is.EqualTo(File.ReadAllBytes(path)));
@@ -126,7 +131,12 @@ namespace BloomTests.web
                 var path = MakePiecedFile(folder.Path);
                 var output = new StreamWithWriteCallback(() => File.Delete(path));
 
-                var wroteWholeFile = RequestInfo.WriteFileInPieces(path, OpenShared(path), output);
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
 
                 Assert.That(File.Exists(path), Is.False, "the test should have deleted the file");
                 Assert.That(wroteWholeFile, Is.False);
@@ -145,7 +155,12 @@ namespace BloomTests.web
                 var path = MakePiecedFile(subfolder);
                 var output = new StreamWithWriteCallback(() => Directory.Delete(subfolder, true));
 
-                var wroteWholeFile = RequestInfo.WriteFileInPieces(path, OpenShared(path), output);
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
 
                 Assert.That(
                     Directory.Exists(subfolder),
@@ -157,10 +172,91 @@ namespace BloomTests.web
             }
         }
 
-        private static string MakePiecedFile(string folderPath)
+        // Once the last piece has been written, the file is not needed again, so its disappearing
+        // then must not turn a complete reply into an aborted one.
+        [Test]
+        public void WriteFileInPieces_FileDeletedDuringLastPiece_ReturnsTrue()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                const int oneExactPiece = 512 * 1024;
+                var path = MakePiecedFile(folder.Path, oneExactPiece);
+                var expected = File.ReadAllBytes(path);
+                var output = new StreamWithWriteCallback(() => File.Delete(path));
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    oneExactPiece,
+                    output
+                );
+
+                Assert.That(File.Exists(path), Is.False, "the test should have deleted the file");
+                Assert.That(wroteWholeFile, Is.True);
+                Assert.That(output.ToArray(), Is.EqualTo(expected));
+            }
+        }
+
+        // A file replaced by a shorter one part way through cannot supply the promised length.
+        [Test]
+        public void WriteFileInPieces_FileShortenedAfterFirstPiece_ReturnsFalse()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(() =>
+                    File.WriteAllBytes(path, new byte[100])
+                );
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(
+                    new FileInfo(path).Length,
+                    Is.EqualTo(100),
+                    "the test should have shortened the file"
+                );
+                Assert.That(wroteWholeFile, Is.False);
+                Assert.That(output.Length, Is.EqualTo(512 * 1024));
+            }
+        }
+
+        // A file that grew part way through must not write past the promised length.
+        [Test]
+        public void WriteFileInPieces_FileLengthenedAfterFirstPiece_WritesOnlyPromisedLength()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(() =>
+                    File.WriteAllBytes(path, new byte[kLengthOfPiecedFile * 2])
+                );
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(
+                    new FileInfo(path).Length,
+                    Is.EqualTo(kLengthOfPiecedFile * 2),
+                    "the test should have lengthened the file"
+                );
+                Assert.That(wroteWholeFile, Is.True);
+                Assert.That(output.Length, Is.EqualTo(kLengthOfPiecedFile));
+            }
+        }
+
+        private static string MakePiecedFile(string folderPath, int length = kLengthOfPiecedFile)
         {
             var path = Path.Combine(folderPath, "big.jpg");
-            var contents = new byte[kLengthOfPiecedFile];
+            var contents = new byte[length];
             new Random(16935).NextBytes(contents);
             File.WriteAllBytes(path, contents);
             return path;

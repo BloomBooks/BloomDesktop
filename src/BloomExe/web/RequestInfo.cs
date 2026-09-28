@@ -276,7 +276,14 @@ namespace Bloom.Api
                         var pieceStream = fs;
                         fs = null; // WriteFileInPieces disposes it
                         var output = _actualContext.Response.OutputStream;
-                        if (WriteFileInPieces(path, pieceStream, output))
+                        if (
+                            WriteFileInPieces(
+                                path,
+                                pieceStream,
+                                _actualContext.Response.ContentLength64,
+                                output
+                            )
+                        )
                         {
                             output.Close();
                         }
@@ -290,7 +297,7 @@ namespace Bloom.Api
                             Logger.WriteEvent(
                                 "Server aborted its reply because "
                                     + path
-                                    + " was deleted part way through sending it"
+                                    + " was deleted or shortened part way through sending it"
                             );
                             _actualContext.Response.Abort();
                         }
@@ -312,23 +319,37 @@ namespace Bloom.Api
         }
 
         /// <summary>
-        /// Copies the file at path to output in 512KB pieces, closing the file while each piece
-        /// is written so that nobody is prevented from deleting or replacing it meanwhile.
+        /// Copies the first length bytes of the file at path to output in 512KB pieces, closing
+        /// the file while each piece is written so that nobody is prevented from deleting or
+        /// replacing it meanwhile. Never writes more than length bytes, since that is what the
+        /// response's Content-Length promised.
         /// Takes ownership of fs, which must be open at the start of the file.
-        /// Returns false if the file (or its folder) disappeared before all of it was written.
+        /// Returns false if the file (or its folder) disappeared, or the file got shorter,
+        /// before length bytes were written.
         /// </summary>
-        internal static bool WriteFileInPieces(string path, FileStream fs, Stream output)
+        internal static bool WriteFileInPieces(
+            string path,
+            FileStream fs,
+            long length,
+            Stream output
+        )
         {
             try
             {
                 var buffer = new byte[1024 * 512]; //512KB
+                long written = 0;
                 int read;
-                while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                while (
+                    (read = fs.Read(buffer, 0, (int)Math.Min(buffer.Length, length - written))) > 0
+                )
                 {
                     long pos = fs.Position;
                     fs.Dispose();
                     fs = null; // prevent double dispose
                     output.Write(buffer, 0, read);
+                    written += read;
+                    if (written == length)
+                        return true; // no need to reopen a file we have finished with
                     try
                     {
                         fs = OpenSharedReadStreamWithRetry(path);
@@ -343,7 +364,7 @@ namespace Bloom.Api
 
                     fs.Seek(pos, SeekOrigin.Begin);
                 }
-                return true;
+                return written == length;
             }
             finally
             {
