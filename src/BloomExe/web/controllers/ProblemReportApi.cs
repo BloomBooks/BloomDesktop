@@ -1293,7 +1293,7 @@ namespace Bloom.web.controllers
 
         private static string GetDomainlessEmail(string rawEmail)
         {
-            var atIndex = rawEmail.IndexOf("@");
+            var atIndex = rawEmail.IndexOf("@", StringComparison.Ordinal);
             return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
         }
 

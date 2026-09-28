@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -122,7 +123,7 @@ namespace Bloom
         {
             get
             {
-                var startQuery = _notEncoded.IndexOf("?");
+                var startQuery = _notEncoded.IndexOf("?", StringComparison.Ordinal);
                 if (startQuery < 0)
                     return CreateFromUnencodedString("");
                 return CreateFromUnencodedString(_notEncoded.Substring(startQuery));

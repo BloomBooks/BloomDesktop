@@ -2311,7 +2311,7 @@ namespace Bloom.Book
                     var line = cssLines[index].Trim();
                     if (line.StartsWith(kLangTag))
                     {
-                        var idxQuote = line.IndexOf("'", kLangTag.Length);
+                        var idxQuote = line.IndexOf("'", kLangTag.Length, StringComparison.Ordinal);
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
