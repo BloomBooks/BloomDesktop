@@ -711,9 +711,10 @@ namespace Bloom.CollectionTab
 
         /// <summary>
         /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
-        /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind the collection
-        /// tab's embedded React progress dialog, and reselects the book once the dialog closes so
-        /// the collection shows the result.
+        /// per-page browser fix-up over every page (BookProcessor.ProcessBook) behind Bloom's
+        /// top-level compact progress dialog -- the bar and the one housekeeping sentence, exactly
+        /// what the automatic update shows (BookProcessor.EnsurePerPageFixupIfNeededThen) -- and
+        /// reselects the book once the dialog closes so the collection shows the result.
         /// </summary>
         /// <remarks>
         /// The per-page part used to be done by driving the live Edit tab through the pages
@@ -737,10 +738,15 @@ namespace Bloom.CollectionTab
             // Deselect while we rewrite the book, so nothing (e.g. the preview) holds its files.
             SelectBookOnUiThread(null);
 
+            // The same dialog, with the same words, as the automatic update
+            // (BookProcessor.EnsurePerPageFixupIfNeededThen): to the user this is one operation,
+            // here asked for rather than decided by Bloom.
             await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
                 _webSocketServer,
+                BookProcessor.MakeUpdateBookProgressProps(),
                 (progress, worker) =>
                 {
+                    BookProcessor.AlsoLogProgressMessages(progress);
                     try
                     {
                         // Since the user explicitly told us to do this again, we will, even if we
@@ -754,17 +760,13 @@ namespace Bloom.CollectionTab
                         Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
                         throw;
                     }
-                    return Task.FromResult(false); // false => close the dialog when we finish
+                    // As with the automatic update (BookProcessor.EnsurePerPageFixupIfNeededThen): if a
+                    // warning or error reached the dialog without stopping the run, keep the dialog
+                    // up (true) so the user can read it, rather than closing the moment the work
+                    // finishes. Either way the book is reselected when the dialog closes.
+                    return Task.FromResult(progress.HaveProblemsBeenReported);
                 },
-                "collectionTab",
-                // Same string (and id) as the menu command that got us here.
-                LocalizationManager.GetString(
-                    "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-                    "Update Book"
-                ),
-                showCancelButton: false,
-                doWhenDialogCloses: () => SelectBookOnUiThread(b),
-                determinate: true
+                doWhenDialogCloses: () => SelectBookOnUiThread(b)
             );
         }
 

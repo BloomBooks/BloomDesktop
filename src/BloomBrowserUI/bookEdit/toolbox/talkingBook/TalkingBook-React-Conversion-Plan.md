@@ -183,7 +183,7 @@ Two lifecycle facts that shape everything:
   `<ThemeProvider theme={toolboxTheme}>` (from `bloomMaterialUITheme`), using Bloom's
   `react_components` (`BloomButton`, `BloomSwitch`, `BloomTooltip`, the l10n components
   `Div`/`Span`/`LocalizedString`/`useL10n`, `ToolBottomHelpLink`).
-- Follow `.github/skills/react-useeffect/SKILL.md` when writing the component (it exists
+- Follow `.claude/skills/react-useeffect/SKILL.md` when writing the component (it exists
   precisely for conversions like this).
 
 ### 1.7 UI inventory to reproduce (from the pug + engine code)
@@ -214,7 +214,7 @@ Controls, top to bottom (`talkingBookToolboxTool.pug`):
   UI** (see §4).
 
 l10n keys the React version must keep emitting (verify against
-`.github/skills/xlf-strings/SKILL.md` rules — no new strings should be needed):
+`.claude/skills/xlf-strings/SKILL.md` rules — no new strings should be needed):
 `EditTab.Toolbox.TalkingBookTool` (heading, supplied by the React toolbox shell),
 `.CheckSettingsLabel`, `.LookAtSentenceLabel`, `.SpeakLabel`, `.CheckLabel`,
 `.AdjustTimings`, `.NextLabel`, `.Back`, `.Clear`, `.Listen`, `Common.Help`,

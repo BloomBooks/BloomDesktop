@@ -391,6 +391,20 @@ jobs:
                   PLAYWRIGHT_JUNIT_OUTPUT_NAME: ../../../../output/Tests/component-tester-junit.xml
               run: pnpm test --timeout=120000 --reporter=list,junit
 
+            # The config's `trace: "retain-on-failure"` writes a Playwright trace next to each
+            # failed test, under the config directory's default test-results/. Collect it, because
+            # these tests only ever fail unattended: the run is gone by morning and a failure that
+            # nobody can reproduce by hand leaves nothing else to look at. On failure only, for the
+            # same reason as the BloomE2E report above. See that step for why !cancelled() matters.
+            - name: Upload component-tester traces
+              if: ${{ !cancelled() && steps.component_tests.outcome == 'failure' }}
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: component-tester-traces
+                  path: src/BloomBrowserUI/react_components/component-tester/test-results/**
+                  retention-days: 4
+                  if-no-files-found: ignore
+
             # ----- Visual regression tests -----
             # src/BloomVisualRegressionTests drives a real Release Bloom.exe (which it finds at
             # output/Release/x64/Bloom.exe) over HTTP and compares rendered screenshots against the

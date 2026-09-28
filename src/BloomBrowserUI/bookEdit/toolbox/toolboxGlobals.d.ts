@@ -17,7 +17,6 @@ declare global {
     }
 
     interface ToolboxApi {
-        getToolIfOffered?: (toolId: string) => ToolboxToolApi | undefined;
         getCurrentTool?: () => CurrentToolApi | undefined;
     }
 
@@ -30,14 +29,20 @@ declare global {
         showSetupDialog: unknown;
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
+        beginLoadSynphonySettings: unknown;
+        getDecodableStageMatchingWords: unknown;
+        getSynphonyAlwaysMatchSymbols: unknown;
+        classifySampleTextFiles: unknown;
+        addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;
         makeLetterWordList: unknown;
+        removeSampleTextFilesChangedListener: unknown;
+        removeWordListChangedListener: unknown;
         activateLongPressFor: unknown;
         TalkingBookTool: unknown;
         canUndo: unknown;
         undo: unknown;
-        applyToolboxStateToPageLegacy: unknown;
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;

@@ -1,11 +1,9 @@
-﻿<!doctype html>
-
-<html>
+﻿<html>
     <head>
         <meta charset="UTF-8" />
         <meta
             name="Generator"
-            content="Bloom Version 6.0.1344 (apparent build date: 15-May-2024)"
+            content="Bloom Version 6.5.0 (apparent build date: 23-Sep-2026)"
         />
         <meta name="BloomFormatVersion" content="2.1" />
         <meta name="pageTemplateSource" content="Basic Book" />
@@ -27,14 +25,27 @@
                 font-size: 16pt !important;
             } /*]]>*/
         </style>
-        <style type="text/css">
-            div.bloom-page.coverColor {
+        <style type="text/css" name="legacyCoverBackgroundColor">
+            DIV.bloom-page.coverColor {
                 background-color: #98d0b9 !important;
             }
         </style>
+        <style type="text/css" name="appearanceCoverBackgroundColor">
+            .bloom-page {
+                --cover-background-color: #98d0b9;
+            }
+        </style>
+
         <meta name="lockedDownAsShell" content="true" />
-        <meta name="maintenanceLevel" content="4" />
+        <meta name="maintenanceLevel" content="14" />
         <meta name="mediaMaintenanceLevel" content="1" />
+
+        <meta
+            name="FeatureRequirement"
+            content='[{"BloomDesktopMinVersion":"6.2","BloomPlayerMinVersion":"2.0","FeatureId":"canvasElement","FeaturePhrase":"6.2 representation of canvas elements"},{"BloomDesktopMinVersion":"6.2","BloomPlayerMinVersion":"2.0","FeatureId":"bloomCanvas","FeaturePhrase":"6.2 use of bloom-canvas"}]'
+        />
+        <meta name="browserMaintenanceLevel" content="1" />
+        <meta name="browserMaintenanceLayout" content="A5Portrait" />
         <link rel="stylesheet" href="basePage.css" type="text/css" />
         <link rel="stylesheet" href="previewMode.css" type="text/css" />
         <link rel="stylesheet" href="origami.css" type="text/css" />
@@ -42,12 +53,12 @@
         <link rel="stylesheet" href="Traditional-XMatter.css" type="text/css" />
         <link rel="stylesheet" href="branding.css" type="text/css" />
         <link rel="stylesheet" href="defaultLangStyles.css" type="text/css" />
+        <link rel="stylesheet" href="appearance.css" type="text/css" />
         <link
             rel="stylesheet"
             href="../customCollectionStyles.css"
             type="text/css"
         />
-        <link rel="stylesheet" href="appearance.css" type="text/css" />
     </head>
 
     <body
@@ -85,6 +96,10 @@
                 data-copyright="Copyright © 2021, SIL International"
                 data-creator="Moinak &amp; team"
                 data-license="cc-by"
+                onerror="this.classList.add('bloom-imageLoadError')"
+                data-canvas-element-style="width: 468.672px; height: 468.672px; left: 0px; top: 36.6094px;"
+                data-canvas-imgsizebasedon="469,542"
+                data-container-fraction-of-page="0.839,0.6826"
             >
                 page 13.jpg
             </div>
@@ -96,7 +111,6 @@
                 contenteditable="true"
             >
                 <p>Story by SIL Staff</p>
-
                 <p>Illustrations by Moinak and team</p>
             </div>
 
@@ -106,55 +120,57 @@
                 A Family Learns about Immunisations
             </div>
 
-            <div data-book="outside-back-cover-branding-bottom-html" lang="*">
-                <img
-                    class="branding"
-                    src="BloomWithTaglineAgainstLight.svg"
-                    alt=""
-                    data-copyright=""
-                    data-creator=""
-                    data-license=""
-                />
+            <div
+                data-book="outside-back-cover-branding-bottom-html"
+                lang="*"
+                class="bloom-force-publish"
+            >
+                <div class="bloom-branding-wrapper">
+                    <a
+                        href="https://bloomlibrary.org/language:en?utm_source=badgeclick"
+                        ><img
+                            class="branding"
+                            src="made-with-bloom-badge-text.svg"
+                            alt="This image, made-with-bloom-badge-text.svg, is missing or was loading too slowly."
+                        /><img
+                            class="bloom-qrcode"
+                            src="lang-qr-code.png"
+                            alt="This image, lang-qr-code.png, is missing or was loading too slowly."
+                        />
+                        <div class="bloom-lang-on-blorg">
+                            <div class="bloom-blorg-caption">
+                                More books in <b>English</b> language:
+                            </div>
+                            <div class="bloom-blorg-url">
+                                BloomLibrary.org/language:en
+                            </div>
+                        </div></a
+                    >
+                </div>
             </div>
-
             <div data-book="copyright" lang="*">
                 Copyright © 2021, SIL International
             </div>
-
             <div data-book="licenseUrl" lang="*">
                 http://creativecommons.org/licenses/by/4.0/
             </div>
-
             <div data-book="licenseDescription" lang="en">
                 http://creativecommons.org/licenses/by/4.0/<br />You are free to
                 make commercial use of this work. You may adapt and add to this
                 work. You must keep the copyright and credits for authors,
                 illustrators, etc.
             </div>
-
             <div data-book="licenseImage" lang="*">license.png</div>
+            <div
+                data-xmatter-page="frontCover"
+                data-page="required singleton"
+                data-export="front-matter-cover"
+                data-page-number=""
+            ></div>
             <div
                 data-xmatter-page="insideFrontCover"
                 data-page="required singleton"
                 data-export="front-matter-inside-front-cover"
-                data-page-number=""
-            ></div>
-            <div
-                data-xmatter-page="outsideBackCover"
-                data-page="required singleton"
-                data-export="back-matter-back-cover"
-                data-page-number=""
-            ></div>
-            <div
-                data-xmatter-page="insideBackCover"
-                data-page="required singleton"
-                data-export="back-matter-inside-back-cover"
-                data-page-number=""
-            ></div>
-            <div
-                data-xmatter-page="credits"
-                data-page="required singleton"
-                data-export="front-matter-credits"
                 data-page-number=""
             ></div>
             <div
@@ -164,18 +180,30 @@
                 data-page-number=""
             ></div>
             <div
-                data-xmatter-page="frontCover"
+                data-xmatter-page="credits"
                 data-page="required singleton"
-                data-export="front-matter-cover"
+                data-export="front-matter-credits"
+                data-page-number=""
+            ></div>
+            <div
+                data-xmatter-page="insideBackCover"
+                data-page="required singleton"
+                data-export="back-matter-inside-back-cover"
+                data-page-number=""
+            ></div>
+            <div
+                data-xmatter-page="outsideBackCover"
+                data-page="required singleton"
+                data-export="back-matter-back-cover"
                 data-page-number=""
             ></div>
         </div>
-
         <div
             class="bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait"
             data-page="required singleton"
             data-export="front-matter-cover"
             data-xmatter-page="frontCover"
+            data-custom-layout-id="customOutsideFrontCover"
             id="3de70d61-17a5-4442-8040-b93be50a1da5"
             lang="en"
             data-page-number=""
@@ -184,16 +212,12 @@
                 class="pageLabel"
                 lang="en"
                 data-i18n="TemplateBooks.PageLabel.Front Cover"
-                data-after-content="Traditional Front/Back Matter"
             >
                 Front Cover
             </div>
-
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
                 <div data-book="cover-branding-top-html" lang="*"></div>
-
                 <div
                     class="bloom-translationGroup bookTitle"
                     data-default-languages="V,N1"
@@ -209,41 +233,51 @@
                         data-book="bookTitle"
                         style="padding-bottom: 0px"
                         data-languagetipcontent="English"
-                        tabindex="0"
-                        spellcheck="false"
-                        role="textbox"
-                        aria-label="false"
-                        data-hasqtip="true"
-                        aria-describedby="qtip-0"
                     >
                         <p>
                             <strong>A Family Learns about Immunisations</strong>
                         </p>
                     </div>
-
                     <div
                         class="bloom-editable bloom-nodefaultstylerule Title-On-Cover-style bloom-padForOverflow"
                         lang="z"
                         contenteditable="true"
                         data-book="bookTitle"
                         style=""
-                    ></div>
+                    >
+                        <p></p>
+                    </div>
                 </div>
-
                 <div
-                    class="bloom-canvas"
-                    data-title="Name: page 13.jpg Size: 514.25 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 542 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1694 dots would fill this container at 300 DPI."
-                    title=""
+                    class="bloom-canvas bloom-has-canvas-element"
+                    data-imgsizebasedon="469,542"
                 >
-                    <img
-                        data-book="coverImage"
-                        src="page%2013.jpg"
-                        data-copyright="Copyright © 2021, SIL International"
-                        data-creator="Moinak &amp; team"
-                        data-license="cc-by"
-                        alt=""
-                    />
-
+                    <div
+                        class="bloom-canvas-element bloom-backgroundImage"
+                        style="
+                            width: 468.672px;
+                            height: 468.672px;
+                            left: 0px;
+                            top: 36.6094px;
+                        "
+                        data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                    >
+                        <div
+                            class="bloom-imageContainer"
+                            style="direction: ltr"
+                            data-fraction-of-page="0.839,0.6826"
+                        >
+                            <img
+                                data-book="coverImage"
+                                src="page%2013.jpg"
+                                onerror="this.classList.add('bloom-imageLoadError')"
+                                data-copyright="Copyright © 2021, SIL International"
+                                data-creator="Moinak &amp; team"
+                                data-license="cc-by"
+                                alt=""
+                            />
+                        </div>
+                    </div>
                     <div
                         class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
                         data-default-languages="auto"
@@ -255,40 +289,36 @@
                             contenteditable="true"
                             data-book="coverImageDescription"
                             data-languagetipcontent="English"
-                            tabindex="0"
-                            spellcheck="false"
-                            role="textbox"
-                            aria-label="false"
                         ></div>
-
                         <div
                             class="bloom-editable ImageDescriptionEdit-style"
                             lang="z"
                             contenteditable="true"
                             data-book="coverImageDescription"
                             style=""
-                        ></div>
+                        >
+                            <p></p>
+                        </div>
                     </div>
                 </div>
-
+                <!-- 2 columns: first for an optional logo, then text content-->
                 <div class="bottomBlock">
                     <div
                         data-book="cover-bottom-first-row-branding-html"
                         lang="*"
                     ></div>
-
                     <div data-book="cover-branding-left-html" lang="*"></div>
-
+                    <!-- 2 rows-->
                     <div class="bottomTextContent">
+                        <!--NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,-->
+                        <!-- because it is never empty-->
                         <div
                             class="creditsRow"
                             data-hint="You may use this space for author/illustrator, or anything else."
-                            data-hasqtip="true"
-                            aria-describedby="qtip-1"
                         >
                             <div
                                 class="bloom-translationGroup"
-                                data-default-languages="V"
+                                data-default-languages="[CoverCreditsLanguage] DEFAULT:V"
                                 style="font-size: 16px"
                             >
                                 <div
@@ -297,22 +327,18 @@
                                     contenteditable="true"
                                     data-book="smallCoverCredits"
                                     data-languagetipcontent="English"
-                                    tabindex="0"
-                                    spellcheck="false"
-                                    role="textbox"
-                                    aria-label="false"
                                 ></div>
-
                                 <div
                                     class="bloom-editable smallCoverCredits Cover-Default-style"
                                     lang="z"
                                     contenteditable="true"
                                     data-book="smallCoverCredits"
                                     style=""
-                                ></div>
+                                >
+                                    <p></p>
+                                </div>
                             </div>
                         </div>
-
                         <div class="bottomRow" data-have-topic="true">
                             <div
                                 class="coverBottomLangName Cover-Default-style"
@@ -321,20 +347,16 @@
                             >
                                 English
                             </div>
-
                             <div
                                 class="coverBottomBookTopic bloom-userCannotModifyStyles bloom-alwaysShowBubble Cover-Default-style"
                                 data-derived="topic"
                                 data-functiononhintclick="showTopicChooser"
                                 data-hint="Choose topic"
-                                data-hasqtip="true"
-                                aria-describedby="qtip-2"
                                 lang="en"
                             >
                                 Health
                             </div>
                         </div>
-
                         <div
                             data-book="cover-branding-bottom-html"
                             lang="*"
@@ -343,7 +365,6 @@
                 </div>
             </div>
         </div>
-
         <div
             class="bloom-page cover coverColor bloom-frontMatter cover coverColor insideFrontCover bloom-frontMatter side-left A5Portrait"
             data-page="required singleton"
@@ -361,25 +382,23 @@
                 Inside Front Cover
             </div>
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
-                <div class="bloom-translationGroup" data-default-languages="N1">
+                <div
+                    class="bloom-translationGroup"
+                    data-default-languages="N1"
+                    style="font-size: 13.3333px"
+                >
                     <div
                         class="bloom-editable Inside-Front-Cover-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="insideFontCover"
-                    >
-                        <label class="bubble"
-                            >If you need somewhere to put more information about
-                            the book, you can use this page, which is the inside
-                            of the front cover.</label
-                        >
-                    </div>
+                        data-languagetipcontent="English"
+                        data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the front cover."
+                    ></div>
                 </div>
             </div>
         </div>
-
         <div
             class="bloom-page titlePage bloom-frontMatter side-right A5Portrait"
             data-page="required singleton"
@@ -397,20 +416,15 @@
                 Title Page
             </div>
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
+                <!-- TITLE PAGE-->
                 <div
                     class="bloom-translationGroup"
                     data-default-languages="V,N1"
                     id="titlePageTitleBlock"
+                    style="font-size: 18.6667px"
                 >
                     <label class="bubble">Book title in {lang}</label>
-                    <div
-                        class="bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-padForOverflow"
-                        lang="z"
-                        contenteditable="true"
-                        data-book="bookTitle"
-                    ></div>
 
                     <div
                         class="bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-padForOverflow bloom-visibility-code-on bloom-content1 bloom-contentNational1 bloom-contentFirst"
@@ -418,18 +432,28 @@
                         contenteditable="true"
                         data-book="bookTitle"
                         style="padding-bottom: 0px"
+                        data-languagetipcontent="English"
                     >
                         <p>
                             <strong>A Family Learns about Immunisations</strong>
                         </p>
                     </div>
+                    <div
+                        class="bloom-editable bloom-nodefaultstylerule Title-On-Title-Page-style bloom-padForOverflow"
+                        lang="z"
+                        contenteditable="true"
+                        data-book="bookTitle"
+                        style=""
+                    >
+                        <p></p>
+                    </div>
                 </div>
                 <div class="largeFlexGap"></div>
-
                 <div
                     class="bloom-translationGroup"
                     data-default-languages="N1"
                     id="originalContributions"
+                    style="font-size: 13.3333px"
                 >
                     <label
                         class="bubble"
@@ -438,53 +462,60 @@
                         >The contributions made by writers, illustrators,
                         editors, etc., in {lang}</label
                     >
-                    <div
-                        class="bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style"
-                        lang="z"
-                        contenteditable="true"
-                        data-book="originalContributions"
-                    ></div>
 
                     <div
                         class="bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="originalContributions"
+                        data-languagetipcontent="English"
                     >
                         <p>Story by SIL Staff</p>
-
                         <p>Illustrations by Moinak and team</p>
+                    </div>
+                    <div
+                        class="bloom-editable credits bloom-copyFromOtherLanguageIfNecessary Content-On-Title-Page-style"
+                        lang="z"
+                        contenteditable="true"
+                        data-book="originalContributions"
+                        style=""
+                    >
+                        <p></p>
                     </div>
                 </div>
                 <div class="smallFlexGap"></div>
-
                 <div
                     class="bloom-translationGroup"
                     data-default-languages="N1"
                     id="funding"
+                    style="font-size: 13.3333px"
                 >
                     <label class="bubble"
                         >Use this to acknowledge any funding agencies.</label
                     >
-                    <div
-                        class="bloom-editable funding Content-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary"
-                        lang="z"
-                        contenteditable="true"
-                        data-book="funding"
-                    ></div>
+
                     <div
                         class="bloom-editable funding Content-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="funding"
+                        data-languagetipcontent="English"
                     ></div>
+                    <div
+                        class="bloom-editable funding Content-On-Title-Page-style bloom-copyFromOtherLanguageIfNecessary"
+                        lang="z"
+                        contenteditable="true"
+                        data-book="funding"
+                        style=""
+                    >
+                        <p></p>
+                    </div>
                 </div>
                 <div class="largeFlexGap"></div>
                 <div
                     class="Content-On-Title-Page-style"
                     id="languageInformation"
                 ></div>
-
                 <div
                     class="languagesOfBook"
                     data-derived="languagesOfBook"
@@ -501,7 +532,6 @@
                 <div data-book="title-page-branding-bottom-html" lang="*"></div>
             </div>
         </div>
-
         <div
             class="bloom-page bloom-frontMatter credits side-left A5Portrait"
             data-page="required singleton"
@@ -519,10 +549,8 @@
                 Credits Page
             </div>
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
                 <div data-book="credits-page-branding-top-html" lang="*"></div>
-
                 <div
                     class="bloom-metaData licenseAndCopyrightBlock"
                     data-functiononhintclick="showCopyrightAndLicenseDialog"
@@ -536,7 +564,7 @@
                     >
                         Copyright © 2021, SIL International
                     </div>
-
+                    <!-- no default content-->
                     <div class="licenseBlock">
                         <img
                             class="licenseImage"
@@ -544,7 +572,6 @@
                             data-derived="licenseImage"
                             alt=""
                         />
-
                         <div
                             class="licenseUrl"
                             data-derived="licenseUrl"
@@ -552,7 +579,6 @@
                         >
                             http://creativecommons.org/licenses/by/4.0/
                         </div>
-
                         <div
                             class="licenseDescription Credits-Page-style"
                             data-derived="licenseDescription"
@@ -564,17 +590,16 @@
                             copyright and credits for authors, illustrators,
                             etc.
                         </div>
-
                         <div
                             class="licenseNotes Credits-Page-style"
                             data-derived="licenseNotes"
                         ></div>
                     </div>
                 </div>
-
                 <div
                     class="bloom-translationGroup versionAcknowledgments"
                     data-default-languages="N1"
+                    style="font-size: 13.3333px"
                 >
                     <label class="bubble"
                         >Acknowledgments for this version, in {lang}. For
@@ -586,37 +611,39 @@
                         lang="en"
                         contenteditable="true"
                         data-book="versionAcknowledgments"
+                        data-languagetipcontent="English"
                     ></div>
                 </div>
-
                 <div
                     class="copyright Credits-Page-style"
                     data-derived="originalCopyrightAndLicense"
                 ></div>
-
                 <div
                     class="bloom-translationGroup originalAcknowledgments"
                     data-default-languages="N1"
+                    style="font-size: 13.3333px"
                 >
                     <label class="bubble"
                         >Original (or Shell) Acknowledgments in {lang}</label
                     >
 
                     <div
-                        class="bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style"
-                        lang="z"
-                        contenteditable="true"
-                        data-book="originalAcknowledgments"
-                    ></div>
-
-                    <div
                         class="bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="originalAcknowledgments"
+                        data-languagetipcontent="English"
                     ></div>
+                    <div
+                        class="bloom-editable bloom-copyFromOtherLanguageIfNecessary Credits-Page-style"
+                        lang="z"
+                        contenteditable="true"
+                        data-book="originalAcknowledgments"
+                        style=""
+                    >
+                        <p></p>
+                    </div>
                 </div>
-
                 <div
                     class="ISBNContainer"
                     data-hint="International Standard Book Number. Leave blank if you don't have one of these."
@@ -625,20 +652,26 @@
                         class="bloom-doNotPublishIfParentOtherwiseEmpty Credits-Page-style"
                         >ISBN</span
                     >
-
                     <div
                         class="bloom-translationGroup bloom-recording-optional"
                         data-default-languages="*"
+                        style="font-size: 13.3333px"
                     >
-                        <div
-                            class="bloom-editable Credits-Page-style bloom-visibility-code-on"
-                            data-book="ISBN"
-                            lang="*"
-                        ></div>
                         <div
                             class="bloom-editable Credits-Page-style bloom-content1 bloom-contentNational1"
                             data-book="ISBN"
                             lang="en"
+                            contenteditable="true"
+                            style=""
+                            data-languagetipcontent="English"
+                        >
+                            <p></p>
+                        </div>
+                        <div
+                            class="bloom-editable Credits-Page-style bloom-visibility-code-on"
+                            data-book="ISBN"
+                            lang="*"
+                            contenteditable="true"
                         ></div>
                     </div>
                 </div>
@@ -679,17 +712,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 1.jpg Size: 976.27 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%201.jpg"
-                                    alt="a girl and a younger boy play in front of a house on a sunny, clear day. Their mother is in the doorway, talking to them."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 1.jpg Size: 976.27 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%201.jpg"
+                                            alt="a girl and a younger boy play in&#xA;                                            front of a house on a sunny, clear&#xA;                                            day. Their mother is in the doorway,&#xA;                                            talking to them."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -750,13 +802,11 @@
                                         Nelli and Mattu were playing in the
                                         yard.
                                     </p>
-
                                     <p>
                                         “Nelli!” called Mama. “Take your brother
                                         and go to the water tap for more water.
                                         I need to wash the baby.”
                                     </p>
-
                                     <p></p>
                                 </div>
 
@@ -804,17 +854,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 2.jpg Size: 839.79 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%202.jpg"
-                                    alt="The two children carry a bucket as they walk toward a water pump. Near the pump stand a group of women talking. One looks like a woman from town."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 2.jpg Size: 839.79 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%202.jpg"
+                                            alt="The two children carry a bucket as&#xA;                                            they walk toward a water pump. Near&#xA;                                            the pump stand a group of women&#xA;                                            talking. One looks like a woman from&#xA;                                            town."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -874,14 +943,12 @@
                                 >
                                     <p>
                                         Nelli and her brother got containers and
-                                        walked to the water tap.&nbsp;
+                                        walked to the water tap. 
                                     </p>
-
                                     <p>
                                         They saw a stranger at the tap. She was
                                         talking to people as they got water.
                                     </p>
-
                                     <p></p>
                                 </div>
 
@@ -929,17 +996,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 3.jpg Size: 566.16 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%203.jpg"
-                                    alt="The children stand at the pump with the bucket underneath, filling with water. The town woman faces them to talk to them."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 3.jpg Size: 566.16 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%203.jpg"
+                                            alt="The children stand at the pump with&#xA;                                            the bucket underneath, filling with&#xA;                                            water. The town woman faces them to&#xA;                                            talk to them."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1002,7 +1088,6 @@
                                         “Hello there, I'm Nurse Kerol from the
                                         clinic. What are your names?”
                                     </p>
-
                                     <p></p>
                                 </div>
 
@@ -1050,17 +1135,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 4.jpg Size: 477.65 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%204.jpg"
-                                    alt="the children and the town woman talk to each other at the water pump"
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 4.jpg Size: 477.65 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%204.jpg"
+                                            alt="the children and the town woman talk&#xA;                                            to each other at the water pump"
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1122,7 +1226,6 @@
                                         mother, so she can give our baby sister
                                         a bath.”
                                     </p>
-
                                     <p>
                                         “You are such good helpers. Can I help
                                         you carry the water home? I would like
@@ -1174,17 +1277,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 7.jpg Size: 782.46 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%207.jpg"
-                                    alt="The girl and the woman walk with the full bucket between them. The boy chases bugs behind them. They are near to the children's house."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 7.jpg Size: 782.46 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%207.jpg"
+                                            alt="The girl and the woman walk with the&#xA;                                            full bucket between them. The boy&#xA;                                            chases bugs behind them. They are&#xA;                                            near to the children's house."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1247,7 +1369,6 @@
                                         Nelli called out, 'Mama, Mama! There is
                                         someone here to see you.”
                                     </p>
-
                                     <p></p>
                                 </div>
 
@@ -1295,17 +1416,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 8.jpg Size: 868.48 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="page%208.jpg"
-                                    alt="Mama, holding the baby, stands in the doorway. She recognizes the woman and greets her."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 8.jpg Size: 868.48 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="page%208.jpg"
+                                            alt="Mama, holding the baby, stands in&#xA;                                            the doorway. She recognizes the&#xA;                                            woman and greets her."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1365,13 +1505,11 @@
                                         Mama came to the door, carrying the
                                         baby.
                                     </p>
-
                                     <p>
                                         “Hello! Nelli, I know your new friend.
                                         She grew up in the village next to ours.
                                         Welcome to our house, Kerol."
                                     </p>
-
                                     <p></p>
                                 </div>
 
@@ -1419,17 +1557,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 9.jpg Size: 696.71 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 421 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 570 DPI. • An image with 1466 x 1316 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,408"
                             >
-                                <img
-                                    src="page%209.jpg"
-                                    alt="The women sit in the house (on mats? at a table?) drinking tea. The baby is with her mother. The girl and the boy are in the back ground."
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 30.4609px;
+                                        top: 0px;
+                                        width: 407.75px;
+                                        height: 407.75px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 9.jpg Size: 696.71 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 421 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 570 DPI. • An image with 1466 x 1316 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5139"
+                                    >
+                                        <img
+                                            src="page%209.jpg"
+                                            alt="The women sit in the house (on mats?&#xA;                                            at a table?) drinking tea. The baby&#xA;                                            is with her mother. The girl and the&#xA;                                            boy are in the back ground."
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1495,7 +1652,6 @@
                                         childhood sicknesses that can kill
                                         them.”
                                     </p>
-
                                     <p>
                                         Mama replied. “But when they get sick we
                                         can take them to the clinic for a shot.
@@ -1547,17 +1703,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 10.jpg Size: 343.42 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 436 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 550 DPI. • An image with 1466 x 1363 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,436"
                             >
-                                <img
-                                    src="page%2010.jpg"
-                                    alt="women talking and drinking tea with kids watching"
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 16.3984px;
+                                        top: 0px;
+                                        width: 435.875px;
+                                        height: 435.875px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 10.jpg Size: 343.42 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 436 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 550 DPI. • An image with 1466 x 1363 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5491"
+                                    >
+                                        <img
+                                            src="page%2010.jpg"
+                                            alt="women talking and drinking tea with&#xA;                                            kids watching"
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1619,7 +1794,6 @@
                                         are shots to give them protection from
                                         future sicknesses.”
                                     </p>
-
                                     <p>
                                         “How can a shot give protection for the
                                         future? I thought shots gave you strong
@@ -1672,17 +1846,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: new papua 10.jpg Size: 886.18 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,469"
                             >
-                                <img
-                                    src="new%20papua%2010.jpg"
-                                    alt="a picture of a healthy garden with a strong fence around it"
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 0.171875px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: new papua 10.jpg Size: 886.18 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 469 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1466 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5907"
+                                    >
+                                        <img
+                                            src="new%20papua%2010.jpg"
+                                            alt="a picture of a healthy garden with a&#xA;                                            strong fence around it"
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1793,16 +1986,34 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title="Name: page 12.jpg Size: 774.52 kb Dots: 2500 x 2500 For the current paper size: • The image container is 406 x 341 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 704 DPI. • An image with 1269 x 1066 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,436"
                             >
-                                <img
-                                    src="page%2012.jpg"
-                                    alt="picture of pigs ruining a garden"
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 16.3984px;
+                                        top: 0px;
+                                        width: 435.875px;
+                                        height: 435.875px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title="Name: page 12.jpg Size: 774.52 kb Dots: 2500 x 2500 For the current paper size: • The image container is 406 x 341 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 704 DPI. • An image with 1269 x 1066 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.5491"
+                                    >
+                                        <img
+                                            src="page%2012.jpg"
+                                            alt="picture of pigs ruining a garden"
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -1861,7 +2072,6 @@
                                         grow well. Without a good fence, pigs
                                         and other animals will ruin our garden.”
                                     </p>
-
                                     <p>
                                         “Well, just like the fence, the
                                         immunisations work to protect the
@@ -1962,17 +2172,36 @@
                             min-height="60px 150px"
                         >
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 14.jpg Size: 265.05 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 544 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1700 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,544"
                             >
-                                <img
-                                    src="page%2014.jpg"
-                                    alt="picture of kid with lock jaw"
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 0px;
+                                        top: 37.5547px;
+                                        width: 468.672px;
+                                        height: 468.672px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 14.jpg Size: 265.05 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 544 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 512 DPI. • An image with 1466 x 1700 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.6851"
+                                    >
+                                        <img
+                                            src="page%2014.jpg"
+                                            alt="picture of kid with lock jaw"
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -2028,17 +2257,36 @@
                     >
                         <div class="split-pane-component-inner">
                             <div
-                                class="bloom-canvas bloom-leadingElement"
+                                class="bloom-canvas bloom-leadingElement bloom-has-canvas-element"
                                 title=""
                                 data-title="Name: page 15.jpg Size: 514.25 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 330 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 727 DPI. • An image with 1466 x 1032 dots would fill this container at 300 DPI."
+                                data-imgsizebasedon="469,330"
                             >
-                                <img
-                                    src="page%2015.jpg"
-                                    alt=""
-                                    data-copyright="Copyright © 2021, SIL International"
-                                    data-creator="Moinak &amp; team"
-                                    data-license="cc-by"
-                                />
+                                <div
+                                    class="bloom-canvas-element bloom-backgroundImage"
+                                    style="
+                                        left: 69.125px;
+                                        top: 0px;
+                                        width: 330.422px;
+                                        height: 330.422px;
+                                    "
+                                    data-bubble="{`version`:`1.0`,`style`:`none`,`tails`:[],`level`:1,`backgroundColors`:[`transparent`],`shadowOffset`:0}"
+                                >
+                                    <div
+                                        class="bloom-leadingElement bloom-imageContainer"
+                                        title=""
+                                        data-title="Name: page 15.jpg Size: 514.25 kb Dots: 2500 x 2500 For the current paper size: • The image container is 469 x 330 dots. • For print publications, you want between 300-600 DPI (Dots Per Inch). ✓ This image would print at 727 DPI. • An image with 1466 x 1032 dots would fill this container at 300 DPI."
+                                        data-fraction-of-page="0.839,0.4156"
+                                    >
+                                        <img
+                                            src="page%2015.jpg"
+                                            alt=""
+                                            data-copyright="Copyright © 2021, SIL International"
+                                            data-creator="Moinak &amp; team"
+                                            data-license="cc-by"
+                                        />
+                                    </div>
+                                </div>
 
                                 <div
                                     class="bloom-translationGroup bloom-imageDescription bloom-trailingElement"
@@ -2054,7 +2302,9 @@
                                         lang="en"
                                         contenteditable="true"
                                         data-languagetipcontent="English"
-                                    ></div>
+                                    >
+                                        <p></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2092,9 +2342,8 @@
                                     <p>
                                         “You mean I can stop my kids from
                                         getting these bad illnesses?” said Mama.
-                                        “When can they have these shots?”&nbsp;
+                                        “When can they have these shots?” 
                                     </p>
-
                                     <p>
                                         Kerol replied, “We will come to the
                                         village in three weeks to give the
@@ -2102,7 +2351,6 @@
                                         come to the clinic to get the
                                         immunisations.”
                                     </p>
-
                                     <p>
                                         “Hmm, I think I'll bring them to the
                                         clinic tomorrow,” Mama said. “They need
@@ -2129,6 +2377,7 @@
             data-page="required singleton"
             data-export="back-matter-inside-back-cover"
             data-xmatter-page="insideBackCover"
+            data-custom-layout-id="customInsideBackCover"
             id="b69f2013-c6ed-426b-8c79-7b0e8f76bf30"
             lang="en"
             data-page-number=""
@@ -2141,35 +2390,33 @@
                 Inside Back Cover
             </div>
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
                 <div
                     data-book="inside-back-cover-branding-top-html"
                     lang="*"
                 ></div>
-
-                <div class="bloom-translationGroup" data-default-languages="N1">
+                <div
+                    class="bloom-translationGroup"
+                    data-default-languages="N1"
+                    style="font-size: 13.3333px"
+                >
                     <div
                         class="bloom-editable Inside-Back-Cover-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="insideBackCover"
-                    >
-                        <label class="bubble"
-                            >If you need somewhere to put more information about
-                            the book, you can use this page, which is the inside
-                            of the back cover.</label
-                        >
-                    </div>
+                        data-languagetipcontent="English"
+                        data-hint="If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover."
+                    ></div>
                 </div>
             </div>
         </div>
-
         <div
             class="bloom-page cover coverColor outsideBackCover bloom-backMatter side-left A5Portrait"
             data-page="required singleton"
             data-export="back-matter-back-cover"
             data-xmatter-page="outsideBackCover"
+            data-custom-layout-id="customOutsideBackCover"
             id="c8f69895-93cd-4d45-b035-68f59827be3d"
             lang="en"
             data-page-number=""
@@ -2182,41 +2429,52 @@
                 Outside Back Cover
             </div>
             <div class="pageDescription" lang="en"></div>
-
             <div class="marginBox">
                 <div
                     data-book="outside-back-cover-branding-top-html"
                     lang="*"
                 ></div>
-
-                <div class="bloom-translationGroup" data-default-languages="N1">
+                <div
+                    class="bloom-translationGroup"
+                    data-default-languages="N1"
+                    style="font-size: 13.3333px"
+                >
                     <div
                         class="bloom-editable Outside-Back-Cover-style bloom-visibility-code-on bloom-content1 bloom-contentNational1"
                         lang="en"
                         contenteditable="true"
                         data-book="outsideBackCover"
-                    >
-                        <label class="bubble"
-                            >If you need somewhere to put more information about
-                            the book, you can use this page, which is the
-                            outside of the back cover.</label
-                        >
-                    </div>
+                        data-languagetipcontent="English"
+                        data-hint="If you need somewhere to put more information about the book, you can use this page, which is the outside of the back cover."
+                    ></div>
                 </div>
-
                 <div
                     class="bloom-force-publish"
                     data-book="outside-back-cover-branding-bottom-html"
                     lang="*"
                 >
-                    <img
-                        class="branding"
-                        src="BloomWithTaglineAgainstLight.svg"
-                        alt=""
-                        data-copyright=""
-                        data-creator=""
-                        data-license=""
-                    />
+                    <div class="bloom-branding-wrapper">
+                        <a
+                            href="https://bloomlibrary.org/language:en?utm_source=badgeclick"
+                            ><img
+                                class="branding"
+                                src="made-with-bloom-badge-text.svg"
+                                alt="This image, made-with-bloom-badge-text.svg, is missing or was loading too slowly."
+                            /><img
+                                class="bloom-qrcode"
+                                src="lang-qr-code.png"
+                                alt="This image, lang-qr-code.png, is missing or was loading too slowly."
+                            />
+                            <div class="bloom-lang-on-blorg">
+                                <div class="bloom-blorg-caption">
+                                    More books in <b>English</b> language:
+                                </div>
+                                <div class="bloom-blorg-url">
+                                    BloomLibrary.org/language:en
+                                </div>
+                            </div></a
+                        >
+                    </div>
                 </div>
             </div>
         </div>

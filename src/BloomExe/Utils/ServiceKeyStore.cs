@@ -221,23 +221,37 @@ namespace Bloom.Utils
         /// </summary>
         public static void Set(string name, string secret)
         {
+            SetMany(new[] { new KeyValuePair<string, string>(name, secret) });
+        }
+
+        /// <summary>
+        /// Applies several changes in a single read-modify-write, each one exactly what
+        /// <see cref="Set"/> would do: a null or empty secret removes that key. A caller
+        /// changing a family of keys at once uses this rather than a loop of Set calls, so a
+        /// write that fails cannot leave some of the changes on disk and the rest not.
+        /// </summary>
+        public static void SetMany(IEnumerable<KeyValuePair<string, string>> changes)
+        {
             lock (s_lock)
             {
                 var store = Load();
-                if (string.IsNullOrEmpty(secret))
+                var anythingChanged = false;
+                foreach (var change in changes)
                 {
-                    if (!store.Keys.Remove(name))
-                        return; // nothing there, so nothing to write
-                }
-                else
-                {
-                    store.Keys[name] = new StoredKey
+                    if (string.IsNullOrEmpty(change.Value))
                     {
-                        Value = Protect(secret),
+                        anythingChanged |= store.Keys.Remove(change.Key);
+                        continue;
+                    }
+                    store.Keys[change.Key] = new StoredKey
+                    {
+                        Value = Protect(change.Value),
                         Protection = kDpapiCurrentUserProtection,
                     };
+                    anythingChanged = true;
                 }
-                Save(store);
+                if (anythingChanged)
+                    Save(store);
             }
         }
 
@@ -320,7 +334,7 @@ namespace Bloom.Utils
 
             /// <summary>See <see cref="StoreFile.Extra"/>.</summary>
             [JsonExtensionData]
-            public IDictionary<string, JToken> Extra;
+            public IDictionary<string, JToken> Extra { get; set; }
         }
 
         /// <summary>The whole file.</summary>
@@ -340,7 +354,7 @@ namespace Bloom.Utils
             /// gone with nothing to say why.
             /// </summary>
             [JsonExtensionData]
-            public IDictionary<string, JToken> Extra;
+            public IDictionary<string, JToken> Extra { get; set; }
         }
 
         /// <summary>

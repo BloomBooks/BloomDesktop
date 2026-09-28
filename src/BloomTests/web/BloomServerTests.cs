@@ -249,6 +249,76 @@ namespace BloomTests.web
             }
         }
 
+        /// <summary>
+        /// A url containing the literal text "undefined" means some front-end code built it out of a
+        /// JavaScript value it did not have yet - always our bug, never a file the user is missing.
+        /// The referrer is what tells us which page did it, so it has to reach the report. BL-16666.
+        /// </summary>
+        [Test]
+        public void ReportsMissingFile_UndefinedInPath_LogsTheReferringPage()
+        {
+            using (var server = CreateBloomServer())
+            {
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "audio/undefined",
+                    referer: "http://localhost:8089/bloom/SomeBook/SomePage.htm"
+                );
+
+                server.MakeReply(transaction);
+
+                Assert.That(
+                    Logger.LogText,
+                    Contains.Substring("SomeBook/SomePage.htm"),
+                    "The referring page should be in the report; without it we cannot tell which of our pages built the bad url."
+                );
+                Assert.That(
+                    Logger.LogText,
+                    Contains.Substring("JavaScript value turned into text")
+                );
+            }
+        }
+
+        /// <summary>
+        /// The referrer header is optional, so the diagnostics must still say something useful (and
+        /// not crash) when the browser doesn't send one.
+        /// </summary>
+        [Test]
+        public void ReportsMissingFile_UndefinedInPathAndNoReferer_StillReports()
+        {
+            using (var server = CreateBloomServer())
+            {
+                var transaction = new PretendRequestInfo(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "undefined"
+                );
+
+                server.MakeReply(transaction);
+
+                Assert.That(Logger.LogText, Contains.Substring("the browser did not say"));
+            }
+        }
+
+        [TestCase("audio/undefined", true)]
+        [TestCase("undefined", true)]
+        [TestCase("C:/Users/joe/AppData/Local/Temp/undefined", true)]
+        [TestCase("images/null", true)]
+        [TestCase("pages/NaN.htm", false, Description = "NaN.htm is a filename, not a bare value")]
+        [TestCase("undefined.png", false, Description = "so is undefined.png")]
+        [TestCase(
+            "audio/Undefined",
+            false,
+            Description = "JavaScript never produces this spelling"
+        )]
+        [TestCase("undefinedThings/x.png", false)]
+        [TestCase("myBook/audio/abc123.mp3", false)]
+        [TestCase("", false)]
+        public void LooksLikeAJavascriptValueInAUrl_Works(string localPath, bool expected)
+        {
+            Assert.That(
+                BloomServer.LooksLikeAJavascriptValueInAUrl(localPath),
+                Is.EqualTo(expected)
+            );
+        }
+
         [Test]
         public void SupportsHandlerInjection()
         {

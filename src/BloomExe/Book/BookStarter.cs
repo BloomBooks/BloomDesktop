@@ -335,6 +335,22 @@ namespace Bloom.Book
 
             ClearAwayDraftText(storage.Dom.RawDom);
 
+            // A new book made from one of our own templates holds only fresh xmatter and the few template
+            // pages that are not "extra"; there is nothing on them for the per-page browser pass to do. So
+            // record it as done, or the first "Edit with AI" or page-size change would stop to run the pass
+            // behind a dialog on a book minutes old (BL-16905). Other sources carry their own record
+            // (our Sample Shells ship with it), or have really been edited, so we leave them alone.
+            if (
+                usingTemplate
+                && sourceFolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory)
+            )
+            {
+                BookProcessor.StampPerPageFixupDone(
+                    storage.Dom,
+                    sizeAndOrientation.SizeAndOrientation.ClassName
+                );
+            }
+
             storage.UpdateSupportFiles();
             try
             {

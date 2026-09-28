@@ -6,7 +6,7 @@ import {
     findRunningStandardBloomInstances,
     requireOptionValue,
     requireTcpPortOption,
-} from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+} from "../.claude/skills/run-bloom/bloomProcessCommon.mjs";
 import {
     discoveryFileSchemaVersion,
     getDiscoveryFilePath,
@@ -944,7 +944,7 @@ if (process.stdin.readable) {
 
 // --- Launcher control surface -----------------------------------------------
 // A loopback-only HTTP server through which agents can query and drive this
-// launcher (see watchBloomExeControl.mjs and the bloom-automation skill).
+// launcher (see watchBloomExeControl.mjs and the run-bloom skill).
 // Discovered via output/bloom-launcher.json and the BLOOM_LAUNCHER_READY line.
 // Started BEFORE the first dotnet spawn so the control port can be passed to
 // Bloom (--launcher-port), which uses it for its in-app restart toast.

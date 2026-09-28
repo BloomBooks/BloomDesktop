@@ -206,7 +206,7 @@ namespace Bloom.web.controllers
         /// </summary>
         private class E2eLoginState
         {
-            public string Email;
+            public string Email { get; set; }
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -32,9 +34,24 @@ namespace Bloom
         public static string AlternativeWebView2Path;
         private bool _readyToNavigate;
 
+        // Set if InitWebView failed. Since initialization is kicked off unawaited, this is the only
+        // record we have that it will never finish; without it, the browser just looks eternally
+        // not-yet-ready. See StartInitWebViewReportingAnyFailure. Volatile because it is written by
+        // that continuation (on whatever thread completes it) and read by the ready-waits below on
+        // the caller's thread, which spin on it.
+        private volatile Exception _initializationError;
+
         // Exposes whether the (async) CoreWebView2 environment initialization has finished. Lets callers
         // measure how long that init takes separately from the subsequent navigation (see BookProcessor).
         public override bool IsReadyToNavigate => _readyToNavigate;
+
+        /// <summary>
+        /// Why initialization failed, or null if it has not failed. Non-null means this browser will
+        /// never become ready to navigate, so a caller spinning on <see cref="IsReadyToNavigate"/> should
+        /// give up at once and blame this rather than its own timeout — see OffScreenBrowser, which owns
+        /// its own readiness wait and so cannot rely on the checks inside this class.
+        /// </summary>
+        internal Exception InitializationError => _initializationError;
         private PasteCommand _pasteCommand;
         private CopyCommand _copyCommand;
         private UndoCommand _undoCommand;
@@ -51,8 +68,9 @@ namespace Bloom
 
         // When set (via CreateWithInjectedEnvironment), InitWebView uses this already-created environment
         // instead of making its own. Lets OffScreenBrowser share one environment — one browser process,
-        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely and
-        // without the global shared-environment batch statics.
+        // user-data folder, and HTTP cache — across the fresh browser it makes per page, thread-safely:
+        // the environment belongs to the instance that owns it, so instances on different threads never
+        // contend, and nothing global has to be set for the duration of a batch.
         private CoreWebView2Environment _injectedEnvironment;
 
         /// <summary>
@@ -70,7 +88,7 @@ namespace Bloom
             browser._injectedEnvironment = environment;
             browser.InitializeComponent();
             // Kicked off unawaited (like the default constructor); callers wait on IsReadyToNavigate.
-            _ = browser.InitWebView();
+            browser.StartInitWebViewReportingAnyFailure();
             return browser;
         }
 
@@ -119,7 +137,58 @@ namespace Bloom
             // something on that thread, it's really easy to deadlock.
             // A lot of this is because of the way that WinForms works, and when we finally get away from WinForms,
             // we may be able to get to an environment where we don't need to try so hard to avoid async.)
-            _ = InitWebView();
+            StartInitWebViewReportingAnyFailure();
+        }
+
+        /// <summary>
+        /// Starts the asynchronous WebView2 initialization without awaiting it — the constructors can't
+        /// await — but, unlike a bare "_ = InitWebView()", does not silently discard a failure.
+        /// </summary>
+        /// <remarks>
+        /// Nothing observes the Task, so an exception thrown inside InitWebView used to vanish entirely:
+        /// no log entry, no dialog, nothing. The browser was simply left with _readyToNavigate false
+        /// forever, and the first visible symptom came much later and somewhere else — a navigation
+        /// timeout, then "The instance of CoreWebView2 is uninitialized" from the next JavaScript call.
+        /// That is precisely how BL-16767 hid its own cause: bulk upload had drifted onto an MTA thread
+        /// pool thread, where CoreWebView2Environment.CreateAsync throws RPC_E_CHANGED_MODE ("Cannot
+        /// change thread mode after it is set") because WebView2 needs an STA thread. Recording the
+        /// error also lets the ready-waits below give up at once instead of spinning out their timeout.
+        /// </remarks>
+        private void StartInitWebViewReportingAnyFailure()
+        {
+            // The continuation runs on some other thread, so capture what is interesting about the
+            // creating thread now: which thread it was, and its apartment, is most of the diagnosis.
+            var creatingThreadId = Thread.CurrentThread.ManagedThreadId;
+            var creatingApartment = Thread.CurrentThread.GetApartmentState();
+            InitWebView()
+                .ContinueWith(
+                    task =>
+                    {
+                        var error = task.Exception?.GetBaseException();
+                        _initializationError =
+                            error ?? new ApplicationException("WebView2 initialization failed");
+                        if (Disposing || _inDisposeMethod || IsDisposed)
+                            return; // disposed before initialization completed. See BL-13593 and BL-11384.
+                        NonFatalProblem.Report(
+                            ModalIf.None,
+                            PassiveIf.None,
+                            "Bloom could not initialize a WebView2 browser.",
+                            "This browser will never become ready to navigate, so whatever asked for it"
+                                + " will fail later, most likely with a navigation timeout followed by"
+                                + " \"The instance of CoreWebView2 is uninitialized\". It was created on"
+                                + $" thread {creatingThreadId}, whose apartment state was"
+                                + $" {creatingApartment}."
+                                + (
+                                    creatingApartment == ApartmentState.STA
+                                        ? ""
+                                        : " WebView2 requires an STA thread with a message loop, so that"
+                                            + " by itself is enough to explain the failure; see BL-16767."
+                                ),
+                            error
+                        );
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted
+                );
         }
 
         private void SetupEventHandling()
@@ -307,54 +376,135 @@ namespace Bloom
 
         static int dataFolderCounter = 0;
 
-        // When set (via BeginSharedEnvironmentBatch), all WebView2 browsers created during the batch
-        // share ONE CoreWebView2Environment — i.e. one browser process, one user-data folder, and one
-        // HTTP cache — instead of each creating its own. The first browser of the batch creates the
-        // environment; the rest reuse it. Each browser still gets its own fresh CoreWebView2 control
-        // (fresh renderer), so this does NOT reintroduce the single-control reuse-wedge. Used by
-        // BookProcessor's off-screen per-page fix-up to avoid paying environment creation per page.
-        //
-        // These statics assume the batch is UI-thread-only (which it is: all browser construction is
-        // marshalled to the UI thread, and BookProcessor drives the batch there). If another browser
-        // happens to be created during the batch (e.g. a thumbnail), it harmlessly joins the shared
-        // environment. They are NOT a mechanism for concurrent batches.
-        private static bool _useSharedEnvironment;
-        private static CoreWebView2Environment _sharedEnvironment;
-
         // The one environment every browser of an e2e run shares, so the run has a single browser
         // process and therefore a single remote-debugging listener. See where it is used in
-        // InitWebView. Like the statics above it is unsynchronized, which is safe for the same
-        // reason: browser construction is marshalled to the UI thread.
+        // InitWebView. It is unsynchronized, which is safe because browser construction is
+        // marshalled to the UI thread.
         private static CoreWebView2Environment _environmentForE2eTests;
 
-        public static void BeginSharedEnvironmentBatch()
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr FindWindowEx(
+            IntPtr parent,
+            IntPtr childAfter,
+            string className,
+            string windowName
+        );
+
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out NativeRect rect);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr insertAfter,
+            int x,
+            int y,
+            int cx,
+            int cy,
+            uint flags
+        );
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
         {
-            AssertSharedEnvironmentStaticsAreUiThreadOnly();
-            _useSharedEnvironment = true;
-            _sharedEnvironment = null;
+            public int Left,
+                Top,
+                Right,
+                Bottom;
         }
 
-        public static void EndSharedEnvironmentBatch()
-        {
-            AssertSharedEnvironmentStaticsAreUiThreadOnly();
-            _useSharedEnvironment = false;
-            // Drop our reference; the underlying browser process/profile is released once the last
-            // CoreWebView2 using this environment is disposed. (CoreWebView2Environment is not IDisposable.)
-            _sharedEnvironment = null;
-        }
+        private const uint kSwpNoMove = 0x0002;
+        private const uint kSwpNoZOrder = 0x0004;
+        private const uint kSwpNoActivate = 0x0010;
 
-        // The shared-environment statics above have no synchronization; they are safe only because the
-        // batch is UI-thread-only (see the comment on _useSharedEnvironment). Assert that assumption so
-        // any future code that drives a batch off the UI thread trips here instead of silently corrupting
-        // state. Unit-test/console modes are exempt, as elsewhere in this file.
-        private static void AssertSharedEnvironmentStaticsAreUiThreadOnly()
+        // Set once we have complained about this workaround failing, so a problem that repeats on every
+        // resize does not fill the log.
+        private bool _reportedHostWindowCorrectionFailure;
+
+        /// <summary>
+        /// Works around a WebView2 bug (BL-16876) that truncates our content whenever the browser is
+        /// hosted in one of the dialogs that LegacyDpiDialogLauncher shows under a SYSTEM_AWARE thread
+        /// DPI context (see that class, and WorkspaceView.OpenLegacySettingsDialog).
+        ///
+        /// WebView2 ties DPI awareness to the msedgewebview2.exe browser process, which inherits the
+        /// awareness of the HWND that hosts it. Bloom's process is PerMonitorV2, so a browser created for
+        /// a System-aware dialog is born with a different awareness than the app. In that state WebView2
+        /// ignores the bounds we gave it: with Bounds=636x446, BoundsMode=UseRawPixels and
+        /// RasterizationScale=1 it still creates its own host window (Chrome_WidgetWin_0) at
+        /// systemDpi/monitorDpi of that size -- 509x357 on a 125% monitor. It sizes the *content* window
+        /// correctly, so the content ends up clipped by its own undersized parent.
+        ///
+        /// We cannot fix this by changing anyone's DPI awareness: making the dialogs PerMonitorV2 changes
+        /// how the WinForms half of them lays out, and forcing PerMonitorV2 around environment or
+        /// controller creation either does nothing or makes the mismatch worse. So we simply put the host
+        /// window back to the size WebView2 was asked for. Input still maps correctly afterwards.
+        ///
+        /// This is a no-op unless the sizes actually disagree, so it costs nothing in the normal case and
+        /// stops doing anything if WebView2 fixes the bug.
+        /// </summary>
+        private void CorrectTruncatedWebView2HostWindow()
         {
-            Debug.Assert(
-                Program.RunningOnUiThread
-                    || Program.RunningUnitTests
-                    || Program.RunningInConsoleMode,
-                "Shared WebView2 environment batch must be driven on the UI thread (these statics are unsynchronized)"
-            );
+            // This is a cosmetic workaround for someone else's bug, reaching into window handles that
+            // WebView2 owns and does not document. If any of that ever misbehaves we want a slightly
+            // clipped dialog, not a dead Bloom, so nothing in here is allowed to escape.
+            try
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                var webviewWindow = _webview.Handle;
+                if (!LegacyDpiDialogLauncher.IsWindowLegacyDpiAware(webviewWindow))
+                    return;
+                // The controller's own window is a direct child of the WebView2 control's window.
+                var hostWindow = FindWindowEx(
+                    webviewWindow,
+                    IntPtr.Zero,
+                    "Chrome_WidgetWin_0",
+                    null
+                );
+                if (hostWindow == IntPtr.Zero)
+                    return; // not created yet; a later resize will catch it
+                if (!GetClientRect(webviewWindow, out var want))
+                    return;
+                var wantWidth = want.Right - want.Left;
+                var wantHeight = want.Bottom - want.Top;
+                if (wantWidth <= 0 || wantHeight <= 0)
+                    return;
+                if (!GetClientRect(hostWindow, out var have))
+                    return;
+                if (have.Right - have.Left == wantWidth && have.Bottom - have.Top == wantHeight)
+                    return; // WebView2 got it right; leave it alone
+                // SetWindowPos reports failure by returning false, not by throwing, so without this
+                // check a rejected resize (e.g. WebView2 destroyed the host window between our
+                // finding it and our resizing it) would leave the dialog clipped and say nothing.
+                if (
+                    !SetWindowPos(
+                        hostWindow,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        wantWidth,
+                        wantHeight,
+                        kSwpNoMove | kSwpNoZOrder | kSwpNoActivate
+                    )
+                )
+                {
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                }
+            }
+            catch (Exception e)
+            {
+                // Log once per browser; this runs again on every resize, and a repeating failure would
+                // otherwise bury everything else in the log.
+                if (!_reportedHostWindowCorrectionFailure)
+                {
+                    _reportedHostWindowCorrectionFailure = true;
+                    Logger.WriteMinorEvent(
+                        "Could not correct the WebView2 host window size (BL-16876 workaround); the dialog"
+                            + " may show clipped content: "
+                            + e.Message
+                    );
+                }
+            }
         }
 
         private async Task InitWebView()
@@ -495,13 +645,11 @@ namespace Bloom
             // because EnsureCoreWebView2Async still fires this control's own InitializationCompleted, which
             // is what sets _readyToNavigate.)
             SetupEventHandling();
-            // Reuse an existing environment (and its browser process + user-data folder + HTTP cache) when we
-            // can, so we don't pay environment creation per browser:
-            //  - _injectedEnvironment: an environment handed to this instance (OffScreenBrowser shares one
-            //    environment across the fresh browser it creates per page — see CreateWithInjectedEnvironment);
-            //  - _sharedEnvironment: the legacy on-UI-thread shared-environment batch (BookProcessor's old path).
-            // Otherwise we fall through and create a fresh one.
-            var env = _injectedEnvironment ?? (_useSharedEnvironment ? _sharedEnvironment : null);
+            // Reuse an environment handed to this instance (and its browser process + user-data folder +
+            // HTTP cache) when there is one, so we don't pay environment creation per browser:
+            // OffScreenBrowser shares one environment across the fresh browser it creates per page — see
+            // CreateWithInjectedEnvironment. Otherwise we fall through and create a fresh one.
+            var env = _injectedEnvironment;
             // An e2e run attaches a test to ONE of these browser processes over the remote debugging
             // port, and every environment we create is given that same port number, so only the
             // process that starts first can listen on it. Which one that is depends on startup
@@ -534,8 +682,6 @@ namespace Bloom
                     userDataFolder: dataFolder,
                     options: op
                 );
-                if (_useSharedEnvironment)
-                    _sharedEnvironment = env;
                 // Only keep it when it actually carries a debugging port. The port lives in the
                 // options, which are fixed when the environment is made, so an environment built
                 // before BloomServer had its port would have none, and every UI-thread browser
@@ -550,6 +696,22 @@ namespace Bloom
                     _environmentForE2eTests = env;
             }
             await _webview.EnsureCoreWebView2Async(env);
+            // WebView2 has now created its host window, which is where it gets the size wrong
+            // (BL-16876), so correct it. In practice this one call is enough: once the host window
+            // has the right size, WebView2's own resizing keeps it that way.
+            CorrectTruncatedWebView2HostWindow();
+            // Re-check after a resize as well, in case initialization finished before the dialog's
+            // final layout and the correction above therefore ran against a stale size. This has to
+            // be POSTED rather than done in the handler: WebView2.OnSizeChanged raises SizeChanged
+            // first and only then applies the new Bounds, so work done inline here would be
+            // overwritten a moment later. By the time the posted call runs, the resize has settled,
+            // and it costs nothing because it is a no-op whenever the sizes already agree.
+            _webview.SizeChanged += (o, e) =>
+            {
+                if (!_webview.IsHandleCreated || _inDisposeMethod || Disposing)
+                    return;
+                _webview.BeginInvoke((Action)CorrectTruncatedWebView2HostWindow);
+            };
             // Added as a footnote to BL-15466 to prevent popups generated from title
             // attributes being white on black, presumably because of some setting the
             // user has made for Chrome/Edge generally.
@@ -697,9 +859,28 @@ namespace Bloom
             // threw an Exception indicating it was not ready, waiting like this fixed it.
             while (!_readyToNavigate)
             {
+                // Initialization failed, so waiting can only loop forever. Fail with the real cause
+                // rather than hanging (BL-16767).
+                if (_initializationError != null)
+                    throw new ApplicationException(
+                        "This WebView2 browser failed to initialize, so it can never become ready to navigate.",
+                        _initializationError
+                    );
                 Application.DoEvents();
                 Thread.Sleep(10);
             }
+        }
+
+        /// <summary>
+        /// The exception to throw when this browser's initialization failed, so that callers see the
+        /// real cause (as the InnerException) rather than a downstream timeout or a null CoreWebView2.
+        /// </summary>
+        private ApplicationException InitializationFailedException()
+        {
+            return new ApplicationException(
+                "Browser failed to initialize, so it could not load a page.",
+                _initializationError
+            );
         }
 
         // This variation should be used by clients that use a stopwatch
@@ -709,7 +890,11 @@ namespace Bloom
         // Callers should check that _readyToNavigate is true on return.
         private void EnsureBrowserReadyToNavigate(Stopwatch navTimer, int timeLimit)
         {
-            while (!_readyToNavigate && navTimer.ElapsedMilliseconds < timeLimit)
+            while (
+                !_readyToNavigate
+                && _initializationError == null // waiting is hopeless once init has failed (BL-16767)
+                && navTimer.ElapsedMilliseconds < timeLimit
+            )
             {
                 Application.DoEvents();
                 Thread.Sleep(10);
@@ -740,6 +925,21 @@ namespace Bloom
             var navTimer = new Stopwatch();
             navTimer.Start();
             EnsureBrowserReadyToNavigate(navTimer, timeLimit);
+
+            // Initialization failed outright, so there is nothing to wait for: neither this navigation
+            // nor anything else with this browser can ever work. Give up now, naming the real cause,
+            // instead of spending the whole timeLimit waiting for a navigation we never started and
+            // then reporting it as a timeout (BL-16767).
+            if (_initializationError != null)
+            {
+                if (throwOnTimeout)
+                    throw InitializationFailedException();
+                Logger.WriteError(
+                    "Not navigating: this WebView2 browser failed to initialize.",
+                    _initializationError
+                );
+                return false;
+            }
 
             EventHandler<CoreWebView2NavigationCompletedEventArgs> navigationCompletedHandler =
                 null;
@@ -781,11 +981,17 @@ namespace Bloom
                 if (!done)
                 {
                     if (throwOnTimeout)
+                    {
+                        // Initialization can also fail after the point where it set _readyToNavigate.
+                        // Blame that rather than a timeout that never had a chance (BL-16767).
+                        if (_initializationError != null)
+                            throw InitializationFailedException();
                         throw new ApplicationException(
                             _readyToNavigate
                                 ? "Browser unexpectedly took too long to load a page"
                                 : "Browser unexpectedly took too long to initialize"
                         );
+                    }
                     else
                         return false;
                 }
