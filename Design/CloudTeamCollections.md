@@ -21,7 +21,7 @@ what is still open. It describes the design as it stands in September 2026.
 >   file rather than on the server (see [Sharing UI](#sharing-ui-built)).
 > - **The freeze for migration** (the `AllowSharedFolderChanges` setting of
 >   [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration)): BloomDesktop PR
->   #8414, branch `BL-16928-shared-folder-changes`, a 6.5 patch based on `Version6.5`.
+>   #8414, branch `BL-16928-shared-folder-changes`, based on `master`.
 >
 > Tracking: YouTrack BL-16531 (the whole feature, targeted at 6.6) and the cards tagged
 > **Sharing** (BL-16672 to BL-16676, BL-16527).
@@ -472,10 +472,10 @@ The checkout belongs to the copy, not the account, and that is what lets it pass
 
 ## 5. Starting a cloud collection: initial upload and migration
 
-**The server side is built (#13, CONTRACTS v1.12), as is the 6.5 freeze (#8414); the rest of the
+**The server side is built (#13, CONTRACTS v1.12), as is the freeze (#8414); the rest of the
 client is designed, not built yet.** Besides those, it reuses: first check-in, checkout with
-a client-made GUID, `checkout_book_takeover`, `force_unlock`, `AllowCheckouts` (BL-16691, in 6.4
-and 6.5), `MinimumBloomVersion` (BL-16690) and the Share dialog's list of people from Team
+a client-made GUID, `checkout_book_takeover`, `force_unlock`, `MinimumBloomVersion` (BL-16690,
+honored since 6.4) and the Share dialog's list of people from Team
 Collection history. The server and client work it needs is listed in
 [section 9](#9-open-questions-and-planned-work).
 
@@ -490,19 +490,20 @@ the BL-16676 mockup's preparation phase: nobody has to check in, and nobody wait
 (Migration only.) The admin's Bloom sets two values in the **old shared folder's** collection
 settings (the `.bloomCollection` in `Other/Other Collection Files.zip`):
 
-- **`AllowSharedFolderChanges=False`** (new, BL-16928, a 6.5 patch shipped well before 6.6). A
-  Bloom that sees it does nothing that writes to the shared folder: no check-in (including the
-  first check-in of a new book), no checkout (which records its status in the shared folder), no
-  rename, delete or force unlock, no pushing collection settings or other collection files. People
-  can go on editing, locally, the books already checked out to them, until they upgrade. That is
-  why the freeze does not use `MinimumBloomVersion`, which would lock them out entirely.
-- **`AllowCheckouts=False`**, for any 6.4 or 6.5 Bloom that missed the patch.
-
-6.6 Blooms still on the old system honor both.
+- **`MinimumBloomVersion=6.6`** (BL-16690, honored since 6.4). A 6.4 or 6.5 Bloom is shut out of
+  the collection entirely, at startup and mid-session, and told to upgrade. Someone with books
+  checked out on an older Bloom keeps their edits on disk but can't touch them until they have
+  upgraded; their 6.6 Bloom then carries those checkouts over (step 5).
+- **`AllowSharedFolderChanges=False`** (BL-16928, new in 6.6). A 6.6 Bloom that is still on the
+  old system, because the upload isn't finished, does nothing that writes to the shared folder:
+  no check-in (including the first check-in of a new book), no checkout (which records its status
+  in the shared folder), no rename, delete or force unlock, no pushing collection settings or
+  other collection files. Its user can go on editing, locally, the books already checked out to
+  them.
 
 Right after setting them, the old shared folder is made **read-only for everyone except the admin
-doing the migration**, as a safeguard against Blooms too old to honor `AllowSharedFolderChanges`,
-`AllowCheckouts` or `MinimumBloomVersion`. On Dropbox, the folder's Dropbox owner (who may not be
+doing the migration**, as a safeguard against Blooms too old to honor `MinimumBloomVersion`
+(before 6.4). On Dropbox, the folder's Dropbox owner (who may not be
 the Bloom admin) changes every other member to "Can view"; on a LAN share it is done with
 file-system permissions. Bloom can neither do nor verify this, so the migration UI lists it as a
 checklist step. Every later write to the old folder (the `Migration Keys` files, the cloud id in
@@ -512,9 +513,15 @@ old Bloom fail fast depends on the sync service (see
 [section 9](#9-open-questions-and-planned-work)); even where it doesn't, it keeps very old Blooms
 from changing what everyone else sees.
 
-The admin's Bloom then creates the cloud
-collection in the database with its **initial upload in progress** flag set, and uploads the
-collection files.
+For **every** collection that becomes a cloud collection, Team Collection or not, the admin's Bloom
+also sets `MinimumBloomVersion=6.6` in the collection's own settings before they are uploaded. The
+cloud copy of the settings, and so every member's copy downloaded from it, then shuts out older
+Blooms. An older Bloom would otherwise open the folder as an ordinary collection (or, for a former
+Team Collection, as one whose shared folder is missing) and could change books behind the cloud's
+back.
+
+The admin's Bloom then creates the cloud collection in the database with its **initial upload in
+progress** flag set, and uploads the collection files.
 
 ### 2. Upload
 
@@ -599,7 +606,7 @@ sequenceDiagram
     participant F as Old shared folder
     participant DB as Cloud (tc)
     participant B as Bob's Bloom (6.6)
-    A->>F: AllowSharedFolderChanges=False, AllowCheckouts=False
+    A->>F: MinimumBloomVersion=6.6, AllowSharedFolderChanges=False
     A->>DB: create collection (upload flag set), collection files
     A->>DB: first check-in of Bob's book (shared folder version)
     A->>F: write Migration Keys/instanceId.json (guid, old email)
@@ -616,7 +623,7 @@ sequenceDiagram
 
 If, say, the admin's computer dies mid-upload, a database admin deletes the incomplete cloud
 collection with a support script (by collection id: its database rows and its S3 prefix);
-`AllowSharedFolderChanges` and `AllowCheckouts` are reset in the old shared settings (or left for
+`MinimumBloomVersion` and `AllowSharedFolderChanges` are reset in the old shared settings (or left for
 the next attempt), and so is the other members' write access to the old folder; the
 `Migration Keys` folder is deleted; and someone else is made admin and
 starts again. There is no UI for this.
@@ -848,7 +855,7 @@ them yet.
   GOING-LIVE runbook entry. The script should run only once the admin's Bloom has stopped, since
   S3 credentials already handed out stay valid for up to an hour. Everything else reuses first
   check-in, checkout with a client GUID, takeover and force unlock.
-- Client: the BL-16928 patch for 6.5 (`AllowSharedFolderChanges`); the background sender of first
+- Client: `AllowSharedFolderChanges` (BL-16928, #8414); setting `MinimumBloomVersion=6.6` on every collection that becomes a cloud collection; the background sender of first
   check-ins; writing the `Migration Keys` files and placeholder locks; finishing (clearing the
   flag and writing the cloud id into the old shared settings); and each member's switch-over
   with its takeovers.
