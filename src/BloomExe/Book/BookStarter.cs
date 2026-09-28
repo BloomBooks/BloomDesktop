@@ -345,10 +345,7 @@ namespace Bloom.Book
                 && sourceFolderPath.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory)
             )
             {
-                BookProcessor.StampPerPageFixupDone(
-                    storage.Dom,
-                    sizeAndOrientation.SizeAndOrientation.ClassName
-                );
+                BookProcessor.RecordPageLayoutUpdateDone(storage.Dom);
             }
 
             storage.UpdateSupportFiles();

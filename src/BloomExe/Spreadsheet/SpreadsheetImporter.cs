@@ -393,6 +393,9 @@ namespace Bloom.Spreadsheet
             CleanupLeftOverPages();
 
             CleanupDataDiv();
+            // The import makes pages and puts pictures on them without ever showing them in the Edit
+            // tab, so they lack what the editing code records when it lays a page out.
+            BookProcessor.RecordPageLayoutChanged(_destinationDom);
             // This section is necessary to make sure changes to the dom are recorded.
             // If we run SS Importer from the CLI (without CollectionSettings), BringBookUpToDate()
             // will happen when we eventually open the book, but the user gets an updated thumbail and preview
