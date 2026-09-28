@@ -360,16 +360,13 @@ namespace Bloom.web.controllers
             // offers each slot a size worked out from the share of its page that slot covers, which
             // Bloom records only when a page is saved. A book that has not been through the per-page
             // pass carries that on the pages someone happened to visit and nowhere else, so most of
-            // the book would get no suggested size. So if this book is behind the current browser
-            // maintenance level, bring the whole book up to it first, then open the editor on the
+            // the book would get no suggested size. So if this book needs its page layout update,
+            // run it over the whole book first, then open the editor on the
             // page we were on. That path does its own save, so it replaces the one below. It is a
             // no-op for a book already up to date, which is the normal case (BL-16852).
-            if (BookProcessor.NeedsPerPageFixup(model.CurrentBook))
+            if (BookProcessor.NeedsPageLayoutUpdate(model.CurrentBook))
             {
-                model.BringBookToCurrentBrowserLevelThen(
-                    pageId,
-                    () => OpenEditorInBrowser(payload)
-                );
+                model.UpdatePageLayoutIfNeededThen(pageId, () => OpenEditorInBrowser(payload));
                 request.PostSucceeded();
                 return;
             }
