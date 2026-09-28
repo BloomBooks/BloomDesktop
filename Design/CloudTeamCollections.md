@@ -8,7 +8,7 @@ what is still open. It describes the design as it stands in September 2026.
 >
 > - **Server** (Postgres schema `tc`, RLS, RPCs, edge functions, local dev stack): the
 >   `bloom-core-supabase` repo, PR #13, branch `BL-16531-tc-backend`. Its detailed docs are in
->   `team-collections/docs/`: `CONTRACTS.md` (the wire contract, currently **v1.10**), `SCHEMA.md`
+>   `team-collections/docs/`: `CONTRACTS.md` (the wire contract, currently **v1.11**), `SCHEMA.md`
 >   (ER diagram and notes) and `GOING-LIVE.md` (deployment runbook). Not deployed anywhere yet.
 > - **Desktop client** (`CloudTeamCollection` and its helpers, the sign-in and join UI, unit and
 >   E2E tests): BloomDesktop draft PR #8052, branch `cloud-tc-for-review`, which also carries the
@@ -19,6 +19,9 @@ what is still open. It describes the design as it stands in September 2026.
 > - **The Share dialog** (who has access, and in what role): BloomDesktop PR #8394, branch
 >   `BL-16673-share-dialog`, based on `master`. It currently stores its data in a local stand-in
 >   file rather than on the server (see [Sharing UI](#sharing-ui-built)).
+> - **The freeze for migration** (the `AllowSharedFolderChanges` setting of
+>   [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration)): BloomDesktop PR
+>   #8414, branch `BL-16928-shared-folder-changes`, a 6.5 patch based on `Version6.5`.
 >
 > Tracking: YouTrack BL-16531 (the whole feature, targeted at 6.6) and the cards tagged
 > **Sharing** (BL-16672 to BL-16676, BL-16527).
