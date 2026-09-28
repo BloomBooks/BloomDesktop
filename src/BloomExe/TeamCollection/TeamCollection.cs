@@ -1404,11 +1404,15 @@ namespace Bloom.TeamCollection
 
             UpdateAllowCheckoutsFromRepo();
             // The change may have been an administrator pausing changes to the shared folder.
-            // Checking the connection notices that and switches us to Disconnected mode now,
-            // rather than at the next restart. (We are on the UI thread, in an Idle handler; our
-            // caller then fires the selection-changed event that refreshes the book status
-            // panel.) See BL-16928.
-            _tcManager.CheckConnection();
+            // If so, switch to Disconnected mode now rather than at the next connection check.
+            // Only the pause is checked here, not the whole connection: a momentary network or
+            // Dropbox blip while a teammate's settings change arrives must not leave an ordinary
+            // collection disconnected for the rest of the session. (We are on the UI thread, in
+            // an Idle handler; our caller then fires the selection-changed event that refreshes
+            // the book status panel.) See BL-16928.
+            var pausedProblem = GetSharedFolderChangesPausedProblem();
+            if (pausedProblem != null && _tcManager.CurrentCollection == this)
+                _tcManager.MakeDisconnected(pausedProblem, RepoDescription);
             return false;
         }
 

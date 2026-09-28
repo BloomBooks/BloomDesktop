@@ -20,6 +20,11 @@ namespace Bloom.TeamCollection
         CollectionSettings Settings { get; }
         CollectionLock Lock { get; }
         bool CheckConnection();
+
+        /// <summary>
+        /// Switch to a DisconnectedTeamCollection that reports the given problem.
+        /// </summary>
+        void MakeDisconnected(TeamCollectionMessage message, string repoDescription);
         void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
         string PlannedRepoFolderPath(string repoFolderParentPath);
 
