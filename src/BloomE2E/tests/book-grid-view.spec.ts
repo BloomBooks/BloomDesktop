@@ -23,6 +23,7 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import { bookHtmlPath } from "../helpers/bookHtml";
+import { choosePageView } from "../helpers/pageView";
 import { realClick } from "../helpers/realClick";
 import type { Page } from "@playwright/test";
 
@@ -48,13 +49,6 @@ function cell(page: Page, pageId: string) {
 function facingIndex(index: number): number {
     // The cover is page 0, on the right of the first spread, so odd indexes are left pages.
     return index % 2 === 1 ? index + 1 : index - 1;
-}
-
-/** Click one of the page view chooser's two segments: one page at a time, or all pages. */
-async function choosePageView(page: Page, view: "one" | "all"): Promise<void> {
-    await page
-        .getByTestId(view === "all" ? "view-all-pages" : "view-one-page")
-        .click();
 }
 
 /** Which segment of the page view chooser is chosen, checking that exactly one is. */

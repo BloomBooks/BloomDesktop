@@ -26,6 +26,7 @@ import {
     setupControlsBar,
     setShowingOtherPages,
 } from "./js/bookGridView";
+import { markPageForRemoval } from "./js/pageRemovalMark";
 import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
 import {
     getPageLoadId,
@@ -88,6 +89,9 @@ export interface IPageFrameExports {
     pageUnloading(): void;
     // Show or hide the other pages of the book around the page being edited.
     setShowingOtherPages(show: boolean): void;
+    // Bring the page with this id (the page being edited, if none) into view and draw a red X across
+    // it, while the user confirms removing it. Returns a function that takes the X away.
+    markPageForRemoval(pageId?: string): () => void;
     // See pageSnapshot.ts.
     notePageContentMayHaveChanged(): void;
     // See pageSnapshot.ts. For the e2e suite.
@@ -539,6 +543,7 @@ interface EditablePageBundleApi {
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
     setShowingOtherPages: typeof setShowingOtherPages;
+    markPageForRemoval: typeof markPageForRemoval;
     notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -624,6 +629,7 @@ window.editablePageBundle = {
     getPageContentForSaveWhenReady,
     pageUnloading,
     setShowingOtherPages,
+    markPageForRemoval,
     notePageContentMayHaveChanged,
     copySelection,
     cutSelection,
