@@ -4,6 +4,7 @@ import { afterEach, describe, expect, test } from "vitest";
 // the side, one above the other for a calendar, one by one for a book sized for a screen.
 
 import {
+    getIndexOfPageAfterBlankPage,
     getSpreadShape,
     isLaidOutRightToLeft,
     makeGridLayout,
@@ -181,5 +182,88 @@ describe("makeGridLayout", () => {
         expect(grid.positionOfPage(2)).toEqual({ x: 0, y: 0 }); // left
         expect(grid.positionOfPage(3)).toEqual({ x: 310, y: 160 }); // next row, right
         expect(grid.positionOfPage(4)).toEqual({ x: 210, y: 160 });
+    });
+});
+
+describe("getIndexOfPageAfterBlankPage", () => {
+    const sideBySide = { pagesPerSpread: 2 as const, pagesAreStacked: false };
+    // A front cover, content pages, then an inside back cover and a back cover.
+    function makeBook(contentPages: number): { isXMatter: boolean }[] {
+        return [
+            { isXMatter: true },
+            ...Array.from({ length: contentPages }, () => ({
+                isXMatter: false,
+            })),
+            { isXMatter: true },
+            { isXMatter: true },
+        ];
+    }
+
+    test("an even number of pages already leaves the back cover alone", () => {
+        const book = makeBook(3);
+        expect(book.length).toBe(6);
+        expect(getIndexOfPageAfterBlankPage(sideBySide, book)).toBeUndefined();
+    });
+
+    test("an odd number of pages gets a blank page before the inside back cover", () => {
+        const book = makeBook(2);
+        expect(book.length).toBe(5);
+        expect(getIndexOfPageAfterBlankPage(sideBySide, book)).toBe(3);
+    });
+
+    test("with no inside back cover, the blank page goes before the back cover", () => {
+        const book = [
+            { isXMatter: true },
+            { isXMatter: false },
+            { isXMatter: false },
+            { isXMatter: false },
+            { isXMatter: true },
+        ];
+        expect(getIndexOfPageAfterBlankPage(sideBySide, book)).toBe(4);
+    });
+
+    test("a calendar gets one too, but a book sized for a screen has no facing pages", () => {
+        const book = makeBook(2);
+        expect(
+            getIndexOfPageAfterBlankPage(
+                { pagesPerSpread: 2, pagesAreStacked: true },
+                book,
+            ),
+        ).toBe(3);
+        expect(
+            getIndexOfPageAfterBlankPage(
+                { pagesPerSpread: 1, pagesAreStacked: false },
+                book,
+            ),
+        ).toBeUndefined();
+    });
+
+    test("the blank page takes a place of its own and the back cover stands alone", () => {
+        // Room for exactly two spreads, as in the makeGridLayout tests.
+        const grid = makeGridLayout(
+            sideBySide,
+            kPageWidth,
+            kPageHeight,
+            410,
+            kGap,
+            kGap,
+            false,
+            3,
+        );
+        expect(grid.positionOfPage(2)).toEqual({ x: 310, y: 0 }); // last content page, right
+        expect(grid.positionOfBlankPage()).toEqual({ x: 0, y: 160 }); // left
+        expect(grid.positionOfPage(3)).toEqual({ x: 100, y: 160 }); // inside back cover, right
+        expect(grid.positionOfPage(4)).toEqual({ x: 210, y: 160 }); // back cover, alone
+        expect(
+            makeGridLayout(
+                sideBySide,
+                kPageWidth,
+                kPageHeight,
+                410,
+                kGap,
+                kGap,
+                false,
+            ).positionOfBlankPage(),
+        ).toBeUndefined();
     });
 });

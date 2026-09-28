@@ -10,6 +10,10 @@
 // in a calendar, a lower page) would be.
 // A book whose first language reads right to left is read from the other side, so everything is
 // mirrored: the front cover stands where a left page would be, and each row runs right to left.
+// With facing pages, the inside back cover and the back cover are the two sides of the last sheet,
+// so the back cover stands alone too. When the pages alone would put the back cover beside the
+// inside back cover, the printed book has a blank page before the inside back cover, and so does
+// the layout (see getIndexOfPageAfterBlankPage()).
 
 import { kScrollingLayouts } from "./scrollingLayouts";
 
@@ -30,6 +34,8 @@ export interface IGridLayout {
     spreadHeight: number;
     // Where the page at this index in the book goes, relative to the top left of the grid.
     positionOfPage(pageIndex: number): { x: number; y: number };
+    // Where the blank page goes, if the layout has one.
+    positionOfBlankPage(): { x: number; y: number } | undefined;
 }
 
 /** How the pages of the book holding this page are grouped into spreads. */
@@ -61,6 +67,29 @@ export function isLaidOutRightToLeft(
     );
 }
 
+/**
+ * The index of the page that a blank page comes before, or undefined if the book needs none. A book
+ * with facing pages needs one when the back cover (the last page) would otherwise face the page
+ * before it. The blank page goes before the inside back cover, which is back matter, or before the
+ * back cover if the page before it is not back matter.
+ */
+export function getIndexOfPageAfterBlankPage(
+    shape: ISpreadShape,
+    pages: { isXMatter: boolean }[],
+): number | undefined {
+    // The front cover takes the second place of the first spread, so the back cover is the second
+    // page of its spread when the number of pages is odd.
+    if (
+        shape.pagesPerSpread !== 2 ||
+        pages.length < 3 ||
+        pages.length % 2 === 0
+    ) {
+        return undefined;
+    }
+    const lastIndex = pages.length - 1;
+    return pages[lastIndex - 1].isXMatter ? lastIndex - 1 : lastIndex;
+}
+
 /** How many pages wide one spread is. */
 export function pagesAcrossASpread(shape: ISpreadShape): number {
     return shape.pagesAreStacked ? 1 : shape.pagesPerSpread;
@@ -68,7 +97,9 @@ export function pagesAcrossASpread(shape: ISpreadShape): number {
 
 /**
  * Lay the book out in rows of spreads, as many spreads to a row as fit in availableWidth (but at
- * least one), with spreadGap between spreads and rowGap between rows, mirrored if rightToLeft.
+ * least one), with spreadGap between spreads and rowGap between rows, mirrored if rightToLeft. If
+ * blankPageBefore is given, a blank page takes the place before the page at that index, and every
+ * page from there on moves along one place.
  */
 export function makeGridLayout(
     shape: ISpreadShape,
@@ -78,6 +109,7 @@ export function makeGridLayout(
     spreadGap: number,
     rowGap: number,
     rightToLeft: boolean,
+    blankPageBefore?: number,
 ): IGridLayout {
     const spreadWidth = pagesAcrossASpread(shape) * pageWidth;
     const spreadHeight = shape.pagesAreStacked ? 2 * pageHeight : pageHeight;
@@ -89,24 +121,35 @@ export function makeGridLayout(
     // so page i takes place i + 1.
     const coverOffset = shape.pagesPerSpread === 2 ? 1 : 0;
     const rowWidth = spreadsPerRow * (spreadWidth + spreadGap) - spreadGap;
+    const positionOfPlace = (place: number) => {
+        const spread = Math.floor(place / shape.pagesPerSpread);
+        const placeInSpread = place % shape.pagesPerSpread;
+        const x = (spread % spreadsPerRow) * (spreadWidth + spreadGap);
+        const y = Math.floor(spread / spreadsPerRow) * (spreadHeight + rowGap);
+        const position = shape.pagesAreStacked
+            ? { x, y: y + placeInSpread * pageHeight }
+            : { x: x + placeInSpread * pageWidth, y };
+        if (rightToLeft) {
+            position.x = rowWidth - position.x - pageWidth;
+        }
+        return position;
+    };
     return {
         spreadsPerRow,
         spreadWidth,
         spreadHeight,
-        positionOfPage: (pageIndex: number) => {
-            const place = pageIndex + coverOffset;
-            const spread = Math.floor(place / shape.pagesPerSpread);
-            const placeInSpread = place % shape.pagesPerSpread;
-            const x = (spread % spreadsPerRow) * (spreadWidth + spreadGap);
-            const y =
-                Math.floor(spread / spreadsPerRow) * (spreadHeight + rowGap);
-            const position = shape.pagesAreStacked
-                ? { x, y: y + placeInSpread * pageHeight }
-                : { x: x + placeInSpread * pageWidth, y };
-            if (rightToLeft) {
-                position.x = rowWidth - position.x - pageWidth;
-            }
-            return position;
-        },
+        positionOfPage: (pageIndex: number) =>
+            positionOfPlace(
+                pageIndex +
+                    coverOffset +
+                    (blankPageBefore !== undefined &&
+                    pageIndex >= blankPageBefore
+                        ? 1
+                        : 0),
+            ),
+        positionOfBlankPage: () =>
+            blankPageBefore === undefined
+                ? undefined
+                : positionOfPlace(blankPageBefore + coverOffset),
     };
 }
