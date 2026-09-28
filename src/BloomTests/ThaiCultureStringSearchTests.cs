@@ -1,10 +1,12 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
 using Bloom.Workspace;
 using NUnit.Framework;
+using SIL.TestUtilities;
 
 namespace BloomTests
 {
@@ -121,6 +123,28 @@ namespace BloomTests
                 "TrimEnd did not return; it is looping on a separator it cannot remove"
             );
             Assert.That(trim.Result, Is.EqualTo("Accra, Ghana"));
+        }
+
+        [Test]
+        public void FindBookHtmlInFolder_ThaiNamedBook_ChoosesTheHtmFile()
+        {
+            Assert.That(CultureInfo.CurrentCulture.Name, Is.EqualTo("th-TH"));
+            using (var outerFolder = new TemporaryFolder("FindBookHtmlInFolder_ThaiNamedBook"))
+            {
+                // The folder name differs from the book's file name, so the candidates are found
+                // by filtering the folder's files on their extension.
+                using (var folder = new TemporaryFolder(outerFolder, "นิทานใหม่"))
+                {
+                    File.WriteAllText(folder.Combine("นิทาน.htm"), "");
+                    File.WriteAllText(folder.Combine("นิทาน.htm.bak"), "");
+                    File.WriteAllText(folder.Combine("นิทาน.htmbak"), "");
+                    File.WriteAllText(folder.Combine("notes.txt"), "");
+
+                    var path = BookStorage.FindBookHtmlInFolder(folder.Path);
+
+                    Assert.That(Path.GetFileName(path), Is.EqualTo("นิทาน.htm"));
+                }
+            }
         }
     }
 }
