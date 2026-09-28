@@ -26,6 +26,8 @@ export interface IBookTeamCollectionStatus {
     checkInMessage: string;
     isUserAdmin: boolean;
     checkoutsArePaused: boolean; // an administrator has turned off checkouts for the whole collection
+    sharedFolderChangesArePaused: boolean; // Bloom must not change the shared folder at all: no check in/out, delete, etc. (BL-16928)
+    movedToCloud: boolean; // the collection has been replaced by a cloud collection; only meaningful while sharedFolderChangesArePaused
 }
 
 export const initialBookStatus: IBookTeamCollectionStatus = {
@@ -47,6 +49,8 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     checkInMessage: "",
     isUserAdmin: false,
     checkoutsArePaused: false,
+    sharedFolderChangesArePaused: false,
+    movedToCloud: false,
 };
 
 export function useTColBookStatus(
