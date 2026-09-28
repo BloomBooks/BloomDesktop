@@ -89,9 +89,9 @@ export interface IPageFrameExports {
     pageUnloading(): void;
     // Show or hide the other pages of the book around the page being edited.
     setShowingOtherPages(show: boolean): void;
-    // Bring the page with this id (the page being edited, if none) into view and draw a red X across
-    // it, while the user confirms removing it. Returns a function that takes the X away.
-    markPageForRemoval(pageId?: string): () => void;
+    // Bring the page being edited into view and draw a red X across it, while the user confirms
+    // removing it. Returns a function that takes the X away.
+    markPageForRemoval(): () => void;
     // See pageSnapshot.ts.
     notePageContentMayHaveChanged(): void;
     // See pageSnapshot.ts. For the e2e suite.

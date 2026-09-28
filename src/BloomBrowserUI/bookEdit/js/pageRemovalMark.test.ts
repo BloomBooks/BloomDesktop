@@ -26,14 +26,6 @@ function makeEditedPage(): HTMLElement {
     return page;
 }
 
-function makeGridCell(pageId: string): HTMLElement {
-    const cell = document.createElement("div");
-    cell.classList.add("bloom-book-grid-cell");
-    cell.setAttribute("data-page-id", pageId);
-    document.body.appendChild(cell);
-    return cell;
-}
-
 function getMarks(): SVGSVGElement[] {
     return Array.from(document.querySelectorAll("svg.bloom-page-removal-mark"));
 }
@@ -64,7 +56,7 @@ afterEach(() => {
 });
 
 describe("markPageForRemoval", () => {
-    test("with no id, draws an X across the page being edited, 30px short of each corner", () => {
+    test("draws an X across the page being edited, 30px short of each corner", () => {
         const page = makeEditedPage();
         placeAt(page, 100, 50, 400, 600);
 
@@ -89,36 +81,14 @@ describe("markPageForRemoval", () => {
         });
     });
 
-    test("draws the X across the grid cell of another page", () => {
-        placeAt(makeEditedPage(), 100, 50, 400, 600);
-        const cell = makeGridCell("other-page");
-        placeAt(cell, 540, 50, 400, 600);
-
-        markPageForRemoval("other-page");
-
-        const marks = getMarks();
-        expect(marks.length).toBe(1);
-        expect(marks[0].style.left).toBe("540px");
-    });
-
     test("the function it returns takes the X away", () => {
         placeAt(makeEditedPage(), 100, 50, 400, 600);
 
-        const removeMark = markPageForRemoval("edited-page");
+        const removeMark = markPageForRemoval();
         expect(getMarks().length).toBe(1);
 
         removeMark();
         expect(getMarks().length).toBe(0);
-    });
-
-    test("a page this frame is not showing gets no X", () => {
-        placeAt(makeEditedPage(), 100, 50, 400, 600);
-
-        const removeMark = markPageForRemoval("page-not-in-this-frame");
-
-        expect(getMarks().length).toBe(0);
-        expect(scrollBy).not.toHaveBeenCalled();
-        removeMark(); // must be harmless
     });
 
     test("a page that is already fully in view is not scrolled", () => {
@@ -130,11 +100,9 @@ describe("markPageForRemoval", () => {
     });
 
     test("a page below the view is scrolled to the middle of it", () => {
-        const cell = makeGridCell("other-page");
-        makeEditedPage();
-        placeAt(cell, 300, 2000, 400, 600);
+        placeAt(makeEditedPage(), 300, 2000, 400, 600);
 
-        markPageForRemoval("other-page");
+        markPageForRemoval();
 
         // The page is 600 high in an 800 high view, so its top should end up at 100.
         expect(scrollBy).toHaveBeenCalledWith(0, 1900);
