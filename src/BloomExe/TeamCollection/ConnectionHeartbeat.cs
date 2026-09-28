@@ -40,6 +40,13 @@ namespace Bloom.TeamCollection
         private Timer _timer;
         private volatile bool _disposed;
 
+        /// <summary>
+        /// Whether Start() actually armed a timer. Exists so the test for the RunningUnitTests
+        /// guard can see the guard work: the first tick would be a minute away, so counting
+        /// probes just after Start() would read zero whether the guard was there or not.
+        /// </summary>
+        internal bool IsTimerArmed => _timer != null;
+
         public ConnectionHeartbeat(TeamCollection teamCollection)
         {
             _teamCollection = teamCollection;

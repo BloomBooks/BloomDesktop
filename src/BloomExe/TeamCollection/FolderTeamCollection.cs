@@ -1147,6 +1147,24 @@ namespace Bloom.TeamCollection
                     // again later, so give up on watching for the rest of this session.
                     return;
                 }
+                // Monitoring can have stopped while we were getting here: StopMonitoring runs on
+                // the sync progress dialog's worker thread (see SynchronizeRepoAndLocal), not the
+                // UI thread we are on. Its watcher teardown has then already happened and will not
+                // happen again -- Dispose only calls StopMonitoring while _monitoring is true -- so
+                // the watcher we have just enabled would go on raising events into a collection
+                // nobody is using. Take it down ourselves. Reading the field into a local keeps
+                // this safe if StopMonitoring gets to it first.
+                if (!IsMonitoring)
+                {
+                    var strandedWatcher = _booksWatcher;
+                    _booksWatcher = null;
+                    if (strandedWatcher != null)
+                    {
+                        strandedWatcher.EnableRaisingEvents = false;
+                        strandedWatcher.Dispose();
+                    }
+                    return;
+                }
                 Logger.WriteEvent(
                     $"Team Collection: \"{booksPath}\" has appeared; now watching it for book changes."
                 );

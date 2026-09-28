@@ -3016,8 +3016,15 @@ namespace BloomTests.TeamCollection
 
                     heartbeat.Start();
 
-                    // No timer means no ticks, so nothing ever checks. (If this regressed, unit
-                    // test runs would leave thread-pool timers probing the real network.)
+                    // Assert on the timer itself, not on how many probes have happened: the
+                    // first tick would be IntervalMs (a minute) away, so a probe count is zero
+                    // whether the guard is there or not, and this test would pass even with the
+                    // guard deleted -- while leaking the very timer it exists to rule out.
+                    Assert.That(
+                        heartbeat.IsTimerArmed,
+                        Is.False,
+                        "unit test runs must not be left with thread-pool timers probing the real network"
+                    );
                     Assert.That(tc.CheckConnectionCallCount, Is.EqualTo(0));
                     heartbeat.Dispose();
                 }
