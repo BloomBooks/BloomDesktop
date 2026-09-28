@@ -1,6 +1,7 @@
 // Shows the rest of the book around the page being edited, laid out in spreads the way the
-// printed book will be read: the front cover alone on the right, then each left page beside its
-// facing right page, as many spreads per row as fit, with further rows above and below.
+// finished book will be read: usually the front cover alone on the right, then each left page
+// beside its facing right page, as many spreads per row as fit, with further rows above and below.
+// Calendars and books sized for a screen are grouped differently; see bookGridLayout.ts.
 //
 // Only the page being edited is editable. Every other page is a read-only rendering in its own
 // iframe, so none of the editing code (which assumes this document holds exactly one .bloom-page)
@@ -16,6 +17,8 @@ import {
     getWorkspaceBundleExports,
 } from "./workspaceFrames";
 import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
+import { getSpreadShape, makeGridLayout } from "./bookGridLayout";
+import { kBloomPurple } from "../../bloomMaterialUITheme";
 
 interface IGridPage {
     key: string;
@@ -29,6 +32,8 @@ const kClickedPageKey = "bloom-edit-clickedGridPage";
 const kSpreadGap = 40;
 // Vertical space between rows.
 const kRowGap = 40;
+// Width on screen, in pixels, of the outline around the page being edited.
+const kEditedPageOutlineWidth = 3;
 
 interface IClickedPageRecord {
     pageId: string;
@@ -59,10 +64,14 @@ const kGridStyles = `
 .bloom-book-grid-cell.bloom-book-grid-rendered {
     background-color: white;
 }
-/* The page being edited sits in this cell itself; the cell must neither hide it nor take its clicks. */
+/* The page being edited sits in this cell itself; the cell must neither hide it nor take its clicks.
+   The outline marks it among the other pages. The z-index puts the outline over the facing page's
+   cell, so it shows along the edge the two pages share. */
 .bloom-book-grid-cell.bloom-book-grid-edited {
     background-color: transparent;
     pointer-events: none;
+    outline: var(--bloom-edited-page-outline-width) solid ${kBloomPurple};
+    z-index: 1;
 }
 .bloom-book-grid-frame {
     display: block;
@@ -232,11 +241,6 @@ function getEditedPage(): HTMLElement {
     return document.querySelector(".bloom-page") as HTMLElement;
 }
 
-// The cover sits alone on the right of the first spread, so page i takes slot i + 1.
-function slotOfPage(pageIndex: number): number {
-    return pageIndex + 1;
-}
-
 function buildGrid(pages: IGridPage[]): Promise<void> {
     const container = getScalingContainer()!;
     const editedPage = getEditedPage();
@@ -356,29 +360,33 @@ function layoutGrid(
     const editedPage = getEditedPage();
     const pageWidth = editedPage.offsetWidth;
     const pageHeight = editedPage.offsetHeight;
-    const spreadWidth = 2 * pageWidth;
 
-    // How many spreads fit across. The container is border-box (see kGridStyles), so its clientWidth
-    // is the whole width, whatever padding this sets below. The answer must not depend on that
-    // padding: the padding depends on the answer, and the two would chase each other for ever.
-    const availableWidth = container.clientWidth;
-    const spreadsPerRow = Math.max(
-        1,
-        Math.floor((availableWidth + kSpreadGap) / (spreadWidth + kSpreadGap)),
+    // The scaling container zooms everything in it, the outline around the page being edited
+    // included; keep that outline the same width on screen at any zoom.
+    const zoom = editedPage.getBoundingClientRect().width / pageWidth;
+    const outlineWidth = kEditedPageOutlineWidth / zoom;
+    gridLayer.style.setProperty(
+        "--bloom-edited-page-outline-width",
+        `${outlineWidth}px`,
     );
-    const slotsPerRow = spreadsPerRow * 2;
-    const slotPosition = (slot: number) => {
-        const row = Math.floor(slot / slotsPerRow);
-        const column = slot % slotsPerRow;
-        const spread = Math.floor(column / 2);
-        return {
-            x: spread * (spreadWidth + kSpreadGap) + (column % 2) * pageWidth,
-            y: row * (pageHeight + kRowGap),
-        };
-    };
+    // Room around the grid, so the outline of a page at its edge is not cut off by the edge of
+    // the page frame. Nothing counts an outline when working out how far the frame can scroll.
+    const edgeMargin = Math.max(kSpreadGap / 2, outlineWidth);
 
-    const edited = slotPosition(slotOfPage(editedIndex));
-    const wantedPaddingLeft = `${edited.x}px`;
+    // The container is border-box (see kGridStyles), so its clientWidth is the whole width,
+    // whatever padding this sets below. How many spreads fit across must not depend on that
+    // padding: the padding depends on the answer, and the two would chase each other for ever.
+    const grid = makeGridLayout(
+        getSpreadShape(editedPage),
+        pageWidth,
+        pageHeight,
+        container.clientWidth - 2 * edgeMargin,
+        kSpreadGap,
+        kRowGap,
+    );
+
+    const edited = grid.positionOfPage(editedIndex);
+    const wantedPaddingLeft = `${edited.x + edgeMargin}px`;
     const wantedPaddingTop = `${edited.y + kRowGap}px`;
     if (container.style.paddingLeft !== wantedPaddingLeft) {
         container.style.paddingLeft = wantedPaddingLeft;
@@ -395,16 +403,16 @@ function layoutGrid(
 
     let index = 0;
     cells.forEach((cell) => {
-        const position = slotPosition(slotOfPage(index));
+        const position = grid.positionOfPage(index);
         cell.style.left = `${position.x}px`;
         cell.style.top = `${position.y}px`;
         cell.style.width = `${pageWidth}px`;
         cell.style.height = `${pageHeight}px`;
         index++;
     });
-    const last = slotPosition(slotOfPage(pageCount - 1));
-    gridLayer.style.width = `${spreadsPerRow * (spreadWidth + kSpreadGap)}px`;
-    gridLayer.style.height = `${last.y + pageHeight}px`;
+    const last = grid.positionOfPage(pageCount - 1);
+    gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
+    gridLayer.style.height = `${last.y + pageHeight + edgeMargin}px`;
     repositionBubbles();
 }
 

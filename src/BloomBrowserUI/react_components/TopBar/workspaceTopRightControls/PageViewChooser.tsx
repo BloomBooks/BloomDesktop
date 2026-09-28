@@ -12,6 +12,10 @@ import {
     getWorkspaceBundleExports,
 } from "../../../bookEdit/js/workspaceFrames";
 import { get, postJson } from "../../../utils/bloomApi";
+import {
+    getSpreadShape,
+    pagesAcrossASpread,
+} from "../../../bookEdit/js/bookGridLayout";
 
 type PageView = "one" | "all";
 
@@ -118,10 +122,11 @@ export const PageViewChooser: React.FunctionComponent = () => {
     );
 };
 
-// Seeing all the pages is meant to show at least the page being edited and its facing page side
-// by side, so if the page frame is too narrow for two pages at the current zoom, zoom out until it
-// is not (to a whole step of 10%, and no further than Bloom allows). The full height of the pages
-// does not have to fit.
+// Seeing all the pages is meant to show at least the whole spread holding the page being edited
+// (two pages side by side, except in calendars and books sized for a screen; see
+// bookGridLayout.ts), so if the page frame is too narrow for it at the current zoom, zoom out until
+// it is not (to a whole step of 10%, and no further than Bloom allows). The full height of the
+// spread does not have to fit.
 function zoomOutToFitASpread(): void {
     const frame = document.getElementById("page") as HTMLIFrameElement;
     const pageDocument = frame.contentDocument!;
@@ -131,14 +136,15 @@ function zoomOutToFitASpread(): void {
     // While the Edit tab is changing pages the frame does not hold a page yet. The choice itself
     // is already stored, so all that is lost is the zoom.
     if (!page) return;
-    const pageWidth = page.offsetWidth;
+    const spreadWidth =
+        pagesAcrossASpread(getSpreadShape(page)) * page.offsetWidth;
     // The width the zoomed page can use; see setZoom() in workspaceRoot.ts.
     const availableWidth = pageDocument.body.clientWidth - 5;
     get("workspace/topRight/zoom", (result) => {
         const zoomInfo = result.data as { zoom: number; minZoom: number };
         const fittingZoom = Math.max(
             zoomInfo.minZoom,
-            Math.floor((availableWidth / (2 * pageWidth)) * 10) * 10,
+            Math.floor((availableWidth / spreadWidth) * 10) * 10,
         );
         if (fittingZoom < zoomInfo.zoom) {
             postJson("workspace/topRight/zoom", { zoom: fittingZoom });
