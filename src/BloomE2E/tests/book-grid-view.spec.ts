@@ -23,7 +23,14 @@ import {
     type IBookPage,
 } from "../helpers/bookMaking";
 import { bookHtmlPath } from "../helpers/bookHtml";
-import { choosePageView } from "../helpers/pageView";
+import {
+    choosePageView,
+    clickPageInGrid,
+    getPagePlacement,
+    isPageChangeUnderway,
+    scrollPageTopAboveView,
+    waitForClickedPageToSettle,
+} from "../helpers/pageView";
 import { realClick } from "../helpers/realClick";
 import type { Page } from "@playwright/test";
 
@@ -554,6 +561,58 @@ test.describe("showing the other pages of the book", () => {
             /bloom-book-grid-rendered/,
             { timeout: 15000 },
         );
+    });
+
+    test("clicking a page whose top is above the view opens that page and no other [Test Case ID 835]", async ({
+        page,
+    }) => {
+        // Bloom focuses the first empty text box on the page it opens, and the browser scrolls a
+        // focused box that is out of view to the middle of the view. When that moved the page, the
+        // click Bloom replays on the opened page landed on the page above it, which opened that
+        // one, and so on back through the book. It takes a page whose first text box is near its
+        // top, so the box can be wholly above the view while the rest of the page is on screen.
+        const contentPages = await getContentPages(page);
+        await goToPage(page, contentPages[contentPages.length - 1].id);
+        const before = await getPages(page);
+        await addPage(page, "Image on Bottom");
+        const pages = await getPages(page);
+        const targetIndex = pages.findIndex(
+            (p) => !before.some((b) => b.id === p.id),
+        );
+        const target = pages[targetIndex];
+        expect(
+            targetIndex,
+            "Sanity check: the page to click should have pages above it",
+        ).toBeGreaterThan(5);
+        // Start two rows away, so the page to click is one of the other pages.
+        await goToPage(page, pages[targetIndex - 4].id);
+        expect(await chosenPageView(page)).toBe("all");
+        const placed = await scrollPageTopAboveView(page, target.id, 380);
+        expect(
+            placed.page.top,
+            "Sanity check: the top of the page to click should be above the view",
+        ).toBeLessThan(placed.visible.top);
+
+        // THE ACTION UNDER TEST: a real click on the part of that page that is on screen.
+        await clickPageInGrid(page, target.id, 150);
+
+        await expect
+            .poll(() => getShownPageId(page), {
+                timeout: 30000,
+                message:
+                    "The clicked page never became the page being edited, or Bloom went on to other pages by itself",
+            })
+            .toBe(target.id);
+        await waitForEditablePage(page);
+        await waitForClickedPageToSettle(page);
+        expect(await getShownPageId(page)).toBe(target.id);
+        expect(
+            await isPageChangeUnderway(page),
+            "Something clicked another page after the clicked page opened",
+        ).toBe(false);
+        // And the page is still where it was clicked.
+        const after = await getPagePlacement(page, target.id);
+        expect(Math.abs(after.page.top - placed.page.top)).toBeLessThan(3);
     });
 
     test("the page's bubbles stay beside it in All Pages and after going back to One Page [Test Case ID 835]", async ({
