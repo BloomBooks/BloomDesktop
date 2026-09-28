@@ -14,6 +14,7 @@ import {
 import { get, postJson } from "../../../utils/bloomApi";
 import {
     getSpreadShape,
+    kSpreadGap,
     pagesAcrossASpread,
 } from "../../../bookEdit/js/bookGridLayout";
 
@@ -136,8 +137,11 @@ function zoomOutToFitASpread(): void {
     // While the Edit tab is changing pages the frame does not hold a page yet. The choice itself
     // is already stored, so all that is lost is the zoom.
     if (!page) return;
+    // With the room the grid leaves at its two edges, which together is at least one kSpreadGap
+    // (see layoutGrid() in bookGridView.ts).
     const spreadWidth =
-        pagesAcrossASpread(getSpreadShape(page)) * page.offsetWidth;
+        pagesAcrossASpread(getSpreadShape(page)) * page.offsetWidth +
+        kSpreadGap;
     // The width the zoomed page can use; see setZoom() in workspaceRoot.ts.
     const availableWidth = pageDocument.body.clientWidth - 5;
     get("workspace/topRight/zoom", (result) => {

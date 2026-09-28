@@ -388,10 +388,7 @@ test.describe("showing the other pages of the book", () => {
                     samples.push({
                         frame: top.id,
                         waiting:
-                            !!document.getElementById("page-loading-cover") ||
-                            doc.documentElement.classList.contains(
-                                "bloom-book-grid-waiting",
-                            ),
+                            !!document.getElementById("page-loading-cover"),
                         pages: ids.map((id) => {
                             const c = doc.querySelector(
                                 `.bloom-book-grid-cell[data-page-id="${id}"]`,

@@ -5,6 +5,7 @@ import { afterEach, describe, expect, test } from "vitest";
 
 import {
     getSpreadShape,
+    isLaidOutRightToLeft,
     makeGridLayout,
     pagesAcrossASpread,
 } from "./bookGridLayout";
@@ -70,6 +71,19 @@ describe("getSpreadShape", () => {
     });
 });
 
+describe("isLaidOutRightToLeft", () => {
+    test("reads the book's direction from the side Bloom puts a page on", () => {
+        const page = makePage("A5Portrait");
+        page.classList.add("side-right");
+        // Left to right, the front cover (index 0) and every even page are on the right.
+        expect(isLaidOutRightToLeft(page, 0)).toBe(false);
+        expect(isLaidOutRightToLeft(page, 3)).toBe(true);
+        page.classList.replace("side-right", "side-left");
+        expect(isLaidOutRightToLeft(page, 0)).toBe(true);
+        expect(isLaidOutRightToLeft(page, 3)).toBe(false);
+    });
+});
+
 describe("makeGridLayout", () => {
     test("a printed book: cover alone on the right, then left and right pages", () => {
         const shape = { pagesPerSpread: 2 as const, pagesAreStacked: false };
@@ -82,6 +96,7 @@ describe("makeGridLayout", () => {
             410,
             kGap,
             kGap,
+            false,
         );
         expect(grid.spreadsPerRow).toBe(2);
         expect(grid.positionOfPage(0)).toEqual({ x: 100, y: 0 }); // cover, right
@@ -102,6 +117,7 @@ describe("makeGridLayout", () => {
             210,
             kGap,
             kGap,
+            false,
         );
         expect(grid.spreadsPerRow).toBe(2);
         expect(grid.spreadHeight).toBe(300);
@@ -123,6 +139,7 @@ describe("makeGridLayout", () => {
             320,
             kGap,
             kGap,
+            false,
         );
         expect(grid.spreadsPerRow).toBe(3);
         expect(grid.positionOfPage(0)).toEqual({ x: 0, y: 0 });
@@ -140,8 +157,29 @@ describe("makeGridLayout", () => {
             50,
             kGap,
             kGap,
+            false,
         );
         expect(grid.spreadsPerRow).toBe(1);
         expect(grid.positionOfPage(1)).toEqual({ x: 0, y: 160 });
+    });
+
+    test("a book read right to left: cover alone on the left, rows running right to left", () => {
+        const shape = { pagesPerSpread: 2 as const, pagesAreStacked: false };
+        // Room for exactly two spreads, as in the left-to-right test above.
+        const grid = makeGridLayout(
+            shape,
+            kPageWidth,
+            kPageHeight,
+            410,
+            kGap,
+            kGap,
+            true,
+        );
+        expect(grid.spreadsPerRow).toBe(2);
+        expect(grid.positionOfPage(0)).toEqual({ x: 210, y: 0 }); // cover, left
+        expect(grid.positionOfPage(1)).toEqual({ x: 100, y: 0 }); // right
+        expect(grid.positionOfPage(2)).toEqual({ x: 0, y: 0 }); // left
+        expect(grid.positionOfPage(3)).toEqual({ x: 310, y: 160 }); // next row, right
+        expect(grid.positionOfPage(4)).toEqual({ x: 210, y: 160 });
     });
 });

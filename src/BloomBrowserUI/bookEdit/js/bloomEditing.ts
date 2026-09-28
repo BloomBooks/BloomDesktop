@@ -82,7 +82,10 @@ import {
     getHexColorsForPalette,
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
-import { isShowingOtherPagesHere } from "./bookGridView";
+import {
+    isShowingOtherPagesHere,
+    wasOpenedByClickingItInTheGrid,
+} from "./bookGridView";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     externalCaptureErrorForPendingWork,
@@ -924,7 +927,7 @@ export function SetupElements(
                 // I'm not sure whether this is desirable when we found one from data-bloom-active,
                 // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
                 if (elementToFocus && focusable) {
-                    focusable.focus();
+                    focusable.each((_, e) => focusTextBoxOnNewPage(e));
                     // Ideally calling focus above has this as a side effect.
                     // However, the focusin event handler doesn't seem to get called at this point
                     // for image containers, even though we have set tabindex to zero,
@@ -934,7 +937,8 @@ export function SetupElements(
                     BloomSourceBubbles.ShowSourceBubbleForElement(
                         elementToFocus,
                     );
-                } else {
+                } else if (!wasOpenedByClickingItInTheGrid()) {
+                    // (A page opened by clicking it in the grid gets the focus from that click.)
                     // It's OK not to focus anything.  The priority for focusing text boxes is:
                     // 1) empty canvas element "Text Box" which has no border to indicate that it's there
                     // 2) empty text box, whether canvas element or origami

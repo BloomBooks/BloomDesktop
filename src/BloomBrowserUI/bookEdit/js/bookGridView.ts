@@ -17,7 +17,13 @@ import {
     getWorkspaceBundleExports,
 } from "./workspaceFrames";
 import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
-import { getSpreadShape, makeGridLayout } from "./bookGridLayout";
+import {
+    getSpreadShape,
+    isLaidOutRightToLeft,
+    kRowGap,
+    kSpreadGap,
+    makeGridLayout,
+} from "./bookGridLayout";
 import { kBloomPurple } from "../../bloomMaterialUITheme";
 
 interface IGridPage {
@@ -31,10 +37,6 @@ const kClickedPageKey = "bloom-edit-clickedGridPage";
 // On this document's root once replayTheClickThatOpenedThisPage() has finished.
 const kOpeningClickDoneClass = "bloom-book-grid-opening-click-done";
 
-// Horizontal space between one spread and the next.
-const kSpreadGap = 40;
-// Vertical space between rows.
-const kRowGap = 40;
 // Width on screen, in pixels, of the outline around the page being edited.
 const kEditedPageOutlineWidth = 3;
 
@@ -112,6 +114,8 @@ let gridLayer: HTMLElement | undefined;
 // Where the user clicked the page that is now being edited, back when it was one of the other
 // pages, as a fraction of its width and height. See replayTheClickThatOpenedThisPage().
 let openingClick: { xFraction: number; yFraction: number } | undefined;
+// Set by restoreScrollPosition() when the user opened this page by clicking it in the grid.
+let openedByClickingItInTheGrid = false;
 // Where the page being edited is in this page frame's viewport, as the user last saw it, and the
 // zoom it was seen at. Laying the pages out again (a zoom change, a narrower window) scrolls to keep
 // the page there; see keepEditedPageInPlace().
@@ -406,6 +410,7 @@ function layoutGrid(
         container.clientWidth - 2 * edgeMargin,
         kSpreadGap,
         kRowGap,
+        isLaidOutRightToLeft(editedPage, editedIndex),
     );
 
     const edited = grid.positionOfPage(editedIndex);
@@ -567,12 +572,23 @@ function fullSizePictures(pageHtml: string): string {
 }
 
 // The page frames show a page with the same stylesheets as the page being edited, but none of
-// its scripts.
+// its scripts. A style element's rules are copied from the stylesheet itself, not from its text:
+// the Format dialog changes the book's userModifiedStyles with insertRule and the like, which leave
+// the text as it was when the page loaded (see StyleEditor.ts).
 function getStylesheetsForPageFrames(): string {
     return Array.from(
         document.head.querySelectorAll("link[rel='stylesheet'], style"),
     )
-        .map((element) => element.outerHTML)
+        .map((element) => {
+            if (!(element instanceof HTMLStyleElement) || !element.sheet) {
+                return element.outerHTML;
+            }
+            const copy = element.cloneNode() as HTMLStyleElement;
+            copy.textContent = Array.from(element.sheet.cssRules)
+                .map((rule) => rule.cssText)
+                .join("\n");
+            return copy.outerHTML;
+        })
         .join("");
 }
 
@@ -650,6 +666,7 @@ function restoreScrollPosition(editedPage: HTMLElement): void {
     // tab's own containers, outside this frame, and push the page list off the side of the window.
     if (record && record.pageId === editedPage.id) {
         window.scrollBy(rect.left - record.left, rect.top - record.top);
+        openedByClickingItInTheGrid = true;
         openingClick = {
             xFraction: record.xFraction,
             yFraction: record.yFraction,
@@ -659,6 +676,22 @@ function restoreScrollPosition(editedPage: HTMLElement): void {
             rect.left - (window.innerWidth - rect.width) / 2,
             rect.top - (window.innerHeight - rect.height) / 2,
         );
+    }
+}
+
+/**
+ * True if the user opened this page by clicking it while it was one of the other pages. That click
+ * decides what gets the focus (see replayTheClickThatOpenedThisPage()), so code setting up the page
+ * must not focus anything else, whether the click has been replayed yet or not.
+ */
+export function wasOpenedByClickingItInTheGrid(): boolean {
+    if (openedByClickingItInTheGrid) return true;
+    // restoreScrollPosition() has not run yet; the record of the click is still waiting for it.
+    try {
+        const saved = sessionStorage.getItem(kClickedPageKey);
+        return !!saved && JSON.parse(saved).pageId === getEditedPage().id;
+    } catch {
+        return false;
     }
 }
 
