@@ -82,6 +82,7 @@ import {
     getHexColorsForPalette,
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import { isShowingOtherPagesHere } from "./bookGridView";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     externalCaptureErrorForPendingWork,
@@ -120,6 +121,16 @@ export function makeElement(
         result.draggable(draggableArgs);
     }
     return result;
+}
+
+// Focus the text box Bloom picks for the user when a page loads. With the other pages of the book
+// showing, the page is where the user clicked it (see bookGridView.ts), and the browser's usual
+// scroll to a focused box that is off screen would move the page out from under the click that
+// opened it.
+function focusTextBoxOnNewPage(textBox: Element): void {
+    (textBox as HTMLElement).focus({
+        preventScroll: isShowingOtherPagesHere(),
+    });
 }
 
 function isBrOrWhitespace(node) {
@@ -960,11 +971,11 @@ export function SetupElements(
                         );
                         if (emptyTextBlockCanvasElement) {
                             // We want to focus on the first empty canvas element text with style "none".
-                            $(emptyTextBlockCanvasElement).focus();
+                            focusTextBoxOnNewPage(emptyTextBlockCanvasElement);
                             return;
                         } else {
                             // otherwise, focus on the first empty text box, whether canvas element or origami.
-                            $(emptyEditables[0]).focus();
+                            focusTextBoxOnNewPage(emptyEditables[0]);
                             return;
                         }
                     }
@@ -974,7 +985,7 @@ export function SetupElements(
                     );
                     if (editable) {
                         // focus on the first available origami text box
-                        $(editable).focus();
+                        focusTextBoxOnNewPage(editable);
                     }
                 }
             }

@@ -28,6 +28,9 @@ interface IGridPage {
 // Where the clicked page was on screen, so the next page document can put it back there.
 const kClickedPageKey = "bloom-edit-clickedGridPage";
 
+// On this document's root once replayTheClickThatOpenedThisPage() has finished.
+const kOpeningClickDoneClass = "bloom-book-grid-opening-click-done";
+
 // Horizontal space between one spread and the next.
 const kSpreadGap = 40;
 // Vertical space between rows.
@@ -106,9 +109,13 @@ body > .above-page-control-container.bloom-controls-bar {
 `;
 
 let gridLayer: HTMLElement | undefined;
-// Where, in this page frame's viewport, the user clicked the page that is now being edited, back
-// when it was one of the other pages. See replayTheClickThatOpenedThisPage().
-let openingClick: { x: number; y: number } | undefined;
+// Where the user clicked the page that is now being edited, back when it was one of the other
+// pages, as a fraction of its width and height. See replayTheClickThatOpenedThisPage().
+let openingClick: { xFraction: number; yFraction: number } | undefined;
+// Where the page being edited is in this page frame's viewport, as the user last saw it, and the
+// zoom it was seen at. Laying the pages out again (a zoom change, a narrower window) scrolls to keep
+// the page there; see keepEditedPageInPlace().
+let editedPagePlace: { left: number; top: number; zoom: string } | undefined;
 let gridStyle: HTMLStyleElement | undefined;
 let observers: { disconnect(): void }[] = [];
 
@@ -131,10 +138,7 @@ export function setShowingOtherPages(show: boolean): void {
  * and every page on screen is drawn (at once, if there is no grid to build).
  */
 export function setupBookGridView(): Promise<void> {
-    if (
-        window.frameElement?.id !== "page" ||
-        !getWorkspaceBundleExports().isShowingOtherPages()
-    ) {
+    if (!isShowingOtherPagesHere()) {
         return Promise.resolve();
     }
     if (gridLayer) {
@@ -164,10 +168,23 @@ export function setupBookGridView(): Promise<void> {
     });
 }
 
+/**
+ * True when this document is the live Edit tab's page and the user has chosen to see the other
+ * pages of the book around it. The page is then placed where the user clicked it, so code setting
+ * up the page must not scroll it away (for example, by focusing a text box without preventScroll).
+ */
+export function isShowingOtherPagesHere(): boolean {
+    return (
+        window.frameElement?.id === "page" &&
+        getWorkspaceBundleExports().isShowingOtherPages()
+    );
+}
+
 /** Remove the grid of other pages and everything it changed in this document. */
 export function removeBookGridView(): void {
     observers.forEach((o) => o.disconnect());
     observers = [];
+    editedPagePlace = undefined;
     gridLayer?.remove();
     gridLayer = undefined;
     gridStyle?.remove();
@@ -288,6 +305,12 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
     const layout = () => layoutGrid(pages.length, editedIndex, cells);
     layout();
     restoreScrollPosition(editedPage);
+    rememberWhereEditedPageIs();
+    const onScroll = () => rememberWhereEditedPageIs();
+    window.addEventListener("scroll", onScroll);
+    observers.push({
+        disconnect: () => window.removeEventListener("scroll", onScroll),
+    });
 
     // Draw the pages that are on screen now, rather than waiting for the observer below, so the
     // caller can know when the view is complete.
@@ -413,7 +436,34 @@ function layoutGrid(
     const last = grid.positionOfPage(pageCount - 1);
     gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
     gridLayer.style.height = `${last.y + pageHeight + edgeMargin}px`;
+    keepEditedPageInPlace();
     repositionBubbles();
+}
+
+function getZoomOfScalingContainer(): string {
+    return getScalingContainer()!.style.transform;
+}
+
+// Note where the user sees the page being edited. A scroll the browser makes on its own while the
+// zoom changes (it clamps the scroll position when zooming out shrinks the document) is not the
+// user moving the page, so it is ignored until keepEditedPageInPlace() has caught up with the zoom.
+function rememberWhereEditedPageIs(): void {
+    const zoom = getZoomOfScalingContainer();
+    if (editedPagePlace && editedPagePlace.zoom !== zoom) return;
+    const rect = getEditedPage().getBoundingClientRect();
+    editedPagePlace = { left: rect.left, top: rect.top, zoom };
+}
+
+// Scroll so the page being edited is where the user last saw it. Without this, a zoom change keeps
+// the scroll position while everything grows or shrinks around it, and the page ends up thousands
+// of pixels out of view.
+function keepEditedPageInPlace(): void {
+    if (!editedPagePlace) return;
+    const rect = getEditedPage().getBoundingClientRect();
+    const dx = rect.left - editedPagePlace.left;
+    const dy = rect.top - editedPagePlace.top;
+    editedPagePlace.zoom = getZoomOfScalingContainer();
+    if (Math.abs(dx) >= 1 || Math.abs(dy) >= 1) window.scrollBy(dx, dy);
 }
 
 // Draw one page in its cell. The promise resolves when the page and its pictures have loaded, or
@@ -601,8 +651,8 @@ function restoreScrollPosition(editedPage: HTMLElement): void {
     if (record && record.pageId === editedPage.id) {
         window.scrollBy(rect.left - record.left, rect.top - record.top);
         openingClick = {
-            x: record.left + record.xFraction * rect.width,
-            y: record.top + record.yFraction * rect.height,
+            xFraction: record.xFraction,
+            yFraction: record.yFraction,
         };
     } else {
         window.scrollBy(
@@ -619,11 +669,27 @@ function restoreScrollPosition(editedPage: HTMLElement): void {
  * set up.
  */
 export async function replayTheClickThatOpenedThisPage(): Promise<void> {
+    try {
+        await replayOpeningClick();
+    } finally {
+        // Marks, for tests, that the page has done all it will do about the click that opened it.
+        document.documentElement.classList.add(kOpeningClickDoneClass);
+    }
+}
+
+async function replayOpeningClick(): Promise<void> {
     if (!openingClick) return;
-    const { x, y } = openingClick;
+    const editedPage = getEditedPage();
+    // Where the page is now, which is not necessarily where it was put when it loaded.
+    const rect = editedPage.getBoundingClientRect();
+    const x = rect.left + openingClick.xFraction * rect.width;
+    const y = rect.top + openingClick.yFraction * rect.height;
     openingClick = undefined;
     const target = document.elementFromPoint(x, y) as HTMLElement | null;
-    if (!target) return;
+    // Only ever something on the page being edited. Whatever else is at that point (another page,
+    // the bar of controls) is not what the user clicked, and a click on another page would open
+    // that page, whose own replay could open the next one, and so on through the book.
+    if (!target || !editedPage.contains(target)) return;
     const editable = target.closest(".bloom-editable") as HTMLElement | null;
     // CKEditor puts back the text it took over when it finishes starting, which would wipe out a
     // cursor placed before then.

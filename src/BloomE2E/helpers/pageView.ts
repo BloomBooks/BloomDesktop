@@ -133,3 +133,85 @@ export async function scrollPageOutOfView(
                 `(or a larger zoom).`,
         );
 }
+
+/**
+ * Scroll the page frame so the top of the page with this id is `pixels` above the top of the
+ * visible part of the view (below the bar of controls), leaving the rest of it on screen. Returns
+ * where the page then is.
+ */
+export async function scrollPageTopAboveView(
+    page: Page,
+    pageId: string,
+    pixels: number,
+): Promise<IPagePlacement> {
+    const before = await getPagePlacement(page, pageId);
+    const dy = before.page.top - (before.visible.top - pixels);
+    await editablePageFrame(page).evaluate((dy) => window.scrollBy(0, dy), dy);
+    const after = await getPagePlacement(page, pageId);
+    if (Math.abs(after.page.top - (after.visible.top - pixels)) > 1)
+        throw new Error(
+            `The page frame could not scroll page ${pageId} to ${pixels}px above the view: its top ` +
+                `is at y=${after.page.top}, and the view starts at y=${after.visible.top}.`,
+        );
+    return after;
+}
+
+/**
+ * With All Pages showing, click another page with the mouse, as a user does to edit it: across the
+ * middle of it, `yInView` pixels below the top of the visible part of the view. Throws if that
+ * point is not on the page.
+ */
+export async function clickPageInGrid(
+    page: Page,
+    pageId: string,
+    yInView: number,
+): Promise<void> {
+    const placement = await getPagePlacement(page, pageId);
+    const x = (placement.page.left + placement.page.right) / 2;
+    const y = placement.visible.top + yInView;
+    if (y < placement.page.top || y > placement.page.bottom)
+        throw new Error(
+            `The point ${yInView}px down the view (y=${y}) is not on page ${pageId}, which runs ` +
+                `from y=${placement.page.top} to y=${placement.page.bottom}.`,
+        );
+    const frameBox = await page.locator("#page").boundingBox();
+    if (!frameBox) throw new Error("The page frame has no box on screen.");
+    await page.mouse.click(frameBox.x + x, frameBox.y + y);
+}
+
+/**
+ * Wait until the page being edited has finished dealing with the click that opened it (when it
+ * was one of the other pages, Bloom replays that click on it; see
+ * replayTheClickThatOpenedThisPage in bookGridView.ts).
+ */
+export async function waitForClickedPageToSettle(page: Page): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                editablePageFrame(page)
+                    .evaluate(() =>
+                        document.documentElement.classList.contains(
+                            "bloom-book-grid-opening-click-done",
+                        ),
+                    )
+                    .catch(() => false),
+            {
+                timeout: 30000,
+                message:
+                    "The page being edited never finished dealing with the click that opened it.",
+            },
+        )
+        .toBe(true);
+}
+
+/**
+ * True while the Edit tab is changing pages: from a click on another page until the new page
+ * shows (the wait cursor covers the page frame, and the page being left may still be on screen).
+ */
+export async function isPageChangeUnderway(page: Page): Promise<boolean> {
+    return page.evaluate(
+        () =>
+            !!document.getElementById("page-loading-cover") ||
+            !!document.getElementById("page-outgoing"),
+    );
+}
