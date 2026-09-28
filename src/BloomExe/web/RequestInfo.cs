@@ -292,16 +292,15 @@ namespace Bloom.Api
                                 fs = OpenSharedReadStreamWithRetry(path);
                             }
                             catch (Exception e)
-                                when (e is FileNotFoundException
-                                    || e is DirectoryNotFoundException
-                                    || e is UnauthorizedAccessException
-                                )
+                                when (e is IOException || e is UnauthorizedAccessException)
                             {
                                 // and we've made it possible to delete (or move) the file, or even its folder,
                                 // in the middle of our read, so it may be gone. If so, stop here; the check
                                 // below deals with the reply being shorter than we promised.
                                 // (A deleted file that some other process still has open is "delete pending",
                                 // and opening it gives UnauthorizedAccessException rather than FileNotFound.)
+                                // IOException also covers a file some other process has kept locked for longer
+                                // than OpenSharedReadStreamWithRetry keeps trying.
                                 break;
                             }
 
@@ -310,12 +309,12 @@ namespace Bloom.Api
 
                         if (written < promised)
                         {
-                            // The file was deleted or shrank while we were sending it (e.g. the image cache
-                            // was cleared because the user selected another book). We already promised
+                            // The file was deleted, shrank or stayed locked while we were sending it (e.g. the
+                            // image cache was cleared because the user selected another book). We already promised
                             // ContentLength64 bytes, and Close() throws "Cannot close stream until all bytes
                             // are written" if we send fewer, so drop the connection instead.
                             Logger.WriteEvent(
-                                $"Aborted reply for {path}: sent {written} of {promised} bytes before the file went away."
+                                $"Aborted reply for {path}: sent {written} of {promised} bytes before the file went away or could no longer be read."
                             );
                             _actualContext.Response.Abort();
                         }

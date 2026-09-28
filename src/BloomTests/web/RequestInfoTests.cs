@@ -107,12 +107,13 @@ namespace BloomTests.web
             FolderDeleted,
             FileTruncated,
             FileGrown,
+            FileLocked,
         }
 
         /// <summary>
         /// BL-16931: files of 2MB or more are sent in pieces, reopening the file between pieces so
         /// it is never held locked, after promising the original length in Content-Length. Deleting,
-        /// truncating or growing the file part way through used to make an exception escape from
+        /// truncating, growing or locking the file part way through used to make an exception escape from
         /// ReplyWithFileContent (e.g. "Cannot close stream until all bytes are written"). This
         /// serves such a file through a real HttpListener, since HttpListenerResponse can't be faked.
         /// </summary>
@@ -120,6 +121,7 @@ namespace BloomTests.web
         [TestCase(LargeFileChange.FolderDeleted)]
         [TestCase(LargeFileChange.FileTruncated)]
         [TestCase(LargeFileChange.FileGrown)]
+        [TestCase(LargeFileChange.FileLocked)]
         public void ReplyWithFileContent_LargeFileChangesWhileSending_NoExceptionEscapes(
             LargeFileChange change
         )
@@ -262,6 +264,7 @@ namespace BloomTests.web
                 Assert.That(received, Is.GreaterThan(0), "the reply should have started");
 
                 var serverWasStillSending = !serverTask.IsCompleted;
+                FileStream lockStream = null;
                 switch (change)
                 {
                     case LargeFileChange.FileDeleted:
@@ -292,6 +295,11 @@ namespace BloomTests.web
                         )
                             fs.Write(new byte[1024 * 1024], 0, 1024 * 1024);
                         break;
+                    case LargeFileChange.FileLocked:
+                        // Held until the client has read all it will get, which is longer than the
+                        // server keeps retrying to reopen the file.
+                        lockStream = OpenExclusivelyWithRetry(path);
+                        break;
                 }
 
                 try
@@ -304,6 +312,29 @@ namespace BloomTests.web
                 catch (Exception e)
                 {
                     return (promisedLength, received, e, serverWasStillSending);
+                }
+                finally
+                {
+                    lockStream?.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Open the file so that no other process can open it. The server has it open for a moment
+        /// between pieces, and opening it exclusively fails during that moment, so try again.
+        /// </summary>
+        private static FileStream OpenExclusivelyWithRetry(string path)
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+                }
+                catch (IOException) when (attempt < 100)
+                {
+                    System.Threading.Thread.Sleep(10);
                 }
             }
         }
