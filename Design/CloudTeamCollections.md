@@ -8,7 +8,7 @@ what is still open. It describes the design as it stands in September 2026.
 >
 > - **Server** (Postgres schema `tc`, RLS, RPCs, edge functions, local dev stack): the
 >   `bloom-core-supabase` repo, PR #13, branch `BL-16531-tc-backend`. Its detailed docs are in
->   `team-collections/docs/`: `CONTRACTS.md` (the wire contract, currently **v1.11**), `SCHEMA.md`
+>   `team-collections/docs/`: `CONTRACTS.md` (the wire contract, currently **v1.12**), `SCHEMA.md`
 >   (ER diagram and notes) and `GOING-LIVE.md` (deployment runbook). Not deployed anywhere yet.
 > - **Desktop client** (`CloudTeamCollection` and its helpers, the sign-in and join UI, unit and
 >   E2E tests): BloomDesktop draft PR #8052, branch `cloud-tc-for-review`, which also carries the
@@ -472,7 +472,8 @@ The checkout belongs to the copy, not the account, and that is what lets it pass
 
 ## 5. Starting a cloud collection: initial upload and migration
 
-**Designed, not built yet.** What exists already is what it reuses: first check-in, checkout with
+**The server side is built (#13, CONTRACTS v1.12), as is the 6.5 freeze (#8414); the rest of the
+client is designed, not built yet.** Besides those, it reuses: first check-in, checkout with
 a client-made GUID, `checkout_book_takeover`, `force_unlock`, `AllowCheckouts` (BL-16691, in 6.4
 and 6.5), `MinimumBloomVersion` (BL-16690) and the Share dialog's list of people from Team
 Collection history. The server and client work it needs is listed in
@@ -540,13 +541,17 @@ sign in and claim their membership. For each such book, after uploading it, the 
    `oldMachine`. `Migration Keys` is a new folder at the shared folder's root, beside `Books`,
    `Other` and `Lost and Found`; 6.5 watches only `Books` and `Other` and ignores it. The key is
    written **before** the lock is taken (write-ahead, like `.checkout`);
-3. locks the book, with a new admin-only RPC, to a **placeholder holder** `legacy:<old email>`,
-   with that GUID's hash and the old machine name. The RPC is allowed only while the upload flag
-   is set, and repeating it with the same GUID succeeds again (for resuming after a crash).
+3. locks the book with `lock_book_for_legacy_checkout` (admin-only) to a **placeholder holder**
+   `legacy:<old email>`, with that GUID's hash and the old machine name. The RPC is allowed only
+   while the upload flag is set and only on a free, committed book, and repeating it with the same
+   GUID succeeds again with no change (for resuming after a crash). Its CheckOut event names the
+   admin as the actor, with the placeholder in `lock_info`, so History can show whose checkout it
+   really is.
 
-The placeholder fits the data model. `locked_by` is plain text with no foreign key, and no real
-account id contains `:`, so nobody can check the book in or unlock it normally, while takeover (by
-GUID) and admin force unlock work unchanged. `resolve_member_display` falls back to the email in
+The placeholder fits the data model. `locked_by` is plain text with no foreign key, and a CHECK
+constraint keeps any member's `user_id` from starting with `legacy:`; every holder check also
+requires the caller to be a claimed member. So nobody can check the book in or unlock it normally,
+while takeover (by GUID) and admin force unlock work unchanged. `resolve_member_display` falls back to the email in
 the placeholder, so the book shows as checked out to `bob-old@example.com`. Instance ids are
 unique within a collection (Bloom won't open a collection until duplicates are fixed), so one key
 per instance id needs no further check.
@@ -832,15 +837,17 @@ them yet.
   would need another touch point for members who stay connected.
 
 **Starting a cloud collection** (designed in
-[section 5](#5-starting-a-cloud-collection-initial-upload-and-migration), not built; BL-16676,
-BL-16928)
+[section 5](#5-starting-a-cloud-collection-initial-upload-and-migration); BL-16676, BL-16928)
 
-- Server: the collection's initial-upload flag (one column, set by `create_collection`, cleared by
-  the admin); `my_collections` skipping flagged collections; the admin-only RPC that locks a book
-  to a `legacy:<old email>` placeholder with a GUID hash, allowed only while the flag is set and
-  idempotent with the same GUID; the `resolve_member_display` fallback that shows the placeholder's
-  email; and the support script that deletes an incomplete collection's rows and S3 prefix.
-  Everything else reuses first check-in, checkout with a client GUID, takeover and force unlock.
+- Server, built on #13 (CONTRACTS v1.12): `tc.collections.initial_upload_in_progress`, set by
+  `create_collection(..., p_initial_upload)` and cleared by `finish_initial_upload` (admin-only,
+  idempotent); `get_collection_state`/`get_changes` report it; `my_collections` skips flagged
+  collections, which also hides one from the uploading admin's other computers until it is done;
+  `lock_book_for_legacy_checkout`; the `resolve_member_display` fallback; and
+  `support_delete_collection` with `team-collections/support/delete-collection.ps1` and a
+  GOING-LIVE runbook entry. The script should run only once the admin's Bloom has stopped, since
+  S3 credentials already handed out stay valid for up to an hour. Everything else reuses first
+  check-in, checkout with a client GUID, takeover and force unlock.
 - Client: the BL-16928 patch for 6.5 (`AllowSharedFolderChanges`); the background sender of first
   check-ins; writing the `Migration Keys` files and placeholder locks; finishing (clearing the
   flag and writing the cloud id into the old shared settings); and each member's switch-over
