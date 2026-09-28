@@ -7,10 +7,14 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.SubscriptionAndFeatures;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -29,23 +33,58 @@ namespace Bloom.web.controllers
         // we keep a reference to it here so pending settings can be updated there.
         public static CollectionSettingsDialog DialogBeingEdited;
 
+        /// <summary>
+        /// The edits being made in the React Collection Settings dialog, or null when it is not
+        /// open. The WinForms dialog keeps its own pending values (DialogBeingEdited) and never
+        /// uses this; the two only coexist until the React dialog replaces it.
+        /// </summary>
+        public static PendingCollectionSettings PendingSettings { get; private set; }
+
+        /// <summary>
+        /// The TypeScript side expects the names in the collection/settings contract in camelCase,
+        /// while the C# classes spell them the way C# does.
+        /// </summary>
+        internal static readonly JsonSerializerSettings kCamelCaseSettings =
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+            };
+
         private readonly CollectionSettings _collectionSettings;
         private readonly List<object> _numberingStyles = new List<object>();
+        private readonly List<NumberingStyleOffering> _numberingStyleOfferings =
+            new List<NumberingStyleOffering>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+        private readonly TeamCollectionManager _tcManager;
+        private readonly QueueRenameOfCollection _queueRenameOfCollection;
 
         public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
             XMatterPackFinder xmatterPackFinder,
-            BookSelection bookSelection
+            BookSelection bookSelection,
+            TeamCollectionManager tcManager,
+            QueueRenameOfCollection queueRenameOfCollection
         )
         {
             _collectionSettings = collectionSettings;
             _xmatterPackFinder = xmatterPackFinder;
             this._bookSelection = bookSelection;
+            _tcManager = tcManager;
+            _queueRenameOfCollection = queueRenameOfCollection;
         }
+
+        /// <summary>
+        /// Whether the collection we have open is a Team Collection, even if we cannot reach the
+        /// repository just now.
+        /// </summary>
+        private bool CurrentCollectionIsTeamCollection =>
+            _tcManager.CurrentCollectionEvenIfDisconnected != null;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -54,14 +93,18 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        // Just a placeholder for the skeleton dialog for now.
-                        request.ReplyWithJson("{}");
-                    }
-                    else if (request.HttpMethod == HttpMethods.Post)
-                    {
-                        request.PostSucceeded();
-                    }
+                        HandleGetCollectionSettings(request);
+                    else
+                        HandleSaveCollectionSettings(request);
+                },
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                "collection/settings/cancel",
+                request =>
+                {
+                    PendingSettings = null;
+                    request.PostSucceeded();
                 },
                 true
             );
@@ -451,6 +494,313 @@ namespace Bloom.web.controllers
                 if (qrcodeCaption != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
+        }
+
+        /// <summary>
+        /// Replies to GET collection/settings, starting a fresh editing session so the values the
+        /// dialog shows are the ones the collection has now. A Team Collection member who is not
+        /// an administrator gets only the reason they may not edit, and no session.
+        /// </summary>
+        private void HandleGetCollectionSettings(ApiRequest request)
+        {
+            if (!_tcManager.OkToEditCollectionSettings)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsResponse
+                        {
+                            NotAllowedMessage = WorkspaceView.MustBeAdminMessage(
+                                _collectionSettings,
+                                "\n"
+                            ),
+                        },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+            PendingSettings = new PendingCollectionSettings(_collectionSettings);
+            var response = new CollectionSettingsResponse
+            {
+                Values = GetCurrentValues(),
+                Context = GetContext(),
+                RestartPaths = CollectionSettingsValues.GetRestartPaths(),
+            };
+            request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// Handles POST collection/settings, whose body is the "values" object of the GET reply.
+        /// On a validation failure nothing is saved and the session stays open so the user can
+        /// fix what is wrong.
+        /// </summary>
+        private void HandleSaveCollectionSettings(ApiRequest request)
+        {
+            var pending = PendingSettings;
+            var postedValues = JsonConvert.DeserializeObject<CollectionSettingsValues>(
+                request.RequiredPostJson()
+            );
+            MergeIntoPendingSettings(postedValues, pending);
+            if (CollectionSettingsValues.AnyRestartPathChanged(GetCurrentValues(), postedValues))
+                pending.ChangeThatRequiresRestart();
+
+            var errorMessage = CollectionSettingsUpdater.Validate(
+                pending,
+                CurrentCollectionIsTeamCollection
+            );
+            if (errorMessage != null)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsSaveResult
+                        {
+                            RestartRequired = false,
+                            ErrorMessage = errorMessage,
+                        },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+
+            var restartRequired = CollectionSettingsUpdater.Apply(
+                pending,
+                _collectionSettings,
+                CurrentCollectionIsTeamCollection,
+                _xmatterPackFinder,
+                newName => _queueRenameOfCollection.Raise(newName)
+            );
+            PendingSettings = null;
+            request.ReplyWithJson(
+                JsonConvert.SerializeObject(
+                    new CollectionSettingsSaveResult
+                    {
+                        RestartRequired = restartRequired,
+                        ErrorMessage = null,
+                    },
+                    kCamelCaseSettings
+                )
+            );
+            if (restartRequired)
+                WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
+        /// <summary>
+        /// The editable settings as the collection has them now.
+        /// </summary>
+        private CollectionSettingsValues GetCurrentValues()
+        {
+            var thirdLanguage = _collectionSettings.AllLanguages[2];
+            return new CollectionSettingsValues
+            {
+                Languages = new LanguagesValues
+                {
+                    Language1 = MakeLanguageValues(_collectionSettings.AllLanguages[0]),
+                    Language2 = MakeLanguageValues(_collectionSettings.AllLanguages[1]),
+                    Language3 = string.IsNullOrEmpty(thirdLanguage?.Tag)
+                        ? null
+                        : MakeLanguageValues(thirdLanguage),
+                    SignLanguage = new SignLanguageValues
+                    {
+                        Tag = _collectionSettings.SignLanguage.Tag,
+                        Name = _collectionSettings.SignLanguage.Name,
+                        IsCustomName = _collectionSettings.SignLanguage.IsCustomName,
+                    },
+                },
+                FrontBackMatter = new FrontBackMatterValues
+                {
+                    Xmatter = _collectionSettings.XMatterPackName,
+                    PageNumberStyle = _collectionSettings.PageNumberStyle,
+                    ShowQrCode = _collectionSettings.ShowBlorgLanguageQrCode,
+                    QrcodeCaption = _collectionSettings.BadgeQrCodeLabelLocalized,
+                    // A collection whose settings file never carried these leaves them null.
+                    Country = _collectionSettings.Country ?? "",
+                    Province = _collectionSettings.Province ?? "",
+                    District = _collectionSettings.District ?? "",
+                },
+                Advanced = new AdvancedValues
+                {
+                    AutoUpdate =
+                        CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform
+                        && Settings.Default.AutoUpdate,
+                    CollectionName = _collectionSettings.CollectionName,
+                },
+                Experimental = new Dictionary<string, bool>
+                {
+                    {
+                        ExperimentalFeatures.kTeamCollections,
+                        ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+                    },
+                },
+            };
+        }
+
+        private static LanguageValues MakeLanguageValues(WritingSystem language)
+        {
+            return new LanguageValues
+            {
+                Tag = language.Tag,
+                Name = language.Name,
+                IsCustomName = language.IsCustomName,
+                FontName = language.FontName,
+                IsRightToLeft = language.IsRightToLeft,
+                LineHeight = language.LineHeight,
+                BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces,
+                BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints,
+            };
+        }
+
+        /// <summary>
+        /// What the dialog needs to render but cannot change.
+        /// </summary>
+        private CollectionSettingsContext GetContext()
+        {
+            var brandingForcedXmatter =
+                _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+            return new CollectionSettingsContext
+            {
+                IsTeamCollection = CurrentCollectionIsTeamCollection,
+                EditingBlorgBook = _collectionSettings.EditingABlorgBook,
+                ShowAutoUpdate = CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform,
+                TeamCollectionsAllowed = FeatureStatus
+                    .GetFeatureStatus(_collectionSettings.Subscription, FeatureName.TeamCollection)
+                    .Enabled,
+                XmatterOfferings = GetXmatterOfferings(brandingForcedXmatter),
+                BrandingForcedXmatter = brandingForcedXmatter,
+                NumberingStyles = GetNumberingStyleOfferings(),
+            };
+        }
+
+        /// <summary>
+        /// Copies the values the React dialog sends into the editing session. The subscription,
+        /// the administrators and the bookshelf arrive through endpoints of their own, so they
+        /// are not here; neither is anything the caller left out.
+        /// </summary>
+        private static void MergeIntoPendingSettings(
+            CollectionSettingsValues values,
+            PendingCollectionSettings pending
+        )
+        {
+            if (values.Languages != null)
+            {
+                MergeLanguage(values.Languages.Language1, pending, 0);
+                MergeLanguage(values.Languages.Language2, pending, 1);
+                MergeLanguage(values.Languages.Language3, pending, 2);
+                var signLanguage = values.Languages.SignLanguage;
+                if (signLanguage != null)
+                {
+                    pending.SignLanguage.ChangeTag(signLanguage.Tag);
+                    pending.SignLanguage.SetName(signLanguage.Name, signLanguage.IsCustomName);
+                }
+            }
+            if (values.FrontBackMatter != null)
+            {
+                pending.Xmatter = values.FrontBackMatter.Xmatter;
+                pending.NumberingStyle = values.FrontBackMatter.PageNumberStyle;
+                pending.ShowQrCode = values.FrontBackMatter.ShowQrCode;
+                pending.BadgeQrCodeCaption = values.FrontBackMatter.QrcodeCaption;
+                pending.Country = values.FrontBackMatter.Country;
+                pending.Province = values.FrontBackMatter.Province;
+                pending.District = values.FrontBackMatter.District;
+            }
+            if (values.Advanced != null)
+            {
+                pending.AutomaticallyUpdate = values.Advanced.AutoUpdate;
+                pending.CollectionName = values.Advanced.CollectionName;
+            }
+            if (values.Experimental == null)
+                return;
+            foreach (var feature in values.Experimental)
+            {
+                switch (feature.Key)
+                {
+                    case ExperimentalFeatures.kTeamCollections:
+                        pending.AllowTeamCollection = feature.Value;
+                        break;
+                    case ExperimentalFeatures.kExperimentalSourceBooks:
+                        pending.ShowExperimentalBookSources = feature.Value;
+                        break;
+                    default:
+                        throw new ArgumentException(
+                            $"Unknown experimental feature '{feature.Key}'"
+                        );
+                }
+            }
+        }
+
+        private static void MergeLanguage(
+            LanguageValues language,
+            PendingCollectionSettings pending,
+            int zeroBasedLanguageNumber
+        )
+        {
+            if (language == null)
+                return;
+            var pendingLanguage = pending.Languages[zeroBasedLanguageNumber];
+            // Setting the tag also sets a default name, so set the name we were given afterwards.
+            pendingLanguage.ChangeTag(language.Tag);
+            pendingLanguage.SetName(language.Name, language.IsCustomName);
+            pendingLanguage.IsRightToLeft = language.IsRightToLeft;
+            pendingLanguage.LineHeight = language.LineHeight;
+            pendingLanguage.BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces;
+            pendingLanguage.BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints;
+            pending.FontSelections[zeroBasedLanguageNumber] = language.FontName;
+        }
+
+        /// <summary>
+        /// The front/back matter packs the user may choose from, with their localized labels.
+        /// </summary>
+        private XmatterOffering[] GetXmatterOfferings(string xmatterKeyForcedByBranding)
+        {
+            var xmatterOfferings = new List<XmatterOffering>();
+            var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(
+                xmatterKeyForcedByBranding
+            );
+
+            foreach (var pack in offerings)
+            {
+                var labelToShow = LocalizationManager.GetDynamicString(
+                    "Bloom",
+                    "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack."
+                        + pack.EnglishLabel,
+                    pack.EnglishLabel,
+                    "Name of a Front/Back Matter Pack"
+                );
+                xmatterOfferings.Add(
+                    new XmatterOffering
+                    {
+                        DisplayName = labelToShow,
+                        InternalName = pack.Key,
+                        Description = pack.GetDescription(), // already localized, if available
+                    }
+                );
+            }
+            return xmatterOfferings.ToArray();
+        }
+
+        /// <summary>
+        /// The page numbering styles the user may choose from, with their localized labels.
+        /// </summary>
+        private NumberingStyleOffering[] GetNumberingStyleOfferings()
+        {
+            if (_numberingStyleOfferings.Count == 0)
+            {
+                foreach (var styleKey in CollectionSettings.CssNumberStylesToCultureOrDigits.Keys)
+                {
+                    var localizedStyle = LocalizationManager.GetString(
+                        "CollectionSettingsDialog.BookMakingTab.PageNumberingStyle." + styleKey,
+                        styleKey
+                    );
+                    _numberingStyleOfferings.Add(
+                        new NumberingStyleOffering
+                        {
+                            LocalizedStyle = localizedStyle,
+                            StyleKey = styleKey,
+                        }
+                    );
+                }
+            }
+            return _numberingStyleOfferings.ToArray();
         }
 
         private void ResetBookshelf()
