@@ -1,7 +1,8 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
+using Bloom.Publish.BloomPub;
 using Bloom.Workspace;
 using NUnit.Framework;
 
@@ -84,6 +85,28 @@ namespace BloomTests
             Assert.That(
                 WorkspaceView.GetShortenedLanguageName("Français (France)"),
                 Is.EqualTo("Français")
+            );
+        }
+
+        [Test]
+        public void ExtractFilenameFromBackgroundImageStyleUrl_IsTheNameInTheQuotes()
+        {
+            Assert.That(
+                BloomPubMaker.ExtractFilenameFromBackgroundImageStyleUrl(
+                    "background-image:url('cover.jpg')"
+                ),
+                Is.EqualTo("cover.jpg")
+            );
+        }
+
+        [Test]
+        public void ExtractFilenameFromBackgroundImageStyleUrl_DecodesTheName()
+        {
+            Assert.That(
+                BloomPubMaker.ExtractFilenameFromBackgroundImageStyleUrl(
+                    "background-image:url('%E0%B8%9B%E0%B8%811111.jpg')"
+                ),
+                Is.EqualTo("\u0e1b\u0e011111.jpg")
             );
         }
 

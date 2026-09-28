@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -361,12 +361,18 @@ namespace Bloom.Publish.BloomPub
             return preservedImages;
         }
 
-        private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+        /// <summary>
+        /// Get the image file name out of a background-image style, e.g. "cover.jpg" from
+        /// "background-image:url('cover.jpg')". Internal so a test can reach it.
+        /// </summary>
+        internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
             var filename = style.Substring(
                 style.IndexOf(kBackgroundImage) + kBackgroundImage.Length
             );
-            filename = filename.Substring(0, filename.IndexOf("'"));
+            // Must be ordinal: under th-TH a culture-sensitive search for a punctuation-only
+            // string "matches" at position 0, which would leave us with an empty file name.
+            filename = filename.Substring(0, filename.IndexOf("'", StringComparison.Ordinal));
             return System.Web.HttpUtility.UrlDecode(filename);
         }
 
