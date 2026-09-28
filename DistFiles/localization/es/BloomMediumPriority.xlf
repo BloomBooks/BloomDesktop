@@ -137,9 +137,9 @@
         <target xml:lang="es-ES" state="translated">Texto</target>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
+      <trans-unit id="EditTab.Toolbox.DragActivity.Letter" approved="yes">
         <source xml:lang="en">M</source>
-        <target xml:lang="es-ES" state="translated">M</target>
+        <target xml:lang="es-ES" state="final">M</target>
         <note>ID: EditTab.Toolbox.DragActivity.Letter</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
@@ -1659,19 +1659,19 @@
         <target xml:lang="es-ES" state="needs-translation">Please wait while Bloom does some housekeeping on your book...</target>
         <note>ID: BookProcessor.HousekeepingMessage</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.AppTitle">
+      <trans-unit id="AiImageEditor.AppTitle" approved="yes">
         <source xml:lang="en">Bloom AI Image Tools</source>
-        <target xml:lang="es-ES" state="translated">Herramientas de imágenes con IA de Bloom</target>
+        <target xml:lang="es-ES" state="final">Herramientas de imágenes con IA de Bloom</target>
         <note>ID: AiImageEditor.AppTitle</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.ChooseTitle">
         <source xml:lang="en">Choose an Art Style</source>
-        <target xml:lang="es-ES" state="translated">Elija un estilo artístico</target>
+        <target xml:lang="es-ES" state="translated">Elegir un tipo de estilo de imagen</target>
         <note>ID: AiImageEditor.ArtStyle.ChooseTitle</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.ArtStyle.StyleLabel">
+      <trans-unit id="AiImageEditor.ArtStyle.StyleLabel" approved="yes">
         <source xml:lang="en">Style:</source>
-        <target xml:lang="es-ES" state="translated">Estilo:</target>
+        <target xml:lang="es-ES" state="final">Estilo:</target>
         <note>ID: AiImageEditor.ArtStyle.StyleLabel</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.abstract-illustration.Name">
