@@ -92,7 +92,8 @@ namespace Bloom.web
 
         private bool ShowMessage(string message)
         {
-            return _filters.Count == 0 || _filters.Any(x => message.StartsWith(x));
+            return _filters.Count == 0
+                || _filters.Any(x => message.StartsWith(x, StringComparison.Ordinal));
         }
 
         public void WriteError(string message, params object[] args)

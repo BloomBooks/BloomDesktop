@@ -273,7 +273,7 @@ namespace Bloom.web
             }
 
             var bundleNameWithExtension = javascriptBundleName;
-            if (!bundleNameWithExtension.EndsWith(".js"))
+            if (!bundleNameWithExtension.EndsWith(".js", StringComparison.Ordinal))
             {
                 bundleNameWithExtension += ".js";
             }
@@ -575,7 +575,8 @@ namespace Bloom.web
             if (string.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path));
 
-            return GetViteDevOrigin() + (path.StartsWith("/") ? path : "/" + path);
+            return GetViteDevOrigin()
+                + (path.StartsWith("/", StringComparison.Ordinal) ? path : "/" + path);
         }
 
         public static string ReplaceViteDevOrigin(string html)

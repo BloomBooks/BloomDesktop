@@ -1006,7 +1006,7 @@ namespace Bloom.Publish.BloomPub
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
-                if (src.StartsWith("data:"))
+                if (src.StartsWith("data:", StringComparison.Ordinal))
                     continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
@@ -1074,7 +1074,7 @@ namespace Bloom.Publish.BloomPub
                 );
                 foreach (var attr in img.AttributePairs)
                 {
-                    if (attr.Name.StartsWith("data-"))
+                    if (attr.Name.StartsWith("data-", StringComparison.Ordinal))
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
@@ -1329,7 +1329,7 @@ namespace Bloom.Publish.BloomPub
                         {
                             // We already got the question, and haven't seen a blank line since,
                             // so this is one of its answers.
-                            var correct = trimLine.StartsWith("*");
+                            var correct = trimLine.StartsWith("*", StringComparison.Ordinal);
                             if (correct)
                             {
                                 trimLine = trimLine.Substring(1).Trim();

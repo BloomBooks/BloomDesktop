@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -450,7 +451,7 @@ namespace BloomTests.Spreadsheet
                 .Cast<SafeXmlElement>()
                 .First();
             var times = target.GetAttribute("data-audiorecordingendtimes") ?? "";
-            var index = times.LastIndexOf(" "); // not found produces -1, which happens to work just right.
+            var index = times.LastIndexOf(" ", StringComparison.Ordinal); // not found produces -1, which happens to work just right.
             var durationStr = times.Substring(index + 1, times.Length - index - 1);
             // NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
             Assert.That(

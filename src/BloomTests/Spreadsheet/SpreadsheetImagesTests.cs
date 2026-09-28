@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -955,7 +956,8 @@ namespace BloomTests.Spreadsheet
             {
                 var drawingEntry = xlsx
                     .Entries.Where(e =>
-                        e.FullName.StartsWith("xl/drawings/drawing") && e.FullName.EndsWith(".xml")
+                        e.FullName.StartsWith("xl/drawings/drawing", StringComparison.Ordinal)
+                        && e.FullName.EndsWith(".xml", StringComparison.Ordinal)
                     )
                     .OrderBy(e => e.FullName)
                     .First();

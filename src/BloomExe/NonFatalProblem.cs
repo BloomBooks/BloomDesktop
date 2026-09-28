@@ -203,8 +203,10 @@ namespace Bloom
             {
                 // Don't annoy developers for expected error if the internet is not available.
                 if (
-                    errorWhileReporting.Message.StartsWith("Bloom could not retrieve the URL")
-                    && Bloom.web.UrlLookup.FastInternetAvailable
+                    errorWhileReporting.Message.StartsWith(
+                        "Bloom could not retrieve the URL",
+                        StringComparison.Ordinal
+                    ) && Bloom.web.UrlLookup.FastInternetAvailable
                 )
                 {
                     Debug.Fail("error in nonfatalError reporting");
