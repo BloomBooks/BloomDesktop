@@ -258,6 +258,7 @@ namespace Bloom.Collection
             Language2Tag = "en";
             AllowNewBooks = true;
             AllowCheckouts = true;
+            AllowSharedFolderChanges = true;
             CollectionName = "dummy collection";
             AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
             AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
@@ -460,6 +461,15 @@ namespace Bloom.Collection
             // collection still round-trips correctly. See BL-16691.
             if (!AllowCheckouts)
                 xml.Add(new XElement("AllowCheckouts", AllowCheckouts.ToString()));
+            // Written only while false, for the same reasons as AllowCheckouts. See BL-16928.
+            if (!AllowSharedFolderChanges)
+                xml.Add(
+                    new XElement("AllowSharedFolderChanges", AllowSharedFolderChanges.ToString())
+                );
+            // Written only when present. Save() rebuilds the whole file, so without this an ordinary
+            // save would drop it from the local file. See BL-16928.
+            if (!string.IsNullOrEmpty(CloudCollectionId))
+                xml.Add(new XElement(kCloudCollectionIdElementName, CloudCollectionId));
             xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
             xml.Add(
                 new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds)
@@ -753,6 +763,10 @@ namespace Bloom.Collection
                 // behaves the same way, and making this the one exception would be more surprising
                 // than the behavior itself. See BL-16691.
                 AllowCheckouts = ReadBoolean(xml, "AllowCheckouts", true);
+                // Missing means allowed, and a malformed value means paused, exactly as for
+                // AllowCheckouts above. See BL-16928.
+                AllowSharedFolderChanges = ReadBoolean(xml, "AllowSharedFolderChanges", true);
+                CloudCollectionId = ReadString(xml, kCloudCollectionIdElementName, "");
 
                 string audioRecordingModeStr = ReadString(xml, "AudioRecordingMode", "Unknown");
                 TalkingBookApi.AudioRecordingMode parsedAudioRecordingMode;
@@ -1095,6 +1109,27 @@ namespace Bloom.Collection
         /// When false, no one may check out a book in this (Team) collection. See BL-16691.
         /// </summary>
         public bool AllowCheckouts { get; set; }
+
+        /// <summary>
+        /// When false, Bloom must not write anything to this Team Collection's shared folder: no
+        /// check in, check out, delete, force unlock, or pushing collection files. Books already
+        /// checked out here can still be edited locally. It is set when a folder Team Collection is
+        /// being moved to the cloud, so that the old shared folder stops changing. Implies no
+        /// checkouts, whatever AllowCheckouts says. See BL-16928.
+        /// </summary>
+        public bool AllowSharedFolderChanges { get; set; }
+
+        /// <summary>
+        /// The name of the element that holds CloudCollectionId.
+        /// </summary>
+        public const string kCloudCollectionIdElementName = "CloudCollectionId";
+
+        /// <summary>
+        /// The id of the cloud collection that replaced this folder Team Collection, or empty if
+        /// there is none. This version of Bloom uses it only to tell people, while
+        /// AllowSharedFolderChanges is false, that they need a newer Bloom. See BL-16928.
+        /// </summary>
+        public string CloudCollectionId { get; set; } = "";
 
         public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 

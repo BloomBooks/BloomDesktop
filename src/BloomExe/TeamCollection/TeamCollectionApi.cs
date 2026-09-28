@@ -202,6 +202,8 @@ namespace Bloom.TeamCollection
                 request.Failed();
                 return;
             }
+            if (RefuseBecauseSharedFolderChangesArePaused(request))
+                return;
 
             try
             {
@@ -537,6 +539,8 @@ namespace Bloom.TeamCollection
                         checkinMessage = "",
                         isUserAdmin = _tcManager.OkToEditCollectionSettings,
                         checkoutsArePaused = !_settings.AllowCheckouts,
+                        sharedFolderChangesArePaused = !_settings.AllowSharedFolderChanges,
+                        movedToCloud = !string.IsNullOrEmpty(_settings.CloudCollectionId),
                     }
                 );
             }
@@ -624,6 +628,11 @@ namespace Bloom.TeamCollection
                     checkinMessage,
                     isUserAdmin = _tcManager.OkToEditCollectionSettings,
                     checkoutsArePaused = !_settings.AllowCheckouts,
+                    // Deliberately just our in-memory settings, not the repo: this is asked for
+                    // every book in the list. The actions themselves check the repo too, and
+                    // refresh this if they find it stale. See BL-16928.
+                    sharedFolderChangesArePaused = !_settings.AllowSharedFolderChanges,
+                    movedToCloud = !string.IsNullOrEmpty(_settings.CloudCollectionId),
                 }
             );
         }
@@ -708,6 +717,10 @@ namespace Bloom.TeamCollection
                 request.Failed("checkouts are paused for this collection");
                 return;
             }
+            // Pausing shared-folder changes implies no checkouts, since a checkout records its
+            // status in the shared folder. See BL-16928.
+            if (RefuseBecauseSharedFolderChangesArePaused(request))
+                return;
 
             try
             {
@@ -755,6 +768,22 @@ namespace Bloom.TeamCollection
                 );
                 request.Failed("lock failed");
             }
+        }
+
+        /// <summary>
+        /// If changes to the shared folder are paused, fail the request and return true. Like the
+        /// paused-checkouts refusal above, this is here because the browser decides what to enable
+        /// from a status snapshot that may be stale; we push a status refresh so the panel redraws
+        /// into the paused state and explains itself. The TeamCollection write methods refuse too,
+        /// so this is the friendly check, not the only one. See BL-16928.
+        /// </summary>
+        private bool RefuseBecauseSharedFolderChangesArePaused(ApiRequest request)
+        {
+            if (!_tcManager.SharedFolderChangesArePaused)
+                return false;
+            _socketServer.SendEvent("bookTeamCollectionStatus", "reload");
+            request.Failed("changes to the shared folder are paused for this collection");
+            return true;
         }
 
         // internal, and taking bookFolder (which is always this.BookFolderName in production) for ease of testing.
@@ -813,6 +842,8 @@ namespace Bloom.TeamCollection
                     request.Failed();
                     return;
                 }
+                if (RefuseBecauseSharedFolderChangesArePaused(request))
+                    return;
 
                 // Enhance: do we need progress here?
                 var bookName = Path.GetFileName(_bookSelection.CurrentSelection.FolderPath);
@@ -891,6 +922,10 @@ namespace Bloom.TeamCollection
 
         public void HandleCheckInCurrentBook(ApiRequest request)
         {
+            // Check this first, before we disable the Edit tab below: the person keeps the book
+            // checked out and should be able to go on editing it. See BL-16928.
+            if (RefuseBecauseSharedFolderChangesArePaused(request))
+                return;
             // Make sure the user can't switch to edit while we're checking in
             // This is a bit of a hack, and I wish this class didn't even know about the
             // WorkspaceView. But it takes time to save the book and check it in, and until
@@ -945,6 +980,17 @@ namespace Bloom.TeamCollection
 
             var progress = new WebSocketProgress(_socketServer, "teamCollection-status");
             progress.LogAllMessages = true;
+
+            // Explain in the dialog's progress box rather than failing one book at a time.
+            // See BL-16928.
+            if (_tcManager.SharedFolderChangesArePaused)
+            {
+                progress.MessageWithoutLocalizing(
+                    _tcManager.SharedFolderChangesPausedMessage,
+                    ProgressKind.Warning
+                );
+                return;
+            }
 
             Action<float> reportProgressFraction = (fraction) => {
                 //progress.MessageWithoutLocalizing(fraction.ToString() + " ");
