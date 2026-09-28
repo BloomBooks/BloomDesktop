@@ -1352,23 +1352,6 @@ namespace Bloom.TeamCollection
             progress.Message("SettingUpCore", "Setting up the core team collection files");
             CreateJoinCollectionFile();
             CreateTeamCollectionLinkFile(_localCollectionFolder, repoFolder);
-            // A new Team Collection starts out open to changes. Settings that still carry a pause
-            // (say, a copy of a Team Collection that was frozen for its move to the cloud) would
-            // otherwise push the pause into the new shared folder, and the new collection would
-            // disconnect itself the first time it checked its connection. See BL-16928.
-            var settings = _tcManager?.Settings;
-            if (
-                settings != null
-                && (
-                    !settings.AllowSharedFolderChanges
-                    || !string.IsNullOrEmpty(settings.CloudCollectionId)
-                )
-            )
-            {
-                settings.AllowSharedFolderChanges = true;
-                settings.CloudCollectionId = "";
-                settings.Save();
-            }
             CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
             // The new TC now has the current collection-level files. But a couple of things might try
             // to copy them again: we do a sync when closing down the collection, as we will shortly

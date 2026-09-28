@@ -1942,63 +1942,6 @@ namespace BloomTests.TeamCollection
         }
 
         /// <summary>
-        /// Making a new Team Collection from a local collection whose settings still say paused
-        /// (say, a copy of a Team Collection frozen for its move to the cloud) must give an
-        /// ordinary, unpaused Team Collection: the pause and the cloud id are dropped before the
-        /// settings go up, so the new collection does not disconnect itself. See BL-16928.
-        /// </summary>
-        [Test]
-        public void SetupTeamCollection_LocalSettingsPaused_StartsUnpausedWithItsBooks()
-        {
-            AssumeNetworkAvailable();
-            using (var collectionFolder = new TemporaryFolder("SetupLocalPaused_Collection"))
-            using (var repoFolder = new TemporaryFolder("SetupLocalPaused_Repo"))
-            {
-                var settingsPath = CollectionSettings.GetDefaultSettingsFilePath(
-                    collectionFolder.FolderPath
-                );
-                File.WriteAllText(settingsPath, kMovedToCloudSettings);
-                var settings = new CollectionSettings(settingsPath);
-                Assert.That(
-                    settings.AllowSharedFolderChanges,
-                    Is.False,
-                    "setup failed: the local settings should start out paused"
-                );
-                Assert.That(
-                    settings.CloudCollectionId,
-                    Is.EqualTo("cloud-42"),
-                    "setup failed: the local settings should start out with a cloud id"
-                );
-                SyncAtStartupTests.MakeFakeBook(
-                    collectionFolder.FolderPath,
-                    "Local book",
-                    "Local book content"
-                );
-                var mockTcManager = new Mock<ITeamCollectionManager>();
-                mockTcManager.Setup(m => m.Settings).Returns(settings);
-                var tc = new TestFolderTeamCollection(
-                    mockTcManager.Object,
-                    collectionFolder.FolderPath,
-                    repoFolder.FolderPath
-                );
-
-                tc.SetupTeamCollection(repoFolder.FolderPath, new NullWebSocketProgress());
-
-                Assert.That(settings.AllowSharedFolderChanges, Is.True);
-                Assert.That(settings.CloudCollectionId, Is.Empty);
-                Assert.That(
-                    tc.CheckConnection(),
-                    Is.Null,
-                    "the new shared folder should not say paused"
-                );
-                Assert.That(
-                    File.Exists(Path.Combine(repoFolder.FolderPath, "Books", "Local book.bloom")),
-                    "the new Team Collection should have its book"
-                );
-            }
-        }
-
-        /// <summary>
         /// Picking up the repo's minimum version matters even when this Bloom is new enough to carry
         /// on working. CollectionSettings.Save() rebuilds the file from memory, so if we were still
         /// holding the empty value we loaded at startup, the next ordinary save would drop the
