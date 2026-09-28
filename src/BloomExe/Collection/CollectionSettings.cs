@@ -1111,11 +1111,12 @@ namespace Bloom.Collection
         public bool AllowCheckouts { get; set; }
 
         /// <summary>
-        /// When false, Bloom must not write anything to this Team Collection's shared folder: no
-        /// check in, check out, delete, force unlock, or pushing collection files. Books already
-        /// checked out here can still be edited locally. It is set when a folder Team Collection is
-        /// being moved to the cloud, so that the old shared folder stops changing. Implies no
-        /// checkouts, whatever AllowCheckouts says. See BL-16928.
+        /// When false, Bloom must not write anything to this Team Collection's shared folder. It is
+        /// set when a folder Team Collection is being moved to the cloud, so that the old shared
+        /// folder stops changing. What counts is the shared folder's copy: when that says false,
+        /// FolderTeamCollection.CheckConnection() puts Bloom in Disconnected mode, where books
+        /// already checked out here can still be edited but nothing is sent to the team. The
+        /// property is here so that Save() keeps the value. See BL-16928.
         /// </summary>
         public bool AllowSharedFolderChanges { get; set; }
 
@@ -1127,7 +1128,7 @@ namespace Bloom.Collection
         /// <summary>
         /// The id of the cloud collection that replaced this folder Team Collection, or empty if
         /// there is none. This version of Bloom uses it only to tell people, while
-        /// AllowSharedFolderChanges is false, that they need a newer Bloom. See BL-16928.
+        /// AllowSharedFolderChanges is false, that the collection has moved to the cloud. See BL-16928.
         /// </summary>
         public string CloudCollectionId { get; set; } = "";
 

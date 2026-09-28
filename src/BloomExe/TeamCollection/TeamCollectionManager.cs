@@ -43,16 +43,6 @@ namespace Bloom.TeamCollection
         /// </summary>
         void SendBookStatusReload();
 
-        /// <summary>
-        /// True if Bloom must not change the Team Collection's shared folder just now. See BL-16928.
-        /// </summary>
-        bool SharedFolderChangesArePaused { get; }
-
-        /// <summary>
-        /// The explanation to show when SharedFolderChangesArePaused. See BL-16928.
-        /// </summary>
-        string SharedFolderChangesPausedMessage { get; }
-
         // ENHANCE: Add other properties and methods as needed
     }
 
@@ -202,33 +192,6 @@ namespace Bloom.TeamCollection
                 book.FolderPath
             );
         }
-
-        /// <summary>
-        /// True if this is a Team Collection whose shared folder Bloom must not change just now
-        /// (AllowSharedFolderChanges is false). When we are connected the repo's own copy of the
-        /// settings decides (see TeamCollection.AreSharedFolderChangesPaused); when disconnected we
-        /// can only go by our own. See BL-16928.
-        /// </summary>
-        public bool SharedFolderChangesArePaused
-        {
-            get
-            {
-                if (CurrentCollection != null)
-                    return CurrentCollection.AreSharedFolderChangesPaused();
-                return CurrentCollectionEvenIfDisconnected != null
-                    && Settings != null
-                    && !Settings.AllowSharedFolderChanges;
-            }
-        }
-
-        /// <summary>
-        /// The explanation to show when SharedFolderChangesArePaused. See BL-16928.
-        /// </summary>
-        public string SharedFolderChangesPausedMessage =>
-            CurrentCollection?.SharedFolderChangesPausedMessage()
-            ?? TeamCollection.GetSharedFolderChangesPausedMessage(
-                !string.IsNullOrEmpty(Settings?.CloudCollectionId)
-            );
 
         public TeamCollectionStatus CollectionStatus
         {
@@ -501,22 +464,30 @@ namespace Bloom.TeamCollection
         {
             CurrentCollection = null;
             // This will show the TC icon in error state, and if the dialog is shown it will have this one message.
-            CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(
+            var disconnectedTC = new DisconnectedTeamCollection(
                 this,
                 _localCollectionFolder,
                 repoDescription
             );
+            // An administrator pausing changes to the shared folder (BL-16928) is not a problem the
+            // user can resolve, so we note it for the book status panel and leave out the advice below.
+            disconnectedTC.MovedToCloud = message.L10NId == TeamCollection.kMovedToCloudL10nId;
+            disconnectedTC.DisconnectedBecauseSharedFolderChangesPaused =
+                disconnectedTC.MovedToCloud
+                || message.L10NId == TeamCollection.kSharedFolderChangesPausedL10nId;
+            CurrentCollectionEvenIfDisconnected = disconnectedTC;
             CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
             CurrentCollectionEvenIfDisconnected.TCManager = this;
             // Every call to MessageLog.WriteMessage() also raises the TeamCollectionStatusChanged event.
             CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(message);
-            CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(
-                MessageAndMilestoneType.Error,
-                "TeamCollection.OperatingDisconnected",
-                "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
-                null,
-                null
-            );
+            if (!disconnectedTC.DisconnectedBecauseSharedFolderChangesPaused)
+                CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(
+                    MessageAndMilestoneType.Error,
+                    "TeamCollection.OperatingDisconnected",
+                    "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
+                    null,
+                    null
+                );
             // This is normally ensured by pushing an Error message into the log. But in this case,
             // before the user gets a chance to open the dialog, we will run SyncAtStartup, push a Reloaded
             // milestone into the log, and thus suppress it. If we're disconnected, whatever gets in the

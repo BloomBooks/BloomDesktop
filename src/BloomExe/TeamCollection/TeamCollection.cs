@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -38,17 +39,6 @@ namespace Bloom.TeamCollection
         {
             BookName = bookName;
         }
-    }
-
-    /// <summary>
-    /// Thrown when something tries to write to a Team Collection's shared folder while its
-    /// AllowSharedFolderChanges setting is false. The message is the localized explanation we
-    /// show the user. See BL-16928.
-    /// </summary>
-    public class SharedFolderChangesPausedException : Exception
-    {
-        public SharedFolderChangesPausedException(string message)
-            : base(message) { }
     }
 
     /// <summary>
@@ -221,9 +211,6 @@ namespace Bloom.TeamCollection
         /// the new book was renamed.</returns>
         public List<string> ForgetChangesCheckin(string bookName)
         {
-            // Check before we start: this restores the local copy from the repo before it writes
-            // the unlocked status, and we must not do the first half without the second.
-            ThrowIfSharedFolderChangesPaused();
             var foldersNeedingUpdate = new List<string>();
             var status = GetLocalStatus(bookName);
             var finalBookName = bookName;
@@ -303,8 +290,6 @@ namespace Bloom.TeamCollection
             Action<float> progressCallback = null
         )
         {
-            // Check before we start, so a refusal can't leave a rename half done.
-            ThrowIfSharedFolderChangesPaused();
             var bookFolderName = Path.GetFileName(folderPath);
             var checksum = MakeChecksum(folderPath);
             var status = GetStatus(bookFolderName).WithChecksum(checksum);
@@ -711,7 +696,6 @@ namespace Bloom.TeamCollection
         // Unlock the book, making it available for anyone to edit.
         public void UnlockBook(string bookName)
         {
-            ThrowIfSharedFolderChangesPaused();
             WriteBookStatus(bookName, GetStatus(bookName).WithLockedBy(null));
         }
 
@@ -721,8 +705,6 @@ namespace Bloom.TeamCollection
         {
             var whoBy = email ?? TeamCollectionManager.CurrentUser;
             Debug.Assert(!string.IsNullOrWhiteSpace(whoBy));
-            // A checkout records its status in the shared folder. See BL-16928.
-            ThrowIfSharedFolderChangesPaused();
 
             var status = GetStatus(bookName);
             if (String.IsNullOrEmpty(status.lockedBy) && !IsDisconnected)
@@ -746,7 +728,6 @@ namespace Bloom.TeamCollection
 
         public void ForceUnlock(string bookName)
         {
-            ThrowIfSharedFolderChangesPaused();
             var status = GetStatus(bookName);
             status = status.WithLockedBy(null);
             WriteBookStatus(bookName, status);
@@ -833,12 +814,6 @@ namespace Bloom.TeamCollection
         {
             if (_stopSyncingCollectionFiles)
                 return;
-            // While changes to the shared folder are paused, local changes to collection files
-            // stay local: at startup the repo's copy wins, and at other times there is nothing
-            // we are allowed to do. See BL-16928.
-            var sharedFolderChangesArePaused = AreSharedFolderChangesPaused();
-            if (!atStartup && sharedFolderChangesArePaused)
-                return;
             var repoModTime = LastRepoCollectionFileModifyTime;
             var savedSyncTime = LocalCollectionFilesRecordedSyncTime();
             if (atStartup && repoModTime != DateTime.MinValue)
@@ -859,11 +834,7 @@ namespace Bloom.TeamCollection
                 {
                     // OK, it got modified while we weren't looking. If this user is an admin,
                     // and no settings changed remotely, we'll let the local ones win.
-                    if (
-                        !sharedFolderChangesArePaused
-                        && _tcManager.OkToEditCollectionSettings
-                        && savedSyncTime >= repoModTime
-                    )
+                    if (_tcManager.OkToEditCollectionSettings && savedSyncTime >= repoModTime)
                     {
                         CopyRepoCollectionFilesFromLocal(_localCollectionFolder);
                         return;
@@ -906,7 +877,6 @@ namespace Bloom.TeamCollection
                         // allowed, and the next Save() would write that back over the change and
                         // un-pause the whole team. See BL-16691.
                         UpdateAllowCheckoutsFromRepo();
-                        UpdateAllowSharedFolderChangesFromRepo();
                         // MinimumBloomVersion is hand-edited into the local file by exactly the same
                         // administrator workflow, and would be erased by exactly the same next Save().
                         // We only take the value; we deliberately do NOT lock the administrator out
@@ -1188,7 +1158,6 @@ namespace Bloom.TeamCollection
         /// <param name="localCollectionFolder"></param>
         public void CopyRepoCollectionFilesFromLocal(string localCollectionFolder)
         {
-            ThrowIfSharedFolderChangesPaused();
             try
             {
                 _updatingCollectionFiles = true;
@@ -1434,8 +1403,69 @@ namespace Bloom.TeamCollection
                 return true;
 
             UpdateAllowCheckoutsFromRepo();
-            UpdateAllowSharedFolderChangesFromRepo();
+            // The change may have been an administrator pausing changes to the shared folder.
+            // Checking the connection notices that and switches us to Disconnected mode now,
+            // rather than at the next restart. (We are on the UI thread, in an Idle handler; our
+            // caller then fires the selection-changed event that refreshes the book status
+            // panel.) See BL-16928.
+            _tcManager.CheckConnection();
             return false;
+        }
+
+        /// <summary>
+        /// The L10N id of the message FolderTeamCollection.CheckConnection() gives while the shared
+        /// folder's settings say AllowSharedFolderChanges is false. See BL-16928.
+        /// </summary>
+        public const string kSharedFolderChangesPausedL10nId =
+            "TeamCollection.SharedFolderChangesPaused";
+
+        /// <summary>
+        /// The L10N id of that message once the collection has also been given a CloudCollectionId,
+        /// that is, it has moved to Bloom's cloud collections. See BL-16928.
+        /// </summary>
+        public const string kMovedToCloudL10nId = "TeamCollection.MovedToCloud";
+
+        /// <summary>
+        /// If the repo's copy of the collection settings says that nothing may be written to the
+        /// shared folder (AllowSharedFolderChanges is false), return the message that explains
+        /// this, which puts us in Disconnected mode just as a real connection problem would.
+        /// Return null otherwise, including when we can't read the repo's settings: that is
+        /// normally transient, and no reason on its own to disconnect. See BL-16928.
+        /// </summary>
+        protected TeamCollectionMessage GetSharedFolderChangesPausedProblem()
+        {
+            var content = TryGetRepoCollectionSettingsContent();
+            if (string.IsNullOrWhiteSpace(content))
+                return null;
+            XElement xml;
+            try
+            {
+                xml = XElement.Parse(content);
+            }
+            catch (Exception e)
+            {
+                Logger.WriteError("TeamCollection could not parse the repo collection settings", e);
+                return null;
+            }
+            // As when loading settings, missing means allowed and a malformed value means paused.
+            if (CollectionSettings.ReadBoolean(xml, "AllowSharedFolderChanges", true))
+                return null;
+            var cloudId = CollectionSettings.ReadString(
+                xml,
+                CollectionSettings.kCloudCollectionIdElementName,
+                ""
+            );
+            if (!string.IsNullOrEmpty(cloudId))
+                return new TeamCollectionMessage(
+                    MessageAndMilestoneType.Error,
+                    kMovedToCloudL10nId,
+                    "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+                );
+            return new TeamCollectionMessage(
+                MessageAndMilestoneType.Error,
+                kSharedFolderChangesPausedL10nId,
+                "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
+            );
         }
 
         /// <summary>
@@ -1624,136 +1654,6 @@ namespace Bloom.TeamCollection
             // showing a live checkout button until something else forced it to refetch. Tested by
             // pausing checkouts in the shared folder with Bloom running.
             _tcManager.SendBookStatusReload();
-        }
-
-        /// <summary>
-        /// Read the AllowSharedFolderChanges setting from the repo's copy of the collection
-        /// settings. Returns null if we can't tell (disconnected, no repo copy yet, or the file
-        /// is unreadable right now). See BL-16928.
-        /// </summary>
-        public virtual bool? GetAllowSharedFolderChangesFromRepo()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Read the CloudCollectionId from the repo's copy of the collection settings: empty if it
-        /// has none, null if we can't tell. See BL-16928.
-        /// </summary>
-        public virtual string GetCloudCollectionIdFromRepo()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Pick up AllowSharedFolderChanges and CloudCollectionId from the repo mid-session, just as
-        /// UpdateAllowCheckoutsFromRepo does for AllowCheckouts, and for the same reasons. The cloud
-        /// id matters because the migration writes it some time after it pauses changes, and it
-        /// changes what we tell the user. See BL-16928.
-        /// </summary>
-        internal void UpdateAllowSharedFolderChangesFromRepo()
-        {
-            var settings = _tcManager?.Settings;
-            if (settings == null)
-                return; // no settings to update (unit tests)
-            var changed = false;
-            var repoValue = GetAllowSharedFolderChangesFromRepo();
-            if (repoValue != null && repoValue.Value != settings.AllowSharedFolderChanges)
-            {
-                settings.AllowSharedFolderChanges = repoValue.Value;
-                Logger.WriteEvent(
-                    $"TeamCollection: AllowSharedFolderChanges changed remotely to {repoValue.Value}."
-                );
-                changed = true;
-            }
-            var repoCloudId = GetCloudCollectionIdFromRepo();
-            if (repoCloudId != null && repoCloudId != settings.CloudCollectionId)
-            {
-                settings.CloudCollectionId = repoCloudId;
-                Logger.WriteEvent(
-                    $"TeamCollection: CloudCollectionId changed remotely to '{repoCloudId}'."
-                );
-                changed = true;
-            }
-            if (changed)
-                _tcManager.SendBookStatusReload(); // see UpdateAllowCheckoutsFromRepo
-        }
-
-        /// <summary>
-        /// True if Bloom must not write anything to the shared folder just now. The shared
-        /// folder's copy of the settings is the authority whenever we can read it. Our own copy
-        /// must not be: an administrator turns the pause on by editing their local settings, and
-        /// the push that carries that to the shared folder has to be allowed, or nobody else would
-        /// ever be paused. Once it arrives there, everyone is paused, the administrator included.
-        /// The repo can also be ahead of us, since picking a change up mid-session waits for the
-        /// file watcher; when it is, we catch our settings up so the UI changes too.
-        /// Only when the repo's settings exist but can't be read do we fall back on our own copy
-        /// (and then a write would most likely fail anyway). A shared folder with no settings at all
-        /// is a brand-new Team Collection being set up, which has nothing to protect yet. See BL-16928.
-        /// </summary>
-        public bool AreSharedFolderChangesPaused()
-        {
-            var repoValue = GetAllowSharedFolderChangesFromRepo();
-            if (repoValue == true)
-                return false;
-            if (repoValue == false)
-            {
-                if (_tcManager?.Settings?.AllowSharedFolderChanges == true)
-                    UpdateAllowSharedFolderChangesFromRepo();
-                return true;
-            }
-            if (!RepoCollectionSettingsExist())
-                return false;
-            return _tcManager?.Settings?.AllowSharedFolderChanges == false;
-        }
-
-        /// <summary>
-        /// Whether the repo has a copy of the collection settings at all, readable or not. The
-        /// default, not knowing, says yes, so that AreSharedFolderChangesPaused falls back on our
-        /// own settings. See BL-16928.
-        /// </summary>
-        protected virtual bool RepoCollectionSettingsExist()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Refuse, by throwing SharedFolderChangesPausedException, if changes to the shared folder
-        /// are paused. Every method that writes to the shared folder calls this. See BL-16928.
-        /// </summary>
-        protected internal void ThrowIfSharedFolderChangesPaused()
-        {
-            if (AreSharedFolderChangesPaused())
-                throw new SharedFolderChangesPausedException(SharedFolderChangesPausedMessage());
-        }
-
-        /// <summary>
-        /// The explanation we give the user while changes to the shared folder are paused. It
-        /// depends on whether the collection has already moved to the cloud. See BL-16928.
-        /// </summary>
-        public string SharedFolderChangesPausedMessage()
-        {
-            var cloudId = _tcManager?.Settings?.CloudCollectionId;
-            if (string.IsNullOrEmpty(cloudId))
-                cloudId = GetCloudCollectionIdFromRepo();
-            return GetSharedFolderChangesPausedMessage(!string.IsNullOrEmpty(cloudId));
-        }
-
-        /// <summary>
-        /// The localized explanation for paused shared-folder changes. The same XLF ids are used by
-        /// TeamCollectionBookStatusPanel.tsx. See BL-16928.
-        /// </summary>
-        public static string GetSharedFolderChangesPausedMessage(bool movedToCloud)
-        {
-            if (movedToCloud)
-                return LocalizationManager.GetString(
-                    "TeamCollection.MovedToCloud",
-                    "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
-                );
-            return LocalizationManager.GetString(
-                "TeamCollection.SharedFolderChangesPaused",
-                "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection."
-            );
         }
 
         /// <summary>
@@ -2661,18 +2561,6 @@ namespace Bloom.TeamCollection
                         RobustFile.Delete(localStatusFilePath);
                     }
                 }
-                catch (SharedFolderChangesPausedException ex)
-                {
-                    // Sorting this book out would have meant writing to the shared folder. The
-                    // refusal happens before anything is changed, so the local copy is untouched.
-                    // This is expected, not a bug: explain, don't report. See BL-16928.
-                    ReportProgressAndLog(
-                        progress,
-                        ProgressKind.Warning,
-                        null,
-                        Path.GetFileName(path) + ": " + ex.Message
-                    );
-                }
                 catch (Exception ex)
                 {
                     // Something went wrong with dealing with this book, but we'd like to carry on with
@@ -2977,16 +2865,6 @@ namespace Bloom.TeamCollection
 
                         continue;
                     }
-                }
-                catch (SharedFolderChangesPausedException ex)
-                {
-                    // As in the first loop: explain, don't report. See BL-16928.
-                    ReportProgressAndLog(
-                        progress,
-                        ProgressKind.Warning,
-                        null,
-                        bookName + ": " + ex.Message
-                    );
                 }
                 catch (Exception ex)
                 {

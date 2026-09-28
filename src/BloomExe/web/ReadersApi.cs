@@ -356,13 +356,6 @@ namespace Bloom.Api
         {
             if (IsRequestInvalid(request))
                 return;
-            // Reader settings are collection files, so they can't be shared while changes to the
-            // shared folder are paused. See BL-16928.
-            if (_tcManager.SharedFolderChangesArePaused)
-            {
-                request.ReplyWithText(_tcManager.SharedFolderChangesPausedMessage);
-                return;
-            }
             request.ReplyWithText(
                 _tcManager.OkToEditCollectionSettings
                     ? ""

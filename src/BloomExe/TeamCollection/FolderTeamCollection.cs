@@ -98,7 +98,6 @@ namespace Bloom.TeamCollection
             Action<float> progressCallback = null
         )
         {
-            ThrowIfSharedFolderChangesPaused();
             var bookFolderName = Path.GetFileName(sourceBookFolderPath);
             var bookPath = GetPathToBookFileInRepo(bookFolderName);
 
@@ -283,7 +282,6 @@ namespace Bloom.TeamCollection
 
         protected override void MoveRepoBookToLostAndFound(string bookName)
         {
-            ThrowIfSharedFolderChangesPaused();
             var source = GetPathToBookFileInRepo(bookName);
             var dest = AvailableLostAndFoundPath(bookName);
             RobustFile.Move(source, dest);
@@ -337,78 +335,6 @@ namespace Bloom.TeamCollection
                 // is nothing to do about it now: we'll get another notification when the file
                 // settles, and failing that we read it again at startup. Leaving the setting alone
                 // is the safe outcome either way.
-                Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Read AllowSharedFolderChanges straight out of the repo's copy of the collection
-        /// settings, as GetAllowCheckoutsFromRepo does for AllowCheckouts. See BL-16928.
-        /// </summary>
-        public override bool? GetAllowSharedFolderChangesFromRepo()
-        {
-            return GetAllowSharedFolderChangesFromRepoFolder(_repoFolderPath);
-        }
-
-        /// <summary>
-        /// Whether the repo has its zip of collection files at all. See BL-16928.
-        /// </summary>
-        protected override bool RepoCollectionSettingsExist()
-        {
-            return RobustFile.Exists(GetRepoProjectFilesZipPath(_repoFolderPath));
-        }
-
-        /// <summary>
-        /// Read CloudCollectionId straight out of the repo's copy of the collection settings.
-        /// Empty if the element is missing; null if we can't read the file. See BL-16928.
-        /// </summary>
-        public override string GetCloudCollectionIdFromRepo()
-        {
-            var xml = ReadRepoCollectionSettingsXml(_repoFolderPath);
-            if (xml == null)
-                return null;
-            return CollectionSettings.ReadString(
-                xml,
-                CollectionSettings.kCloudCollectionIdElementName,
-                ""
-            );
-        }
-
-        /// <summary>
-        /// AllowSharedFolderChanges as the collection settings in the given repo folder have it,
-        /// or null if we can't tell. Static so the palette code, which is static, can use it.
-        /// </summary>
-        private static bool? GetAllowSharedFolderChangesFromRepoFolder(string repoFolder)
-        {
-            var xml = ReadRepoCollectionSettingsXml(repoFolder);
-            if (xml == null)
-                return null;
-            return CollectionSettings.ReadBoolean(xml, "AllowSharedFolderChanges", true);
-        }
-
-        /// <summary>
-        /// The parsed collection settings from the repo's zip of collection files, or null if
-        /// there are none or we can't read them just now (for the reasons given in
-        /// GetAllowCheckoutsFromRepo, that is a normal transient condition). See BL-16928.
-        /// </summary>
-        private static XElement ReadRepoCollectionSettingsXml(string repoFolder)
-        {
-            try
-            {
-                var zipPath = GetRepoProjectFilesZipPath(repoFolder);
-                if (!RobustFile.Exists(zipPath))
-                    return null;
-                var entryName = GetCollectionSettingsEntryName(zipPath);
-                if (entryName == null)
-                    return null;
-                var content = RobustZip.GetZipEntryContent(zipPath, entryName);
-                if (string.IsNullOrWhiteSpace(content))
-                    return null;
-                return XElement.Parse(content);
-            }
-            catch (Exception e)
-            {
                 Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
                 return null;
             }
@@ -585,9 +511,6 @@ namespace Bloom.TeamCollection
 
         public override void PutCollectionFiles(string[] names)
         {
-            // Not checked here: CopyRepoCollectionFilesFromLocal, the only caller, checks once
-            // before it starts. Checking again here would refuse half way through a push that
-            // is itself writing a pause into the repo. See BL-16928.
             var destPath = GetRepoProjectFilesZipPath(_repoFolderPath);
             RobustZip.WriteFilesToZip(names, _localCollectionFolder, destPath);
         }
@@ -646,7 +569,6 @@ namespace Bloom.TeamCollection
         // At this point, we are not handling child folders.
         protected override void CopyLocalFolderToRepo(string folderName)
         {
-            // Checked by CopyRepoCollectionFilesFromLocal, as for PutCollectionFiles.
             var sourceDir = Path.Combine(_localCollectionFolder, folderName);
             if (!Directory.Exists(sourceDir))
                 return;
@@ -811,19 +733,11 @@ namespace Bloom.TeamCollection
             }
         }
 
-        /// <summary>
-        /// Copy the local color palettes to the repo if they differ, unless repoWritesAllowed is
-        /// false because changes to the shared folder are paused (BL-16928). The merged palettes
-        /// are still saved locally by our caller, so nothing the user added is lost.
-        /// </summary>
         private static void CopyToRepoIfNeeded(
             string localColorPalettePath,
-            string repoColorPalettePath,
-            bool repoWritesAllowed
+            string repoColorPalettePath
         )
         {
-            if (!repoWritesAllowed)
-                return;
             var needToCopy = false;
             if (RobustFile.Exists(repoColorPalettePath))
             {
@@ -924,16 +838,6 @@ namespace Bloom.TeamCollection
         {
             var repoColorPalettePath = Path.Combine(repoFolder, "Other", "colorPalettes.json");
             var localColorPalettePath = Path.Combine(localFolder, "colorPalettes.json");
-            // Merging into the local copy is fine, but while changes to the shared folder are
-            // paused we must not copy the result back. Decided as in
-            // TeamCollection.AreSharedFolderChangesPaused: the repo's value when we can read it,
-            // our own only when its settings exist but are unreadable. See BL-16928.
-            var repoWritesAllowed =
-                GetAllowSharedFolderChangesFromRepoFolder(repoFolder)
-                ?? (
-                    !RobustFile.Exists(GetRepoProjectFilesZipPath(repoFolder))
-                    || collectionSettings?.AllowSharedFolderChanges != false
-                );
             if (RobustFile.Exists(repoColorPalettePath))
             {
                 if (RobustFile.Exists(localColorPalettePath))
@@ -980,20 +884,12 @@ namespace Bloom.TeamCollection
                             // The copy to repo may not happen when we're actually copying files to the
                             // local collection, but that's okay.
                             if (localFolder == localCollectionFolder)
-                                CopyToRepoIfNeeded(
-                                    localColorPalettePath,
-                                    repoColorPalettePath,
-                                    repoWritesAllowed
-                                );
+                                CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
                         }
                         else if (collectionSettings.FolderPath == localFolder)
                         {
                             collectionSettings.SaveColorPalettesToJsonFile();
-                            CopyToRepoIfNeeded(
-                                localColorPalettePath,
-                                repoColorPalettePath,
-                                repoWritesAllowed
-                            );
+                            CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
                         }
                         // If the local folder is not the collection folder, we don't need to
                         // save the color palettes because we must be working with temp data.
@@ -1015,7 +911,7 @@ namespace Bloom.TeamCollection
             else if (RobustFile.Exists(localColorPalettePath))
             {
                 // Add the palette file to the repo if it doesn't exist there.
-                CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath, repoWritesAllowed);
+                CopyToRepoIfNeeded(localColorPalettePath, repoColorPalettePath);
             }
         }
 
@@ -1228,7 +1124,6 @@ namespace Bloom.TeamCollection
         /// those are now handled using RenameBookInRepo, so currently we never pass false.</param>
         public override void DeleteBookFromRepo(string bookFolderPath, bool makeTombstone = true)
         {
-            ThrowIfSharedFolderChangesPaused();
             var currentBookFolderName = Path.GetFileName(bookFolderPath);
             var localStatus = GetLocalStatus(currentBookFolderName);
             var bookFolderNameToDeleteInRepo =
@@ -1258,7 +1153,6 @@ namespace Bloom.TeamCollection
 
         public override void RenameBookInRepo(string newBookFolderPath, string oldName)
         {
-            ThrowIfSharedFolderChangesPaused();
             var oldLocalPath = Path.Combine(Path.GetDirectoryName(newBookFolderPath), oldName);
             var pathToOldBookFileInRepo = GetPathToBookFileInRepo(oldLocalPath);
             var pathToNewBookFileInRepo = GetPathToBookFileInRepo(newBookFolderPath);
@@ -1387,7 +1281,6 @@ namespace Bloom.TeamCollection
         /// </summary>
         protected override void WriteBookStatusJsonToRepo(string bookName, string status)
         {
-            ThrowIfSharedFolderChangesPaused();
             var bookPath = GetPathToBookFileInRepo(bookName);
             if (!RobustFile.Exists(bookPath))
             {
@@ -1461,8 +1354,8 @@ namespace Bloom.TeamCollection
             CreateTeamCollectionLinkFile(_localCollectionFolder, repoFolder);
             // A new Team Collection starts out open to changes. Settings that still carry a pause
             // (say, a copy of a Team Collection that was frozen for its move to the cloud) would
-            // otherwise push the pause into the new shared folder, which would then refuse every
-            // one of its own books below. See BL-16928.
+            // otherwise push the pause into the new shared folder, and the new collection would
+            // disconnect itself the first time it checked its connection. See BL-16928.
             var settings = _tcManager?.Settings;
             if (
                 settings != null
@@ -1797,7 +1690,10 @@ namespace Bloom.TeamCollection
                 }
             }
 
-            return null;
+            // Last, because a real connection problem is the one to report first: it is something
+            // the user can fix, and until it is fixed what we read here may be stale anyway. (Either
+            // way we end up disconnected, so nothing can slip through.) See BL-16928.
+            return GetSharedFolderChangesPausedProblem();
         }
 
         private bool IsFolderOnLocalNetwork(string repoFolderPath)

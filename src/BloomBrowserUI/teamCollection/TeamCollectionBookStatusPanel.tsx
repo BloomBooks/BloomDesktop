@@ -318,28 +318,27 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         true,
     );
 
-    // While an administrator has paused all changes to the shared folder (BL-16928), nothing
-    // here that writes to it may be used: check in, check out, forget changes, force unlock.
-    // The C# side refuses too, so a stale status can't get around it.
-    const sharedFolderChangesPausedMessage = useL10n(
+    // When we are disconnected because an administrator has stopped all changes to the shared
+    // folder, reconnecting is not something the user can do, so we say why instead. BL-16928.
+    const subTitleSharedFolderChangesPaused = useL10n(
         "The administrator of this collection has paused changes to it. For now, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
         "TeamCollection.SharedFolderChangesPaused",
     );
-    const movedToCloudMessage = useL10n(
+    const subTitleMovedToCloud = useL10n(
         "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
         "TeamCollection.MovedToCloud",
     );
+    let subTitlePaused: string | undefined;
+    if (props.movedToCloud) {
+        subTitlePaused = subTitleMovedToCloud;
+    } else if (props.disconnectedBecausePaused) {
+        subTitlePaused = subTitleSharedFolderChangesPaused;
+    }
+
     const checkoutsPausedMessage = useL10n(
         "The administrator of this collection has paused checkouts.",
         "TeamCollection.CheckoutsPaused",
     );
-    const sharedFolderPausedNote = props.sharedFolderChangesArePaused ? (
-        <NoteBox>
-            {props.movedToCloud
-                ? movedToCloudMessage
-                : sharedFolderChangesPausedMessage}
-        </NoteBox>
-    ) : undefined;
 
     const menuItems: (SimpleMenuItem | "-")[] = [
         {
@@ -355,8 +354,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             text: "Forget Changes & Check in Book...",
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
-            disabled:
-                props.isNewLocalBook || props.sharedFolderChangesArePaused,
+            disabled: props.isNewLocalBook,
         });
     }
 
@@ -366,7 +364,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
             text: "Force Unlock (Administrator Only)...",
             l10nKey: "TeamCollection.ForceUnlockMenuItem",
             action: () => setForceUnlockDialogOpen(true),
-            disabled: !props.isUserAdmin || props.sharedFolderChangesArePaused,
+            disabled: !props.isUserAdmin,
             icon: (
                 <WarningIcon
                     css={css`
@@ -494,15 +492,12 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                             "checkout-button",
                             "/bloom/teamCollection/Check Out.svg",
                             checkoutHandler,
-                            props.checkoutsArePaused ||
-                                props.sharedFolderChangesArePaused,
+                            props.checkoutsArePaused,
                         )}
                         belowButton={
-                            // The broader pause, with its fuller explanation, wins.
-                            sharedFolderPausedNote ??
-                            (props.checkoutsArePaused ? (
+                            props.checkoutsArePaused ? (
                                 <NoteBox>{checkoutsPausedMessage}</NoteBox>
-                            ) : undefined)
+                            ) : undefined
                         }
                         menu={menu}
                     />
@@ -528,16 +523,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                     );
                 };
 
-                let lockedByMeSubTitle = "";
-                if (checkInFailed) {
-                    lockedByMeSubTitle = subTitleCheckInFailed;
-                } else if (props.sharedFolderChangesArePaused) {
-                    // "Click this button to send your changes" would be wrong; the note explains.
-                    lockedByMeSubTitle = "";
-                } else if (checkInProgress === 0) {
-                    lockedByMeSubTitle = subTitleLockedByMe;
-                }
-
                 return (
                     <StatusPanelCommon
                         css={css`
@@ -552,7 +537,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                 ? mainTitleLockedByMe
                                 : checkingIn
                         }
-                        subTitle={lockedByMeSubTitle}
+                        subTitle={
+                            checkInFailed
+                                ? subTitleCheckInFailed
+                                : checkInProgress === 0
+                                  ? subTitleLockedByMe
+                                  : ""
+                        }
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
                         button={
@@ -564,8 +555,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                                         "checkin-button",
                                         "/bloom/teamCollection/Check In.svg",
                                         checkInHandler,
-                                        checkInProgress > 0 ||
-                                            props.sharedFolderChangesArePaused,
+                                        checkInProgress > 0,
                                         "primary",
                                     )}
                                 </ThemeProvider>
@@ -573,7 +563,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         }
                         useWarningColorForButton={true}
                         menu={menu}
-                        belowButton={sharedFolderPausedNote}
                     >
                         {checkInProgress === 0 ? (
                             <div
@@ -639,7 +628,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         subTitle={subTitleLockedElsewhere}
                         icon={avatar}
                         menu={menu}
-                        belowButton={sharedFolderPausedNote}
                     >
                         {getLockedInfoChild(lockedElsewhereInfo)}
                     </StatusPanelCommon>
@@ -651,7 +639,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                         subTitle={subTitleLocked}
                         icon={avatar}
                         menu={menu}
-                        belowButton={sharedFolderPausedNote}
                     >
                         {getLockedInfoChild(lockedInfo)}
                     </StatusPanelCommon>
@@ -694,7 +681,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                 return (
                     <StatusPanelCommon
                         title={mainTitleDisconnected}
-                        subTitle={subTitleDisconnected}
+                        subTitle={subTitlePaused ?? subTitleDisconnected}
                         icon={
                             <img
                                 src={"/bloom/images/Disconnected.svg"}
@@ -707,7 +694,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
                 return (
                     <StatusPanelCommon
                         title={mainTitleLockedByMe}
-                        subTitle={subTitleDisconnectedCheckedOut}
+                        subTitle={
+                            subTitlePaused ?? subTitleDisconnectedCheckedOut
+                        }
                         icon={avatar}
                         menu={menu}
                     />
