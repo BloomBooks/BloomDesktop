@@ -18,17 +18,20 @@ import {
 } from "./workspaceFrames";
 import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
 import {
+    getIndexOfPageAfterBlankPage,
     getSpreadShape,
     isLaidOutRightToLeft,
     kRowGap,
     kSpreadGap,
     makeGridLayout,
 } from "./bookGridLayout";
-import { kBloomPurple } from "../../bloomMaterialUITheme";
+import { kBloomYellow } from "../../bloomMaterialUITheme";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 interface IGridPage {
     key: string;
     caption: string;
+    isXMatter: boolean;
 }
 
 // Where the clicked page was on screen, so the next page document can put it back there.
@@ -37,8 +40,13 @@ const kClickedPageKey = "bloom-edit-clickedGridPage";
 // On this document's root once replayTheClickThatOpenedThisPage() has finished.
 const kOpeningClickDoneClass = "bloom-book-grid-opening-click-done";
 
-// Width on screen, in pixels, of the outline around the page being edited.
-const kEditedPageOutlineWidth = 3;
+// Thickness on screen, in pixels, of the marks at the corners of the page being edited.
+const kEditedPageCornerThickness = 6;
+// Length of each arm of those marks, as a fraction of the page's shorter side.
+const kEditedPageCornerLength = 0.1;
+// Size on screen, in pixels, of the words on the blank page (see getIndexOfPageAfterBlankPage()).
+const kBlankPageLabelSize = 14;
+const kBlankPageNoteSize = 12;
 
 interface IClickedPageRecord {
     pageId: string;
@@ -70,13 +78,59 @@ const kGridStyles = `
     background-color: white;
 }
 /* The page being edited sits in this cell itself; the cell must neither hide it nor take its clicks.
-   The outline marks it among the other pages. The z-index puts the outline over the facing page's
-   cell, so it shows along the edge the two pages share. */
+   A mark at each corner, in the colour the page list uses for the selected page, sets it apart from
+   the other pages. Each mark is two rounded bars just outside the page, one along each edge. The
+   z-index puts the marks over the facing page's cell, where the two pages meet. */
 .bloom-book-grid-cell.bloom-book-grid-edited {
     background-color: transparent;
     pointer-events: none;
-    outline: var(--bloom-edited-page-outline-width) solid ${kBloomPurple};
     z-index: 1;
+}
+.bloom-book-grid-corner {
+    position: absolute;
+    width: var(--bloom-edited-page-corner-length);
+    height: var(--bloom-edited-page-corner-length);
+}
+.bloom-book-grid-corner::before,
+.bloom-book-grid-corner::after {
+    content: "";
+    position: absolute;
+    background-color: ${kBloomYellow};
+    border-radius: var(--bloom-edited-page-corner-thickness);
+}
+.bloom-book-grid-corner::before {
+    left: 0;
+    right: 0;
+    height: var(--bloom-edited-page-corner-thickness);
+}
+.bloom-book-grid-corner::after {
+    top: 0;
+    bottom: 0;
+    width: var(--bloom-edited-page-corner-thickness);
+}
+.bloom-book-grid-corner.top {
+    top: calc(-1 * var(--bloom-edited-page-corner-thickness));
+}
+.bloom-book-grid-corner.bottom {
+    bottom: calc(-1 * var(--bloom-edited-page-corner-thickness));
+}
+.bloom-book-grid-corner.left {
+    left: calc(-1 * var(--bloom-edited-page-corner-thickness));
+}
+.bloom-book-grid-corner.right {
+    right: calc(-1 * var(--bloom-edited-page-corner-thickness));
+}
+.bloom-book-grid-corner.top::before {
+    top: 0;
+}
+.bloom-book-grid-corner.bottom::before {
+    bottom: 0;
+}
+.bloom-book-grid-corner.left::after {
+    left: 0;
+}
+.bloom-book-grid-corner.right::after {
+    right: 0;
 }
 .bloom-book-grid-frame {
     display: block;
@@ -88,6 +142,32 @@ const kGridStyles = `
 .bloom-book-grid-veil {
     position: absolute;
     inset: 0;
+}
+/* A page the printed book has that is not one of the book's pages, so there is nothing to edit.
+   The words are sized on screen (see layoutGrid()), because the cell is zoomed with the page. */
+.bloom-book-grid-blank {
+    position: absolute;
+    box-sizing: border-box;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    padding: calc(2 * var(--bloom-blank-page-note-size));
+    background-color: #e6e6e6;
+    color: #595959;
+    font-family: "Segoe UI", sans-serif;
+    text-align: center;
+    cursor: default;
+    user-select: none;
+}
+.bloom-book-grid-blank-label {
+    font-size: var(--bloom-blank-page-label-size);
+    font-weight: 600;
+}
+.bloom-book-grid-blank-note {
+    font-size: var(--bloom-blank-page-note-size);
 }
 `;
 
@@ -285,6 +365,13 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
     gridStyle.textContent = kGridStyles;
     document.head.appendChild(gridStyle);
 
+    const blankPageBefore = getIndexOfPageAfterBlankPage(
+        getSpreadShape(editedPage),
+        pages,
+    );
+    const blankCell =
+        blankPageBefore === undefined ? undefined : makeBlankPageCell();
+
     const cells = new Map<string, HTMLElement>();
     pages.forEach((page, index) => {
         const cell = document.createElement("div");
@@ -293,6 +380,13 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
         cell.setAttribute("data-page-index", index.toString());
         if (index === editedIndex) {
             cell.classList.add("bloom-book-grid-edited");
+            ["top left", "top right", "bottom left", "bottom right"].forEach(
+                (where) => {
+                    const corner = document.createElement("div");
+                    corner.className = `bloom-book-grid-corner ${where}`;
+                    cell.appendChild(corner);
+                },
+            );
         } else {
             const veil = document.createElement("div");
             veil.classList.add("bloom-book-grid-veil");
@@ -301,11 +395,21 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
             );
             cell.appendChild(veil);
         }
+        if (index === blankPageBefore) {
+            gridLayer!.appendChild(blankCell!);
+        }
         gridLayer!.appendChild(cell);
         cells.set(page.key, cell);
     });
 
-    const layout = () => layoutGrid(pages.length, editedIndex, cells);
+    const layout = () =>
+        layoutGrid(
+            pages.length,
+            editedIndex,
+            cells,
+            blankPageBefore,
+            blankCell,
+        );
     layout();
     restoreScrollPosition(editedPage);
     rememberWhereEditedPageIs();
@@ -361,6 +465,29 @@ function buildGrid(pages: IGridPage[]): Promise<void> {
     return drawn.then(() => undefined);
 }
 
+// The printed book's blank page (see getIndexOfPageAfterBlankPage()). It is not one of the book's
+// pages, so it says what it is.
+function makeBlankPageCell(): HTMLElement {
+    const cell = document.createElement("div");
+    cell.classList.add("bloom-book-grid-blank");
+    const label = document.createElement("div");
+    label.classList.add("bloom-book-grid-blank-label");
+    const note = document.createElement("div");
+    note.classList.add("bloom-book-grid-blank-note");
+    cell.append(label, note);
+    theOneLocalizationManager
+        .asyncGetText("EditTab.PageView.BlankPage", "Blank page", "")
+        .done((text) => (label.textContent = text));
+    theOneLocalizationManager
+        .asyncGetText(
+            "EditTab.PageView.BlankPage.Note",
+            "The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.",
+            "",
+        )
+        .done((text) => (note.textContent = text));
+    return cell;
+}
+
 function isOnScreen(element: HTMLElement): boolean {
     const rect = element.getBoundingClientRect();
     return (
@@ -378,6 +505,8 @@ function layoutGrid(
     pageCount: number,
     editedIndex: number,
     cells: Map<string, HTMLElement>,
+    blankPageBefore: number | undefined,
+    blankCell: HTMLElement | undefined,
 ): void {
     if (!gridLayer) return;
     const container = getScalingContainer()!;
@@ -385,17 +514,29 @@ function layoutGrid(
     const pageWidth = editedPage.offsetWidth;
     const pageHeight = editedPage.offsetHeight;
 
-    // The scaling container zooms everything in it, the outline around the page being edited
-    // included; keep that outline the same width on screen at any zoom.
+    // The scaling container zooms everything in it, the marks at the corners of the page being
+    // edited included; keep them the same thickness on screen at any zoom.
     const zoom = editedPage.getBoundingClientRect().width / pageWidth;
-    const outlineWidth = kEditedPageOutlineWidth / zoom;
+    const cornerThickness = kEditedPageCornerThickness / zoom;
     gridLayer.style.setProperty(
-        "--bloom-edited-page-outline-width",
-        `${outlineWidth}px`,
+        "--bloom-edited-page-corner-thickness",
+        `${cornerThickness}px`,
     );
-    // Room around the grid, so the outline of a page at its edge is not cut off by the edge of
-    // the page frame. Nothing counts an outline when working out how far the frame can scroll.
-    const edgeMargin = Math.max(kSpreadGap / 2, outlineWidth);
+    gridLayer.style.setProperty(
+        "--bloom-edited-page-corner-length",
+        `${cornerThickness + kEditedPageCornerLength * Math.min(pageWidth, pageHeight)}px`,
+    );
+    gridLayer.style.setProperty(
+        "--bloom-blank-page-label-size",
+        `${kBlankPageLabelSize / zoom}px`,
+    );
+    gridLayer.style.setProperty(
+        "--bloom-blank-page-note-size",
+        `${kBlankPageNoteSize / zoom}px`,
+    );
+    // Room around the grid, so the corner marks of a page at its edge are not cut off by the edge
+    // of the page frame.
+    const edgeMargin = Math.max(kSpreadGap / 2, cornerThickness);
 
     // The container is border-box (see kGridStyles), so its clientWidth is the whole width,
     // whatever padding this sets below. How many spreads fit across must not depend on that
@@ -408,6 +549,7 @@ function layoutGrid(
         kSpreadGap,
         kRowGap,
         isLaidOutRightToLeft(editedPage, editedIndex),
+        blankPageBefore,
     );
 
     const edited = grid.positionOfPage(editedIndex);
@@ -435,6 +577,13 @@ function layoutGrid(
         cell.style.height = `${pageHeight}px`;
         index++;
     });
+    const blankPosition = grid.positionOfBlankPage();
+    if (blankCell && blankPosition) {
+        blankCell.style.left = `${blankPosition.x}px`;
+        blankCell.style.top = `${blankPosition.y}px`;
+        blankCell.style.width = `${pageWidth}px`;
+        blankCell.style.height = `${pageHeight}px`;
+    }
     const last = grid.positionOfPage(pageCount - 1);
     gridLayer.style.width = `${grid.spreadsPerRow * (grid.spreadWidth + kSpreadGap)}px`;
     gridLayer.style.height = `${last.y + pageHeight + edgeMargin}px`;

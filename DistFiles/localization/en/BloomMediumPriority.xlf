@@ -71,6 +71,16 @@
         <note>ID: EditTab.PageView.AllPages.Tooltip</note>
         <note>Tooltip on the right button of a two-button switch at the top right of the Edit tab. This button shows all the pages of the book around the page being edited, as they would be laid out in the printed book.</note>
       </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage" translate="no">
+        <source xml:lang="en">Blank page</source>
+        <note>ID: EditTab.PageView.BlankPage</note>
+        <note>Shown on an empty, uneditable page in the Edit tab's view of all the pages of the book. It stands for a page that is not one of the book's own pages but that the printed book has, so that the inside back cover and the back cover are printed on the two sides of one sheet.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.PageView.BlankPage.Note" translate="no">
+        <source xml:lang="en">The printed book has an empty page here, so that the inside back cover and the back cover are the two sides of one sheet.</source>
+        <note>ID: EditTab.PageView.BlankPage.Note</note>
+        <note>Shown below "Blank page" on that same empty page, to say why it is there.</note>
+      </trans-unit>
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
