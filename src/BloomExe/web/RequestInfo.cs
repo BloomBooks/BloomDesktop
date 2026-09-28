@@ -273,30 +273,34 @@ namespace Bloom.Api
                     // locked, even for read, because the user may decide to delete it.
                     try
                     {
-                        var buffer = new byte[1024 * 512]; //512KB
-                        int read;
-                        while ((read = fs.Read(buffer, 0, buffer.Length)) > 0)
+                        var pieceStream = fs;
+                        fs = null; // WriteFileInPieces disposes it
+                        var output = _actualContext.Response.OutputStream;
+                        if (
+                            WriteFileInPieces(
+                                path,
+                                pieceStream,
+                                _actualContext.Response.ContentLength64,
+                                output
+                            )
+                        )
                         {
-                            long pos = fs.Position;
-                            fs.Dispose();
-                            fs = null; // prevent double dispose
-                            _actualContext.Response.OutputStream.Write(buffer, 0, read);
-                            try
-                            {
-                                fs = OpenSharedReadStreamWithRetry(path);
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                // and we've made it possible to delete (or move) the file in the middle
-                                // of our read, so it may be gone. If so, just pretend it ended with
-                                // what we already returned.
-                                break;
-                            }
-
-                            fs.Seek(pos, SeekOrigin.Begin);
+                            output.Close();
                         }
-
-                        _actualContext.Response.OutputStream.Close();
+                        else
+                        {
+                            // Content-Length already promised the browser the whole file, so closing
+                            // the stream now would throw InvalidOperationException; drop the
+                            // connection instead. This happens when the runtime image cache is
+                            // cleared because the user selected another book (BL-16935), so
+                            // nothing is still showing the picture.
+                            Logger.WriteEvent(
+                                "Server aborted its reply because "
+                                    + path
+                                    + " was deleted or shortened part way through sending it"
+                            );
+                            _actualContext.Response.Abort();
+                        }
                     }
                     catch (HttpListenerException e)
                     {
@@ -312,6 +316,60 @@ namespace Bloom.Api
             }
 
             HaveFullyProcessedRequest = true;
+        }
+
+        /// <summary>
+        /// Copies the first length bytes of the file at path to output in 512KB pieces, closing
+        /// the file while each piece is written so that nobody is prevented from deleting or
+        /// replacing it meanwhile. Never writes more than length bytes, since that is what the
+        /// response's Content-Length promised.
+        /// Takes ownership of fs, which must be open at the start of the file.
+        /// Returns false if the file (or its folder) disappeared, or the file got shorter,
+        /// before length bytes were written.
+        /// </summary>
+        internal static bool WriteFileInPieces(
+            string path,
+            FileStream fs,
+            long length,
+            Stream output
+        )
+        {
+            try
+            {
+                var buffer = new byte[1024 * 512]; //512KB
+                long written = 0;
+                int read;
+                while (
+                    (read = fs.Read(buffer, 0, (int)Math.Min(buffer.Length, length - written))) > 0
+                )
+                {
+                    long pos = fs.Position;
+                    fs.Dispose();
+                    fs = null; // prevent double dispose
+                    output.Write(buffer, 0, read);
+                    written += read;
+                    if (written == length)
+                        return true; // no need to reopen a file we have finished with
+                    try
+                    {
+                        fs = OpenSharedReadStreamWithRetry(path);
+                    }
+                    catch (Exception e)
+                        when (e is FileNotFoundException || e is DirectoryNotFoundException)
+                    {
+                        // and we've made it possible to delete (or move) the file in the middle
+                        // of our read, so it may be gone.
+                        return false;
+                    }
+
+                    fs.Seek(pos, SeekOrigin.Begin);
+                }
+                return written == length;
+            }
+            finally
+            {
+                fs?.Dispose();
+            }
         }
 
         public void ReplyWithStreamContent(Stream input, string responseType)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -6,6 +6,7 @@ using Bloom.Api;
 using Bloom.web;
 using NUnit.Framework;
 using SIL.IO;
+using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
 namespace BloomTests.web
 {
@@ -95,6 +96,202 @@ namespace BloomTests.web
             var requestInfo = new RequestInfo(context);
 
             Assert.AreEqual(body, requestInfo.GetPostJson());
+        }
+
+        // A little more than one 512KB piece, so WriteFileInPieces must reopen the file once.
+        private const int kLengthOfPiecedFile = 512 * 1024 + 1000;
+
+        [Test]
+        public void WriteFileInPieces_FileStaysPut_WritesWholeFile()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(null);
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(wroteWholeFile, Is.True);
+                Assert.That(output.ToArray(), Is.EqualTo(File.ReadAllBytes(path)));
+            }
+        }
+
+        // BL-16935: the runtime image cache deletes its files when the selected book changes,
+        // possibly while we are part way through sending one of them.
+        [Test]
+        public void WriteFileInPieces_FileDeletedAfterFirstPiece_ReturnsFalse()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(() => File.Delete(path));
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(File.Exists(path), Is.False, "the test should have deleted the file");
+                Assert.That(wroteWholeFile, Is.False);
+                Assert.That(output.Length, Is.EqualTo(512 * 1024));
+            }
+        }
+
+        // The cache's whole folder may go, which makes the reopen throw DirectoryNotFoundException.
+        [Test]
+        public void WriteFileInPieces_FolderDeletedAfterFirstPiece_ReturnsFalse()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var subfolder = Path.Combine(folder.Path, "cache");
+                Directory.CreateDirectory(subfolder);
+                var path = MakePiecedFile(subfolder);
+                var output = new StreamWithWriteCallback(() => Directory.Delete(subfolder, true));
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(
+                    Directory.Exists(subfolder),
+                    Is.False,
+                    "the test should have deleted the folder"
+                );
+                Assert.That(wroteWholeFile, Is.False);
+                Assert.That(output.Length, Is.EqualTo(512 * 1024));
+            }
+        }
+
+        // Once the last piece has been written, the file is not needed again, so its disappearing
+        // then must not turn a complete reply into an aborted one.
+        [Test]
+        public void WriteFileInPieces_FileDeletedDuringLastPiece_ReturnsTrue()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                const int oneExactPiece = 512 * 1024;
+                var path = MakePiecedFile(folder.Path, oneExactPiece);
+                var expected = File.ReadAllBytes(path);
+                var output = new StreamWithWriteCallback(() => File.Delete(path));
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    oneExactPiece,
+                    output
+                );
+
+                Assert.That(File.Exists(path), Is.False, "the test should have deleted the file");
+                Assert.That(wroteWholeFile, Is.True);
+                Assert.That(output.ToArray(), Is.EqualTo(expected));
+            }
+        }
+
+        // A file replaced by a shorter one part way through cannot supply the promised length.
+        [Test]
+        public void WriteFileInPieces_FileShortenedAfterFirstPiece_ReturnsFalse()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(() =>
+                    File.WriteAllBytes(path, new byte[100])
+                );
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(
+                    new FileInfo(path).Length,
+                    Is.EqualTo(100),
+                    "the test should have shortened the file"
+                );
+                Assert.That(wroteWholeFile, Is.False);
+                Assert.That(output.Length, Is.EqualTo(512 * 1024));
+            }
+        }
+
+        // A file that grew part way through must not write past the promised length.
+        [Test]
+        public void WriteFileInPieces_FileLengthenedAfterFirstPiece_WritesOnlyPromisedLength()
+        {
+            using (var folder = new TemporaryFolder("WriteFileInPieces"))
+            {
+                var path = MakePiecedFile(folder.Path);
+                var output = new StreamWithWriteCallback(() =>
+                    File.WriteAllBytes(path, new byte[kLengthOfPiecedFile * 2])
+                );
+
+                var wroteWholeFile = RequestInfo.WriteFileInPieces(
+                    path,
+                    OpenShared(path),
+                    kLengthOfPiecedFile,
+                    output
+                );
+
+                Assert.That(
+                    new FileInfo(path).Length,
+                    Is.EqualTo(kLengthOfPiecedFile * 2),
+                    "the test should have lengthened the file"
+                );
+                Assert.That(wroteWholeFile, Is.True);
+                Assert.That(output.Length, Is.EqualTo(kLengthOfPiecedFile));
+            }
+        }
+
+        private static string MakePiecedFile(string folderPath, int length = kLengthOfPiecedFile)
+        {
+            var path = Path.Combine(folderPath, "big.jpg");
+            var contents = new byte[length];
+            new Random(16935).NextBytes(contents);
+            File.WriteAllBytes(path, contents);
+            return path;
+        }
+
+        private static FileStream OpenShared(string path)
+        {
+            return new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
+        }
+
+        /// <summary>
+        /// A MemoryStream that runs an action (once) after its first Write, standing in for
+        /// something that happens while a piece of the file is being sent.
+        /// </summary>
+        private class StreamWithWriteCallback : MemoryStream
+        {
+            private Action _afterFirstWrite;
+
+            public StreamWithWriteCallback(Action afterFirstWrite)
+            {
+                _afterFirstWrite = afterFirstWrite;
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                base.Write(buffer, offset, count);
+                var action = _afterFirstWrite;
+                _afterFirstWrite = null;
+                action?.Invoke();
+            }
         }
 
         private TempFile MakeTempFile(byte[] contents)
