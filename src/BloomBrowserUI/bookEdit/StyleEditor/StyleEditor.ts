@@ -45,6 +45,7 @@ import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementMa
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
 import { getEditablePageBundleExports } from "../js/workspaceFrames";
+import { updateOtherPagesUserModifiedStyles } from "../js/bookGridView";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -2373,6 +2374,7 @@ export default class StyleEditor {
     }
 
     public cleanupAfterStyleChange(doNotShrink?: boolean) {
+        updateOtherPagesUserModifiedStyles();
         const editable = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(editable);
         if (!styleName) {
