@@ -1792,8 +1792,8 @@ namespace BloomTests.TeamCollection
                     Assert.That(settings.CloudCollectionId, Is.EqualTo("cloud-42"));
                     Assert.That(
                         tc.SharedFolderChangesPausedMessage(),
-                        Does.Contain("6.6"),
-                        "once the cloud id is known, the message should say to upgrade"
+                        Does.Contain("reopen the collection"),
+                        "once the cloud id is known, the message should say how to switch to the cloud"
                     );
                 }
             );

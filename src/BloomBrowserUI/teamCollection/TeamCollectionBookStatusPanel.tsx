@@ -326,7 +326,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<
         "TeamCollection.SharedFolderChangesPaused",
     );
     const movedToCloudMessage = useL10n(
-        "This collection has moved to Bloom's cloud sharing. To keep working with your team, you need Bloom 6.6 or later. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
+        "This collection has moved to Bloom's cloud sharing. To keep working with your team, close and reopen the collection, and Bloom will switch it over. Until then, you can keep editing the books you have checked out, but you cannot check books in or out, or change the collection.",
         "TeamCollection.MovedToCloud",
     );
     const checkoutsPausedMessage = useL10n(
