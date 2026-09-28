@@ -93,6 +93,35 @@ export async function selectPublishDestination(
 }
 
 /**
+ * Go to the Publish tab, click one of its destinations, and wait until Bloom shows it. When the
+ * book's pages need bringing up to date, Bloom does that first, with its progress dialog, and
+ * switches to the destination only once it is done; so this waits through that update.
+ *
+ * It waits for the destination's panel rather than for its tab to be selected, because while the
+ * mouse is over a tab its accessible name becomes its tooltip ("Generate a PDF document...").
+ */
+export async function showPublishDestination(
+    page: Page,
+    destination: PublishDestination,
+): Promise<void> {
+    await selectPublishDestination(page, destination);
+    await expect(
+        page.getByRole("tabpanel", { name: destination, exact: true }),
+        `Bloom never showed the "${destination}" publish screen.`,
+    ).toBeVisible({ timeout: 120000 });
+}
+
+/** True if the Publish tab is showing this destination's screen right now. */
+export async function isPublishDestinationShowing(
+    page: Page,
+    destination: PublishDestination,
+): Promise<boolean> {
+    return page
+        .getByRole("tabpanel", { name: destination, exact: true })
+        .isVisible();
+}
+
+/**
  * Go to the Publish tab, open one of its destinations, and wait for its Text Languages list. A
  * book must already be selected. Use this for the screens whose subject is those lists; the Web
  * screen has its own opener in helpers/libraryPublish.ts.

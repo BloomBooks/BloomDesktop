@@ -73,6 +73,19 @@ namespace Bloom.web.controllers
             // on the UI thread because bringing the book up to date shows a dialog.
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "setTheme", HandleSetTheme, true);
 
+            // POST body is a 1-based page number. The next time Bloom brings a book's pages up to
+            // date (BookProcessor.ProcessBook), it fails on reaching that page, as a page whose
+            // capture failed would, so a test can see how Bloom reports a failed update.
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "failPageUpdateAt",
+                request =>
+                {
+                    BookProcessor.FailAtPageForTesting(int.Parse(request.RequiredPostString()));
+                    request.PostSucceeded();
+                },
+                false
+            );
+
             // POST (no body needed). Stages the currently selected book as a BloomPUB exactly as
             // the Publish:BloomPub preview does, and replies with the localhost URL of the staged
             // book's .htm file. A test then loads that URL in bloom-player to screenshot how the

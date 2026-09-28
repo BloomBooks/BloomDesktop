@@ -185,3 +185,32 @@ export function readXmatterPackOfBook(bookFolder: string): string {
         fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
     );
 }
+
+/**
+ * The `pageLayoutUpdateLevel` the book saved in `bookFolder` records: "0" when something changed
+ * the pages' layout since they were last brought up to date, the current level when they are up to
+ * date, or undefined when the book records none. Bloom saves the book after the change, not with
+ * it, so a test waits for a value with waitForPageLayoutUpdateLevel rather than reading it once.
+ */
+export function readPageLayoutUpdateLevel(
+    bookFolder: string,
+): string | undefined {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    const meta =
+        /<meta\s+name="pageLayoutUpdateLevel"\s+content="([^"]*)"/.exec(html);
+    return meta?.[1];
+}
+
+/** Wait until the book saved in `bookFolder` records this `pageLayoutUpdateLevel`. */
+export async function waitForPageLayoutUpdateLevel(
+    bookFolder: string,
+    level: string,
+    timeoutMs = 60000,
+): Promise<void> {
+    await expect
+        .poll(() => readPageLayoutUpdateLevel(bookFolder), {
+            timeout: timeoutMs,
+            message: `${bookHtmlPath(bookFolder)} never recorded pageLayoutUpdateLevel "${level}".`,
+        })
+        .toBe(level);
+}
