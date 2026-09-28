@@ -1008,7 +1008,23 @@ namespace Bloom.TeamCollection
             var booksPath = Path.Combine(_repoFolderPath, "Books");
             if (Directory.Exists(booksPath))
             {
-                if (!StartBooksWatcher(booksPath))
+                bool startedWatching;
+                try
+                {
+                    startedWatching = StartBooksWatcher(booksPath);
+                }
+                catch (Exception ex)
+                {
+                    // The folder can go between the test just above and FileSystemWatcher.Path
+                    // taking hold of it, and assigning Path to a folder that is not there throws.
+                    // Left alone that escapes StartMonitoring, so nobody is told and we do not go
+                    // Disconnected. Report it exactly as a watcher that refuses to start is
+                    // reported -- which is what RetryDeferredWatching already does for the same
+                    // race on its own path. See BL-16729.
+                    HandleRepoWatcherError(booksPath, ex);
+                    return;
+                }
+                if (!startedWatching)
                 {
                     // StartBooksWatcher reported the failure, which (when there is no window to
                     // marshal to, e.g. at startup) disconnects us synchronously and calls
@@ -1208,7 +1224,7 @@ namespace Bloom.TeamCollection
             {
                 if (!Directory.Exists(Path.Combine(_localCollectionFolder, bookName)))
                     RaiseNewBook(bookName + ".bloom");
-                else if (HasBeenChangedRemotely(bookName))
+                else if (HasBeenChangedRemotely(bookName) || HasCheckoutChangedRemotely(bookName))
                     HandleModifiedFile(
                         new BookRepoChangeEventArgs { BookFileName = bookName + ".bloom" }
                     );

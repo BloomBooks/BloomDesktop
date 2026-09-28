@@ -386,12 +386,12 @@ namespace Bloom.TeamCollection
                     // What RobustFile.AppendAllText does -- the same call, and so the same
                     // encoding (UTF-8, no BOM), so the two paths can append to one file
                     // interchangeably -- but over milliseconds rather than seconds.
-                    RetryUtility.Retry(
-                        () => File.AppendAllText(_logFilePath, text),
+                    RobustFileIO.QuickAppendAllText(
+                        _logFilePath,
+                        text,
                         kQuickAppendAttempts,
                         kQuickAppendRetryMs,
-                        kTransientAppendExceptions,
-                        memo: $"AppendAllText {_logFilePath}"
+                        kTransientAppendExceptions
                     );
                 }
                 return true;
@@ -450,6 +450,34 @@ namespace Bloom.TeamCollection
             return p1 == p2;
         }
 
+        /// <summary>
+        /// Errors whose de-duplication starts afresh after a Reload. Repeating most errors is
+        /// just noise -- a bad zip file in the repo produces the same complaint over and over --
+        /// which is why the check below otherwise looks at the whole session. But "Bloom may have
+        /// missed some changes, please click Reload Collection" is different: once the user has
+        /// acted on it, a fresh occurrence is telling them something genuinely new, and swallowing
+        /// it leaves them believing they are up to date when Bloom has just decided they are not.
+        /// See BL-16729.
+        /// </summary>
+        private static readonly ISet<string> kErrorsRepeatableAfterReload = new HashSet<string>
+        {
+            TeamCollection.kMayHaveMissedChangesId,
+        };
+
+        /// <summary>
+        /// The index just past the most recent Reloaded milestone, or 0 if there has not been one
+        /// this session. Call with _messagesLock held, as IsRedundantMessage's caller does.
+        /// </summary>
+        private int IndexAfterLastReloadedMilestone()
+        {
+            for (var i = _messages.Count - 1; i >= 0; i--)
+            {
+                if (_messages[i].MessageType == MessageAndMilestoneType.Reloaded)
+                    return i + 1;
+            }
+            return 0;
+        }
+
         private bool IsRedundantMessage(
             MessageAndMilestoneType messageType,
             string l10nId,
@@ -478,16 +506,26 @@ namespace Bloom.TeamCollection
                 // the message is redundant with a current session report. But currently we reset completely for each
                 // session, and problems (particularly the one produced by a bad zip file in the repo) tend to be very
                 // frequent. We need to look at everything to weed out duplicates.
-                return _messages.Any(msg =>
-                    (
-                        msg.MessageType == MessageAndMilestoneType.Error
-                        || msg.MessageType == MessageAndMilestoneType.ErrorNoReload
+                // ...except for the few messages a Reload answers; see kErrorsRepeatableAfterReload.
+                var searchFrom = kErrorsRepeatableAfterReload.Contains(l10nId)
+                    ? IndexAfterLastReloadedMilestone()
+                    : 0;
+                for (var i = searchFrom; i < _messages.Count; i++)
+                {
+                    var msg = _messages[i];
+                    if (
+                        (
+                            msg.MessageType == MessageAndMilestoneType.Error
+                            || msg.MessageType == MessageAndMilestoneType.ErrorNoReload
+                        )
+                        && msg.L10NId == l10nId
+                        && msg.RawEnglishMessageTemplate == message
+                        && MatchParams(msg.Param0, param0)
+                        && MatchParams(msg.Param1, param1)
                     )
-                    && msg.L10NId == l10nId
-                    && msg.RawEnglishMessageTemplate == message
-                    && MatchParams(msg.Param0, param0)
-                    && MatchParams(msg.Param1, param1)
-                );
+                        return true;
+                }
+                return false;
             }
             return false;
         }

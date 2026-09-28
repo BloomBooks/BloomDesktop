@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Bloom.ImageProcessing;
 using SIL.Code;
@@ -82,6 +83,38 @@ namespace Bloom
         /// Attempts to delete a directory once. Returns false if an exception prevents deletion,
         /// rather than retrying or throwing — suitable for best-effort cleanup during shutdown.
         /// </summary>
+        /// <summary>
+        /// Append to a file, retrying only briefly. RobustFile.AppendAllText keeps trying for
+        /// seconds, which is right when nothing is waiting on the answer and wrong when the UI
+        /// thread is: Bloom's Team Collection history is written from Application.Idle, so a log
+        /// file that something else has open (a backup agent, an anti-virus scan) would freeze
+        /// the window for as long as RobustFile persisted. This makes the same underlying call
+        /// -- and so writes the same encoding, UTF-8 with no BOM, letting the two interleave in
+        /// one file -- but gives up after a couple of quick tries and lets the caller decide what
+        /// to do with what it could not write. See BL-16729.
+        ///
+        /// It lives here rather than at the call site because this file is where Bloom keeps its
+        /// deliberate, reviewed uses of the raw File API.
+        /// </summary>
+        /// <param name="exceptionTypesToRetry">Typically just IOException: a permissions failure
+        /// will not improve while we wait, so it should come straight back out.</param>
+        public static void QuickAppendAllText(
+            string path,
+            string text,
+            int attempts,
+            int retryDelayMs,
+            ISet<Type> exceptionTypesToRetry
+        )
+        {
+            RetryUtility.Retry(
+                () => File.AppendAllText(path, text),
+                attempts,
+                retryDelayMs,
+                exceptionTypesToRetry,
+                memo: $"AppendAllText {path}"
+            );
+        }
+
         public static bool TryDeleteDirectory(string path, bool recursive = false)
         {
             try

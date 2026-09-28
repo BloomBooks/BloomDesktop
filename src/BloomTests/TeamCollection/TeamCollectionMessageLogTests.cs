@@ -497,9 +497,7 @@ namespace BloomTests.TeamCollection
         [Test]
         public void Flush_MessageCouldNotBeWrittenEarlier_WritesIt()
         {
-            using (
-                new FileStream(_logFile.Path, FileMode.Open, FileAccess.Write, FileShare.None)
-            )
+            using (new FileStream(_logFile.Path, FileMode.Open, FileAccess.Write, FileShare.None))
             {
                 MakeHistory1();
             }
@@ -791,6 +789,68 @@ namespace BloomTests.TeamCollection
                 // So TearDown can delete the file.
                 File.SetAttributes(_logFile.Path, attributes);
             }
+        }
+
+        /// <summary>
+        /// Repeating most errors is noise, so the log drops a duplicate whenever it occurred this
+        /// session. "Bloom may have missed some changes, please click Reload Collection" is the
+        /// exception: once the user has reloaded, another one is telling them something new, and
+        /// dropping it leaves them believing they are up to date. See BL-16729.
+        /// </summary>
+        [Test]
+        public void WriteMessage_MayHaveMissedChanges_SuppressedUntilAReload_ThenAllowedAgain()
+        {
+            void WarnOfMissedChanges() =>
+                _messageLog.WriteMessage(
+                    MessageAndMilestoneType.Error,
+                    Bloom.TeamCollection.TeamCollection.kMayHaveMissedChangesId,
+                    "Bloom may have missed some changes your teammates made.",
+                    null,
+                    null
+                );
+
+            WarnOfMissedChanges();
+            Assert.That(
+                _messageLog.Messages,
+                Has.Count.EqualTo(1),
+                "setup problem: the first warning should always be recorded"
+            );
+
+            // Still the same unanswered warning, so the second one is genuinely redundant.
+            WarnOfMissedChanges();
+            Assert.That(
+                _messageLog.Messages,
+                Has.Count.EqualTo(1),
+                "a repeat before the user has reloaded is redundant and should be dropped"
+            );
+
+            // The user reloads, which is exactly what the message asked for.
+            _messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+
+            // sut: it happened again since. That is new information.
+            WarnOfMissedChanges();
+            Assert.That(
+                _messageLog.Messages.Count(m =>
+                    m.L10NId == Bloom.TeamCollection.TeamCollection.kMayHaveMissedChangesId
+                ),
+                Is.EqualTo(2),
+                "after a reload the warning must be allowed through again, or the user is left "
+                    + "believing they are up to date"
+            );
+
+            // And the narrowing is confined to that one message: ordinary errors still de-duplicate
+            // across the whole session, which is what keeps a repeating repo problem from flooding
+            // the log.
+            MakeError1();
+            var countAfterFirst = _messageLog.Messages.Count;
+            _messageLog.WriteMilestone(MessageAndMilestoneType.Reloaded);
+            MakeError1();
+            Assert.That(
+                _messageLog.Messages,
+                Has.Count.EqualTo(countAfterFirst + 1),
+                "only the Reloaded milestone should have been added; an ordinary error must still "
+                    + "be treated as redundant even after a reload"
+            );
         }
 
         [Test]

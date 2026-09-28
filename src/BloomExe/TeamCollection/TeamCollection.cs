@@ -679,7 +679,7 @@ namespace Bloom.TeamCollection
             });
         }
 
-        private const string kMayHaveMissedChangesId = "TeamCollection.MayHaveMissedChanges";
+        internal const string kMayHaveMissedChangesId = "TeamCollection.MayHaveMissedChanges";
         private const string kMayHaveMissedChangesEnglish =
             "Bloom may have missed some changes your teammates made. Please click \"Reload Collection\" to be sure you have the latest.";
 
@@ -1891,6 +1891,34 @@ namespace Bloom.TeamCollection
                 );
 
             return isConflictingCheckedOutStatus || isConflictingCheckSum;
+        }
+
+        /// <summary>
+        /// Whether the repo's record of who has this book checked out differs from our local
+        /// copy's. HasBeenChangedRemotely compares book checksums, and checking a book out or in
+        /// does not change the book's checksum -- it changes the status stored beside it -- so a
+        /// checkout made while we were not watching is invisible to that test. The live watcher
+        /// never needed this, because it reacts to the repo file being written at all; the
+        /// catch-up scan that runs when we start watching late does. Without it a teammate's
+        /// checkout stays invisible and the book goes on offering itself for checkout, which is
+        /// how two people end up editing the same book. See BL-16729.
+        /// </summary>
+        protected bool HasCheckoutChangedRemotely(string bookName)
+        {
+            var repoStatus = GetStatus(bookName);
+            // Nothing trustworthy to compare against: say no rather than announcing a change we
+            // cannot substantiate. A repo we cannot read is the watcher's problem, not ours.
+            if (repoStatus == null || repoStatus.hasInvalidRepoData)
+                return false;
+            var localStatus = GetLocalStatus(bookName);
+            if (localStatus == null)
+                return false;
+            // Ordinal comparison, as BookStatus.IsCheckedOutHereBy uses on the same two fields.
+            // lockedWhen is deliberately not compared: a check-in followed by another checkout
+            // from the same machine leaves these two the same, and if the book itself changed in
+            // between the checksum test has already caught it.
+            return localStatus.lockedBy != repoStatus.lockedBy
+                || localStatus.lockedWhere != repoStatus.lockedWhere;
         }
 
         private bool HasCheckoutConflict(string bookName)

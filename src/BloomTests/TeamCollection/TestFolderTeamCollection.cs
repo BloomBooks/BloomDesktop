@@ -18,6 +18,23 @@ namespace BloomTests.TeamCollection
         )
             : base(tcManager, localCollectionFolder, repoFolderPath, tcLog) { }
 
+        /// <summary>
+        /// HasCheckoutChangedRemotely is protected, and it is the whole of the new judgment the
+        /// catch-up scan makes, so let a test drive it directly rather than through the scan's
+        /// event plumbing.
+        /// </summary>
+        public bool CallHasCheckoutChangedRemotely(string bookName) =>
+            HasCheckoutChangedRemotely(bookName);
+
+        /// <summary>
+        /// Write the repo's copy of a book's status and nothing else. WriteBookStatus deliberately
+        /// writes the local copy too, which is right for something we did, but it is precisely
+        /// wrong for simulating what a teammate did on another machine: from here, their checkout
+        /// only ever shows up in the repo.
+        /// </summary>
+        public void WriteRepoStatusOnly(string bookName, BookStatus status) =>
+            WriteBookStatusJsonToRepo(bookName, status.ToJson());
+
         public Action OnCreatedCalled;
         public Action OnChangedCalled;
         public Action OnCollectionChangedCalled;

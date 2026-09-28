@@ -2312,6 +2312,106 @@ namespace BloomTests.TeamCollection
         /// meta.json, so it has an ID that tombstones can be keyed on) into the collection.
         /// </summary>
         /// <returns>The path to the book folder.</returns>
+        /// <summary>
+        /// The catch-up scan that runs when we start watching late asks HasBeenChangedRemotely,
+        /// which compares book checksums -- and a checkout does not change a book's checksum, it
+        /// changes the status stored beside it. So a teammate's checkout made while we were not
+        /// watching was invisible, and the book went on offering itself for checkout. See BL-16729.
+        /// </summary>
+        [Test]
+        public void HasCheckoutChangedRemotely_TeammateCheckedItOutWhileWeWereNotWatching_True()
+        {
+            using (var collectionFolder = new TemporaryFolder("CheckoutChanged_Collection"))
+            using (var repoFolder = new TemporaryFolder("CheckoutChanged_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    var bookPath = MakeLocalBook(collectionFolder.FolderPath, "Shared book");
+                    tc.PutBook(bookPath);
+                    Assert.That(
+                        tc.CallHasCheckoutChangedRemotely("Shared book"),
+                        Is.False,
+                        "setup problem: freshly checked in, the repo and local status should agree"
+                    );
+
+                    // A teammate checks it out. Only the repo's copy of the status records that;
+                    // nothing has told us, because we were not watching.
+                    var repoStatus = tc.GetStatus("Shared book");
+                    tc.WriteRepoStatusOnly(
+                        "Shared book",
+                        repoStatus.WithLockedBy("fred@nowhere.org", "Fred", "Smith")
+                    );
+
+                    // sut
+                    Assert.That(
+                        tc.CallHasCheckoutChangedRemotely("Shared book"),
+                        Is.True,
+                        "a checkout recorded only in the repo is exactly the change this has to see"
+                    );
+
+                    // The book's content has not changed, so the checksum test alone would have
+                    // missed it -- which is the whole reason this test exists.
+                    Assert.That(
+                        tc.HasBeenChangedRemotely("Shared book"),
+                        Is.False,
+                        "sanity check: the checksum is unchanged, so the old test finds nothing"
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The other direction: a teammate checking a book back in is also a status-only change,
+        /// and must not be mistaken for "nothing happened" either.
+        /// </summary>
+        [Test]
+        public void HasCheckoutChangedRemotely_TeammateCheckedItBackIn_True()
+        {
+            using (var collectionFolder = new TemporaryFolder("CheckinChanged_Collection"))
+            using (var repoFolder = new TemporaryFolder("CheckinChanged_Repo"))
+            {
+                var mockTcManager = new Mock<ITeamCollectionManager>();
+                using (
+                    var tc = new TestFolderTeamCollection(
+                        mockTcManager.Object,
+                        collectionFolder.FolderPath,
+                        repoFolder.FolderPath
+                    )
+                )
+                {
+                    var bookPath = MakeLocalBook(collectionFolder.FolderPath, "Shared book");
+                    tc.PutBook(bookPath);
+                    // Both copies agree that a teammate has it out.
+                    var checkedOut = tc.GetStatus("Shared book")
+                        .WithLockedBy("fred@nowhere.org", "Fred", "Smith");
+                    // WriteBookStatus writes both copies, so after this they agree.
+                    tc.WriteBookStatus("Shared book", checkedOut);
+                    Assert.That(
+                        tc.CallHasCheckoutChangedRemotely("Shared book"),
+                        Is.False,
+                        "setup problem: both copies should agree that Fred has it out"
+                    );
+
+                    // Fred checks it back in; again only the repo knows.
+                    tc.WriteRepoStatusOnly("Shared book", checkedOut.WithLockedBy(null));
+
+                    // sut
+                    Assert.That(
+                        tc.CallHasCheckoutChangedRemotely("Shared book"),
+                        Is.True,
+                        "a check-in recorded only in the repo is a change we have to notice too"
+                    );
+                }
+            }
+        }
+
         private static string MakeLocalBook(string collectionFolderPath, string title)
         {
             return new BookFolderBuilder()
