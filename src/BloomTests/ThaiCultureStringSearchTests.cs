@@ -1,10 +1,15 @@
-﻿using System.Globalization;
+﻿using System.Collections;
+using System.Globalization;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
+using Bloom.Collection;
 using Bloom.Publish.BloomPub;
+using Bloom.ToPalaso;
 using Bloom.Workspace;
 using NUnit.Framework;
+using SIL.WritingSystems;
 
 namespace BloomTests
 {
@@ -24,12 +29,42 @@ namespace BloomTests
         {
             _originalCulture = CultureInfo.CurrentCulture;
             CultureInfo.CurrentCulture = new CultureInfo("th-TH");
+            ClearLibPalasoLanguageNameCaches();
         }
 
         [TearDown]
         public void TearDown()
         {
             CultureInfo.CurrentCulture = _originalCulture;
+            ClearLibPalasoLanguageNameCaches();
+        }
+
+        /// <summary>
+        /// IetfLanguageTag caches language names process-wide, keyed by tag and not by culture.
+        /// Without clearing them, a name another test looked up earlier would make a test here
+        /// pass without the fix, and a name wrongly looked up here would leak into later tests.
+        /// </summary>
+        private static void ClearLibPalasoLanguageNameCaches()
+        {
+            foreach (
+                var fieldName in new[]
+                {
+                    "MapIsoCodesToLanguageName",
+                    "MapIsoCodeToSubtitledLanguageName",
+                }
+            )
+            {
+                var field = typeof(IetfLanguageTag).GetField(
+                    fieldName,
+                    BindingFlags.Static | BindingFlags.NonPublic
+                );
+                Assert.That(
+                    field,
+                    Is.Not.Null,
+                    $"libpalaso no longer has the cache IetfLanguageTag.{fieldName}; update this test"
+                );
+                ((IDictionary)field.GetValue(null)).Clear();
+            }
         }
 
         [Test]
@@ -85,6 +120,40 @@ namespace BloomTests
             Assert.That(
                 WorkspaceView.GetShortenedLanguageName("Français (France)"),
                 Is.EqualTo("Français")
+            );
+        }
+
+        [TestCase("fr", "fr")]
+        [TestCase("pt-BR", "pt")]
+        [TestCase("zh-CN", "zh-CN")]
+        public void GetGeneralCode_IsTheLanguageSubtag(string code, string expected)
+        {
+            Assert.That(IetfLanguageTagExtra.GetGeneralCode(code), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void CreateLanguageItem_IsNamedForTheLanguage_NotInvariantLanguage()
+        {
+            // BL-16945: every item in the UI language menu was named "Invariant Language".
+            var item = WorkspaceView.CreateLanguageItem("de");
+
+            Assert.That(item.MenuText, Is.EqualTo("Deutsch"));
+            // EnglishName comes from CultureInfo.DisplayName, which follows the machine's UI
+            // language, so check only that it is not the invariant culture's.
+            Assert.That(item.EnglishName, Does.Not.StartWith("Invariant"));
+        }
+
+        [Test]
+        public void WritingSystem_NamedFromItsTag_IsNotTheInvariantCultureName()
+        {
+            // BL-16945: this is how a new collection's default Language2 got saved as
+            // "Invariant Language (Invariant Country)".
+            var writingSystem = new WritingSystem(() => "en") { Tag = "en" };
+
+            Assert.That(writingSystem.Name, Is.Not.Empty);
+            Assert.That(
+                writingSystem.Name,
+                Is.Not.EqualTo(CultureInfo.InvariantCulture.EnglishName)
             );
         }
 
