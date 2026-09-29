@@ -375,7 +375,7 @@ detects this), `LockHeldByOther`, `CheckoutElsewhere` (the checkout moved to ano
 start), `BaseVersionSuperseded` (receive and re-send), `NameConflict`, `InvalidManifest`,
 `ClientOutOfDate` (426, from `tc.min_supported_client_version()`). A finish that already committed
 returns the same `{versionId, seq}` when repeated, so finish is retried with the same transaction
-on a lost response. An open transaction lives 48 hours and is resumable; expired ones are reaped.
+on a lost response. An open transaction lives 48 hours and is resumable; after that the reaper marks it expired.
 `checkin-abort` is idempotent (an unknown transaction is a 200 no-op).
 
 **Send-only locks.** A check-in never creates a checkout and never returns a GUID. A **first
@@ -801,7 +801,9 @@ erDiagram
   so downloads get exactly the committed bytes. Keyed by `book_id` as well as `version_id` because
   the hot reads and the replace-at-commit are both per book.
 - **`checkin_transactions`**: in-flight check-ins: the proposed manifest, changed paths, base
-  version, GUID-hash snapshot, `revision`, status and expiry. Ephemeral; reaped after expiry.
+  version, GUID-hash snapshot, `revision`, status and expiry. Rows are never deleted: the reaper
+  marks an open transaction `expired` once its 48 hours are up, and finished and aborted rows
+  stay. Aborted and expired rows are the orphaned-upload sweep's worklist.
 - **`events`**: the append-only history log, the realtime source (via trigger) and the polling
   cursor (`id`). `book_id` survives deletion as NULL so history outlives the book.
 - **`collection_file_groups`** / **`collection_group_files`** / **`collection_file_transactions`**:
@@ -927,6 +929,327 @@ history and capturing a book for a problem report.
   book row, so the sweep's worklist never sees them); harmless orphans until an inventory-based
   cleanup exists.
 - The client polls every 60 seconds; subscribing to the realtime channel is later work.
+
+### Proposed: users with their own identity
+
+**Decided: we need the users table, and a person's name belongs on it** (one name everywhere),
+taken from their Bloom registration; see the name bullet below. That was the last open question
+before going ahead with it and with the [schema simplifications](#proposed-schema-simplifications).
+
+Today a person is identified by their Firebase `sub`, stored as text in ten columns:
+`members.user_id` and `members.added_by`, `books.locked_by` and `books.created_by`,
+`events.by_user_id`, `versions.created_by`, `checkin_transactions.started_by`,
+`collections.created_by`, `collection_file_groups.updated_by`,
+`collection_file_transactions.started_by` and `color_palette_entries.added_by`. If someone's email
+changes and that brings a new Firebase account, their memberships, locks and history are orphaned.
+The proposal:
+
+- A `core.users` table, in a schema of its own outside `tc`, not exposed through the API and
+  reached only through SECURITY DEFINER functions: `id uuid` (ours, never changes),
+  `authentication_id` (the Firebase uid, or the local GoTrue id; unique where set), `email` (the current
+  sign-in email, lowercase and NFC, refreshed from the token), `name` and `created_at`.
+- Those columns become `uuid` foreign keys to `core.users` (less any the
+  [simplifications](#proposed-schema-simplifications) remove). `tc.current_user_id()`, which
+  every RPC already uses to find the caller, looks the token's `sub` up in `core.users` and returns
+  `users.id` (or NULL, which is treated as "not a member of anything", as now).
+- A users row is created only when something needs it: `claim_memberships()` creates one when it
+  finds an invitation for the token's verified email, and `create_collection` creates one for the
+  collection's first admin. Someone who signs in with nothing to join gets no row.
+- The name moves from `members.display_name` to `users.name`: one name everywhere, taken from the
+  first and last name in the person's Bloom Registration dialog **at every sign-in** (Bloom sends it
+  with `claim_memberships()`, which it already calls then), so correcting one's registration
+  corrects the name everywhere, history included (history shows `users.name`; the token's `name`
+  claim is no longer recorded). There are no current plans for a way for admins, or anyone else,
+  to edit other people's names, so `members_set_display_name` goes. (The only UI that ever did,
+  the Sharing panel in Settings of the #8052 client, never shipped; the Share dialog replaces it.)
+  Someone invited but not yet signed in is shown by email. A known limit: the registration belongs
+  to the computer, so someone who signs in on another person's computer takes that registration's
+  name until they next sign in on their own.
+- `members.email` remains the address the person was invited by; once the row is claimed, the
+  person's current email is `users.email`. `members_add` treats an email matching either as
+  already having access.
+- **Unclaimed users** replace the `legacy:<email>` lock holder of
+  [section 5](#3-books-checked-out-to-others-in-the-old-system). A book checked out in the old
+  Team Collection is locked to a users row with that old email and no `authentication_id`, so nobody can
+  sign in as it. If the person later signs in with that email, `claim_memberships()` sets
+  `authentication_id` on the same row instead of making a new one, and the lock is already theirs; if
+  they sign in with another email, takeover moves the lock as now and the unclaimed row is left
+  holding nothing. Every "who holds this book" check stays a test of one column, and
+  `users.email` can stay unique because such rows are claimed, not duplicated.
+- The client learns its own `users.id` (from `claim_memberships()` or a small `whoami()`) to
+  recognize its own locks, and the `.checkout` record keeps that id rather than the email.
+- An email change is a database-admin task. If Firebase keeps the uid, nothing is needed: the next
+  sign-in refreshes `users.email`. If the person has a new Firebase account, one support script
+  sets the row's `authentication_id` and `email` to the new account's; it refuses if the new account
+  already has a users row, which would make it a merge. Merging two users (re-pointing the identity
+  columns, and settling a collection both belong to) is rarer still, and would be written when
+  first needed.
+- One user with several logins at once is not supported. If it is ever needed, `authentication_id` and
+  `email` move to a `user_identities` table and `current_user_id()` looks there; the foreign keys,
+  which all point at `users.id`, don't change.
+
+Since nothing is deployed, this is a change to the declarative schema and a breaking CONTRACTS
+version, with no data to migrate.
+
+### Proposed: book names that needn't be unique
+
+Not decided. A book is identified by `books.id` on the server and by its `instance_id` in S3;
+`books.name` is there because each Bloom names the book's folder after it, and it is unique
+(case-insensitively, after NFC, among books that aren't deleted, per collection; enforced by the
+`books_live_name_uq` index) because two books can't share a folder. The proposal is to let each
+copy choose its own folder name, as Bloom already does locally when a title-based name is taken:
+
+- `books.name` stays, as the name the book should have (from its title, or the name a user chose
+  with Rename), for folder names, status, the join list and history. It is no longer unique:
+  `books_live_name_uq`, `rename_check` and the `NameConflict` name checks in `checkin_start_tx`
+  and `undelete_book` go, and so does the client's handling of `NameConflict`.
+- Each copy names a book's folder from `books.name`, adding a suffix if that folder name is already
+  taken locally, and renames its folder when `books.name` changes. So two copies of a collection
+  can name the same book differently ("The Moon" and "The Moon1") when two books want the same
+  name.
+- The main `.htm`, which Bloom names after the folder, is stored as **`index.htm`** in the manifest
+  and in S3, whatever the local folder is called. The client maps it to and from the local
+  `<folder>.htm` when it builds a manifest and when it downloads, as it already maps a key to a
+  differently spelled local path (`LocalRelativePath`). Without this, copies with different folder
+  names would list different files, and each check-in would look like one `.htm` deleted and
+  another added. With it, a rename changes no files at all, only `books.name`. Only the main
+  `.htm` is affected: the upload filter already passes no other `.htm`.
+- Client work (#8052): books the server has and this copy hasn't are tracked by id, with a local
+  folder name assigned when first seen, rather than assuming the server's name is the folder name
+  (`_bookIdByName`); a check-in sends the name the book should have, not a folder name with a
+  local suffix, which for a name chosen with Rename probably means keeping that name in
+  `meta.json` beside `nameLocked`; and whatever compares a local book with the cloud one uses
+  manifest keys, not names on disk.
+
+### Proposed: schema simplifications
+
+To be done alongside the users table. Each was checked against the
+SQL functions, the edge functions and the #8052 client on `BL-16531-tc-backend`.
+
+1. **Drop `tc.versions`.** Each check-in writes a row, but nothing reads the table except
+   `max(seq)` to number the next version, which `books.current_version_seq` already holds, and a
+   count in a support report. The CheckIn event already records the seq (`book_version_seq`), the
+   comment (`message`), the author, the Bloom version and the time, and only the current checksum is
+   ever used, which is on `books`. The version's uuid serves only as a "which version am I based
+   on" check (the client's cached `CurrentVersionId`, sent back as `baseVersionId`), which the
+   per-book seq does equally well. So `books.current_version_id` goes, and a book's version is
+   simply its number, so the names lose "seq": `books.current_version_seq` becomes
+   `current_version`, which is also the "has this book been committed?" test;
+   `checkin_transactions.base_version_id` becomes `base_book_version`; `result_version_id` and
+   `result_seq` become one `resulting_book_version`; `events.book_version_seq` becomes
+   `book_version`; `collection_file_transactions.result_version` becomes `resulting_version`, to
+   match; and `versionId` leaves the API. Keeping managed old versions (see Broader design above) would bring
+   back a table of versions, but it would need each version's file list, which `versions` doesn't
+   keep, so today's table would not help.
+2. **No synthetic id or `version_id` on the file tables.** `version_files` holds only the current
+   version's files (superseded rows are deleted at every commit), so its `version_id` always equals
+   the book's current version, and it goes with its index. `version_files` and
+   `collection_group_files` are already unique on `(book_id, path)` and `(group_id, path)`; those
+   become their primary keys and the `id` identity columns go. With `versions` gone, `version_files`
+   is simply the files that make up each book now, so it is renamed `book_files`, the book
+   counterpart of `collection_group_files`. (`s3_version_id` keeps its name: that version is the
+   S3 object's.)
+3. **Drop eight indexes that duplicate a unique constraint's leading column:**
+   `books_collection_id_idx`, `books_instance_id_idx` (the only lookup by instance id also filters
+   by collection), `events_collection_id_idx` (covered by `events_collection_cursor_idx`),
+   `members_collection_id_idx`, `collection_file_groups_collection_id_idx`,
+   `collection_group_files_group_id_idx`, `version_files_book_id_idx` and
+   `color_palette_entries_collection_id_idx`. They add cost to every write and speed up nothing.
+4. **What the users table removes as well:** `events.by_user_name` and `events.by_email` (history
+   shows the person's current name and email from `users`), `members.display_name` and the
+   `members_set_display_name` call, and optionally `books.created_by`, since the Created event already records who made
+   the book.
+5. **`checkin_transactions.finished_at` and `aborted_at`** are written but never read; `status`
+   already says the same thing.
+6. **Resume only an identical transaction; otherwise abort it, and drop `revision`.** A
+   `checkin-start` that finds an open transaction for the same book and person resumes it only if
+   its proposal would be identical (the proposed files with their paths, hashes and sizes, the
+   changed paths, the checksum, the base version, the GUID snapshot and the proposed name), and then
+   only extends `expires_at`. Otherwise it aborts that transaction and opens a new one. A finish
+   still running for the old transaction then commits either exactly what the new start wants or
+   nothing (`transaction_aborted`), so nothing needs to detect a mid-finish rewrite: `revision` and
+   `TransactionChanged` go. This needs the start to lock the open transaction row before comparing
+   (the existing-book path already does; the new-book path must too). For a new book's first
+   check-in, only the transaction is aborted, and the new transaction reuses the uncommitted book
+   row. The client treats `transaction_aborted` on a superseded finish as superseded, not as an
+   error. A finish can then only ever commit the proposal of the start that returned its
+   transaction id, which a retry after `TransactionChanged` does not guarantee today.
+   `collection_file_transactions` gets the same change. Orphaned uploads are no more likely than
+   now: rewriting a transaction in place also leaves the earlier proposal's uploads unreferenced.
+7. **Name books in the API by instance id, not by `books.id`.** The client uses `books.id` only to
+   pass it back: it finds a local book's id from the instance id in its `meta.json`
+   (`ResolveBookId`) through a map it keeps, stores it in the `.checkout` record, and after a first
+   check-in makes an extra state request just to learn the id, which finish doesn't return. Instead,
+   every call that takes `p_book_id` (`checkout_book`, `checkout_book_takeover`, `unlock_book`,
+   `force_unlock`, `delete_book`, `undelete_book`, `get_book_manifest`, `checkin-start`) takes the
+   collection id and the instance id, found through the existing unique `(collection_id,
+   instance_id)` constraint, and the book and event rows sent to the client carry the instance id.
+   The instance id alone isn't enough, since the same book can be in two collections. `books.id`
+   stays as the table's own key, so foreign keys stay single `uuid` columns; the client just never
+   sees it. The `.checkout` record's `bookId` goes (it already holds the collection id), and so do
+   the client's instance-id-to-book-id map and the extra request after a first check-in.
+8. **Rename the two transaction tables, and delete their rows once nothing needs them.**
+   `checkin_transactions` becomes `checkin_attempts`, and `collection_file_transactions` becomes
+   `collection_file_checkin_attempts`. Each row is one try at committing a check-in, which may
+   succeed, be abandoned or run out of time (`open`, `finished`, `aborted`, `expired`), and the
+   record of check-ins that happened is the CheckIn events. Today the rows are never deleted (see
+   section 6). The reaper, which already runs at every start, would also delete a finished row once
+   its `expires_at` has passed, since a repeated finish only ever comes from the same Bloom session,
+   which keeps the transaction id in memory; and it would delete an aborted or expired row once the
+   orphaned-upload sweep has deleted its uploads, since those rows are the sweep's worklist. The
+   tables then hold only attempts in progress and recently ended ones, which is what the names
+   say.
+9. **Rename `events` to `history_events`, and give collection-file check-ins a type of their
+   own.** The table is both each collection's history and its change feed (its `id` is the
+   per-collection polling cursor, and realtime broadcasts from it), so every row has a
+   `collection_id`. It holds two kinds of entry: book events, and the event a collection-files
+   check-in writes, which has no `book_id`, has a `group_key`, and today borrows the book CheckIn
+   type (1). A new cloud type, 102 (CollectionFilesCheckIn), next to WorkPreservedLocally (100) and
+   CheckOutReleased (101), takes over that event, so type 1 means only a book check-in; the change
+   is the one insert in `collection_files_finish_tx`, the `type` CHECK constraint and the list of
+   types in CONTRACTS. `log_event` then requires a book id for the types that concern a book.
+   `book_history_events` was considered, but the table isn't only about books.
+10. **One set of collection files instead of three groups, and only an admin may send it.** The
+    groups (`other`, `allowed-words`, `sample-texts`) don't reduce transfer, since per-file
+    checksums already limit a send or a receive to the files that changed. They only help when two
+    people change different kinds of collection files at the same moment, which is rare: in Bloom
+    only an admin can change them, and palette colors, which everyone adds to, are separate
+    (`color_palette_entries`). Meanwhile the group names are something the server and every Bloom
+    version sharing a collection must agree on. So `collection_file_groups` goes, and its version
+    counter and who updated it when move onto `collections` (`collection_files_version`,
+    `collection_files_updated_at`, `collection_files_updated_by`); `collection_group_files`
+    becomes `collection_files`, keyed by `(collection_id, path)`, with paths relative to the
+    collection folder (`Allowed Words/…`, `Sample Texts/…`, the `.bloomCollection` and the other
+    top-level files); `group_key` leaves `collection_file_checkin_attempts` and `history_events`;
+    the S3 prefix becomes `collectionFiles/`; and the two CHECK constraints, the edge function's
+    allowlist and the `groupKey` parameters go. Which local files count as collection files stays
+    Bloom's rule, now a filter on paths, so a new kind of collection file needs no server change
+    (though the Bloom versions sharing a collection must still agree on it). Two changes to any
+    collection files at the same moment now collide, and the existing rule applies: the repository
+    wins. **Decided:** the server requires an admin to send collection files, as it does for force
+    unlock. Today `collection_files_start_tx` checks only membership, although Bloom's UI already
+    lets only an admin change them.
+
+Looked at and kept: `initial_upload_in_progress`; `color_palette_entries`, whose union-only merge
+differs from other files; `checkin_transactions.collection_id`, which spares the security checks a
+join; `locked_at` and `locked_by_machine`, for display; `members.added_by`, `added_at` and
+`claimed_at`, as a record of who did what; `events.book_name`, so history reads sensibly after a
+rename or delete; and the transaction's `checkout_guid_hash` snapshot and `revision`, which keep
+check-ins correct. Folding the three collection-file tables into `books` with a `kind` column was
+considered and set aside: it would remove three tables and about 390 lines of SQL and edge-function
+code, but every book query would then need a `kind` filter, and one forgotten filter would put
+collection files into a book list.
+
+### The schema with every proposal applied
+
+What [section 6](#6-database-schema)'s diagram becomes if all the proposals above are adopted:
+`users` (in the `core` schema) is added, `versions` and `collection_file_groups` are gone, tables
+are renamed, and each table loses the columns the proposals remove. Key columns only, as in
+section 6. Four more columns point at `users` but are left out of the picture to keep it readable:
+`members.added_by`, `collections.collection_files_updated_by`,
+`collection_file_checkin_attempts.started_by` and `color_palette_entries.added_by`.
+
+```mermaid
+erDiagram
+    users |o--o{ members : "claimed as"
+    users |o--o{ books : "holds the lock"
+    users ||--o{ checkin_attempts : "sends"
+    users ||--o{ history_events : "acts in"
+    users ||--o{ collections : "created"
+    collections ||--o{ members : "approved accounts"
+    collections ||--o{ books : contains
+    collections ||--o{ history_events : "history log"
+    collections ||--o{ checkin_attempts : "in-flight sends"
+    collections ||--o{ collection_files : "collection files"
+    collections ||--o{ collection_file_checkin_attempts : "in-flight sends"
+    collections ||--o{ color_palette_entries : palette
+    books ||--o{ book_files : "current manifest"
+    books ||--o{ checkin_attempts : "open send"
+    books |o--o{ history_events : "book events"
+
+    users {
+        uuid id PK "never changes"
+        text authentication_id "Firebase uid, NULL = unclaimed"
+        text email "unique, lowercase, NFC"
+        text name
+        timestamptz created_at
+    }
+    collections {
+        uuid id PK "Bloom CollectionId"
+        text name
+        uuid created_by FK
+        boolean initial_upload_in_progress
+        bigint collection_files_version
+    }
+    members {
+        bigint id PK
+        uuid collection_id FK
+        text email "the address invited"
+        member_role role "admin or member"
+        uuid user_id FK "NULL until claimed"
+        timestamptz claimed_at
+        timestamptz last_seen_at "NULL until seen"
+    }
+    books {
+        uuid id PK
+        uuid collection_id FK
+        uuid instance_id "unique per collection"
+        text name "not unique"
+        bigint current_version "NULL = first check-in in progress"
+        text current_checksum
+        uuid locked_by FK "NULL = free"
+        text locked_by_machine "display only"
+        text checkout_guid_hash "NULL = free or send-only"
+        timestamptz deleted_at "tombstone"
+    }
+    book_files {
+        uuid book_id PK, FK
+        text path PK "main htm stored as index.htm"
+        text sha256
+        text s3_version_id
+    }
+    checkin_attempts {
+        uuid id PK
+        uuid book_id FK
+        uuid started_by FK
+        bigint base_book_version
+        jsonb proposed_files
+        text checkout_guid_hash "snapshot at start"
+        text status "open finished aborted expired"
+        timestamptz expires_at "48 h"
+        bigint resulting_book_version
+    }
+    history_events {
+        bigint id PK "polling cursor"
+        uuid collection_id FK
+        uuid book_id FK "SET NULL on delete"
+        integer type "BookHistoryEventType, or 100 and up for cloud"
+        uuid by_user_id FK
+        bigint book_version
+        text book_name
+        text message
+        timestamptz occurred_at
+    }
+    collection_files {
+        uuid collection_id PK, FK
+        text path PK "relative to the collection folder"
+        text sha256
+        text s3_version_id
+    }
+    collection_file_checkin_attempts {
+        uuid id PK
+        uuid collection_id FK
+        bigint expected_version
+        bigint resulting_version
+        text status
+    }
+    color_palette_entries {
+        bigint id PK
+        uuid collection_id FK
+        text palette
+        text color
+    }
+```
 
 ## 10. What changed since the previous version
 
