@@ -30,7 +30,7 @@ export class CanvasTool extends ToolboxToolReactAdaptor {
         return kCanvasToolId;
     }
 
-    /** The icon for this tool's section header in the toolbox. */
+    /** The icon for this tool's header in the toolbox. */
     public iconPath(): string {
         return "/bloom/bookEdit/toolbox/canvas/Canvas%20Icon.svg";
     }

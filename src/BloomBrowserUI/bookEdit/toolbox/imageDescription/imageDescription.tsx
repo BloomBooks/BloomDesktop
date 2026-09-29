@@ -256,7 +256,8 @@ export function setupImageDescriptions(
                 // holds that page, which may not have its script yet, and it gets its own
                 // newPageReady() once it loads. The container belongs to a page that is going away.
                 if (
-                    container.ownerDocument !== getPageIframeBody()?.ownerDocument
+                    container.ownerDocument !==
+                    getPageIframeBody()?.ownerDocument
                 ) {
                     return;
                 }
@@ -376,7 +377,7 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         return ImageDescriptionAdapter.kToolID;
     }
 
-    /** The icon for this tool's section header in the toolbox. */
+    /** The icon for this tool's header in the toolbox. */
     public iconPath(): string {
         return "/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg";
     }

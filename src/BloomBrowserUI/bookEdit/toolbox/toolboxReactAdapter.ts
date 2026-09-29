@@ -14,21 +14,21 @@
 // ITool.id() returns, with no "Tool" suffix (e.g. "canvas", not "canvasTool"). See
 // toolIds.ts for where the suffixed spellings are converted at our boundaries.
 export interface IToolboxReactAdapter {
-    // Makes the tool with this id the active, expanded section of the React accordion.
+    // Makes the tool with this id the open one in the React toolbox.
     setActiveToolByToolId(toolId: string): void;
     // Registers a callback to be told whenever the active tool changes, including
     // as a result of setActiveToolByToolId().
     onActiveToolChanged(callback: (toolId: string) => void): void;
-    // Adds a section for this tool, building its body from the tool's makeRootElement().
+    // Offers this tool, building its body from the tool's makeRootElement().
     // Does nothing if the toolbox is already offering the tool.
     addTool(toolId: string): void;
-    // Removes this tool's section, if it has one. If it was the active section, the first
+    // Withdraws this tool, if it is being offered. If it was the open one, the first
     // remaining tool becomes active.
     removeTool(toolId: string): void;
-    // Is the toolbox currently offering a section for this tool?
+    // Is the toolbox currently offering this tool?
     hasTool(toolId: string): boolean;
-    // The id of the first tool section, or undefined if there are no tool sections.
-    // The "More..." (settings) section doesn't count; it is not a tool that can be current.
+    // The id of the first tool, or undefined if there are none.
+    // The "More..." (settings) tool doesn't count; it is not a tool that can be current.
     getFirstToolId(): string | undefined;
 }
 
