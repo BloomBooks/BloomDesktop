@@ -9,13 +9,13 @@
 // This file is also the single place that knows how a tool's canonical id relates to the
 // other spellings of it that appear at our boundaries: the "Tool"-suffixed names in
 // persisted data and stylesheets, and the English labels and localization keys of the
-// toolbox section headers and "More..." checkboxes.
+// toolbox headers and "More..." checkboxes.
 export const kCanvasToolId = "canvas";
 export const kGameToolId = "game";
 export const kImageDescriptionToolId = "imageDescription";
 export const kMotionToolId = "motion";
 export const kMusicToolId = "music";
-// The "More..." section, which is where the user turns the other tools on and off.
+// The "More..." tool, which is where the user turns the other tools on and off.
 // It is a tool like the others, but it is never a sensible *default* current tool
 // (the toolbox's getFirstToolId skips it). Expanding it does still get persisted as the
 // book's current tool, as it always has been.
@@ -80,8 +80,8 @@ export function toEnabledSettingName(toolId: string): string {
 }
 
 /**
- * The English label and localization key of a tool, used both for its toolbox section
- * header and for its checkbox in the "More..." section. Both are derived from the
+ * The English label and localization key of a tool, used both for its toolbox
+ * header and for its checkbox under "More...". Both are derived from the
  * canonical tool id: "decodableReader" gives "Decodable Reader Tool" and
  * "EditTab.Toolbox.DecodableReaderTool".
  */
@@ -114,7 +114,7 @@ export function getToolLabelInfo(toolId: string): {
 
 /**
  * Orders two tools the way the toolbox presents them: alphabetically by English label.
- * (The toolbox itself puts the "More..." section last, whatever this says about it.)
+ * (The toolbox itself puts the "More..." tool last, whatever this says about it.)
  */
 export function compareToolsByLabel(toolIdA: string, toolIdB: string): number {
     return getToolLabelInfo(toolIdA).englishLabel.localeCompare(

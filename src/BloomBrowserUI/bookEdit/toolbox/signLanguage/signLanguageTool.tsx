@@ -1045,7 +1045,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         return "signLanguage";
     }
 
-    /** The icon for this tool's section header in the toolbox. */
+    /** The icon for this tool's header in the toolbox. */
     public iconPath(): string {
         return "/bloom/bookEdit/toolbox/signLanguage/signLanguageTool.svg";
     }

@@ -207,7 +207,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         return kTalkingBookToolId;
     }
 
-    /** The icon for this tool's section header in the toolbox. */
+    /** The icon for this tool's header in the toolbox. */
     public iconPath(): string {
         return "/bloom/images/microphone-white.svg";
     }

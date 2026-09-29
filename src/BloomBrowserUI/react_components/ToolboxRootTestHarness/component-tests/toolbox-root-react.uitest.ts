@@ -9,24 +9,24 @@ import { expect, test, type Page } from "../../component-tester/playwrightTest";
 
 const harnessUrl = "/?component=ToolboxRootTestHarness";
 
-// The header of one section. AccordionSummary is the clickable header, and it is what
+// The header of one tool. AccordionSummary is the clickable header, and it is what
 // carries aria-expanded.
 const getToolHeader = (page: Page, label: string) =>
     page.locator(".MuiAccordionSummary-root", { hasText: label });
 
-// The labels of all the section headers, in the order the toolbox shows them.
+// The labels of all the tool headers, in the order the toolbox shows them.
 const getToolHeaderTexts = async (page: Page): Promise<string[]> => {
     return await page
         .locator(".MuiAccordionSummary-content .MuiTypography-root")
         .allTextContents();
 };
 
-// The icon of one section's header. ToolboxRoot puts the tool's canonical id on it and
+// The icon of one tool's header. ToolboxRoot puts the tool's canonical id on it and
 // shows the tool's iconPath() as its background image.
 const getToolHeaderIcon = (page: Page, toolId: string) =>
     page.locator(`.MuiAccordionSummary-root span[data-toolid="${toolId}"]`);
 
-// The subscription badges in the section headers. (The "More..." section has badges of its
+// The subscription badges in the tool headers. (The "More..." tool has badges of its
 // own beside its checkboxes, so these assertions must not look at the whole page.)
 const getHeaderSubscriptionBadges = (page: Page) =>
     page.locator(
@@ -46,7 +46,7 @@ const gotoHarness = async (page: Page): Promise<void> => {
 };
 
 // Does what toolbox.ts does when the user turns a tool on: tells the toolbox to offer a
-// section for it, and makes it the active one.
+// tool for it, and makes it the active one.
 const addToolAndMakeItActive = async (
     page: Page,
     toolId: string,
@@ -61,7 +61,7 @@ const addToolAndMakeItActive = async (
 };
 
 test.describe("ToolboxRoot", () => {
-    test("clicking a section header makes it the active section", async ({
+    test("clicking a tool header makes it the active tool", async ({
         page,
     }) => {
         await gotoHarness(page);
@@ -102,7 +102,7 @@ test.describe("ToolboxRoot", () => {
         ).toHaveAttribute("aria-expanded", "false");
     });
 
-    test("a tool added later gets a section and can be made active", async ({
+    test("a tool added later gets its own row and can be made active", async ({
         page,
     }) => {
         await gotoHarness(page);
@@ -116,7 +116,7 @@ test.describe("ToolboxRoot", () => {
         await expect(canvas).toHaveAttribute("aria-expanded", "true");
     });
 
-    test("sections are alphabetical with More last", async ({ page }) => {
+    test("tools are alphabetical with More last", async ({ page }) => {
         await gotoHarness(page);
 
         expect(await getToolHeaderTexts(page)).toEqual([
@@ -126,7 +126,7 @@ test.describe("ToolboxRoot", () => {
         ]);
     });
 
-    test("sections stay alphabetical with More last after a tool is added", async ({
+    test("tools stay alphabetical with More last after a tool is added", async ({
         page,
     }) => {
         await gotoHarness(page);
@@ -151,7 +151,7 @@ test.describe("ToolboxRoot", () => {
 
         // "Impairment Visualizer" (rather than "Impairment Visualizer Tool") is the one
         // exception to the "<Tool Name> Tool" convention; see toolIds.getToolLabelInfo.
-        // The Settings tool's section is labelled "More...".
+        // The Settings tool is labelled "More...".
         expect(await getToolHeaderTexts(page)).toEqual([
             "Impairment Visualizer",
             "Motion Tool",

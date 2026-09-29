@@ -18,8 +18,8 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
     }
 
     /**
-     * The URL of the icon for this tool's toolbox section header. Tools that don't show one
-     * (the "More..." section, and tools that only appear on pages that ask for them) don't
+     * The URL of the icon for this tool's header in the toolbox. Tools that don't show one
+     * (the "More..." tool, and tools that only appear on pages that ask for them) don't
      * override this.
      */
     public iconPath(): string | undefined {
