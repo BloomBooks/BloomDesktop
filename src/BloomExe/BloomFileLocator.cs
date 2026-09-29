@@ -328,11 +328,15 @@ namespace Bloom
         {
             var folder = GetCodeBaseFolder();
             var slash = Path.DirectorySeparatorChar;
-            // In the case of a debug build, the executable files are not at the root of the whole install,
-            // but typically in output\Debug\x64. The "browser" folder, however, is not there but
-            // directly in output. So we need to back up two levels to find the folder to test in Debug builds.
+            // When Bloom runs from a source tree rather than an install, the executable files are not at
+            // the root of the whole install, but typically in output\Debug\x64 or output\Release\x64 (the
+            // latter is what CI's e2e and visual-regression runs use). The "browser" folder, however, is
+            // not there but directly in output. So we need to back up two levels to find the folder to test.
             var pathLessOne = Path.GetDirectoryName(folder);
-            if (pathLessOne.EndsWith($"{slash}output{slash}Debug"))
+            if (
+                pathLessOne.EndsWith($"{slash}output{slash}Debug")
+                || pathLessOne.EndsWith($"{slash}output{slash}Release")
+            )
                 folder = Path.GetDirectoryName(pathLessOne);
 
             return filepath.Contains(folder);

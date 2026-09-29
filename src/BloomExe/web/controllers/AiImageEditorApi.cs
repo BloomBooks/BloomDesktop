@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -360,16 +360,13 @@ namespace Bloom.web.controllers
             // offers each slot a size worked out from the share of its page that slot covers, which
             // Bloom records only when a page is saved. A book that has not been through the per-page
             // pass carries that on the pages someone happened to visit and nowhere else, so most of
-            // the book would get no suggested size. So if this book is behind the current browser
-            // maintenance level, bring the whole book up to it first, then open the editor on the
+            // the book would get no suggested size. So if this book needs its page layout update,
+            // run it over the whole book first, then open the editor on the
             // page we were on. That path does its own save, so it replaces the one below. It is a
             // no-op for a book already up to date, which is the normal case (BL-16852).
-            if (BookProcessor.NeedsPerPageFixup(model.CurrentBook))
+            if (BookProcessor.NeedsPageLayoutUpdate(model.CurrentBook))
             {
-                model.BringBookToCurrentBrowserLevelThen(
-                    pageId,
-                    () => OpenEditorInBrowser(payload)
-                );
+                model.UpdatePageLayoutIfNeededThen(pageId, () => OpenEditorInBrowser(payload));
                 request.PostSucceeded();
                 return;
             }
@@ -523,6 +520,11 @@ namespace Bloom.web.controllers
                     editorUrl = GetAiImageEditorUrl(),
                     httpBase,
                     sessionToken = _sessionToken,
+                    // Which language Bloom's own UI is in. The editor needs it for text it
+                    // never translates (the art style descriptions), which it hides rather
+                    // than showing in English inside a translated Bloom. We tell it rather
+                    // than letting it ask, so the editor needs no knowledge of Bloom's API.
+                    uiLanguageId = LocalizationManager.UILanguageId,
                     book = new { id = book.BookInfo.Id, title = book.BookInfo.Title },
                     bookImages = EnumerateBookImages(book.OurHtmlDom, book.FolderPath),
                     // How big a screen a digital copy of this book is made for: the BloomPUB
@@ -1853,7 +1855,7 @@ namespace Bloom.web.controllers
             // survives.
             DeleteSupersededAiImageFiles(book.FolderPath, book.OurHtmlDom, supersededOffPageFiles);
 
-            // The "AI Image Editor Closed" and "Change Picture" events are reported by
+            // The "Change Picture" events are reported by
             // aiImageEditorOverlay.ts when it gets this reply, not here. For a slot on the page the user
             // has open we only STAGE the replacement and hand it back; whether it actually landed
             // is something only the browser learns, so counting a staged slot as applied here

@@ -20,6 +20,9 @@ const ToolboxCheckbox: FunctionComponent<{
 }> = (props) => {
     return (
         <div
+            // A stable hook for the e2e suite, which turns tools on and off here. The check box's
+            // label is localized; the tool id is not.
+            data-testid={`toolbox-tool-checkbox-${props.tool}`}
             css={css`
                 display: flex;
                 align-items: center;
