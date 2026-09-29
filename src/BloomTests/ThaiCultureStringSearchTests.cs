@@ -104,7 +104,9 @@ namespace BloomTests
             var item = WorkspaceView.CreateLanguageItem("de");
 
             Assert.That(item.MenuText, Is.EqualTo("Deutsch"));
-            Assert.That(item.EnglishName, Is.EqualTo("German"));
+            // EnglishName comes from CultureInfo.DisplayName, which follows the machine's UI
+            // language, so check only that it is not the invariant culture's.
+            Assert.That(item.EnglishName, Does.Not.StartWith("Invariant"));
         }
 
         [Test]
