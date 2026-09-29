@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
 using Bloom.Publish.BloomPub;
+using Bloom.ToPalaso;
 using Bloom.Workspace;
 using NUnit.Framework;
 
@@ -86,6 +87,24 @@ namespace BloomTests
                 WorkspaceView.GetShortenedLanguageName("Français (France)"),
                 Is.EqualTo("Français")
             );
+        }
+
+        [TestCase("fr", "fr")]
+        [TestCase("pt-BR", "pt")]
+        [TestCase("zh-CN", "zh-CN")]
+        public void GetGeneralCode_IsTheLanguageSubtag(string code, string expected)
+        {
+            Assert.That(IetfLanguageTagExtra.GetGeneralCode(code), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void CreateLanguageItem_IsNamedForTheLanguage_NotInvariantLanguage()
+        {
+            // BL-16945: every item in the UI language menu was named "Invariant Language".
+            var item = WorkspaceView.CreateLanguageItem("de");
+
+            Assert.That(item.MenuText, Is.EqualTo("Deutsch"));
+            Assert.That(item.EnglishName, Is.EqualTo("German"));
         }
 
         [Test]

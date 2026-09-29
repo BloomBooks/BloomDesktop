@@ -13,6 +13,7 @@ using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -346,7 +347,7 @@ namespace Bloom.Collection
             try
             {
                 // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
+                return IetfLanguageTagExtra.GetLocalizedLanguageName(tag, inLanguage);
             }
             catch (Exception)
             {

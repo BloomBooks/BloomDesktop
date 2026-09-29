@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using Bloom.ToPalaso;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
@@ -95,11 +96,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
