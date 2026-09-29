@@ -286,6 +286,12 @@ namespace Bloom.Collection
                 // of languages in the collection.  So we retry with the migrated name.
                 Name = ReadString(xml, "Language1Name", "");
             }
+            // Under a Thai regional format, Bloom computed and saved the invariant culture's name,
+            // "Invariant Language (Invariant Country)", for a language named from its tag, such as
+            // the default Language2 of a new collection (BL-16945). No real language has that name,
+            // so look it up again.
+            if (Name.StartsWith("Invariant Language", StringComparison.Ordinal))
+                Name = "";
             if (Name == "")
             {
                 Name = GetLanguageName_NoCache(
