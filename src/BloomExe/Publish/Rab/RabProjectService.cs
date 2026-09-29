@@ -4472,33 +4472,40 @@ namespace Bloom.Publish.Rab
         /// Reading App Builder key is used only if its VERSION file says it is at least
         /// <see cref="kMinimumStandaloneRabVersion"/>. Bloom does not support older standalone
         /// installs (BL-16943), so for one of those Prepare installs Reading App Builder for Bloom.
+        /// If the Bloom key names a folder that no longer holds rab.bat (a leftover registration),
+        /// a supported standalone install is used instead; if there is none, the leftover folder
+        /// is still returned so Prepare sees Reading App Builder as missing and reinstalls it.
         /// </summary>
         internal string GetRabInstallDir()
         {
             var bloomRabInstallDir = GetRabRegistryValue(kBloomRabRegistrySubKey, "InstallDir");
-            if (!string.IsNullOrWhiteSpace(bloomRabInstallDir))
+            if (
+                !string.IsNullOrWhiteSpace(bloomRabInstallDir)
+                && RobustFile.Exists(Path.Combine(bloomRabInstallDir, "rab.bat"))
+            )
                 return bloomRabInstallDir;
 
             var standaloneInstallDir = GetRabRegistryValue(kRabRegistrySubKey, "InstallDir");
-            if (string.IsNullOrWhiteSpace(standaloneInstallDir))
-                return null;
+            if (
+                !string.IsNullOrWhiteSpace(standaloneInstallDir)
+                && IsSupportedRabVersion(ReadRabVersionFile(standaloneInstallDir))
+            )
+                return standaloneInstallDir;
 
-            return IsSupportedRabVersion(ReadRabVersionFile(standaloneInstallDir))
-                ? standaloneInstallDir
-                : null;
+            return string.IsNullOrWhiteSpace(bloomRabInstallDir) ? null : bloomRabInstallDir;
         }
 
         /// <summary>
-        /// If the only Reading App Builder in the registry is a standalone install too old for
-        /// Bloom to use, returns its folder and the version its VERSION file reports (null if it
+        /// If there is no usable Reading App Builder for Bloom install and the standalone install
+        /// in the registry is too old for Bloom to use, returns its folder and the version its VERSION file reports (null if it
         /// has none); otherwise returns (null, null).
         /// </summary>
         private (string InstallDir, string Version) GetUnsupportedStandaloneRabInstall()
         {
+            var bloomRabInstallDir = GetRabRegistryValue(kBloomRabRegistrySubKey, "InstallDir");
             if (
-                !string.IsNullOrWhiteSpace(
-                    GetRabRegistryValue(kBloomRabRegistrySubKey, "InstallDir")
-                )
+                !string.IsNullOrWhiteSpace(bloomRabInstallDir)
+                && RobustFile.Exists(Path.Combine(bloomRabInstallDir, "rab.bat"))
             )
                 return (null, null);
 

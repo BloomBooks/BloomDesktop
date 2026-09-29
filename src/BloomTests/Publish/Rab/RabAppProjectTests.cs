@@ -629,6 +629,81 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.IsRabInstalledForPrepare(), Is.True);
         }
 
+        [TestCase("13.2")]
+        [TestCase("15.0")]
+        public void GetRabInstallDir_PrefersBloomRabInstall_WhenBothEditionsAreInstalled(
+            string standaloneVersion
+        )
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bloomRabInstallDir = CreateFakeRabInstall(
+                tempFolder.Path,
+                null,
+                "Reading App Builder for Bloom"
+            );
+            var standaloneInstallDir = CreateFakeRabInstall(tempFolder.Path, standaloneVersion);
+            Assert.That(
+                standaloneInstallDir,
+                Is.Not.EqualTo(bloomRabInstallDir),
+                "setup: the two editions should be in different folders"
+            );
+            var service = new RegistryAwareRabProjectService(
+                Path.Combine(tempFolder.Path, "default"),
+                bloomRabInstallDir,
+                null
+            )
+            {
+                StandaloneRegistryInstallDir = standaloneInstallDir,
+            };
+
+            Assert.That(service.GetRabInstallDir(), Is.EqualTo(bloomRabInstallDir));
+            Assert.That(
+                service.FindRabLauncherPath(),
+                Is.EqualTo(Path.Combine(bloomRabInstallDir, "rab.bat"))
+            );
+        }
+
+        [TestCase("14.0", true)]
+        [TestCase("13.2", false)]
+        public void GetRabInstallDir_WhenBloomRegistrationIsLeftOver_UsesSupportedStandaloneInstall(
+            string standaloneVersion,
+            bool expectStandalone
+        )
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var leftoverBloomRabInstallDir = Path.Combine(
+                tempFolder.Path,
+                "Reading App Builder for Bloom"
+            );
+            Directory.CreateDirectory(leftoverBloomRabInstallDir);
+            var standaloneInstallDir = CreateFakeRabInstall(tempFolder.Path, standaloneVersion);
+            Assert.That(
+                RobustFile.Exists(Path.Combine(leftoverBloomRabInstallDir, "rab.bat")),
+                Is.False,
+                "setup: the Bloom registration should point at a folder without Reading App Builder in it"
+            );
+            var service = new RegistryAwareRabProjectService(
+                Path.Combine(tempFolder.Path, "default"),
+                leftoverBloomRabInstallDir,
+                null
+            )
+            {
+                StandaloneRegistryInstallDir = standaloneInstallDir,
+            };
+
+            if (expectStandalone)
+            {
+                Assert.That(service.GetRabInstallDir(), Is.EqualTo(standaloneInstallDir));
+                Assert.That(service.IsRabInstalledForPrepare(), Is.True);
+            }
+            else
+            {
+                // Nothing usable: keep reporting the leftover folder so Prepare reinstalls.
+                Assert.That(service.GetRabInstallDir(), Is.EqualTo(leftoverBloomRabInstallDir));
+                Assert.That(service.IsRabInstalledForPrepare(), Is.False);
+            }
+        }
+
         [TestCase("14.0", true)]
         [TestCase("14", true)]
         [TestCase("14.1.2", true)]
@@ -647,9 +722,13 @@ namespace BloomTests.Publish.Rab
         /// Creates a folder with the files IsRabInstalledForPrepare looks for, plus a VERSION file
         /// containing the given text unless it is null.
         /// </summary>
-        private static string CreateFakeRabInstall(string parentFolder, string version)
+        private static string CreateFakeRabInstall(
+            string parentFolder,
+            string version,
+            string folderName = "Reading App Builder"
+        )
         {
-            var installDir = Path.Combine(parentFolder, "Reading App Builder");
+            var installDir = Path.Combine(parentFolder, folderName);
             Directory.CreateDirectory(Path.Combine(installDir, "runtime", "bin"));
             RobustFile.WriteAllText(Path.Combine(installDir, "rab.bat"), "");
             RobustFile.WriteAllText(Path.Combine(installDir, "runtime", "bin", "keytool.exe"), "");
@@ -4181,8 +4260,19 @@ namespace BloomTests.Publish.Rab
             // The registry key the simulated InstallDir and Version values live under.
             public string RegistrySubKey { get; set; } = kBloomRabRegistrySubKeyForTest;
 
+            // When set, the standalone registry key also reports this InstallDir, so a test can
+            // simulate both Reading App Builder editions being installed.
+            public string StandaloneRegistryInstallDir { get; set; }
+
             internal override string GetRabRegistryValue(string subKeyPath, string valueName)
             {
+                if (
+                    subKeyPath == kStandaloneRabRegistrySubKeyForTest
+                    && valueName == "InstallDir"
+                    && StandaloneRegistryInstallDir != null
+                )
+                    return StandaloneRegistryInstallDir;
+
                 if (subKeyPath != RegistrySubKey)
                     return null;
 
