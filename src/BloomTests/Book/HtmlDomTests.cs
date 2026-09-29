@@ -1057,12 +1057,14 @@ namespace BloomTests.Book
             );
             var contents = stylesNodes[0].InnerText.Trim();
             Assert.That(
-                contents.LastIndexOf(XmlHtmlConverter.CdataPrefix).Equals(0),
+                contents
+                    .LastIndexOf(XmlHtmlConverter.CdataPrefix, StringComparison.Ordinal)
+                    .Equals(0),
                 "userModifiedStyles begins with a unique copy of the CDATA prefix."
             );
             Assert.That(
                 contents
-                    .IndexOf(XmlHtmlConverter.CdataSuffix)
+                    .IndexOf(XmlHtmlConverter.CdataSuffix, StringComparison.Ordinal)
                     .Equals(contents.Length - XmlHtmlConverter.CdataSuffix.Length),
                 "userModifiedStyles ends with a unique copy of the CDATA suffix"
             );
@@ -1976,17 +1978,31 @@ p {
                 cssContent.Length,
                 "Comments should be removed from the original CSS"
             );
-            var idxFontFamily = noComments.IndexOf("font-family:");
+            var idxFontFamily = noComments.IndexOf("font-family:", StringComparison.Ordinal);
             Assert.Greater(idxFontFamily, 0, "The first font-family should be found.");
-            var length = noComments.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+            var length =
+                noComments.IndexOf(";", idxFontFamily, StringComparison.Ordinal)
+                + 1
+                - idxFontFamily;
             Assert.Greater(length, 0, "The first font-family should be terminated properly.");
 
-            idxFontFamily = noComments.IndexOf("font-family:", idxFontFamily + length);
+            idxFontFamily = noComments.IndexOf(
+                "font-family:",
+                idxFontFamily + length,
+                StringComparison.Ordinal
+            );
             Assert.Greater(idxFontFamily, 0, "The second font-family should be found.");
-            length = noComments.IndexOf(";", idxFontFamily) + 1 - idxFontFamily;
+            length =
+                noComments.IndexOf(";", idxFontFamily, StringComparison.Ordinal)
+                + 1
+                - idxFontFamily;
             Assert.Greater(length, 0, "The second font-family should be terminated properly.");
 
-            idxFontFamily = noComments.IndexOf("font-family:", idxFontFamily + length);
+            idxFontFamily = noComments.IndexOf(
+                "font-family:",
+                idxFontFamily + length,
+                StringComparison.Ordinal
+            );
             Assert.Less(idxFontFamily, 0, "A third font-family should not be found!");
 
             var fonts = new HashSet<string>();

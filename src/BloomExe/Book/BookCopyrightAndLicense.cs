@@ -91,7 +91,7 @@ namespace Bloom.Book
                 {
                     // Need to handle urls which do not end with the version number.
                     // Simply set it to the default version.
-                    if (!licenseUrl.EndsWith("/"))
+                    if (!licenseUrl.EndsWith("/", StringComparison.Ordinal))
                         licenseUrl += "/";
                     licenseUrl += CreativeCommonsLicenseInfo.kDefaultVersion;
                     metadata.License = CreativeCommonsLicense.FromLicenseUrl(licenseUrl);

@@ -267,7 +267,7 @@ namespace Bloom.WebLibraryIntegration
             if (string.IsNullOrEmpty(s3PrefixToUploadTo))
                 throw new ApplicationException("Unable to initiate book upload on the server.");
 
-            if (!s3PrefixToUploadTo.EndsWith("/"))
+            if (!s3PrefixToUploadTo.EndsWith("/", StringComparison.Ordinal))
                 s3PrefixToUploadTo += "/";
 
             return (

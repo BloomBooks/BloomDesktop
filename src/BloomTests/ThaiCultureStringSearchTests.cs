@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Bloom;
@@ -9,6 +10,7 @@ using Bloom.Publish.BloomPub;
 using Bloom.ToPalaso;
 using Bloom.Workspace;
 using NUnit.Framework;
+using SIL.TestUtilities;
 using SIL.WritingSystems;
 
 namespace BloomTests
@@ -190,6 +192,37 @@ namespace BloomTests
                 "TrimEnd did not return; it is looping on a separator it cannot remove"
             );
             Assert.That(trim.Result, Is.EqualTo("Accra, Ghana"));
+        }
+
+        /// <summary>
+        /// Unlike IndexOf, ICU's IsSuffix/IsPrefix -- which back EndsWith/StartsWith -- do not
+        /// report a match for an all-ignorable needle, so under th-TH the searches on this path
+        /// answer the same whether or not they pass a StringComparison (measured on .NET 8 / ICU;
+        /// see the notes on BL-16934). This test therefore cannot fail if those arguments are
+        /// dropped again: it is coverage that a Thai-named book is still found, not a guard
+        /// against regressing the culture-sensitivity fix. The tests above, which exercise
+        /// IndexOf, are the ones that do fail without it.
+        /// </summary>
+        [Test]
+        public void FindBookHtmlInFolder_ThaiNamedBook_ChoosesTheHtmFile()
+        {
+            Assert.That(CultureInfo.CurrentCulture.Name, Is.EqualTo("th-TH"));
+            using (var outerFolder = new TemporaryFolder("FindBookHtmlInFolder_ThaiNamedBook"))
+            {
+                // The folder name differs from the book's file name, so the candidates are found
+                // by filtering the folder's files on their extension.
+                using (var folder = new TemporaryFolder(outerFolder, "นิทานใหม่"))
+                {
+                    File.WriteAllText(folder.Combine("นิทาน.htm"), "");
+                    File.WriteAllText(folder.Combine("นิทาน.htm.bak"), "");
+                    File.WriteAllText(folder.Combine("นิทาน.htmbak"), "");
+                    File.WriteAllText(folder.Combine("notes.txt"), "");
+
+                    var path = BookStorage.FindBookHtmlInFolder(folder.Path);
+
+                    Assert.That(Path.GetFileName(path), Is.EqualTo("นิทาน.htm"));
+                }
+            }
         }
     }
 }

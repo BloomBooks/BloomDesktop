@@ -403,7 +403,10 @@ namespace Bloom.Book
             {
                 // Path.GetFileName will return empty string if the FolderPath ends with "/"
                 Debug.Assert(
-                    !FolderPath.EndsWith(Path.DirectorySeparatorChar.ToString()),
+                    !FolderPath.EndsWith(
+                        Path.DirectorySeparatorChar.ToString(),
+                        StringComparison.Ordinal
+                    ),
                     "FolderPath is expected not to include a trailing slash, otherwise the folder's name will be determined incorrectly."
                 );
 
@@ -1841,7 +1844,7 @@ namespace Bloom.Book
             // base for the current title, so a genuine title change still renames the folder.)
             if (
                 (
-                    currentFolderName.StartsWith(idealFolderName)
+                    currentFolderName.StartsWith(idealFolderName, StringComparison.Ordinal)
                     || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
                 )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
@@ -2073,7 +2076,7 @@ namespace Bloom.Book
             // is updated. (In particular we don't want to rename the real book for
             // remote users of a TeamCollection when we were just renaming the copy
             // we were publishing.)
-            if (FolderPath.StartsWith(_collectionSettings.FolderPath))
+            if (FolderPath.StartsWith(_collectionSettings.FolderPath, StringComparison.Ordinal))
             {
                 _bookRenamedEvent.Raise(fromToPair);
                 BookTitleChanged?.Invoke(this, EventArgs.Empty);
@@ -2145,7 +2148,12 @@ namespace Bloom.Book
 
                 // Branding images are handled in a special way in BrandingApi.cs.
                 // Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
-                if (imageFileName.EndsWith(Bloom.Api.BrandingSettings.kBrandingImageUrlPart))
+                if (
+                    imageFileName.EndsWith(
+                        Bloom.Api.BrandingSettings.kBrandingImageUrlPart,
+                        StringComparison.Ordinal
+                    )
+                )
                     continue;
 
                 //trim off the end of "license.png?123243"
@@ -2284,7 +2292,9 @@ namespace Bloom.Book
             // (although Bloom doesn't run natively on MacOS).  See BL-11415.
             // Note that periods are stripped from the beginning and end of titles when creating file/folder
             // names in SanitizeNameForFileSystem()/RemoveDangerousCharacters().
-            candidates.RemoveAll((path) => Path.GetFileName(path).StartsWith("."));
+            candidates.RemoveAll(
+                (path) => Path.GetFileName(path).StartsWith(".", StringComparison.Ordinal)
+            );
             if (candidates.Count == 0)
                 return string.Empty;
 
@@ -2321,7 +2331,10 @@ namespace Bloom.Book
                     .GetFiles(folderPath)
                     // Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
                     // So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
-                    .Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
+                    .Where(name =>
+                        name.EndsWith(".htm", StringComparison.Ordinal)
+                        || name.EndsWith(".html", StringComparison.Ordinal)
+                    );
             }
             catch (UnauthorizedAccessException uaex)
             {
@@ -2346,7 +2359,9 @@ namespace Bloom.Book
             var allCandidates = GetAllHtmCandidates(folderPath).ToList();
             allCandidates.RemoveAll(f => okayFiles.Contains(f));
             return allCandidates.Where(f =>
-                !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
+                !Path.GetFileName(f)
+                    .ToLowerInvariant()
+                    .StartsWith("readme-", StringComparison.Ordinal)
             );
         }
 
@@ -2914,7 +2929,10 @@ namespace Bloom.Book
                     continue;
                 // clean up any unwanted Xmatter CSS files. The one we want is already skipped.
                 // Get rid of any versions of basePage.css that aren't in cssFilesToSkipInThisPhase
-                if (file.EndsWith("XMatter.css") || file.StartsWith("basePage"))
+                if (
+                    file.EndsWith("XMatter.css", StringComparison.Ordinal)
+                    || file.StartsWith("basePage", StringComparison.Ordinal)
+                )
                     RobustFile.Delete(path);
                 else
                     supportFilesToUpdate.Add(file);
@@ -3093,7 +3111,7 @@ namespace Bloom.Book
             {
                 var src = imgBranding.GetAttribute("src");
                 var name = Path.GetFileNameWithoutExtension(src);
-                if (!name.EndsWith("-text"))
+                if (!name.EndsWith("-text", StringComparison.Ordinal))
                 {
                     var extension = Path.GetExtension(src);
                     src = name + "-text" + extension;
@@ -3325,7 +3343,7 @@ namespace Bloom.Book
                     var destPath = Path.Combine(FolderPath, fileName);
                     Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
                     RobustFile.Copy(sourcePath, destPath, true);
-                    if (fileName.EndsWith(".css"))
+                    if (fileName.EndsWith(".css", StringComparison.Ordinal))
                     {
                         gotBrandingCss |= fileName == "branding.css";
                     }
@@ -3414,7 +3432,9 @@ namespace Bloom.Book
             {
                 if (
                     sourceFileName.ToLowerInvariant().Contains("xmatter")
-                    && !sourceFileName.ToLower().StartsWith("factory-xmatter")
+                    && !sourceFileName
+                        .ToLower()
+                        .StartsWith("factory-xmatter", StringComparison.Ordinal)
                 )
                 {
                     return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
@@ -3426,7 +3446,7 @@ namespace Bloom.Book
             if (Platform.IsMono)
             {
                 // do not attempt to copy files to the "/usr" directory
-                if (targetDirInfo.FullName.StartsWith("/usr"))
+                if (targetDirInfo.FullName.StartsWith("/usr", StringComparison.Ordinal))
                     return;
             }
             else
@@ -3843,7 +3863,7 @@ namespace Bloom.Book
             int i = 0;
             string suffix = "";
             string result;
-            if (!ext.StartsWith("."))
+            if (!ext.StartsWith(".", StringComparison.Ordinal))
                 ext = "." + ext;
             do
             {
@@ -4743,7 +4763,10 @@ namespace Bloom.Book
                 {
                     elt.SetAttribute("data-tool-id", "game");
                     // In case this runs on something that's already migrated, don't change an existing theme.
-                    if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    if (
+                        !elt.GetClasses()
+                            .Any(x => x.StartsWith("game-theme", StringComparison.Ordinal))
+                    )
                     {
                         // This is the theme (once called 'legacy') that looks most like the old version
                         // of these games...in fact we tried hard to make it identical.

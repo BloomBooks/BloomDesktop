@@ -313,7 +313,9 @@ namespace Bloom.CollectionTab
                     // Fall back to whatever single book htm we copied.
                     oldHtm = Directory
                         .GetFiles(newBookDir, "*.htm")
-                        .FirstOrDefault(p => !Path.GetFileName(p).StartsWith("."));
+                        .FirstOrDefault(p =>
+                            !Path.GetFileName(p).StartsWith(".", StringComparison.Ordinal)
+                        );
                 if (oldHtm != null && RobustFile.Exists(oldHtm))
                     RobustFile.Move(oldHtm, Path.Combine(newBookDir, newBookName + ".htm"));
             }
@@ -1355,7 +1357,7 @@ namespace Bloom.CollectionTab
                 Logger.WriteEvent("Saving {0} ...", destFileName);
                 zipFile.Save();
 
-                if (destFileName.EndsWith(".bloom"))
+                if (destFileName.EndsWith(".bloom", StringComparison.Ordinal))
                     Logger.WriteEvent("Finished writing .bloom file.");
                 else
                     Logger.WriteEvent("Finished writing .bloomSource file.");

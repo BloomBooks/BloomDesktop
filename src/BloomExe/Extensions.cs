@@ -20,7 +20,12 @@ namespace Bloom
         public static string ToLocalhost(this string fileName)
         {
             // don't do this if it is done already
-            if (fileName.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+            if (
+                fileName.StartsWith(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
                 return fileName;
 
             return BloomServer.ServerUrlWithBloomPrefixEndingInSlash
@@ -29,7 +34,12 @@ namespace Bloom
 
         public static string FromLocalhost(this string uri)
         {
-            if (uri.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+            if (
+                uri.StartsWith(
+                    BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+                    StringComparison.Ordinal
+                )
+            )
                 uri = uri.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length)
                     .UnescapeFileNameForHttp();
             return uri;
