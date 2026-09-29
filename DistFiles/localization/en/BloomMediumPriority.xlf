@@ -2671,6 +2671,11 @@
         <note>ID: EditTab.Folio.BubbleHeading</note>
         <note>Heading of the bubble beside the list on a folio's table of contents page, in the Edit tab. A folio is a book that publishes other books of its collection as one book.</note>
       </trans-unit>
+      <trans-unit id="Folio.BookNoLongerInCollection" translate="no">
+        <source xml:lang="en">"{0}" is no longer in this collection.</source>
+        <note>ID: Folio.BookNoLongerInCollection</note>
+        <note>{0} is the title of a book. Shown in the bubble beside the list on a folio's table of contents page when Bloom removes a book from the list because it was deleted from the collection, and in the message when Bloom cannot make the folio's PDF for that reason. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Folio.Settings" translate="no">
         <source xml:lang="en">Settings…</source>
         <note>ID: EditTab.Folio.Settings</note>

@@ -255,6 +255,31 @@ namespace BloomTests.Publish.PDF
         }
 
         [Test]
+        public void GetFolioBookTitles_ReadsTheStoredTitlesOfEveryTocPage()
+        {
+            var dom = MakeDom(
+                "<div class='bloom-page bloom-folio-toc' id='toc1'><div class='marginBox'>"
+                    + "<div class='bloom-translationGroup bloom-folio-toc-list' data-folio-book-ids='a b'"
+                    + " data-folio-book-titles='{\"a\":\"Apples\",\"b\":\"Bees &amp; Wasps\"}'/>"
+                    + "</div></div>"
+                    + "<div class='bloom-page bloom-folio-toc' id='toc2'><div class='marginBox'>"
+                    + "<div class='bloom-translationGroup bloom-folio-toc-list' data-folio-book-ids='c'/>"
+                    + "</div></div>"
+            );
+            Assert.That(Bloom.Book.Book.GetFolioBookIds(dom), Is.EqualTo(new[] { "a", "b", "c" }));
+
+            var titles = Bloom.Book.Book.GetFolioBookTitles(dom);
+
+            Assert.That(
+                titles,
+                Is.EquivalentTo(
+                    new Dictionary<string, string> { { "a", "Apples" }, { "b", "Bees & Wasps" } }
+                ),
+                "c was listed without a stored title, so it has none"
+            );
+        }
+
+        [Test]
         public void GetFolioTocPages_BookWithoutTocPage_IsNotAFolio()
         {
             var dom = MakeDom("<div class='bloom-page bloom-folio-tocx numberedPage' id='p1'/>");

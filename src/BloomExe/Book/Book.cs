@@ -3054,6 +3054,13 @@ namespace Bloom.Book
         public const string kFolioBookIdsAttribute = "data-folio-book-ids";
 
         /// <summary>
+        /// The attribute of a folio's table of contents list that gives the last title seen for each
+        /// book it names: a JSON object from bookInstanceId to title. It lets Bloom name a book that
+        /// has since been deleted from the collection.
+        /// </summary>
+        public const string kFolioBookTitlesAttribute = "data-folio-book-titles";
+
+        /// <summary>
         /// A "Folio" document is one that acts as a wrapper for a number of other books in its
         /// collection, which it publishes as one book. A book is a folio if it has at least one
         /// table of contents page.
@@ -3083,6 +3090,33 @@ namespace Bloom.Book
         public static List<string> GetFolioBookIds(HtmlDom dom)
         {
             return GetFolioTocPages(dom).SelectMany(GetFolioTocEntryIds).ToList();
+        }
+
+        /// <summary>
+        /// The last title seen for each book listed on the table of contents pages of a folio's DOM,
+        /// by id. A book with no stored title is absent.
+        /// </summary>
+        public static Dictionary<string, string> GetFolioBookTitles(HtmlDom dom)
+        {
+            var titles = new Dictionary<string, string>();
+            foreach (var tocPage in GetFolioTocPages(dom))
+            {
+                foreach (
+                    var list in tocPage.SafeSelectElements(
+                        $".//div[contains(concat(' ', @class, ' '), ' {kFolioTocListClass} ')]"
+                    )
+                )
+                {
+                    var json = list.GetAttribute(kFolioBookTitlesAttribute);
+                    if (string.IsNullOrEmpty(json))
+                        continue;
+                    foreach (
+                        var entry in JsonConvert.DeserializeObject<Dictionary<string, string>>(json)
+                    )
+                        titles[entry.Key] = entry.Value;
+                }
+            }
+            return titles;
         }
 
         /// <summary>

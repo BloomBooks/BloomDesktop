@@ -779,6 +779,7 @@
       <trans-unit id="PublishTab.Folio.BooksMissing" translate="no">
         <source xml:lang="en">{0} of the books this folio lists are no longer in this collection.</source>
         <note>ID: PublishTab.Folio.BooksMissing</note>
+        <note>Obsolete as of 6.6 — replaced by Folio.BookNoLongerInCollection, which names each book.</note>
         <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is a number of books.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Folio.BookSizeDiffers" translate="no">

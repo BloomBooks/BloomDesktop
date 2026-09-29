@@ -240,7 +240,7 @@ namespace Bloom.Publish.PDF
         private List<Book.Book> GetChildBooks()
         {
             var bookInfos = _collection.GetBookInfos().ToList();
-            var missing = 0;
+            var titles = Book.Book.GetFolioBookTitles(_folio.OurHtmlDom);
             var problems = new List<string>();
             var children = new List<Book.Book>();
             foreach (var id in _folio.GetFolioBookIds())
@@ -248,7 +248,18 @@ namespace Bloom.Publish.PDF
                 var info = bookInfos.FirstOrDefault(b => b.Id == id);
                 if (info == null)
                 {
-                    missing++;
+                    // Named by the last title the table of contents page recorded for it. A book
+                    // chosen before titles were recorded can only be named by its id.
+                    problems.Add(
+                        string.Format(
+                            LocalizationManager.GetString(
+                                "Folio.BookNoLongerInCollection",
+                                "\"{0}\" is no longer in this collection.",
+                                "{0} is the title of a book."
+                            ),
+                            titles.TryGetValue(id, out var title) ? title : id
+                        )
+                    );
                     continue;
                 }
                 var child = _bookServer.GetBookFromBookInfo(info);
@@ -281,20 +292,6 @@ namespace Bloom.Publish.PDF
                     continue;
                 }
                 children.Add(child);
-            }
-            if (missing > 0)
-            {
-                problems.Insert(
-                    0,
-                    string.Format(
-                        LocalizationManager.GetString(
-                            "PublishTab.Folio.BooksMissing",
-                            "{0} of the books this folio lists are no longer in this collection.",
-                            "{0} is a number of books."
-                        ),
-                        missing
-                    )
-                );
             }
             ThrowIfProblems(problems);
             return children;
