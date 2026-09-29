@@ -74,7 +74,7 @@ export function setToolboxSettingsChangeHandler(
 // Each tool implements this interface and adds an instance of its implementation to the
 // list maintained here. The methods support the different things individual tools
 // can be asked to do by the rest of the system. Everything the toolbox needs to know
-// about a tool, including the metadata it shows in the tool's section header, comes from
+// about a tool, including the metadata it shows in the tool's header, comes from
 // here (or is derived from id(); see toolIds.ts).
 // See ToolboxView.cs class comment for a summary of how to add a new tool.
 export interface ITool {
@@ -109,14 +109,14 @@ export interface ITool {
     requiresToolId(): boolean;
 
     // It should return the main content of the tool, which must be a single div.
-    // ToolboxRoot renders the section header (label, icon, subscription badge) around it;
+    // ToolboxRoot renders the tool's header (label, icon, subscription badge) around it;
     // this method is however responsible to localize the content of the div.
     makeRootElement(): HTMLDivElement;
     // notifies the tool that an image has been changed on the page.
     // If the change only affects one image, it may be passed; otherwise, all should be fixed.
     imageUpdated(img: HTMLImageElement | undefined): void;
-    // The URL of the icon to show in this tool's toolbox section header, e.g.
-    // "/bloom/images/microphone-white.svg". Undefined for the few sections that don't
+    // The URL of the icon to show in this tool's header in the toolbox, e.g.
+    // "/bloom/images/microphone-white.svg". Undefined for the few tools that don't
     // have an icon.
     iconPath(): string | undefined;
 }
@@ -233,7 +233,7 @@ export class ToolBox {
 
     /**
      * The tools the book has enabled, as a comma-separated list of tool names. This is the
-     * one place we ask; the answer drives which sections the toolbox offers.
+     * one place we ask; the answer drives which tools the toolbox offers.
      */
     private getEnabledTools() {
         // Using axios directly because we want the promise.
@@ -289,7 +289,7 @@ export class ToolBox {
                     }
                 }
 
-                // The "More..." section, which is how the user enables the other tools,
+                // The "More..." tool, which is how the user enables the other tools,
                 // is always offered.
                 toolsToLoad.push(kSettingsToolId);
                 const loadNextTool = () => {
@@ -310,7 +310,7 @@ export class ToolBox {
     }
 
     /**
-     * Is the toolbox currently offering this tool (canonical id) a section? (Despite the
+     * Is the toolbox currently offering this tool (canonical id)? (Despite the
      * name, this does not mean the tool is the *current* tool; it never did.)
      */
     public isToolActive(toolId: string): boolean {
@@ -403,8 +403,8 @@ export function getActiveToolId(): string | undefined {
     return newToolId ? newToolId : currentTool?.id();
 }
 
-// How long, after a tool is turned on in the "More..." settings section, we wait
-// before adding/opening it. The open collapses the "More..." section, so we delay
+// How long, after a tool is turned on in the "More..." tool, we wait
+// before adding/opening it. Opening it closes the "More..." tool, so we delay
 // it just long enough for the user to see the checkbox they ticked. (BL-16501)
 const kShowToolAfterEnableDelayMs = 300;
 
@@ -423,7 +423,7 @@ const pendingShowToolTimeouts = new Map<
 // the tool in the toolbox, whenever the tool is checked
 // or unchecked in the toolbox settings.
 // deferShowToRevealCheckbox is set only by the "More..." settings checkboxes:
-// when turning a tool on from there, opening it collapses the settings section,
+// when turning a tool on from there, opening it collapses the settings tool,
 // so we briefly delay the open (see below) to let the user see the checkbox they
 // ticked. Other callers (e.g. activating a tool from an in-page action) leave it
 // false so the tool opens immediately. (BL-16501)
@@ -458,11 +458,11 @@ export function setToolEnabledFromSettings(
     }
 
     if (turnOn && deferShowToRevealCheckbox) {
-        // Turning a tool on adds it to the accordion and makes it the active
-        // section, which collapses the "More..." settings section. If we do that
-        // immediately, the "More..." section closes before the user perceives the
-        // checkbox they just ticked. Briefly delay so the checkmark is visible
-        // before the section collapses to reveal the newly-enabled tool. (BL-16501)
+        // Turning a tool on adds it to the toolbox and opens it, which closes
+        // the "More..." tool. If we do that immediately, "More..." closes before
+        // the user perceives the checkbox they just ticked. Briefly delay, so the
+        // checkmark is visible before "More..." closes to reveal the newly-enabled
+        // tool. (BL-16501)
         const timeout = setTimeout(() => {
             pendingShowToolTimeouts.delete(toolId);
             // Guard against the tool having been turned off again during the delay.
@@ -709,7 +709,7 @@ export function removeToolboxMarkup() {
 }
 
 /**
- * Called when the toolbox UI reports that a different section is now the active one.
+ * Called when the toolbox UI reports that a different tool is now the active one.
  * requestedToolId is a canonical tool id (the toolbox UI only ever reports tools it is
  * offering, and it was told about them by their canonical ids).
  * Note: do not name this parameter newToolId; that is the module-level variable this
@@ -760,7 +760,7 @@ function activateTool(newTool: ITool) {
     }
 }
 
-// Does the toolbox have a section for this tool? Only then does it have somewhere to
+// Is the toolbox offering this tool? Only then does it have somewhere to
 // display itself and does it make sense to run its lifecycle methods.
 function isToolInitialized(tool: ITool): boolean {
     return toolbox.isToolActive(tool.id());
@@ -802,7 +802,7 @@ function setCurrentTool(toolId: string) {
         toolboxReactActivationHooked = true;
     }
 
-    // NOTE: getFirstToolId() never returns the More (settings) section: it is never a
+    // NOTE: getFirstToolId() never returns the More (settings) tool: it is never a
     // sensible *default*. (Expanding it by hand does still make it current and gets
     // persisted, as it always has.)
     if (!toolId) {
@@ -835,7 +835,7 @@ function getITool(toolId: string): ITool {
 }
 
 /**
- * Tells the toolbox UI to offer a section for this tool, and optionally to open it.
+ * Tells the toolbox UI to offer this tool, and optionally to open it.
  * These tools are the tools enabled by the user, tools that are always enabled
  * (like the talking book tool), and the settings ("More...") tool.
  */
@@ -885,7 +885,7 @@ function showToolboxChanged(wasShowing: boolean): void {
     } else {
         // starting up for the very first time in this book...no tool is current,
         // so select and properly initialize the first one. If the toolbox somehow has
-        // no tool sections at all, fall back to the talking book tool, which is always
+        // no tools at all, fall back to the talking book tool, which is always
         // enabled. (This should never happen; we're just being defensive.)
         const adapter = getToolboxReactAdapter();
         adapter?.setActiveToolByToolId(

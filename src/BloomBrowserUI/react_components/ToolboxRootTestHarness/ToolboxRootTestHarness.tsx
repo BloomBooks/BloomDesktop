@@ -20,7 +20,7 @@ import { useMountEffect } from "../../utils/useMountEffect";
 // adapter's addTool() for each, and finally makes the tool the book was last using the
 // current one). This harness stands in for exactly that: it registers a small set of tools
 // with the real ToolBox.registerTool(), then populates the toolbox through the real
-// adapter. Everything under test — the sections, their order, their headers, and which one
+// adapter. Everything under test — the tools, their order, their headers, and which one
 // is expanded — is therefore production code driven the production way.
 
 declare global {
@@ -69,9 +69,9 @@ class StandInTool extends ToolboxToolReactAdaptor {
 
 // The tools this harness offers. The two real ones are the cheapest real tools to host
 // outside the real toolbox: neither needs CkEditor, the audio engine, or a page being
-// edited in order to render its section. Impairment Visualizer also exercises the one tool
+// edited in order to render its body. Impairment Visualizer also exercises the one tool
 // id whose label and l10n key take no "Tool" suffix, and the Settings ("More...") tool is
-// the section that always sorts last.
+// the tool that always sorts last.
 const impairmentVisualizerTool = new ImpairmentVisualizerAdaptor();
 const settingsTool = new SettingsTool();
 const motionTool = new StandInTool(
@@ -91,17 +91,17 @@ const canvasTool = new StandInTool(
     (tool) => ToolBox.registerTool(tool),
 );
 
-// The sections the toolbox starts with, i.e. what toolbox.ts would add after asking the
+// The tools the toolbox starts with, i.e. what toolbox.ts would add after asking the
 // server which tools this book has enabled. Canvas is deliberately left out so that a test
-// can add it later, the way ticking its checkbox in the "More..." section does.
+// can add it later, the way ticking its checkbox in the "More..." tool does.
 const initiallyOfferedToolIds = [
     impairmentVisualizerTool.id(),
     motionTool.id(),
     settingsTool.id(),
 ];
 
-// The tool this "book" was last using, which toolbox.ts makes current once the sections
-// exist. Deliberately not the first section, so that a test can tell that it was restored
+// The tool this "book" was last using, which toolbox.ts makes current once the tools
+// exist. Deliberately not the first tool, so that a test can tell that it was restored
 // rather than just defaulted to.
 const restoredCurrentToolId = motionTool.id();
 

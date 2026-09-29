@@ -27,31 +27,31 @@ import {
 } from "./toolIds";
 
 // React host for the toolbox sidebar. It holds the list of tools the toolbox is offering,
-// which one is expanded, and the DOM node that each tool renders itself into.
+// which one is open, and the DOM node that each tool renders itself into.
 //
 // It does not decide which tools to offer: toolbox.ts asks the server which tools the book
 // has enabled and tells us about each one through the adapter's addTool(), which is the
-// only way a section is ever created.
+// only way a tool is ever created.
 //
 // Every tool is a React component, but a tool hands us the already-rendered root DOM
 // element of its component (from its ITool.makeRootElement()) rather than an element type
 // we could render ourselves. So a small host component (ToolBodyHost) puts that element
-// into the React layout, which also means a tool keeps its state as sections open and
-// close.
+// into the React layout, which also means a tool keeps its state as the user opens and
+// closes tools.
 
-// Everything the toolbox needs in order to show one tool's section. It all comes from the
+// Everything the toolbox needs in order to show one tool. It all comes from the
 // tool itself (see ITool) or is derived from its id (see toolIds.ts).
-type ToolboxSection = {
+type OfferedTool = {
     // The tool's canonical id, i.e. what its ITool.id() returns, e.g. "canvas".
     id: string;
     englishLabel: string;
     l10nKey: string;
-    // The icon to show in the section header; undefined for sections without one.
+    // The icon to show in the tool's header; undefined for tools without one.
     iconPath?: string;
-    // Set only for tools that require a subscription, in which case the section header
+    // Set only for tools that require a subscription, in which case the tool's header
     // gets a badge for this feature.
     featureName?: string;
-    // The element the tool renders itself into. Created once, when the section is created.
+    // The element the tool renders itself into. Created once, when the tool is first offered.
     toolBodyElement: HTMLDivElement;
 };
 
@@ -67,15 +67,15 @@ const toolboxHeaderIconStyles = css`
 
 // Each tool's body, kept for the life of the toolbox and reused whenever the tool is offered
 // again. makeRootElement() mounts the tool's own React root inside the element it returns, and
-// taking a section away only detaches that element: the root stays mounted, so its effects are
+// withdrawing a tool only detaches that element: the root stays mounted, so its effects are
 // never cleaned up. Making a fresh one each time the user ticks the tool in More... would
 // therefore leave the old one running (the Canvas tool polls on a timer, for instance) and add
 // another alongside it. The legacy toolbox likewise built each tool's body only once.
 const toolBodyElements = new Map<string, HTMLDivElement>();
 
-// Gathers everything we need to show a section for this tool. The tool must be one the
+// Gathers everything we need in order to show this tool. The tool must be one the
 // toolbox knows about: toolbox.ts only asks us for tools it found in the master list.
-const makeSectionFromToolId = (toolId: string): ToolboxSection => {
+const makeOfferedTool = (toolId: string): OfferedTool => {
     const tool = getMasterToolList().find(
         (candidate) => candidate.id() === toolId,
     )!;
@@ -97,21 +97,21 @@ const makeSectionFromToolId = (toolId: string): ToolboxSection => {
     };
 };
 
-const sortSectionsAlphabeticallyWithSettingsLast = (
-    sections: ToolboxSection[],
-): ToolboxSection[] => {
-    const settingsSection = sections.find(
-        (section) => section.id === kSettingsToolId,
+const sortToolsAlphabeticallyWithSettingsLast = (
+    offeredTools: OfferedTool[],
+): OfferedTool[] => {
+    const settingsTool = offeredTools.find(
+        (tool) => tool.id === kSettingsToolId,
     );
-    const nonSettingsSections = sections
-        .filter((section) => section.id !== kSettingsToolId)
+    const nonSettingsTools = offeredTools
+        .filter((tool) => tool.id !== kSettingsToolId)
         .sort((a, b) => compareToolsByLabel(a.id, b.id));
 
-    if (!settingsSection) {
-        return nonSettingsSections;
+    if (!settingsTool) {
+        return nonSettingsTools;
     }
 
-    return [...nonSettingsSections, settingsSection];
+    return [...nonSettingsTools, settingsTool];
 };
 
 // Puts a tool's own DOM element (the one it renders itself into) into the React layout,
@@ -169,48 +169,42 @@ const ToolBodyHost: React.FunctionComponent<{ element: HTMLDivElement }> = (
 // This component is the root of the whole toolbox sidebar. It is rendered into a dedicated
 // host element created by the toolbox page pug.
 export const ToolboxRoot: React.FunctionComponent = () => {
-    const [sections, setSections] = React.useState<ToolboxSection[]>([]);
-    const [expandedSectionId, setExpandedSectionId] = React.useState<string>();
+    const [offeredTools, setOfferedTools] = React.useState<OfferedTool[]>([]);
+    const [openToolId, setOpenToolId] = React.useState<string>();
     const activeToolChangedCallbacks = React.useRef<
         ((toolId: string) => void)[]
     >([]);
-    // The authoritative copy of the sections, so that the adapter methods toolbox.ts
+    // The authoritative copy of the tools being offered, so that the adapter methods toolbox.ts
     // calls can read and update the list synchronously. (React state is updated from it,
     // for rendering.)
-    const sectionsRef = React.useRef<ToolboxSection[]>([]);
-    // Likewise the authoritative copy of which section is expanded, so that removeTool()
+    const offeredToolsRef = React.useRef<OfferedTool[]>([]);
+    // Likewise the authoritative copy of which tool is open, so that removeTool()
     // can tell synchronously whether it is removing the open one.
-    const expandedSectionIdRef = React.useRef<string | undefined>(undefined);
+    const openToolIdRef = React.useRef<string | undefined>(undefined);
 
-    const applySections = React.useCallback(
-        (nextSections: ToolboxSection[]) => {
-            sectionsRef.current = nextSections;
-            setSections(nextSections);
-        },
-        [],
-    );
+    const applyOfferedTools = React.useCallback((nextTools: OfferedTool[]) => {
+        offeredToolsRef.current = nextTools;
+        setOfferedTools(nextTools);
+    }, []);
 
-    const setExpandedSection = React.useCallback(
-        (sectionId: string | undefined) => {
-            expandedSectionIdRef.current = sectionId;
-            setExpandedSectionId(sectionId);
-        },
-        [],
-    );
+    const setOpenTool = React.useCallback((toolId: string | undefined) => {
+        openToolIdRef.current = toolId;
+        setOpenToolId(toolId);
+    }, []);
 
-    // Expand this tool's section and tell toolbox.ts about it. toolbox.ts keeps its own
+    // Open this tool and tell toolbox.ts about it. toolbox.ts keeps its own
     // idea of which tool is current and drives each tool's showTool()/hideTool() from it,
-    // so every path that changes which section is expanded to a real tool has to come
+    // so every path that changes which tool is open to a real tool has to come
     // through here; one that quietly changed only our state left the two out of sync and
     // the tool the user could see was never activated (BL-16602).
     const makeToolActive = React.useCallback(
         (toolId: string) => {
-            setExpandedSection(toolId);
+            setOpenTool(toolId);
             activeToolChangedCallbacks.current.forEach((callback) => {
                 callback(toolId);
             });
         },
-        [setExpandedSection],
+        [setOpenTool],
     );
 
     // Register the adapter that toolbox.ts uses to say which tools the toolbox offers,
@@ -226,36 +220,36 @@ export const ToolboxRoot: React.FunctionComponent = () => {
             },
             addTool: (toolId: string) => {
                 if (
-                    sectionsRef.current.some((section) => section.id === toolId)
+                    offeredToolsRef.current.some((tool) => tool.id === toolId)
                 ) {
                     return;
                 }
-                applySections(
-                    sortSectionsAlphabeticallyWithSettingsLast([
-                        ...sectionsRef.current,
-                        makeSectionFromToolId(toolId),
+                applyOfferedTools(
+                    sortToolsAlphabeticallyWithSettingsLast([
+                        ...offeredToolsRef.current,
+                        makeOfferedTool(toolId),
                     ]),
                 );
             },
             removeTool: (toolId: string) => {
-                const remainingSections = sectionsRef.current.filter(
-                    (section) => section.id !== toolId,
+                const remainingTools = offeredToolsRef.current.filter(
+                    (tool) => tool.id !== toolId,
                 );
-                if (remainingSections.length === sectionsRef.current.length) {
+                if (remainingTools.length === offeredToolsRef.current.length) {
                     return;
                 }
-                applySections(remainingSections);
-                if (expandedSectionIdRef.current !== toolId) {
-                    // We removed a tool the user wasn't looking at, so which section is
+                applyOfferedTools(remainingTools);
+                if (openToolIdRef.current !== toolId) {
+                    // We removed a tool the user wasn't looking at, so which tool is
                     // open doesn't change.
                     return;
                 }
-                const replacementToolId = remainingSections[0]?.id;
+                const replacementToolId = remainingTools[0]?.id;
                 if (!replacementToolId) {
                     // Nothing left to open. Don't notify toolbox.ts: it has no way to
-                    // represent "no current tool", and expanding a section later will
+                    // represent "no current tool", and opening a tool later will
                     // tell it then.
-                    setExpandedSection(undefined);
+                    setOpenTool(undefined);
                     return;
                 }
                 // Go through makeToolActive so toolbox.ts hears about the replacement.
@@ -266,13 +260,13 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                 makeToolActive(replacementToolId);
             },
             hasTool: (toolId: string) => {
-                return sectionsRef.current.some(
-                    (section) => section.id === toolId,
+                return offeredToolsRef.current.some(
+                    (tool) => tool.id === toolId,
                 );
             },
             getFirstToolId: () => {
-                return sectionsRef.current.find(
-                    (section) => section.id !== kSettingsToolId,
+                return offeredToolsRef.current.find(
+                    (tool) => tool.id !== kSettingsToolId,
                 )?.id;
             },
         });
@@ -298,7 +292,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         display: flex;
                         flex-direction: column;
                         // Lets the darker panel background show through between the
-                        // collapsed section headers, as it did in 6.3 and earlier (BL-16532).
+                        // closed tool headers, as it did in 6.3 and earlier (BL-16532).
                         gap: 1px;
                         height: 100%;
                         min-height: 0;
@@ -312,9 +306,9 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                         }
                     `}
                 >
-                    {sections.map((section) => (
+                    {offeredTools.map((tool) => (
                         <Accordion
-                            key={section.id}
+                            key={tool.id}
                             css={css`
                                 background-color: ${kBloomUnselectedTabBackground};
                                 color: white;
@@ -361,7 +355,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 }
                             `}
                             disableGutters
-                            expanded={expandedSectionId === section.id}
+                            expanded={openToolId === tool.id}
                             onChange={(_event, expanded) => {
                                 // Clicking the open tool's header does nothing, as in 6.5 and earlier
                                 // (originally BL-16533). With the legacy sync gone the collapse would
@@ -369,7 +363,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                 // to keep the established behavior: the toolbox always shows one open
                                 // tool.
                                 if (expanded) {
-                                    makeToolActive(section.id);
+                                    makeToolActive(tool.id);
                                 }
                             }}
                         >
@@ -412,7 +406,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     // The talking book icon is a tall, narrow microphone,
                                     // so it gets a narrower box than the others.
                                     css={
-                                        section.id === kTalkingBookToolId
+                                        tool.id === kTalkingBookToolId
                                             ? [
                                                   toolboxHeaderIconStyles,
                                                   css`
@@ -422,15 +416,15 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                               ]
                                             : toolboxHeaderIconStyles
                                     }
-                                    data-toolid={section.id}
+                                    data-toolid={tool.id}
                                     data-testid="toolbox-header-icon"
                                     // The icon path is also exposed as data so tests can
                                     // check which icon a header shows without reading styles.
-                                    data-icon-src={section.iconPath}
+                                    data-icon-src={tool.iconPath}
                                     style={
-                                        section.iconPath
+                                        tool.iconPath
                                             ? {
-                                                  backgroundImage: `url(${section.iconPath})`,
+                                                  backgroundImage: `url(${tool.iconPath})`,
                                               }
                                             : undefined
                                     }
@@ -441,14 +435,14 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                         font-size: 11px;
                                     `}
                                 >
-                                    <LocalizedString l10nKey={section.l10nKey}>
-                                        {section.englishLabel}
+                                    <LocalizedString l10nKey={tool.l10nKey}>
+                                        {tool.englishLabel}
                                     </LocalizedString>
                                 </Typography>
-                                {section.featureName && (
+                                {tool.featureName && (
                                     <span>
                                         <SubscriptionBadgeWithTooltipAndDialog
-                                            featureName={section.featureName}
+                                            featureName={tool.featureName}
                                         />
                                     </span>
                                 )}
@@ -484,7 +478,7 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                                     `}
                                 >
                                     <ToolBodyHost
-                                        element={section.toolBodyElement}
+                                        element={tool.toolBodyElement}
                                     />
                                 </div>
                             </AccordionDetails>

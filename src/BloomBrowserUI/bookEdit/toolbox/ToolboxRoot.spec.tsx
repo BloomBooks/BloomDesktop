@@ -5,7 +5,7 @@ import { renderRoot, unmountRoot } from "../../utils/reactRender";
 
 // The real ./toolbox module drags in the whole legacy toolbox (jQuery, every tool, the
 // edit-page frames...). All ToolboxRoot wants from it is the list of tools that exist,
-// which it uses to build a section for each tool it is told to offer.
+// which it uses to build a body for each tool it is told to offer.
 const makeFakeTool = (id: string, featureName?: string) => ({
     id: () => id,
     iconPath: () => `/bloom/images/${id}.svg`,
@@ -68,13 +68,13 @@ const getAdapter = () => {
 };
 
 // Each accordion header carries the tool's canonical id on its icon span, so this is the
-// order of the sections the user would see.
+// order of the tools the user would see.
 const getHeaderToolIds = (container: HTMLElement): string[] =>
     Array.from(
         container.querySelectorAll(".MuiAccordionSummary-root [data-toolid]"),
     ).map((element) => element.getAttribute("data-toolid") ?? "");
 
-// Which section the user actually has open.
+// Which tool the user actually has open.
 const getExpandedToolId = (container: HTMLElement): string | undefined => {
     const expandedHeader = Array.from(
         container.querySelectorAll(".MuiAccordionSummary-root"),

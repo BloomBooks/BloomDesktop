@@ -146,7 +146,7 @@ export async function getShownTools(page: Page): Promise<string[]> {
 }
 
 /**
- * The name of the tool whose section of the toolbox is open, as its header shows it, e.g.
+ * The name of the tool the toolbox has open, as its header shows it, e.g.
  * "Talking Book Tool", or undefined when no tool is open.
  */
 export async function getOpenToolName(page: Page): Promise<string | undefined> {
@@ -163,8 +163,8 @@ function toolHeader(tool: ToolId): string {
 }
 
 /**
- * The tool whose section of the toolbox is open, by the `data-toolid` its header carries, e.g.
- * "talkingBook", or undefined when no section is open. getOpenToolName reads the header's
+ * The tool the toolbox has open, by the `data-toolid` its header carries, e.g.
+ * "talkingBook", or undefined when no tool is open. getOpenToolName reads the header's
  * localized text instead.
  */
 export async function getOpenTool(page: Page): Promise<ToolId | undefined> {
@@ -195,10 +195,10 @@ async function waitForToolboxToSettle(page: Page): Promise<void> {
 }
 
 /**
- * Click the header of one of the toolbox's sections, the way a person does, whether or not that
- * section is already open, and wait for the toolbox to settle. openTool is the route for "open
+ * Click one of the toolbox's tool headers, the way a person does, whether or not that
+ * tool is already open, and wait for the toolbox to settle. openTool is the route for "open
  * this tool"; this is for a test whose subject is what the click itself does, such as clicking
- * the header of the section that is already open. Throws, naming the tools on offer, when the
+ * the header of the tool that is already open. Throws, naming the tools on offer, when the
  * toolbox is not offering this one.
  */
 export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
@@ -213,15 +213,15 @@ export async function clickToolHeader(page: Page, tool: ToolId): Promise<void> {
     await waitForToolboxToSettle(page);
 }
 
-/** The row under the toolbox's "More..." section that holds one tool's on/off check box. */
+/** The row under the toolbox's "More..." tool that holds one tool's on/off check box. */
 function toolCheckboxRow(tool: ToolId): string {
     return `[data-testid="toolbox-tool-checkbox-${tool}"]`;
 }
 
 /**
  * Turn a tool on or off by ticking or unticking its check box under the toolbox's "More..."
- * section, the way a person does, and wait until the toolbox has caught up: the tool's section is
- * offered (on) or gone (off). Opens the "More..." section first. Does nothing but wait when the
+ * tool, the way a person does, and wait until the toolbox has caught up: the tool's body is
+ * offered (on) or gone (off). Opens the "More..." tool first. Does nothing but wait when the
  * box is already in the state asked for.
  *
  * This is the UI route, for the journey test of turning tools on and off. A test that only needs
@@ -242,7 +242,7 @@ export async function setToolTurnedOn(
             timeout: 30000,
             message: `Turning the "${tool}" tool ${on ? "on" : "off"} under "More..." did not ${
                 on ? "add" : "remove"
-            } its section.`,
+            } it.`,
         })
         .toBe(on);
 }
@@ -283,8 +283,8 @@ export async function enableToolForBook(
 }
 
 /**
- * Wait until the toolbox has a section open, and return which tool it is. The toolbox opens a
- * section a moment after the drawer opens, and again a moment after a tool is turned on (so the
+ * Wait until the toolbox has a tool open, and return which tool it is. The toolbox opens a
+ * tool a moment after the drawer opens, and again a moment after a tool is turned on (so the
  * person sees the check box tick before "More..." closes, BL-16501).
  */
 export async function waitForOpenTool(page: Page): Promise<ToolId> {
@@ -297,7 +297,7 @@ export async function waitForOpenTool(page: Page): Promise<ToolId> {
             },
             {
                 timeout: 30000,
-                message: `The toolbox never opened a section. It shows: ${(
+                message: `The toolbox never opened a tool. It shows: ${(
                     await getShownTools(page)
                 ).join(", ")}.`,
             },

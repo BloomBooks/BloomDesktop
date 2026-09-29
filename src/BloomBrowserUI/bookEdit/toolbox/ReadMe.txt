@@ -2,7 +2,7 @@ The toolbox is the sidebar of the Edit tab. Every tool in it is a React componen
 
 Code organization
 - Files in this root folder are the generic machinery for managing the toolbox as a whole:
-    - ToolboxRoot.tsx    the React root: one MUI Accordion section per tool, whose body is
+    - ToolboxRoot.tsx    the React root: one MUI Accordion per tool, whose body is
                          the element the tool's ITool.makeRootElement() returns.
     - toolbox.ts         the ITool interface and the non-React orchestration: it asks the
                          server which tools this book has enabled, drives each tool's
@@ -32,14 +32,14 @@ know about the tool.
 To add a new tool
 1. Create a folder here whose name is the tool's canonical id (no "Tool" suffix).
 2. In it, write a class that extends ToolboxToolReactAdaptor, implementing at least id()
-   and makeRootElement(), plus iconPath() if the section header should show an icon, and
+   and makeRootElement(), plus iconPath() if its header should show an icon, and
    whichever lifecycle methods the tool needs (see the ITool comments in toolbox.ts).
 3. Register one instance of it in toolboxBootstrap.ts: ToolBox.registerTool(new MyTool()).
 4. Add an XLF entry for the label, whose key follows the convention in toolIds.ts
    getToolLabelInfo() (e.g. id "music" gives key "EditTab.Toolbox.MusicTool" and English
    "Music Tool"); see .github/skills/xlf-strings/SKILL.md.
 
-That is all. The section header (label, icon, subscription badge), the tool's checkbox in
-the "More..." section, and the alphabetical ordering are all derived from the ITool
+That is all. The header (label, icon, subscription badge), the tool's checkbox under
+"More...", and the alphabetical ordering are all derived from the ITool
 implementation and its id, so there is no list of tools to update anywhere else.
 See also the ToolboxView class comment in src/BloomExe/Edit/ToolboxView.cs.
