@@ -91,7 +91,11 @@ namespace Bloom.TeamCollection
             }
             else
             {
-                result.lockedWhen = $"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}";
+                // Invariant, so a non-Gregorian culture (e.g. Thai) doesn't write a Buddhist-calendar
+                // year into the status file that every team member reads.
+                result.lockedWhen = FormattableString.Invariant(
+                    $"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}"
+                );
                 result.lockedWhere = TeamCollectionManager.CurrentMachine;
             }
 

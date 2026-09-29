@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -762,7 +763,17 @@ namespace Bloom.TeamCollection
         public DateTime WhenWasBookLocked(string bookName)
         {
             var status = GetStatus(bookName);
-            if (DateTime.TryParse(status.lockedWhen, out var result))
+            // lockedWhen is written invariantly (see BookStatus.WithLockedBy), so read it that way too.
+            // A Buddhist-calendar year written by a Thai machine before BL-16948 is deliberately not
+            // corrected; it goes away when the book is checked in.
+            if (
+                DateTime.TryParse(
+                    status.lockedWhen,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var result
+                )
+            )
                 return result;
             return DateTime.MaxValue;
         }
