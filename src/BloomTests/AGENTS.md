@@ -104,10 +104,10 @@ French for a reason that has nothing to do with the code under test. Either asse
 string really should be invariant, as log lines should be — fix the production code and leave the
 test asserting the period.
 
-The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR` and
-`tr-TR`, so **do not run under another culture as a matter of routine** — it costs a full build and
-a full run for nothing new. Do it only when your change parses or formats numbers, dates, or casing,
-or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
+The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR`,
+`tr-TR` and `th-TH`, so **do not run under another culture as a matter of routine** — it costs a full
+build and a full run for nothing new. Do it only when your change parses or formats numbers, dates,
+casing, or string searches, or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
 variable, and does nothing when it is unset:
 
 ```bash
