@@ -18,6 +18,7 @@ using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
 using Bloom.FreezeDoctor;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -142,6 +143,7 @@ namespace Bloom
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+            TagLibCultureFix.Register();
             CheckForCorruptUserConfig();
             // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
             // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
