@@ -576,9 +576,13 @@ namespace Bloom.Collection
             if (_originalSubscription.Descriptor == _pendingSubscription.Descriptor)
                 return true;
             if (
-                _pendingSubscription.Descriptor.StartsWith(_originalSubscription.Descriptor + "-")
+                _pendingSubscription.Descriptor.StartsWith(
+                    _originalSubscription.Descriptor + "-",
+                    StringComparison.Ordinal
+                )
                 || _originalSubscription.Descriptor.StartsWith(
-                    _pendingSubscription.Descriptor + "-"
+                    _pendingSubscription.Descriptor + "-",
+                    StringComparison.Ordinal
                 )
             )
             {

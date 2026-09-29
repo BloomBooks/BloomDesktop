@@ -120,7 +120,7 @@ namespace Bloom.Book
             IFileLocator fileLocator
         )
         {
-            if (xmatterName.EndsWith("Device"))
+            if (xmatterName.EndsWith("Device", StringComparison.Ordinal))
                 return xmatterName;
 
             // Look to see if there is a special Device version of this xmatter
@@ -429,7 +429,7 @@ namespace Bloom.Book
                     foreach (var node in e.ChildNodes)
                     {
                         var t = node as SafeXmlText;
-                        if (t != null && t.Value.StartsWith("{"))
+                        if (t != null && t.Value.StartsWith("{", StringComparison.Ordinal))
                             t.Value = ""; //otherwise html tidy will through away span's (at least) that are empty, so we never get a chance to fill in the values.
                     }
                 }

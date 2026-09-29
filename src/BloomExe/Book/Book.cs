@@ -889,7 +889,8 @@ namespace Bloom.Book
             return new HtmlDom(builder.ToString());
         }
 
-        private bool IsDownloaded => FolderPath.StartsWith(BookDownload.DownloadFolder);
+        private bool IsDownloaded =>
+            FolderPath.StartsWith(BookDownload.DownloadFolder, StringComparison.Ordinal);
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
@@ -2268,7 +2269,12 @@ namespace Bloom.Book
             }
             // Rename/remove/create files that have changed names or locations to match link href changes above.
             // Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
-            if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
+            if (
+                !FolderPath.StartsWith(
+                    BloomFileLocator.FactoryCollectionsDirectory,
+                    StringComparison.Ordinal
+                )
+            )
             {
                 BookStorage.CssFilesThatAreObsolete.ForEach(filename =>
                 {
@@ -2347,7 +2353,7 @@ namespace Bloom.Book
                 for (var index = 0; index < cssLines.Length; ++index)
                 {
                     var line = cssLines[index].Trim();
-                    if (line.StartsWith(kLangTag))
+                    if (line.StartsWith(kLangTag, StringComparison.Ordinal))
                     {
                         var idxQuote = line.IndexOf("'", kLangTag.Length, StringComparison.Ordinal);
                         if (idxQuote > 0)
@@ -2482,7 +2488,10 @@ namespace Bloom.Book
             {
                 // If we already have a data-i18n attribute with the right contents, skip this one.
                 var i18nValue = pageLabelElt.GetOptionalStringAttribute(i18nAttr, i18nPrefix);
-                if (i18nValue.StartsWith(i18nPrefix) && i18nValue.Length > prefixLength)
+                if (
+                    i18nValue.StartsWith(i18nPrefix, StringComparison.Ordinal)
+                    && i18nValue.Length > prefixLength
+                )
                 {
                     // As best we can tell, this already has the right localization attribute contents.
                     continue;
@@ -3403,7 +3412,12 @@ namespace Bloom.Book
                             )
                         )
                             return false; // missing audio file
-                        if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
+                        if (
+                            !textOfDiv.StartsWith(
+                                audioSentenceChildNode.InnerText,
+                                StringComparison.Ordinal
+                            )
+                        )
                             return false; // missing audio span?
                         textOfDiv = textOfDiv.Substring(audioSentenceChildNode.InnerText.Length);
                         textOfDiv = textOfDiv.TrimStart();

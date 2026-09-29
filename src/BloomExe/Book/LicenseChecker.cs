@@ -205,9 +205,12 @@ namespace Bloom.Book
         {
             if (contentId == key)
                 return true;
-            if (!contentId.EndsWith("*"))
+            if (!contentId.EndsWith("*", StringComparison.Ordinal))
                 return false;
-            return key.StartsWith(contentId.Substring(0, contentId.Length - 1));
+            return key.StartsWith(
+                contentId.Substring(0, contentId.Length - 1),
+                StringComparison.Ordinal
+            );
         }
 
         public static void SetOfflineFolder(string folderPath)

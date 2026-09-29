@@ -437,7 +437,7 @@ namespace Bloom.Publish.Video
         string UrlToFile(string input)
         {
             string result;
-            if (input.StartsWith("/bloom/"))
+            if (input.StartsWith("/bloom/", StringComparison.Ordinal))
             {
                 // As of bloom-player 2.8.0, this is the expected form: /bloom/C:/rest-of-path
                 result = input.Replace("/bloom/", "").UnescapeFileNameForHttp();

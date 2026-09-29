@@ -257,7 +257,7 @@ namespace Bloom.Spreadsheet
             {
                 // remove spaces from the style attribute
                 styleAttribute = styleAttribute.Replace(" ", "");
-                int colorFoundIndex = styleAttribute.IndexOf("color:#");
+                int colorFoundIndex = styleAttribute.IndexOf("color:#", StringComparison.Ordinal);
                 if (colorFoundIndex > -1)
                 {
                     // There is a color specified

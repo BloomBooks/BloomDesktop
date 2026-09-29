@@ -2401,7 +2401,10 @@ namespace BloomTests.Publish.Rab
                 RobustFile.ReadAllText(paths.PrepareStatePath)
             );
             Assert.That(prepareState.KeystorePath, Is.EqualTo(paths.SharedKeystorePath));
-            Assert.That(prepareState.KeystorePath.StartsWith(paths.RabRoot), Is.False);
+            Assert.That(
+                prepareState.KeystorePath.StartsWith(paths.RabRoot, StringComparison.Ordinal),
+                Is.False
+            );
             Assert.That(RobustFile.Exists(paths.SharedKeystorePath), Is.True);
             Assert.That(RobustFile.Exists(paths.SharedSigningStatePath), Is.True);
 
