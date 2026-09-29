@@ -928,7 +928,7 @@ namespace Bloom.Publish.Epub
                 return (null, null);
 
             var stripped = copyrightString.Substring(COPYRIGHT.Length);
-            var commaIndex = stripped.IndexOf(","); // Put in by ClearShare; not localized.
+            var commaIndex = stripped.IndexOf(",", StringComparison.Ordinal); // Put in by ClearShare; not localized.
             if (commaIndex < 0)
                 return (null, null);
             var rightsHolder = stripped.Substring(commaIndex + 1).Trim();

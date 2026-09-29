@@ -1073,7 +1073,17 @@ namespace Bloom.WebLibraryIntegration
                         );
                         progress.WriteStatus(pdfMsg);
 
-                        publishModel.MakePDFForUpload(progress);
+                        if (!publishModel.MakePDFForUpload(progress))
+                        {
+                            // A partial PDF may well exist on disk (the failure can happen after the
+                            // file is written, while adding metadata), so we must not fall through to
+                            // the Exists() check and upload it as though all was well. (BL-16869)
+                            progress.WriteError(
+                                "{0} was not uploaded because Bloom could not make its PDF.",
+                                bookFolder
+                            );
+                            return "";
+                        }
                         if (RobustFile.Exists(publishModel.PdfFilePath))
                         {
                             RobustFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);

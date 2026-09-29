@@ -15,6 +15,8 @@ import {
     kBloomCanvasClass,
     kBloomCanvasSelector,
     kCanvasElementSelector,
+    kImageContainerClass,
+    kImageContainerSelector,
 } from "../toolbox/canvas/canvasElementConstants";
 import { updateCanvasElementClass } from "../toolbox/canvas/canvasElementDomUtils";
 
@@ -30,12 +32,18 @@ import {
 import { getCanvasElementManager } from "../toolbox/canvas/canvasElementPageBridge";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 import $ from "jquery";
+import {
+    kBrowserDpi,
+    kPrintDpi,
+    getSuggestedImageTargetForContainer,
+    IDigitalScreen,
+    isDeviceLayoutPage,
+    parseBloomPubImageLimit,
+} from "./imageTargetResolution";
 
-// This appears to be constant even on higher dpi screens.
-// (See http://www.w3.org/TR/css3-values/#absolute-lengths)
-const kBrowserDpi = 96;
-export const kImageContainerClass = "bloom-imageContainer";
-export const kImageContainerSelector = `.${kImageContainerClass}`;
+// Declared in canvasElementConstants.ts, which nothing imports anything else from, and
+// re-exported here because most of Bloom names an image slot through this module.
+export { kImageContainerClass, kImageContainerSelector };
 
 // We don't use actual placeHolder.png files anymore, but we do continue to use
 // src="placeHolder.png" to mark placeholders
@@ -946,6 +954,27 @@ interface IImageInfoResponse {
     bitDepth: string;
 }
 
+// The screen a digital copy of this book is made for: the BloomPUB image limit the user set in
+// Book Settings > BloomPUB > Resolution, which is the size the publish step shrinks images to.
+// Undefined when the settings cannot be fetched, and then the tooltip says nothing about the
+// size an image wants rather than quoting a screen this book may not use.
+// Corresponds with BookSettingsApi.cs::HandleBookSettings, whose `publish` is PublishSettings.
+async function getBloomPubImageLimitAsync(): Promise<
+    IDigitalScreen | undefined
+> {
+    const result = await getWithConfigAsync<{
+        publish?: {
+            bloomPUB?: {
+                imageSettings?: { maxWidth?: number; maxHeight?: number };
+            };
+        };
+    }>("book/settings", {});
+    if (!result) {
+        return undefined;
+    }
+    return parseBloomPubImageLimit(result.data.publish);
+}
+
 async function DetermineImageTooltipAsync(
     bloomCanvas: HTMLElement,
 ): Promise<string> {
@@ -962,10 +991,30 @@ async function DetermineImageTooltipAsync(
     }
 
     const containerJQ = $(bloomCanvas);
-    const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
-    const targetDpiHeight = Math.ceil(
-        (300 * containerJQ.height()) / kBrowserDpi,
-    );
+    // The same size advice the AI image editor gets, so the two never disagree. On a
+    // screen-sized page this asks for the container's share of a device screen instead of
+    // 300 DPI, and print advice is then left out below because it would be misleading.
+    //
+    // Only a screen-sized page needs the book's BloomPUB image limit, so a paper page does
+    // not pay for the extra request and passes null, which that path never looks at.
+    const pageElement = bloomCanvas.closest(".bloom-page");
+    const isDeviceLayout = !!pageElement && isDeviceLayoutPage(pageElement);
+    const digitalScreen = isDeviceLayout
+        ? await getBloomPubImageLimitAsync()
+        : undefined;
+    // A screen-sized page whose setting could not be read has nothing to size against, so it
+    // gets no advice at all, exactly as a container that cannot be measured does.
+    const suggestedTarget =
+        isDeviceLayout && !digitalScreen
+            ? null
+            : getSuggestedImageTargetForContainer(
+                  bloomCanvas,
+                  digitalScreen ?? null,
+              );
+    // Whether this page is read on a screen rather than printed, which decides what the
+    // rest of the tooltip may say. Taken from the layout rather than from suggestedTarget,
+    // which is absent when the container or the setting could not be read.
+    const isDigital = isDeviceLayout;
     const isPlaceHolder = isPlaceHolderImage(url);
 
     const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
@@ -997,18 +1046,34 @@ async function DetermineImageTooltipAsync(
         } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
             imageFileInfo.width
         } x ${imageFileInfo.height}\n\n`;
-        if (!isPlaceHolder) {
+        // On a screen-sized page nothing is printed, so a printing DPI would only mislead.
+        if (!isPlaceHolder && !isDigital) {
             dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
         }
     }
 
+    let targetLine = "";
+    // digitalScreen is fetched exactly on a screen-sized page, so naming it here is both
+    // the digital/paper test and what lets the line quote the screen's size.
+    if (suggestedTarget && digitalScreen) {
+        targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container on a ${digitalScreen.longEdgePx} x ${digitalScreen.shortEdgePx} screen.`;
+    } else if (suggestedTarget) {
+        targetLine = `  • An image with ${suggestedTarget.width} x ${suggestedTarget.height} dots would fill this container at ${kPrintDpi} DPI.`;
+    }
+    // Print resolution advice belongs only to a page that will be printed.
+    const printAdviceLine = isDigital
+        ? ""
+        : `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n`;
+
     // This is really talking about the bloom-canvas, but for UI we'll stick with image container.
     const linesAboutThisContext =
-        `For the current paper size:\n` +
+        (isDigital
+            ? `For the current page size:\n`
+            : `For the current paper size:\n`) +
         `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
-        `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+        printAdviceLine +
         dpiLine +
-        `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+        targetLine;
 
     // if there is a data-href, start with that url
     let hyperlinkInfo = "";

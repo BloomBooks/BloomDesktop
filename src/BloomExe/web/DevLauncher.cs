@@ -13,6 +13,8 @@ namespace Bloom.web
     /// launcher's /status and, once it reports that dotnet watch has seen C#
     /// source changes since this Bloom became ready, show a non-expiring toast
     /// whose action asks the launcher to quit Bloom, rebuild, and relaunch it.
+    /// The same request is available on demand from the developer context menu
+    /// (right-click the top bar), which shows its Restart item only when IsAvailable.
     ///
     /// None of this happens for end users: without --launcher-port every method
     /// here is a no-op.
@@ -40,6 +42,12 @@ namespace Bloom.web
 
         private static bool s_monitoring;
         private static bool s_restartRequested;
+
+        /// <summary>
+        /// True when the dev launcher started this Bloom, and so can be asked to rebuild
+        /// and relaunch it. False in every end-user build, where there is no launcher.
+        /// </summary>
+        public static bool IsAvailable => Program.StartupLauncherPort != null;
 
         /// <summary>
         /// Begin watching the dev launcher for pending C# changes, showing the
@@ -124,10 +132,12 @@ namespace Bloom.web
         /// relaunch it. The launcher accepts with a 202 and then closes this very
         /// process as part of the restart, so we do not wait for the restart
         /// itself — only for the launcher to accept the request.
+        /// Called both from the restart toast and from the developer context menu's
+        /// Restart item; a no-op-ish failure path leaves the toast offer intact.
         /// </summary>
-        private static void RequestRestart()
+        public static void RequestRestart()
         {
-            Logger.WriteEvent("Dev launcher restart requested from the restart toast.");
+            Logger.WriteEvent("Dev launcher restart requested.");
             // Stop polling while the request is in flight: the launcher is about to
             // take this process down, and re-showing the toast meanwhile is noise.
             s_restartRequested = true;

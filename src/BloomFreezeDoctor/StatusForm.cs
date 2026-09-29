@@ -824,33 +824,40 @@ public sealed class StatusForm : Form
             return;
         }
         // "Report now" files even when everything else would decline — a developer build, a rehearsal, a
-        // debugged process. That is deliberate: it is how the filing path gets tested without stopping and
-        // restarting the Doctor with `--force`, and a developer build can have a real freeze genuinely
-        // worth reporting. But filing a card by accident wastes somebody's time, so say plainly what is
-        // being overridden and let the person decide.
+        // debugged process, or simply a Bloom with nothing wrong with it. That is deliberate: it is how the
+        // filing path gets tested without stopping and restarting the Doctor with `--force`, and a
+        // developer build can have a real freeze genuinely worth reporting. But filing a card by accident
+        // wastes somebody's time, so ALWAYS ask, saying plainly what is being overridden and which project
+        // the card lands in, and let the person decide. Asking only when a filing guard stood in the way
+        // meant a healthy Bloom on a Beta build filed a card on the first click, with no warning at all.
         var blockers = _supervisor.WhyFilingWouldNormallyBeBlocked(target.ProcessId);
-        if (blockers.Count > 0)
+        var answer = MessageBox.Show(
+            this,
+            ReportNowConfirmation.Message(target.State, blockers, _supervisor.Project),
+            "Bloom Freeze Doctor",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2
+        );
+        if (answer != DialogResult.Yes)
         {
-            var reasons = string.Join(Environment.NewLine, blockers.Select(r => "  • " + r));
-            var answer = MessageBox.Show(
-                this,
-                "This report would not normally be filed on the tracker:"
-                    + Environment.NewLine
-                    + Environment.NewLine
-                    + reasons
-                    + Environment.NewLine
-                    + Environment.NewLine
-                    + "\"Report now\" files anyway. Go ahead and create a real tracker card?",
-                "Bloom Freeze Doctor",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning,
-                MessageBoxDefaultButton.Button2
-            );
-            if (answer != DialogResult.Yes)
-            {
-                _lastEvent.Text = "Report not filed, at your request.";
-                return;
-            }
+            _lastEvent.Text = "Report not filed, at your request.";
+            return;
+        }
+        // The dialog can sit open for as long as the person likes, and Bloom may have gone in the
+        // meantime. A process id is not an identity (see ProcessIdentity): once the watcher lets go of a
+        // dead Bloom, Windows can hand its id to a stranger, and gathering on the id alone would dump and
+        // file whatever now owns it. So ask the supervisor again, and compare the start time as well as
+        // the id: the stranger could even be a new Bloom the Doctor has since adopted, which the person
+        // was not asked about.
+        if (
+            _supervisor
+                .LiveWatchedBlooms()
+                .All(b => b.ProcessId != target.ProcessId || b.StartTime != target.StartTime)
+        )
+        {
+            _lastEvent.Text = "Report not gathered: that Bloom is no longer running.";
+            return;
         }
 
         _lastEvent.Text = "Gathering a report on request…";

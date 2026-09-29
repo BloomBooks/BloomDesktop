@@ -20,6 +20,7 @@ using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -1094,6 +1095,29 @@ namespace Bloom.Book
         }
 
         /// <summary>
+        /// The caller's progress with its status lines suppressed (warnings, errors and the percent
+        /// still get through). Used for the passes that work through the book's images one by one
+        /// (mirroring their metadata into the HTML, shrinking oversized files), which report a
+        /// status line per image as well as the percent done. Here, bringing a book up to date, the
+        /// dialog is determinate, so the percent bar already shows how far along we are, and a line
+        /// per image only fills the log with dozens of near-identical entries (BL-16893). The stage
+        /// statuses this class writes itself ("Updating pages...") are not suppressed: callers with
+        /// an overwriting status label (Update All Books, importing a .bloomSource) still want
+        /// them. The one place the per-image lines are wanted, the Copyright and License dialog's
+        /// "add this to all images", does not come through here.
+        /// </summary>
+        private static IProgress NoStatusProgress(IProgress progress)
+        {
+            if (
+                progress == null
+                || progress is NullProgress
+                || progress is QuietStatusProgress // already quiet (e.g. from BookProcessor.ProcessBook)
+            )
+                return progress;
+            return new QuietStatusProgress(progress);
+        }
+
+        /// <summary>
         /// Make any needed changes to make a book which might have come from an old version of Bloom
         /// consistent with the current data model. Also makes sure it has the current XMatter
         /// and a folder name consistent with its title (unless folder name has been overridden).
@@ -1142,7 +1166,7 @@ namespace Bloom.Book
             EnsureUpToDateMemory(progress);
             UpdateSupportFiles();
 
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
 
             Storage.CleanupUnusedSupportFiles(forCopyOfUpToDateBook);
 
@@ -1917,7 +1941,7 @@ namespace Bloom.Book
                 ImageUpdater.UpdateAllHtmlDataAttributesForAllImgElements(
                     FolderPath,
                     OurHtmlDom,
-                    progress
+                    NoStatusProgress(progress)
                 );
             }
             catch (UnauthorizedAccessException e)
@@ -1933,7 +1957,7 @@ namespace Bloom.Book
             // already been done, so they must be called in exactly this order.
             Storage.RestoreStuffBeforeMigration();
             Storage.MigrateMaintenanceLevels();
-            Storage.MigrateToMediaLevel1ShrinkLargeImages(progress);
+            Storage.MigrateToMediaLevel1ShrinkLargeImages(NoStatusProgress(progress));
             Storage.MigrateToLevel2RemoveTransparentComicalSvgs();
             Storage.MigrateToLevel3PutImgFirst();
             Storage.MigrateToLevel4UseAppearanceSystem();
@@ -2000,9 +2024,20 @@ namespace Bloom.Book
             // language.
             // (The commit label when these were added says "so that a single branding can vary things by lang."
             // We don't appear to actually do that but it still seems like it might be useful.)
-            bookDom.Body.SetAttribute("data-L1", this._bookData.Language1Tag);
-            bookDom.Body.SetAttribute("data-L2", this._bookData.Language2Tag);
-            bookDom.Body.SetAttribute("data-L3", this._bookData.Language3Tag);
+            SetLanguageAttributeOnBody(bookDom, 1, this._bookData.Language1Tag);
+            SetLanguageAttributeOnBody(bookDom, 2, this._bookData.Language2Tag);
+            SetLanguageAttributeOnBody(bookDom, 3, this._bookData.Language3Tag);
+        }
+
+        /// <summary>
+        /// Set data-l1 (etc.) on the body. The name must be lower case: HTML does not allow upper case
+        /// in data- attribute names, and browsers lower-case them anyway. Bloom used to write data-L1;
+        /// our DOM treats that as a different attribute, so remove it or the book would carry both.
+        /// </summary>
+        private static void SetLanguageAttributeOnBody(HtmlDom bookDom, int number, string tag)
+        {
+            bookDom.Body.RemoveAttribute("data-L" + number);
+            bookDom.Body.SetAttribute("data-l" + number, tag);
         }
 
         private void AddReaderBodyAttributes(HtmlDom bookDom)
@@ -2314,7 +2349,7 @@ namespace Bloom.Book
                     var line = cssLines[index].Trim();
                     if (line.StartsWith(kLangTag))
                     {
-                        var idxQuote = line.IndexOf("'", kLangTag.Length);
+                        var idxQuote = line.IndexOf("'", kLangTag.Length, StringComparison.Ordinal);
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
@@ -2627,6 +2662,9 @@ namespace Bloom.Book
             //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
             // Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
             // Various things, especially publication, don't work with unknown page sizes.
+            var sizeClassBefore = Layout
+                .FromDom(bookDOM, Layout.A5Portrait)
+                .SizeAndOrientation.ClassName;
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
             var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
@@ -2634,6 +2672,11 @@ namespace Bloom.Book
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
             layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
+            // A size the xmatter or branding does not support, or one we do not know, was replaced
+            // above. VerifyLayout later spreads the new size to every page, but by then the first
+            // page already has it, so SetLayout sees no change; record it here instead.
+            if (layout.SizeAndOrientation.ClassName != sizeClassBefore)
+                BookProcessor.RecordPageLayoutChanged(bookDOM);
             helper.InjectXMatter(
                 _bookData.WritingSystemAliases,
                 layout,
@@ -2693,7 +2736,7 @@ namespace Bloom.Book
             var paragraphs = bookDOM.SafeSelectNodes("//div[contains(@class,'bloom-editable')]/p");
             foreach (SafeXmlElement para in paragraphs)
             {
-                // spans are the only paragraph internal elements that should have any attributes.
+                // spans and hyperlinks are the only paragraph internal elements that should have any attributes.
                 RemoveUnwantedAttributesFromChildren(para);
                 string inner = para.InnerXml;
                 if (String.IsNullOrEmpty(inner) || !inner.Contains("<"))
@@ -2766,11 +2809,17 @@ namespace Bloom.Book
             }
         }
 
+        /// <summary>
+        /// Strip attributes from character-style markup (b, i, strong, em, u, sup...) inside a paragraph.
+        /// Spans keep theirs (audio-sentence ids, bloom-linebreak, etc.), and so do hyperlinks: an
+        /// anchor without its href is no longer a link at all (BL-16892).
+        /// </summary>
         private static void RemoveUnwantedAttributesFromChildren(SafeXmlElement paraOrMarkup)
         {
             foreach (var child in paraOrMarkup.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (child.Name.ToLowerInvariant() != "span")
+                var name = child.Name.ToLowerInvariant();
+                if (name != "span" && name != "a")
                 {
                     foreach (var attrName in child.AttributeNames)
                         child.RemoveAttribute(attrName);
@@ -4318,7 +4367,16 @@ namespace Bloom.Book
             {
                 try
                 {
-                    if (pageToSaveToDisk != null && !reallyNeedFullSave)
+                    // A book still recording a page layout update level above ours has to go
+                    // through the full Save, which is what brings that level down to what we can
+                    // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
+                    // and replaces one page, so it would leave the old level in the head. This costs
+                    // one full save: afterwards the level is ours and the fast path resumes.
+                    if (
+                        pageToSaveToDisk != null
+                        && !reallyNeedFullSave
+                        && !BookProcessor.RecordsPageLayoutUpdateLevelAboveOurs(OurHtmlDom)
+                    )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
                         // nothing changed outside this page. We can do a much more efficient write operation.
@@ -4860,6 +4918,10 @@ namespace Bloom.Book
 
         public void SetLayout(Layout layout)
         {
+            // The page layout update records measurements relative to the page, so a new size or
+            // orientation leaves them stale.
+            if (GetLayout().SizeAndOrientation.ClassName != layout.SizeAndOrientation.ClassName)
+                BookProcessor.RecordPageLayoutChanged(OurHtmlDom);
             SizeAndOrientation.AddClassesForLayout(OurHtmlDom, layout);
         }
 

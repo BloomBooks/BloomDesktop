@@ -11,6 +11,7 @@ import {
 import * as React from "react";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { BloomStepper } from "../../react_components/BloomStepper";
+import { splitAtLinkText } from "../../utils/textUtils";
 import {
     AppBuilderPrepareStepId,
     IAppBuilderPrepareStepStatus,
@@ -45,34 +46,21 @@ export const PrepareStepTooltipContent: React.FunctionComponent<{
         return <>{props.tooltip.text}</>;
     }
 
-    const idxOpen = props.tooltip.text.indexOf("[");
-    const idxClose = props.tooltip.text.indexOf("]", idxOpen + 1);
-
-    if (idxOpen < 0 || idxClose <= idxOpen) {
-        return (
-            <Link
-                underline="hover"
-                href={props.tooltip.linkHref}
-                target="_blank"
-                rel="noreferrer"
-            >
-                {props.tooltip.text}
-            </Link>
-        );
-    }
+    // With no bracketed link text, the whole string is the link.
+    const parts = splitAtLinkText(props.tooltip.text);
 
     return (
         <span>
-            {props.tooltip.text.substring(0, idxOpen)}
+            {parts.beforeLink}
             <Link
                 underline="hover"
                 href={props.tooltip.linkHref}
                 target="_blank"
                 rel="noreferrer"
             >
-                {props.tooltip.text.substring(idxOpen + 1, idxClose)}
+                {parts.linkText}
             </Link>
-            {props.tooltip.text.substring(idxClose + 1)}
+            {parts.afterLink}
         </span>
     );
 };

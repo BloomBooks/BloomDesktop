@@ -372,11 +372,13 @@ public sealed class DoctorSupervisor : IDisposable
         // Two steps, and the split is deliberate: whether a Bloom holds the single-instance token comes
         // from its session file, and reading files under the supervisor lock is how the watchdog ends up
         // waiting on a disk. Snapshot under the lock, read outside it.
-        List<(int ProcessId, TargetState State)> snapshot = new();
+        List<(int ProcessId, TargetState State, DateTime StartTime)> snapshot = new();
         lock (_lock)
         {
             if (_watcher != null && IsAlive(_watcher.Target.ProcessId, _watcher.Target.StartTime))
-                snapshot.Add((_watcher.Target.ProcessId, _watcher.State));
+                snapshot.Add(
+                    (_watcher.Target.ProcessId, _watcher.State, _watcher.Target.StartTime)
+                );
         }
 
         return snapshot
@@ -385,7 +387,8 @@ public sealed class DoctorSupervisor : IDisposable
                 bloom.State,
                 // Null when the Bloom wrote no session file, which RestartBlockers reads as possibly
                 // blocking - see there for why that is the safe direction.
-                Protocol.DoctorSessionStore.TryRead(bloom.ProcessId)?.OwnsSingleInstanceToken
+                Protocol.DoctorSessionStore.TryRead(bloom.ProcessId)?.OwnsSingleInstanceToken,
+                bloom.StartTime
             ))
             .ToList();
     }

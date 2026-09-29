@@ -805,6 +805,14 @@ namespace Bloom.web.controllers
                 );
                 return;
             }
+            if (
+                ReportProblemWithoutUiIfNonInteractive(
+                    levelOfProblem,
+                    exception,
+                    string.Join(" ", new[] { shortUserLevelMessage, detailedMessage }).Trim()
+                )
+            )
+                return;
             StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
             lock (_showingProblemReportLock)
@@ -1262,6 +1270,31 @@ namespace Bloom.web.controllers
             }
         }
 
+        /// <summary>
+        /// Report a problem on standard error instead of in a dialog, when there is nobody to
+        /// click the dialog. Callers must already have called LogProblem, and must return without
+        /// showing any UI when this returns true.
+        /// </summary>
+        /// <remarks>
+        /// A modal dialog in a command-line verb or an e2e run blocks forever: the operation
+        /// neither succeeds nor fails, and the caller just waits (BL-16869). NonFatalProblem.Report
+        /// has done this for a while; this is the same guard for the problem-report dialogs.
+        /// </remarks>
+        /// <returns>true if the problem was reported here and the caller should return</returns>
+        internal static bool ReportProblemWithoutUiIfNonInteractive(
+            string levelOfProblem,
+            Exception exception,
+            string message
+        )
+        {
+            if (!Program.RunningNonInteractive)
+                return false;
+            Console.Error.WriteLine($"Problem ({levelOfProblem}): {message}");
+            if (exception != null)
+                Console.Error.WriteLine(exception.ToString());
+            return true;
+        }
+
         internal static void LogProblem(
             Exception exception,
             string detailedMessage,
@@ -1304,7 +1337,7 @@ namespace Bloom.web.controllers
 
         private static string GetDomainlessEmail(string rawEmail)
         {
-            var atIndex = rawEmail.IndexOf("@");
+            var atIndex = rawEmail.IndexOf("@", StringComparison.Ordinal);
             return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
         }
 

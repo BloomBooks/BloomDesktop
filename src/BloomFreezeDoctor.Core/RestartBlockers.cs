@@ -10,10 +10,16 @@ namespace BloomFreezeDoctor;
 /// From the Bloom's own session file. **Null means it did not say**, which is not the same as no - see
 /// <see cref="RestartBlockers"/>.
 /// </param>
+/// <param name="StartTime">
+/// When the process started. With the id this is the process's identity (see <see cref="ProcessIdentity"/>):
+/// a caller that holds one of these across a pause, such as a dialog, compares both before acting on it,
+/// because the id alone can have passed to another Bloom in the meantime.
+/// </param>
 public readonly record struct LiveBloom(
     int ProcessId,
     TargetState State,
-    bool? HoldsSingleInstanceToken
+    bool? HoldsSingleInstanceToken,
+    DateTime StartTime = default
 );
 
 /// <summary>

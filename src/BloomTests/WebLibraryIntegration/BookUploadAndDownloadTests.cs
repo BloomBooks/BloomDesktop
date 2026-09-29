@@ -14,6 +14,7 @@ using Bloom.SubscriptionAndFeatures;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
 using BloomTests.Book;
+using BloomTests.ToPalaso;
 using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
@@ -227,7 +228,7 @@ namespace BloomTests.WebLibraryIntegration
             File.WriteAllText(jsonPath, newJson);
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var bookObjectId = await _uploader.UploadBook_ForUnitTestAsync(bookFolder);
+            var (bookObjectId, _) = await UploadOrFailWithReasonAsync(bookFolder);
             try
             {
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
@@ -452,9 +453,9 @@ namespace BloomTests.WebLibraryIntegration
                     Subscription = new Subscription("Test-Expired-005691-4935"), // expired 2/3/2025
                 }
             );
-            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
+            var (bookObjectId, s3PrefixUploadedTo) = await UploadOrFailWithReasonAsync(
                 bookFolder,
-                collectionSettings: settings
+                settings
             );
             try
             {
@@ -554,10 +555,7 @@ namespace BloomTests.WebLibraryIntegration
             int fileCount = Directory.GetFiles(bookFolder).Length;
             _bloomLibraryBookApiClient.TestOnly_SetUserAccountInfo();
 
-            var (bookObjectId, s3PrefixUploadedTo) = await _uploader.UploadBook_ForUnitTestAsync(
-                bookFolder,
-                new NullProgress()
-            );
+            var (bookObjectId, s3PrefixUploadedTo) = await UploadOrFailWithReasonAsync(bookFolder);
             try
             {
                 Assert.That(string.IsNullOrEmpty(bookObjectId), Is.False);
@@ -751,6 +749,37 @@ namespace BloomTests.WebLibraryIntegration
                 Thread.Sleep(100);
             }
             throw new ApplicationException("S3 is very slow today");
+        }
+
+        /// <summary>
+        /// Upload through the real uploader and fail at once if no book id came back, quoting the
+        /// errors the uploader reported. The uploader catches every failure (network, S3, the
+        /// bloomlibrary API) and reports it only through its progress, so without this a failed
+        /// upload shows up as nothing more than "Expected: False But was: True". Only the error
+        /// lines are quoted, not verbose output or stack traces, because CI logs are public.
+        /// </summary>
+        private async Task<(string bookObjectId, string s3Prefix)> UploadOrFailWithReasonAsync(
+            string bookFolder,
+            CollectionSettings collectionSettings = null
+        )
+        {
+            var progress = new RecordingProgress();
+            var result = await _uploader.UploadBook_ForUnitTestAsync(
+                bookFolder,
+                progress,
+                collectionSettings: collectionSettings
+            );
+            Assert.That(
+                string.IsNullOrEmpty(result.Item1) || result.Item1 == "quiet",
+                Is.False,
+                "The upload failed. The uploader reported: "
+                    + (
+                        progress.Errors.Count == 0
+                            ? "(no errors)"
+                            : string.Join(" | ", progress.Errors)
+                    )
+            );
+            return result;
         }
 
         private string GetParentOfS3Prefix(string prefix)

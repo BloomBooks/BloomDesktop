@@ -49,7 +49,7 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
-        public void EnsureBooksAreLicensedForPublishing_UnlicensedLanguage_ThrowsWithLicenseMessage()
+        public void EnsureBooksAreLicensedForPublishing_UnlicensedLanguage_ThrowsNamingBookWithLicenseMessage()
         {
             var book = CreateBookWithPhysicalFile(kBookBody, kLicensedBookHead);
             // Sanity check that the fixture really does forbid English for this book.
@@ -61,13 +61,16 @@ namespace BloomTests.Publish.Rab
                 )
             );
 
+            // Even a single problem names its book: an app usually contains several books, and the
+            // LicenseChecker message alone only says "this book" (BL-16833, tester feedback).
             Assert.That(
                 exception.Message,
                 Is.EqualTo(
-                    string.Format(
-                        LicenseChecker.kUnlicenseLanguageMessage,
-                        book.PrettyPrintLanguage("en")
-                    )
+                    "Ruth: "
+                        + string.Format(
+                            LicenseChecker.kUnlicenseLanguageMessage,
+                            book.PrettyPrintLanguage("en")
+                        )
                 )
             );
         }

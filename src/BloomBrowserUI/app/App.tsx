@@ -20,6 +20,12 @@ import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDia
 // The id of the Edit tab's one EmbeddedProgressDialog. C# addresses it by this string: it is
 // the "which" prop that BrowserProgressDialog sends in its open-progress bundle.
 export const kEditViewProgressDialogId = "editView";
+import {
+    EmbeddedSimpleProgressDialog,
+    kBloomBridgeProgressContext,
+    kBloomBridgeProgressDialogId,
+    kUpdateBookProgressDialogId,
+} from "../react_components/Progress/SimpleProgressDialog";
 
 export const App: React.FunctionComponent = () => {
     // Eventually the source of truth of what tab is active will be on the
@@ -76,6 +82,18 @@ export const App: React.FunctionComponent = () => {
                 stays invisible until something opens it. It lives here, above the tabs, so
                 that switching tabs does not unmount it mid-task. */}
             <EmbeddedProgressDialog id={kEditViewProgressDialogId} />
+            {/* Bringing a book up to date ("Update Book", and the automatic pass before the AI
+                image editor or after a page-size change) shows its progress here, at the top
+                level: it is started from more than one tab, and the Edit tab empties its own
+                page while the work runs, so the dialog cannot live inside a tab. Being here
+                also means its backdrop covers the whole of Bloom while it is up. */}
+            <EmbeddedSimpleProgressDialog id={kUpdateBookProgressDialogId} />
+            {/* The same dialog for BloomBridge's process-book runs, on a websocket context of its
+                own (see kBloomBridgeProgressContext). */}
+            <EmbeddedSimpleProgressDialog
+                id={kBloomBridgeProgressDialogId}
+                socketContext={kBloomBridgeProgressContext}
+            />
             <ToastHost />
         </div>
     );

@@ -2747,9 +2747,13 @@ namespace Bloom.ImageProcessing
                 // files).
                 // BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
                 // Logging it will allow us to possibly correlate an error here with another problem that does get reported.
+                var details = MiscUtils.GetExtendedFileCopyErrorInformation(
+                    imagePath,
+                    out var likelyCause
+                );
                 var message = $"Could not update PNG image (BL-3227) at {imagePath}";
-                string details;
-                details = MiscUtils.GetExtendedFileCopyErrorInformation(imagePath);
+                if (likelyCause != null)
+                    message += " " + likelyCause;
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.All,
@@ -3013,6 +3017,7 @@ namespace Bloom.ImageProcessing
                     fileName,
                     preserveCropStyleForUpload
                 );
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
                 return;
             }
 
@@ -3024,7 +3029,8 @@ namespace Bloom.ImageProcessing
                 imageDestFolder,
                 needNewName,
                 preserveCropStyleForUpload,
-                bloomDataDivEntriesByDataBook
+                bloomDataDivEntriesByDataBook,
+                out var cropSucceeded
             );
 
             // Track if we replaced an original file with a new one
@@ -3032,7 +3038,10 @@ namespace Bloom.ImageProcessing
             {
                 replacedOriginals.Add(src);
             }
-            cropped[key] = croppedFileName;
+            // Don't let a duplicate treat a failed crop as done; that would take the duplicate
+            // path, which syncs the data-div as if the file had been cropped.
+            if (cropSucceeded)
+                cropped[key] = croppedFileName;
         }
 
         private static void UpdateCropStyleForAlreadyCroppedImage(
@@ -3240,11 +3249,13 @@ namespace Bloom.ImageProcessing
             string imageDestFolder,
             bool useNewName,
             bool preserveCropStyleForUpload,
-            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook,
+            out bool cropSucceeded
         )
         {
             var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            cropSucceeded = croppedImagePath != null;
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
             // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
@@ -3292,11 +3303,20 @@ namespace Bloom.ImageProcessing
             {
                 UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
             }
+            else if (!cropSucceeded && preserveCropStyleForUpload)
+            {
+                // The file is unchanged, so the crop style is still right; keeping it is the only
+                // way the uploaded book shows this image cropped at all.
+            }
             else
             {
                 // so nothing can possibly think it needs more cropping
                 img.RemoveAttribute("style");
             }
+
+            // If the crop failed, the file is unchanged, so leave the data-div's crop style alone.
+            if (cropSucceeded)
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             return result;
         }
@@ -3418,6 +3438,41 @@ namespace Bloom.ImageProcessing
         }
 
         /// <summary>
+        /// After cropping has changed or removed the style of an img, give its bloomDataDiv entry
+        /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
+        /// crop style gets copied back onto the img, where it crops the already-cropped image
+        /// again (BL-16907).
+        /// An img on a custom layout page is different: its style fits the custom layout, while the
+        /// data-div entry describes the standard layout's crop of the original file, in a canvas
+        /// element sized for the original file's shape (BL-16357). Neither applies to the cropped
+        /// file, so the entry loses them. If the book goes back to the standard layout, BookData
+        /// then copies only the src onto the template's plain img, and the picture shows whole;
+        /// the editor lays it out afresh, as for a newly chosen picture.
+        /// </summary>
+        private static void SyncDataDivStyle(
+            SafeXmlElement img,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+                return;
+            if (HtmlDom.IsInCustomLayoutPage(img))
+            {
+                dataDivElement.RemoveAttribute("style");
+                foreach (var name in HtmlDom.BackgroundImgTupleNames)
+                    dataDivElement.RemoveAttribute(name);
+            }
+            else if (img.HasAttribute("style"))
+                dataDivElement.SetAttribute("style", img.GetAttribute("style"));
+            else
+                dataDivElement.RemoveAttribute("style");
+        }
+
+        /// <summary>
         /// If the specified img is cropped, and we can find and successfully crop the
         /// appropriate image file, make a new file containing the cropped image in imageDestFolder
         /// and return the path to it.
@@ -3462,6 +3517,54 @@ namespace Bloom.ImageProcessing
             if (result.ExitCode == 0)
                 return tempPath;
             return null;
+        }
+
+        /// <summary>
+        /// Whether the img is in the structure cropping uses and carries the styles that
+        /// express one. Cheap — it reads the DOM only — so it is the right question to ask
+        /// before anything that opens the image file.
+        /// </summary>
+        internal static bool HasCropStyles(SafeXmlElement img)
+        {
+            return TryGetCropMetadata(img) != null;
+        }
+
+        /// <summary>
+        /// Whether the img's crop styles actually hide part of the image file, rather than
+        /// merely sizing it to its canvas element. Bloom writes width/left/top when it fits a
+        /// background image to its canvas as well as when the user crops, so the presence of
+        /// those styles says nothing on its own: a fitted image's rectangle covers the whole
+        /// file. Callers that want to know whether the reader is seeing less than the file
+        /// holds — and to avoid the cost of rendering a "crop" that would copy the image
+        /// unchanged — should ask this.
+        /// </summary>
+        /// <param name="imageSize">the file's real pixel size, from <see cref="TryGetImageSize"/></param>
+        internal static bool CropHidesPartOfImage(SafeXmlElement img, Size imageSize)
+        {
+            if (imageSize.Width <= 0 || imageSize.Height <= 0)
+                return false;
+            var cropMetadata = TryGetCropMetadata(img);
+            if (cropMetadata == null)
+                return false;
+            var rectangle = ComputeCropRectangle(cropMetadata, imageSize);
+            // A rectangle with no area shows nothing at all, so it is not a view of part of
+            // the image; it means the canvas element is missing one of the dimensions a crop
+            // is expressed in (TryGetCropMetadata requires a width, not a height). Answering
+            // "cropped" here would send a zero-sized rectangle on to the renderer.
+            if (rectangle.Width <= 0 || rectangle.Height <= 0)
+                return false;
+            // How much slop to allow at each edge. The rounding we are compensating for
+            // happened in CSS pixels, while the rectangle is in image pixels, and
+            // ComputeCropRectangle magnifies the one into the other by 1/scale — for a 3000px
+            // photo shown 300px wide, half a CSS pixel is five image pixels. A flat one-pixel
+            // tolerance would therefore call a merely-fitted image cropped, and we would
+            // re-encode it at every launch to hand back a few rows short of itself.
+            var scale = cropMetadata.ImgWidth / imageSize.Width;
+            var tolerance = scale > 0 ? Math.Max(1.0, 1.0 / scale) : 1.0;
+            return rectangle.Left > tolerance
+                || rectangle.Top > tolerance
+                || rectangle.Right < imageSize.Width - tolerance
+                || rectangle.Bottom < imageSize.Height - tolerance;
         }
 
         /// <summary>

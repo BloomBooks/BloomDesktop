@@ -1,13 +1,6 @@
 export {};
 
 declare global {
-    interface ToolboxReactAdapterApi {
-        isEnabled: () => boolean;
-        setActiveToolByToolId: (toolId: string) => void;
-        getActiveToolId: () => string | undefined;
-        onActiveToolChanged: (callback: (toolId: string) => void) => void;
-    }
-
     interface ToolboxToolApi {
         makeRootElement?: () => HTMLDivElement;
     }
@@ -17,7 +10,6 @@ declare global {
     }
 
     interface ToolboxApi {
-        getToolIfOffered?: (toolId: string) => ToolboxToolApi | undefined;
         getCurrentTool?: () => CurrentToolApi | undefined;
     }
 
@@ -30,14 +22,20 @@ declare global {
         showSetupDialog: unknown;
         initializeReaderSetupDialog: unknown;
         closeSetupDialog: unknown;
+        beginLoadSynphonySettings: unknown;
+        getDecodableStageMatchingWords: unknown;
+        getSynphonyAlwaysMatchSymbols: unknown;
+        classifySampleTextFiles: unknown;
+        addSampleTextFilesChangedListener: unknown;
         addWordListChangedListener: unknown;
         beginSaveChangedSettings: unknown;
         makeLetterWordList: unknown;
+        removeSampleTextFilesChangedListener: unknown;
+        removeWordListChangedListener: unknown;
         activateLongPressFor: unknown;
         TalkingBookTool: unknown;
         canUndo: unknown;
         undo: unknown;
-        applyToolboxStateToPageLegacy: unknown;
         setActiveDragActivityTab: unknown;
         getTheOneAudioRecorderForExportOnly: unknown;
         copyLeveledReaderStatsToClipboard: unknown;
@@ -45,7 +43,6 @@ declare global {
     }
 
     interface Window {
-        toolboxReactAdapter?: ToolboxReactAdapterApi;
         toolboxBundle?: ToolboxBundleApi;
     }
 }

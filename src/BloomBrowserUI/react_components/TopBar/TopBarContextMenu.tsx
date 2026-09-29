@@ -34,6 +34,8 @@ export const TopBarContextMenu: React.FunctionComponent<{
     const [canChooseDevBloomLibrary, setCanChooseDevBloomLibrary] =
         React.useState(false);
     const [useDevBloomLibrary, setUseDevBloomLibrary] = React.useState(false);
+    const [canRestartViaDevLauncher, setCanRestartViaDevLauncher] =
+        React.useState(false);
 
     const onClose = React.useCallback(() => {
         setMenuPoint(undefined);
@@ -66,6 +68,11 @@ export const TopBarContextMenu: React.FunctionComponent<{
         });
         getBoolean("app/useDevBloomLibrary", (value) => {
             setUseDevBloomLibrary(value);
+        });
+        // Only a Bloom that go.sh started has a launcher to ask for a restart; in any
+        // other build (including an installed one) there is nothing to talk to.
+        getBoolean("app/canRestartViaDevLauncher", (value) => {
+            setCanRestartViaDevLauncher(value);
         });
 
         const target = props.targetRef.current;
@@ -182,6 +189,18 @@ export const TopBarContextMenu: React.FunctionComponent<{
                 },
             },
         ];
+        if (canRestartViaDevLauncher) {
+            items.push({ label: "-" });
+            items.push({
+                // The launcher quits this Bloom, lets dotnet watch rebuild, and starts it
+                // again -- the terminal's own "Ctrl+R" offer never reaches dotnet watch,
+                // whose stdin the launcher leaves closed.
+                label: "Restart Bloom (rebuilds C#)",
+                onClick: () => {
+                    post("app/restartViaDevLauncher");
+                },
+            });
+        }
         if (canChooseDevBloomLibrary) {
             items.push({ label: "-" });
             items.push({
@@ -204,6 +223,7 @@ export const TopBarContextMenu: React.FunctionComponent<{
         runFreezeDoctor,
         canChooseDevBloomLibrary,
         useDevBloomLibrary,
+        canRestartViaDevLauncher,
     ]);
 
     return (

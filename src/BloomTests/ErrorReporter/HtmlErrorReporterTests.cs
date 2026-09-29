@@ -497,5 +497,110 @@ namespace BloomTests.ErrorReporter
             }
         }
         #endregion
+
+        #region Non-interactive (console) suppression -- BL-16869
+
+        /// <summary>
+        /// In a command-line verb (e.g. the child Bloom that `bloom upload` starts) there is nobody
+        /// to dismiss a dialog, so showing one blocks the process forever. The problem must be
+        /// reported on stderr instead. See BL-16869.
+        /// </summary>
+        [Test]
+        public void NotifyUserOfProblem_RunningInConsoleMode_ShowsNoDialogAndWritesToStandardError()
+        {
+            var mockFactory = GetDefaultMockReactDialogFactory();
+            var reporter = new HtmlErrorReporterBuilder()
+                .WithTestValues()
+                .BrowserDialogFactory(mockFactory.Object)
+                .Build();
+
+            // Sanity check: with nothing suppressing it, this same call does show a dialog.
+            reporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), null, "a problem");
+            mockFactory.Verify(
+                x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>()),
+                Times.Once,
+                "Setup failed: an interactive Bloom should have shown the notify dialog, so this test could not tell suppression from a dialog that never happens."
+            );
+            mockFactory.Invocations.Clear();
+
+            var originalConsoleMode = Bloom.Program.RunningInConsoleMode;
+            var originalStandardError = Console.Error;
+            var capturedStandardError = new System.IO.StringWriter();
+            try
+            {
+                Bloom.Program.RunningInConsoleMode = true;
+                Console.SetError(capturedStandardError);
+
+                // System Under Test
+                reporter.NotifyUserOfProblem(
+                    new ShowAlwaysPolicy(),
+                    new ApplicationException("fake exception"),
+                    "a problem"
+                );
+            }
+            finally
+            {
+                Console.SetError(originalStandardError);
+                Bloom.Program.RunningInConsoleMode = originalConsoleMode;
+            }
+
+            mockFactory.Verify(
+                x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>()),
+                Times.Never,
+                "A modal dialog here would block a non-interactive Bloom forever (BL-16869)."
+            );
+            var standardError = capturedStandardError.ToString();
+            Assert.That(
+                standardError,
+                Does.Contain("a problem"),
+                "The problem must still be reported on stderr, or it vanishes silently."
+            );
+            Assert.That(
+                standardError,
+                Does.Contain("fake exception"),
+                "The exception details must reach stderr too."
+            );
+        }
+
+        /// <summary>
+        /// An e2e run must keep showing the dialog: the suite's problemDialogWatcher fixture finds
+        /// it among the CDP page targets and fails the test with the exception behind it.
+        /// </summary>
+        [Test]
+        public void NotifyUserOfProblem_RunningE2eTests_StillShowsDialog()
+        {
+            var mockFactory = GetDefaultMockReactDialogFactory();
+            var reporter = new HtmlErrorReporterBuilder()
+                .WithTestValues()
+                .BrowserDialogFactory(mockFactory.Object)
+                .Build();
+
+            var originalConsoleMode = Bloom.Program.RunningInConsoleMode;
+            var originalE2eMode = Bloom.Program.RunningE2eTests;
+            try
+            {
+                Bloom.Program.RunningInConsoleMode = false;
+                Bloom.Program.RunningE2eTests = true;
+
+                reporter.NotifyUserOfProblem(
+                    new ShowAlwaysPolicy(),
+                    new ApplicationException("fake exception"),
+                    "a problem"
+                );
+            }
+            finally
+            {
+                Bloom.Program.RunningE2eTests = originalE2eMode;
+                Bloom.Program.RunningInConsoleMode = originalConsoleMode;
+            }
+
+            mockFactory.Verify(
+                x => x.CreateReactDialog(It.IsAny<string>(), It.IsAny<object>()),
+                Times.Once,
+                "Suppressing the dialog under --e2e would blind problemDialogWatcher, letting tests go green through real exceptions."
+            );
+        }
+
+        #endregion
     }
 }

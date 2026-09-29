@@ -259,8 +259,8 @@ export default class BloomField {
                 }
             });
         }
-        // BL-16649: "No Indent" (see the text context menu) marks one
-        // paragraph as the continuation of a paragraph on the previous page. Pressing Enter
+        // BL-16649: "Do Not Indent This Paragraph" (see the text context menu)
+        // marks one paragraph as the continuation of a paragraph on the previous page. Pressing Enter
         // in such a paragraph makes a genuinely new paragraph, which should indent normally
         // -- but ckeditor builds it by shallow-cloning the paragraph it split, so it would
         // inherit the class. We note which paragraphs existed just before the Enter, then

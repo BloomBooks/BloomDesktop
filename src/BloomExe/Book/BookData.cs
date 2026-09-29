@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1427,10 +1427,18 @@ namespace Bloom.Book
             }
         }
 
-        private static string TrimEnd(string source, string value)
+        /// <summary>
+        /// Remove every trailing copy of value from the end of source.
+        /// </summary>
+        internal static string TrimEnd(string source, string value)
         {
-            while (source.EndsWith(value))
-                source = source.Remove(source.LastIndexOf(value));
+            // Every string ends with the empty string, and removing it changes nothing, so the
+            // loop below would never end. The separator we are called with is translated, so a
+            // translator really can hand us one.
+            if (string.IsNullOrEmpty(value))
+                return source;
+            while (source.EndsWith(value, StringComparison.Ordinal))
+                source = source.Remove(source.LastIndexOf(value, StringComparison.Ordinal));
             return source;
         }
 
@@ -1439,9 +1447,9 @@ namespace Bloom.Book
         /// This routine uses the user-specified name for the main project language.
         /// For the other two project languages, it explicitly uses the appropriate collection settings
         /// name for that language, which the user also set.
-        /// If the user hasn't set a name for the given language, this will find a fairly readable name
-        /// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
-        /// if it can't find a name.
+        /// If the user hasn't set a name for the given language, this returns the language's
+        /// standard name from the subtag registry Palaso ships ("Spanish"), and falls
+        /// back to the code itself if it can't find a name.
         /// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
         /// </summary>
         public string GetDisplayNameForLanguage(string code)
@@ -2492,7 +2500,11 @@ namespace Bloom.Book
                     ?.Item2.Unencoded;
             }
 
-            var hasBackgroundImgData = backgroundImgValues.All(x => x != null);
+            // Not "all of them are present": the fraction-of-page value is optional, so that a
+            // book saved before it existed still gets its background image rebuilt.
+            var hasBackgroundImgData = HtmlDom.HaveDataForReconstructingBackgroundImgWrapper(
+                backgroundImgValues
+            );
 
             // Note that these attributes were already run through the _attributesNotToCopy filter, which wipes out the ones
             // we don't ever want restored. The style attribute is special, for a series of historical reasons,

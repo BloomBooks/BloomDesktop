@@ -394,6 +394,22 @@ namespace Bloom.ErrorReporter
             // Before we do anything that might be "risky", put the problem in the log.
             ProblemReportApi.LogProblem(exception, messageText, severity);
 
+            // This is the path a plain ErrorReport.NotifyUserOfProblem takes, and it is how a
+            // failed PDF in a bulk upload used to hang the child Bloom forever (BL-16869).
+            if (
+                ProblemReportApi.ReportProblemWithoutUiIfNonInteractive(
+                    severity,
+                    exception,
+                    messageText
+                )
+            )
+            {
+                // The interactive path does this once the dialog closes; we have no dialog, so do it
+                // here rather than leave the reporter holding a stale Control.
+                ResetToDefaults();
+                return;
+            }
+
             // ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
             //System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
             var control = GetControlToUse();
