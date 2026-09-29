@@ -818,7 +818,8 @@ Full request and response shapes, error codes and version history are in `CONTRA
 
 | Area            | RPCs / edge functions                                                    |
 | --------------- | ------------------------------------------------------------------------ |
-| Collections     | `create_collection` (caller becomes its sole admin), `my_collections`, `claim_memberships` |
+| Collections     | `create_collection(..., initial_upload?)` (caller becomes its sole admin), `my_collections`, `claim_memberships` |
+| Migration       | `finish_initial_upload` (admin), `lock_book_for_legacy_checkout` (admin, only while the upload flag is set); see [section 5](#5-starting-a-cloud-collection-initial-upload-and-migration) |
 | State           | `get_collection_state(collection, since?)`, `get_changes(collection, since)`, `get_book_manifest`, `get_collection_file_manifest` |
 | Locks           | `checkout_book(book, machine, guid)`, `checkout_book_takeover(book, guid, machine)`, `unlock_book(book, guid)`, `force_unlock(book)` (admin) |
 | Books           | `delete_book(book, guid)`, `undelete_book` (admin), `rename_check`       |
@@ -826,7 +827,7 @@ Full request and response shapes, error codes and version history are in `CONTRA
 | Other           | `add_palette_colors`, `log_event` (client-originated history entries)    |
 | Edge: books     | `checkin-start`, `checkin-finish`, `checkin-abort`, `download-start`    |
 | Edge: coll. files | `collection-files-start`, `collection-files-finish`                    |
-| Ops only        | `sweep-stale-uploads` (service role), `support_set_admin` (service role) |
+| Ops only        | `sweep-stale-uploads` (service role), `support_set_admin` (service role), `support_delete_collection` (service role) |
 
 The orphaned-upload sweep deletes S3 versions uploaded by check-ins that never committed, but only
 after a 48-hour grace; because finish never commits an upload older than its 24-hour commit window,
