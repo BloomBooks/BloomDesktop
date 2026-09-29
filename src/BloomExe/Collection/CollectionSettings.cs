@@ -1468,14 +1468,14 @@ namespace Bloom.Collection
                 // Exactly these tags: variants like zh-CN-x-foo must stay distinguishable from each
                 // other, so they go through GetLanguageNameWithScriptVariants below instead.
                 if (langTag == "zh-CN" || langTag == "zh-TW" || langTag == "prs")
-                    return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
-                if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
+                    return IetfLanguageTagExtra.GetLocalizedLanguageName(langTag, "en");
+                if (IetfLanguageTagExtra.GetBestLanguageName(langTag, out var bestName))
                 {
                     // For an unlisted language the lookup has already built the whole label, tag
                     // included ("Language Not Listed (qaa-x-foo)"); wrapping it in script variants
                     // would nest it inside itself.
                     if (
-                        IetfLanguageTag.GetGeneralCode(langTag.ToLowerInvariant())
+                        IetfLanguageTagExtra.GetGeneralCode(langTag.ToLowerInvariant())
                         == WellKnownSubtags.UnlistedLanguage
                     )
                         return bestName;
