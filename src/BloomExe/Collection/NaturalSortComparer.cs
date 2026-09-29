@@ -77,7 +77,7 @@ namespace Bloom.Collection
 
         private static int PartCompare(string left, string right)
         {
-            // Make "blah 2 blah" sort before "blah 2.1 blah". NB: Sort order ends up determinging order in the Folio PDF, so SIL-Lead SHRP (Uganda) is dependent on this
+            // Make "blah 2 blah" sort before "blah 2.1 blah".
             if (left == ".")
                 return 1;
             if (right == ".")

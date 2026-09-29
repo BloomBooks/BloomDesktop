@@ -42,6 +42,11 @@ export interface IWorkspaceExports {
         currentLinks: Link[],
         setLinksCallback: (links: Link[]) => void,
     ): void;
+    showFolioBooksDialog(
+        tocPageId: string,
+        currentLinks: Link[],
+        setLinksCallback: (links: Link[]) => void,
+    ): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
         currentTextBox: HTMLElement,
         // The split and applyTimingsFile calls both return a list of new timings,
@@ -59,7 +64,10 @@ export interface IWorkspaceExports {
         emailRequiredForTeamCollection?: boolean,
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
-    showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showBookSettingsDialog(
+        initiallySelectedPageKey?: string,
+        bookSettingsOnly?: boolean,
+    ): void;
     showDecodableReaderSetupDialog(): void;
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
@@ -88,6 +96,8 @@ import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChoos
 export { showLinkTargetChooserDialog };
 import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
 export { showBookGridSetupDialog };
+import { showFolioBooksDialog } from "../react_components/BookGridSetup/FolioBooksDialog";
+export { showFolioBooksDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
@@ -491,6 +501,7 @@ interface WorkspaceBundleApi {
     showPageChooserDialog: typeof showPageChooserDialog;
     showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
     showBookGridSetupDialog: typeof showBookGridSetupDialog;
+    showFolioBooksDialog: typeof showFolioBooksDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
     showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
     closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
@@ -541,6 +552,7 @@ window.workspaceBundle = {
     showPageChooserDialog,
     showLinkTargetChooserDialog,
     showBookGridSetupDialog,
+    showFolioBooksDialog,
     showBookSettingsDialog,
     showDecodableReaderSetupDialog,
     closeDecodableReaderSetupDialog,

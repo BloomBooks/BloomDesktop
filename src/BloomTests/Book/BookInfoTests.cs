@@ -397,10 +397,9 @@ namespace BloomTests.Book
         public void Constructor_FallsBackToTags()
         {
             var tagsPath = Path.Combine(_folder.Path, "tags.txt");
-            File.WriteAllText(tagsPath, @"folio\nexperimental\nsuitableForMakingShells\n");
+            File.WriteAllText(tagsPath, @"experimental\nsuitableForMakingShells\n");
             var bi = new BookInfo(_folder.Path, true);
             Assert.That(bi.IsExperimental);
-            Assert.That(bi.IsFolio);
             // BL-2163, we are no longer migrating suitableForMakingShells
             Assert.That(bi.IsSuitableForMakingShells, Is.False);
 
@@ -408,11 +407,10 @@ namespace BloomTests.Book
             var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
             File.WriteAllText(
                 jsonPath,
-                @"{""folio"":""false"",""experimental"":""true"",""suitableForMakingShells"":""false""}"
+                @"{""experimental"":""true"",""suitableForMakingShells"":""false""}"
             );
             bi = new BookInfo(_folder.Path, true);
             Assert.That(bi.IsExperimental);
-            Assert.That(bi.IsFolio, Is.False);
             Assert.That(bi.IsSuitableForMakingShells, Is.False);
         }
 

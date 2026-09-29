@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.MiscUI;
 using L10NSharp;
 using SIL.Reporting;
 using Application = System.Windows.Forms.Application;
@@ -390,6 +391,14 @@ namespace Bloom.Publish.PDF
             }
             else
             {
+                if (e.Result is FolioPublishingException folioProblem)
+                {
+                    BloomMessageBox.ShowInfo(folioProblem.MessageHtml);
+                    dynamic messageBundleCancel = new DynamicJson();
+                    messageBundleCancel.path = "";
+                    _webSocketServer.SendBundle("publish", "pdfReady", messageBundleCancel);
+                    return;
+                }
                 if (e.Result is Exception)
                 {
                     PublishModel.ReportPdfGenerationError(e.Result as Exception);

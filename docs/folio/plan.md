@@ -1,7 +1,7 @@
 # Folio: publishing a collection's books as one book
 
-Status: proposal, not started. Decisions so far are recorded in each section; remaining questions
-are at the end.
+Status: phases 1 to 4 built (branch `folio-template`). Decisions are recorded in each section; remaining
+questions are at the end.
 
 ## What exists today
 
@@ -31,9 +31,8 @@ and `PdfMaker.MakePdf`. There is no UI; the meta tag has to be added by hand.
    `NaturalSortComparer`, which SIL-LEAD SHRP depends on (`NaturalSortComparer.cs:80`).
 6. **Broken books.** `BookServer.GetBookFromBookInfo` returns an `ErrorBook` for a book that fails
    to load; nothing handles that.
-7. **Image paths need special cases.** Image URLs are rewritten to `../<childFolder>/...`, and
-   `BloomServer` serves any rooted path that exists (`BloomServer.cs:1251`) to make that work.
-   Only `img` and background images are rewritten.
+7. **Image paths need special cases.** Image URLs are rewritten to `../<childFolder>/...`. Only
+   `img` and background images are rewritten.
 8. **One huge DOM.** All pages of all books, with full-resolution images, go through one WebView2
    print job.
 9. **Per-book publishing rules run against the folio, not the child.**
@@ -70,8 +69,8 @@ book.
 
 The options appear in a new Folio section of Book Settings
 (`bookEdit/bookAndPageSettings/BookSettingsConfigrPages.tsx`), shown only when the book is a folio.
-They are saved in the folio's `meta.json` through the existing `book/settings` API
-(`BookSettingsApi.cs`).
+They are publishing settings, so they are saved with the book's other ones, as `folio` in its
+`publish-settings.json` (`PublishSettings.Folio`), through the existing `book/settings` API.
 
 ### 2. Render each book separately, then merge the PDFs
 
@@ -94,7 +93,8 @@ Then:
 5. run booklet imposition once on the merged file.
 
 This removes problems 2, 7, 8 and 9 outright: each part renders exactly as the child book would by
-itself. The `../<childFolder>/` rewriting and the rooted-path case in `BloomServer` can be deleted.
+itself, and the `../<childFolder>/` rewriting is gone. (`BloomServer`'s case for a request that is
+a full path to an existing file stays: it is how every PDF's images are served, folio or not.)
 
 **Booklet imposition works unchanged** because every layouter (`SideFoldBookletLayouter`,
 `CutLandscapeLayout`, ...) takes one finished PDF and doesn't care how it was produced. The merge
@@ -163,23 +163,28 @@ A new **Folio** template book, under `src/content/templates/template books/`, is
 a folio. It comes with one table of contents page. That page does two jobs: it is where the user
 chooses the folio's books, and it is the table of contents in the published book.
 
-The page reuses the book grid. A link grid page (`src/BloomBrowserUI/bookEdit/js/linkGrid.ts`)
-holds `bloom-bookButton` elements with `data-bloom-book-id`, and double-clicking it opens
-`BookGridSetupDialog`, which shows every book in the collection (`BookSourcesList`) beside the
-chosen ones in order (`BookTargetList`). `AppBuilderChooseBooksDialog` already reuses
-`BookGridSetup` for the Reading App Builder with `targetLabel="books-in-app"`. The table of
-contents page does the same with a new `targetLabel` such as `"books-in-folio"`:
+The page has a heading, "Table of Contents" in English, and a list. Both are ordinary
+translation groups, so the user can edit the heading and format either with the Format dialog.
 
-- in the Edit tab it lists the chosen books in order; double-clicking opens the dialog;
-- the chosen books and their order live in the page's DOM, as in a link grid, so they travel with
-  the book and are saved by ordinary page saving;
-- in the PDF each entry shows the book's title and its first page number, which are known before
-  rendering (section 4). With the "leave out the table of contents" option, these pages are not
-  printed, though they still decide which books go in.
+- **Which books.** The list's `data-folio-book-ids` names its books in order, by bookInstanceId.
+  The ids sit outside the editable text, so nothing typed in the box can lose them, and they are
+  saved by ordinary page saving.
+- **Choosing them.** A bubble beside the list, headed "Folio" with the folio icon
+  (`images/folio.svg`, also on the template's thumbnail and the PDF & Print button), holds
+  **Choose Books…** and **Settings…**, one above the other. Choose Books… opens `FolioBooksDialog`, which reuses `BookGridSetup` (as
+  `AppBuilderChooseBooksDialog` does) with `targetLabel="books-in-folio"`: the collection's books
+  beside the chosen ones, in order. Choosing rewrites the list's language 1 box as one line per
+  title. Settings… opens Book and Page Settings at its Folio section.
+- **In the PDF**, the box is rewritten again as one line per book: its title and the first page
+  number printed in it, which are known before rendering (section 4). A style the user gave the box
+  stays, because it is on the box, not in its text. With the "leave out the table of contents"
+  option these pages are not printed, though they still decide which books go in.
 
 **More than one table of contents page.** Extra pages exist only because a long list may not fit
-on one page; they don't divide the folio into parts. The template's page is also available from
-Add Page, so a user whose list doesn't fit can add more. The folio's books are the books on all its table of
+on one page; they don't divide the folio into parts. The template has the page twice: a new folio
+starts with the first, and Add Page offers the second, which is marked `data-page="extra"` because
+Add Page offers only such pages and a new book leaves them out. The template's `template` folder
+holds that page's thumbnails and a `NotForAddPage.txt`, so other books don't offer it. The folio's books are the books on all its table of
 contents pages, in page order and then in list order within each page. A book can be on only one
 of them: the dialog leaves out books already chosen on another page. All table of contents pages
 print where they sit in the folio, before the first child book.
@@ -198,7 +203,19 @@ folio from the template.
 A missing or broken child (`ErrorBook`) is reported by name and the PDF is not made; failing is
 better than a PDF with a book silently missing.
 
-### 7. Other publish targets
+### 7. The PDF & Print screen
+
+For a folio, the screen's options panel has a **Folio Settings…** button under the booklet modes, which opens Book
+and Page Settings at its Folio section without the page settings (there is no page being edited
+outside the Edit tab). When a save changes the folio settings, `book/settings` tells the screen it
+has no PDF, as a cancelled PDF does, and the user makes it again.
+
+While the PDF is made, the progress dialog shows a linear bar that never moves backwards
+(`ProgressDialog` keeps the largest percentage it has been sent), and its log names each book as
+its turn comes: "Making the PDF of book 3 of 40: <title>". Each part's own 0 to 100 percent is
+mapped onto its share of the whole job (`PdfProgressRange`).
+
+### 8. Other publish targets
 
 For now, BloomPub, ePUB and Bloom Library upload of a folio show a message that folios publish as
 PDF only. The next section covers what a single-document folio would need.
@@ -282,22 +299,33 @@ Each book is there for a reason and has as few pages as that reason needs:
 
 ## Phases
 
-1. **Separate rendering and merge** (section 2), taking the book list from table of contents pages
-   written by hand in test fixtures, plus the side rule (section 3),
-   numbering (section 4) and the same-size check (section 5), with the options at their defaults.
-   Delete `AddChildBookContentsToFolio`, the image-path rewriting and the `BloomServer` rooted-path
-   case. Unit tests in `BloomTests` for part planning: blank insertion, sides, numbering,
-   right-to-left, both xmatter options. One e2e test that publishes a small folio (three short
-   books, one needing a blank) as a booklet.
-2. **Folio template and table of contents pages** (section 6): the template, the page,
-   `BookGridSetup` reuse, the "has a table of contents page" rule replacing the meta tag, the
-   printed table of contents, strings in `DistFiles/localization/en/`.
+1. **Separate rendering and merge** (section 2), plus the side rule (section 3), numbering
+   (section 4) and the same-size check (section 5), with the options at their defaults. The Folio
+   template exists with its table of contents page, and a book is a folio when it has one.
+   `AddChildBookContentsToFolio` and the image-path rewriting are deleted. Unit tests in
+   `BloomTests` (`FolioPdfTests`); e2e spec `tests/folio-pdf.spec.ts`; the test collection script
+   `scripts/make-folio-test-collection.script.ts`; `./go.sh --collection <path>` opens a
+   collection with its own user settings.
+2. **Choosing books on the table of contents pages** (section 6): the Choose Books… button beside the list opens
+   `FolioBooksDialog` (`BookGridSetup` with `"books-in-folio"`), which leaves out folios and books on
+   the folio's other table of contents pages (`editView/folioBooksOnOtherTocPages`); the printed
+   table of contents gets each book's title and first page number (`FillTablesOfContents`).
 3. **Book Settings Folio section and the non-default options** (section 1): "chapters of one
    book", per-book numbering, packing without blanks, leaving out the table of contents.
-4. Messages for the other publish targets (section 7).
-5. Update `template.starter.nothingautomatic` in `Template Starter/ReadMe-en.md`, which still calls
-   the feature "forthcoming", and write the docs page.
-6. Scale check (Validation, layer 5).
+4. Messages for the other publish targets (section 8): Web, BloomPUB, ePUB and Audio or Video show
+   `FolioPdfOnlyNotice` for a folio.
+5. Not done, waiting on the developer: the Template Starter readme's "forthcoming Folio feature"
+   sentence (`template.starter.nothingautomatic`) is translated through
+   `DistFiles/localization/Template Starter/ReadMe-*.xlf`, outside `en/`, so changing it is their
+   call; and the docs page, which would be published to docs.bloomlibrary.org.
+6. Scale check (Validation, layer 5): `scripts/folio-scale.script.ts`. On 2026-09-29, Release build:
+   40 books of 8 pages, every page with its own 3000 × 2000 photograph of random noise (which
+   compresses worst of all), made a 566-page, 800 MB PDF in 272 s; Bloom's working set peaked at
+   1,664 MB, the PDF maker's at 60 MB. An earlier run with one photograph shared by every page peaked
+   at 1,930 MB before each part was compressed on its own ahead of the join. The join still holds
+   every part in Bloom's memory; joining outside Bloom's process would be the next step if that
+   matters. One earlier run showed the preview pointing at a PDF that did not exist; it did not
+   happen again, and the cause is not known.
 
 ## Open questions
 

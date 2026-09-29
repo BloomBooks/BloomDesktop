@@ -18,8 +18,11 @@ import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../react_components/l10nComponents";
 import { RequiresSubscriptionAdjacentIconWrapper } from "../../react_components/requiresSubscription";
 import { kSelectCss } from "../../bloomMaterialUITheme";
+import BloomButton from "../../react_components/bloomButton";
+import { showBookSettingsDialog } from "../../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { ToggleButton, Typography } from "@mui/material";
+import { FolioIcon } from "../../react_components/icons/FolioIcon";
 
 interface PdfReadyMessage {
     path: string;
@@ -50,6 +53,8 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
         "PublishTab.PdfMaker.PdfWithCmykSwopV2",
     );
     const [allowFullBleed] = useApiBoolean("publish/pdf/allowFullBleed", false);
+    // A folio's PDF depends on its Folio settings, so offer them here too.
+    const [isFolio] = useApiBoolean("book/settings/isFolio", false);
     const [colorProfile, setColorProfile] = useApiStringState(
         "publish/pdf/colorProfile",
         "none",
@@ -142,6 +147,31 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                     </BloomTooltip>
                 </div>
             </SettingsGroup>
+            {isFolio && (
+                <BloomButton
+                    id="folio-settings"
+                    css={css`
+                        margin-top: 1em;
+                        text-transform: none;
+                    `}
+                    variant="contained"
+                    enabled={true}
+                    hasText={true}
+                    l10nKey="PublishTab.PdfPrint.FolioSettings"
+                    iconBeforeText={
+                        <FolioIcon
+                            color="white"
+                            css={css`
+                                width: 24px;
+                                height: 24px;
+                            `}
+                        />
+                    }
+                    onClick={() => showBookSettingsDialog("folio", true)}
+                >
+                    Folio Settings…
+                </BloomButton>
+            )}
             <FormGroup
                 css={css`
                     margin-top: 1em;

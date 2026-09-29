@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.web;
 using Bloom.Workspace;
 using DotImpose.LayoutMethods;
 using L10NSharp;
@@ -48,26 +51,13 @@ namespace Bloom.Publish.PDF
             Control owner
         )
         {
-            // Try up to 4 times. This is a last-resort attempt to handle BL-361.
-            // Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
-            // but as it was an intermittent problem and we're not sure that was the cause, this might help.
-            for (int i = 0; i < 4; i++)
+            if (specs.FolioParts != null)
             {
-                new MakePdfUsingExternalPdfMakerProgram().MakePdf(specs, worker, doWorkEventArgs);
-
-                if (
-                    doWorkEventArgs.Cancel
-                    || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception)
-                )
+                if (!MakeAndJoinFolioPartPdfs(specs, worker, doWorkEventArgs))
                     return;
-                if (worker?.CancellationPending ?? false)
-                {
-                    doWorkEventArgs.Cancel = true;
-                    return;
-                }
-                if (RobustFile.Exists(specs.OutputPdfPath))
-                    break; // normally the first time
             }
+            else if (!RenderHtmlToPdf(specs, worker, doWorkEventArgs))
+                return;
             if (!RobustFile.Exists(specs.OutputPdfPath))
             {
                 // Should never happen, but...
@@ -99,15 +89,24 @@ namespace Bloom.Publish.PDF
                 // Note: previously compression was the last step, after making a booklet. We moved it before for
                 // the reason above. Seems like it would also have performance benefits, if anything, to shrink
                 // the file before manipulating it further. Just noting it in case there are unexpected issues.
-                var fixPdf = new ProcessPdfWithGhostscript(
-                    ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
-                    specs.ColorProfile,
-                    worker,
-                    doWorkEventArgs
-                );
-                fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
+                // A folio's parts went through Ghostscript before they were joined (see
+                // MakeAndJoinFolioPartPdfs), and a second pass would re-encode their images again.
+                if (specs.FolioParts == null)
+                {
+                    var fixPdf = new ProcessPdfWithGhostscript(
+                        ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
+                        specs.ColorProfile,
+                        worker,
+                        doWorkEventArgs
+                    );
+                    fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
+                }
                 /*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
-                AddMetadataAndRemoveBlankPagesIfNecessary(specs);
+                // A folio's parts had their spurious full-bleed pages removed before they were joined.
+                AddMetadataAndRemoveBlankPagesIfNecessary(
+                    specs,
+                    removeBlankPages: specs.FolioParts == null
+                );
                 /*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
                 if (
                     specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet
@@ -170,14 +169,152 @@ namespace Bloom.Publish.PDF
         }
 
         /// <summary>
-        /// WebView2PdfMaker adds a blank page after each page in full bleed output for some paper sizes.
-        /// This checks for the existence of twice as many pages as expected, and if that condition is true,
-        /// deletes the even numbered pages.
+        /// Render specs.InputHtmlPath to specs.OutputPdfPath. Returns false if the work was cancelled
+        /// or failed, in which case doWorkEventArgs says which.
+        /// </summary>
+        private static bool RenderHtmlToPdf(
+            PdfMakingSpecs specs,
+            BackgroundWorker worker,
+            DoWorkEventArgs doWorkEventArgs
+        )
+        {
+            // Try up to 4 times. This is a last-resort attempt to handle BL-361.
+            // Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
+            // but as it was an intermittent problem and we're not sure that was the cause, this might help.
+            for (int i = 0; i < 4; i++)
+            {
+                new MakePdfUsingExternalPdfMakerProgram().MakePdf(specs, worker, doWorkEventArgs);
+
+                if (
+                    doWorkEventArgs.Cancel
+                    || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception)
+                )
+                    return false;
+                if (worker?.CancellationPending ?? false)
+                {
+                    doWorkEventArgs.Cancel = true;
+                    return false;
+                }
+                if (RobustFile.Exists(specs.OutputPdfPath))
+                    break; // normally the first time
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Render each of a folio's documents to a PDF of its own, shrink it with Ghostscript, remove
+        /// the spurious full-bleed pages from it, and join them in order into specs.OutputPdfPath.
+        /// Each part is shrunk before the join because the join holds every part's pages in memory
+        /// at once, and a folio of many books with large pictures is far too big for that until its
+        /// images have been compressed. Returns false if the work was cancelled or failed, in which
+        /// case doWorkEventArgs says which.
+        /// </summary>
+        private static bool MakeAndJoinFolioPartPdfs(
+            PdfMakingSpecs specs,
+            BackgroundWorker worker,
+            DoWorkEventArgs doWorkEventArgs
+        )
+        {
+            var partPdfs = new List<TempFile>();
+            var socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+            var bookCount = specs.FolioParts.Count(p => p.BookTitle != null);
+            var bookNumber = 0;
+            // Joining the parts takes the last few percent of the whole job.
+            const int kShareOfParts = 95;
+            try
+            {
+                for (var i = 0; i < specs.FolioParts.Count; i++)
+                {
+                    var part = specs.FolioParts[i];
+                    string message;
+                    if (part.BookTitle == null)
+                        message = LocalizationManager.GetString(
+                            "PublishTab.PdfMaker.MakingFolioOwnPages",
+                            "Making the PDF of this folio's own pages"
+                        );
+                    else
+                        message = string.Format(
+                            LocalizationManager.GetString(
+                                "PublishTab.PdfMaker.MakingFolioBook",
+                                "Making the PDF of book {0} of {1}: {2}",
+                                "Progress message while Bloom makes a folio's PDF one book at a time. {0} and {1} are numbers; {2} is the book's title."
+                            ),
+                            ++bookNumber,
+                            bookCount,
+                            part.BookTitle
+                        );
+                    socketProgress.MessageWithoutLocalizing(message);
+                    worker?.ReportProgress(0, message);
+                    using var range = PdfProgressRange.Use(
+                        i * kShareOfParts / specs.FolioParts.Count,
+                        (i + 1) * kShareOfParts / specs.FolioParts.Count
+                    );
+                    var partPdf = TempFile.WithExtension(".pdf");
+                    partPdfs.Add(partPdf);
+                    RobustFile.Delete(partPdf.Path);
+                    var partSpecs = specs.CloneForFolioPart();
+                    partSpecs.InputHtmlPath = part.InputHtmlPath;
+                    partSpecs.OutputPdfPath = partPdf.Path;
+                    partSpecs.HtmlPageCount = part.HtmlPageCount;
+                    partSpecs.FolioParts = null;
+                    if (!RenderHtmlToPdf(partSpecs, worker, doWorkEventArgs))
+                        return false;
+                    if (!RobustFile.Exists(partPdf.Path))
+                        return true; // MakePdf reports the missing output
+                    new ProcessPdfWithGhostscript(
+                        ProcessPdfWithGhostscript.OutputType.DesktopPrinting,
+                        specs.ColorProfile,
+                        worker,
+                        doWorkEventArgs
+                    ).ProcessPdfFile(partPdf.Path, partPdf.Path);
+                    if (doWorkEventArgs.Cancel)
+                        return false;
+                    using (var pdfDoc = PdfReader.Open(partPdf.Path, PdfDocumentOpenMode.Modify))
+                    {
+                        RemoveSpuriousFullBleedPages(pdfDoc, partSpecs);
+                        pdfDoc.Save(partPdf.Path);
+                    }
+                }
+                socketProgress.MessageWithoutLocalizing(
+                    LocalizationManager.GetString(
+                        "PublishTab.PdfMaker.JoiningFolioParts",
+                        "Joining the books into one PDF"
+                    )
+                );
+                socketProgress.SendPercent(kShareOfParts);
+                using (var joined = new PdfDocument())
+                {
+                    foreach (var partPdf in partPdfs)
+                    {
+                        using (var input = PdfReader.Open(partPdf.Path, PdfDocumentOpenMode.Import))
+                        {
+                            foreach (var page in input.Pages)
+                                joined.AddPage(page);
+                        }
+                    }
+                    RobustFile.Delete(specs.OutputPdfPath);
+                    joined.Save(specs.OutputPdfPath);
+                }
+                return true;
+            }
+            finally
+            {
+                foreach (var partPdf in partPdfs)
+                    partPdf.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Add the metadata, and (when removeBlankPages is true) remove the spurious pages that
+        /// full-bleed output can have (see RemoveSpuriousFullBleedPages).
         /// </summary>
         /// <remarks>
         /// This would be easy to move to a simple command line program if memory use proves to be a problem.
         /// </remarks>
-        private void AddMetadataAndRemoveBlankPagesIfNecessary(PdfMakingSpecs specs)
+        private void AddMetadataAndRemoveBlankPagesIfNecessary(
+            PdfMakingSpecs specs,
+            bool removeBlankPages
+        )
         {
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "about to check for blank pages in full bleed PDF file", false);
             using (var pdfDoc = PdfReader.Open(specs.OutputPdfPath, PdfDocumentOpenMode.Modify))
@@ -186,27 +323,38 @@ namespace Bloom.Publish.PDF
                 pdfDoc.Info.Title = specs.Title;
                 pdfDoc.Info.Subject = specs.Summary;
                 pdfDoc.Info.Keywords = specs.Keywords;
-                if (specs.BookIsFullBleed && pdfDoc.PageCount != specs.HtmlPageCount)
-                {
-                    var lastEven = 0;
-                    if (pdfDoc.PageCount == 2 * specs.HtmlPageCount)
-                        lastEven = pdfDoc.PageCount - 1;
-                    else if (pdfDoc.PageCount == 2 * specs.HtmlPageCount - 1)
-                        lastEven = pdfDoc.PageCount - 2;
-                    if (lastEven == 0)
-                    {
-                        Debug.Assert(
-                            pdfDoc.PageCount == specs.HtmlPageCount,
-                            $"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {specs.HtmlPageCount}"
-                        );
-                        return; /* something is screwy */
-                    }
-                    for (int i = lastEven; i > 0; i -= 2)
-                        pdfDoc.Pages.RemoveAt(i);
-                }
+                if (removeBlankPages)
+                    RemoveSpuriousFullBleedPages(pdfDoc, specs);
                 pdfDoc.Save(specs.OutputPdfPath);
             }
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
+        }
+
+        /// <summary>
+        /// WebView2PdfMaker adds a blank page after each page in full bleed output for some paper sizes.
+        /// This checks for the existence of twice as many pages as expected, and if that condition is true,
+        /// deletes the even numbered pages.
+        /// </summary>
+        private static void RemoveSpuriousFullBleedPages(PdfDocument pdfDoc, PdfMakingSpecs specs)
+        {
+            if (specs.BookIsFullBleed && pdfDoc.PageCount != specs.HtmlPageCount)
+            {
+                var lastEven = 0;
+                if (pdfDoc.PageCount == 2 * specs.HtmlPageCount)
+                    lastEven = pdfDoc.PageCount - 1;
+                else if (pdfDoc.PageCount == 2 * specs.HtmlPageCount - 1)
+                    lastEven = pdfDoc.PageCount - 2;
+                if (lastEven == 0)
+                {
+                    Debug.Assert(
+                        pdfDoc.PageCount == specs.HtmlPageCount,
+                        $"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {specs.HtmlPageCount}"
+                    );
+                    return; /* something is screwy */
+                }
+                for (int i = lastEven; i > 0; i -= 2)
+                    pdfDoc.Pages.RemoveAt(i);
+            }
         }
 
         public static string GetDistributedColorProfilesFolder()

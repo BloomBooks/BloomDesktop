@@ -3705,7 +3705,11 @@ namespace Bloom.Book
             );
         }
 
-        private static void UpdateSideClass(
+        /// <summary>
+        /// Give the page the side-left or side-right class its position (from 0) in the printed
+        /// sequence calls for. The first page is a right-hand page, or a left-hand one in a right-to-left book.
+        /// </summary>
+        internal static void UpdateSideClass(
             SafeXmlElement pageDiv,
             int indexOfPageZeroBased,
             bool languageIsRightToLeft

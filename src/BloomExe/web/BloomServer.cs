@@ -1248,10 +1248,9 @@ namespace Bloom.Api
                     return browserFilePath;
             }
 
-            // Is this request the full path to an image file? For most images, we just have the filename. However, in at
-            // least one use case, the image we want isn't in the folder of the PDF we're looking at. That case is when
-            // we are looking at a "folio", a book that gathers up other books into one big PDF. In that case, we want
-            // to find the image in the correct book folder.  See AddChildBookContentsToFolio();
+            // Is this request the full path to an image file? It is when we are making a PDF: the HTML the PDF maker
+            // renders is served from its book's folder by full path, under the OriginalImages marker, so the images it
+            // refers to by file name are requested by full path too.
             var possibleFullImagePath = localPath;
             // "OriginalImages/" at the beginning means we're generating a pdf and want full images,
             // but it has nothing to do with the actual file location.

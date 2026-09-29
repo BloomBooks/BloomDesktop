@@ -27,6 +27,7 @@ namespace Bloom.Book
             Epub = new EpubSettings();
             BloomPub = new BloomPubSettings();
             BloomLibrary = new BloomLibrarySettings();
+            Folio = new FolioSettings();
         }
 
         [JsonProperty("audioVideo")]
@@ -40,6 +41,12 @@ namespace Bloom.Book
 
         [JsonProperty("bloomLibrary")]
         public BloomLibrarySettings BloomLibrary;
+
+        /// <summary>
+        /// How a folio publishes the books it holds. Used only when the book is a folio.
+        /// </summary>
+        [JsonProperty("folio")]
+        public FolioSettings Folio;
 
         public static PublishSettings FromString(string json)
         {
@@ -439,6 +446,48 @@ namespace Bloom.Book
                 || RemoveFontSizes != other.RemoveFontSizes
                 || Mode != other.Mode;
         }
+    }
+
+    /// <summary>
+    /// How a folio (a book that publishes other books of its collection as one book) makes its
+    /// PDF. Book Settings shows these in its Folio section, for folios only. The defaults make the
+    /// PDF each held book's own PDF glued together.
+    /// </summary>
+    public class FolioSettings
+    {
+        /// <summary>
+        /// "eachBook": every held book keeps its own front and back matter, covers included.
+        /// "folioOnly": the held books are chapters of one book, so theirs are left out and only
+        /// the folio's own front and back matter is printed.
+        /// </summary>
+        [JsonProperty("xmatter")]
+        public string Xmatter = "eachBook";
+
+        /// <summary>
+        /// "continuous": numbers run on through the whole folio. "eachBook": each held book's
+        /// pages keep the numbers they have when it is printed alone.
+        /// </summary>
+        [JsonProperty("pageNumbers")]
+        public string PageNumbers = "continuous";
+
+        /// <summary>
+        /// Add a blank page wherever a book would otherwise start on the other side from the one it
+        /// starts on when printed alone.
+        /// </summary>
+        [JsonProperty("addBlankPages")]
+        public bool AddBlankPages = true;
+
+        /// <summary>
+        /// Print the table of contents pages. When false they still decide which books go in.
+        /// </summary>
+        [JsonProperty("showTableOfContents")]
+        public bool ShowTableOfContents = true;
+
+        [JsonIgnore]
+        public bool KeepEachBooksXmatter => Xmatter != "folioOnly";
+
+        [JsonIgnore]
+        public bool NumberContinuously => PageNumbers != "eachBook";
     }
 
     public class BloomLibrarySettings

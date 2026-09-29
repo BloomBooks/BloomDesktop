@@ -1650,7 +1650,7 @@ namespace BloomTests.Book
             locator.AddPath(root.CombineForPath("bookLayout"));
             var folder = storage.FolderPath;
             var tagsPath = Path.Combine(folder, "tags.txt");
-            File.WriteAllText(tagsPath, "suitableForMakingShells\nexperimental\nfolio\n");
+            File.WriteAllText(tagsPath, "suitableForMakingShells\nexperimental\n");
             var collectionSettings = new CollectionSettings(
                 new NewCollectionSettings()
                 {
@@ -1675,10 +1675,6 @@ namespace BloomTests.Book
 
             // BL-2163, we are no longer migrating suitableForMakingShells
             Assert.That(storage.BookInfo.IsSuitableForMakingShells, Is.False);
-
-            // BL-9223, we expect BringBookUpToDate to update the bookInfo with the value determined from the book's html.
-            // The HTML in this test case does not indicate its a folio, so we expect BringBookUpToDate to change the value from True to False.
-            Assert.That(storage.BookInfo.IsFolio, Is.False);
 
             Assert.That(storage.BookInfo.IsExperimental, Is.True);
             Assert.That(storage.BookInfo.BookletMakingIsAppropriate, Is.True);

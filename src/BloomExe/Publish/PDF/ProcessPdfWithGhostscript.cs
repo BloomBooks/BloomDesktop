@@ -444,7 +444,10 @@ namespace Bloom.Publish.PDF
                         _worker.ReportProgress(percentage);
                         // For new view...goes to Javascript code
                         _socketProgress.SendPercent(
-                            percentage * kPdfCompressionShare / 100 + (100 - kPdfCompressionShare)
+                            PdfProgressRange.Map(
+                                percentage * kPdfCompressionShare / 100
+                                    + (100 - kPdfCompressionShare)
+                            )
                         );
                     }
                     catch (ObjectDisposedException e)

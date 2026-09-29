@@ -678,6 +678,7 @@ namespace Bloom.web.controllers
                         folderName = info.FolderName,
                         folderPath = info.FolderPath,
                         isFactory = collection.IsFactoryInstalled,
+                        isFolio = info.IsFolio,
                     };
                 })
                 .ToArray();

@@ -156,6 +156,12 @@ const parseArgs = () => {
         dontDisturb: false,
         // Libraries to serve live from a local checkout: [{ name, checkoutPath? }, ...].
         withLibs: [],
+        // The .bloomCollection file Bloom opens at startup, instead of the most recent collection
+        // in its user settings. See resolveCollectionOptions.
+        collection: undefined,
+        // The folder Bloom keeps its user settings (user.config) in; passed to Bloom as
+        // --user-settings-folder. See resolveCollectionOptions.
+        userSettingsFolder: undefined,
     };
 
     for (let index = 0; index < args.length; index++) {
@@ -198,10 +204,73 @@ const parseArgs = () => {
             addWithLib(options, arg.slice("--with=".length));
             continue;
         }
+
+        if (arg === "--collection") {
+            options.collection = requireOptionValue(
+                args,
+                index,
+                "--collection",
+            );
+            index++;
+            continue;
+        }
+
+        if (arg === "--user-settings-folder") {
+            options.userSettingsFolder = requireOptionValue(
+                args,
+                index,
+                "--user-settings-folder",
+            );
+            index++;
+            continue;
+        }
     }
 
+    resolveCollectionOptions(options);
     return options;
 };
+
+// --collection names a .bloomCollection file, or a folder holding exactly one. Bloom records the
+// collection it opens as the most recent one in its user settings, and every Bloom of one build
+// shares those settings, so opening a named collection with the shared settings would change which
+// collection the developer's own Bloom opens next. So a --collection with no --user-settings-folder
+// gets a settings folder of its own under output/go-user-settings/, named after the collection.
+function resolveCollectionOptions(options) {
+    if (options.collection) {
+        let collectionPath = path.resolve(options.collection);
+        if (!fs.existsSync(collectionPath)) {
+            throw new Error(`--collection: ${collectionPath} does not exist.`);
+        }
+        if (fs.statSync(collectionPath).isDirectory()) {
+            const collectionFiles = fs
+                .readdirSync(collectionPath)
+                .filter((name) =>
+                    name.toLowerCase().endsWith(".bloomcollection"),
+                );
+            if (collectionFiles.length !== 1) {
+                throw new Error(
+                    `--collection: ${collectionPath} must hold exactly one .bloomCollection file; it holds ${collectionFiles.length}.`,
+                );
+            }
+            collectionPath = path.join(collectionPath, collectionFiles[0]);
+        } else if (!collectionPath.toLowerCase().endsWith(".bloomcollection")) {
+            throw new Error(
+                `--collection: ${collectionPath} is not a .bloomCollection file.`,
+            );
+        }
+        options.collection = collectionPath;
+        options.userSettingsFolder ??= path.join(
+            repoRoot,
+            "output",
+            "go-user-settings",
+            path.basename(collectionPath, path.extname(collectionPath)),
+        );
+    }
+    if (options.userSettingsFolder) {
+        options.userSettingsFolder = path.resolve(options.userSettingsFolder);
+        fs.mkdirSync(options.userSettingsFolder, { recursive: true });
+    }
+}
 
 let options;
 
@@ -905,6 +974,14 @@ const startBloomExe = (vitePort) => {
 
     if (options.dontDisturb) {
         args.push("--dont-disturb");
+    }
+
+    if (options.collection) {
+        args.push("--collection", options.collection);
+    }
+
+    if (options.userSettingsFolder) {
+        args.push("--user-settings-folder", options.userSettingsFolder);
     }
 
     const child = spawn(process.execPath, args, {

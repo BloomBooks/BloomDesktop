@@ -465,6 +465,8 @@ namespace Bloom.web.controllers
                     .CurrentSelection
                     .TitleBestForUserDisplay,
                 featurePreventingPublishing = featureStatusForSerialization,
+                // A folio publishes the books it holds only as a PDF (see FolioPdfPartsMaker).
+                isFolio = _publishModel.BookSelection.CurrentSelection.IsFolio,
             };
 
             var result = JsonConvert.SerializeObject(resultObject);

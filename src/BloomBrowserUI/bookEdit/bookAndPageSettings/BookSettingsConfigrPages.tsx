@@ -46,6 +46,8 @@ type BookSettingsAreaProps = {
     appearanceDisabled: boolean;
     tierAllowsFullBleed?: boolean;
     pageSizeSupportsFullBleed: boolean;
+    // Show the Folio page, for a book that publishes other books of its collection as one book.
+    isFolio?: boolean;
     settings: object | undefined;
     settingsToReturnLater: object | undefined;
     getAdditionalProps: <T>(subPath: string) => {
@@ -203,6 +205,48 @@ export const useBookSettingsAreaDefinition = (
     const otherLanguagesLabel = useL10n(
         "Other Languages",
         "BookSettings.Fonts.OtherLanguages",
+    );
+
+    const folioLabel = useL10n("Folio", "BookSettings.Folio");
+    const folioXmatterLabel = useL10n(
+        "Front and back matter",
+        "BookSettings.Folio.Xmatter",
+    );
+    const folioXmatterDescription = useL10n(
+        "Whether each book keeps its own covers, title page and credits, or the books are chapters of one book, so only this folio's are printed.",
+        "BookSettings.Folio.Xmatter.Description",
+    );
+    const folioXmatterEachBookLabel = useL10n(
+        "Each book's own",
+        "BookSettings.Folio.Xmatter.EachBook",
+    );
+    const folioXmatterFolioOnlyLabel = useL10n(
+        "Folio's only (chapters)",
+        "BookSettings.Folio.Xmatter.FolioOnly",
+    );
+    const folioPageNumbersLabel = useL10n(
+        "Page numbers",
+        "BookSettings.Folio.PageNumbers",
+    );
+    const folioPageNumbersContinuousLabel = useL10n(
+        "Continuous",
+        "BookSettings.Folio.PageNumbers.Continuous",
+    );
+    const folioPageNumbersEachBookLabel = useL10n(
+        "Each book's own",
+        "BookSettings.Folio.PageNumbers.EachBook",
+    );
+    const folioBlankPagesLabel = useL10n(
+        "Add blank pages so each book starts on the side it would by itself",
+        "BookSettings.Folio.AddBlankPages",
+    );
+    const folioShowTocLabel = useL10n(
+        "Print the table of contents",
+        "BookSettings.Folio.ShowTableOfContents",
+    );
+    const folioShowTocDescription = useL10n(
+        "When this is off, the table of contents pages still choose the books, but are not printed.",
+        "BookSettings.Folio.ShowTableOfContents.Description",
     );
 
     const coverColorPickerControl = React.useCallback(
@@ -541,6 +585,56 @@ export const useBookSettingsAreaDefinition = (
                     />
                 </ConfigrGroup>
             </ConfigrPage>,
+            ...(props.isFolio
+                ? [
+                      <ConfigrPage
+                          key="folio"
+                          label={folioLabel}
+                          pageKey="folio"
+                      >
+                          <ConfigrGroup>
+                              <ConfigrSelect
+                                  label={folioXmatterLabel}
+                                  description={folioXmatterDescription}
+                                  path="publish.folio.xmatter"
+                                  options={[
+                                      {
+                                          label: folioXmatterEachBookLabel,
+                                          value: "eachBook",
+                                      },
+                                      {
+                                          label: folioXmatterFolioOnlyLabel,
+                                          value: "folioOnly",
+                                      },
+                                  ]}
+                              />
+                              <ConfigrSelect
+                                  label={folioPageNumbersLabel}
+                                  path="publish.folio.pageNumbers"
+                                  options={[
+                                      {
+                                          label: folioPageNumbersContinuousLabel,
+                                          value: "continuous",
+                                      },
+                                      {
+                                          label: folioPageNumbersEachBookLabel,
+                                          value: "eachBook",
+                                      },
+                                  ]}
+                              />
+                              <ConfigrBoolean
+                                  label={folioBlankPagesLabel}
+                                  path="publish.folio.addBlankPages"
+                              />
+                              <ConfigrBoolean
+                                  label={folioShowTocLabel}
+                                  description={folioShowTocDescription}
+                                  path="publish.folio.showTableOfContents"
+                              />
+                          </ConfigrGroup>
+                      </ConfigrPage>,
+                  ]
+                : []),
             <ConfigrPage key="fonts" label="Fonts" pageKey="fonts">
                 <ConfigrGroup>
                     <ConfigrStatic>

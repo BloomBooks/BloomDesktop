@@ -21,6 +21,8 @@ export interface IBookInfo {
     folderName: string;
     folderPath: string;
     isFactory: boolean;
+    /** True for a folio, a book that publishes other books of its collection as one book. */
+    isFolio: boolean;
 }
 
 // A very minimal set of collection properties for now

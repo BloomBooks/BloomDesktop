@@ -47,6 +47,7 @@ export interface IProgressDialogProps {
     determinate?: boolean; // if not set true, shows circular spinner regardless of linearProgess setting
     linearProgress?: boolean; // default is circular progress; set to true for linear progress bar instead
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
+    minWidth?: string; // Overrides the width that size gives the message area, e.g. "520px".
     noMessages?: boolean; // If true, the ProgressBox won't show any messages. This is useful if you just want to use the ProgressDialog for its title, buttons, and progress indicators.
 }
 
@@ -133,7 +134,11 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                 setDone(true);
             }
             if (e.id === "percent" && e.percent !== undefined) {
-                setPercent(e.percent);
+                // A job's progress only goes forward. Some jobs report in stages that each count
+                // from their own start (a PDF is rendered, then compressed), and a bar that jumped
+                // back would look as if work had been lost. Opening the dialog resets it to 0.
+                const percent = e.percent;
+                setPercent((current) => Math.max(current, percent));
             }
             if (e.id === "stage") {
                 // SendStage packs the text into the event's message field (SendString).
@@ -293,9 +298,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                               : props.size === "small"
                                 ? "80px"
                                 : "400px"};
-                        min-width: ${props.size === "small"
-                            ? "250px"
-                            : "540px"};
+                        min-width: ${props.minWidth ??
+                        (props.size === "small" ? "250px" : "540px")};
                         background-color: transparent;
                     `}
                     // This is utterly bizarre. When not wrapped in a material UI Dialog, ProgressBox happily

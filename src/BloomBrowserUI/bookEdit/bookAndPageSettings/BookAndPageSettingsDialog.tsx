@@ -77,6 +77,9 @@ interface IOverrideInformation {
 
 export const BookAndPageSettingsDialog: React.FunctionComponent<{
     initiallySelectedPageKey?: string;
+    // Show only the book's settings, for use outside the Edit tab (from Publish's PDF & Print),
+    // where there is no page being edited to read or change page settings from.
+    bookSettingsOnly?: boolean;
 }> = (props) => {
     const { closeDialog, propsForBloomDialog } = useSetupBloomDialog({
         initiallyOpen: true,
@@ -118,6 +121,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         "book/settings/pageSizeSupportsFullBleed",
         true,
     );
+    const [isFolio] = useApiBoolean("book/settings/isFolio", false);
 
     const [unusedLanguageDataExists] = useApiBoolean(
         "stylesAndFonts/unusedLanguageDataExists",
@@ -177,7 +181,12 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
 
     const [pageSettings, setPageSettings] = React.useState<
         IPageSettings | undefined
-    >(undefined);
+    >(
+        props.bookSettingsOnly
+            ? // No page to read; Config-R still needs a page object among its values.
+              ({ page: {} } as unknown as IPageSettings)
+            : undefined,
+    );
     const [currentPageIsXMatter, setCurrentPageIsXMatter] =
         React.useState(false);
 
@@ -267,7 +276,9 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     // This effect synchronizes dialog state with the editable page iframe, which is outside React.
     // The iframe body can exist slightly before .bloom-page is inserted, so wait for that element
     // once on mount before snapshotting settings used by Cancel and the initial config-r values.
+    // Outside the Edit tab (bookSettingsOnly) there is no such page to wait for.
     React.useEffect(() => {
+        if (props.bookSettingsOnly) return;
         return whenBloomPageIsReady((currentPageElement) => {
             setPageSettings(getCurrentPageSettings());
             initialPageAttributeSnapshot.current =
@@ -277,7 +288,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                     currentPageElement.classList.contains("bloom-backMatter"),
             );
         });
-    }, []);
+    }, [props.bookSettingsOnly]);
 
     // If the dialog unmounts while a nested color picker is open, clear the shared visibility flag
     // so the parent dialog does not stay hidden after this component is gone.
@@ -340,11 +351,14 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
             const latestSettings =
                 latestSettingsRef.current ?? settingsToReturnLater;
             if (latestSettings) {
-                const parsedPageSettings =
-                    parsePageSettingsFromConfigrValue(latestSettings);
-                const changedPageSettings = pageSettings
-                    ? getChangedPageSettings(pageSettings, parsedPageSettings)
-                    : undefined;
+                // Without a page (bookSettingsOnly) there are no page settings to parse or apply.
+                const changedPageSettings =
+                    pageSettings && !props.bookSettingsOnly
+                        ? getChangedPageSettings(
+                              pageSettings,
+                              parsePageSettingsFromConfigrValue(latestSettings),
+                          )
+                        : undefined;
 
                 if (changedPageSettings) {
                     applyChangedPageSettings(changedPageSettings);
@@ -368,6 +382,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         appearanceDisabled,
         tierAllowsFullBleed,
         pageSizeSupportsFullBleed,
+        isFolio,
         settings,
         settingsToReturnLater,
         getAdditionalProps,
@@ -412,7 +427,7 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
         </ConfigrArea>,
     ];
 
-    if (!currentPageIsXMatter) {
+    if (!currentPageIsXMatter && !props.bookSettingsOnly) {
         configrAreas.push(
             <ConfigrArea
                 key={pageSettingsArea.pageKey}
@@ -490,14 +505,14 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
                         showAppBar={false}
                         showJson={false}
                         onChange={(s) => {
-                            const parsedPageSettings =
-                                parsePageSettingsFromConfigrValue(s);
-                            const changedPageSettings = pageSettings
-                                ? getChangedPageSettings(
-                                      pageSettings,
-                                      parsedPageSettings,
-                                  )
-                                : undefined;
+                            // Without a page (bookSettingsOnly) there are no page settings to parse.
+                            const changedPageSettings =
+                                pageSettings && !props.bookSettingsOnly
+                                    ? getChangedPageSettings(
+                                          pageSettings,
+                                          parsePageSettingsFromConfigrValue(s),
+                                      )
+                                    : undefined;
 
                             // Config-r may call onChange while rendering, so defer state updates.
                             latestSettingsRef.current = s;
@@ -541,7 +556,10 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     );
 };
 
-export function showBookSettingsDialog(initiallySelectedPageKey?: string) {
+export function showBookSettingsDialog(
+    initiallySelectedPageKey?: string,
+    bookSettingsOnly?: boolean,
+) {
     // once Bloom's tab bar is also in react, it won't be possible
     // to open another copy of this without closing it first, but
     // for now, we need to prevent that.
@@ -551,6 +569,7 @@ export function showBookSettingsDialog(initiallySelectedPageKey?: string) {
             getWorkspaceBundleExports().ShowEditViewDialog(
                 <BookAndPageSettingsDialog
                     initiallySelectedPageKey={initiallySelectedPageKey}
+                    bookSettingsOnly={bookSettingsOnly}
                 />,
             );
         } catch (error) {

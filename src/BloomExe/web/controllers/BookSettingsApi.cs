@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.SafeXml;
@@ -60,6 +61,13 @@ namespace Bloom.Api
             apiHandler.RegisterEndpointHandler(
                 "book/settings/deleteCustomBookStyles",
                 HandleDeleteCustomBookStyles,
+                false
+            );
+            // Whether Book Settings should show its Folio section.
+            apiHandler.RegisterBooleanEndpointHandler(
+                "book/settings/isFolio",
+                request => _bookSelection.CurrentSelection.IsFolio,
+                null,
                 false
             );
             apiHandler.RegisterBooleanEndpointHandler(
@@ -175,9 +183,18 @@ namespace Bloom.Api
                     var jsonOfJustPublishSettings = JsonConvert.SerializeObject(
                         newSettings.publish
                     );
-                    _bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(
-                        jsonOfJustPublishSettings
-                    );
+                    var publishSettings = _bookSelection.CurrentSelection.BookInfo.PublishSettings;
+                    var folioSettingsBefore = JsonConvert.SerializeObject(publishSettings.Folio);
+                    publishSettings.LoadNewJson(jsonOfJustPublishSettings);
+                    // A folio's PDF is made from these settings, so a PDF made before they changed
+                    // is out of date. Tell the PDF & Print screen it has none, as a cancelled PDF
+                    // does; the user makes it again.
+                    if (JsonConvert.SerializeObject(publishSettings.Folio) != folioSettingsBefore)
+                    {
+                        dynamic noPdf = new DynamicJson();
+                        noPdf.path = "";
+                        BloomWebSocketServer.Instance.SendBundle("publish", "pdfReady", noPdf);
+                    }
                     // Now we need to extract the content language visibility settings and remove them from what gets saved
                     // as the appearance settings.
                     var newAppearance = newSettings.appearance;

@@ -127,6 +127,11 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
+                "editView/folioBooksOnOtherTocPages",
+                HandleGetFolioBooksOnOtherTocPages,
+                false
+            );
+            apiHandler.RegisterEndpointHandler(
                 "editView/setCustomPageLayout",
                 HandleSetCustomPageLayout,
                 true
@@ -730,6 +735,22 @@ namespace Bloom.web.controllers
                 return;
             }
             request.ReplyWithText(request.CurrentBook.ID);
+        }
+
+        /// <summary>
+        /// The ids of the books listed on the current folio's table of contents pages other than
+        /// the one named by the page-id parameter. A book may be on only one of a folio's table of
+        /// contents pages, so the dialog that chooses a page's books leaves these out.
+        /// </summary>
+        private void HandleGetFolioBooksOnOtherTocPages(ApiRequest request)
+        {
+            var pageId = request.RequiredParam("page-id");
+            var ids = Book
+                .Book.GetFolioTocPages(request.CurrentBook.OurHtmlDom)
+                .Where(page => page.GetAttribute("id") != pageId)
+                .SelectMany(Book.Book.GetFolioTocEntryIds)
+                .ToArray();
+            request.ReplyWithJson(ids);
         }
     }
 }

@@ -10,7 +10,29 @@ import { useL10n } from "../l10nHooks";
 import { postJson } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
-type BookGridSetupTargetLabel = "links-in-grid" | "books-in-app";
+type BookGridSetupTargetLabel =
+    | "links-in-grid"
+    | "books-in-app"
+    | "books-in-folio";
+
+// The header over the chosen books, for each use of this component.
+const targetHeaders: Record<
+    BookGridSetupTargetLabel,
+    { english: string; l10nKey: string }
+> = {
+    "links-in-grid": {
+        english: "Links in Grid (%0)",
+        l10nKey: "BookGridSetup.LinksInGrid",
+    },
+    "books-in-app": {
+        english: "Books in App (%0)",
+        l10nKey: "BookGridSetup.BooksInApp",
+    },
+    "books-in-folio": {
+        english: "Books in Folio (%0)",
+        l10nKey: "BookGridSetup.BooksInFolio",
+    },
+};
 
 const BookGridSetup: React.FC<{
     sourceBooks: BookInfoForLinks[];
@@ -22,13 +44,8 @@ const BookGridSetup: React.FC<{
     const [selectedSource, setSelectedSource] =
         useState<BookInfoForLinks | null>(null);
     const [targets, setTargets] = useState<Link[]>(props.links); // initialize with links prop
-    const showsBooksInApp = props.targetLabel === "books-in-app";
-    const targetHeader = useL10n(
-        showsBooksInApp ? "Books in App (%0)" : "Links in Grid (%0)",
-        showsBooksInApp
-            ? "BookGridSetup.BooksInApp"
-            : "BookGridSetup.LinksInGrid",
-    );
+    const header = targetHeaders[props.targetLabel ?? "links-in-grid"];
+    const targetHeader = useL10n(header.english, header.l10nKey);
 
     React.useEffect(() => {
         setTargets(props.links);

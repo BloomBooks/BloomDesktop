@@ -362,6 +362,11 @@ namespace Bloom.Publish
             Debug.Assert(owner != null || Program.RunningInConsoleMode); // must pass if we don't have a view.
             try
             {
+                if (IsMakingFolioPdf)
+                {
+                    MakeFolioPdf(worker, doWorkEventArgs, owner);
+                    return;
+                }
                 using (var tempHtml = MakeFinalHtmlForPdfMaker())
                 {
                     if (doWorkEventArgs.Cancel)
@@ -375,29 +380,10 @@ namespace Bloom.Publish
                     //    "about to create PDF file",
                     //    false
                     //);
-                    _pdfMaker.MakePdf(
-                        new PdfMakingSpecs()
-                        {
-                            InputHtmlPath = tempHtml.Key,
-                            OutputPdfPath = PdfFilePath,
-                            PaperSizeName = PageLayout.SizeAndOrientation.PageSizeName,
-                            Landscape = PageLayout.SizeAndOrientation.IsLandScape,
-                            LayoutPagesForRightToLeft = LayoutPagesForRightToLeft,
-                            BooketLayoutMethod = layoutMethod,
-                            BookletPortion = BookletPortion,
-                            BookIsFullBleed = _currentlyLoadedBook.FullBleed,
-                            PrintWithFullBleed = GetPrintingWithFullBleed(),
-                            ColorProfile = _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
-                            HtmlPageCount = this.HtmlPageCount,
-                            Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
-                            Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
-                            Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
-                            Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData),
-                        },
-                        worker,
-                        doWorkEventArgs,
-                        owner
-                    );
+                    var specs = MakePdfMakingSpecs(layoutMethod);
+                    specs.InputHtmlPath = tempHtml.Key;
+                    specs.HtmlPageCount = this.HtmlPageCount;
+                    _pdfMaker.MakePdf(specs, worker, doWorkEventArgs, owner);
                     // Warn the user if we're starting to use too much memory.
                     //Bloom.Utils.MemoryManagement.CheckMemory(
                     //    false,
@@ -413,6 +399,98 @@ namespace Bloom.Publish
                 //                SIL.Reporting.ErrorReport.NotifyUserOfProblem(e, "There was a problem creating a PDF from this book.");
                 //                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
                 //                return;
+            }
+        }
+
+        /// <summary>
+        /// The specs for making a PDF of the current book with the current settings, except for the
+        /// HTML to make it from, which the caller fills in.
+        /// </summary>
+        private PdfMakingSpecs MakePdfMakingSpecs(BookletLayoutMethod layoutMethod)
+        {
+            return new PdfMakingSpecs()
+            {
+                OutputPdfPath = PdfFilePath,
+                PaperSizeName = PageLayout.SizeAndOrientation.PageSizeName,
+                Landscape = PageLayout.SizeAndOrientation.IsLandScape,
+                LayoutPagesForRightToLeft = LayoutPagesForRightToLeft,
+                BooketLayoutMethod = layoutMethod,
+                BookletPortion = BookletPortion,
+                BookIsFullBleed = _currentlyLoadedBook.FullBleed,
+                PrintWithFullBleed = GetPrintingWithFullBleed(),
+                ColorProfile = _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
+                Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
+                Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
+                Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
+                Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData),
+            };
+        }
+
+        /// <summary>
+        /// Whether the PDF being made is a folio's, made from the books it lists. A booklet's cover
+        /// is the folio's own cover alone, so that is made the ordinary way.
+        /// </summary>
+        private bool IsMakingFolioPdf
+        {
+            get
+            {
+                if (_currentlyLoadedBook == null)
+                    _currentlyLoadedBook = BookSelection.CurrentSelection;
+                return _currentlyLoadedBook.IsFolio
+                    && BookletPortion != BookletPortions.BookletCover;
+            }
+        }
+
+        /// <summary>
+        /// Make the PDF of a folio: one HTML document per section (see FolioPdfPartsMaker), each
+        /// rendered on its own and then joined by the PdfMaker.
+        /// </summary>
+        private void MakeFolioPdf(
+            BackgroundWorker worker,
+            DoWorkEventArgs doWorkEventArgs,
+            Control owner
+        )
+        {
+            PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
+            CheckOrientationIsUnchanged();
+            var parts = new FolioPdfPartsMaker(
+                _currentlyLoadedBook,
+                _currentBookCollectionSelection.CurrentSelection,
+                _bookServer,
+                PageLayout,
+                BookletPortion
+            ).MakeParts();
+            var htmlFiles = new List<InMemoryHtmlFile>();
+            try
+            {
+                var specs = MakePdfMakingSpecs(GetBookletLayoutMethod());
+                specs.FolioParts = new List<PdfMakingSpecs.FolioPart>();
+                foreach (var part in parts)
+                {
+                    var file = FinishDomForPdfMaker(part.Dom, out var pageCount);
+                    htmlFiles.Add(file);
+                    specs.FolioParts.Add(
+                        new PdfMakingSpecs.FolioPart
+                        {
+                            InputHtmlPath = file.Key,
+                            HtmlPageCount = pageCount,
+                            BookTitle =
+                                part.Book == _currentlyLoadedBook
+                                    ? null
+                                    : part.Book.TitleBestForUserDisplay,
+                        }
+                    );
+                }
+                HtmlPageCount = specs.FolioParts.Sum(p => p.HtmlPageCount);
+                specs.HtmlPageCount = HtmlPageCount;
+                if (doWorkEventArgs.Cancel)
+                    return;
+                _pdfMaker.MakePdf(specs, worker, doWorkEventArgs, owner);
+            }
+            finally
+            {
+                foreach (var file in htmlFiles)
+                    file.Dispose();
             }
         }
 
@@ -458,6 +536,15 @@ namespace Bloom.Publish
                 _currentlyLoadedBook = BookSelection.CurrentSelection;
             PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
+            CheckOrientationIsUnchanged();
+            var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, PageLayout);
+            var file = FinishDomForPdfMaker(dom, out var pageCount);
+            HtmlPageCount = pageCount;
+            return file;
+        }
+
+        private void CheckOrientationIsUnchanged()
+        {
             var orientationChanging =
                 BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape
                 != PageLayout.SizeAndOrientation.IsLandScape;
@@ -467,13 +554,14 @@ namespace Bloom.Publish
                     "We no longer support creating a PDF in a different orientation from the one set in edit mode"
                 );
             }
-            var dom = BookSelection.CurrentSelection.GetDomForPrinting(
-                BookletPortion,
-                _currentBookCollectionSelection.CurrentSelection,
-                _bookServer,
-                PageLayout
-            );
+        }
 
+        /// <summary>
+        /// Do what every DOM needs, after Book.GetDomForPrinting, to become the HTML that the PDF
+        /// maker renders, and serve it as an in-memory file in the DOM's book folder.
+        /// </summary>
+        private InMemoryHtmlFile FinishDomForPdfMaker(HtmlDom dom, out int pageCount)
+        {
             AddStylesheetClasses(dom.RawDom);
             dom.RawDom.AddClassToBody("pdfPublishMode");
 
@@ -484,7 +572,7 @@ namespace Bloom.Publish
             var pages = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")
                 .Cast<SafeXmlElement>()
                 .ToList();
-            HtmlPageCount = pages.Count;
+            pageCount = pages.Count;
             // Remove any content that has been generated by an AI engine. (BL-14339)
             foreach (var page in pages)
             {

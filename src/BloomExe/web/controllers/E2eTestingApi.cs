@@ -328,8 +328,12 @@ namespace Bloom.web.controllers
                 {
                     var templateBookPath = templateBook.GetPathHtmlFile().Replace('\\', '/');
                     var templateBookTitle = templateBook.Title;
+                    // The dialog offers only the pages marked "extra" (TemplateBookPages.tsx).
                     return templateBook
                         .GetTemplatePagesIdDictionary()
+                        .Where(pair =>
+                            pair.Value.GetDivNodeForThisPage().GetAttribute("data-page") == "extra"
+                        )
                         .Select(pair => new
                         {
                             id = pair.Key,

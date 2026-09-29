@@ -34,6 +34,10 @@ const parseArgs = () => {
         noWatch: false,
         // Pass --dont-disturb on to Bloom. See go.mjs --dont-disturb.
         dontDisturb: false,
+        // The .bloomCollection file for Bloom to open. See go.mjs --collection.
+        collection: undefined,
+        // Passed on to Bloom as --user-settings-folder. See go.mjs --collection.
+        userSettingsFolder: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -72,9 +76,25 @@ const parseArgs = () => {
             continue;
         }
 
+        if (arg === "--collection") {
+            options.collection = requireOptionValue(args, i, "--collection");
+            i++;
+            continue;
+        }
+
+        if (arg === "--user-settings-folder") {
+            options.userSettingsFolder = requireOptionValue(
+                args,
+                i,
+                "--user-settings-folder",
+            );
+            i++;
+            continue;
+        }
+
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root, --vite-port, --nowatch and --dont-disturb.",
+                "Unsupported option. Supported options are --repo-root, --vite-port, --nowatch, --dont-disturb, --collection and --user-settings-folder.",
             );
         }
     }
@@ -175,6 +195,16 @@ if (options.dontDisturb) {
 
 if (effectiveVitePort) {
     dotnetArgs.push("--vite-port", String(effectiveVitePort));
+}
+
+// Bloom opens a .bloomCollection given as its only positional argument, as it does for a
+// double-clicked collection file.
+if (options.collection) {
+    dotnetArgs.push(options.collection);
+}
+
+if (options.userSettingsFolder) {
+    dotnetArgs.push("--user-settings-folder", options.userSettingsFolder);
 }
 
 if (effectiveVitePort) {

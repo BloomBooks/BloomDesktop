@@ -13,7 +13,9 @@
 //   options: --repo-root <path> (default: this checkout), --timeout-ms <n> (default 300000),
 //            --nowatch (only with --ensure-running: pass --nowatch through to go.mjs, so
 //            Bloom runs without "dotnet watch" - halves the time to a running Bloom, at the
-//            cost of C# edits no longer rebuilding by themselves; use --restart for those)
+//            cost of C# edits no longer rebuilding by themselves; use --restart for those),
+//            --collection <path> and --user-settings-folder <dir> (only with --ensure-running:
+//            passed through to go.mjs, so Bloom opens that collection; see go.mjs --collection)
 //
 // --ensure-running always starts go.mjs with --dont-disturb: this script is how an agent starts
 // Bloom, and a Bloom an agent drives must not take the foreground or the keyboard from the person
@@ -79,6 +81,8 @@ const parseArgs = () => {
         timeoutMs: 300000,
         // Only meaningful for --ensure-running, the one action that starts go.mjs.
         noWatch: false,
+        collection: undefined,
+        userSettingsFolder: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -116,6 +120,22 @@ const parseArgs = () => {
             continue;
         }
 
+        if (arg === "--collection") {
+            options.collection = path.resolve(
+                requireOptionValue(args, i, "--collection"),
+            );
+            i++;
+            continue;
+        }
+
+        if (arg === "--user-settings-folder") {
+            options.userSettingsFolder = path.resolve(
+                requireOptionValue(args, i, "--user-settings-folder"),
+            );
+            i++;
+            continue;
+        }
+
         if (arg === "--repo-root") {
             options.repoRoot = path.resolve(
                 requireOptionValue(args, i, "--repo-root"),
@@ -139,7 +159,7 @@ const parseArgs = () => {
         }
 
         throw new Error(
-            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --nowatch, --repo-root <path>, --timeout-ms <n>.`,
+            `Unsupported option ${arg}. Actions: ${actionNames.join(", ")}; options: --json, --wait-ready, --nowatch, --collection <path>, --user-settings-folder <dir>, --repo-root <path>, --timeout-ms <n>.`,
         );
     }
 
@@ -152,6 +172,14 @@ const parseArgs = () => {
     if (options.noWatch && options.action !== "ensure-running") {
         throw new Error(
             "--nowatch only applies to --ensure-running (it is passed through to go.mjs when the stack is started).",
+        );
+    }
+    if (
+        (options.collection || options.userSettingsFolder) &&
+        options.action !== "ensure-running"
+    ) {
+        throw new Error(
+            "--collection and --user-settings-folder only apply to --ensure-running (they are passed through to go.mjs when the stack is started).",
         );
     }
 
@@ -321,7 +349,17 @@ const goMjsPath = (repoRoot) =>
 const launchViaOrca = (repoRoot, goArgs) => {
     // "node <go.mjs>" rather than "./go.sh" because the Orca terminal's shell
     // may not be bash; go.sh is a 4-line shim around exactly this command.
-    const command = [`node "${goMjsPath(repoRoot)}"`, ...goArgs].join(" ");
+    // This is one command line for whatever shell the tab runs, and a bash there eats backslashes,
+    // so paths (a collection's, say) go with forward slashes, which Windows accepts; and any
+    // argument with a space in it is quoted.
+    const command = [
+        `node "${goMjsPath(repoRoot)}"`,
+        ...goArgs
+            .map((arg) =>
+                path.isAbsolute(arg) ? arg.replace(/\\/g, "/") : arg,
+            )
+            .map((arg) => (arg.includes(" ") ? `"${arg}"` : arg)),
+    ].join(" ");
     const output = execFileSync(
         "orca",
         [
@@ -460,6 +498,12 @@ const ensureRunning = async (options, deadline) => {
                 const goArgs = [
                     "--dont-disturb",
                     ...(options.noWatch ? ["--nowatch"] : []),
+                    ...(options.collection
+                        ? ["--collection", options.collection]
+                        : []),
+                    ...(options.userSettingsFolder
+                        ? ["--user-settings-folder", options.userSettingsFolder]
+                        : []),
                 ];
                 launch = isOrcaRuntimeReachable()
                     ? launchViaOrca(options.repoRoot, goArgs)

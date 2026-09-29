@@ -1,0 +1,43 @@
+include ../standard-page-mixins.pug
+
+//- A folio publishes other books of its collection as one book. The books it holds, and their order,
+//- are named by the data-folio-book-ids of its table of contents pages' lists (Book.GetFolioBookIds);
+//- a book with at least one such page is a folio (Book.IsFolio). The template has two: a book made
+//- from it starts with the first, and Add Page offers the second, marked "extra", for when the list
+//- does not fit on one page. The list is an ordinary text box, so it can be formatted; choosing the
+//- books rewrites its text, and so does making the PDF, which adds each book's first page number.
+
+//- A table of contents page: a heading, and the list of books.
+mixin folio-toc-page
+	+page('Table of Contents', 'Lists the books this folio publishes, in order.')&attributes(attributes)
+		+field-prototypeDeclaredExplicity('V').bloom-folio-toc-heading.FolioTocHeading-style
+			+editable(kLanguageForPrototypeOnly)
+			+editable('en') Table of Contents
+		+field('V').bloom-folio-toc-list(data-folio-book-ids='')
+
+doctype html
+html
+	head
+		+metadata-standard
+		meta(name='defaultNameForDerivedBooks', content='Folio')
+		meta(name='bloomBookId', content='788fa287-ae9d-4176-9f75-e586e9157c09')
+		meta(name='SuitableForMakingShells', content='yes')
+		//- Eventually, we'll remove Bloom's need for this.
+		meta(name='pageTemplateSource', content='Folio')
+		title 'Folio'
+		+stylesheets('Folio.css')
+		+standardStyles
+			= '\n'
+			//- A style, not a size in Folio.less, so the Format dialog can change it. It must not be
+			//- relative (em, %): Bloom copies the box's size onto its translation group each time the
+			//- page is shown (SetupThingsSensitiveToStyleChanges), so a relative size grows every time.
+			| .FolioTocHeading-style { font-size: 16pt !important; text-align: center !important; }
+	body
+		+dataDiv
+			+bookVariable-title('en', 'Folio')
+			+bookVariable('styleNumberSequence', '*', '0')
+		+preview-outsideFrontCover
+		//- This one is copied into each new folio.
+		+folio-toc-page.bloom-folio-toc#76b232bd-e619-4f7d-8fc9-3f01daf3d940
+		//- This one is what Add Page offers; Bloom leaves "extra" pages out of a new book.
+		+folio-toc-page.bloom-folio-toc#3f0c2e8a-51d4-4b0e-9a61-8c4f7a2d6b13(data-page='extra')

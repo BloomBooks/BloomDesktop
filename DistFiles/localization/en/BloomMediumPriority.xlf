@@ -2586,6 +2586,116 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Heading of the dialog shown the first time the user opens the editor.</note>
       </trans-unit>
+      <trans-unit id="TemplateBooks.PageLabel.Table of Contents" translate="no">
+        <source xml:lang="en">Table of Contents</source>
+        <note>ID: TemplateBooks.PageLabel.Table of Contents</note>
+        <note>The name of a page of the Folio template, shown in the page list and in Add Page. It lists the books the folio publishes.</note>
+      </trans-unit>
+      <trans-unit id="BookGridSetup.BooksInFolio" translate="no">
+        <source xml:lang="en">Books in Folio (%0)</source>
+        <note>ID: BookGridSetup.BooksInFolio</note>
+        <note>Heading over the list of books chosen for a folio, in the dialog for choosing them. %0 is the number of books. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="FolioBooksDialog.Title" translate="no">
+        <source xml:lang="en">Choose Books for Folio</source>
+        <note>ID: FolioBooksDialog.Title</note>
+        <note>Title of the dialog that opens from the Choose Books… button on a folio's table of contents page. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Folio.ChooseBooks" translate="no">
+        <source xml:lang="en">Choose Books…</source>
+        <note>ID: EditTab.Folio.ChooseBooks</note>
+        <note>Button in a bubble beside the list on a folio's table of contents page, in the Edit tab. It opens the dialog for choosing the books the page lists. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio" translate="no">
+        <source xml:lang="en">Folio</source>
+        <note>ID: BookSettings.Folio</note>
+        <note>Name of a section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.Xmatter" translate="no">
+        <source xml:lang="en">Front and back matter</source>
+        <note>ID: BookSettings.Folio.Xmatter</note>
+        <note>Label of a choice. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.Xmatter.Description" translate="no">
+        <source xml:lang="en">Whether each book keeps its own covers, title page and credits, or the books are chapters of one book, so only this folio's are printed.</source>
+        <note>ID: BookSettings.Folio.Xmatter.Description</note>
+        <note>Explains the "Front and back matter" choice. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.Xmatter.EachBook" translate="no">
+        <source xml:lang="en">Each book's own</source>
+        <note>ID: BookSettings.Folio.Xmatter.EachBook</note>
+        <note>One option of the "Front and back matter" choice: every book keeps its own. Keep it short: it fits in a small dropdown. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.Xmatter.FolioOnly" translate="no">
+        <source xml:lang="en">Folio's only (chapters)</source>
+        <note>ID: BookSettings.Folio.Xmatter.FolioOnly</note>
+        <note>One option of the "Front and back matter" choice: only the folio's own are printed, as if the books were chapters of one book. Keep it short: it fits in a small dropdown. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.PageNumbers" translate="no">
+        <source xml:lang="en">Page numbers</source>
+        <note>ID: BookSettings.Folio.PageNumbers</note>
+        <note>Label of a choice. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.PageNumbers.Continuous" translate="no">
+        <source xml:lang="en">Continuous</source>
+        <note>ID: BookSettings.Folio.PageNumbers.Continuous</note>
+        <note>One option of the "Page numbers" choice: the numbers run on through the whole folio. Keep it short: it fits in a small dropdown. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.PageNumbers.EachBook" translate="no">
+        <source xml:lang="en">Each book's own</source>
+        <note>ID: BookSettings.Folio.PageNumbers.EachBook</note>
+        <note>One option of the "Page numbers" choice: each book keeps the numbers it has by itself. Keep it short: it fits in a small dropdown. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.AddBlankPages" translate="no">
+        <source xml:lang="en">Add blank pages so each book starts on the side it would by itself</source>
+        <note>ID: BookSettings.Folio.AddBlankPages</note>
+        <note>Label of a check box. "Side" means a left-hand or right-hand page. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.ShowTableOfContents" translate="no">
+        <source xml:lang="en">Print the table of contents</source>
+        <note>ID: BookSettings.Folio.ShowTableOfContents</note>
+        <note>Label of a check box. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="BookSettings.Folio.ShowTableOfContents.Description" translate="no">
+        <source xml:lang="en">When this is off, the table of contents pages still choose the books, but are not printed.</source>
+        <note>ID: BookSettings.Folio.ShowTableOfContents.Description</note>
+        <note>Explains the "Print the table of contents" check box. In the Folio section of Book and Page Settings, shown only for a folio. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.PdfOnly" translate="no">
+        <source xml:lang="en">This book is a folio. A folio can be published only as a PDF, from PDF &amp; Print.</source>
+        <note>ID: PublishTab.Folio.PdfOnly</note>
+        <note>Shown in the Publish tab instead of the Web, BloomPUB, ePUB and Audio or Video screens when the book is a folio. "PDF &amp; Print" is the name of another screen of the Publish tab. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Folio.BubbleHeading" translate="no">
+        <source xml:lang="en">Folio</source>
+        <note>ID: EditTab.Folio.BubbleHeading</note>
+        <note>Heading of the bubble beside the list on a folio's table of contents page, in the Edit tab. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Folio.Settings" translate="no">
+        <source xml:lang="en">Settings…</source>
+        <note>ID: EditTab.Folio.Settings</note>
+        <note>Button in the bubble beside the list on a folio's table of contents page, under the heading "Folio". It opens Book and Page Settings at its Folio section. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.FolioSettings" translate="no">
+        <source xml:lang="en">Folio Settings…</source>
+        <note>ID: PublishTab.PdfPrint.FolioSettings</note>
+        <note>Button on the PDF &amp; Print screen of the Publish tab, shown only for a folio. It opens Book and Page Settings at its Folio section. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.MakingFolioOwnPages" translate="no">
+        <source xml:lang="en">Making the PDF of this folio's own pages</source>
+        <note>ID: PublishTab.PdfMaker.MakingFolioOwnPages</note>
+        <note>Progress message while Bloom makes a folio's PDF one part at a time: the part with the folio's own cover, title page, table of contents and so on. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.MakingFolioBook" translate="no">
+        <source xml:lang="en">Making the PDF of book {0} of {1}: {2}</source>
+        <note>ID: PublishTab.PdfMaker.MakingFolioBook</note>
+        <note>Progress message while Bloom makes a folio's PDF one book at a time. {0} and {1} are numbers; {2} is the book's title. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.JoiningFolioParts" translate="no">
+        <source xml:lang="en">Joining the books into one PDF</source>
+        <note>ID: PublishTab.PdfMaker.JoiningFolioParts</note>
+        <note>Progress message after Bloom has made a PDF of each of a folio's books, while it puts them together. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

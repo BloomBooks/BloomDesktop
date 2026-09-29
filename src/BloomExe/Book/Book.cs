@@ -1197,7 +1197,7 @@ namespace Bloom.Book
             // into BookInfo (which represents the meta.json file).
             // The version in Book.cs should be the ultimate source of truth, but it's handy to have BookInfo have a copy
             // of it too because BookInfo's meta.json is faster to parse than the book's HTML file.
-            // This helps out the AddChildBookContentsToFolio() method.
+            // It lets the collection tell which books are folios without reading their HTML.
             BookInfo.IsFolio = IsFolio;
         }
 
@@ -2831,7 +2831,6 @@ namespace Bloom.Book
         internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
         {
             var oldTags = RobustFile.ReadAllText(oldTagsPath);
-            bookMetaData.IsFolio = oldTags.Contains("folio");
             bookMetaData.IsExperimental = oldTags.Contains("experimental");
         }
 
@@ -3038,18 +3037,67 @@ namespace Bloom.Book
         public bool IsTemplateBook => IsSuitableForMakingShells;
 
         /// <summary>
-        /// A "Folio" document is one that acts as a wrapper for a number of other books
+        /// The class of a folio's table of contents pages (see the Folio template).
         /// </summary>
-        public bool IsFolio
+        public const string kFolioTocPageClass = "bloom-folio-toc";
+
+        /// <summary>
+        /// The class of the translation group on a folio's table of contents page that lists its
+        /// books. Its data-folio-book-ids attribute names them, in order, by bookInstanceId,
+        /// separated by spaces; its text shows them, and can be formatted like any text box.
+        /// </summary>
+        public const string kFolioTocListClass = "bloom-folio-toc-list";
+
+        /// <summary>
+        /// The attribute of a folio's table of contents list that names its books (see kFolioTocListClass).
+        /// </summary>
+        public const string kFolioBookIdsAttribute = "data-folio-book-ids";
+
+        /// <summary>
+        /// A "Folio" document is one that acts as a wrapper for a number of other books in its
+        /// collection, which it publishes as one book. A book is a folio if it has at least one
+        /// table of contents page.
+        /// </summary>
+        public bool IsFolio => GetFolioTocPages(OurHtmlDom).Any();
+
+        /// <summary>
+        /// The table of contents pages of a folio, in page order.
+        /// </summary>
+        public static IEnumerable<SafeXmlElement> GetFolioTocPages(HtmlDom dom)
         {
-            get
-            {
-                string metaValue = OurHtmlDom.GetMetaValue(
-                    "folio",
-                    OurHtmlDom.GetMetaValue("Folio", "no")
+            return dom.RawDom.SafeSelectElements(
+                $"/html/body/div[contains(@class,'bloom-page') and contains(concat(' ', @class, ' '), ' {kFolioTocPageClass} ')]"
+            );
+        }
+
+        /// <summary>
+        /// The ids (bookInstanceId) of the books this folio publishes, in the order it publishes
+        /// them: the entries of its table of contents pages, in page order and then in list order.
+        /// Empty for a book that is not a folio.
+        /// </summary>
+        public List<string> GetFolioBookIds() => GetFolioBookIds(OurHtmlDom);
+
+        /// <summary>
+        /// The ids of the books listed on the table of contents pages of a folio's DOM, in order.
+        /// </summary>
+        public static List<string> GetFolioBookIds(HtmlDom dom)
+        {
+            return GetFolioTocPages(dom).SelectMany(GetFolioTocEntryIds).ToList();
+        }
+
+        /// <summary>
+        /// The ids of the books one table of contents page of a folio lists, in order.
+        /// </summary>
+        public static IEnumerable<string> GetFolioTocEntryIds(SafeXmlElement tocPage)
+        {
+            return tocPage
+                .SafeSelectElements(
+                    $".//div[contains(concat(' ', @class, ' '), ' {kFolioTocListClass} ')]"
+                )
+                .SelectMany(list =>
+                    list.GetAttribute(kFolioBookIdsAttribute)
+                        .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 );
-                return metaValue == "yes" || metaValue == "true";
-            }
         }
 
         /// <summary>
@@ -4578,19 +4626,21 @@ namespace Bloom.Book
             return -1;
         }
 
+        /// <summary>
+        /// Make the DOM that a PDF of this book is made from: the pages of the given portion, at the
+        /// given layout, with the pages a PDF leaves out removed.
+        /// </summary>
+        /// <param name="includeBackgroundColors">Whether to keep page background colors. Left out,
+        /// this book's own print preference decides; a folio passes its own preference for every
+        /// book it publishes.</param>
         public HtmlDom GetDomForPrinting(
             PublishModel.BookletPortions bookletPortion,
-            BookCollection currentBookCollection,
-            BookServer bookServer,
-            Layout pageLayout
+            Layout pageLayout,
+            bool? includeBackgroundColors = null
         )
         {
+            var keepBackgroundColors = includeBackgroundColors ?? UserPrefs.IncludeBackgroundColors;
             var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-
-            if (IsFolio)
-            {
-                AddChildBookContentsToFolio(printingDom, currentBookCollection, bookServer);
-            }
 
             //we do this now becuase the publish ui allows the user to select a different layout for the pdf than what is in the book file
             SizeAndOrientation.UpdatePageSizeAndOrientationClasses(printingDom.RawDom, pageLayout);
@@ -4653,11 +4703,11 @@ namespace Bloom.Book
             {
                 InsertFullBleedMarkup(printingDom.Body);
             }
-            if (!UserPrefs.IncludeBackgroundColors)
+            if (!keepBackgroundColors)
             {
                 HtmlDom.RemovePageBackgroundColorStyles(printingDom.RawDom);
             }
-            if (!FullBleed && !UserPrefs.IncludeBackgroundColors)
+            if (!FullBleed && !keepBackgroundColors)
                 SetBackwardsCompatibleCoverBackgroundColor(printingDom.RawDom, "white", true);
             AddPreviewJavascript(printingDom);
             // #bloomDataDiv may cause duplicate id's inside a store svg element. (BL-16239)
@@ -4678,112 +4728,6 @@ namespace Bloom.Book
             if (dataDiv != null)
             {
                 dataDiv.ParentNode.RemoveChild(dataDiv);
-            }
-        }
-
-        /// <summary>
-        /// used when this book is a "master"/"folio" book that is used to bring together a number of other books in the collection
-        /// </summary>
-        /// <param name="printingDom"></param>
-        /// <param name="currentBookCollection"></param>
-        /// <param name="bookServer"></param>
-        private void AddChildBookContentsToFolio(
-            HtmlDom printingDom,
-            BookCollection currentBookCollection,
-            BookServer bookServer
-        )
-        {
-            var currentLastContentPage = GetLastPageForInsertingNewContent(printingDom);
-
-            int cumulativePageNum = 1;
-            var lastPageNumStr = currentLastContentPage.GetAttribute("data-page-number");
-            if (int.TryParse(lastPageNumStr, out int lastPageNum))
-            {
-                cumulativePageNum = lastPageNum;
-            }
-
-            //currently we have no way of filtering them, we just take them all
-            foreach (var bookInfo in currentBookCollection.GetBookInfos())
-            {
-                if (bookInfo.IsFolio)
-                    continue;
-                var childBook = bookServer.GetBookFromBookInfo(bookInfo);
-
-                //this will set the class bloom-content1 on the correct language
-                //this happens anyhow if the page was ever looked at in the Edti Tab
-                //But if we are testing a collection's folio pdf'ing ability on a newly-generated
-                //SHRP collection, and we don't do this, we see lots of sample text because every
-                //bloom-editable has "bloom-content1", even the "Z" language ones.
-                childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
-
-                //add links to the template css needed by the children.
-
-                HtmlDom.AddStylesheetFromAnotherBook(childBook.OurHtmlDom, printingDom);
-
-                foreach (
-                    SafeXmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes(
-                        "/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"
-                    )
-                )
-                {
-                    var importedPage = (SafeXmlElement)printingDom.RawDom.ImportNode(pageDiv, true);
-
-                    if (!String.IsNullOrWhiteSpace(importedPage.GetAttribute("data-page-number")))
-                    {
-                        ++cumulativePageNum;
-                        importedPage.SetAttribute("data-page-number", cumulativePageNum.ToString());
-                    }
-
-                    currentLastContentPage.ParentNode.InsertAfter(
-                        importedPage,
-                        currentLastContentPage
-                    );
-                    currentLastContentPage = importedPage;
-
-                    foreach (
-                        SafeXmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(
-                            importedPage
-                        )
-                    )
-                    {
-                        var bookFolderName = Path.GetFileName(bookInfo.FolderPath);
-                        var path = HtmlDom.GetImageElementUrl(img);
-                        var pathRelativeToFolioFolder =
-                            "../" + bookFolderName + "/" + path.NotEncoded; // want query as well as filepath
-                        //NB: URLEncode would replace spaces with '+', which is ok in the parameter section, but not the URL
-                        //So we are using UrlPathEncode
-
-                        HtmlDom.SetImageElementUrl(
-                            img,
-                            UrlPathString.CreateFromUnencodedString(pathRelativeToFolioFolder)
-                        );
-                    }
-                }
-            }
-        }
-
-        private SafeXmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
-        {
-            var lastPage =
-                printingDom.RawDom.SelectSingleNode(
-                    "/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]"
-                ) as SafeXmlElement;
-            if (lastPage == null)
-            {
-                //currently nothing but front and back matter
-                var lastFrontMatter =
-                    printingDom.RawDom.SelectSingleNode(
-                        "/html/body//div[contains(@class,'bloom-frontMatter')][last()]"
-                    ) as SafeXmlElement;
-                if (lastFrontMatter == null)
-                    throw new ApplicationException(
-                        "GetLastPageForInsertingNewContent() found no content pages nor frontmatter"
-                    );
-                return lastFrontMatter;
-            }
-            else
-            {
-                return lastPage;
             }
         }
 

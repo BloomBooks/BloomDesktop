@@ -69,6 +69,15 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown --json             
   an explicit `--restart`. The front end is unaffected (Vite serves it either way). It is rejected
   on the other actions, which do not start go.mjs; an existing launcher keeps the mode it started
   in.
+- `--ensure-running --collection <path>` passes `--collection` through to go.mjs (`./go.sh
+  --collection <path>` by hand), so Bloom opens that collection instead of the most recent one
+  in its user settings. The path is a `.bloomCollection` file or a folder holding one. Because
+  Bloom records the collection it opens as the most recent one, and every Bloom of a build shares
+  one user.config, a `--collection` without `--user-settings-folder <dir>` gets its own settings
+  folder under `output/go-user-settings/<collection name>`, so the developer's own Bloom still
+  opens what it opened before. Use this whenever you need a collection of your own; never open
+  one of the developer's collections to test on. Like `--nowatch`, both are rejected on the
+  other actions, and a launcher already running keeps the collection it has.
 - Every action prints a `[control] ... requested` line in the launcher's terminal so the human
   can see why Bloom moved.
 

@@ -280,7 +280,9 @@ export const PDFPrintPublishScreen = () => {
             <ProgressDialog
                 title={progressHeader}
                 determinate={true}
+                linearProgress={true}
                 size="small"
+                minWidth="520px"
                 showCancelButton={true}
                 onCancel={() => {
                     post("publish/pdf/cancel");

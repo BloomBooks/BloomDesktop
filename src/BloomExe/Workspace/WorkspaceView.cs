@@ -1733,7 +1733,7 @@ window.showWorkspaceInitializationFailure = function(message) {
             // An automated run has nobody to dismiss a modal dialog. This one is shown as a startup
             // action, so it would sit on the UI thread in its own message loop for the whole run --
             // exactly the "dialog nobody can dismiss" that Program.RunningE2eTests exists to avoid.
-            if (Program.RunningE2eTests)
+            if (Program.NobodyToAnswerStartupQuestions)
                 return;
             // If Bloom is newly installed or we only had old versions before, this should be 0.
             var isShown = Settings.Default.AutoUpdateDialogShown;
@@ -1761,6 +1761,8 @@ window.showWorkspaceInitializationFailure = function(message) {
 
         private void ShowForumInvitationDialogIfNeeded()
         {
+            if (Program.NobodyToAnswerStartupQuestions)
+                return;
             if (Settings.Default.ForumInvitationAcknowledged)
                 return;
             var lastShown = Settings.Default.ForumInvitationLastShown;

@@ -29,6 +29,20 @@ Bloom already running keeps whatever it was started with). Never launch `./go.sh
 shell except when debugging the launcher itself, and never run an already-built `Bloom.exe`
 directly (it is stale).
 
+To test on a collection of your own, add `--collection <path to .bloomCollection or its folder>`
+to `--ensure-running`; it also gives that Bloom its own user settings, so the developer's
+most-recent collection is left alone (`reference.md`). Never test on one of the developer's
+collections.
+
+**`--ensure-running` hands back whatever launcher this worktree already has, including one the
+developer started for their own use**, and then ignores `--collection` and `--nowatch`. Before
+driving it, check that it is yours: `--status` reports no collection, so ask the running Bloom
+(`common/instanceInfo` gives `editableCollectionFolder` and `userSettingsFolder`). If it is not
+yours, leave it alone: never `--restart`, `--quit-bloom` or `--shutdown` a launcher you did not
+start. For a Bloom of your own beside theirs, launch one through the e2e fixture code
+(`src/BloomE2E/fixtures/launchBloom.ts`), which runs a separate instance on a temp copy of a
+collection with its own ports and settings.
+
 A cold first build outlasts `--wait-ready`'s default patience: the wait can give up while
 `--status` still says `state:"building"`, and that is not a failure. Pass `--timeout-ms 600000`,
 run the command as a background task and act on its completion; never sleep-poll `--status`, and

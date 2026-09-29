@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -166,7 +167,11 @@ namespace Bloom.Publish.PDF
                     {
                         var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
                         socketProgress.SendPercent(
-                            percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100
+                            PdfProgressRange.Map(
+                                percent
+                                    * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare)
+                                    / 100
+                            )
                         );
                         if (worker?.CancellationPending ?? false)
                         {
@@ -448,6 +453,41 @@ namespace Bloom.Publish.PDF
         }
     }
 
+    /// <summary>
+    /// The part of the whole job that the percentages the PDF maker and Ghostscript report stand
+    /// for. A folio's PDF is made one part after another, and each part's own 0 to 100 percent is
+    /// only a slice of the whole, so the progress bar moves on through the parts instead of
+    /// starting over for each. Outside a folio the range is the whole, 0 to 100.
+    /// </summary>
+    public static class PdfProgressRange
+    {
+        private static int _start;
+        private static int _end = 100;
+
+        /// <summary>A percentage of the current part, as a percentage of the whole job.</summary>
+        public static int Map(int percent) => _start + percent * (_end - _start) / 100;
+
+        /// <summary>
+        /// Report percentages as falling between start and end of the whole job until the result
+        /// is disposed, when the range goes back to the whole.
+        /// </summary>
+        public static IDisposable Use(int start, int end)
+        {
+            _start = start;
+            _end = end;
+            return new RangeReset();
+        }
+
+        private class RangeReset : IDisposable
+        {
+            public void Dispose()
+            {
+                _start = 0;
+                _end = 100;
+            }
+        }
+    }
+
     public class PdfMakingSpecs
     {
         public string InputHtmlPath;
@@ -461,6 +501,32 @@ namespace Bloom.Publish.PDF
         public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
         public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
         public int HtmlPageCount;
+
+        /// <summary>
+        /// One HTML document of a folio (see FolioPdfPartsMaker), and how many pages it has.
+        /// </summary>
+        public class FolioPart
+        {
+            public string InputHtmlPath;
+            public int HtmlPageCount;
+
+            /// <summary>The title of the book this part holds; null for the folio's own pages.</summary>
+            public string BookTitle;
+        }
+
+        /// <summary>
+        /// For a folio, the documents whose PDFs are joined, in order, to make the PDF that is then
+        /// compressed and imposed. InputHtmlPath is not used then, and HtmlPageCount is their total.
+        /// </summary>
+        public List<FolioPart> FolioParts;
+
+        /// <summary>
+        /// A copy of these specs, for rendering one of a folio's documents with the same settings.
+        /// </summary>
+        public PdfMakingSpecs CloneForFolioPart()
+        {
+            return (PdfMakingSpecs)MemberwiseClone();
+        }
 
         // metadata
         public string Author;

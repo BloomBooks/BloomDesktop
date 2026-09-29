@@ -14,6 +14,12 @@ declare module "*.html?raw" {
     export default content;
 }
 
+// Allow importing SVG files as raw markup (e.g. images/folio.svg, drawn inline so it takes currentColor)
+declare module "*.svg?raw" {
+    const content: string;
+    export default content;
+}
+
 // Allow importing CSS files as raw strings (e.g. bloomUIFontFaces.css for runtime injection)
 declare module "*.css?raw" {
     const content: string;

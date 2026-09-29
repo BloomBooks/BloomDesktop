@@ -350,7 +350,7 @@ namespace Bloom
                 // by the user.
                 if (!Settings.Default.LicenseAccepted)
                 {
-                    if (RunningE2eTests)
+                    if (NobodyToAnswerStartupQuestions)
                     {
                         // e2e / visual-regression runs (--e2e) launch Bloom with a collection
                         // argument and no human to click Accept. Showing the modal LicenseDialog
@@ -1867,7 +1867,11 @@ namespace Bloom
 
         private static void CheckRegistration()
         {
-            if (RegistrationManager.ShouldWeShowRegistrationDialog() && !_supressRegistrationDialog)
+            if (
+                !NobodyToAnswerStartupQuestions
+                && RegistrationManager.ShouldWeShowRegistrationDialog()
+                && !_supressRegistrationDialog
+            )
                 RegistrationManager.ShowRegistrationDialog(_projectContext.ProjectWindow);
         }
 
@@ -3344,6 +3348,16 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report,
         // FatalExceptionHandler, and BloomAssertListener (which does the same for Debug.Assert).
         public static bool RunningE2eTests { get; set; }
+
+        /// <summary>
+        /// True when no person is there to answer the questions Bloom asks at startup on a fresh
+        /// set of user settings (accept the license, how to update, register, join the forum): an
+        /// e2e run, or an automated launch (--automation) that names its own user-settings folder,
+        /// as go.sh --collection does for an agent testing on a collection of its own. Such a folder
+        /// starts empty, so every one of those questions would otherwise be asked.
+        /// </summary>
+        public static bool NobodyToAnswerStartupQuestions =>
+            RunningE2eTests || (StartupAutomation && StartupUserSettingsFolder != null);
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.

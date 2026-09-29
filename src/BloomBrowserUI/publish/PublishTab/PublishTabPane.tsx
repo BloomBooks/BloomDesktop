@@ -32,6 +32,26 @@ import { RegistrationDialogEventLauncher } from "../../react_components/registra
 import { RequiresSubscriptionOverlayWrapper } from "../../react_components/requiresSubscription";
 import { useWorkspaceTabInfo } from "../../react_components/TopBar/TopBar";
 
+// What the publish destinations other than PDF & Print show for a folio: it publishes the books it
+// holds only as a PDF.
+export const FolioPdfOnlyNotice: React.FunctionComponent = () => {
+    return (
+        <NoteBox
+            css={css`
+                width: fit-content;
+                max-width: 500px;
+                margin: 30px;
+                padding-right: 20px;
+            `}
+        >
+            <Div l10nKey="PublishTab.Folio.PdfOnly">
+                This book is a folio. A folio can be published only as a PDF,
+                from PDF &amp; Print.
+            </Div>
+        </NoteBox>
+    );
+};
+
 export const CheckoutNeededScreen: React.FunctionComponent<{
     titleForDisplay: string;
 }> = (_props) => {
@@ -105,6 +125,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
         canUpload: false,
         bookTitle: "",
         featurePreventingPublishing: undefined as FeatureStatus | undefined,
+        isFolio: false,
     });
     const [tabIndex, setTabIndex] = React.useState(
         kWaitForUserToChooseTabIndex,
@@ -148,6 +169,7 @@ export const PublishTabPane: React.FunctionComponent = () => {
                 bookTitle: result.data.titleForDisplay,
                 featurePreventingPublishing:
                     result.data.featurePreventingPublishing,
+                isFolio: result.data.isFolio,
             });
             setPublishTabReady(true);
         });
@@ -415,30 +437,42 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 <PDFPrintPublishScreen />
                             </TabPanel>
                             <TabPanel>
-                                {publishTabInfo.canUpload ? (
-                                    <LibraryPublishScreen
-                                        onUploadingChange={setUploadUnderway}
-                                    />
-                                ) : (
-                                    <WarningBox
-                                        css={css`
-                                            width: fit-content;
-                                            max-width: 400px;
-                                            margin: 30px;
-                                            padding-right: 20px;
-                                        `}
-                                    >
-                                        <Div l10nKey="PublishTab.CannotUpload">
-                                            The creator of this book does not
-                                            allow derivatives to be uploaded.
-                                            Please contact the creator for more
-                                            information.
-                                        </Div>
-                                    </WarningBox>
+                                {publishTabInfo.isFolio && (
+                                    <FolioPdfOnlyNotice />
                                 )}
+                                {!publishTabInfo.isFolio &&
+                                    publishTabInfo.canUpload && (
+                                        <LibraryPublishScreen
+                                            onUploadingChange={
+                                                setUploadUnderway
+                                            }
+                                        />
+                                    )}
+                                {!publishTabInfo.isFolio &&
+                                    !publishTabInfo.canUpload && (
+                                        <WarningBox
+                                            css={css`
+                                                width: fit-content;
+                                                max-width: 400px;
+                                                margin: 30px;
+                                                padding-right: 20px;
+                                            `}
+                                        >
+                                            <Div l10nKey="PublishTab.CannotUpload">
+                                                The creator of this book does
+                                                not allow derivatives to be
+                                                uploaded. Please contact the
+                                                creator for more information.
+                                            </Div>
+                                        </WarningBox>
+                                    )}
                             </TabPanel>
                             <TabPanel>
-                                <ReaderPublishScreen />
+                                {publishTabInfo.isFolio ? (
+                                    <FolioPdfOnlyNotice />
+                                ) : (
+                                    <ReaderPublishScreen />
+                                )}
                             </TabPanel>
                             <TabPanel>
                                 <RequiresSubscriptionOverlayWrapper featureName="AppBuilder">
@@ -450,10 +484,18 @@ export const PublishTabPane: React.FunctionComponent = () => {
                                 </RequiresSubscriptionOverlayWrapper>
                             </TabPanel>
                             <TabPanel>
-                                <EPUBPublishScreen />
+                                {publishTabInfo.isFolio ? (
+                                    <FolioPdfOnlyNotice />
+                                ) : (
+                                    <EPUBPublishScreen />
+                                )}
                             </TabPanel>
                             <TabPanel>
-                                <PublishAudioVideo />
+                                {publishTabInfo.isFolio ? (
+                                    <FolioPdfOnlyNotice />
+                                ) : (
+                                    <PublishAudioVideo />
+                                )}
                             </TabPanel>
                             <TabPanel>
                                 {/* Before user has selected a publish mode, show a blank panel */}

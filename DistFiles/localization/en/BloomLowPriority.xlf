@@ -761,6 +761,41 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Name of one of the AI tools, in the list the user picks from. Keep it short: it is a single line on a small card.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Folio.CannotMakePdf" translate="no">
+        <source xml:lang="en">Bloom cannot make a PDF of this folio:</source>
+        <note>ID: PublishTab.Folio.CannotMakePdf</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. The lines after it each give one reason.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BookCannotBeRead" translate="no">
+        <source xml:lang="en">"{0}" cannot be read.</source>
+        <note>ID: PublishTab.Folio.BookCannotBeRead</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is the name of a book's folder.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BookIsFolio" translate="no">
+        <source xml:lang="en">"{0}" is itself a folio.</source>
+        <note>ID: PublishTab.Folio.BookIsFolio</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is the title of a book. A folio may not hold another folio.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BooksMissing" translate="no">
+        <source xml:lang="en">{0} of the books this folio lists are no longer in this collection.</source>
+        <note>ID: PublishTab.Folio.BooksMissing</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is a number of books.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BookSizeDiffers" translate="no">
+        <source xml:lang="en">"{0}" is {1}, but this folio is {2}.</source>
+        <note>ID: PublishTab.Folio.BookSizeDiffers</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is the title of a book. {1} and {2} are page sizes with orientations, such as A5Portrait, which are not translated.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BookNotFullBleed" translate="no">
+        <source xml:lang="en">"{0}" is not set up for full bleed printing, but this folio is.</source>
+        <note>ID: PublishTab.Folio.BookNotFullBleed</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is the title of a book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Folio.BookFullBleed" translate="no">
+        <source xml:lang="en">"{0}" is set up for full bleed printing, but this folio is not.</source>
+        <note>ID: PublishTab.Folio.BookFullBleed</note>
+        <note>Shown when Bloom cannot make the PDF of a folio, a book that publishes other books of its collection as one book. {0} is the title of a book.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

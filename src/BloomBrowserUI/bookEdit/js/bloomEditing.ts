@@ -76,6 +76,7 @@ import {
 import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { setupBookLinkGrids } from "./linkGrid";
+import { setupFolioTocPages } from "./folioToc";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
@@ -812,6 +813,7 @@ export function SetupElements(
     SetupMetadataButton(container);
 
     setupBookLinkGrids(container);
+    setupFolioTocPages(container);
 
     const { divsThatHaveSourceBubbles, bubbleDivs } =
         prepareSourceAndHintBubbles(container);
