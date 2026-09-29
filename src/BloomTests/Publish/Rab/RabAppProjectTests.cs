@@ -1547,22 +1547,59 @@ namespace BloomTests.Publish.Rab
 
             Assert.That(service.Commands, Has.Count.EqualTo(5));
             Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
-            Assert.That(service.Commands[0], Does.Contain("-jdk-install-folder "));
-            Assert.That(service.Commands[0], Does.Contain(service.RabJdkInstallFolder));
-            Assert.That(service.Commands[0], Does.Contain("-android-sdk-install-folder "));
-            Assert.That(service.Commands[0], Does.Contain(service.RabAndroidSdkInstallFolder));
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring("-jdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring(service.RabJdkInstallFolder).Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains.Substring("-android-sdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[0],
+                Contains
+                    .Substring(service.RabAndroidSdkInstallFolder)
+                    .Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[1], Does.StartWith("-new "));
-            Assert.That(service.Commands[1], Does.Contain("-b "));
+            Assert.That(
+                service.Commands[1],
+                Contains.Substring("-b ").Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[2], Does.StartWith("-install-sdks-if-needed "));
-            Assert.That(service.Commands[2], Does.Contain("-jdk-install-folder "));
-            Assert.That(service.Commands[2], Does.Contain(service.RabJdkInstallFolder));
-            Assert.That(service.Commands[2], Does.Contain("-android-sdk-install-folder "));
-            Assert.That(service.Commands[2], Does.Contain(service.RabAndroidSdkInstallFolder));
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring("-jdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring(service.RabJdkInstallFolder).Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains.Substring("-android-sdk-install-folder ").Using(StringComparison.Ordinal)
+            );
+            Assert.That(
+                service.Commands[2],
+                Contains
+                    .Substring(service.RabAndroidSdkInstallFolder)
+                    .Using(StringComparison.Ordinal)
+            );
             Assert.That(service.Commands[3], Does.StartWith("-load "));
-            Assert.That(service.Commands[3], Does.Contain("-b "));
+            Assert.That(
+                service.Commands[3],
+                Contains.Substring("-b ").Using(StringComparison.Ordinal)
+            );
             Assert.That(Regex.IsMatch(service.Commands[3], @"(^|\s)-build(\s|$)"), Is.False);
             Assert.That(service.Commands[4], Does.StartWith("-load "));
-            Assert.That(service.Commands[4], Does.Not.Contain("-b "));
+            Assert.That(
+                service.Commands[4],
+                Is.Not.Matches(Contains.Substring("-b ").Using(StringComparison.Ordinal))
+            );
             Assert.That(Regex.IsMatch(service.Commands[4], @"(^|\s)-build(\s|$)"), Is.True);
             Assert.That(service.Progress.Stages, Does.Contain("preparing-workspace"));
             Assert.That(service.Progress.Stages, Does.Contain("installing-build-tools"));

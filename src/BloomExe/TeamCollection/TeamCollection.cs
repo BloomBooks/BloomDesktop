@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -762,7 +763,16 @@ namespace Bloom.TeamCollection
         public DateTime WhenWasBookLocked(string bookName)
         {
             var status = GetStatus(bookName);
-            if (DateTime.TryParse(status.lockedWhen, out var result))
+            // lockedWhen is written invariantly (see BookStatus.WithLockedBy), so read it that way too;
+            // a Thai culture would otherwise take its Gregorian year as a Buddhist one.
+            if (
+                DateTime.TryParse(
+                    status.lockedWhen,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var result
+                )
+            )
                 return result;
             return DateTime.MaxValue;
         }
