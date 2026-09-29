@@ -125,6 +125,15 @@ namespace BloomTests
             Assert.That(trim.Result, Is.EqualTo("Accra, Ghana"));
         }
 
+        /// <summary>
+        /// Unlike IndexOf, ICU's IsSuffix/IsPrefix -- which back EndsWith/StartsWith -- do not
+        /// report a match for an all-ignorable needle, so under th-TH the searches on this path
+        /// answer the same whether or not they pass a StringComparison (measured on .NET 8 / ICU;
+        /// see the notes on BL-16934). This test therefore cannot fail if those arguments are
+        /// dropped again: it is coverage that a Thai-named book is still found, not a guard
+        /// against regressing the culture-sensitivity fix. The tests above, which exercise
+        /// IndexOf, are the ones that do fail without it.
+        /// </summary>
         [Test]
         public void FindBookHtmlInFolder_ThaiNamedBook_ChoosesTheHtmFile()
         {
