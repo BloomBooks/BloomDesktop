@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.IO;
 using SIL.WritingSystems;
@@ -272,7 +273,7 @@ namespace Bloom.Book
                 CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
                 problems.Select(x =>
                     book == null
-                        ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
+                        ? IetfLanguageTagExtra.GetLocalizedLanguageName(x, "")
                         : book.PrettyPrintLanguage(x)
                 )
             );
