@@ -401,14 +401,22 @@ namespace Bloom
                     if (args.Length > 0)
                         _supressRegistrationDialog = true;
 
-                    if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
+                    if (
+                        args.Length == 1
+                        && args[0]
+                            .ToLowerInvariant()
+                            .EndsWith(".bloompack", StringComparison.Ordinal)
+                    )
                     {
                         SetUpErrorHandling();
                         using (_applicationContainer = new ApplicationContainer())
                         {
                             var path = args[0];
                             // This allows local links to bloom packs.
-                            if (path.ToLowerInvariant().StartsWith("bloom://"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .StartsWith("bloom://", StringComparison.Ordinal)
+                            )
                             {
                                 path = path.Substring("bloom://".Length);
                                 if (!RobustFile.Exists(path))
@@ -440,7 +448,7 @@ namespace Bloom
                         var missingTcPieces = FolderTeamCollection.MissingTcPieces(args[0]);
                         if (!string.IsNullOrEmpty(missingTcPieces))
                         {
-                            if (missingTcPieces.StartsWith("book folder"))
+                            if (missingTcPieces.StartsWith("book folder", StringComparison.Ordinal))
                             {
                                 ErrorReport.NotifyUserOfProblem(
                                     "You opened a file meant to help you join a Team Collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder synchronized *to your computer*. Then, inside that folder, open the \"joinCollection\" file."
@@ -650,13 +658,19 @@ namespace Bloom
                             // before looking for .bloomCollection.
                             var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            if (path.ToLowerInvariant().EndsWith(@".bloomproblembook"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomproblembook", StringComparison.Ordinal)
+                            )
                             {
                                 Settings.Default.MruProjects.AddNewPath(
                                     ProblemReportApi.UnpackProblemBook(path)
                                 );
                             }
-                            else if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+                            else if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomcollection", StringComparison.Ordinal)
+                            )
                             {
                                 // See BL-10012. We'll die eventually, might as well nip this in the bud.
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -1654,14 +1668,15 @@ namespace Bloom
 
         private static bool IsInstallerLaunch(string[] args)
         {
-            return args.Length > 0 && args[0].ToLowerInvariant().StartsWith("--veloapp-");
+            return args.Length > 0
+                && args[0].ToLowerInvariant().StartsWith("--veloapp-", StringComparison.Ordinal);
         }
 
         private static bool IsLocalizationHarvestingLaunch(string[] args)
         {
             return args.Length == 1
-                && args[0].StartsWith("--ha")
-                && "--harvest-for-localization".StartsWith(args[0]);
+                && args[0].StartsWith("--ha", StringComparison.Ordinal)
+                && "--harvest-for-localization".StartsWith(args[0], StringComparison.Ordinal);
         }
 
         // I think this does something like the Wix element
@@ -1862,8 +1877,12 @@ namespace Bloom
         private static bool IsBloomBookOrder(string[] args)
         {
             return args.Length == 1
-                && !args[0].ToLowerInvariant().EndsWith(".bloomcollection")
-                && !args[0].ToLowerInvariant().EndsWith(".bloomproblembook")
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomcollection", StringComparison.Ordinal)
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomproblembook", StringComparison.Ordinal)
                 && !IsInstallerLaunch(args);
         }
 
@@ -2053,7 +2072,7 @@ namespace Bloom
                 // Catch case where the last collection was so long that windows gave us a 8.3 version which will eventually
                 // fail. Just fail right now, don't bother to have a conversation with the user about it.
                 // This might be impossible in real life, I'm not sure. Part of BL-10012.
-                if (path.EndsWith(".BLO"))
+                if (path.EndsWith(".BLO", StringComparison.Ordinal))
                 {
                     Settings.Default.MruProjects.RemovePath(path);
                     path = null;
@@ -3215,7 +3234,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         {
             try
             {
-                return process.ProcessName.ToLowerInvariant().StartsWith("mono");
+                return process
+                    .ProcessName.ToLowerInvariant()
+                    .StartsWith("mono", StringComparison.Ordinal);
             }
             catch (System.InvalidOperationException)
             {

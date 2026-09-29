@@ -195,7 +195,11 @@ namespace Bloom.Publish.PDF
             foreach (var versionDir in Directory.GetDirectories(baseDir))
             {
                 var gsversion = Path.GetFileName(versionDir);
-                if (gsversion != null && gsversion.StartsWith("gs") && gsversion.Length > 2)
+                if (
+                    gsversion != null
+                    && gsversion.StartsWith("gs", StringComparison.Ordinal)
+                    && gsversion.Length > 2
+                )
                 {
                     gsversion = gsversion.Substring(2);
                     float version;
@@ -400,7 +404,10 @@ namespace Bloom.Publish.PDF
                 return;
             }
             //Debug.WriteLine(String.Format("DEBUG gs report line = \"{0}\"", line));
-            if (line.StartsWith(kProcessingPages) && line.Contains(kThroughWithSpaces))
+            if (
+                line.StartsWith(kProcessingPages, StringComparison.Ordinal)
+                && line.Contains(kThroughWithSpaces)
+            )
             {
                 _firstPage = 0;
                 int lastPage = 0;
@@ -429,7 +436,7 @@ namespace Bloom.Publish.PDF
                 if (_firstPage > 0 && lastPage > 0)
                     _numPages = lastPage - _firstPage + 1;
             }
-            else if (line.StartsWith(kPage) && _numPages > 0)
+            else if (line.StartsWith(kPage, StringComparison.Ordinal) && _numPages > 0)
             {
                 // Get the current page number and adjust the progress dialog appropriately.
                 int pageNumber = 0;

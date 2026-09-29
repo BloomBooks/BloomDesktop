@@ -2311,7 +2311,7 @@ namespace BloomTests.Book
             var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             // should look like a hex color
-            Assert.IsTrue(result.StartsWith("#"));
+            Assert.IsTrue(result.StartsWith("#", StringComparison.Ordinal));
             Assert.IsTrue(result.Length == 7);
         }
 

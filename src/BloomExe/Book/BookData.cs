@@ -1590,7 +1590,7 @@ namespace Bloom.Book
                         if (itemsToDelete != null)
                             itemsToDelete.Add(Tuple.Create(key, lang));
                     }
-                    else if (!value.StartsWith("{"))
+                    else if (!value.StartsWith("{", StringComparison.Ordinal))
                     //ignore placeholder stuff like "{Book Title}"; that's not a value we want to collect
                     {
                         if (
@@ -1800,7 +1800,10 @@ namespace Bloom.Book
                 if (attr.Name == "class")
                 {
                     var classes = attr.Value.Split().ToList();
-                    classes.RemoveAll(x => _classesNotToCopy.Contains(x) || x.EndsWith("-style"));
+                    classes.RemoveAll(x =>
+                        _classesNotToCopy.Contains(x)
+                        || x.EndsWith("-style", StringComparison.Ordinal)
+                    );
                     result.Add(
                         Tuple.Create("class", XmlString.FromUnencoded(string.Join(" ", classes)))
                     );
@@ -1839,7 +1842,7 @@ namespace Bloom.Book
                 if (
                     attribute.Name != kDataXmatterPage
                     && attribute.Name != "data-custom-layout-id"
-                    && attribute.Name.StartsWith("data-")
+                    && attribute.Name.StartsWith("data-", StringComparison.Ordinal)
                 )
                 {
                     // xmatter pages are not numbered.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7303.
@@ -2298,7 +2301,7 @@ namespace Bloom.Book
 
         internal static string GetInactiveAttributeName(string activeAttributeName)
         {
-            if (activeAttributeName.StartsWith("data-"))
+            if (activeAttributeName.StartsWith("data-", StringComparison.Ordinal))
                 return $"{activeAttributeName}-inactive";
             // We don't want to make bad HTML by creating invalid non-data attributes like "id-inactive",
             // so if the attribute we want to make inactive doesn't already start with data- we'll add that.
@@ -2985,7 +2988,7 @@ namespace Bloom.Book
                             .Any(word =>
                                 word == "©"
                                 || word.ToLowerInvariant() == "copyright"
-                                || word.StartsWith("20")
+                                || word.StartsWith("20", StringComparison.Ordinal)
                             );
                         if (!presetContainsMoreThanPublisher)
                         {

@@ -887,7 +887,10 @@ namespace BloomTests.Book
             );
             var result = storage.ValidateBook(storage.PathToExistingHtml);
             Assert.IsTrue(
-                result.StartsWith("Bloom-page element not found at root level: someOtherId"),
+                result.StartsWith(
+                    "Bloom-page element not found at root level: someOtherId",
+                    StringComparison.Ordinal
+                ),
                 "Bad Html should fail ValidateBook()."
             );
             Assert.IsTrue(storage.ErrorAllowsReporting, "ErrorAllowsReporting");
@@ -942,8 +945,13 @@ namespace BloomTests.Book
             );
             Assert.That(storage.ErrorAllowsReporting, Is.False, "ErrorAllowsReporting");
             Assert.That(
-                storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1"),
-                Is.GreaterThan(storage.ErrorMessagesHtml.IndexOf("Breaking Feature 2")),
+                storage.ErrorMessagesHtml.IndexOf("Breaking Feature 1", StringComparison.Ordinal),
+                Is.GreaterThan(
+                    storage.ErrorMessagesHtml.IndexOf(
+                        "Breaking Feature 2",
+                        StringComparison.Ordinal
+                    )
+                ),
                 "sort order wrong"
             );
         }
@@ -979,7 +987,7 @@ namespace BloomTests.Book
             foreach (string extension in extensions)
             {
                 string filename;
-                if (extension.StartsWith("."))
+                if (extension.StartsWith(".", StringComparison.Ordinal))
                     filename = $"{filenameWithoutExtension}{extension}";
                 else
                     filename = $"{filenameWithoutExtension}.{extension}";
@@ -1371,7 +1379,7 @@ namespace BloomTests.Book
                 // Sanity check: we really are in the churn-prone situation (folder base is a truncated
                 // form of the ideal name, so the simple StartsWith work-around check would fail).
                 Assert.That(
-                    currentFolderName.StartsWith(longTitle),
+                    currentFolderName.StartsWith(longTitle, StringComparison.Ordinal),
                     Is.False,
                     "test setup: the truncated folder base should not start with the full ideal name"
                 );

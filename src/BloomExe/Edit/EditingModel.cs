@@ -2497,7 +2497,9 @@ namespace Bloom.Edit
                     {
                         return;
                     }
-                    _weHaveSeenAJsonChange |= args.Name.ToLowerInvariant().EndsWith(".json");
+                    _weHaveSeenAJsonChange |= args
+                        .Name.ToLowerInvariant()
+                        .EndsWith(".json", StringComparison.Ordinal);
                     if (CurrentBook == null)
                         return;
                     // if we've been called already in the past 5 seconds, don't do it again

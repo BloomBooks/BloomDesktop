@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
@@ -387,9 +388,9 @@ namespace Bloom.web.controllers
 
             var lower = branding.ToLowerInvariant();
             SubscriptionTier tier;
-            if (lower.EndsWith("-lc"))
+            if (lower.EndsWith("-lc", StringComparison.Ordinal))
                 tier = SubscriptionTier.LocalCommunity;
-            else if (lower.EndsWith("-pro"))
+            else if (lower.EndsWith("-pro", StringComparison.Ordinal))
                 tier = SubscriptionTier.Pro;
             else
                 tier = SubscriptionTier.Enterprise;

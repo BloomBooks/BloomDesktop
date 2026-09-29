@@ -248,8 +248,8 @@ namespace Bloom
                     ) =>
                     {
                         if (
-                            args1.Uri.StartsWith("http")
-                            && !args1.Uri.StartsWith("http://localhost")
+                            args1.Uri.StartsWith("http", StringComparison.Ordinal)
+                            && !args1.Uri.StartsWith("http://localhost", StringComparison.Ordinal)
                         )
                         {
                             args1.Cancel = true;
@@ -284,7 +284,10 @@ namespace Bloom
                     CoreWebView2NavigationStartingEventArgs args
                 ) =>
                 {
-                    if (args.Uri.StartsWith("http") && !args.Uri.StartsWith("http://localhost"))
+                    if (
+                        args.Uri.StartsWith("http", StringComparison.Ordinal)
+                        && !args.Uri.StartsWith("http://localhost", StringComparison.Ordinal)
+                    )
                     {
                         args.Cancel = true;
                         ToPalaso.ProcessExtra.SafeStartInFront(args.Uri);

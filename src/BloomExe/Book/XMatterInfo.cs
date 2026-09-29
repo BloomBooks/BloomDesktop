@@ -76,7 +76,7 @@ namespace Bloom.Book
                     return string.Empty;
 
                 var englishDescription = RobustFile.ReadAllText(pathEnglish);
-                if (!englishDescription.StartsWith("[V"))
+                if (!englishDescription.StartsWith("[V", StringComparison.Ordinal))
                     return englishDescription;
 
                 // Once we put [V1] in the english description we could have translations
@@ -103,7 +103,7 @@ namespace Bloom.Book
 
         private static int GetVersionNumberString(string fullDescription)
         {
-            if (!fullDescription.StartsWith("[V"))
+            if (!fullDescription.StartsWith("[V", StringComparison.Ordinal))
                 return 0;
             var endIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
             if (endIndex < 2)
@@ -121,7 +121,7 @@ namespace Bloom.Book
 
         private static string StripVersionOff(string fullDescription)
         {
-            if (!fullDescription.StartsWith("[V"))
+            if (!fullDescription.StartsWith("[V", StringComparison.Ordinal))
                 return fullDescription;
             var closeBracketIndex = fullDescription.IndexOf("]", StringComparison.InvariantCulture);
             return (closeBracketIndex > 2 && fullDescription.Length > 4)
