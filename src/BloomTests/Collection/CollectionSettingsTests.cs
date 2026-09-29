@@ -272,6 +272,29 @@ namespace BloomTests.Collection
         }
 
         [Test]
+        public void Reading_CustomNameStartingWithInvariantLanguage_KeepsIt()
+        {
+            var bloomCollectionFileContents =
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Collection version=""0.2"">
+	<Language1Name>Invariant Language Lab</Language1Name>
+	<Language1IsCustomName>true</Language1IsCustomName>
+	<Language1Iso639Code>atz</Language1Iso639Code>
+</Collection>";
+            const string collectionName = "testInvariantCustomName";
+            var collectionPath = CollectionSettings.GetPathForNewSettings(
+                _folder.Path,
+                collectionName
+            );
+            Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
+            RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
+
+            var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+            Assert.That(settings.Language1.Name, Is.EqualTo("Invariant Language Lab"));
+        }
+
+        [Test]
         public void Reading_InvalidSubscription_ClearsDefaultBookshelf()
         {
             var bloomCollectionFileContents =

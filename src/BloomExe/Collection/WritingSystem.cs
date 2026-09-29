@@ -288,9 +288,9 @@ namespace Bloom.Collection
             }
             // Under a Thai regional format, Bloom computed and saved the invariant culture's name,
             // "Invariant Language (Invariant Country)", for a language named from its tag, such as
-            // the default Language2 of a new collection (BL-16945). No real language has that name,
-            // so look it up again.
-            if (Name.StartsWith("Invariant Language", StringComparison.Ordinal))
+            // the default Language2 of a new collection (BL-16945). No real language has that
+            // exact name, so look it up again.
+            if (Name == CultureInfo.InvariantCulture.EnglishName)
                 Name = "";
             if (Name == "")
             {
