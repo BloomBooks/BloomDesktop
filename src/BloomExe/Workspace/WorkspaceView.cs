@@ -1273,10 +1273,10 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
