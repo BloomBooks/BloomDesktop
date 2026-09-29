@@ -55,7 +55,7 @@ namespace BloomTests.ImageProcessing
         private static void AssertThaiCollationIgnoresThePeriod()
         {
             Assert.That(
-                "original.png".LastIndexOf("."),
+                "original.png".LastIndexOf(".", StringComparison.CurrentCulture),
                 Is.Not.EqualTo(8),
                 "This runtime's th-TH collation finds the period, so it cannot reproduce BL-16926"
             );
