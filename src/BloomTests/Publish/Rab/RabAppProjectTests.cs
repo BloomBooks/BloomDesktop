@@ -24,6 +24,10 @@ namespace BloomTests.Publish.Rab
 {
     public class RabAppProjectTests
     {
+        private const string kBloomRabRegistrySubKeyForTest =
+            @"Software\SIL\Reading App Builder for Bloom";
+        private const string kStandaloneRabRegistrySubKeyForTest =
+            @"Software\SIL\Reading App Builder";
         private const string kSampleAppDef =
             @"<?xml version='1.0' encoding='utf-8'?>
 <app-definition type='RAB' program-version='13.4'>
@@ -559,6 +563,190 @@ namespace BloomTests.Publish.Rab
             );
 
             Assert.That(error.Message, Does.Contain("registry reports version 15.2"));
+        }
+
+        [Test]
+        public void GetRabInstallDir_UsesStandaloneInstall_WhenItsVersionFileIsAtLeast14()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var standaloneInstallDir = CreateFakeRabInstall(tempFolder.Path, "14.0");
+            var service = new RegistryAwareRabProjectService(
+                Path.Combine(tempFolder.Path, "default"),
+                standaloneInstallDir,
+                null
+            )
+            {
+                RegistrySubKey = kStandaloneRabRegistrySubKeyForTest,
+            };
+
+            Assert.That(service.GetRabInstallDir(), Is.EqualTo(standaloneInstallDir));
+            Assert.That(service.IsRabInstalledForPrepare(), Is.True);
+            Assert.That(
+                service.FindRabLauncherPath(),
+                Is.EqualTo(Path.Combine(standaloneInstallDir, "rab.bat"))
+            );
+        }
+
+        [TestCase("13.2")]
+        [TestCase(null)]
+        public void GetRabInstallDir_IgnoresStandaloneInstall_WhenItsVersionIsOlderThan14OrUnknown(
+            string standaloneVersion
+        )
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var standaloneInstallDir = CreateFakeRabInstall(tempFolder.Path, standaloneVersion);
+            Assert.That(
+                RobustFile.Exists(Path.Combine(standaloneInstallDir, "rab.bat")),
+                Is.True,
+                "setup: the old standalone install should look otherwise usable"
+            );
+            var service = new RegistryAwareRabProjectService(
+                Path.Combine(tempFolder.Path, "default"),
+                standaloneInstallDir,
+                null
+            )
+            {
+                RegistrySubKey = kStandaloneRabRegistrySubKeyForTest,
+            };
+
+            Assert.That(service.GetRabInstallDir(), Is.Null);
+            Assert.That(service.IsRabInstalledForPrepare(), Is.False);
+            Assert.That(service.FindRabLauncherPath(), Is.Null);
+        }
+
+        [Test]
+        public void GetRabInstallDir_UsesBloomRabInstall_WithoutCheckingItsVersionFile()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bloomRabInstallDir = CreateFakeRabInstall(tempFolder.Path, null);
+            var service = new RegistryAwareRabProjectService(
+                Path.Combine(tempFolder.Path, "default"),
+                bloomRabInstallDir,
+                null
+            );
+
+            Assert.That(service.GetRabInstallDir(), Is.EqualTo(bloomRabInstallDir));
+            Assert.That(service.IsRabInstalledForPrepare(), Is.True);
+        }
+
+        [TestCase("14.0", true)]
+        [TestCase("14", true)]
+        [TestCase("14.1.2", true)]
+        [TestCase("15.2", true)]
+        [TestCase("13.9", false)]
+        [TestCase("12", false)]
+        [TestCase("", false)]
+        [TestCase(null, false)]
+        [TestCase("not a version", false)]
+        public void IsSupportedRabVersion_RequiresAtLeast14(string versionText, bool expected)
+        {
+            Assert.That(RabProjectService.IsSupportedRabVersion(versionText), Is.EqualTo(expected));
+        }
+
+        /// <summary>
+        /// Creates a folder with the files IsRabInstalledForPrepare looks for, plus a VERSION file
+        /// containing the given text unless it is null.
+        /// </summary>
+        private static string CreateFakeRabInstall(string parentFolder, string version)
+        {
+            var installDir = Path.Combine(parentFolder, "Reading App Builder");
+            Directory.CreateDirectory(Path.Combine(installDir, "runtime", "bin"));
+            RobustFile.WriteAllText(Path.Combine(installDir, "rab.bat"), "");
+            RobustFile.WriteAllText(Path.Combine(installDir, "runtime", "bin", "keytool.exe"), "");
+            if (version != null)
+                RobustFile.WriteAllText(Path.Combine(installDir, "VERSION"), version + "\r\n");
+            return installDir;
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_WhenInstallingSdksLeavesBuildToolsMissing()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks)
+            {
+                InstallSdksCreatesBuildTools = false,
+            };
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.False,
+                "setup: the build tools should not be installed yet"
+            );
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    Path.Combine(service.RabAndroidSdkInstallFolder, "platform-tools", "adb.exe")
+                )
+            );
+            Assert.That(error.Message, Does.Contain("java.exe"));
+            Assert.That(error.Message, Does.Contain("tzdb.dat"));
+            Assert.That(error.Message, Does.Contain(service.RabJdkInstallFolder));
+            Assert.That(service.Commands, Has.Count.EqualTo(1));
+            Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public async Task BuildAsync_Fails_WhenInstallingSdksLeavesBuildToolsMissing()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.True,
+                "setup: Prepare should have installed the build tools"
+            );
+
+            // The Android SDK goes missing and RAB's reinstall exits 0 without restoring it.
+            RobustIO.DeleteDirectoryAndContents(service.RabAndroidSdkInstallFolder);
+            service.InstallSdksCreatesBuildTools = false;
+            var commandCountBeforeBuild = service.Commands.Count;
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.BuildAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    Path.Combine(service.RabAndroidSdkInstallFolder, "platform-tools", "adb.exe")
+                )
+            );
+            Assert.That(error.Message, Does.Not.Contain("java.exe"));
+            Assert.That(service.Commands, Has.Count.EqualTo(commandCountBeforeBuild + 1));
+            Assert.That(service.Commands.Last(), Does.StartWith("-install-sdks-if-needed "));
         }
 
         [Test]
@@ -3095,6 +3283,11 @@ namespace BloomTests.Publish.Rab
             // cleanup removes it.
             public bool FailNextBuild { get; set; }
 
+            // When false, the simulated -install-sdks-if-needed command succeeds without creating
+            // the JDK and Android SDK files, mimicking Reading App Builder exiting 0 without
+            // installing its build tools (BL-16943).
+            public bool InstallSdksCreatesBuildTools { get; set; } = true;
+
             // When true (used with FailNextBuild), the failing build first overwrites the deliverable
             // APK in SafeApkRoot with a short partial, mimicking Reading App Builder being killed
             // while writing its finished APK; the interrupted-build cleanup should delete that
@@ -3220,7 +3413,8 @@ namespace BloomTests.Publish.Rab
                     TzdbExistsBeforeInstallSdksCommand = RobustFile.Exists(
                         Path.Combine(GetRabJdkRootPath(), "lib", "tzdb.dat")
                     );
-                    CreateBuildToolMarkers();
+                    if (InstallSdksCreatesBuildTools)
+                        CreateBuildToolMarkers();
                     return;
                 }
 
@@ -3981,8 +4175,14 @@ namespace BloomTests.Publish.Rab
                 return _defaultInstallDir;
             }
 
-            internal override string GetRabRegistryValue(string valueName)
+            // The registry key the simulated InstallDir and Version values live under.
+            public string RegistrySubKey { get; set; } = kBloomRabRegistrySubKeyForTest;
+
+            internal override string GetRabRegistryValue(string subKeyPath, string valueName)
             {
+                if (subKeyPath != RegistrySubKey)
+                    return null;
+
                 if (valueName == "InstallDir")
                     return _registryInstallDir;
 

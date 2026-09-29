@@ -47,6 +47,11 @@ namespace Bloom.Publish.Rab
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
         private const string kRabInstallerVersion = "14-0";
+
+        // A standalone Reading App Builder older than the version Bloom would install is not used.
+        private static readonly Version kMinimumStandaloneRabVersion = new Version(
+            kRabInstallerVersion.Replace('-', '.')
+        );
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         internal const string kRabSetupInstallerFileName =
             kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
@@ -721,6 +726,18 @@ namespace Bloom.Publish.Rab
             if (!_rabInstallInterrupted && IsRabInstalledForPrepare())
                 return true;
 
+            var unsupportedStandaloneRab = GetUnsupportedStandaloneRabInstall();
+            if (unsupportedStandaloneRab.InstallDir != null)
+            {
+                var versionDescription =
+                    unsupportedStandaloneRab.Version == null
+                        ? "with no VERSION file"
+                        : $"version {unsupportedStandaloneRab.Version}";
+                _progress.MessageWithoutLocalizing(
+                    $"Found Reading App Builder {versionDescription} at {unsupportedStandaloneRab.InstallDir}, but Bloom needs version {kMinimumStandaloneRabVersion} or later. Bloom will install Reading App Builder for Bloom instead."
+                );
+            }
+
             var installerPath = GetRabSetupInstallerPath();
             if (!string.IsNullOrWhiteSpace(installerPath))
             {
@@ -790,6 +807,36 @@ namespace Bloom.Publish.Rab
             );
             ResetIncompleteRabBuildToolFolders();
             RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
+
+            // RAB can exit 0 from -install-sdks-if-needed without actually putting the tools in
+            // place (BL-16943). Without this check Prepare would report success while the Apps
+            // screen shows the build-tools step unchecked and keeps Choose Books disabled.
+            if (!AreRabBuildToolsInstalled())
+                throw new ApplicationException(GetMissingRabBuildToolsMessage());
+        }
+
+        /// <summary>
+        /// Describes which of the JDK and Android SDK files that <see cref="AreRabBuildToolsInstalled"/>
+        /// checks for are missing, and where Bloom looked for them.
+        /// </summary>
+        internal string GetMissingRabBuildToolsMessage()
+        {
+            var missingFiles = new List<string>();
+            if (!IsRabJdkInstalled())
+            {
+                var javaPath = GetRabJavaExecutablePath();
+                if (!RobustFile.Exists(javaPath))
+                    missingFiles.Add(javaPath);
+                var tzdbPath = Path.Combine(GetRabJdkRootPath(), "lib", "tzdb.dat");
+                if (!RobustFile.Exists(tzdbPath))
+                    missingFiles.Add(tzdbPath);
+            }
+            if (!IsRabAndroidSdkInstalled())
+                missingFiles.Add(GetRabAdbExecutablePath());
+
+            return "Reading App Builder reported that it installed its build tools, but Bloom could not find "
+                + string.Join(", ", missingFiles)
+                + $". Bloom looked for the JDK in {GetRabJdkInstallFolder()} and the Android SDK in {GetRabAndroidSdkInstallFolder()}.";
         }
 
         private void ResetIncompleteRabBuildToolFolders()
@@ -2712,7 +2759,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual bool IsRabInstalledForPrepare()
         {
-            var installDir = GetRabRegistryValue("InstallDir");
+            var installDir = GetRabInstallDir();
             if (string.IsNullOrWhiteSpace(installDir))
                 return false;
 
@@ -2722,7 +2769,7 @@ namespace Bloom.Publish.Rab
 
         internal virtual string GetRabInstalledIconRoot()
         {
-            var installDir = GetRabRegistryValue("InstallDir");
+            var installDir = GetRabInstallDir();
             if (string.IsNullOrWhiteSpace(installDir))
                 return null;
 
@@ -3481,9 +3528,15 @@ namespace Bloom.Publish.Rab
 
         internal virtual bool IsRabAndroidSdkInstalled()
         {
-            return RobustFile.Exists(
-                Path.Combine(GetRabAndroidSdkInstallFolder(), "platform-tools", "adb.exe")
-            );
+            return RobustFile.Exists(GetRabAdbExecutablePath());
+        }
+
+        /// <summary>
+        /// The adb.exe that marks Bloom's copy of the Android SDK as installed.
+        /// </summary>
+        private string GetRabAdbExecutablePath()
+        {
+            return Path.Combine(GetRabAndroidSdkInstallFolder(), "platform-tools", "adb.exe");
         }
 
         internal virtual string GetRabJdkRootPath()
@@ -4334,11 +4387,7 @@ namespace Bloom.Publish.Rab
 
         private string FindRabRuntimePath(string relativePath)
         {
-            var installDirCandidates = new[]
-            {
-                GetRabRegistryValue("InstallDir"),
-                GetDefaultRabInstallDir(),
-            }
+            var installDirCandidates = new[] { GetRabInstallDir(), GetDefaultRabInstallDir() }
                 .Where(path => !string.IsNullOrWhiteSpace(path))
                 .Distinct(StringComparer.OrdinalIgnoreCase);
 
@@ -4374,20 +4423,37 @@ namespace Bloom.Publish.Rab
             return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         }
 
-        internal virtual string GetRabRegistryValue(string valueName)
+        /// <summary>
+        /// Reads a value from the first Reading App Builder registry key that has it, preferring
+        /// the Reading App Builder for Bloom key over the standalone one.
+        /// </summary>
+        internal string GetRabRegistryValue(string valueName)
+        {
+            foreach (var subKeyPath in GetRabRegistrySubKeys())
+            {
+                var value = GetRabRegistryValue(subKeyPath, valueName);
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Reads a value from one Reading App Builder registry key, checking both the 64-bit and
+        /// 32-bit views. Returns null if the key or value is missing or unreadable.
+        /// </summary>
+        internal virtual string GetRabRegistryValue(string subKeyPath, string valueName)
         {
             try
             {
                 foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
                 {
                     using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-                    foreach (var subKeyPath in GetRabRegistrySubKeys())
-                    {
-                        using var rabKey = baseKey.OpenSubKey(subKeyPath);
-                        var value = rabKey?.GetValue(valueName) as string;
-                        if (!string.IsNullOrWhiteSpace(value))
-                            return value;
-                    }
+                    using var rabKey = baseKey.OpenSubKey(subKeyPath);
+                    var value = rabKey?.GetValue(valueName) as string;
+                    if (!string.IsNullOrWhiteSpace(value))
+                        return value;
                 }
             }
             catch (Exception error)
@@ -4398,6 +4464,78 @@ namespace Bloom.Publish.Rab
                 ) { }
 
             return null;
+        }
+
+        /// <summary>
+        /// The Reading App Builder install folder Bloom should use, from the registry. The
+        /// Reading App Builder for Bloom key wins. A folder found only through the standalone
+        /// Reading App Builder key is used only if its VERSION file says it is at least
+        /// <see cref="kMinimumStandaloneRabVersion"/>. Bloom does not support older standalone
+        /// installs (BL-16943), so for one of those Prepare installs Reading App Builder for Bloom.
+        /// </summary>
+        internal string GetRabInstallDir()
+        {
+            var bloomRabInstallDir = GetRabRegistryValue(kBloomRabRegistrySubKey, "InstallDir");
+            if (!string.IsNullOrWhiteSpace(bloomRabInstallDir))
+                return bloomRabInstallDir;
+
+            var standaloneInstallDir = GetRabRegistryValue(kRabRegistrySubKey, "InstallDir");
+            if (string.IsNullOrWhiteSpace(standaloneInstallDir))
+                return null;
+
+            return IsSupportedRabVersion(ReadRabVersionFile(standaloneInstallDir))
+                ? standaloneInstallDir
+                : null;
+        }
+
+        /// <summary>
+        /// If the only Reading App Builder in the registry is a standalone install too old for
+        /// Bloom to use, returns its folder and the version its VERSION file reports (null if it
+        /// has none); otherwise returns (null, null).
+        /// </summary>
+        private (string InstallDir, string Version) GetUnsupportedStandaloneRabInstall()
+        {
+            if (
+                !string.IsNullOrWhiteSpace(
+                    GetRabRegistryValue(kBloomRabRegistrySubKey, "InstallDir")
+                )
+            )
+                return (null, null);
+
+            var standaloneInstallDir = GetRabRegistryValue(kRabRegistrySubKey, "InstallDir");
+            if (string.IsNullOrWhiteSpace(standaloneInstallDir))
+                return (null, null);
+
+            var version = ReadRabVersionFile(standaloneInstallDir);
+            return IsSupportedRabVersion(version) ? (null, null) : (standaloneInstallDir, version);
+        }
+
+        /// <summary>
+        /// Returns the trimmed contents of the VERSION file in a Reading App Builder install
+        /// folder (e.g. "14.0"), or null if there is no such file.
+        /// </summary>
+        private static string ReadRabVersionFile(string installDir)
+        {
+            var versionPath = Path.Combine(installDir, "VERSION");
+            if (!RobustFile.Exists(versionPath))
+                return null;
+
+            return RobustFile.ReadAllText(versionPath).Trim();
+        }
+
+        /// <summary>
+        /// True if the given Reading App Builder version text (e.g. "14.0" or "14") is at least
+        /// <see cref="kMinimumStandaloneRabVersion"/>. Missing or unparseable text counts as too old.
+        /// </summary>
+        internal static bool IsSupportedRabVersion(string versionText)
+        {
+            if (string.IsNullOrWhiteSpace(versionText))
+                return false;
+
+            // Version.TryParse needs at least major.minor.
+            var normalizedText = versionText.Contains('.') ? versionText : versionText + ".0";
+            return Version.TryParse(normalizedText, out var version)
+                && version >= kMinimumStandaloneRabVersion;
         }
 
         private string GetRabNotFoundMessage()
