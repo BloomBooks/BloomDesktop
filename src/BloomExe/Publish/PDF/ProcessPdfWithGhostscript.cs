@@ -407,7 +407,7 @@ namespace Bloom.Publish.PDF
                 _numPages = 0;
                 // Get the first and last page numbers processed and the total number of pages.
                 var idxNumber = kProcessingPages.Length;
-                var idxMid = line.IndexOf(kThroughWithSpaces);
+                var idxMid = line.IndexOf(kThroughWithSpaces, StringComparison.Ordinal);
                 if (
                     idxMid > idxNumber
                     && !Int32.TryParse(
@@ -417,7 +417,7 @@ namespace Bloom.Publish.PDF
                 )
                     _firstPage = 0;
                 idxNumber = idxMid + kThroughWithSpaces.Length;
-                var idxPeriod = line.IndexOf(".", idxNumber);
+                var idxPeriod = line.IndexOf(".", idxNumber, StringComparison.Ordinal);
                 if (
                     idxPeriod > idxNumber
                     && !Int32.TryParse(

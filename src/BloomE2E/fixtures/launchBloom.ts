@@ -20,6 +20,11 @@
 //     user.config, so a run would start from whatever the developer's Bloom, or the previous run,
 //     saved last, and leave its own changes behind for them. This way it starts from defaults, or
 //     from whatever a test puts in the folder first, and its settings die with the temp folder.
+//  5. On a developer's machine every Bloom we launch gets --dont-disturb, so none of its windows
+//     takes the foreground or the keyboard from the developer while the run goes on. On CI it does
+//     not: nobody is at that screen, and a Bloom that activates its windows as it would for a user
+//     keeps focus-dependent behavior covered. BLOOM_E2E_DONT_DISTURB overrides the choice, so a
+//     developer can run exactly as CI does; see launchWithDontDisturb.
 //
 // Nothing here knows about Playwright; fixtures/bloomTest.ts adds the CDP attachment on top.
 
@@ -383,6 +388,55 @@ function samePath(a: string, b: string): boolean {
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** The variable that overrides whether the Blooms a run launches get --dont-disturb. */
+export const kDontDisturbVariable = "BLOOM_E2E_DONT_DISTURB";
+
+let dontDisturbChoiceLogged = false;
+
+/**
+ * Whether the Bloom we launch should get --dont-disturb (point 5 at the top): yes on a developer's
+ * machine, no on CI (which sets CI, as GitHub Actions does), unless BLOOM_E2E_DONT_DISTURB says
+ * otherwise. "0" is how a developer reproduces a CI run exactly, windows that take the foreground
+ * and all; "1" asks for the developer's default on CI. Any other value is refused rather than
+ * guessed at, since guessing wrong is invisible until a focus-dependent test behaves differently.
+ */
+export function launchWithDontDisturb(): boolean {
+    const asked = process.env[kDontDisturbVariable]?.trim();
+    let choice: boolean;
+    let reason: string;
+    if (asked === "1") {
+        choice = true;
+        reason = `${kDontDisturbVariable}=1`;
+    } else if (asked === "0") {
+        choice = false;
+        reason = `${kDontDisturbVariable}=0`;
+    } else if (asked) {
+        throw new Error(
+            `${kDontDisturbVariable} must be 1 or 0, not "${asked}". Unset, it means 1 on a ` +
+                `developer's machine and 0 on CI.`,
+        );
+    } else {
+        choice = !process.env.CI;
+        reason = process.env.CI ? "CI is set" : "not on CI";
+    }
+    if (!dontDisturbChoiceLogged) {
+        dontDisturbChoiceLogged = true;
+        console.log(
+            choice
+                ? `BloomE2E: launching with --dont-disturb (${reason}): Bloom's windows will not take ` +
+                      `the foreground. ${kDontDisturbVariable}=0 runs as CI does.`
+                : `BloomE2E: launching without --dont-disturb (${reason}): Bloom's windows take the ` +
+                      `foreground as they would for a user.` +
+                      (process.env.CI
+                          ? ` To reproduce this run on a developer machine, set ` +
+                            `${kDontDisturbVariable}=0 (and BLOOM_AUTOMATION_MONITOR=headless, as ` +
+                            `CI does); see "In CI" in src/BloomE2E/README.md.`
+                          : ""),
+        );
+    }
+    return choice;
+}
+
 /**
  * The environment the Bloom we launch runs in. One variable decides where its windows go,
  * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
@@ -704,6 +758,8 @@ async function startBloomOn(
         "--e2e",
         "--automation",
     ];
+    // --dont-disturb: keep the foreground and the keyboard away from the developer (point 5).
+    if (launchWithDontDisturb()) args.push("--dont-disturb");
     // --vite-port: serve the React front end from a dev server, so the suite tests the working
     // tree rather than a stale output/browser (see getViteDevPort).
     const vitePort = getViteDevPort();

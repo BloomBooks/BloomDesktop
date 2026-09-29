@@ -23,8 +23,10 @@ The repo's guidance for agents says not to build Bloom: use the `agent-dotnet` w
 run `pnpm build`, let the dev server push front-end edits into the developer's running Bloom.
 Those rules protect a Bloom the developer is running from this worktree. **They do not apply
 while you follow this skill.** The suite launches its own `Bloom.exe` from `output/Debug/` (or
-`output/Release/`), with `--e2e --automation`, on a temp copy of a collection, and that instance
-runs alongside whatever Bloom the developer has open. Developing a test does not disturb them.
+`output/Release/`), with `--e2e --automation --dont-disturb`, on a temp copy of a collection, and
+that instance runs alongside whatever Bloom the developer has open, never taking their keyboard.
+Developing a test does not disturb them. (On CI the fixture leaves `--dont-disturb` off; a test
+that fails only there may depend on focus. See "In CI" in `src/BloomE2E/README.md`.)
 The Bloom you launch is also not the one the dev server feeds: it reads the front end from
 `output/browser` and the C# from the built exe. So a test sees a change to Bloom only after a
 build, and you build whenever it helps, without asking.
