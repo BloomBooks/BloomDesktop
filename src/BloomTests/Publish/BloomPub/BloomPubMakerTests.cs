@@ -2592,5 +2592,43 @@ namespace BloomTests.Publish.BloomPub
                 }
             }
         }
+
+        [Test]
+        public void GetUniqueNewFilename_NoConflict_ReturnsSimpleName()
+        {
+            using (var folder = new TemporaryFolder("GetUniqueNewFilename_NoConflict"))
+            {
+                // No file exists yet, so no numeric suffix is needed.
+                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
+                Assert.That(result, Is.EqualTo("photo_r.jpg"));
+            }
+        }
+
+        [Test]
+        public void GetUniqueNewFilename_OneConflict_AddsNumericSuffix()
+        {
+            using (var folder = new TemporaryFolder("GetUniqueNewFilename_OneConflict"))
+            {
+                // Simulate a previous image already occupying "photo_r.jpg".
+                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_r.jpg"), "dummy");
+
+                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
+                Assert.That(result, Is.EqualTo("photo_1_r.jpg"));
+            }
+        }
+
+        [Test]
+        public void GetUniqueNewFilename_TwoConflicts_IncrementsUntilUnique()
+        {
+            using (var folder = new TemporaryFolder("GetUniqueNewFilename_TwoConflicts"))
+            {
+                // Both "photo_r.jpg" and "photo_1_r.jpg" already exist.
+                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_r.jpg"), "dummy");
+                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_1_r.jpg"), "dummy");
+
+                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
+                Assert.That(result, Is.EqualTo("photo_2_r.jpg"));
+            }
+        }
     }
 }
