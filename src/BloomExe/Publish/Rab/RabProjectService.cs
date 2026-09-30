@@ -1608,6 +1608,51 @@ namespace Bloom.Publish.Rab
             var project = RabAppProject.Load(appDefPath);
             project.SynchronizeFonts(ReadFontDefinitionsFromBloomPubs(trackedBooks));
             project.Save();
+            CopyEmbeddedFontFiles(trackedBooks, project.FontsFolderPath);
+        }
+
+        /// <summary>
+        /// Copies the file of every font embedded in the BloomPUBs into the project's fonts folder.
+        /// SynchronizeFonts lists these fonts in the .appDef by bare file name, and at build time RAB
+        /// looks for them only in that folder; RAB itself copies font files there only when it creates
+        /// a project, so without this any embedded font (every one but Andika) fails the build with
+        /// "A required file for this app is missing" (BL-16959). Each face (Bold, Italic...) has its
+        /// own file and @font-face rule, so each is copied. We leave the files of fonts that are no
+        /// longer used: RAB packages only the fonts the .appDef lists, and some files in the folder
+        /// may have been put there by RAB.
+        /// </summary>
+        internal static void CopyEmbeddedFontFiles(
+            IEnumerable<RabBookPublishInfo> trackedBooks,
+            string fontsFolderPath
+        )
+        {
+            var copiedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var book in trackedBooks ?? Array.Empty<RabBookPublishInfo>())
+            {
+                var fonts =
+                    book.EmbeddedFonts ?? ReadFontDefinitionsFromBloomPub(book.BloomPubPath);
+                var fileNames = fonts
+                    .Select(font => font.FileName)
+                    .Where(fileName => !copiedFileNames.Contains(fileName))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                if (fileNames.Count == 0)
+                    continue;
+
+                Directory.CreateDirectory(fontsFolderPath);
+                using var archive = ZipFile.OpenRead(book.BloomPubPath);
+                foreach (var fileName in fileNames)
+                {
+                    var entry = archive.GetEntry(fileName);
+                    if (entry == null)
+                        throw new ApplicationException(
+                            $"{book.BloomPubPath} uses the font file {fileName} but does not contain it."
+                        );
+
+                    entry.ExtractToFile(Path.Combine(fontsFolderPath, fileName), true);
+                    copiedFileNames.Add(fileName);
+                }
+            }
         }
 
         /// <summary>
