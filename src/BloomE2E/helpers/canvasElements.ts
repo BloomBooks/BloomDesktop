@@ -202,8 +202,8 @@ export async function dragPaletteItemOntoCanvas(
 ): Promise<number> {
     const toolbox = await openCanvasTool(page);
     const source = toolbox.locator(`[data-testid="palette-${item}"]:visible`);
-    // Wait rather than count once: an item that is behind a subscription tier or an experiment
-    // (the table is behind both) appears only once the palette has heard back from
+    // Wait rather than count once: an item that is behind a subscription tier or hidden by its
+    // feature status appears only once the palette has heard back from
     // features/status, so it is missing for a moment every time the tool opens.
     const appeared = await source
         .first()

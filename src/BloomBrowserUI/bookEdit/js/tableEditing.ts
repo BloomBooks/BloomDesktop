@@ -126,7 +126,7 @@ function ensureContentTypesRegistered(): void {
  * Tell the bloom-table library how much of a table's editing Bloom is offering.
  *
  * A book may hold a table that the user is not entitled to make: the subscription
- * is below Pro, or the Tables experiment has been turned off since the table was
+ * is below Pro, or the table feature has stopped being visible since the table was
  * made. Bloom's rule for such a book is the one it uses for canvas elements —
  * localize, don't create — so the table stays attached and its text, language tags,
  * format gear, picture replacement and audio all keep working, while everything

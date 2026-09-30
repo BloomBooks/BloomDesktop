@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, expect, vi } from "vitest";
 
 // A book may hold a table its owner is not entitled to make: the subscription is
-// below Pro, or the Tables experiment has been turned off. Bloom's rule there is the
+// below Pro, or the table feature is not visible. Bloom's rule there is the
 // canvas rule -- localize, don't create -- so the table stays attached and typable
 // while everything that would create or restructure one is withheld. These tests
 // exercise the two hooks that do that (see installHostHooks in tableEditing.ts)

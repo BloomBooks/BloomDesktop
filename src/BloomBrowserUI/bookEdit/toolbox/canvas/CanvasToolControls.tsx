@@ -97,10 +97,9 @@ const getImageFillModeForElement = (element: HTMLElement): ImageFillMode => {
 
 const CanvasToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
-    // Tables need a Pro subscription and the "Tables" experiment, and both halves
-    // of the feature's status have to be true to offer one: the tier decides
-    // `enabled`, while an experimental feature that is turned off makes its feature
-    // invisible rather than disabled. There is no subscription badge on this palette
+    // Both halves of the table feature's status have to be true to offer one: the
+    // Pro tier decides `enabled`, while a feature Bloom is hiding is invisible
+    // rather than disabled. There is no subscription badge on this palette
     // item, because below Pro the Canvas tool as a whole is already behind the canvas
     // feature's subscription notice (see subscriptionToolIds in ToolboxRoot.tsx), so
     // nothing here is reachable. The Table link in the page layout controls does need

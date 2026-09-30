@@ -135,7 +135,7 @@ export interface IFeatureStatus {
     subscriptionTier: SubscriptionTier;
     /** True when the collection's tier reaches the feature's. */
     enabled: boolean;
-    /** True when Bloom should show the feature's controls at all: for tables, the experiment. */
+    /** True when Bloom should show the feature's controls at all. */
     visible: boolean;
 }
 

@@ -10,8 +10,8 @@
 // kept here.
 //
 // The two halves of the status mean different things and both have to be true. A
-// tier below Pro leaves `enabled` false, and turning the Tables experiment off
-// leaves `visible` false. Either way the rule is the canvas rule: a table already
+// tier below Pro leaves `enabled` false, and a feature Bloom is hiding has
+// `visible` false. Either way the rule is the canvas rule: a table already
 // in the book stays editable as text, but nothing may create or restructure one.
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 
@@ -25,7 +25,7 @@ let tablesMayBeRestructuredOnThisPage = false;
 /**
  * True when the user may create and restructure tables: add and remove rows and
  * columns, resize them, change a cell's content type, and duplicate a table. False
- * both below Pro and with the Tables experiment turned off.
+ * both below Pro and when the table feature is not visible.
  */
 export function tablesMayBeRestructured(): boolean {
     return tablesMayBeRestructuredOnThisPage;

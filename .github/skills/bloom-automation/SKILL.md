@@ -434,23 +434,15 @@ Use node or bash scripts. Avoid powershell. Use the "dev-browser" cli instead of
 
 ## Driving the editable page over CDP (DOM interaction)
 
-These patterns were verified driving the real Bloom.exe WebView2 via `dev-browser --connect http://localhost:<cdpPort>`. Pages returned by `browser.getPage(...)` are full Playwright Page objects.
+Verified driving the real Bloom.exe WebView2 with Playwright's `chromium.connectOverCDP`.
 
-- **Frames.** The Edit screen is several sibling iframes under the workspace root. Get them with Playwright by name/url, not by index:
-    - page (editable content): `page.frames().find(f => f.name() === 'page')`
-    - toolbox: `page.frames().find(f => (f.url()||'').includes('toolbox'))`
-    - others: `pageList`, plus the top/anon root.
-  After a tab switch or page change the page frame reloads; re-find it and poll until your target selector exists (e.g. `.bloom-page`) before acting.
-- **Clicking inside a frame: use `elementHandle.click({force:true})`, not `page.mouse.click(x,y)`.** `boundingBox()` for an element inside an iframe returns *frame-relative* coords, but `page.mouse` uses *top-level viewport* coords — so computed clicks land in the wrong place. `elementHandle.click()` is frame-aware. `{force:true}` is also needed because Bloom overlays a format-gear (`#formatButton`, `.bloom-ui`) on focused editables that intercepts normal clicks ("subtree intercepts pointer events").
-- **Typing into a cell/text box.** Click the `.bloom-editable` with `{force:true}`, then `page.keyboard.type(...)`. To replace existing text: `Control+A` then `Delete` first. Re-query the editables array between cells (the DOM can re-render).
-- **Saving a page.** There is no save button; navigating away persists the page. Switching workspace tabs (Collections → Edit) forces a save+reload — handy for a round-trip test. The saved book HTML is the book folder's main `<BookName>.htm`; ignore the `*-memsim-*` and `*Pagelist*` temp files. Find the book folder from a page-frame iframe `src` (e.g. `…/Bloom/<collection>/Book-xxxx/`).
-- **Undo is a C# accelerator — synthetic Ctrl+Z over CDP does NOT reach it.** Instead call the exact entry points C# uses, from the *top* frame: `window.workspaceBundle.handleUndo()` and `window.workspaceBundle.canUndo()` (returns `"yes"`/`"fail"`).
-- **Cross-frame bundle calls.** Page-frame functions are on `window.editablePageBundle.*` (read it inside the page frame); workspace/root functions on `window.workspaceBundle.*` (top frame). Useful for asserting state without scraping the DOM.
-- **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`), then activated by clicking their accordion header `[data-toolId="<id>Tool"]`. Tool buttons expose `title`/`aria-label` (e.g. `button[title="Insert Row Below"]`), not `alt`.
-- **Capture console errors** while exercising React UI: `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })` — the cheapest check for "multiple React"/hook/MUI problems.
-- **dev-browser script gotchas.** Scripts run in a QuickJS sandbox (no Node/`require`/`fs`). Keep them small and single-purpose; end by logging the state you need. Bump `--timeout` (e.g. 40–50) for multi-step scripts. Avoid stray bare expressions (e.g. a lone `window` line) — they can abort the script.
-- **After relinking/rebuilding a linked front-end dependency**, restart the whole `go.sh` session rather than relying on hot reload; otherwise the page runs the stale copy. A launcher `/restart` is *not* enough: it restarts Bloom.exe but the Vite dev server started by the first `go.sh` keeps running and keeps serving the module it transformed at startup (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill the Vite process on its own either, because that takes the launcher down with it and the control API disappears. Stop the session and start `./go.sh` again; the new session picks new Vite and control ports, so re-read `output/bloom-launcher.json`.
-- **Locator coordinates are top-level, not frame-relative.** `locator.boundingBox()` on an element inside the page iframe already returns main-frame viewport coordinates, so `appPage.mouse.click(box.x + box.width/2, box.y + box.height/2)` lands on the element. Adding the iframe's own offset makes the click miss.
+- **The page frame reloads.** After a tab switch or page change, re-find the `page` frame and poll until your target selector exists (e.g. `.bloom-page`) before acting.
+- **Click editables with `{force:true}`.** Bloom overlays a format gear (`#formatButton`, `.bloom-ui`) on a focused editable, and it intercepts normal clicks ("subtree intercepts pointer events"). Re-query the editables between cells; the DOM can re-render.
+- **Saving a page.** There is no save button; navigating away persists the page. Switching workspace tabs (Collections → Edit) forces a save+reload, which suits a round-trip test. The saved book HTML is the book folder's main `<BookName>.htm`; ignore the `*-memsim-*` and `*Pagelist*` temp files. Find the book folder from a page-frame iframe `src` (e.g. `…/Bloom/<collection>/Book-xxxx/`).
+- **Undo is a C# accelerator; synthetic Ctrl+Z over CDP does NOT reach it.** Call the entry points C# uses, from the *top* frame: `window.workspaceBundle.handleUndo()` and `window.workspaceBundle.canUndo()` (returns `"yes"`/`"fail"`). Page-frame functions are likewise on `window.editablePageBundle.*` inside the page frame, handy for asserting state without scraping the DOM.
+- **Toolbox tools.** Optional/experimental tools must first be enabled via the "More…" settings checkbox (e.g. `#<toolname>Check`, which calls `toolboxBundle.showOrHideTool_click(this)`) before their accordion section appears. Tool buttons expose `title`/`aria-label` (e.g. `button[title="Insert Row Below"]`), not `alt`.
+- **Capture console errors** while exercising React UI: `page.on('console', m => { if (m.type()==='error') errors.push(m.text()); })`, the cheapest check for "multiple React"/hook/MUI problems.
+- **After changing a front-end dependency** (relinking it, or bumping a GitHub dependency's hash), restart the whole stack rather than relying on hot reload; otherwise the page runs the stale copy. `launcherControl.mjs --restart` is *not* enough: it restarts Bloom.exe, but the Vite dev server keeps serving the module it transformed at startup (`curl http://localhost:<vitePort>/@id/<dep>` and grep for your change to confirm). Do not kill the Vite process on its own either, because that takes the launcher down with it. Use `--shutdown` then `--ensure-running`; the new stack picks new Vite and control ports, so re-read the status.
 
 ## Change Layout (adding a section to a custom page)
 
@@ -487,5 +479,5 @@ Two gotchas:
 
 The link's `data-i18n` values are `EditTab.CustomPage.Image`, `.Video`, `.Table`
 and `.Text`. A link only appears when its feature is on, so a missing Table link
-usually means the "Tables" experiment is off in Collection Settings, not that the
+usually means the feature is not visible (see its entry in FeatureRegistry.cs), not that the
 click failed.

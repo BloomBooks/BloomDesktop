@@ -25,7 +25,7 @@ $(() => {
 let isWidgetFeatureEnabledForOrigami = false;
 let isCanvasFeatureEnabledForOrigami = false;
 // The Table link needs both parts of the feature's status, because it behaves
-// differently for each: the experiment being off hides the link, while a
+// differently for each: a feature that is not visible hides the link, while a
 // subscription tier below Pro shows it disabled, with a badge saying why.
 let tableFeatureStatusForOrigami: FeatureStatus | undefined = undefined;
 
@@ -447,7 +447,7 @@ function getCloseButton() {
 /**
  * The Table entry of a section's type chooser, or nothing when tables are not on offer.
  *
- * The "Tables" experiment being off hides the entry altogether, the way the Canvas and
+ * A table feature that is not visible hides the entry altogether, the way the Canvas and
  * HTML Widget entries disappear when their features are off. A subscription tier below
  * the one tables need is different: the entry stays, so the user can see that tables
  * exist, but it does nothing except explain itself. It carries the same badge as the

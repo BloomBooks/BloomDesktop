@@ -111,7 +111,7 @@ export async function getSectionTypesOffered(
 /**
  * What the Table entry of a section's type chooser looks like. The entry has three possible
  * states, and they mean different things (see createTableSelector in origami.ts): missing
- * altogether when the "Tables" experiment is off, dimmed and badged when the experiment is on but
+ * altogether when the table feature is not visible, dimmed and badged when it is visible but
  * the collection's subscription tier is below the one tables need, and an ordinary link when
  * tables can be made.
  */

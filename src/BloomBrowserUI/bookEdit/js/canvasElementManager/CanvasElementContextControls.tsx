@@ -101,8 +101,8 @@ const CanvasElementContextControls: React.FunctionComponent<{
     // we feed that into the control context so the menu item is hidden when off.
     const aiImageEditingStatus = useGetFeatureStatus("AiImageEditing");
     // Both halves of the table feature's status matter, and they mean different
-    // things: a tier below Pro leaves it not enabled, and turning the Tables
-    // experiment off leaves it not visible. Either way no new table may be made,
+    // things: a tier below Pro leaves it not enabled, and a feature Bloom is
+    // hiding is not visible. Either way no new table may be made,
     // which is what Duplicate on a table element would do.
     const tableStatus = useGetFeatureStatus("table");
     const languageNameValues = useApiObject<ILanguageNameValues>(
