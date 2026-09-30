@@ -38,13 +38,17 @@ export const BookSettingsButton: React.FunctionComponent = (props) => {
             textColor={kTextOnPurple}
             disabledTextColor={kDisabledTextOnPurple}
             cssOverrides={css`
-                width: 88px;
+                min-width: 88px;
+                max-width: 124px;
                 white-space: normal;
                 line-height: 1.15;
 
                 span {
-                    display: inline-block;
-                    max-width: 72px;
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 2;
+                    overflow: hidden;
+                    max-width: 108px;
                 }
             `}
         />
