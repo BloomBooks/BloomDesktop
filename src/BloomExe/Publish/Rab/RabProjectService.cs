@@ -789,7 +789,95 @@ namespace Bloom.Publish.Rab
                 ProgressKind.Heading
             );
             ResetIncompleteRabBuildToolFolders();
-            RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
+
+            // Keep RAB's output so that, if the tools end up missing, we can say where RAB found
+            // the ones it used instead.
+            var installOutput = new List<string>();
+            _rabOutputCapture = installOutput;
+            try
+            {
+                RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
+            }
+            finally
+            {
+                _rabOutputCapture = null;
+            }
+
+            // RAB 14 exits 0 from -install-sdks-if-needed without installing anything when it finds
+            // a JDK or Android SDK somewhere else, such as the C:\sdk left by a standalone RAB
+            // (BL-16943). Bloom only uses its own copies, so stop here instead of reporting success
+            // while the Apps screen shows the build tools as missing.
+            if (!AreRabBuildToolsInstalled())
+                throw new ApplicationException(DescribeMissingRabBuildTools(installOutput));
+        }
+
+        /// <summary>
+        /// Explains, for each of the JDK and Android SDK that is missing from Bloom's folders after
+        /// -install-sdks-if-needed, what went wrong. When RAB's output says it used a copy in some
+        /// other folder, the message names that folder and tells the user how to get past it.
+        /// </summary>
+        internal string DescribeMissingRabBuildTools(IReadOnlyList<string> rabOutput)
+        {
+            var problems = new List<string>();
+            if (!IsRabJdkInstalled())
+                problems.Add(
+                    DescribeMissingRabBuildTool(
+                        "JDK",
+                        GetRabJdkInstallFolder(),
+                        FindFolderReportedByRab(rabOutput, "JDK folder:")
+                    )
+                );
+            if (!IsRabAndroidSdkInstalled())
+                problems.Add(
+                    DescribeMissingRabBuildTool(
+                        "Android SDK",
+                        GetRabAndroidSdkInstallFolder(),
+                        FindFolderReportedByRab(rabOutput, "Android SDK is already installed at:")
+                    )
+                );
+            return string.Join(" ", problems);
+        }
+
+        private static string DescribeMissingRabBuildTool(
+            string toolName,
+            string bloomFolder,
+            string folderReportedByRab
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(folderReportedByRab)
+                || IsSameOrInsideFolder(folderReportedByRab, bloomFolder)
+            )
+                return $"Reading App Builder finished without installing the {toolName} that Bloom needs in {bloomFolder}.";
+
+            return $"Reading App Builder used the {toolName} in {folderReportedByRab} instead of installing one for Bloom in {bloomFolder}, but Bloom can only use its own copy. "
+                + $"To fix this, rename {folderReportedByRab} (for example to {folderReportedByRab.TrimEnd('\\', '/')}-old) and click Prepare again. "
+                + "Any other program that uses that folder may not work until you rename it back.";
+        }
+
+        /// <summary>
+        /// Returns the folder from the last line of RAB output that starts with the given label
+        /// (e.g. "Android SDK is already installed at: C:\sdk"), or null if there is none.
+        /// </summary>
+        private static string FindFolderReportedByRab(IReadOnlyList<string> rabOutput, string label)
+        {
+            var line = rabOutput
+                .Select(outputLine => outputLine.Trim())
+                .LastOrDefault(outputLine =>
+                    outputLine.StartsWith(label, StringComparison.Ordinal)
+                );
+            return line?.Substring(label.Length).Trim();
+        }
+
+        private static bool IsSameOrInsideFolder(string path, string folder)
+        {
+            var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
+            var fullFolder = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar);
+            return string.Equals(fullPath, fullFolder, StringComparison.OrdinalIgnoreCase)
+                || fullPath.StartsWith(
+                    fullFolder + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase
+                );
         }
 
         private void ResetIncompleteRabBuildToolFolders()
