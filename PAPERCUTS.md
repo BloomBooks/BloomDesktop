@@ -214,22 +214,6 @@ House rules:
 - **Context:** `Add-Tables`, updating Bloom to the current bloom-table. The one stale property was
   `overflow: hidden` where the library now needs `overflow: clip` for nested tables.
 
-## 2026-08-20 — Rebuilding a pnpm-linked front-end dependency needs a whole new go.sh session
-
-- **Cut:** `bloom-table` is linked from a sibling repo, and after `vp pack` there the running
-  Bloom kept executing the old code. The launcher's `/restart` does not help: it restarts
-  Bloom.exe, but the Vite dev server from the first `go.sh` survives and keeps serving the
-  module it transformed at startup (`/@id/bloom-table` was 1462507 bytes stale against a 1462511
-  byte file on disk). Killing that one node process to force a fresh server killed the launcher
-  with it, so the control API vanished and the developer's Bloom went down.
-- **Idea:** Either have `go.sh` watch the dist of linked deps and restart Vite, or give the
-  launcher a documented "restart Vite too" action. Meanwhile the skill note that says "restart
-  Bloom" should say "stop the session and run `./go.sh` again", because a `/restart` reads as
-  enough and is not. `curl http://localhost:<vitePort>/@id/<dep>` and grep for your change is the
-  cheap way to tell whether the server is stale.
-- **Context:** `Add-Tables` branch, removing the table toolbox and taking the latest bloom-table.
-  Cost about twenty minutes plus an unplanned relaunch of the developer's Bloom.
-
 ## 2026-08-28 — Moving a worktree between master and Version6.5 changes which settings file Bloom reads
 
 `BloomExe.csproj` sets `<Version>` per branch: 6.6.0.0 on master, 6.5.0.0 on Version6.5.
@@ -245,34 +229,6 @@ visible setting; every other user setting jumps too.
 **Workaround:** edit `%LOCALAPPDATA%\SIL\Bloom\6.5.0.0\user.config` and put the collection you
 want first in `MruProjects`, or delete the entries so Bloom shows the collection chooser.
 
-**Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
-the branch rather than the version in that path.
-
-**Context:** BL-16781, after re-basing the `dev-blorgswitch` worktree onto Version6.5.
-
-## A rebuilt bloom-table never reaches the running Bloom until the dev server restarts
-
-**2026-08-20, Add-Tables.** `vite.config.mts` deliberately puts `bloom-table` in
-`optimizeDeps.exclude` with a comment saying that pre-bundling would cache a stale copy, and
-that excluding it "makes Vite serve the dist live, so a `vp pack` in the sibling repo shows up".
-It does not show up. The page loads it as `/@fs/D:/bloom-table/dist/bloom-table.mjs?t=<stamp>`,
-and Vite keeps serving the transform it cached under that exact URL: the file is outside the
-project root, so nothing watches it, so the stamp never changes and the cache is never
-invalidated. A page reload, a cache-disabled reload, deleting `node_modules/.vite/deps`, and
-`launcherControl.mjs --restart` all leave the old library in place.
-
-The cost is a wrong diagnosis, not just lost time: the new code is served correctly for the
-Bloom-side file and only the library is stale, so the console fills with
-`TypeError: dragToResize.beginResizeAtPoint is not a function` from a line that plainly calls a
-method the built `.d.mts` and `.mjs` both contain. It reads as a build or export problem in the
-library.
-
-What worked: `launcherControl.mjs --shutdown` then `--ensure-running --wait-ready`, i.e. a fresh
-Vite. Note the ports change, so re-read `output/bloom-launcher.json`, and Bloom comes back on the
-collection tab (`switchWorkspaceTab.mjs --running-bloom --tab edit`).
-
-**Idea:** either add `D:/bloom-table/dist` to `server.watch`, or have `go.sh` run bloom-table's
-`build:watch` when it is linked, so a `vp pack` there triggers the invalidation Vite needs.
 **Idea:** `./go.sh` could say which settings folder this build uses, or a dev build could name
 the branch rather than the version in that path.
 

@@ -957,12 +957,11 @@ export default defineConfig(async ({ command }) => {
             exclude: [
                 "lib/localizationManager/localizationManager", // Don't pre-bundle this
                 "bloom-image-gallery", // TypeScript source entry point — must go through Vite's transform pipeline, not esbuild pre-bundling
-                // bloom-table is pnpm-linked from a sibling repo we actively develop.
-                // If it is pre-bundled, Vite caches the optimized copy and does NOT
-                // notice when we rebuild its dist (Vite ignores node_modules for
-                // change detection), so edits never reach the running toolbox/page.
-                // Excluding it makes Vite serve the dist live, so a `vp pack` in the
-                // bloom-table repo shows up on the next reload.
+                // bloom-table comes from a committed-dist tag on GitHub, but a developer
+                // working on the library pnpm-links a local build instead (see the note in
+                // package.json). A pre-bundled copy would outlive that swap, so it is served
+                // as is. A running dev server still keeps the copy it first transformed:
+                // restart the whole go.sh stack to pick up a new build.
                 "bloom-table",
             ],
             // Force Vite to treat comicaljs as having named exports even though it's CommonJS/UMD
