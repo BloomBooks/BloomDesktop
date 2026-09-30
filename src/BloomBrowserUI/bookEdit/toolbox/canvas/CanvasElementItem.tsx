@@ -557,6 +557,8 @@ const CanvasElementBaseTextItem: React.FunctionComponent<{
         <Span
             l10nKey={props.l10nKey}
             className={props.className}
+            // See the note on CanvasElementSvgItem's data-testid.
+            data-testid={`palette-${props.canvasElementType}`}
             draggable={true}
             onDragStart={(ev) => ondragstart(ev, props.canvasElementType)}
             onDragEnd={(ev) =>

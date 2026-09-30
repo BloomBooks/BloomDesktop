@@ -1,0 +1,159 @@
+namespace BloomFreezeDoctor;
+
+/// <summary>
+/// Works out which Bloom we are looking at from the outside — its release channel, and whether it is
+/// the sort of run that must never produce a report.
+///
+/// These are pure functions on strings so they can be tested exhaustively; both have a trap that fails
+/// in the dangerous direction (calling a developer build Release, or a real Bloom headless).
+/// </summary>
+public static class BloomChannel
+{
+    /// <summary>
+    /// Derives Bloom's release channel from the path its executable was launched from.
+    ///
+    /// **Deliberately indifferent to the file extension.** It looks only at folders, so <c>Bloom.exe</c>
+    /// and <c>Bloom.dll</c> in the same directory give the same answer - which is what we need, because
+    /// Bloom's own <c>ApplicationUpdateSupport.ChannelName</c> asks its entry assembly and so sees a
+    /// <c>.dll</c>, while from outside we see the process, whose main module is the <c>.exe</c>. Bloom's
+    /// version additionally requires the <c>.dll</c> ending on its developer-build check; matching that
+    /// here would call every developer build "Release", which is the dangerous direction. A test pins the
+    /// two forms agreeing.
+    ///
+    /// This is a NARROWER function than Bloom's, not a copy of it: Bloom's also has a Linux branch and a
+    /// unit-test channel, neither of which a Windows-only watcher wants.
+    ///
+    /// **Why the Doctor works this out for itself rather than asking Bloom.** It is the only answer
+    /// available for a Bloom that wrote no session file - one built before the Doctor existed, or one that
+    /// died before it got the chance - which are exactly the runs the Doctor exists for.
+    /// </summary>
+    public static string DeriveFromExePath(string exePath)
+    {
+        // An unknown path is not Release: a Bloom whose executable we cannot read would otherwise be
+        // labelled Release on its card and - because the channel is one of the fingerprint's ingredients -
+        // merged with genuine Release reports. Only the EMPTY path is Unknown. A path we can read but do
+        // not recognise is still Release: that is what an ordinary installation looks like.
+        if (string.IsNullOrWhiteSpace(exePath))
+            return "Unknown";
+
+        var path = (exePath ?? "").Replace('\\', '/');
+        if (path.Contains("/output/Debug/", StringComparison.OrdinalIgnoreCase))
+            return "Developer/Debug";
+        if (path.Contains("/output/Release/", StringComparison.OrdinalIgnoreCase))
+            return "Developer/Release";
+
+        // Installed builds live in .../Bloom{Channel}/current/. An empty channel means Release.
+        var match = System.Text.RegularExpressions.Regex.Match(
+            path,
+            @"/Bloom([^/]*)/current/",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+        if (match.Success && match.Groups[1].Value.Length > 0)
+            return match.Groups[1].Value.Replace("-arm64", "");
+
+        return "Release";
+    }
+
+    /// <summary>
+    /// The process names an installed Bloom can have, one per release channel — which are also the folder
+    /// names, since an installed Bloom lives in
+    /// <c>%LOCALAPPDATA%\Bloom{Channel}\current\Bloom{Channel}.exe</c> and Release is the one with no
+    /// suffix.
+    ///
+    /// **Kept in one place because two consumers must agree.** The Doctor sweeps for these to find Blooms
+    /// nobody told it about, and "Restart Bloom" searches the same names for something to launch; a list
+    /// that drifted would let the Doctor watch a channel it could not then restart.
+    ///
+    /// **Beta and Release are here on purpose.** The Doctor ships in every channel and is switched on per
+    /// machine from the debug menu; it is part of the next Beta, and whether to offer it to Release users is
+    /// still open. Watching costs nothing until something goes wrong. Whether a report may actually be
+    /// FILED is decided separately, by <see cref="IsDeveloperChannel"/> and the guards around it, none of
+    /// which distinguish Beta or Release from any other installed channel.
+    /// </summary>
+    public static readonly string[] InstalledBloomProcessNames =
+    [
+        "Bloom", // Release: the channel with no suffix
+        "BloomAlpha",
+        "BloomBeta",
+        "BloomBetaInternal",
+        "BloomReleaseInternal",
+    ];
+
+    /// <summary>
+    /// True when the channel is a developer build. Such a run is gathered and written to disk but
+    /// never filed, which is the first and most reliable of the four defences against reporting a
+    /// developer stopping their debugger.
+    /// </summary>
+    public static bool IsDeveloperChannel(string channel) =>
+        channel.StartsWith("Developer", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True when a command line says this Bloom is doing a job rather than serving a user: one of the
+    /// console verbs. Such a process legitimately has no window, so without this check every headless
+    /// run would look like a zombie.
+    ///
+    /// **<c>--automation</c> is deliberately NOT one of these.** In Bloom it means three things, none of
+    /// them about windows: take the multi-instance path rather than the single-instance token
+    /// (Program.Main), print <c>BLOOM_AUTOMATION_READY</c> with the ports so the launcher can find this
+    /// instance (BloomServer.WriteAutomationStartupInfo), and show those ports in the title bar
+    /// (Shell.ShouldShowPortSummaryInWindowTitle). It shows the ordinary Shell window like any other
+    /// run; there is no headless Bloom mode in this repo at all. And <c>go.sh</c>'s launcher passes it on
+    /// **every** launch, so treating it as headless would silence the Doctor for the one Bloom a
+    /// developer actually watches their changes in.
+    /// </summary>
+    public static bool IsHeadlessRun(string commandLine)
+    {
+        var line = commandLine ?? "";
+
+        // Bloom's console verbs, from Program.Main's command-line dispatch. They print to a console
+        // and exit; none of them shows a window.
+        string[] verbs =
+        [
+            "hydrate",
+            "upload",
+            "download",
+            "getfonts",
+            "changeLayout",
+            "createArtifacts",
+            "spreadsheetExport",
+            "spreadsheetImport",
+            "sendFontAnalytics",
+        ];
+        // Match a verb as its own argument, so a collection path that happens to contain the word
+        // "upload" does not silence a real Bloom.
+        var arguments = SplitArguments(line);
+        return arguments.Any(a => verbs.Contains(a, StringComparer.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Splits a Windows command line into arguments well enough for the verb test above: quoted runs
+    /// stay together, everything else splits on whitespace. Not a full CommandLineToArgvW.
+    /// </summary>
+    private static List<string> SplitArguments(string commandLine)
+    {
+        var result = new List<string>();
+        var current = new System.Text.StringBuilder();
+        var inQuotes = false;
+        foreach (var c in commandLine)
+        {
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+                continue;
+            }
+            if (!inQuotes && char.IsWhiteSpace(c))
+            {
+                if (current.Length > 0)
+                {
+                    result.Add(current.ToString());
+                    current.Clear();
+                }
+                continue;
+            }
+            current.Append(c);
+        }
+        if (current.Length > 0)
+            result.Add(current.ToString());
+        return result;
+    }
+}

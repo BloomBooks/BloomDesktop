@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -19,6 +20,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Utils;
+using Bloom.web;
 using Bloom.web.controllers;
 using L10NSharp;
 using SIL.IO;
@@ -311,7 +313,9 @@ namespace Bloom.CollectionTab
                     // Fall back to whatever single book htm we copied.
                     oldHtm = Directory
                         .GetFiles(newBookDir, "*.htm")
-                        .FirstOrDefault(p => !Path.GetFileName(p).StartsWith("."));
+                        .FirstOrDefault(p =>
+                            !Path.GetFileName(p).StartsWith(".", StringComparison.Ordinal)
+                        );
                 if (oldHtm != null && RobustFile.Exists(oldHtm))
                     RobustFile.Move(oldHtm, Path.Combine(newBookDir, newBookName + ".htm"));
             }
@@ -707,19 +711,65 @@ namespace Bloom.CollectionTab
             }
         }
 
-        public void BringBookUpToDate()
+        /// <summary>
+        /// The Collection tab's "Update Book" command. Runs the whole-book migrations and then the
+        /// page layout update over every page (BookProcessor.ProcessBook) behind Bloom's
+        /// top-level compact progress dialog -- the bar and the one housekeeping sentence, exactly
+        /// what the automatic update shows (BookProcessor.UpdatePageLayoutIfNeededThen) -- and
+        /// reselects the book once the dialog closes so the collection shows the result.
+        /// </summary>
+        /// <remarks>
+        /// The per-page part used to be done by driving the live Edit tab through the pages
+        /// (BL-16595). That saved each page the instant it loaded, which could capture a page in the
+        /// middle of an asynchronous change (BL-16870). ProcessBook's off-screen capture waits for
+        /// those to finish, and it is all-or-nothing: a failure on any page leaves the book as the
+        /// whole-book update left it rather than half-processed.
+        ///
+        /// The work runs on the progress dialog's background worker: ProcessBook blocks on its own
+        /// off-screen browser thread, and the pages it loads call back into Bloom's API server, so
+        /// it must not run on the UI thread. Like the other embedded-dialog callers, this returns
+        /// as soon as the dialog is open, not when the work is done. If ProcessBook throws, the
+        /// dialog shows the error and stays open with Close and Report buttons; either way the book
+        /// is reselected when the dialog closes.
+        /// </remarks>
+        public async Task BringBookUpToDateAsync()
         {
             var b = _bookSelection.CurrentSelection;
-            _bookSelection.SelectBook(null);
+            if (b == null)
+                return;
+            // Deselect while we rewrite the book, so nothing (e.g. the preview) holds its files.
+            SelectBookOnUiThread(null);
 
-            using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
-            {
-                // Since the user explicitly told us to do this again, we will, even if we think
-                // it's already been done.
-                dlg.ShowAndDoWork(progress => b.BringBookUpToDate(progress));
-            }
-
-            _bookSelection.SelectBook(b);
+            // The same dialog, with the same words, as the automatic update
+            // (BookProcessor.UpdatePageLayoutIfNeededThen): to the user this is one operation,
+            // here asked for rather than decided by Bloom.
+            await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
+                _webSocketServer,
+                BookProcessor.MakeUpdateBookProgressProps(),
+                (progress, worker) =>
+                {
+                    BookProcessor.AlsoLogProgressMessages(progress);
+                    try
+                    {
+                        // Since the user explicitly told us to do this again, we will, even if we
+                        // think it's already been done. (ProcessBook calls BringBookUpToDate, which
+                        // forces a full update.)
+                        BookProcessor.ProcessBook(b, progress: new WebProgressAdapter(progress));
+                    }
+                    catch (Exception e)
+                    {
+                        // The dialog will show the message; make sure the details reach the log too.
+                        Logger.WriteError("Update Book failed for " + b.NameBestForUserDisplay, e);
+                        throw;
+                    }
+                    // As with the automatic update (BookProcessor.UpdatePageLayoutIfNeededThen): if a
+                    // warning or error reached the dialog without stopping the run, keep the dialog
+                    // up (true) so the user can read it, rather than closing the moment the work
+                    // finishes. Either way the book is reselected when the dialog closes.
+                    return Task.FromResult(progress.HaveProblemsBeenReported);
+                },
+                doWhenDialogCloses: () => SelectBookOnUiThread(b)
+            );
         }
 
         /// <summary>
@@ -1307,7 +1357,7 @@ namespace Bloom.CollectionTab
                 Logger.WriteEvent("Saving {0} ...", destFileName);
                 zipFile.Save();
 
-                if (destFileName.EndsWith(".bloom"))
+                if (destFileName.EndsWith(".bloom", StringComparison.Ordinal))
                     Logger.WriteEvent("Finished writing .bloom file.");
                 else
                     Logger.WriteEvent("Finished writing .bloomSource file.");

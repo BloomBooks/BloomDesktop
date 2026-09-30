@@ -11,9 +11,9 @@
 //
 //  - Tables are a Pro-tier feature behind the "tables" experiment, so the collection is given both.
 //    The tier comes from a real subscription code written into the .bloomCollection, because Bloom
-//    reads the tier as it opens the collection and then keeps it; the experiment comes from an
-//    --e2e environment variable rather than the saved setting, because the saved setting lives in a
-//    user.config the developer's own Bloom shares. See kProSubscriptionCode in
+//    reads the tier as it opens the collection and then keeps it; the experiment comes from the
+//    --experimental-features argument, which Bloom accepts only beside --e2e, rather than the saved
+//    setting, which would outlive the run. See kEnterpriseSubscriptionCode in
 //    helpers/collectionSettings.ts and ExperimentalFeatures.cs.
 //  - The tests are serial and share one book: each starts from the state the one before it left.
 //    So a failure part way through leaves the later tests failing on setup, and the first failure
@@ -46,7 +46,7 @@ import { bottom, right } from "../helpers/geometry";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
 import {
     getFeatureStatus,
-    kProSubscriptionCode,
+    kEnterpriseSubscriptionCode,
 } from "../helpers/collectionSettings";
 import {
     openPublishDestination,
@@ -82,7 +82,7 @@ test.use({
     collectionSpec: {
         name: "tables-core",
         languages: ["en"],
-        subscriptionCode: kProSubscriptionCode,
+        subscriptionCode: kEnterpriseSubscriptionCode,
     },
     experimentalFeatures: ["tables"],
 });

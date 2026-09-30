@@ -8,6 +8,7 @@ import {
     hideColorPickerDialog as doHideColorPickerDialog,
 } from "../react_components/color-picking/colorPickerDialog";
 import { postJson } from "../utils/bloomApi";
+import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
 
@@ -33,6 +34,14 @@ export interface IWorkspaceExports {
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
     showEditViewTopicChooserDialog(): void;
+    showLinkTargetChooserDialog(
+        currentUrl: string,
+        onSetUrl: (url: string) => void,
+    ): void;
+    showBookGridSetupDialog(
+        currentLinks: Link[],
+        setLinksCallback: (links: Link[]) => void,
+    ): void;
     showAdjustTimingsDialogFromWorkspaceRoot(
         currentTextBox: HTMLElement,
         // The split and applyTimingsFile calls both return a list of new timings,
@@ -51,6 +60,8 @@ export interface IWorkspaceExports {
     ): void;
     showAboutDialogFromWorkspaceRoot(): void;
     showBookSettingsDialog(initiallySelectedPageKey?: string): void;
+    showDecodableReaderSetupDialog(): void;
+    closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
     openAiImageEditor(target: IAiImageEditorTarget): void;
 }
@@ -70,10 +81,21 @@ import { getEditablePageBundleExports } from "./js/workspaceFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+// These two are launched from code that runs in the page iframe. They must be shown from here,
+// the workspace root, so that their modal backdrop covers the whole workspace including the
+// page list; rendered in the page iframe the backdrop covers only the book pane (BL-16809).
+import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChooser/LinkTargetChooserDialogLauncher";
+export { showLinkTargetChooserDialog };
+import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
+export { showBookGridSetupDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
 export { showBookSettingsDialog };
+import {
+    closeDecodableReaderSetupDialog,
+    showDecodableReaderSetupDialog,
+} from "./toolbox/readers/readerSetup/DecodableReaderSetupDialog";
 import { showRegistrationDialogForEditTab } from "../react_components/registration/registrationDialog";
 export { showRegistrationDialogForEditTab as showRegistrationDialog };
 import { showAboutDialog } from "../react_components/aboutDialog";
@@ -326,6 +348,24 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<unknown>) {
     }
     let root = doc.getElementById("modal-dialog-react-root");
     // remove any left over dialog stuff
+    //
+    // Known limitation, recorded here because this is the shared place every edit-view dialog
+    // goes through: detaching the container does NOT unmount the React tree that renderRoot
+    // created in it, and renderRoot keys its root by container element, so each showing makes a
+    // new root and abandons the previous one. Those abandoned trees are never freed for the life
+    // of the edit view.
+    //
+    // What that does and does not cost, measured rather than assumed (BL-16607): it does NOT
+    // leak a dialog's subscriptions. A dialog closes by setting its own `open` to false, and
+    // BloomDialog does not pass keepMounted, so MUI unmounts the dialog's children and their
+    // effect cleanups run -- opening and closing the Decodable Reader setup dialog three times,
+    // visiting the tab that registers a window "focus" listener each time, ends with a net zero
+    // of those listeners. What is left behind is the empty shell: one root object and its
+    // top-level component per showing. Small, but unbounded over a long editing session.
+    //
+    // Fixing it means unmounting the old root here (or having the dialog close through something
+    // that does) rather than only detaching its container. That changes teardown for every
+    // dialog shown this way, so it wants its own testing pass.
     if (root) {
         doc.body.removeChild(root);
     }
@@ -469,7 +509,11 @@ interface WorkspaceBundleApi {
     getToolboxBundleExports: typeof getToolboxBundleExports;
     getEditablePageBundleExports: typeof getEditablePageBundleExports;
     showPageChooserDialog: typeof showPageChooserDialog;
+    showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
+    showBookGridSetupDialog: typeof showBookGridSetupDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
+    showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
+    closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
     showRegistrationDialog: typeof showRegistrationDialogForEditTab;
     showAboutDialog: typeof showAboutDialog;
 }
@@ -515,7 +559,11 @@ window.workspaceBundle = {
     getToolboxBundleExports,
     getEditablePageBundleExports,
     showPageChooserDialog,
+    showLinkTargetChooserDialog,
+    showBookGridSetupDialog,
     showBookSettingsDialog,
+    showDecodableReaderSetupDialog,
+    closeDecodableReaderSetupDialog,
     showRegistrationDialog: showRegistrationDialogForEditTab,
     showAboutDialog,
 };

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Bloom.Properties;
 
 namespace Bloom
@@ -13,54 +14,27 @@ namespace Bloom
         public const string kTables = "tables";
 
         /// <summary>
-        /// The name of the environment variable an e2e test uses to turn experimental features on
-        /// for the Bloom it launches, and for that process alone.
-        /// </summary>
-        public const string kE2eEnvironmentVariable = "BLOOM_E2E_EXPERIMENTAL_FEATURES";
-
-        /// <summary>
-        /// The value an e2e test puts in that variable to say "no experimental features at all".
-        /// A token is needed because an empty environment variable cannot be told from an absent
-        /// one on Windows, and "absent" has to go on meaning "leave the saved setting alone" for
-        /// every Bloom that is not under --e2e.
-        /// </summary>
-        public const string kE2eNoFeatures = "none";
-
-        /// <summary>
-        /// Features an e2e test asked for, as a comma-separated list of tokens, or the empty
-        /// string.
+        /// The comma-separated tokens of the features that are enabled: normally the saved setting,
+        /// but under --e2e only what the command line asked for (--experimental-features), which
+        /// may be nothing.
         ///
-        /// A test cannot turn one of these on the way a person does: they live in the Advanced tab
-        /// of the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can
-        /// it write the setting, because Settings.Default lives in one user.config per build
-        /// version, shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of
-        /// one build shares one user.config"), so a test that saved a feature would leave it on for
-        /// them. This reads the answer from the environment instead: nothing is saved, and the
-        /// setting dies with the process. Honoured only under --e2e.
-        /// </summary>
-        private static string TokensFromE2eEnvironment =>
-            Program.RunningE2eTests
-                ? Environment.GetEnvironmentVariable(kE2eEnvironmentVariable) ?? ""
-                : "";
-
-        /// <summary>
-        /// The tokens of the features that are on, comma-separated.
-        ///
-        /// Under --e2e the environment variable is the WHOLE answer, rather than something added
-        /// to the saved setting: a run says which features it wants and gets exactly those, and a
-        /// run that names none (kE2eNoFeatures) gets none. That matters because the saved setting
-        /// lives in a user.config shared with the developer's own Bloom (see AUTOMATION-DEBT.md,
-        /// "Every Bloom of one build shares one user.config"), so a test of how Bloom behaves with
-        /// an experiment turned OFF could not be written at all while the developer's own saved
-        /// setting could turn it back on.
+        /// A test cannot turn a feature on the way a person does: they live in the Advanced tab of
+        /// the collection Settings dialog, which is a WinForms surface CDP cannot reach. Nor can it
+        /// write the setting, because Settings.Default lives in one user.config per build version,
+        /// shared with the developer's own Bloom (see AUTOMATION-DEBT.md, "Every Bloom of one build
+        /// shares one user.config"), so a test that saved a feature would leave it on for them.
+        /// So under --e2e the command line is the whole answer: nothing is saved, the setting dies
+        /// with the process, and the developer's own saved experiments do not reach the run, so a
+        /// test that needs a feature OFF gets it off by not naming the token. Program refuses the
+        /// argument without --e2e. A feature named here stays enabled for the whole run: SetValue
+        /// edits only the saved setting, so it cannot turn such a feature off.
         /// </summary>
         public static string TokensOfEnabledFeatures
         {
             get
             {
-                var fromEnvironment = TokensFromE2eEnvironment;
-                if (!string.IsNullOrEmpty(fromEnvironment))
-                    return fromEnvironment == kE2eNoFeatures ? "" : fromEnvironment;
+                if (Program.RunningE2eTests)
+                    return Program.StartupExperimentalFeatures ?? "";
                 return Settings.Default.EnabledExperimentalFeatures ?? "";
             }
         }
@@ -98,8 +72,11 @@ namespace Bloom
         {
             if (isEnabled)
             {
-                if (!IsFeatureEnabled(featureName))
-                    Settings.Default.EnabledExperimentalFeatures += "," + featureName;
+                // Asks the saved setting itself, not IsFeatureEnabled: under --e2e that answers
+                // from the command line, so a saved token would look absent and be saved again.
+                var saved = Settings.Default.EnabledExperimentalFeatures ?? "";
+                if (!HasToken(saved, featureName))
+                    Settings.Default.EnabledExperimentalFeatures = saved + "," + featureName;
             }
             else
             {
@@ -116,8 +93,17 @@ namespace Bloom
         public static bool IsFeatureEnabled(string featureName)
         {
             // Reads TokensOfEnabledFeatures rather than the setting, so a feature an e2e test
-            // named in the environment counts as enabled everywhere this is asked.
-            return TokensOfEnabledFeatures.Contains(featureName);
+            // named on the command line counts as enabled everywhere this is asked.
+            return HasToken(TokensOfEnabledFeatures, featureName);
+        }
+
+        /// <summary>
+        /// Whether the comma-separated list names exactly this token. A substring test would let
+        /// a token that merely contains a feature's name ("not-team-collections") enable it.
+        /// </summary>
+        private static bool HasToken(string commaSeparatedTokens, string token)
+        {
+            return commaSeparatedTokens.Split(',').Select(t => t.Trim()).Contains(token);
         }
     }
 }

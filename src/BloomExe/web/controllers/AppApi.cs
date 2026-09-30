@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Bloom.Book;
+using Bloom.FreezeDoctor;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -161,6 +162,30 @@ namespace Bloom.Api
                 (request, value) => GetShell()?.SetIsMeddlingWithNewFiles(value),
                 true
             );
+            // Whether to run the Bloom Freeze Doctor, which ships inside Bloom but is off by default.
+            // Not routed through the Shell, unlike its neighbours: this is a plain application setting
+            // about a separate process, and it has nothing to do with any window.
+            apiHandler.RegisterBooleanEndpointHandler(
+                kAppUrlPrefix + "runFreezeDoctor",
+                request => Settings.Default.RunFreezeDoctor,
+                (request, value) =>
+                {
+                    Settings.Default.RunFreezeDoctor = value;
+                    Settings.Default.Save();
+                    if (value)
+                    {
+                        // Start it now rather than at the next restart. Someone switching this on is
+                        // usually in the middle of chasing a freeze and would like to be watched from
+                        // this moment, not from whenever they next happen to restart Bloom.
+                        DoctorLauncher.LaunchIfWanted();
+                    }
+                    // Switching it OFF deliberately leaves any Doctor already running alone. It is
+                    // watching this Bloom and holding evidence; killing it here could throw away a report
+                    // that has been gathered but not yet filed. It quits by itself when Bloom goes, and
+                    // it will not start with the next Bloom.
+                },
+                true
+            );
             // True only on the builds that offer the "Use dev.BloomLibrary.org" menu item.
             apiHandler.RegisterEndpointHandler(
                 kAppUrlPrefix + "canChooseDevBloomLibrary",
@@ -173,6 +198,25 @@ namespace Bloom.Api
                 kAppUrlPrefix + "useDevBloomLibrary",
                 request => BookUpload.UseSandbox,
                 (request, value) => GetShell()?.SetUseDevBloomLibrary(value),
+                true
+            );
+            // True only when the dev launcher (go.sh) started this Bloom, so the developer
+            // context menu can offer to restart it. Always false in an end-user build.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "canRestartViaDevLauncher",
+                request => request.ReplyWithBoolean(DevLauncher.IsAvailable),
+                false
+            );
+            // Ask the dev launcher to quit this Bloom, rebuild it, and start it again. The
+            // launcher takes this process down as part of that, so all we can report is that
+            // the request went out.
+            apiHandler.RegisterEndpointHandler(
+                kAppUrlPrefix + "restartViaDevLauncher",
+                request =>
+                {
+                    DevLauncher.RequestRestart();
+                    request.PostSucceeded();
+                },
                 true
             );
             apiHandler.RegisterEndpointHandler(

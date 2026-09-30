@@ -1680,7 +1680,7 @@ namespace BloomTests.Publish.BloomPub
             if (exact)
                 predicate = n => n.Name.Equals(name);
             else
-                predicate = n => n.Name.EndsWith(name);
+                predicate = n => n.Name.EndsWith(name, StringComparison.Ordinal);
 
             var ze = (from ZipEntry entry in zip select entry).FirstOrDefault(predicate);
             Assert.That(ze, Is.Not.Null);
@@ -2196,8 +2196,10 @@ namespace BloomTests.Publish.BloomPub
                 // 0.00 megs is culture-specific; ignore that part.
                 Assert.That(
                     stubProgress.MessagesNotLocalized.Any(s =>
-                        s.StartsWith("Embedding font Times New Roman at a cost of 0")
-                        && s.EndsWith("00 megs")
+                        s.StartsWith(
+                            "Embedding font Times New Roman at a cost of 0",
+                            StringComparison.Ordinal
+                        ) && s.EndsWith("00 megs", StringComparison.Ordinal)
                     )
                 );
                 Assert.That(
@@ -2217,8 +2219,10 @@ namespace BloomTests.Publish.BloomPub
                 // 0.20 megs is culture-specific.
                 Assert.That(
                     stubProgress.MessagesNotLocalized.Any(s =>
-                        s.StartsWith("Embedding font Calibre at a cost of 0")
-                        && s.EndsWith("20 megs")
+                        s.StartsWith(
+                            "Embedding font Calibre at a cost of 0",
+                            StringComparison.Ordinal
+                        ) && s.EndsWith("20 megs", StringComparison.Ordinal)
                     )
                 );
 

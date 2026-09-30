@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -9,6 +9,7 @@ using System.Xml;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
+using Bloom.FreezeDoctor;
 using Bloom.ImageProcessing;
 using Bloom.Publish.Epub;
 using Bloom.SafeXml;
@@ -128,6 +129,10 @@ namespace Bloom.Publish.BloomPub
             bool isTemplateBook = false
         )
         {
+            // Marked at the innermost worker rather than at the publish screens, because every route to a
+            // BloomPUB comes through here - including the bulk publisher and app building, which run longest.
+            using var _longOperation = FreezeDoctorSupport.LongOperation("making a BloomPUB");
+
             // PrepareBookForBloomReader is about to modify sTheMostRecentBloomFileLocator.
             // Record the previous value so we can restore it later.
             var previousLocator = BloomFileLocator.sTheMostRecentBloomFileLocator;
@@ -475,7 +480,11 @@ namespace Bloom.Publish.BloomPub
             return preservedImages;
         }
 
-        private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+        /// <summary>
+        /// Get the image file name out of a background-image style, e.g. "cover.jpg" from
+        /// "background-image:url('cover.jpg')". Internal so a test can reach it.
+        /// </summary>
+        internal static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
         {
             // The url in the style is URL-encoded (HtmlDom.SetImageElementUrl wrote it with
             // UrlPathString.UrlEncoded), so decode it the matching way. HttpUtility.UrlDecode is
@@ -491,8 +500,13 @@ namespace Bloom.Publish.BloomPub
         /// </summary>
         private static string ExtractEncodedUrlFromStyle(string style, out int start, out int end)
         {
-            start = style.IndexOf(kBackgroundImage) + kBackgroundImage.Length;
-            end = style.IndexOf("'", start);
+            // Both searches must be ordinal. Adding kBackgroundImage.Length is only right if the
+            // match consumed exactly that many characters, which a culture-sensitive match need
+            // not do; and under th-TH a search for a punctuation-only string such as "'"
+            // "matches" right where the search starts, which would leave us with an empty file name.
+            start =
+                style.IndexOf(kBackgroundImage, StringComparison.Ordinal) + kBackgroundImage.Length;
+            end = style.IndexOf("'", start, StringComparison.Ordinal);
             return style.Substring(start, end - start);
         }
 
@@ -992,7 +1006,7 @@ namespace Bloom.Publish.BloomPub
                 string src = imgElt.GetAttribute("src");
                 if (ImageUtils.IsPlaceholderImageFilename(src))
                     continue;
-                if (src.StartsWith("data:"))
+                if (src.StartsWith("data:", StringComparison.Ordinal))
                     continue;
                 var file = UrlPathString.CreateFromUrlEncodedString(src).PathOnly.NotEncoded;
                 if (!RobustFile.Exists(Path.Combine(folderPath, file)))
@@ -1060,7 +1074,7 @@ namespace Bloom.Publish.BloomPub
                 );
                 foreach (var attr in img.AttributePairs)
                 {
-                    if (attr.Name.StartsWith("data-"))
+                    if (attr.Name.StartsWith("data-", StringComparison.Ordinal))
                         imgContainer.SetAttribute(attr.Name, attr.Value);
                 }
 
@@ -1315,7 +1329,7 @@ namespace Bloom.Publish.BloomPub
                         {
                             // We already got the question, and haven't seen a blank line since,
                             // so this is one of its answers.
-                            var correct = trimLine.StartsWith("*");
+                            var correct = trimLine.StartsWith("*", StringComparison.Ordinal);
                             if (correct)
                             {
                                 trimLine = trimLine.Substring(1).Trim();

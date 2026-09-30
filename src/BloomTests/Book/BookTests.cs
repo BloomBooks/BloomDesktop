@@ -238,6 +238,27 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void BringBookUpToDate_LanguageAttributesOnBodyAreLowerCase()
+        {
+            SetDom(@"<div class='bloom-page numberedPage customPage A5Portrait'></div>");
+            // What Bloom wrote before: upper-case names, which our DOM treats as different attributes.
+            _bookDom.Body.SetAttribute("data-L1", "old");
+            _bookDom.Body.SetAttribute("data-L2", "old");
+            var book = CreateBook();
+            Assert.That(book.RawDom.Body.GetAttribute("data-L1"), Is.EqualTo("old"), "test setup");
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var body = book.RawDom.Body;
+            Assert.That(body.GetAttribute("data-l1"), Is.EqualTo(_collectionSettings.Language1Tag));
+            // data-l2 is the book's second content language, which is empty for a one-language book.
+            Assert.That(body.HasAttribute("data-l2"), Is.True, "data-l2 should be written");
+            Assert.That(body.HasAttribute("data-L1"), Is.False, "the old data-L1 should be gone");
+            Assert.That(body.HasAttribute("data-L2"), Is.False, "the old data-L2 should be gone");
+            Assert.That(body.HasAttribute("data-L3"), Is.False, "Bloom should not write data-L3");
+        }
+
+        [Test]
         public void BringBookUpToDate_DataCkeTempRemoved()
         {
             // Some books got corrupted with CKE temp data, possibly before we prevented this happening when
@@ -294,6 +315,73 @@ namespace BloomTests.Book
                 "//div[contains(@class,'bloom-canvas')]//img[@data-book='coverImage']"
             );
             Assert.IsTrue(pageImage.GetAttribute("src").Equals(placeHolderFile));
+        }
+
+        /// <summary>
+        /// BL-16819: the user's Transparency choice for the cover image (here Opaque) is a class on the
+        /// img and, once the page is saved, on the data-div copy. Bringing the book up to date replaces
+        /// the xmatter with a fresh template page and refills the cover image from the data-div, and the
+        /// choice must survive that.
+        /// </summary>
+        [Test]
+        public void BringBookUpToDate_CoverImageTransparencyChoiceSurvives()
+        {
+            SetDom(
+                @"<div id='bloomDataDiv'>
+						<div data-book='coverImage' lang='*' src='aor.png' data-canvas-element-style='width: 468px; height: 479px; top: 31px; left: 0px;' data-canvas-imgsizebasedon='469,545' class=' bloom-imageLoadError bloom-opaque' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa'>aor.png</div>
+					</div>
+					<div class='bloom-page cover coverColor bloom-frontMatter frontCover outsideFrontCover side-right A5Portrait' data-page='required singleton' data-xmatter-page='frontCover' data-custom-layout-id='customOutsideFrontCover' id='cover' lang='en'>
+						<div class='marginBox'>
+							<div class='bloom-canvas bloom-has-canvas-element' data-imgsizebasedon='469,545'>
+								<div class='bloom-canvas-element bloom-backgroundImage' style='width: 468px; height: 479px; top: 31px; left: 0px;'>
+									<div class='bloom-imageContainer'>
+										<img data-book='coverImage' src='aor.png' data-copyright='Copyright SIL International 2009' data-creator='' data-license='cc-by-sa' class='bloom-opaque' alt='' />
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>"
+            );
+            var book = CreateBook();
+            var dom = book.RawDom;
+            var pageImageXpath =
+                "//div[contains(@class,'bloom-page')]//img[@data-book='coverImage']";
+            Assert.That(
+                ((SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath)).HasClass(
+                    "bloom-opaque"
+                ),
+                Is.True,
+                "sanity check: the cover image starts out Opaque"
+            );
+
+            book.BringBookUpToDate(new NullProgress());
+
+            var dataDivImage = (SafeXmlElement)
+                dom.SelectSingleNodeHonoringDefaultNS(
+                    "//div[@id='bloomDataDiv']/div[@data-book='coverImage']"
+                );
+            Assert.That(
+                dataDivImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the data-div copy should keep the Opaque choice"
+            );
+            var pageImage = (SafeXmlElement)dom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(pageImage.GetAttribute("src"), Is.EqualTo("aor.png"));
+            Assert.That(
+                pageImage.HasClass("bloom-opaque"),
+                Is.True,
+                "the cover image should still be Opaque after the xmatter is regenerated"
+            );
+
+            // And the page as prepared for the Edit tab must show the choice too.
+            var coverPage = book.GetPages().First(p => p.IsXMatter);
+            var editDom = book.GetEditableHtmlDomForPage(coverPage);
+            var editImg = (SafeXmlElement)editDom.SelectSingleNodeHonoringDefaultNS(pageImageXpath);
+            Assert.That(
+                editImg.HasClass("bloom-opaque"),
+                Is.True,
+                "the page prepared for editing should keep the Opaque choice"
+            );
         }
 
         // Unless it's part of a bloom-canvas that has an image description, an image
@@ -669,6 +757,33 @@ namespace BloomTests.Book
             );
             // And there should be none left with the unknown class.
             AssertThatXmlIn.Dom(dom).HasNoMatchForXpath("//div[contains(@class,'QX9Landscape')]");
+        }
+
+        [TestCase("QX9Landscape", "0")] // forced to A5Portrait: the pages changed size
+        [TestCase("A5Portrait", "1")] // kept: nothing to redo
+        public void BringBookUpToDate_SizeReplaced_RecordsPageLayoutChanged(
+            string sizeClass,
+            string expectedLevel
+        )
+        {
+            SetDom(
+                $@"<div class='bloom-page bloom-frontMatter {sizeClass}'></div>
+                    <div class='bloom-page {sizeClass}'></div>",
+                $@"<meta name='{BookProcessor.kPageLayoutUpdateLevelMeta}' content='1' />"
+            );
+            var book = CreateBook();
+            Assert.That(
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo("1"),
+                "SANITY: the book should start out up to date"
+            );
+
+            book.BringBookUpToDate(new NullProgress());
+
+            Assert.That(
+                book.OurHtmlDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(expectedLevel)
+            );
         }
 
         //Removing extra lines is of interest in case the user was entering blank lines by hand to separate the paragraphs, which now will
@@ -2088,13 +2203,6 @@ namespace BloomTests.Book
             Assert.IsTrue(book.CanDelete);
         }
 
-        [Test, Ignore("broken")]
-        public void CanDelete_TemplateBook_False()
-        {
-            var book = CreateBook();
-            Assert.IsFalse(book.CanDelete);
-        }
-
         [Test]
         public void GetBookletLayoutMethod_A5Portrait_NotCalendar_Fold()
         {
@@ -2203,7 +2311,7 @@ namespace BloomTests.Book
             var result = HtmlDom.GetCoverBackgroundColorFromOldInlineStyle(document);
 
             // should look like a hex color
-            Assert.IsTrue(result.StartsWith("#"));
+            Assert.IsTrue(result.StartsWith("#", StringComparison.Ordinal));
             Assert.IsTrue(result.Length == 7);
         }
 
@@ -3151,6 +3259,29 @@ namespace BloomTests.Book
             Assert.That(innerXml, Does.Not.Contain("style=\"color:red\""));
             Assert.That(innerXml, Does.Not.Contain("lang=\"en\""));
             Assert.That(innerXml, Does.Contain("<strong><em>text</em></strong>"));
+        }
+
+        [Test]
+        public void UpdateCharacterStyleMarkup_PreservesHyperlinkHref()
+        {
+            // A hyperlink is an <a> inside the paragraph; stripping its href would silently destroy the link (BL-16892).
+            // The character-style markup nested inside it should still be cleaned up.
+            var dom = new HtmlDom(
+                "<html><body><div class='bloom-editable'><p>See <a href='https://bloomlibrary.org/page#frag'><b style='color:red'>this book</b></a> now.</p></div></body></html>"
+            );
+            var para = GetFirstEditableParagraph(dom);
+            Assert.That(
+                para.InnerXml,
+                Does.Contain("href=\"https://bloomlibrary.org/page#frag\""),
+                "sanity check: test data has the link"
+            );
+            Bloom.Book.Book.UpdateCharacterStyleMarkup(dom);
+            Assert.That(
+                para.InnerXml,
+                Is.EqualTo(
+                    "See <a href=\"https://bloomlibrary.org/page#frag\"><strong>this book</strong></a> now."
+                )
+            );
         }
 
         [Test]

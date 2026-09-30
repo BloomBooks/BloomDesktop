@@ -580,7 +580,8 @@ namespace Bloom.web.controllers
                                 id = c.PathToDirectory,
                                 name = c.Name,
                                 shouldLocalizeName = c.PathToDirectory.StartsWith(
-                                    BloomFileLocator.FactoryCollectionsDirectory
+                                    BloomFileLocator.FactoryCollectionsDirectory,
+                                    StringComparison.Ordinal
                                 ) || c.ContainsDownloadedBooks,
                                 isLink = c.Type
                                     != BookCollection.CollectionType.TheOneEditableCollection
@@ -590,7 +591,8 @@ namespace Bloom.web.controllers
                                     && !IsFromLinkFile(c.PathToDirectory)
                                     && !c.ContainsDownloadedBooks
                                     && !c.PathToDirectory.StartsWith(
-                                        BloomFileLocator.FactoryCollectionsDirectory
+                                        BloomFileLocator.FactoryCollectionsDirectory,
+                                        StringComparison.Ordinal
                                     ),
                             }
                         );
@@ -602,7 +604,7 @@ namespace Bloom.web.controllers
         private bool IsFromLinkFile(string collectionFolderPath)
         {
             var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
-            if (collectionFolderPath.StartsWith(collectionsFolder))
+            if (collectionFolderPath.StartsWith(collectionsFolder, StringComparison.Ordinal))
                 return false;
             var linkFile = Path.Combine(
                 collectionsFolder,

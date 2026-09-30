@@ -7,6 +7,11 @@
 
 import { expect, type Locator, type Page } from "@playwright/test";
 
+// There is deliberately no direct-API "set the copyright" helper. The obvious endpoint,
+// copyrightAndLicense/bookCopyrightAndLicense, is handled on Bloom's UI thread and deadlocks when a
+// test posts it (the fetch comes from the WebView2 whose UI thread the handler then blocks), on the
+// Edit tab and off it alike. A test sets copyright the way a person does, through the dialog below.
+
 /** The open dialog, whichever page opened it. */
 function dialog(page: Page): Locator {
     return page

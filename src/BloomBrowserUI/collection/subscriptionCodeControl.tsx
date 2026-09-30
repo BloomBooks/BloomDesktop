@@ -15,7 +15,7 @@ import {
     useLocalizedTier,
     useSubscriptionInfo,
 } from "./useSubscriptionInfo";
-import { NoteBox, WarningBox } from "../react_components/boxes";
+import { NoteBox } from "../react_components/boxes";
 import { kBloomBlue, kErrorColor } from "../bloomMaterialUITheme";
 
 type Status =
@@ -149,19 +149,12 @@ const StatusText: React.FC<{
                         width: 100%;
                     `}
                 >
-                    <WarningBox
+                    <NoteBox
                         l10nKey="Settings.Subscription.UnknownCode"
                         bottomRightButton={
                             <Button
                                 variant="outlined"
                                 onClick={() => post("common/checkForUpdates")}
-                                sx={{
-                                    color: "black",
-                                    borderColor: "black",
-                                    "&:hover": {
-                                        borderColor: "black",
-                                    },
-                                }}
                             >
                                 <Label l10nKey="Settings.Subscription.CheckUpdates">
                                     Check for updates
@@ -169,9 +162,9 @@ const StatusText: React.FC<{
                             </Button>
                         }
                     >
-                        This version of Bloom does not have the artwork that
-                        goes with that subscription.
-                    </WarningBox>
+                        This version of Bloom does not contain any special
+                        branding artwork for this subscription.
+                    </NoteBox>
                 </div>
             )}
             {props.status === "SubscriptionExpired" && (

@@ -136,16 +136,10 @@ namespace Bloom.web.controllers
 
         private string SelectFileUsingDialog(OpenFileRequest requestParameters)
         {
-            // In e2e test mode, a test may have pre-answered this dialog (POST e2e/nextChosenFile),
-            // because Playwright cannot dismiss a native dialog and a run that opens one hangs. We
-            // deliberately do NOT remember the folder of a pre-answered file: FilePathMemory is
-            // machine-wide settings shared with the developer's own Bloom, and a test's temp folder
-            // has no business turning up there.
-            if (
-                Program.RunningE2eTests
-                && E2eTestingApi.TryTakeNextChosenFile(out string preChosenPath)
-            )
-                return DeliverChosenFile(preChosenPath, requestParameters);
+            // In e2e test mode, a test may have pre-answered this dialog (POST e2e/nextFileToChoose),
+            // because Playwright cannot dismiss a native dialog and a run that opens one hangs.
+            // BloomOpenFileDialog.ShowDialog answers with the armed path itself, so nothing here
+            // needs to know; see the FilePathMemory guard below for the one thing that does.
 
             // For saving and recalling the last chosen file location
             // requestParameters.title is something like "Choose Audio File", use as an identifier for recalling this filepath
@@ -178,11 +172,14 @@ namespace Bloom.web.controllers
                     // We are not trying get a memory or time diff, just a point measure.
                     PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
 
-                    // remember selected folder path for next time
-                    FilePathMemory.RememberFolderPath(
-                        extraTag,
-                        Path.GetDirectoryName(dlg.FileName)
-                    );
+                    // remember selected folder path for next time. Not under --e2e: FilePathMemory
+                    // is machine-wide settings shared with the developer's own Bloom, and a test's
+                    // temp folder has no business turning up there.
+                    if (!Program.RunningE2eTests)
+                        FilePathMemory.RememberFolderPath(
+                            extraTag,
+                            Path.GetDirectoryName(dlg.FileName)
+                        );
 
                     return DeliverChosenFile(dlg.FileName, requestParameters);
                 }

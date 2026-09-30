@@ -175,6 +175,19 @@ namespace Bloom.MiscUI
         public static Action DoLastOfAllAfterClosingSplashScreen;
 
         /// <summary>
+        /// True while that one-shot is still waiting to run, that is, while we are still in
+        /// first-time startup and something is already going to bring the main window to the front
+        /// when the splash screen closes. False once it has been consumed, which is the case every
+        /// later time we open a collection (the user switching collections, or a reopen after a UI
+        /// language or Collection Settings change). Callers who need the main window in front use
+        /// this to decide whether they have to do it themselves. See BL-16784.
+        /// Note that HideSplashScreenForDialog deliberately does not consume the one-shot, so this
+        /// stays true through the startup path that shows the collection chooser.
+        /// </summary>
+        public static bool WillBringMainWindowToFrontWhenSplashCloses =>
+            DoLastOfAllAfterClosingSplashScreen != null;
+
+        /// <summary>
         /// Where it all happens. This method, invoked as a handler of Application.Idle,
         /// picks one of _startupActions to run next, if one is not already running.
         /// They are done in the order added, except that high priority ones go first.

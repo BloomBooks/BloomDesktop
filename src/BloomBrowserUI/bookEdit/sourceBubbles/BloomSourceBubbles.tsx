@@ -62,6 +62,9 @@ export default class BloomSourceBubbles {
         contentsOfBubble: JQuery,
         selectLangTag?: string,
         forceShowAlwaysOnBody?: boolean,
+        // Show the bubble as soon as it is built, even in the focus-only mode that narrow
+        // translation groups use. See CreateAndShowQtipBubbleFromDiv.
+        showImmediately?: boolean,
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
@@ -81,6 +84,7 @@ export default class BloomSourceBubbles {
             elementThatHasBubble,
             divForBubble,
             forceShowAlwaysOnBody,
+            showImmediately,
         );
     }
 
@@ -492,6 +496,11 @@ export default class BloomSourceBubbles {
                     group.get(0),
                     divForBubble,
                     newLangTag,
+                    undefined, // forceShowAlwaysOnBody, default
+                    // The user just picked this language from the pull-down, so show the
+                    // rebuilt bubble now rather than waiting for a focus event that will
+                    // never come (the click left focus in the text box). See BL-16874.
+                    true,
                 );
             }
         }
@@ -543,6 +552,11 @@ export default class BloomSourceBubbles {
         // will make it look wrong in both size and position. And it only shows when hovering the dialog,
         // so conflicting with other bubbles is not an issue.
         forceShowAlwaysOnBody?: boolean,
+        // Normally a bubble that might overlap its neighbors is only rendered when its group
+        // gets focus. That is wrong when we are rebuilding a bubble the user is looking at
+        // right now: qtip renders lazily, so without this the bubble would simply vanish until
+        // the group next receives focus. See https://issues.bloomlibrary.org/youtrack/issue/BL-16874.
+        showImmediately?: boolean,
     ): void {
         let showEvents = false;
         let hideEvents = false;
@@ -587,7 +601,7 @@ export default class BloomSourceBubbles {
 
                 show: {
                     event: showEvents ? showEventsStr : showEvents,
-                    ready: shouldShowAlways,
+                    ready: shouldShowAlways || !!showImmediately,
                 },
                 style: {
                     tip: {

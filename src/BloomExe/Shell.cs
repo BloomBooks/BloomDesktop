@@ -47,10 +47,11 @@ namespace Bloom
         // finished, overwriting the saved RestoreBounds before they are applied.
         private bool _finishedLoading;
 
-        // During an automation run (--automation, e.g. the Playwright suites) the window must
-        // not steal the user's keyboard focus when it is shown. That holds wherever the window
-        // is: on the developer's desktop, on a monitor of its own, or off every monitor.
-        protected override bool ShowWithoutActivation => Program.StartupAutomation;
+        // When something other than the person at the keyboard is driving Bloom (--dont-disturb:
+        // an agent, or a test suite on a developer's machine) the window must not steal their
+        // keyboard focus when it is shown. That holds wherever the window is: on the developer's
+        // desktop, on a monitor of its own, or off every monitor.
+        protected override bool ShowWithoutActivation => Program.StartupDontDisturb;
 
         public Shell(
             Func<WorkspaceView> projectViewFactory,
@@ -109,6 +110,10 @@ namespace Bloom
             bookDownloadStartingEvent.Subscribe(
                 (x) =>
                 {
+                    // Not while something other than the person at the keyboard drives Bloom
+                    // (--dont-disturb): the download goes ahead, but the foreground stays theirs.
+                    if (Program.StartupDontDisturb)
+                        return;
                     try
                     {
                         this.Invoke((Action)this.Activate);
@@ -404,7 +409,7 @@ namespace Bloom
                     (Action)(
                         () =>
                         {
-                            shell.ReallyComeToFront();
+                            shell.FinishPuttingShellInFront();
                         }
                     )
                 );
@@ -412,23 +417,30 @@ namespace Bloom
         }
 
         /// <summary>
-        /// we let the Program call this after it closes the splash screen
+        /// we let the Program call this after it closes the splash screen, and after opening a
+        /// collection at a time when there is no splash screen to close (see OpenProjectWindow).
+        ///
+        /// Code review asked whether this still earns its keep, now that BringToFrontNow does the
+        /// raising, and suggested inlining it (BL-16784). We kept it, because coming to the front
+        /// is not all it does: it also sets _finishedLoading, which is what allows the window size
+        /// and location to be saved afterwards. And it has three callers -- ComeToFront just above,
+        /// and two in Program (the splash-screen one-shot and OpenProjectWindow) -- so inlining it
+        /// would mean repeating that pairing in each of them.
         /// </summary>
-        public void ReallyComeToFront()
+        public void FinishPuttingShellInFront()
         {
-            // During an automation run, grabbing focus would yank the user's keyboard away
-            // from whatever they are doing while tests run, and a window placed off every
-            // monitor cannot come to the front at all: TopMost and BringToFront on it would
-            // take the foreground away for nothing.
-            if (!Program.StartupAutomation)
+            // Under --dont-disturb, grabbing focus would yank the user's keyboard away from
+            // whatever they are doing while an agent or a test drives Bloom, and a window placed
+            // off every monitor cannot come to the front at all: TopMost and taking the
+            // foreground on it would take the foreground away for nothing.
+            if (!Program.StartupDontDisturb)
             {
-                //try really hard to become top most. See http://stackoverflow.com/questions/5282588/how-can-i-bring-my-application-window-to-the-front
-                TopMost = true;
-                Focus();
-                BringToFront();
-                TopMost = false;
+                // An instant topmost toggle is what we used to do here, and it is why Bloom could
+                // come up behind Chrome. (BL-16784)  See comments for BringToFrontNow for why this
+                // works better.
+                this.BringToFrontNow();
             }
-
+            // Flag that it's safe to restore the window size and location on Linux.
             _finishedLoading = true;
         }
 

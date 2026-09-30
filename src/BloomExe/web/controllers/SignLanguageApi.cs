@@ -489,7 +489,7 @@ namespace Bloom.web.controllers
             WebSocketProgress progress
         )
         {
-            if (fromStdout.StartsWith("out_time="))
+            if (fromStdout.StartsWith("out_time=", StringComparison.Ordinal))
             {
                 var timeStr = fromStdout.Substring(9);
                 if (TimeSpan.TryParse(timeStr, out var time))
@@ -525,32 +525,9 @@ namespace Bloom.web.controllers
             request.PostSucceeded();
         }
 
-        /// <summary>
-        /// The video file the next "choose a video" should answer with, instead of opening the
-        /// file-chooser dialog, or null for the normal behaviour. An e2e test sets this through
-        /// e2e/nextVideoFileToChoose, an endpoint that exists only under --e2e; nothing else
-        /// writes it, so a normal run always shows the dialog. It is taken (and cleared) by the
-        /// one choice it answers, so a test arms it once per video it imports.
-        /// </summary>
-        public static string VideoFileToChooseInE2eTests;
-
         private void ChooseVideo()
         {
             string path = null;
-            var armedForTest = VideoFileToChooseInE2eTests;
-            if (!string.IsNullOrEmpty(armedForTest))
-            {
-                VideoFileToChooseInE2eTests = null;
-                dynamic armedResult = new DynamicJson();
-                armedResult.success = true;
-                armedResult.path = armedForTest;
-                BloomWebSocketServer.Instance?.SendBundle(
-                    "signLanguage",
-                    "chooseVideo-results",
-                    armedResult
-                );
-                return;
-            }
             View.Invoke(
                 (Action)(
                     () =>
@@ -978,7 +955,7 @@ namespace Bloom.web.controllers
         {
             if (string.IsNullOrEmpty(rawTimings))
                 return; // do nothing. timings array will hold default values
-            if (rawTimings.StartsWith("t="))
+            if (rawTimings.StartsWith("t=", StringComparison.Ordinal))
                 rawTimings = rawTimings.Substring(2);
             var timingArray = rawTimings.Split(',');
             timings[0] = Convert.ToDecimal(timingArray[0], CultureInfo.InvariantCulture);

@@ -117,6 +117,7 @@ export interface IPageFrameExports {
     applyAiImageEditorReplacements(
         results?: IAiImageEditorCommitResult[],
     ): IAiImageEditorApplyOutcome;
+    getAiImageEditorPageMetrics(): IPageMetrics | null;
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
@@ -145,11 +146,15 @@ import {
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
-import { applyAiImageEditorReplacements } from "./aiImageEditor/aiImageEditorPageCommands";
+import {
+    applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
+} from "./aiImageEditor/aiImageEditorPageCommands";
 import type {
     IAiImageEditorApplyOutcome,
     IAiImageEditorCommitResult,
 } from "./aiImageEditor/aiImageEditorShared";
+import type { IPageMetrics } from "./js/imageTargetResolution";
 export {
     getBodyContentForSavePage,
     requestPageContent,
@@ -174,6 +179,7 @@ export {
     getTheOneCanvasElementManager,
     showGamePromptDialog,
     applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 import { postString } from "../utils/bloomApi";
@@ -492,6 +498,7 @@ interface EditablePageBundleApi {
     renderDragActivityTabControl: typeof renderDragActivityTabControl;
     showGamePromptDialog: typeof showGamePromptDialog;
     applyAiImageEditorReplacements: typeof applyAiImageEditorReplacements;
+    getAiImageEditorPageMetrics: typeof getAiImageEditorPageMetrics;
 }
 
 declare global {
@@ -500,8 +507,8 @@ declare global {
         // ── Off-screen page-capture handshake (C# BookProcessor ⇆ this bundle) ──────────────────
         // The "process-book" feature (external/process-book API, used by BloomBridge to run
         // finished books through Bloom's browser-only page fix-ups) re-saves every page of a book
-        // WITHOUT opening the live editor. For each page, C# loads it into a throwaway, off-screen
-        // WebView2 and runs this three-step handshake against the two globals below:
+        // WITHOUT opening the live editor. For each page, C# loads it into an off-screen WebView2
+        // and runs this three-step handshake against the two globals below:
         //
         //   1. C# polls window.__bloomEditablePageReady until it is true. We set it (once, in
         //      $(document).ready below) the moment bootstrap()/SetupElements() returns. That kicks off
@@ -520,10 +527,11 @@ declare global {
         //     synchronous, so it can't directly await the capture function's internal async settle.
         //     A plain window field it can poll is the simplest bridge.
         // This looks fragile (two magic globals) but is well-contained: exactly one writer (the
-        // capture fn) and one reader (BookProcessor), and every page gets its own fresh disposable
-        // browser, so there is no stale-value or cross-page-bleed risk.
+        // capture fn) and one reader (BookProcessor). An off-screen browser loads several pages in
+        // turn, so before each navigation BookProcessor clears these globals on the outgoing page;
+        // otherwise it could read the previous page's values before the new document replaces it.
         //
-        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessPage.
+        // Step 1's flag: set in $(document).ready below; read in BookProcessor.ProcessOnePage.
         __bloomEditablePageReady?: boolean;
         // Step 2/3's mailbox: the combined "body<SPLIT-DATA>userCss" string, or "ERROR: <message>".
         __bloomExternalPageContent?: string;
@@ -574,4 +582,5 @@ window.editablePageBundle = {
     renderDragActivityTabControl,
     showGamePromptDialog,
     applyAiImageEditorReplacements,
+    getAiImageEditorPageMetrics,
 };

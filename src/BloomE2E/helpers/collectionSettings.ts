@@ -28,10 +28,12 @@ export interface ICollectionSettings {
      */
     xmatterPack?: string;
     /**
-     * A subscription code, which decides the collection's tier; see kProSubscriptionCode. Left
-     * out, the collection has no code and so is Basic.
+     * A subscription code, which decides the collection's tier; see kEnterpriseSubscriptionCode.
+     * Left out, the collection has no code and so is Basic.
      */
     subscriptionCode?: string;
+    /** The Bloom Library bookshelf, by url key; see ICollectionSpec.bookshelf. Left out, none. */
+    bookshelf?: string;
 }
 
 /**
@@ -41,7 +43,9 @@ export interface ICollectionSettings {
  *
  * The .bloomCollection is REPLACED, not edited, so every other setting goes back to what
  * makeCollectionXml writes. Use this on a collection the test itself created (collectionSpec),
- * not on a prepared collection from testing-inputs, whose other settings would be lost.
+ * not on a prepared collection from testing-inputs, whose other settings would be lost. For the
+ * same reason, pass every setting again, subscriptionCode and xmatterPack included: a setting left
+ * out goes back to its default, so a collection launched on a tier would drop back to Basic.
  *
  * Bloom is killed rather than asked to quit, so leave the page being edited before calling this,
  * or what was typed on it is lost (see goToPage). Each call costs about six seconds.
@@ -73,7 +77,7 @@ export async function restartWithCollectionSettings(
                 makeCollectionXml(
                     settings.languages,
                     settings.xmatterPack,
-                    settings.subscriptionCode,
+                    settings,
                 ),
                 "utf8",
             ),
@@ -102,24 +106,31 @@ export type SubscriptionTier =
     | "Enterprise";
 
 /**
- * A subscription code that puts a collection on the Pro tier. Give it to a test's collectionSpec
- * (or to restartWithCollectionSettings) when the test's subject is a Pro feature, such as tables.
+ * A subscription code that puts a collection on the Enterprise tier, which includes every lower
+ * tier. Give it to a test's collectionSpec (or to restartWithCollectionSettings) when the test's
+ * subject is behind a subscription tier.
  *
  * It has to be a real code rather than an API hook that sets the tier: Bloom reads the tier out of
  * the code as it opens the collection, and several parts of Bloom then keep the Subscription object
  * they were handed at startup, so a tier changed later is invisible to them. FeatureStatusApi is
- * one, which means the Canvas tool's palette goes on hiding the table item however the tier is
+ * one, which means the Canvas tool's palette goes on hiding a tier-gated item however the tier is
  * changed after launch.
  *
- * The code is made the way Bloom's own code-generating sheet does it: a descriptor whose last part
- * is "Pro", the expiry date as days since 1899-12-30 less 40000, and a checksum of
- * (floor(sqrt(datePart)) + sum of descriptor[i] * i, uppercased) modulo 10000. See
- * Subscription.CalculateTier and Subscription.IsChecksumCorrect. This one expires on 1 January
- * 2040, after which Bloom will call the collection Basic and every Pro test will fail; make a new
- * one the same way. The descriptor names no branding Bloom ships, and an unknown branding falls
- * back to Default silently (BookStorage.UpdateSupportFiles), so the collection looks ordinary.
+ * This is the same code Bloom's own unit tests use (SubscriptionTests.cs), so it adds no new code
+ * to the repository. Its descriptor, "Test", is the branding folder src/content/branding/Test,
+ * which stamps a butterfly on the corner of every page, so a book made with it is visibly a test
+ * book. That changes what a page looks like, so a spec that compares screenshots should stay on
+ * the Default branding. It expires around the year 3900. Do NOT mint another code for tests; if
+ * this one stops serving, ask.
  */
-export const kProSubscriptionCode = "Bloom-E2E-Pro-011136-5480";
+export const kEnterpriseSubscriptionCode = "Test-727011-1339";
+
+/**
+ * The bookshelves the Test subscription (kEnterpriseSubscriptionCode) owns on Bloom Library, by
+ * url key, which Contentful knows about. A collection under that code can name either as the
+ * bookshelf its books are uploaded to, as the Settings dialog offers a person.
+ */
+export const kTestBookshelves = ["test-bookshelf-1", "test-bookshelf-2"];
 
 /**
  * What Bloom says about one feature, as features/status reports it. It answers with more than
@@ -128,19 +139,22 @@ export const kProSubscriptionCode = "Bloom-E2E-Pro-011136-5480";
  */
 export interface IFeatureStatus {
     /**
-     * The tier the feature REQUIRES, not the tier the collection has. So this says "Pro" for
-     * tables whatever the collection's own subscription is; `enabled` is what tells you whether
-     * the collection reaches it.
+     * The tier the feature REQUIRES, not the tier the collection has. So this says "Pro" for a
+     * Pro feature whatever the collection's own subscription is; `enabled` is what tells you
+     * whether the collection reaches it.
      */
     subscriptionTier: SubscriptionTier;
     /** True when the collection's tier reaches the feature's. */
     enabled: boolean;
-    /** True when Bloom should show the feature's controls at all. */
+    /**
+     * True when Bloom should show the feature's controls at all. A feature that is also an
+     * experiment is visible only while the experiment is on.
+     */
     visible: boolean;
 }
 
 /**
- * Ask Bloom whether a feature is available here, e.g. getFeatureStatus(page, "table").
+ * Ask Bloom whether a feature is available here, e.g. getFeatureStatus(page, "canvas").
  *
  * This is the same answer the front end asks for before it decides whether to show a feature's
  * controls, so it is the right sanity check for a test whose subject is behind a subscription tier

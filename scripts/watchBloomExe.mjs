@@ -6,7 +6,7 @@ import {
     findRunningStandardBloomInstances,
     requireOptionValue,
     requireTcpPortOption,
-} from "../.github/skills/bloom-automation/bloomProcessCommon.mjs";
+} from "../.claude/skills/run-bloom/bloomProcessCommon.mjs";
 import {
     discoveryFileSchemaVersion,
     getDiscoveryFilePath,
@@ -30,10 +30,24 @@ const parseArgs = () => {
             "..",
         ),
         vitePort: undefined,
+        // Build and run once instead of running under "dotnet watch". See go.mjs --nowatch.
+        noWatch: false,
+        // Pass --dont-disturb on to Bloom. See go.mjs --dont-disturb.
+        dontDisturb: false,
     };
 
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
+        if (arg === "--nowatch" || arg === "--no-watch") {
+            options.noWatch = true;
+            continue;
+        }
+
+        if (arg === "--dont-disturb") {
+            options.dontDisturb = true;
+            continue;
+        }
 
         if (arg === "--repo-root") {
             options.repoRoot = requireOptionValue(args, i, "--repo-root");
@@ -60,7 +74,7 @@ const parseArgs = () => {
 
         if (arg.startsWith("--")) {
             throw new Error(
-                "Unsupported option. Supported options are --repo-root and --vite-port.",
+                "Unsupported option. Supported options are --repo-root, --vite-port, --nowatch and --dont-disturb.",
             );
         }
     }
@@ -131,19 +145,32 @@ const tryInferVitePortFromRunningBloom = async () => {
 const effectiveVitePort =
     options.vitePort ?? (await tryInferVitePortFromRunningBloom());
 
-const dotnetArgs = [
-    "watch",
-    "run",
-    "--project",
-    projectPath,
-    "--",
-    "--automation",
-];
+// With --nowatch we run Bloom directly rather than under "dotnet watch". The watcher costs real time
+// before Bloom appears - it builds, then starts its own file watching over the whole project - and buys
+// nothing at all unless you are editing C#. Everything below still works: the file-change handling simply
+// never fires, because nothing reports a change.
+const dotnetArgs = options.noWatch
+    ? ["run", "--project", projectPath, "--", "--automation"]
+    : ["watch", "run", "--project", projectPath, "--", "--automation"];
+
+if (options.noWatch) {
+    console.log(
+        "Running without dotnet watch: C# edits will NOT rebuild by themselves. " +
+            "The front end is unaffected - TypeScript and LESS still update live through Vite.",
+    );
+}
 
 const startupLabel = getHelpfulStartupLabel(options.repoRoot);
 
 if (startupLabel) {
     dotnetArgs.push("--label", startupLabel);
+}
+
+// --automation (above) is what every Bloom this launcher starts needs: running beside other
+// Blooms, and the BLOOM_AUTOMATION_READY line we wait for. Keeping the foreground to itself is
+// only for a Bloom that something other than the person at the keyboard is driving.
+if (options.dontDisturb) {
+    dotnetArgs.push("--dont-disturb");
 }
 
 if (effectiveVitePort) {
@@ -931,7 +958,7 @@ if (process.stdin.readable) {
 
 // --- Launcher control surface -----------------------------------------------
 // A loopback-only HTTP server through which agents can query and drive this
-// launcher (see watchBloomExeControl.mjs and the bloom-automation skill).
+// launcher (see watchBloomExeControl.mjs and the run-bloom skill).
 // Discovered via output/bloom-launcher.json and the BLOOM_LAUNCHER_READY line.
 // Started BEFORE the first dotnet spawn so the control port can be passed to
 // Bloom (--launcher-port), which uses it for its in-app restart toast.

@@ -39,7 +39,7 @@ import {
     openCanvasTool,
 } from "../helpers/canvasElements";
 import { selectBook } from "../helpers/collection";
-import { kProSubscriptionCode } from "../helpers/collectionSettings";
+import { kEnterpriseSubscriptionCode } from "../helpers/collectionSettings";
 import { expectNoOverlap, expectSameRect } from "../helpers/geometry";
 import { chooseImageFile } from "../helpers/images";
 import { pressKey, pressKeyIn } from "../helpers/keys";
@@ -101,7 +101,7 @@ test.use({
         name: "tables-extended",
         // French as well as English, so the two-languages test has a second language to turn on.
         languages: ["en", "fr"],
-        subscriptionCode: kProSubscriptionCode,
+        subscriptionCode: kEnterpriseSubscriptionCode,
     },
     experimentalFeatures: ["tables"],
 });

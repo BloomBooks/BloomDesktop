@@ -273,7 +273,7 @@ namespace Bloom.web
             }
 
             var bundleNameWithExtension = javascriptBundleName;
-            if (!bundleNameWithExtension.EndsWith(".js"))
+            if (!bundleNameWithExtension.EndsWith(".js", StringComparison.Ordinal))
             {
                 bundleNameWithExtension += ".js";
             }
@@ -532,7 +532,7 @@ namespace Bloom.web
             // Under --e2e, a dev server counts only when the run named it with --vite-port.
             // Otherwise a run's front end depends on what else happens to hold 5173, and the probe
             // below cannot tell Bloom's dev server from any other project's: seen 2026-09-04, where
-            // the bloom-table library's own `vp dev` held the port and every launched Bloom sat on
+            // another repository's Vite dev server held the port and every launched Bloom sat on
             // its loading spinner for ever, because the front end it asked that server for does not
             // exist there. See AUTOMATION-DEBT.md, "Which front end the e2e suite tests depends on
             // what else is running".
@@ -590,7 +590,8 @@ namespace Bloom.web
             if (string.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path));
 
-            return GetViteDevOrigin() + (path.StartsWith("/") ? path : "/" + path);
+            return GetViteDevOrigin()
+                + (path.StartsWith("/", StringComparison.Ordinal) ? path : "/" + path);
         }
 
         public static string ReplaceViteDevOrigin(string html)

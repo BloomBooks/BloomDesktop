@@ -3,7 +3,7 @@
 //
 // This is the one file that drives that button. It exists for two reasons beyond the button
 // itself: it is the journey coverage for Bloom's native "choose a file" dialog, which no test
-// could reach until Bloom gained an --e2e way to pre-answer it (E2eTestingApi's nextChosenFile);
+// could reach until Bloom gained an --e2e way to pre-answer it (E2eTestingApi's nextFileToChoose);
 // and Import Recording is the only route by which a real person gets audio into a book without a
 // microphone, so it is worth knowing it works.
 //
@@ -20,7 +20,6 @@ import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
-    findBookFolder,
     getContentPages,
     goToPage,
     makeBookFromTemplate,
@@ -43,10 +42,11 @@ test.use({
 
 test.describe.configure({ mode: "serial" });
 
-const BOOK_TITLE = "Import Recording Test";
-
-// The book both tests work on, and where its audio would go. Read back from Bloom by the first
-// test, which is the only thing that knows the folder Bloom chose.
+// The book both tests work on, and where its audio would go. The book is given no title: it is
+// left in the folder Bloom made for it, so that folder is where the audio goes for the rest of
+// the file. (Bloom renames a book's folder after its title. On the CI runner a title typed on the
+// cover of a book made under this branding never reached the collection; see AUTOMATION-DEBT.md,
+// "A title typed on the cover of a new book can fail to reach the collection".)
 let bookFolder: string;
 let audioFolder: string;
 
@@ -65,8 +65,8 @@ test.describe("importing a recording made outside Bloom", () => {
         // whole point of that test.
         await setBranding(page, "Sample-Pro");
 
-        await makeBookFromTemplate(page, "Basic Book");
-        await typeInGroup(page, ".bookTitle", "en", BOOK_TITLE);
+        bookFolder = await makeBookFromTemplate(page, "Basic Book");
+        audioFolder = Path.join(bookFolder, "audio");
         await addPage(page, "Just Text", 1);
         await setContentLanguages(page, ["en"]);
         const contentPages = await getContentPages(page);
@@ -79,10 +79,13 @@ test.describe("importing a recording made outside Bloom", () => {
         );
 
         await openToolboxWithTalkingBook(page);
-        bookFolder = await findBookFolder(page, BOOK_TITLE);
-        audioFolder = Path.join(bookFolder, "audio");
 
-        // Sanity check: nothing is narrated yet, so a file appearing later is an import's work.
+        // Sanity check: the book is still where Bloom made it, and nothing is narrated yet, so a
+        // file appearing later is an import's work.
+        expect(
+            fs.existsSync(bookFolder),
+            `The book's folder ${bookFolder} is gone; Bloom must have renamed it.`,
+        ).toBe(true);
         expect(
             fs.existsSync(audioFolder) ? fs.readdirSync(audioFolder) : [],
             "The book already had audio files before anything was imported.",
@@ -129,16 +132,25 @@ test.describe("importing a recording made outside Bloom", () => {
 
         // Bloom names a narration file after the id of the text it belongs to, so the file that
         // appeared should be named after something the tool marked on this page.
-        const sentences = await getNarrationSentences(page);
         const files = fs.readdirSync(audioFolder);
         expect(files.length, `Expected one narration file, got ${files}.`).toBe(
             1,
         );
         const importedId = Path.basename(files[0], Path.extname(files[0]));
-        expect(
-            sentences.map((s) => s.id),
-            `The imported file "${files[0]}" is not named after any recordable element on the page.`,
-        ).toContain(importedId);
+        // Poll, because the file lands before the markup does: the tool marks the text box as the
+        // audio-sentence only after the copy returns, so a read in between still sees the old
+        // By Sentence span. On a loaded runner importNarration can return inside that window
+        // (the 2026-09-24 nightly did), which looks exactly like BL-16873 but is not.
+        await expect
+            .poll(
+                async () =>
+                    (await getNarrationSentences(page)).map((s) => s.id),
+                {
+                    timeout: 10000,
+                    message: `The imported file "${files[0]}" is not named after any recordable element on the page.`,
+                },
+            )
+            .toContain(importedId);
 
         // And it is really the audio that was handed to the chooser, not an empty placeholder.
         expect(

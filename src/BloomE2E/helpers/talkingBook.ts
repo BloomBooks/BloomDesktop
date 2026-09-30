@@ -1,5 +1,12 @@
 // The Edit tab's toolbox, and the Talking Book tool inside it: opening them, reading the sentences
-// the tool marks, and getting narration onto a page.
+// the tool marks, reading the colors the tool highlights the current segment with, and getting
+// narration onto a page.
+//
+// While the tool is open it highlights the segment that the next recording would go into. In the
+// Edit tab that highlight is a CSS ::highlight() pseudo-element that the tool registers in the page
+// frame (audioHighlightManager.ts), and its colors come from two CSS variables the tool sets on
+// the page's root element from the style's Highlighting settings in the Format dialog. Reading those
+// two things is how a test checks "the current segment is highlighted in the colors I chose".
 //
 // RECORDING cannot be automated: the tool records from a real microphone (see AUTOMATION-DEBT.md,
 // "Native OS dialogs hang automation"). There are two ways around that, and they are for different
@@ -18,9 +25,21 @@ import * as Path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import { clickInGroup, editablePageFrame } from "./bookMaking";
+import { cssColorToHex } from "./cssValues";
 
 /** The mp3 the suite uses when a test just needs SOME narration. Relative to src/BloomE2E. */
 export const sampleNarrationFile = "fixtures/audio/sample.mp3";
+
+/** The name the tool registers its current-segment highlight under (audioHighlightManager.ts). */
+const CURRENT_HIGHLIGHT = "bloom-audio-current";
+const BACKGROUND_VAR = "--bloom-audio-current-highlight-background";
+const TEXT_VAR = "--bloom-audio-current-highlight-color";
+
+/** The colors the Talking Book tool is highlighting the current segment with, as "#rrggbb". */
+export interface IAudioHighlightColors {
+    background: string;
+    text: string;
+}
 
 /** One sentence the Talking Book tool has marked as recordable. */
 export interface INarrationSentence {
@@ -81,6 +100,48 @@ export async function getNarrationSentences(
                 text: element.textContent ?? "",
             })),
         );
+}
+
+/**
+ * Wait until the Talking Book tool is highlighting a current segment on the page being edited, and
+ * return the colors it is using. Throws, naming the tool, if no highlight appears: the tool has to
+ * be open (see helpers/toolbox.ts) and the page has to have some text.
+ */
+export async function getCurrentAudioHighlightColors(
+    page: Page,
+): Promise<IAudioHighlightColors> {
+    const read = () =>
+        editablePageFrame(page).evaluate(
+            ({ name, backgroundVar, textVar }) => {
+                const highlights = (
+                    CSS as unknown as { highlights?: Map<string, unknown> }
+                ).highlights;
+                const style = document.documentElement.style;
+                return {
+                    registered: !!highlights?.has(name),
+                    background: style.getPropertyValue(backgroundVar),
+                    text: style.getPropertyValue(textVar),
+                };
+            },
+            {
+                name: CURRENT_HIGHLIGHT,
+                backgroundVar: BACKGROUND_VAR,
+                textVar: TEXT_VAR,
+            },
+        );
+    await expect
+        .poll(async () => (await read()).registered, {
+            timeout: 30000,
+            message:
+                "The Talking Book tool never highlighted a current segment on the page. " +
+                "It has to be open, and the page has to have text.",
+        })
+        .toBe(true);
+    const { background, text } = await read();
+    return {
+        background: cssColorToHex(background),
+        text: cssColorToHex(text),
+    };
 }
 
 /**
@@ -145,7 +206,7 @@ export function getNarratedLanguages(
  * rather than a sentence. Every other test wants addNarration.
  *
  * The button ends in a native file chooser, which Playwright cannot dismiss, so this pre-answers
- * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextChosenFile).
+ * it through Bloom's e2e hook before clicking (see E2eTestingApi's nextFileToChoose).
  *
  * `bookFolder` is needed to wait for the import to finish -- see the comment on the wait below.
  */
@@ -204,12 +265,7 @@ export async function armFileChooser(
     page: Page,
     filePath: string,
 ): Promise<void> {
-    await apiPost(
-        page,
-        "e2e/nextChosenFile",
-        JSON.stringify({ Path: filePath }),
-        "application/json",
-    );
+    await apiPost(page, "e2e/nextFileToChoose", filePath, "text/plain");
 }
 
 /**
@@ -284,4 +340,39 @@ function toolboxFrame(page: Page) {
 /** The hidden check box behind the toolbox hamburger; it reports whether the toolbox is open. */
 function toolboxToggle(page: Page): Locator {
     return page.locator("#pure-toggle-right");
+}
+
+/**
+ * How many of the Talking Book tool's sentence markers on the page being shown sit inside another
+ * one. Always 0 in a healthy book. A nested marker is the damage BL-10291 did (fixed in 5.1): text
+ * copied from a marked sentence and pasted back with the tool open brought its marker inside the
+ * existing one, which threw script errors and made each later paste slower.
+ */
+export async function countNestedNarrationSentences(
+    page: Page,
+): Promise<number> {
+    return editablePageFrame(page)
+        .locator(".audio-sentence .audio-sentence")
+        .count();
+}
+
+/**
+ * Wait until the Talking Book tool has marked all of the text on the page being shown, i.e. the
+ * text inside its sentence markers adds up to `text`. The tool re-marks a text box a moment after
+ * it changes, so this is how a test waits out that pass before judging what it produced.
+ */
+export async function waitForNarrationSentencesToCover(
+    page: Page,
+    text: string,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (await getNarrationSentences(page)).map((s) => s.text).join(""),
+            {
+                timeout: 30000,
+                message: `The Talking Book tool never marked all of "${text}" as recordable sentences.`,
+            },
+        )
+        .toBe(text);
 }

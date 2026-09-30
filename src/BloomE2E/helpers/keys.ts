@@ -4,11 +4,11 @@
 // input events and nothing else, so anything in Bloom that listens for a keydown is untouched by
 // them. That is fine when the subject is the text; it is useless when the subject is the key.
 //
-// Tables need the difference. The canvas element manager handles Delete, the arrow keys and
-// Ctrl+C/Ctrl+V for whatever element is selected, and a table's cells are inside such an element.
-// So the question "does Backspace in an empty cell delete the whole table?" is a question about who
-// gets the keydown, and only a real key press asks it. (AUTOMATION-DEBT.md: "Typing in a text box
-// raises no key events".)
+// Canvas pages need the difference. The canvas element manager handles Delete, the arrow keys and
+// Ctrl+C/Ctrl+V for whatever element is selected, and a text box can sit inside such an element.
+// So the question "does Backspace in an empty text box delete the whole element?" is a question
+// about who gets the keydown, and only a real key press asks it. (AUTOMATION-DEBT.md: "Typing in a
+// text box raises no key events".)
 //
 // Every press goes through Playwright's keyboard, which sends the same CDP raw key events the
 // browser would build from a physical key. What it cannot do is send a key that Bloom's WinForms
@@ -73,4 +73,14 @@ export async function moveCaretToEnd(box: Locator): Promise<void> {
  */
 export async function typeWithKeys(page: Page, text: string): Promise<void> {
     await page.keyboard.type(text);
+}
+
+/**
+ * Select all the text in a text box and copy it to the clipboard with the real Ctrl+A and Ctrl+C a
+ * person presses, so that whatever CKEditor and Bloom do on a copy runs. The copy carries the
+ * box's markup as well as its text, e.g. the Talking Book tool's sentence markers.
+ */
+export async function copyAllTextIn(box: Locator, what: string): Promise<void> {
+    await pressKeyIn(box, "Control+a", what);
+    await box.press("Control+c");
 }

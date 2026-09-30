@@ -130,10 +130,13 @@ namespace BloomTests
             }
         }
 
-        [Test, Ignore("Will fix in BL-2558")]
+        [Test]
         public void SaveAsHTML_HasEmUpAgainstStrong_DoesNotInsertSpace()
         {
             var dom = SafeXmlDocument.Create();
+            // Every real book DOM is loaded with PreserveWhitespace on (BookStorage, BL-2484),
+            // which also keeps the indenting writer from separating inline-only children.
+            dom.PreserveWhitespace = true;
             var original = "<p><em>one</em><strong>two</strong></p>";
             dom.LoadXml(XmlHtmlConverter.CreateHtmlString("<div data-book='test'/>" + original));
             using (var temp = new TempFile())
@@ -275,7 +278,7 @@ namespace BloomTests
             {
                 var xml = dom.DocumentElement.InnerXml;
                 found = xml.Select((c, i) => xml.Substring(i))
-                    .Count(sub => sub.StartsWith("<br />"));
+                    .Count(sub => sub.StartsWith("<br />", StringComparison.Ordinal));
             }
             Assert.AreEqual(1, found);
         }
@@ -529,7 +532,9 @@ namespace BloomTests
             );
             var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html, true);
             var xml = htmlDom.DocumentElement.InnerXml;
-            var nbspIndex = xml.IndexOf("Some text with a") + "Some text with a".Length;
+            var nbspIndex =
+                xml.IndexOf("Some text with a", StringComparison.Ordinal)
+                + "Some text with a".Length;
             Assert.That(
                 xml[nbspIndex],
                 Is.EqualTo('\u00A0'),

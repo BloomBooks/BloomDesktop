@@ -7,11 +7,13 @@
 //
 // A test can drive all of that except the picker, which no automation can (AUTOMATION-DEBT.md,
 // "Native OS dialogs hang automation"). So instead of skipping the route, the picker alone is
-// removed: e2e/nextVideoFileToChoose arms Bloom with the path the picker would have returned, and
-// the next signLanguage/chooseVideo answers with it rather than putting up a dialog. Everything
-// after that -- the re-encode, the progress dialog, the copy into the book, the update of the box,
-// the save -- runs exactly as it does for a person. Only Bloom under --e2e will accept the arming
-// call; see E2eTestingApi.cs and SignLanguageApi.cs.
+// removed: e2e/nextFileToChoose arms Bloom with the path the picker would have returned, and the
+// next file chooser Bloom opens (here, the Sign Language tool's) answers with it rather than
+// putting up a dialog. Everything after that -- the re-encode, the progress dialog, the copy into
+// the book, the update of the box, the save -- runs exactly as it does for a person. Only Bloom
+// under --e2e will accept the arming call; see E2eTestingApi.cs and BloomOpenFileDialog.cs. The
+// same hook answers every other file or folder chooser in Bloom, so a helper for importing a
+// spreadsheet or choosing an image file arms it the same way.
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
@@ -40,9 +42,9 @@ export function videoBoxes(page: Page): Locator {
  * Put the video file at `filePath` into `videoBox`, through the Sign Language tool, and wait until
  * the box shows it.
  *
- * `videoBox` is the `.bloom-videoContainer` to fill; for a table cell, that is the container inside
- * the cell. Bloom re-encodes the file, so this takes a few seconds even for a one-second video, and
- * the file that ends up in the book is not byte-for-byte the one passed in.
+ * `videoBox` is the `.bloom-videoContainer` to fill; see videoBoxes for every one on the page.
+ * Bloom re-encodes the file, so this takes a few seconds even for a one-second video, and the file
+ * that ends up in the book is not byte-for-byte the one passed in.
  */
 export async function chooseVideoFile(
     page: Page,
@@ -53,60 +55,45 @@ export async function chooseVideoFile(
         throw new Error(`There is no video file at ${filePath}.`);
     await apiPost(
         page,
-        "e2e/nextVideoFileToChoose",
+        "e2e/nextFileToChoose",
         Path.resolve(filePath),
         "text/plain",
     );
-
-    // The Sign Language tool turns the camera on as soon as it opens, so that a person can see
-    // themselves before recording, and WebView2 answers that with a permission prompt of its own
-    // over the panel. Nothing in the page can dismiss it, and it takes the presses aimed at the
-    // tool underneath. Granting the permission first means it is never asked for.
-    await page
-        .context()
-        .grantPermissions(["camera"], { origin: new URL(page.url()).origin });
 
     // Clicking the box is what takes Bloom to the Sign Language tool, and it is also what tells the
     // tool which box to import into, so it cannot be skipped by opening the tool directly.
     await realClick(videoBox);
     const toolbox = toolboxFrame(page);
-    // Inside the Sign Language tool's own panel, because other tools have an Advanced section of
-    // their own and their panels stay in the document while shut.
-    const tool = toolbox.locator(".signLanguageBody");
-    await tool.waitFor({ state: "visible", timeout: 30000 });
-    // Import lives in the tool's Advanced section, which starts collapsed to no height at all. Its
-    // heading is the label: the triangle beside it sits in a wrapper of its own whose only children
-    // are absolutely positioned, so that wrapper has no size and cannot be clicked.
-    const importWrapper = tool.locator("#importRecordingWrapper");
-    const importLabel = importWrapper.locator(".commandLabel");
-    // Whether the section is open is a question about the container, not about the button inside
-    // it. Closed means the container's height is nothing and its overflow is hidden, which does not
-    // change the size or position the button reports: automation reads such a button as visible,
-    // clicks where it says it is, and hits the heading that is drawn over it.
-    const contentWrap = tool.locator(".expandable .contentWrap");
-    const isOpen = async () =>
-        (await contentWrap.evaluate(
-            (element) => element.getBoundingClientRect().height,
-        )) > 1;
-    if (!(await isOpen())) {
-        await tool.locator(".expandable > label").first().click();
-        await expect
-            .poll(isOpen, {
-                timeout: 30000,
-                message:
-                    "Clicking the Advanced heading did not open the Sign Language tool's " +
-                    "Advanced section, so Import is not reachable.",
-            })
-            .toBe(true);
+    const importButton = toolbox.locator("#videoImport");
+    // Import lives in the tool's Advanced section, which starts collapsed to zero height. Its
+    // heading label opens it; the triangle beside the label has no size of its own, so a click
+    // aimed there has nothing to hit. The section's height is the only honest sign that it is
+    // open: Playwright counts the clipped button as visible while the section is still shut.
+    // Right after the tool comes up, a click on the heading can be lost (the tool renders again
+    // as it settles, and a fresh render starts shut), so open it again until it stays open.
+    const advancedHeading = toolbox.locator(".expandable > label");
+    const advancedContent = toolbox.locator(".expandable > .contentWrap");
+    await advancedHeading.waitFor({ state: "visible", timeout: 30000 });
+    const contentHeight = () =>
+        advancedContent.evaluate((el) => getComputedStyle(el).height);
+    for (let attempt = 1; ; attempt++) {
+        if ((await contentHeight()) === "0px") await advancedHeading.click();
+        try {
+            await expect.poll(contentHeight, { timeout: 3000 }).not.toBe("0px");
+            // Let the 0.3s height animation finish, so the click below lands on a still button.
+            await expect
+                .poll(contentHeight, { timeout: 3000 })
+                .toBe(await advancedContent.evaluate((el) => el.style.height));
+            break;
+        } catch (e) {
+            if (attempt >= 5)
+                throw new Error(
+                    `The Sign Language tool's Advanced section would not stay open after ${attempt} tries.`,
+                    { cause: e },
+                );
+        }
     }
-    await expect(
-        importWrapper,
-        "The Sign Language tool is offering Import greyed out, which it does while it is " +
-            "recording or playing rather than sitting idle.",
-    ).not.toHaveClass(/disabled/, { timeout: 15000 });
-    // The words rather than the camera button beside them: both call importRecording, and the
-    // button is drawn as a background image inside a wrapper that takes the presses aimed at it.
-    await importLabel.click();
+    await importButton.click();
 
     const source = videoBox.locator("video source");
     await expect

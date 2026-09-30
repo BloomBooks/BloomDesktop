@@ -19,11 +19,16 @@ import {
 } from "@playwright/test";
 import {
     launchBloom,
+    launchBloomIntoChooser,
     type ILaunchedBloom,
+    type ILaunchedChooserBloom,
     type ICollectionSpec,
     type IRelaunchChanges,
 } from "./launchBloom";
 import { chromium } from "@playwright/test";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as Path from "node:path";
 import {
     describeProblems,
     startProblemDialogWatcher,
@@ -36,21 +41,33 @@ import {
     type StepFunction,
 } from "../helpers/caption";
 
-/**
- * What a test gets about the Bloom it is driving. Every field except collectionDir is replaced by
- * restart(), so read them from this object each time rather than copying them into a local.
- */
-export interface IBloomApp {
-    /** Bloom's shell document in the embedded WebView2: the top bar, and whatever tab is showing. */
+/** What every launched Bloom gives a test, whichever mode it started in. */
+interface IBloomAppBase {
+    /** The current page in the embedded WebView2 this test drives. */
     page: Page;
     /** The port Bloom's HTTP server opened on. */
     httpPort: number;
     /** The port the embedded WebView2 answers CDP on. */
     cdpPort: number;
-    /** The process id of the Bloom serving this collection. */
+    /** The process id of the Bloom this test drives. */
     bloomPid: number;
+}
+
+/**
+ * A Bloom launched on a collection (the normal case). Every field except collectionDir is
+ * replaced by restart(), so read them from this object each time rather than copying them into
+ * a local.
+ */
+export interface IBloomApp extends IBloomAppBase {
+    mode: "collection";
     /** The collection folder Bloom has open: a temp folder, never the inputs repository itself. */
     collectionDir: string;
+    /**
+     * The folder this Bloom keeps its user settings in (its user.config), beside the collection in
+     * the temp folder, so nothing it saves reaches the developer's own Bloom or the next run. It
+     * starts empty, and a restart keeps it. See helpers/userSettings.ts to read what is in it.
+     */
+    userSettingsDir: string;
     /**
      * Quit Bloom and start it again on the same collection folder, and return the new shell page.
      *
@@ -68,7 +85,50 @@ export interface IBloomApp {
         betweenStopAndStart?: () => void | Promise<void>,
         changes?: IRelaunchChanges,
     ) => Promise<Page>;
+    /**
+     * Find Bloom's shell document again after an action that made Bloom rebuild it in the same
+     * process — changing the UI language, for example, reopens the whole project, which destroys
+     * the WebView2 page and creates a new one on the same ports. Updates bloomApp.page and
+     * returns it; the old Page object throws once its target is gone. The caller is responsible
+     * for making sure the old shell page has actually closed first (wait for its "close" event),
+     * or this can find the outgoing page.
+     */
+    reattachToShell: () => Promise<Page>;
 }
+
+/**
+ * A Bloom launched with NO collection, showing the Choose Collection dialog (test.use
+ * startAtChooser). `page` is the dialog's document until the test opens a collection.
+ *
+ * Note the two distinct collection roles: there is no open collection here (nothing like
+ * collectionDir), and `collectionToOpen` is the collection card the test can "click" - the
+ * argument openCollectionFromChooser posts, exactly what clicking that card in the dialog posts.
+ */
+export interface IChooserBloomApp extends IBloomAppBase {
+    mode: "chooser";
+    /** The .bloomCollection file of the collection created for this test to open from the dialog. */
+    collectionToOpen: string;
+    /**
+     * The folder this Bloom keeps its user settings in, as for IBloomApp. It starts empty, which
+     * is what brings Bloom up at the chooser: there is no recent collection for it to reopen.
+     */
+    userSettingsDir: string;
+    /**
+     * Find the Choose Collection dialog's page again after an action that made Bloom rebuild the
+     * dialog - choosing a language there does. Reconnects over CDP (a connection from before the
+     * rebuild never sees the new page), updates page, and returns it. The caller makes sure the
+     * old page has closed first (wait for its "close" event).
+     */
+    reattachToChooser: () => Promise<Page>;
+    /**
+     * Find the workspace shell page after the test leaves the dialog by opening a collection.
+     * Reconnects over CDP, updates page, and returns it.
+     */
+    reattachToShell: () => Promise<Page>;
+}
+
+/** Whichever kind of Bloom this worker launched; tests use bloomApp or chooserApp. */
+type IAnyBloomApp = IBloomApp | IChooserBloomApp;
 
 /** Worker-scoped fixtures: one Bloom per worker. */
 interface IBloomWorkerFixtures {
@@ -82,12 +142,26 @@ interface IBloomWorkerFixtures {
     collectionSpec: ICollectionSpec | undefined;
     /**
      * Experimental features this Bloom should have on, by their ExperimentalFeatures.cs tokens
-     * (e.g. ["tables"]). Set it with test.use(). See ILaunchBloomOptions.experimentalFeatures for
-     * why this is not done the way a person does it.
+     * (e.g. ["tables"]). Set it with test.use(). See
+     * ILaunchBloomOptions.experimentalFeatures for why this is not done the way a person does it.
+     * Honoured only for a Bloom launched on a collection.
      */
     experimentalFeatures: string[] | undefined;
-    /** The launched Bloom. Prefer the `page` fixture unless you need a port or the folder. */
+    /**
+     * Set with test.use() to launch Bloom with NO collection, at the Choose Collection dialog;
+     * the test then uses the chooserApp fixture instead of bloomApp. collectionSpec still names
+     * the collection the test can open FROM the dialog (chooserApp.collectionToOpen).
+     *
+     * Bloom reaches the chooser because its user-settings folder, its own like every launched
+     * Bloom's, starts with an empty most-recently-used list (see launchBloomIntoChooser).
+     */
+    startAtChooser: boolean;
+    /** The launched Bloom, whichever mode. Internal: tests use bloomApp or chooserApp. */
+    _launchedApp: IAnyBloomApp;
+    /** The Bloom launched on a collection. Prefer the `page` fixture unless you need more. */
     bloomApp: IBloomApp;
+    /** The Bloom sitting at the Choose Collection dialog (test.use startAtChooser). */
+    chooserApp: IChooserBloomApp;
     problemDialogWatcher: IProblemDialogWatcher;
 }
 
@@ -95,6 +169,11 @@ interface IBloomWorkerFixtures {
 interface IBloomTestFixtures {
     /** Fails the test when Bloom raised a problem dialog while it ran. Runs automatically. */
     failOnBloomProblem: void;
+    /**
+     * When a test fails, keeps what explains it beside Playwright's own trace and screenshot: Bloom's
+     * log, and a copy of the collection as Bloom left it. Runs automatically.
+     */
+    keepEvidenceOnFailure: void;
     /**
      * Puts this test's name and clock on the caption strip in the Bloom window, and stops the
      * clock when it ends. Runs automatically, so a test that never calls `step` still shows.
@@ -107,6 +186,14 @@ interface IBloomTestFixtures {
      */
     step: StepFunction;
 }
+
+/**
+ * Where the Bloom under test writes its log. Bloom logs to %TEMP%\SIL\Bloom\Log.txt whatever
+ * folder its settings are in, so this is the developer's or the runner's temp folder, and a run's
+ * successive Blooms overwrite one another there: what is there when a test fails is the log of the
+ * Bloom that was running.
+ */
+const BLOOM_LOG_PATH = Path.join(os.tmpdir(), "SIL", "Bloom", "Log.txt");
 
 // How long we wait for Bloom's WebView2 to expose the shell document after the HTTP server is up.
 // The first navigation after launch is slow: WebView2 starts, the bundle loads, and React mounts.
@@ -122,6 +209,11 @@ const SHELL_MARKER = '[data-testid="workspace-top-bar"]';
 // and reports the URL of the shell browser the C# side sends its commands to
 // (E2eTestingApi.HandleGetShellUrl).
 const SHELL_URL_ENDPOINT = "e2e/shellUrl";
+
+// How we recognize the Choose Collection dialog's document: a dialog title bar with no
+// workspace tab strip (the shell has the tab strip; the problem dialog has neither an h1
+// title of this shape nor tabs).
+const CHOOSER_MARKER = "#draggable-dialog-title h1";
 
 /**
  * The file name part of a shell URL, e.g. "bloom45mgnfsl.htm" from
@@ -142,7 +234,9 @@ function shellDocumentName(url: string): string {
  * remote-debugging listener slightly later, so a single connect attempt races it and sometimes
  * gets ECONNREFUSED.
  */
-async function connectOverCdpWithRetry(cdpPort: number): Promise<Browser> {
+export async function connectOverCdpWithRetry(
+    cdpPort: number,
+): Promise<Browser> {
     const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
     let lastError: unknown;
     while (Date.now() < deadline) {
@@ -247,59 +341,172 @@ async function findShellPage(
     );
 }
 
+/**
+ * Find the Choose Collection dialog's document among the CDP page targets: a page carrying the
+ * dialog's title bar and no workspace top bar. The dialog is rebuilt from scratch when its UI
+ * language changes, so this runs against a fresh connection each time (see
+ * IChooserBloomApp.reattachToChooser). Polls the way findShellPage does: the target exists, as
+ * about:blank, before Bloom navigates it, and React mounts the dialog later still.
+ */
+async function findChooserPage(
+    browser: Browser,
+    httpPort: number,
+): Promise<Page> {
+    const deadline = Date.now() + SHELL_READY_TIMEOUT_MS;
+    let lastUrls: string[] = [];
+    while (Date.now() < deadline) {
+        const pages = browser
+            .contexts()
+            .flatMap((context) => context.pages())
+            .filter((page) => !page.url().startsWith("devtools://"))
+            // Keep only this Bloom's own documents, as findShellPage does: another Bloom's
+            // dialog can carry the same title bar.
+            .filter(
+                (page) =>
+                    !page.url().startsWith("http") ||
+                    page.url().includes(`:${httpPort}/`),
+            );
+        lastUrls = pages.map((page) => page.url());
+        for (const page of pages) {
+            const found = await page
+                .evaluate(
+                    ([chooser, shell]) =>
+                        !!document.querySelector(chooser) &&
+                        !document.querySelector(shell),
+                    [CHOOSER_MARKER, SHELL_MARKER],
+                )
+                .catch(() => false);
+            if (found) return page;
+        }
+        await delay(500);
+    }
+    throw new Error(
+        `Bloom's WebView2 never exposed the Choose Collection dialog within ` +
+            `${SHELL_READY_TIMEOUT_MS / 1000}s. Targets seen: ${lastUrls.join(", ") || "none"}.`,
+    );
+}
+
 export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     collectionName: [undefined, { scope: "worker", option: true }],
     collectionSpec: [undefined, { scope: "worker", option: true }],
     experimentalFeatures: [undefined, { scope: "worker", option: true }],
+    startAtChooser: [false, { scope: "worker", option: true }],
 
-    bloomApp: [
+    _launchedApp: [
         async (
-            { collectionName, collectionSpec, experimentalFeatures },
+            {
+                collectionName,
+                collectionSpec,
+                experimentalFeatures,
+                startAtChooser,
+            },
             use,
         ) => {
-            let launched: ILaunchedBloom | undefined;
-            // Reassigned by restart(), and read by the teardown below, so the connection we close
-            // is always the current one.
+            // Reassigned by restart() and the reattach methods, and read by the teardown below,
+            // so the connection we close is always the current one.
             let browser: Browser | undefined;
+            // CDP must go to 127.0.0.1: on Windows "localhost" resolves to ::1 first, and
+            // WebView2's debugging port does not answer there — you get an empty or wrong
+            // target list rather than an error. (Bloom's own HTTP server is the opposite: it
+            // rejects a 127.0.0.1 Host header. See helpers/api.ts.) Reconnect rather than reuse
+            // after anything that rebuilds the document: a connection from before the rebuild
+            // never learns about the new page - its target list just stays empty.
+            const reconnectAndFind = async (
+                cdpPort: number,
+                find: (browser: Browser) => Promise<Page>,
+            ): Promise<Page> => {
+                await browser?.close();
+                browser = await connectOverCdpWithRetry(cdpPort);
+                return find(browser);
+            };
+
+            if (startAtChooser) {
+                if (!collectionSpec || collectionName)
+                    throw new Error(
+                        "startAtChooser needs collectionSpec (the collection the test will open " +
+                            "from the dialog) and cannot be combined with collectionName.",
+                    );
+                let launched: ILaunchedChooserBloom | undefined;
+                try {
+                    launched = await launchBloomIntoChooser(collectionSpec);
+                    const app: IChooserBloomApp = {
+                        mode: "chooser",
+                        page: await reconnectAndFind(launched.cdpPort, (b) =>
+                            findChooserPage(b, launched!.httpPort),
+                        ),
+                        httpPort: launched.httpPort,
+                        cdpPort: launched.cdpPort,
+                        bloomPid: launched.bloomPid,
+                        collectionToOpen: launched.collectionToOpen,
+                        userSettingsDir: launched.userSettingsDir,
+                        reattachToChooser: async () => {
+                            app.page = await reconnectAndFind(
+                                launched!.cdpPort,
+                                (b) => findChooserPage(b, launched!.httpPort),
+                            );
+                            return app.page;
+                        },
+                        reattachToShell: async () => {
+                            app.page = await reconnectAndFind(
+                                launched!.cdpPort,
+                                (b) => findShellPage(b, launched!.httpPort),
+                            );
+                            return app.page;
+                        },
+                    };
+                    await use(app);
+                } finally {
+                    // Close the CDP connection first: it keeps a socket into the process we are
+                    // about to kill. Then kill Bloom and delete the temp folder.
+                    await browser?.close();
+                    await launched?.stop();
+                }
+                return;
+            }
+
+            let launched: ILaunchedBloom | undefined;
             try {
                 launched = await launchBloom({
                     collectionName,
                     collectionSpec,
                     experimentalFeatures,
                 });
-                // CDP must go to 127.0.0.1: on Windows "localhost" resolves to ::1 first, and
-                // WebView2's debugging port does not answer there — you get an empty or wrong
-                // target list rather than an error. (Bloom's own HTTP server is the opposite: it
-                // rejects a 127.0.0.1 Host header. See helpers/api.ts.)
-                browser = await connectOverCdpWithRetry(launched.cdpPort);
-                const bloomApp: IBloomApp = {
-                    page: await findShellPage(browser, launched.httpPort),
+                const app: IBloomApp = {
+                    mode: "collection",
+                    page: await reconnectAndFind(launched.cdpPort, (b) =>
+                        findShellPage(b, launched!.httpPort),
+                    ),
                     httpPort: launched.httpPort,
                     cdpPort: launched.cdpPort,
                     bloomPid: launched.bloomPid,
                     collectionDir: launched.collectionDir,
+                    userSettingsDir: launched.userSettingsDir,
                     restart: async (betweenStopAndStart, changes) => {
                         // Close the old CDP connection first: it holds a socket into the process
                         // that is about to be killed.
                         await browser?.close();
                         browser = undefined;
                         await launched!.restart(betweenStopAndStart, changes);
-                        browser = await connectOverCdpWithRetry(
-                            launched!.cdpPort,
-                        );
                         // Resolve the shell again: the restarted Bloom has a new shell document,
                         // and the old page object points at a dead target.
-                        bloomApp.page = await findShellPage(
-                            browser,
-                            launched!.httpPort,
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
                         );
-                        bloomApp.httpPort = launched!.httpPort;
-                        bloomApp.cdpPort = launched!.cdpPort;
-                        bloomApp.bloomPid = launched!.bloomPid;
-                        return bloomApp.page;
+                        app.httpPort = launched!.httpPort;
+                        app.cdpPort = launched!.cdpPort;
+                        app.bloomPid = launched!.bloomPid;
+                        return app.page;
+                    },
+                    reattachToShell: async () => {
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
+                        );
+                        return app.page;
                     },
                 };
-                await use(bloomApp);
+                await use(app);
             } finally {
                 // Close the CDP connection first: it keeps a socket into the process we are about
                 // to kill. Then kill Bloom and delete the temp collection.
@@ -310,16 +517,43 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
         { scope: "worker" },
     ],
 
+    // The typed views of _launchedApp. Using the one that does not match the launch mode fails
+    // immediately with the fix, instead of silently launching a second Bloom.
+    bloomApp: [
+        async ({ _launchedApp }, use) => {
+            if (_launchedApp.mode !== "collection")
+                throw new Error(
+                    "This file sets startAtChooser, so Bloom is at the Choose Collection " +
+                        "dialog: use the chooserApp fixture instead of bloomApp.",
+                );
+            await use(_launchedApp);
+        },
+        { scope: "worker" },
+    ],
+
+    chooserApp: [
+        async ({ _launchedApp }, use) => {
+            if (_launchedApp.mode !== "chooser")
+                throw new Error(
+                    "chooserApp needs test.use({ startAtChooser: true }); this file launched " +
+                        "Bloom on a collection, so use bloomApp (or page).",
+                );
+            await use(_launchedApp);
+        },
+        { scope: "worker" },
+    ],
+
     problemDialogWatcher: [
-        async ({ bloomApp }, use) => {
-            if (!bloomApp.page.context().browser())
+        async ({ _launchedApp }, use) => {
+            if (!_launchedApp.page.context().browser())
                 throw new Error(
                     "The Bloom page has no browser connection, so problem dialogs cannot be watched.",
                 );
-            // Read the connection through bloomApp.page each scan rather than capturing it here:
-            // restart() replaces both, and a captured connection would go quietly deaf.
+            // Read the connection through the app's page each scan rather than capturing it here:
+            // restart() and the reattach methods replace both, and a captured connection would go
+            // quietly deaf.
             const watcher = startProblemDialogWatcher(
-                () => bloomApp.page.context().browser() ?? undefined,
+                () => _launchedApp.page.context().browser() ?? undefined,
             );
             await use(watcher);
             watcher.stop();
@@ -330,41 +564,109 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
     // Override Playwright's own `page`, so a test that just wants to click things says `page` and
     // never launches a browser of Playwright's own.
     //
-    // This is bound once per worker, so a test that calls bloomApp.restart() must use the page
-    // that returns (or bloomApp.page) from then on: this one points at a dead target.
-    page: async ({ bloomApp }, use) => {
-        await use(bloomApp.page);
+    // This is bound once per worker, so a test that calls bloomApp.restart() (or any reattach)
+    // must use the page that returns (or the app's .page) from then on: this one points at a
+    // dead target.
+    page: async ({ _launchedApp }, use) => {
+        await use(_launchedApp.page);
     },
 
     e2eCaption: [
-        async ({ bloomApp }, use, testInfo) => {
-            // Read bloomApp.page at each call rather than capturing it: restart() replaces it.
+        async ({ _launchedApp }, use, testInfo) => {
+            // Read the app's page at each call rather than capturing it: restart() and the
+            // reattach methods replace it.
             await beginCaption(
-                () => bloomApp.page,
+                () => _launchedApp.page,
                 testInfo.file,
                 testInfo.title,
             );
             await use();
-            await finishCaption(() => bloomApp.page);
+            await finishCaption(() => _launchedApp.page);
         },
         { auto: true },
     ],
 
-    step: async ({ bloomApp, e2eCaption }, use) => {
+    step: async ({ _launchedApp, e2eCaption }, use) => {
         // Depending on e2eCaption only orders the setup: the caption must know the test before a
         // step can be added to it.
         void e2eCaption;
         await use(((title, body, options) =>
             runStep(
-                () => bloomApp.page,
+                () => _launchedApp.page,
                 title,
                 body,
                 options,
             )) as StepFunction);
     },
 
+    // Torn down after every other test-scoped fixture (failOnBloomProblem depends on it, so it is
+    // set up first), so a failure raised by one of them is still seen here. Everything goes under
+    // testInfo.outputDir, which is test-results/<test>/, the folder CI already uploads on failure.
+    //
+    // For a Bloom launched at the Choose Collection dialog, the collection kept is the one the test
+    // opens from it (chooserApp.collectionToOpen), which is the only one that Bloom has.
+    //
+    // The collection folder is copied rather than described because the failures this is for are
+    // the ones where Bloom's state on disk disagrees with what the test saw: a title typed on the
+    // cover that the collection never learned (AUTOMATION-DEBT.md). The book's HTML and meta.json
+    // say which side lost it.
+    //
+    // The user-settings folder is deliberately NOT kept. These artifacts are public (the repository
+    // is), and user.config is where a Bloom that signed in to Bloom Library for real
+    // (helpers/bloomLibraryAccount.ts) saves its session token and account, and where the next
+    // secret-shaped setting would land too. Redacting known names would protect only against the
+    // ones we thought of. helpers/userSettings.ts reads that file for a test while it runs instead.
+    keepEvidenceOnFailure: [
+        async ({ _launchedApp }, use, testInfo) => {
+            await use();
+            if (testInfo.status === testInfo.expectedStatus) return;
+            // Bloom may still be writing; a moment lets its last save land in the copy.
+            await delay(1000);
+            // Best effort throughout: this runs on a test that has already failed, and a file
+            // Bloom still holds open must cost only that file, never the rest of the evidence or
+            // a second error on top of the real one. Each step is contained on its own, and the
+            // copy filter really opens each file, because on Windows accessSync checks attributes,
+            // not whether another process has the file locked.
+            try {
+                if (fs.existsSync(BLOOM_LOG_PATH))
+                    await testInfo.attach("bloom-log", {
+                        body: fs.readFileSync(BLOOM_LOG_PATH),
+                        contentType: "text/plain",
+                    });
+            } catch (error) {
+                console.warn(`Could not keep Bloom's log: ${error}`);
+            }
+            try {
+                const collectionDir =
+                    _launchedApp.mode === "collection"
+                        ? _launchedApp.collectionDir
+                        : Path.dirname(_launchedApp.collectionToOpen);
+                fs.cpSync(collectionDir, testInfo.outputPath("collection"), {
+                    recursive: true,
+                    errorOnExist: false,
+                    filter: (source) => {
+                        if (fs.statSync(source).isDirectory()) return true;
+                        try {
+                            fs.closeSync(fs.openSync(source, "r"));
+                            return true;
+                        } catch {
+                            console.warn(
+                                `Left out of the collection copy (locked?): ${source}`,
+                            );
+                            return false;
+                        }
+                    },
+                });
+            } catch (error) {
+                console.warn(`Could not copy the collection folder: ${error}`);
+            }
+        },
+        { auto: true },
+    ],
+
     failOnBloomProblem: [
-        async ({ problemDialogWatcher }, use) => {
+        async ({ problemDialogWatcher, keepEvidenceOnFailure }, use) => {
+            void keepEvidenceOnFailure;
             // Discard anything raised before this test started, so one test's problem is not
             // reported against the next.
             problemDialogWatcher.takeProblems();

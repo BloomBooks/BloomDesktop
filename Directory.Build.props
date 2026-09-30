@@ -53,7 +53,13 @@
             This lives here rather than as a -p: on the wrapper's command line because a
             global property cannot be varied per project.
         -->
-        <UseAppHost Condition="'$(MSBuildProjectName)' != 'WebView2PdfMaker'">false</UseAppHost>
+        <!--
+            BloomFreezeDoctor joins WebView2PdfMaker for the same reason: Bloom launches it by FILE NAME
+            (BloomFreezeDoctor.exe, see FreezeDoctor/DoctorLauncher.cs), so without its apphost the
+            "Run Freeze Doctor" menu item silently does nothing in an agent-built tree - which is an
+            expensive thing to debug, because nothing reports an error.
+        -->
+        <UseAppHost Condition="'$(MSBuildProjectName)' != 'WebView2PdfMaker' AND '$(MSBuildProjectName)' != 'BloomFreezeDoctor'">false</UseAppHost>
         <!--
             Once obj moves out of the project directory, the SDK no longer treats the
             conventional in-tree obj\ and bin\ as intermediate output, so their stale

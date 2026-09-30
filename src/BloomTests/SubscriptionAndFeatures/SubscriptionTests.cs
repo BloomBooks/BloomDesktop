@@ -24,7 +24,7 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase("Foo-Bar-Blah", "Foo-Bar-Blah")]
         [TestCase("Test-Expired-Code-005658-9576", "Test-Expired-Code")]
         [TestCase("การทดสอบ-LC-005908-3073", "การทดสอบ-LC")]
-        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
+        [TestCase("Fake[Western]-009926-6402", "Fake[Western]")]
         public void Descriptor_ReturnsCorrectValue(string code, string expectedDescriptor)
         {
             var subscription = new Subscription(code);
@@ -35,11 +35,11 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase("", "Default")]
         [TestCase("Test-727011-1339", "Test")]
         [TestCase("Foo-Bar-Blah", "Default")] // missing parts, invalid, thus branding is "Default"
-        [TestCase("Fake-LC-006273-1463", "Local-Community")] // this code will eventually expire, after which it should be replaced
+        [TestCase("Fake-LC-009926-1483", "Local-Community")] // this code will eventually expire, after which it should be replaced
         [TestCase("Test-Expired-005691-4935", "Default")] //  expired, thus "Default"
         [TestCase("Test-Invalid-111-1111", "Default")] //  invalid, thus "Default"
         [TestCase("Foobar-***-***", "Default")] //  invalid, thus "Default". To use a redacted code, you have to use a factory method
-        [TestCase("Fake[Western]-006273-6382", "Fake[Western]")]
+        [TestCase("Fake[Western]-009926-6402", "Fake[Western]")]
         public void BrandingKey_ReturnsCorrectValue(string code, string expectedBranding)
         {
             var subscription = new Subscription(code);
@@ -147,9 +147,9 @@ namespace BloomTests.SubscriptionAndFeatures
         [TestCase(null, SubscriptionTier.Basic)]
         [TestCase("", SubscriptionTier.Basic)]
         [TestCase("Legacy-LC-005839-2533", SubscriptionTier.Basic)] // expired, so basic
-        [TestCase("Fake-006273-0501", SubscriptionTier.Enterprise)]
-        [TestCase("Fake-LC-006273-1463", SubscriptionTier.LocalCommunity)]
-        [TestCase("Fake-Pro-006273-2126", SubscriptionTier.Pro)]
+        [TestCase("Fake-009926-0521", SubscriptionTier.Enterprise)]
+        [TestCase("Fake-LC-009926-1483", SubscriptionTier.LocalCommunity)]
+        [TestCase("Fake-Pro-009926-2146", SubscriptionTier.Pro)]
         [TestCase("Test-Expired-005691-4935", SubscriptionTier.Basic)] // if expired, it's basic
         public void Tier_ReturnsCorrectEnum(string code, SubscriptionTier expectedTier)
         {
@@ -232,8 +232,8 @@ namespace BloomTests.SubscriptionAndFeatures
 
         [TestCase(null, "")]
         [TestCase("", "")]
-        [TestCase("Fake-Thing-LC-006273-5397", "Fake Thing")] // dashes are replaced by spaces
-        [TestCase("Fake-006273-0501", "")] // this is a full-on enterprise subscription, so no personalization
+        [TestCase("Fake-Thing-LC-009926-5417", "Fake Thing")] // dashes are replaced by spaces
+        [TestCase("Fake-009926-0521", "")] // this is a full-on enterprise subscription, so no personalization
         public void Personalization_ReturnsCorrectValue(string code, string personalization)
         {
             var subscription = new Subscription(code);

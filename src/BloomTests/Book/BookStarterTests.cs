@@ -280,38 +280,6 @@ namespace BloomTests.Book
                 .HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'titlePage')]", 1);
         }
 
-        [
-            Test,
-            Ignore(
-                "Current architecture gives responsibility for updating to Book, so can't be tested here."
-            )
-        ]
-        public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectImageOnCover()
-        {
-            AssertThatXmlIn
-                .HtmlFile(GetNewMoonAndCapBookPath())
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'cover')]//img[@src='HL0014-1.png']",
-                    1
-                );
-        }
-
-        [
-            Test,
-            Ignore(
-                "Current architecture spreads this responsibility for updating to Book, so can't be tested here."
-            )
-        ]
-        public void CreateBookOnDiskFromTemplate_FromFactoryVaccinations_HasCorrectTopicOnCover()
-        {
-            AssertThatXmlIn
-                .HtmlFile(GetNewMoonAndCapBookPath())
-                .HasSpecifiedNumberOfMatchesForXpath(
-                    "//div[contains(@class,'cover')]//*[@data-derived='topic' and text()='Health']",
-                    1
-                );
-        }
-
         private string GetNewMoonAndCapBookPath()
         {
             var source = Path.Combine(
@@ -541,6 +509,60 @@ namespace BloomTests.Book
             var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
 
             _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+        }
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_NeedsNoPageLayoutUpdate()
+        {
+            var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
+            // The built template is "Basic Book.html" (generated from pug), not ".htm".
+            var sourceDom = new HtmlDom(
+                XmlHtmlConverter.GetXmlDomFromHtmlFile(Path.Combine(source, "Basic Book.html"))
+            );
+            Assert.That(
+                sourceDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.Empty,
+                "test setup: the template itself should not carry the record"
+            );
+
+            var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
+            Assert.That(
+                dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString())
+            );
+            var book = CreateBookServer().GetBookFromBookInfo(new BookInfo(path, true));
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
+        }
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_FromTemplateOutsideFactory_IsNotRecordedAsUpdated()
+        {
+            // Stands in for a template the user made: its pages may really need the per-page pass.
+            using (var userTemplates = new TemporaryFolder("BookStarterTestsUserTemplate"))
+            {
+                var source = Path.Combine(userTemplates.Path, "Basic Book");
+                CopyFolderForTest(
+                    BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
+                    source
+                );
+
+                var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+                var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
+                Assert.That(
+                    dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                    Is.Empty
+                );
+            }
+        }
+
+        private static void CopyFolderForTest(string from, string to)
+        {
+            Directory.CreateDirectory(to);
+            foreach (var file in Directory.GetFiles(from))
+                RobustFile.Copy(file, Path.Combine(to, Path.GetFileName(file)));
         }
 
         [Test]

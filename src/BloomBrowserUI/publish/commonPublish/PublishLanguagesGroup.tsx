@@ -109,8 +109,18 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     const newLangObj = new LanguagePublishInfo(lang);
                     newLangObj[fieldToUpdate] = newState;
 
+                    // Tell the parent only once the server has the new setting. The parent
+                    // re-fetches publish/languagesInBook in response, and if that GET were
+                    // sent right away it could be handled before this POST, so the features
+                    // group would be computed from the old settings (BL nightly e2e failure,
+                    // "turns the Talking Book feature on for as long as some narration is going in").
                     post(
                         `publish/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`,
+                        () => {
+                            if (props.onChange) {
+                                props.onChange();
+                            }
+                        },
                     );
 
                     return newLangObj;
@@ -119,10 +129,6 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                 }
             }),
         );
-
-        if (props.onChange) {
-            props.onChange();
-        }
     };
 
     const showAudioLanguageCheckboxes =

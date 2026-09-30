@@ -45,7 +45,7 @@ import {
 import { selectBook } from "../helpers/collection";
 import {
     getFeatureStatus,
-    kProSubscriptionCode,
+    kEnterpriseSubscriptionCode,
     restartWithCollectionSettings,
 } from "../helpers/collectionSettings";
 import { chooseImageFile, getImagePlacement } from "../helpers/images";
@@ -96,7 +96,7 @@ test.use({
     collectionSpec: {
         name: "tables-gating",
         languages: ["en"],
-        subscriptionCode: kProSubscriptionCode,
+        subscriptionCode: kEnterpriseSubscriptionCode,
     },
     experimentalFeatures: ["tables"],
 });
@@ -623,7 +623,7 @@ test.describe("a book with a table where tables cannot be made", () => {
                     bloomApp,
                     {
                         languages: ["en"],
-                        subscriptionCode: kProSubscriptionCode,
+                        subscriptionCode: kEnterpriseSubscriptionCode,
                     },
                     { experimentalFeatures: [] },
                 );

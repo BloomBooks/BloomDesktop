@@ -4,7 +4,7 @@ import WebSocketManager, {
     IBloomWebSocketEvent,
 } from "../../utils/WebSocketManager";
 import { postJson } from "../../utils/bloomApi";
-import { showBookGridSetupDialog } from "../../react_components/BookGridSetup/BookGridSetupDialog";
+import { getWorkspaceBundleExports } from "./workspaceFrames";
 import { Link } from "../../react_components/BookGridSetup/BookLinkTypes";
 
 function getLanguage1Tag(): string {
@@ -56,7 +56,8 @@ export function editLinkGrid(linkGrid: HTMLElement) {
             };
         });
 
-    showBookGridSetupDialog(
+    // Shown from the workspace root so its backdrop covers the page list too.
+    getWorkspaceBundleExports().showBookGridSetupDialog(
         currentLinks,
         // callback if they press OK
         (links: Link[]) => {

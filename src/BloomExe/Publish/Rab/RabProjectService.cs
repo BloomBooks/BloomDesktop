@@ -19,6 +19,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.FreezeDoctor;
 using Bloom.Publish.BloomPub;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -812,6 +813,13 @@ namespace Bloom.Publish.Rab
 
         private void Build()
         {
+            // The longest deliberate operation Bloom has: a Gradle build exceeds a minute even on a fast
+            // machine. BloomPubMaker marks its own work nested inside this; the scope counts depth, so the
+            // inner one finishing does not end the patience for this one.
+            using var _longOperation = FreezeDoctorSupport.LongOperation(
+                "building an app with Reading App Builder"
+            );
+
             // Build reuses BloomPUBs created during the current Apps-screen session and regenerates only missing ones.
             var paths = GetPaths();
             EnsureWorkspaceFolders(paths);
@@ -1407,6 +1415,23 @@ namespace Bloom.Publish.Rab
             var booksToExport = bookInfos.ToList();
             var bloomPubPathsToKeep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            // Like the other publish paths, refuse to publish a book in a language its copyright holder
+            // has not licensed (BL-16833). Check every book, including ones whose BloomPUB we would
+            // merely reuse, before touching anything on disk.
+            EnsureBooksAreLicensedForPublishing(
+                booksToExport.Select(bookInfo =>
+                {
+                    var book = _collectionModel.GetBookFromBookInfo(bookInfo);
+                    return (
+                        book,
+                        GetBookTitleForRab(book, bookInfo),
+                        BloomPubPublishSettings
+                            .GetPublishSettingsForBook(_bookServer, bookInfo)
+                            .LanguagesToInclude.ToArray()
+                    );
+                })
+            );
+
             foreach (var bookInfo in booksToExport)
             {
                 var existing =
@@ -1495,6 +1520,34 @@ namespace Bloom.Publish.Rab
             }
 
             return exportedBooks;
+        }
+
+        /// <summary>
+        /// Stops Prepare/Build when any book headed into the app may not be published in the languages its
+        /// BloomPUB would include (see LicenseChecker), by throwing with the LicenseChecker message; the
+        /// caller's ReportFailure puts that in the Apps screen log. Each problem is on its own line and
+        /// names the book, because an app usually holds several books and LicenseChecker's message only
+        /// says "this book" (BL-16833). This mirrors the check the BloomPUB, ePUB, and PDF publish paths
+        /// make before they publish.
+        /// </summary>
+        internal static void EnsureBooksAreLicensedForPublishing(
+            IEnumerable<(global::Bloom.Book.Book Book, string Title, string[] Languages)> books
+        )
+        {
+            var checker = new LicenseChecker();
+            var problems = books
+                .Select(book => (book.Title, Message: checker.CheckBook(book.Book, book.Languages)))
+                .Where(problem => problem.Message != null)
+                .ToList();
+            if (problems.Count == 0)
+                return;
+
+            throw new ApplicationException(
+                string.Join(
+                    Environment.NewLine,
+                    problems.Select(problem => $"{problem.Title}: {problem.Message}")
+                )
+            );
         }
 
         internal static string ResolveBloomPubPath(
@@ -2926,18 +2979,27 @@ namespace Bloom.Publish.Rab
             return $"Downloading Reading App Builder installer: {transferredText} received";
         }
 
+        /// <summary>
+        /// Renders a byte count for the download progress log line, e.g. "1.5 MB".
+        /// </summary>
+        /// <remarks>
+        /// Invariant on purpose. This goes into Logger.WriteEvent, in an entirely unlocalized
+        /// English sentence, and a log we are sent from the field should read the same whatever the
+        /// reporter's machine was set to — "1,5 MB" in the middle of an English line is just
+        /// confusing. Without this, the number's shape follows the user's culture.
+        /// </remarks>
         internal static string FormatRabInstallerDownloadBytes(long byteCount)
         {
             const double kilobyte = 1024d;
             const double megabyte = kilobyte * 1024d;
 
             if (byteCount >= megabyte)
-                return $"{byteCount / megabyte:0.0} MB";
+                return FormattableString.Invariant($"{byteCount / megabyte:0.0} MB");
 
             if (byteCount >= kilobyte)
-                return $"{byteCount / kilobyte:0.0} KB";
+                return FormattableString.Invariant($"{byteCount / kilobyte:0.0} KB");
 
-            return $"{byteCount} B";
+            return FormattableString.Invariant($"{byteCount} B");
         }
 
         internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()

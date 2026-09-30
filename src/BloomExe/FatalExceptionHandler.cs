@@ -176,6 +176,12 @@ namespace Bloom
 
         protected override bool DisplayError(Exception exception)
         {
+            // First, before anything below blocks or exits. Both fatal routes - Application.ThreadException
+            // and AppDomain.UnhandledException - funnel through here, so this is the one place that catches
+            // every crash and still runs ahead of the modal dialog, which does not return. When no Doctor is
+            // watching it returns immediately, so the ordinary user's crash pays nothing.
+            FreezeDoctor.FreezeDoctorSupport.RequestDumpBeforeDying();
+
             if (Program.RunningE2eTests)
             {
                 // No human is present during an e2e/visual-regression run to dismiss a modal, so

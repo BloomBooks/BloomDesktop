@@ -201,9 +201,10 @@ export async function expectUploadStepButtons(
 }
 
 /**
- * Click the Upload Book button. Bloom refuses to upload at all under --e2e (see
- * LibraryPublishApi.RefuseUploadWhileRunningE2eTests), so this cannot publish anything; what a
- * test can see is what the screen does before that point, such as the template warning below.
+ * Click the Upload Book button. Under --e2e Bloom uploads only to the sandbox and refuses
+ * bloomlibrary.org itself (see LibraryPublishApi.RefuseUploadWhileRunningE2eTests), and a test that
+ * has only a pretended login (e2e/loginState) has no real session to upload with; what such a test
+ * sees is what the screen does before an upload would happen, such as the template warning below.
  */
 export async function clickUploadBook(page: Page): Promise<void> {
     await page
@@ -226,10 +227,11 @@ export async function waitForTemplateUploadWarning(
 }
 
 /**
- * Answer No to the template warning. There is deliberately no helper for Yes: Bloom refuses to
- * upload under --e2e, so answering Yes would prove nothing beyond that refusal, and what the
- * manual test is really checking — that a template is allowed through the copyright rule — is
- * already settled by the warning appearing at all.
+ * Answer No to the template warning. There is deliberately no helper for Yes here: this helper
+ * serves tests that only pretend to be logged in, which have no real session to upload with, and
+ * what the manual test is really checking — that a template is allowed through the copyright rule —
+ * is already settled by the warning appearing at all. A test that signs in for real and means to
+ * upload drives the Yes path itself.
  */
 export async function declineTemplateUploadWarning(page: Page): Promise<void> {
     await templateUploadWarning(page)

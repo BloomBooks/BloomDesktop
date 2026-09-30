@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ using Bloom.Collection;
 using Bloom.Collection.BloomPack;
 using Bloom.CollectionChoosing;
 using Bloom.ErrorReporter;
+using Bloom.FreezeDoctor;
+using Bloom.ImageProcessing;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Registration;
@@ -27,6 +30,7 @@ using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
+using BloomFreezeDoctor.Protocol;
 using BloomTemp;
 using CommandLine;
 using L10NSharp;
@@ -108,11 +112,31 @@ namespace Bloom
         internal static string StartupLabel { get; private set; }
         internal static bool StartupAutomation { get; private set; }
 
+        // --dont-disturb: something other than the person at the keyboard is driving this Bloom
+        // (an agent, or the e2e and visual-regression suites on a developer's machine), so no
+        // window it opens may take the foreground or the keyboard. Separate from --automation,
+        // which ./go.sh passes to every developer Bloom: a developer testing by hand wants the
+        // ordinary behavior, and so does a test run on CI, where nobody else is at the screen.
+        // Bloom's own windows honor it (Shell, SplashScreen, ReactDialog, the WinForms dialogs
+        // through ShowWithoutActivation, and Extensions.BringToFrontNow); native Windows dialogs,
+        // such as a file picker or a MessageBox, are activated by Windows regardless.
+        internal static bool StartupDontDisturb { get; private set; }
+
+        // Experimental features an e2e run asked for, passed as
+        // --experimental-features <comma-separated tokens>, or null when none were asked for.
+        // Only accepted together with --e2e; see ExperimentalFeatures.TokensFromE2eCommandLine.
+        internal static string StartupExperimentalFeatures { get; private set; }
+
         // Control port of the dev launcher (scripts/watchBloomExe.mjs) that started
         // this Bloom, passed as --launcher-port. When present, DevLauncher watches for
         // pending C# changes and offers a dev-only toast that asks the launcher to
         // rebuild and relaunch us.
         internal static int? StartupLauncherPort { get; private set; }
+
+        // The folder --user-settings-folder asked Bloom to keep its user settings in, or null
+        // when none was named. BloomSettingsProvider is what acts on it; this copy is only for
+        // reporting what was requested.
+        internal static string StartupUserSettingsFolder { get; private set; }
 
         internal static string StartupRequestedPortSummary =>
             string.Join(
@@ -120,9 +144,13 @@ namespace Bloom
                 new[]
                 {
                     StartupAutomation ? "automation=true" : null,
+                    StartupDontDisturb ? "dontDisturb=true" : null,
                     StartupVitePort.HasValue ? $"vitePort={StartupVitePort.Value}" : null,
                     StartupLauncherPort.HasValue
                         ? $"launcherPort={StartupLauncherPort.Value}"
+                        : null,
+                    StartupUserSettingsFolder != null
+                        ? $"userSettingsFolder={StartupUserSettingsFolder}"
                         : null,
                 }.Where(value => value != null)
             );
@@ -134,12 +162,48 @@ namespace Bloom
             _ownsSingleInstanceToken = false;
             _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             Logger.Init();
+            BloomAssertListener.Install();
             // Configure TempFile to create temp files with a "bloom" prefix so we can
             // catch stuff we make that doesn't get cleaned up properly, including in our
             // final call to CleanupTempFolder. Also prevents our temp files competing with
             // other programs for 64K available default temp file names.
             TempFile.NamePrefix = "bloom";
+            TagLibCultureFix.Register();
+
+            // Parse our own startup arguments before anything reads Settings.Default:
+            // --user-settings-folder decides where the settings live (the parser hands it to
+            // BloomSettingsProvider), and a settings provider fixes its location when it is
+            // constructed, which happens the first time a setting is read.
+            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
+            if (startupPortErrorMessage != null)
+            {
+                // A rejected launch touches no settings, its own or anyone else's, so the error is
+                // reported before anything reads Settings.Default. CheckForCorruptUserConfig and
+                // SetUpLocalization below both do, and a rejected launch owns no settings folder
+                // (the parser hands one to BloomSettingsProvider only for an accepted command
+                // line), so they would read, and might repair, the shared profile of whoever is
+                // running Bloom. Only what a message box needs is set up.
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                MessageBox.Show(
+                    startupPortErrorMessage,
+                    "Bloom",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+                return 1;
+            }
+
             CheckForCorruptUserConfig();
+            // Tell any Freeze Doctor already running that a Bloom has started, as early in Main as it can
+            // go, so it adopts us at once instead of at its next five-second sweep. Everything before this
+            // is time in which a hang or a crash cannot be doctored, because Bloom only asks for a dump if
+            // a Doctor is already watching; announced from where the Doctor is launched, much further
+            // down, it would arrive after the sweep had found us anyway.
+            //
+            // Not any earlier than this, though: it reads a setting, and CheckForCorruptUserConfig above is
+            // what makes reading one safe.
+            DoctorLauncher.AnnounceToAnyDoctor();
             // Ensure that the registration information is loaded early before Team Collection
             // needs it.
             Registration.Registration.Default.EnsureLoaded();
@@ -178,18 +242,6 @@ namespace Bloom
             // every startup path calls it.
             SetUpLocalization();
 
-            var args = ParseStartupPortArguments(args1, out var startupPortErrorMessage);
-            if (startupPortErrorMessage != null)
-            {
-                MessageBox.Show(
-                    startupPortErrorMessage,
-                    "Bloom",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-                return 1;
-            }
-
             // Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
             // Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
             // Steve says he thinks Gtk3 is still better but that it likely only matters for Linux,
@@ -202,6 +254,8 @@ namespace Bloom
             // Bloom has several command line scenarios, without a coherent system for them.
             // The following is how we will do things from now on, and things can be moved
             // into this as time allows. See CommandLineOptions.cs.
+            // The command itself runs inside RunConsoleCommandLoop, which gives this thread a real
+            // message loop; see that method for why that matters so much to WebView2.
             if (
                 args.Length > 0
                 && new[]
@@ -225,80 +279,9 @@ namespace Bloom
 
                 RunningInConsoleMode = true;
 
-                var mainTask = CommandLine
-                    .Parser.Default.ParseArguments(
-                        args,
-                        new[]
-                        {
-                            typeof(HydrateParameters),
-                            typeof(UploadParameters),
-                            typeof(DownloadBookOptions),
-                            typeof(GetUsedFontsParameters),
-                            typeof(ChangeLayoutParameters),
-                            typeof(CreateArtifactsParameters),
-                            typeof(SendFontAnalyticsParameters),
-                            typeof(SpreadsheetExportParameters),
-                            typeof(SpreadsheetImportParameters),
-                        }
-                    )
-                    .MapResult(
-                        (HydrateParameters opts) => HydrateBookCommand.Handle(opts),
-                        (UploadParameters opts) => HandleUpload(opts),
-                        (DownloadBookOptions opts) =>
-                            DownloadBookCommand.HandleSilentDownload(opts),
-                        (GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
-                        (ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
-                        (CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
-                        (SendFontAnalyticsParameters opts) => SendFontAnalyticsCommand.Handle(opts),
-                        (SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
-                        // We don't have a way to get the CollectionSettings object for the Import process.
-                        // This means that if we use this CLI version, care should be taken to update the book,
-                        // so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
-                        (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
-                        async errors =>
-                        {
-                            var code = 0;
-                            foreach (var error in errors)
-                            {
-                                if (
-                                    !(error is HelpVerbRequestedError)
-                                    && !(error is HelpRequestedError)
-                                )
-                                {
-                                    // All of the errors have already been reported in English text. This would just add
-                                    // a cryptic class name to the output, possibly in the middle of a line in the usage
-                                    // message displayed as a result of the errors.
-                                    // Console.WriteLine(error.ToString());
-                                    code = 1;
-                                }
-                            }
-
-                            return code;
-                        }
-                    );
-                // What we want to do here is await mainTask. But to do that we have to make
-                // Main async. That is allowed since C# 7.1, but if we do it, we don't get
-                // a Windows.Forms synchronization context, which means async tasks started on
-                // the UI thread don't have to complete on the UI thread. That will mess up
-                // WebView2, and it is so that we can use WebView2's ExecuteJavascriptAsync
-                // that we made all these commands async to begin with.
-                // As soon as we DO have a windows.forms sync context...even if we made it ourselves,
-                // which is tricky because await won't work on a windows.forms sync context
-                // until we enter Run() and start pumping messages...we run into the problem
-                // that we need the result of the main task to return as the result of Main().
-                // We can't just call Result, because that blocks the main thread, which stops
-                // it pumping messages, which means anything that awaits on the main thread
-                // will deadlock.
-                // So, the best I can find to do is to sit here pumping messages until the
-                // main task completes.
-                // (Many of the main tasks don't actually do any awaiting and will immediately
-                // show as completed.)
-                while (!mainTask.IsCompleted)
-                {
-                    Application.DoEvents();
-                }
+                var exitCode = RunConsoleCommandLoop(() => ParseAndDispatchConsoleCommand(args));
                 WebView2Browser.CleanupWebView2UserFolders();
-                return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
+                return exitCode;
             }
 
             if (!ValidateStartupVitePort(out var startupViteErrorMessage))
@@ -343,6 +326,7 @@ namespace Bloom
                 if (Settings.Default.NeedUpgrade)
                 {
                     //see http://stackoverflow.com/questions/3498561/net-applicationsettingsbase-should-i-call-upgrade-every-time-i-load
+                    // (BloomSettingsProvider decides what, if anything, there is to bring in.)
                     Settings.Default.Upgrade();
                     Settings.Default.Reload();
                     Settings.Default.NeedUpgrade = false;
@@ -350,6 +334,11 @@ namespace Bloom
                     Settings.Default.Save();
 
                     StartUpWithFirstOrNewVersionBehavior = true;
+
+                    // The announcement at the top of Main read RunFreezeDoctor before this migration, so on
+                    // the first run of a new version it saw the default (off) and stayed silent. Now that the
+                    // user's real value is in, tell a running Doctor again; a repeat is harmless.
+                    DoctorLauncher.AnnounceToAnyDoctor();
                 }
                 // Migrate from old monolithic experimental features setting.
                 ExperimentalFeatures.MigrateFromOldSettings();
@@ -412,14 +401,22 @@ namespace Bloom
                     if (args.Length > 0)
                         _supressRegistrationDialog = true;
 
-                    if (args.Length == 1 && args[0].ToLowerInvariant().EndsWith(".bloompack"))
+                    if (
+                        args.Length == 1
+                        && args[0]
+                            .ToLowerInvariant()
+                            .EndsWith(".bloompack", StringComparison.Ordinal)
+                    )
                     {
                         SetUpErrorHandling();
                         using (_applicationContainer = new ApplicationContainer())
                         {
                             var path = args[0];
                             // This allows local links to bloom packs.
-                            if (path.ToLowerInvariant().StartsWith("bloom://"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .StartsWith("bloom://", StringComparison.Ordinal)
+                            )
                             {
                                 path = path.Substring("bloom://".Length);
                                 if (!RobustFile.Exists(path))
@@ -451,7 +448,7 @@ namespace Bloom
                         var missingTcPieces = FolderTeamCollection.MissingTcPieces(args[0]);
                         if (!string.IsNullOrEmpty(missingTcPieces))
                         {
-                            if (missingTcPieces.StartsWith("book folder"))
+                            if (missingTcPieces.StartsWith("book folder", StringComparison.Ordinal))
                             {
                                 ErrorReport.NotifyUserOfProblem(
                                     "You opened a file meant to help you join a Team Collection, but Bloom was not able to find a Team Collection folder for you to join. Please ask your colleague for help in getting a complete Team Collection folder synchronized *to your computer*. Then, inside that folder, open the \"joinCollection\" file."
@@ -661,13 +658,19 @@ namespace Bloom
                             // before looking for .bloomCollection.
                             var path = Utils.LongPathAware.GetLongPath(argPath);
 
-                            if (path.ToLowerInvariant().EndsWith(@".bloomproblembook"))
+                            if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomproblembook", StringComparison.Ordinal)
+                            )
                             {
                                 Settings.Default.MruProjects.AddNewPath(
                                     ProblemReportApi.UnpackProblemBook(path)
                                 );
                             }
-                            else if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+                            else if (
+                                path.ToLowerInvariant()
+                                    .EndsWith(@".bloomcollection", StringComparison.Ordinal)
+                            )
                             {
                                 // See BL-10012. We'll die eventually, might as well nip this in the bud.
                                 if (Utils.LongPathAware.GetExceedsMaxPath(path))
@@ -785,9 +788,17 @@ namespace Bloom
             StartupVitePort = null;
             StartupLabel = null;
             StartupAutomation = false;
+            StartupDontDisturb = false;
             StartupLauncherPort = null;
+            StartupUserSettingsFolder = null;
+            BloomSettingsProvider.SetUserSettingsFolder(null);
             RunningE2eTests = false;
+            StartupExperimentalFeatures = null;
 
+            // Collected here and handed to BloomSettingsProvider only once the whole command line
+            // has been accepted, so a rejected launch never owns a settings folder: Main reports
+            // the error before anything reads settings, and there is nothing to undo here.
+            string userSettingsFolder = null;
             var remainingArgs = new List<string>();
 
             for (var i = 0; i < args.Length; i++)
@@ -829,9 +840,31 @@ namespace Bloom
                     || TryHandleStartupFlagArgument(
                         args,
                         ref i,
+                        "--dont-disturb",
+                        () => StartupDontDisturb,
+                        value => StartupDontDisturb = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupFlagArgument(
+                        args,
+                        ref i,
                         "--e2e",
                         () => RunningE2eTests,
                         value => RunningE2eTests = value,
+                        out errorMessage
+                    )
+                    || TryHandleStartupStringArgument(
+                        args,
+                        ref i,
+                        "--experimental-features",
+                        () => StartupExperimentalFeatures,
+                        value => StartupExperimentalFeatures = value,
+                        out errorMessage
+                    )
+                    || TryHandleUserSettingsFolderArgument(
+                        args,
+                        ref i,
+                        ref userSettingsFolder,
                         out errorMessage
                     )
                 )
@@ -845,7 +878,68 @@ namespace Bloom
                 remainingArgs.Add(args[i]);
             }
 
+            // Refuse rather than ignore: a run that asks for a feature and does not get it fails
+            // in some far-away place, looking like a broken feature instead of a bad command line.
+            if (StartupExperimentalFeatures != null && !RunningE2eTests)
+            {
+                errorMessage = "Bloom only accepts --experimental-features together with --e2e.";
+                return Array.Empty<string>();
+            }
+
+            StartupUserSettingsFolder = userSettingsFolder;
+            BloomSettingsProvider.SetUserSettingsFolder(userSettingsFolder);
             return remainingArgs.ToArray();
+        }
+
+        /// <summary>
+        /// Handle --user-settings-folder: the folder to keep user.config in, which the caller
+        /// hands to BloomSettingsProvider. Stored as a full path, because Bloom changes its
+        /// working directory during startup (NormalizeWorkingDirectory) and a relative path would
+        /// otherwise point somewhere else by the time the settings are saved.
+        /// </summary>
+        private static bool TryHandleUserSettingsFolderArgument(
+            string[] args,
+            ref int index,
+            ref string folder,
+            out string errorMessage
+        )
+        {
+            const string optionName = "--user-settings-folder";
+            if (
+                !TryParseStartupStringArgument(
+                    args,
+                    ref index,
+                    optionName,
+                    out var value,
+                    out errorMessage
+                )
+            )
+            {
+                return false;
+            }
+
+            if (errorMessage != null)
+                return true;
+
+            if (folder != null)
+            {
+                errorMessage = $"Bloom only accepts one {optionName} argument.";
+                return true;
+            }
+
+            try
+            {
+                folder = Path.GetFullPath(value);
+            }
+            catch (Exception e)
+                when (e is ArgumentException
+                    || e is NotSupportedException
+                    || e is System.IO.PathTooLongException
+                )
+            {
+                errorMessage = $"Bloom cannot use \"{value}\" as the {optionName}: {e.Message}";
+            }
+            return true;
         }
 
         private static bool TryHandleStartupFlagArgument(
@@ -1102,6 +1196,158 @@ namespace Bloom
                 }
             }
             return missingOrAntique;
+        }
+
+        /// <summary>
+        /// Runs one console-mode command to completion on this thread, driving a real Windows Forms
+        /// message loop while it runs, and returns the exit code the command produced.
+        /// </summary>
+        /// <remarks>
+        /// Console mode used to wait for the command with
+        /// "while (!mainTask.IsCompleted) Application.DoEvents();". The comment there explained that Main
+        /// was deliberately left synchronous so that there would be a Windows Forms synchronization
+        /// context, and so that an await started on this thread would resume on this thread — which
+        /// WebView2 depends on. The trouble is that the wait loop defeated exactly that:
+        /// Application.DoEvents(), when it is the OUTERMOST message loop, uninstalls the
+        /// WindowsFormsSynchronizationContext and leaves a plain base SynchronizationContext, whose Post
+        /// queues to the thread pool. (Nested inside Application.Run it does not, which is why the
+        /// desktop app never had this problem.) So from the first await that actually yielded, console
+        /// work moved to MTA thread-pool threads — where a WebView2 cannot even be created, because
+        /// CoreWebView2Environment.CreateAsync needs an STA thread and throws RPC_E_CHANGED_MODE. That is
+        /// what made bulk upload fail from the second book onwards (BL-16767).
+        ///
+        /// Running a genuine loop instead makes the original intent true: the command's awaits resume on
+        /// this STA thread, which is pumping messages, so a browser created here can finish initializing
+        /// and can be used for the whole run.
+        ///
+        /// ⚠ The flip side, and the one thing to know before adding console code: because awaits now
+        /// come back to this thread, **sync-over-async on this thread can deadlock**, where under the old
+        /// DoEvents wait it could not. If a console verb blocks on a Task (<c>.Result</c>,
+        /// <c>.Wait()</c>, <c>GetAwaiter().GetResult()</c>) and that Task can only complete by running a
+        /// continuation posted back to this context, nothing will ever run it. The blocking calls on the
+        /// existing console paths were checked and are safe: they wait either on library tasks that use
+        /// <c>ConfigureAwait(false)</c> internally (the AWS SDK, HttpClient), or on work owned by another
+        /// thread (OffScreenBrowser completes its own), and <see cref="Bloom.Utils.AsyncUtil"/> pins its
+        /// work to <c>TaskScheduler.Default</c> for exactly this reason. New code that blocks on one of
+        /// Bloom's own async methods is the case to avoid — await it, or route it through AsyncUtil.
+        /// </remarks>
+        /// <param name="startCommand">
+        /// Starts the command and returns its Task. It is invoked from inside the message loop, not
+        /// before it, because an await captures whatever synchronization context is current at the moment
+        /// it suspends — starting the command any earlier would be too late for its first await.
+        /// </param>
+        internal static int RunConsoleCommandLoop(Func<Task<int>> startCommand)
+        {
+            var syncContext = new WindowsFormsSynchronizationContext();
+            SynchronizationContext.SetSynchronizationContext(syncContext);
+            // Deliberately NOT assigned to Program.MainContext. That property means "the app's UI
+            // thread", and code keyed off it (RabProjectService, CommonApi, ToastService) behaves
+            // differently when it is set; RabProjectService in particular has a null branch precisely
+            // for the case where there is no UI. Publishing this context there would silently change
+            // those paths in console mode, which is no part of what this loop is for.
+
+            var appContext = new ApplicationContext();
+            Task<int> commandTask = null;
+            Exception startupError = null;
+
+            // Post rather than call: this body runs once Application.Run below is pumping.
+            syncContext.Post(
+                _ =>
+                {
+                    try
+                    {
+                        commandTask = startCommand();
+                    }
+                    catch (Exception e)
+                    {
+                        // The command threw before it could return a Task, so nothing will ever complete
+                        // it. End the loop ourselves and rethrow below, on the caller's stack.
+                        startupError = e;
+                        appContext.ExitThread();
+                        return;
+                    }
+                    // Stop pumping as soon as the command finishes. Scheduling the continuation onto this
+                    // same context keeps ExitThread on the thread that is running the loop.
+                    commandTask.ContinueWith(
+                        _2 => appContext.ExitThread(),
+                        TaskScheduler.FromCurrentSynchronizationContext()
+                    );
+                },
+                null
+            );
+
+            Application.Run(appContext);
+
+            if (startupError != null)
+                ExceptionDispatchInfo.Capture(startupError).Throw();
+            // Normally the loop ended *because* the task completed, so reading Result below neither
+            // blocks nor deadlocks. But if something else ended the loop (a stray Application.Exit
+            // from inside a command, say), Result would block this thread forever. A console tool that
+            // hangs is the worst thing this method could do, so say what happened instead.
+            if (commandTask == null || !commandTask.IsCompleted)
+                throw new ApplicationException(
+                    "The console message loop ended before the command finished, so its exit code is"
+                        + " unavailable. Something other than the command ending stopped the loop."
+                );
+            // As before, a command that failed surfaces its exception from this line.
+            return commandTask.Result;
+        }
+
+        /// <summary>
+        /// Parses the command line and starts the matching console command, returning its Task.
+        /// Called by <see cref="RunConsoleCommandLoop"/> from inside the message loop.
+        /// </summary>
+        private static Task<int> ParseAndDispatchConsoleCommand(string[] args)
+        {
+            return CommandLine
+                .Parser.Default.ParseArguments(
+                    args,
+                    new[]
+                    {
+                        typeof(HydrateParameters),
+                        typeof(UploadParameters),
+                        typeof(DownloadBookOptions),
+                        typeof(GetUsedFontsParameters),
+                        typeof(ChangeLayoutParameters),
+                        typeof(CreateArtifactsParameters),
+                        typeof(SendFontAnalyticsParameters),
+                        typeof(SpreadsheetExportParameters),
+                        typeof(SpreadsheetImportParameters),
+                    }
+                )
+                .MapResult(
+                    (HydrateParameters opts) => HydrateBookCommand.Handle(opts),
+                    (UploadParameters opts) => HandleUpload(opts),
+                    (DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
+                    (GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
+                    (ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
+                    (CreateArtifactsParameters opts) => CreateArtifactsCommand.Handle(opts),
+                    (SendFontAnalyticsParameters opts) => SendFontAnalyticsCommand.Handle(opts),
+                    (SpreadsheetExportParameters opts) => SpreadsheetExportCommand.Handle(opts),
+                    // We don't have a way to get the CollectionSettings object for the Import process.
+                    // This means that if we use this CLI version, care should be taken to update the book,
+                    // so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
+                    (SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
+                    async errors =>
+                    {
+                        var code = 0;
+                        foreach (var error in errors)
+                        {
+                            if (
+                                !(error is HelpVerbRequestedError) && !(error is HelpRequestedError)
+                            )
+                            {
+                                // All of the errors have already been reported in English text. This would just add
+                                // a cryptic class name to the output, possibly in the middle of a line in the usage
+                                // message displayed as a result of the errors.
+                                // Console.WriteLine(error.ToString());
+                                code = 1;
+                            }
+                        }
+
+                        return code;
+                    }
+                );
         }
 
         static async Task<int> HandleUpload(UploadParameters opts)
@@ -1422,14 +1668,15 @@ namespace Bloom
 
         private static bool IsInstallerLaunch(string[] args)
         {
-            return args.Length > 0 && args[0].ToLowerInvariant().StartsWith("--veloapp-");
+            return args.Length > 0
+                && args[0].ToLowerInvariant().StartsWith("--veloapp-", StringComparison.Ordinal);
         }
 
         private static bool IsLocalizationHarvestingLaunch(string[] args)
         {
             return args.Length == 1
-                && args[0].StartsWith("--ha")
-                && "--harvest-for-localization".StartsWith(args[0]);
+                && args[0].StartsWith("--ha", StringComparison.Ordinal)
+                && "--harvest-for-localization".StartsWith(args[0], StringComparison.Ordinal);
         }
 
         // I think this does something like the Wix element
@@ -1467,7 +1714,7 @@ namespace Bloom
                     var shell = _projectContext.ProjectWindow as Shell;
                     if (shell != null)
                     {
-                        shell.Invoke((Action)(() => shell.ReallyComeToFront()));
+                        shell.Invoke((Action)(() => shell.FinishPuttingShellInFront()));
                     }
                 }
             };
@@ -1483,6 +1730,18 @@ namespace Bloom
             // Crashes if initialized twice, and there's at least once case when joining a TC
             // where we can come here twice.
             WritingSystem.EnsureSldrInitialized();
+
+            // Publish our health for the Freeze Doctor. Started here, just before the message loop,
+            // because the UI heartbeat is a WinForms timer: it only ticks while messages are being pumped,
+            // which is exactly what makes its silence meaningful.
+            FreezeDoctorSupport.Start();
+            // And start the Doctor itself if the user has switched it on, since a diagnostic tool is no use
+            // unless it is already running when the trouble starts.
+            DoctorLauncher.LaunchIfWanted();
+            // Deliberate breakage for testing the Doctor, and inert unless BLOOM_SIMULATE_FREEZE is set
+            // AND this is a developer build.
+            FreezeSimulator.ArmIfRequested(ApplicationUpdateSupport.ChannelName);
+
             try
             {
                 Application.Run();
@@ -1505,6 +1764,8 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                // Ask a watching Freeze Doctor to dump us while we still exist.
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(bad);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1520,6 +1781,7 @@ namespace Bloom
                 {
                     exceptMsg += $" (Sentry report failed: {e})";
                 }
+                FreezeDoctorSupport.RequestDumpBeforeDying();
                 ShowUserEmergencyShutdownMessage(nasty);
                 System.Environment.FailFast(exceptMsg);
             }
@@ -1529,6 +1791,10 @@ namespace Bloom
                     FileMeddlerManager.Stop();
                 WebView2Browser.CleanupWebView2UserFolders();
             }
+
+            // From here on we mark how far shutdown has got, so that a Bloom which dies part way through
+            // can say WHERE it stopped rather than only that it did.
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.MessageLoopReturned);
 
             try
             {
@@ -1546,6 +1812,7 @@ namespace Bloom
                 }
             }
 
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.SettingsSaved);
             Sldr.Cleanup();
             Logger.WriteMinorEvent("shutting down logger, about to dispose project context");
             // Force the log file to include the minor events.  I don't know why this isn't the default. (BL-16290)
@@ -1556,9 +1823,11 @@ namespace Bloom
                 logPath = Path.Combine(Path.GetTempPath(), "SIL", "Bloom", "Log.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logPath));
             RobustFile.WriteAllText(logPath, logText);
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.LogWritten);
 
             if (_projectContext != null)
                 _projectContext.Dispose();
+            FreezeDoctorSupport.SetShutdownPhase(BloomShutdownPhase.ProjectContextDisposed);
         }
 
         /// <summary>
@@ -1608,8 +1877,12 @@ namespace Bloom
         private static bool IsBloomBookOrder(string[] args)
         {
             return args.Length == 1
-                && !args[0].ToLowerInvariant().EndsWith(".bloomcollection")
-                && !args[0].ToLowerInvariant().EndsWith(".bloomproblembook")
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomcollection", StringComparison.Ordinal)
+                && !args[0]
+                    .ToLowerInvariant()
+                    .EndsWith(".bloomproblembook", StringComparison.Ordinal)
                 && !IsInstallerLaunch(args);
         }
 
@@ -1799,7 +2072,7 @@ namespace Bloom
                 // Catch case where the last collection was so long that windows gave us a 8.3 version which will eventually
                 // fail. Just fail right now, don't bother to have a conversation with the user about it.
                 // This might be impossible in real life, I'm not sure. Part of BL-10012.
-                if (path.EndsWith(".BLO"))
+                if (path.EndsWith(".BLO", StringComparison.Ordinal))
                 {
                     Settings.Default.MruProjects.RemovePath(path);
                     path = null;
@@ -1900,6 +2173,16 @@ namespace Bloom
                 _projectContext.ProjectWindow.Show();
 
                 StartupScreenManager.PutSplashAbove(_projectContext.ProjectWindow);
+
+                // At first startup, closing the splash screen brings the main window to the front, and
+                // doing it here as well would put the main window on top of the dialogs that startup
+                // puts up. But every later time we open a collection -- above all when the user switches
+                // collections -- there is no splash screen and nothing else that will do it, and the new
+                // Shell has only Show()'s implicit activation to rely on. Windows refuses that once
+                // another application (Chrome, say) took the foreground as our previous window closed,
+                // and Bloom comes up invisible behind it. BL-16784.
+                if (!StartupScreenManager.WillBringMainWindowToFrontWhenSplashCloses)
+                    (_projectContext.ProjectWindow as Shell)?.FinishPuttingShellInFront();
 
                 if (BloomThreadCancelService != null)
                     BloomThreadCancelService.Dispose();
@@ -2133,11 +2416,31 @@ namespace Bloom
                     dlg.SetScaledSize(700, 500);
                     dlg.StartPosition = FormStartPosition.CenterScreen;
                     dlg.ShowInTaskbar = true;
+                    // An automation run puts this dialog where BLOOM_AUTOMATION_MONITOR says,
+                    // as it does the main window and the splash screen (see
+                    // AutomationWindowPlacement); CenterScreen would put it on whichever monitor
+                    // the mouse is on.
+                    var placement = AutomationWindowPlacement.GetChoice();
+                    if (placement == AutomationWindowPlacement.Choice.OffEveryMonitor)
+                    {
+                        dlg.StartPosition = FormStartPosition.Manual;
+                        var offScreenArea = AutomationWindowPlacement.GetBoundsOffEveryMonitor();
+                        dlg.Location = new System.Drawing.Point(
+                            offScreenArea.Left,
+                            offScreenArea.Top
+                        );
+                        dlg.ShowInTaskbar = false;
+                    }
+                    else if (placement == AutomationWindowPlacement.Choice.OnTheChosenMonitor)
+                    {
+                        dlg.CenterWithin(AutomationWindowPlacement.GetChosenMonitor().WorkingArea);
+                    }
                     // With no owner window to hand it the foreground, this opens behind
                     // whatever the user launched Bloom from (Windows Explorer, say) -- notably
                     // when the minimum-version gate's "Open a Different Collection" brings us
                     // here at startup -- and also when we reopen it programmatically after a
-                    // language change. See BL-16690.
+                    // language change. See BL-16690. (Under --dont-disturb it stays where it
+                    // opens; see BringToFrontNow.)
                     dlg.BringToFrontWhenShown();
                     dlg.ShowDialog();
                     closeSource = dlg.CloseSource;
@@ -2292,6 +2595,14 @@ namespace Bloom
 
         public static void SetUpLocalization()
         {
+            // Offer the pseudo-locale ("Pseudo-English") in the UI language menu on developer, alpha
+            // and internal channels only. It is an internationalization-testing tool, not a translation:
+            // see BL-16748 and OfferPseudoLocalizationForI18nTesting below. Note that this gates
+            // only whether the locale is *offered*; L10NSharp will pseudolocalize lookups for
+            // qps-ploc whenever that is the current UI language, which is why GetDesiredUiLanguage
+            // also refuses a stored qps-ploc on channels where we don't offer it.
+            LocalizationManager.OfferPseudoLocalization = OfferPseudoLocalizationForI18nTesting;
+
             ILocalizationManager lm;
             var installedStringFileFolder =
                 FileLocationUtilities.GetDirectoryDistributedWithApplication(true, "localization");
@@ -2447,6 +2758,31 @@ namespace Bloom
         }
 
         /// <summary>
+        /// Whether we offer the "Pseudo-English" pseudo-locale (qps-ploc) as a UI language.
+        /// It exists so that we (and testers) can spot internationalization problems: every
+        /// string that goes through localization comes back visibly transformed, so anything
+        /// still showing as plain English is hard-coded. That is a developer/tester tool, so we
+        /// offer it only where developers and testers are: see OffersPseudoLocalizationOnChannel.
+        /// See BL-16748.
+        /// </summary>
+        public static bool OfferPseudoLocalizationForI18nTesting =>
+            OffersPseudoLocalizationOnChannel(ApplicationUpdateSupport.ChannelName);
+
+        /// <summary>
+        /// Whether a build on the named channel offers the pseudo-locale: the developer and alpha
+        /// channels, plus the staff-only internal ones (BetaInternal and ReleaseInternal), since
+        /// most of our systematic testing happens on those. Never the public Beta or Release.
+        /// </summary>
+        internal static bool OffersPseudoLocalizationOnChannel(string channelName)
+        {
+            var channel = channelName.ToLowerInvariant();
+            return channel.Contains("developer")
+                || channel.Contains("alpha")
+                || channel.Contains("unstable")
+                || channel.Contains("internal");
+        }
+
+        /// <summary>
         /// Derive the desired UI language from the stored value, or from matching the OS value against
         /// the available localizations if nothing has been explicitly stored yet.
         /// </summary>
@@ -2456,6 +2792,20 @@ namespace Bloom
         private static string GetDesiredUiLanguage(string installedStringFileFolder)
         {
             var desiredLanguage = Settings.Default.UserInterfaceLanguage;
+            // A build that does not offer the pseudo-locale can still find qps-ploc stored: a
+            // developer build shares a settings folder with the Release channel, as neither is
+            // stamped with a channel name (installed Alpha and Beta each get their own). Lookups
+            // for qps-ploc would still work, so fall back to English rather than leave anyone with
+            // a mangled UI and no menu entry to escape it. Only a developer's machine can reach
+            // that state, so it is not worth chasing further than this. See BL-16748.
+            if (
+                desiredLanguage == LocalizationManager.PseudoLocalizationLanguageId
+                && !OfferPseudoLocalizationForI18nTesting
+            )
+            {
+                // SetUpLocalization stores whatever we return back into the setting.
+                return "en";
+            }
             if (
                 String.IsNullOrEmpty(desiredLanguage)
                 || !Settings.Default.UserInterfaceLanguageSetExplicitly
@@ -2537,6 +2887,15 @@ namespace Bloom
 
         // Only the token owner may release it and run Bloom's global temp cleanup on exit.
         private static bool _ownsSingleInstanceToken;
+
+        /// <summary>
+        /// Whether this Bloom holds the single-instance token, which the channels deliberately share, so
+        /// that at most one Bloom is normally running. Published in the Doctor's session file: it is what
+        /// tells the Doctor which running Bloom is actually standing in the way of a restart, as against
+        /// the ones that bypassed the token (an --automation run) or never took it (a Ctrl-held launch
+        /// that was not first).
+        /// </summary>
+        internal static bool OwnsSingleInstanceToken => _ownsSingleInstanceToken;
 
         /// <summary>
         /// Decides whether a Sentry event is the benign "unobserved Task socket/IO abort" noise
@@ -2875,7 +3234,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         {
             try
             {
-                return process.ProcessName.ToLowerInvariant().StartsWith("mono");
+                return process
+                    .ProcessName.ToLowerInvariant()
+                    .StartsWith("mono", StringComparison.Ordinal);
             }
             catch (System.InvalidOperationException)
             {
@@ -2892,7 +3253,8 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         private static void CheckForCorruptUserConfig()
         {
             //First check the user.config we get through using the palaso stuff.  This is the one in a folder with a name like Bloom/3.5.0.0
-            var palasoSettings = new SIL.Settings.CrossPlatformSettingsProvider();
+            // (or the folder --user-settings-folder named; BloomSettingsProvider knows which).
+            var palasoSettings = new BloomSettingsProvider();
             palasoSettings.Initialize(null, null);
             var error = palasoSettings.CheckForErrorsInSettingsFile();
             if (error != null)
@@ -2979,29 +3341,32 @@ Anyone looking specifically at our issue tracking system can read what you sent 
         // Should be set to true if this is being called by Harvester, false otherwise.
         public static bool RunningHarvesterMode { get; set; }
 
-        private static bool _runningE2eTests;
+        /// <summary>
+        /// True when there is no human at the keyboard to dismiss a dialog: a command-line verb,
+        /// including the child Bloom that `upload` starts for a bulk upload. Code that would
+        /// otherwise show modal UI must report the problem some other way (typically stderr) and
+        /// return, because a modal here blocks the process forever -- no failure, no exit code,
+        /// just a hang (BL-16869).
+        /// </summary>
+        /// <remarks>
+        /// Deliberately NOT including RunningE2eTests, even though NonFatalProblem.Report treats
+        /// the two alike. The e2e suite's problemDialogWatcher fixture
+        /// (src/BloomE2E/fixtures/problemDialogWatcher.ts) finds the problem dialog among the CDP
+        /// page targets, scrapes the exception from behind its "Learn More" link, and fails the
+        /// test with it. Suppressing the dialog under --e2e would take that away and let tests go
+        /// green through exceptions they currently catch. Nothing is lost by excluding it: the
+        /// bulk-upload child that BL-16869 is about runs the `upload` verb, so it is in console
+        /// mode regardless.
+        /// </remarks>
+        public static bool RunningNonInteractive => RunningInConsoleMode;
 
         // True while the visual-regression / e2e suite (see src/BloomVisualRegressionTests) is
         // driving Bloom. Set by the --e2e command-line flag, which the suite passes when it launches
         // its own dedicated Bloom. In this mode we suppress modal error dialogs so that a problem
         // surfaces as a failed API call / logged error and fails the test, instead of popping a
-        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report and
-        // FatalExceptionHandler.
-        public static bool RunningE2eTests
-        {
-            get => _runningE2eTests;
-            set
-            {
-                _runningE2eTests = value;
-                // Debug.Assert/Debug.Fail (e.g. BloomServer's request-error guard) otherwise pop a
-                // modal Windows assertion dialog. With no human to dismiss it, that dialog freezes
-                // the request/UI thread and every test times out, while hiding the real error behind
-                // it. Route assertions to the trace/log output instead while in e2e mode, and restore
-                // normal behavior when the suite turns the mode back off.
-                foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener>())
-                    listener.AssertUiEnabled = !value;
-            }
-        }
+        // dialog nobody can dismiss and hanging the whole run. See NonFatalProblem.Report,
+        // FatalExceptionHandler, and BloomAssertListener (which does the same for Debug.Assert).
+        public static bool RunningE2eTests { get; set; }
 
         // Show UI for development and testing which isn't shown to the user.
         // e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.

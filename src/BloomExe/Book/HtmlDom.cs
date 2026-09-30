@@ -360,7 +360,7 @@ namespace Bloom.Book
             // Conceivably we could load the js and look for those as strings, but it would
             // be slow and unreliable (the words might occur in comments).
             var typeAttr =
-                module || src.ToLowerInvariant().EndsWith("bundle.js")
+                module || src.ToLowerInvariant().EndsWith("bundle.js", StringComparison.Ordinal)
                     ? "module"
                     : "text/javascript";
             var existingScript = head.SelectSingleNode(
@@ -623,7 +623,10 @@ namespace Bloom.Book
             var classes = "";
             foreach (var part in oldClasses)
             {
-                if (!part.StartsWith(classPrefix) || classesToKeep.Contains(part))
+                if (
+                    !part.StartsWith(classPrefix, StringComparison.Ordinal)
+                    || classesToKeep.Contains(part)
+                )
                     classes += part + " ";
             }
             xmlElement.SetAttribute("class", classes.Trim());
@@ -670,6 +673,17 @@ namespace Bloom.Book
         public static string kBloomCanvasSelector = "." + kBloomCanvasClass;
         public static string kBackgroundImageClass = "bloom-backgroundImage";
         public static string kImageContainerClass = "bloom-imageContainer";
+
+        /// <summary>
+        /// How much of its page an image slot covers, written onto every image container by the
+        /// front end when a page is saved; see kFractionOfPageAttribute /
+        /// recordFractionOfPageOnImageSlots in imageTargetResolution.ts. It is the only record
+        /// of how big a slot ends up on screen, because the book's HTML otherwise says nothing
+        /// about that, and it is what lets the AI image editor suggest a size for images on
+        /// pages nobody has open. (For a canvas background image the front end measures the
+        /// whole bloom-canvas, but the value still lands on the container.)
+        /// </summary>
+        public const string kFractionOfPageAttribute = "data-fraction-of-page";
 
         public static bool HasBackgroundImage(SafeXmlElement imageContainer)
         {
@@ -845,9 +859,9 @@ namespace Bloom.Book
                     var href = linkNode.GetAttribute("href");
                     var name = Path.GetFileName(href).ToLowerInvariant();
                     if (
-                        name.EndsWith("xmatter.css")
+                        name.EndsWith("xmatter.css", StringComparison.Ordinal)
                         || BookStorage.AutomaticallyAddedCssFilePrefixes.Any(prefix =>
-                            name.StartsWith(prefix.ToLowerInvariant())
+                            name.StartsWith(prefix.ToLowerInvariant(), StringComparison.Ordinal)
                         )
                     )
                     {
@@ -1428,7 +1442,11 @@ namespace Bloom.Book
             var classAttr = child.GetAttribute("class");
             if (string.IsNullOrEmpty(classAttr))
                 return;
-            foreach (var style in classAttr.Split(' ').Where(x => x.EndsWith("-style")))
+            foreach (
+                var style in classAttr
+                    .Split(' ')
+                    .Where(x => x.EndsWith("-style", StringComparison.Ordinal))
+            )
             {
                 var key = style.Substring(0, style.Length - ".style".Length);
                 string defaultDefn;
@@ -1456,7 +1474,9 @@ namespace Bloom.Book
         public static string GetStyle(SafeXmlNode elt)
         {
             var classAttr = elt.GetAttribute("class") ?? "";
-            return classAttr.Split(' ').FirstOrDefault(x => x.EndsWith("-style"));
+            return classAttr
+                .Split(' ')
+                .FirstOrDefault(x => x.EndsWith("-style", StringComparison.Ordinal));
         }
 
         /// <remarks>
@@ -1502,7 +1522,7 @@ namespace Bloom.Book
                     // If the translationGroup doesn't have a style, try the first bloom-editable div in the
                     // template's translationGroup that has a style.
                     defaultStyle = desiredStyleByLang.Values.FirstOrDefault(x =>
-                        x != null && x.EndsWith("-style")
+                        x != null && x.EndsWith("-style", StringComparison.Ordinal)
                     );
                     if (string.IsNullOrEmpty(defaultStyle))
                     {
@@ -1674,7 +1694,7 @@ namespace Bloom.Book
         /// </summary>
         private static string WrapUserStyleInCdata(string innerCssStyles)
         {
-            if (innerCssStyles.StartsWith(XmlHtmlConverter.CdataPrefix))
+            if (innerCssStyles.StartsWith(XmlHtmlConverter.CdataPrefix, StringComparison.Ordinal))
             {
                 // For some reason, we are already wrapped in CDATA.
                 // Could happen in HtmlDom.MergeUserStylesOnInsertion().
@@ -1759,7 +1779,7 @@ namespace Bloom.Book
             var completeRule = String.Empty;
             foreach (var nextLine in styleLines)
             {
-                if (nextLine.StartsWith("."))
+                if (nextLine.StartsWith(".", StringComparison.Ordinal))
                 {
                     if (!String.IsNullOrEmpty(completeRule))
                     {
@@ -2192,7 +2212,11 @@ namespace Bloom.Book
             }
         }
 
-        private static void RemoveStyleProperties(
+        /// <summary>
+        /// Removes the named CSS declarations from the element's style attribute, leaving any
+        /// others alone, and removes the attribute entirely when nothing is left.
+        /// </summary>
+        internal static void RemoveStyleProperties(
             SafeXmlElement element,
             params string[] propertyNames
         )
@@ -2375,7 +2399,9 @@ namespace Bloom.Book
                     "class",
                     String.Join(
                         " ",
-                        elt.GetAttribute("class").Split(' ').Where(c => !c.StartsWith("cke_"))
+                        elt.GetAttribute("class")
+                            .Split(' ')
+                            .Where(c => !c.StartsWith("cke_", StringComparison.Ordinal))
                     )
                 );
             }
@@ -2736,7 +2762,7 @@ namespace Bloom.Book
                 int idxEnd = 0;
                 if (cssContent[idxStart + 1] == '*')
                 {
-                    idxEnd = cssContent.IndexOf("*/", idxStart + 2);
+                    idxEnd = cssContent.IndexOf("*/", idxStart + 2, StringComparison.Ordinal);
                     if (idxEnd < 0)
                         idxEnd = cssContent.Length;
                     else
@@ -2744,7 +2770,7 @@ namespace Bloom.Book
                 }
                 else
                 {
-                    idxEnd = cssContent.IndexOf("\n", idxStart + 2);
+                    idxEnd = cssContent.IndexOf("\n", idxStart + 2, StringComparison.Ordinal);
                     if (idxEnd < 0)
                         idxEnd = cssContent.Length;
                 }
@@ -2756,8 +2782,8 @@ namespace Bloom.Book
         private static int FindCommentStartOutsideQuotes(string content, int start)
         {
             char[] quotes = { '"', '\'' };
-            var idxComment = content.IndexOf("//", start);
-            var idxComment2 = content.IndexOf("/*", start);
+            var idxComment = content.IndexOf("//", start, StringComparison.Ordinal);
+            var idxComment2 = content.IndexOf("/*", start, StringComparison.Ordinal);
             if (idxComment2 >= 0 && (idxComment2 < idxComment || idxComment < 0))
                 idxComment = idxComment2;
             if (idxComment < 0)
@@ -2966,7 +2992,9 @@ namespace Bloom.Book
             if (srcElement == null)
             {
                 srcElement = videoElt.AppendChild("source");
-                var type = url.NotEncoded.EndsWith(".webm") ? "video/webm" : "video/mp4";
+                var type = url.NotEncoded.EndsWith(".webm", StringComparison.Ordinal)
+                    ? "video/webm"
+                    : "video/mp4";
                 srcElement.SetAttribute("type", type);
             }
             SetSrcOfVideoElement(url, srcElement, urlEncode);
@@ -2989,7 +3017,10 @@ namespace Bloom.Book
         {
             if (encodedParamString == null)
                 encodedParamString = "";
-            if (!String.IsNullOrEmpty(encodedParamString) && !(encodedParamString.StartsWith("?")))
+            if (
+                !String.IsNullOrEmpty(encodedParamString)
+                && !(encodedParamString.StartsWith("?", StringComparison.Ordinal))
+            )
                 encodedParamString = "?" + encodedParamString;
             string srcUrl =
                 (urlEncodePath ? url.PathOnly.UrlEncodedForHttpPath : url.PathOnly.NotEncoded)
@@ -3779,7 +3810,10 @@ namespace Bloom.Book
             }
 
             // Test for Partial match based on localized string
-            int indexOfFormatReplacement = localizedFormatString.IndexOf("{0}");
+            int indexOfFormatReplacement = localizedFormatString.IndexOf(
+                "{0}",
+                StringComparison.Ordinal
+            );
             if (indexOfFormatReplacement >= 0)
             {
                 string localizedSubstring;
@@ -4040,7 +4074,10 @@ namespace Bloom.Book
                 // and to write style rules that use it, we need to copy it to the new container.
                 var pageSizeClass = page.GetAttribute("class")
                     .Split(' ')
-                    .First(x => x.EndsWith("Portrait") || x.EndsWith("Landscape"));
+                    .First(x =>
+                        x.EndsWith("Portrait", StringComparison.Ordinal)
+                        || x.EndsWith("Landscape", StringComparison.Ordinal)
+                    );
                 mediaBoxDiv.SetAttribute("class", $"bloom-mediaBox {pageSizeClass}");
             }
         }
@@ -4140,7 +4177,9 @@ namespace Bloom.Book
         public IEnumerable<NameValue> GetBodyAttributesThatMayAffectDisplay()
         {
             //example: [(data-bookshelfurlkey, "kyrgyzstan2020-grade2")]
-            return this.Body.AttributePairs.Where(a => a.Name.StartsWith("data-"));
+            return this.Body.AttributePairs.Where(a =>
+                a.Name.StartsWith("data-", StringComparison.Ordinal)
+            );
         }
 
         internal static void AddMissingAudioHighlightRules(SafeXmlElement userStylesNode)
@@ -4150,7 +4189,7 @@ namespace Bloom.Book
             var updatedRule = false;
             foreach (var key in userStyleKeyDict.Keys)
             {
-                if (key.EndsWith(" span.ui-audioCurrent"))
+                if (key.EndsWith(" span.ui-audioCurrent", StringComparison.Ordinal))
                     rulesToCheck.Add(key);
             }
             foreach (var key in rulesToCheck)
@@ -4216,7 +4255,9 @@ namespace Bloom.Book
             {
                 if (ce.HasClass(HtmlDom.kCanvasElementClass))
                 {
-                    result.Add(Tuple.Create("data-canvas-element-style", ce.GetAttribute("style")));
+                    result.Add(
+                        Tuple.Create(kCanvasElementStyleTupleName, ce.GetAttribute("style"))
+                    );
                 }
 
                 var bloomCanvas = ce.ParentElement;
@@ -4224,22 +4265,59 @@ namespace Bloom.Book
                 {
                     result.Add(
                         Tuple.Create(
-                            "data-canvas-imgsizebasedon",
+                            kCanvasImgSizeBasedOnTupleName,
                             bloomCanvas.GetAttribute("data-imgsizebasedon")
                         )
                     );
+                    // The image container's share of its page, which the front end can only
+                    // measure while the page is laid out in the editor. Without carrying it
+                    // here, bringing a book's xmatter up to date would throw the cover's value
+                    // away and the AI image editor could no longer say how big a cover image
+                    // ought to be. It is optional: a book saved before this attribute existed
+                    // has none, and reconstruction must still work for it.
+                    var fractionOfPage = node.ParentElement?.GetAttribute(kFractionOfPageAttribute);
+                    if (!string.IsNullOrEmpty(fractionOfPage))
+                    {
+                        result.Add(Tuple.Create(kContainerFractionOfPageTupleName, fractionOfPage));
+                    }
                 }
             }
 
             return result;
         }
 
+        // The names under which the data-div keeps the things GetDataForReconstructingBackgroundImgWrapper
+        // saves. Each says where the value lives in the structure being rebuilt, and none of
+        // them is the name of the attribute it ends up as, because the data-div holds them all
+        // as attributes of one element (the coverImage entry).
+        public const string kCanvasImgSizeBasedOnTupleName = "data-canvas-imgsizebasedon";
+        public const string kCanvasElementStyleTupleName = "data-canvas-element-style";
+        public const string kContainerFractionOfPageTupleName = "data-container-fraction-of-page";
+
         /// <summary>
         /// Returns a list of the tuple names created by GetDataForReconstructingBackgroundImgWrapper
         /// and whose data is passed to ReconstructBackgroundImgWrapper
         /// </summary>
         public static string[] BackgroundImgTupleNames =>
-            new string[] { "data-canvas-imgsizebasedon", "data-canvas-element-style" };
+            new string[]
+            {
+                kCanvasImgSizeBasedOnTupleName,
+                kCanvasElementStyleTupleName,
+                kContainerFractionOfPageTupleName,
+            };
+
+        /// <summary>
+        /// Whether the values gathered under <see cref="BackgroundImgTupleNames"/> describe a
+        /// background image whose wrapper we can rebuild. Only the first two are required: the
+        /// third is extra information about the rebuilt container rather than part of the
+        /// structure, and a book last saved by a Bloom that did not write it has none.
+        /// </summary>
+        public static bool HaveDataForReconstructingBackgroundImgWrapper(
+            string[] backgroundImgValues
+        )
+        {
+            return backgroundImgValues[0] != null && backgroundImgValues[1] != null;
+        }
 
         /// <summary>
         /// Use the data saved by GetDataForReconstructingBackgroundImgWrapper to restore the background
@@ -4301,6 +4379,15 @@ namespace Bloom.Book
             bloomCanvas.AddClass("bloom-has-canvas-element"); // probably only necessary if we added the canvas element
             bloomCanvas.SetAttribute("data-imgsizebasedon", backgroundImgValues[0]);
             canvasElement.SetAttribute("style", backgroundImgValues[1]);
+            // Optional; see HaveDataForReconstructingBackgroundImgWrapper. Note that a legacy
+            // cover whose image is a plain img in a bloom-canvas, with no canvas element, saves
+            // none of this data and so loses the attribute when its xmatter is brought up to
+            // date. The per-page pass writes it again, because it re-saves the cover like every
+            // other page, so a book that has been through that pass (which launching the AI image
+            // editor arranges, BL-16852) has it. Until then the AI image editor simply offers that
+            // slot no automatic size.
+            if (!string.IsNullOrEmpty(backgroundImgValues[2]))
+                imageContainer.SetAttribute(kFractionOfPageAttribute, backgroundImgValues[2]);
         }
 
         public static bool IsInCustomLayoutPage(SafeXmlElement node)
