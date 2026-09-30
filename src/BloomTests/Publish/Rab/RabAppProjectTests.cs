@@ -601,6 +601,42 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAJdkElsewhere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesJdk = false,
+            };
+            const string otherJdk = "C:\\Program Files\\Zulu\\zulu-17";
+            service.InstallSdksOutputLines.Add(
+                "JDK folder is already installed with version: 17.0.7"
+            );
+            service.InstallSdksOutputLines.Add("JDK folder: " + otherJdk);
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(error.Message, Does.Contain($"used the JDK in {otherJdk}"));
+            Assert.That(error.Message, Does.Contain(service.RabJdkInstallFolder));
+            Assert.That(
+                error.Message,
+                Does.Contain($"rename {otherJdk} (for example to {otherJdk}-old)")
+            );
+            Assert.That(
+                error.Message,
+                Does.Not.Contain("Android SDK"),
+                "the Android SDK was installed"
+            );
+        }
+
+        [Test]
         public void PrepareAsync_Fails_AndNamesBloomsFolders_WhenRabInstallsNeitherToolAndSaysWhereNeitherIs()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
