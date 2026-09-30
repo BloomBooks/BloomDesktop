@@ -176,8 +176,15 @@ export function canOfferCreatePages(
  * C# owns the pages it makes and saves them itself. This box is on the page being edited, which
  * the browser owns, so its content comes back here to be applied rather than written under the
  * user.
+ *
+ * `showLastPage: false` stays on this page instead, for text Bloom itself put in the box (a folio's
+ * table of contents), where the author did not ask to see the pages made. The box's new content is
+ * then saved with the rest of the page, as any edit is.
  */
-export async function createPagesFor(editable: HTMLElement): Promise<void> {
+export async function createPagesFor(
+    editable: HTMLElement,
+    options?: { showLastPage?: boolean },
+): Promise<void> {
     const group = editable.closest<HTMLElement>(kTranslationGroupSelector);
     const page = editable.closest<HTMLElement>(kPageSelector);
     const language = editable.getAttribute("lang");
@@ -231,7 +238,9 @@ export async function createPagesFor(editable: HTMLElement): Promise<void> {
     // that looks unchanged. This is last: C# saves the page being edited on its way there, which
     // is what puts the box's new content above into the book, and every page Bloom made is saved
     // already.
-    jumpToPage(result.lastPageId);
+    if (options?.showLastPage ?? true) {
+        jumpToPage(result.lastPageId);
+    }
 }
 
 function addButton(editable: HTMLElement): void {

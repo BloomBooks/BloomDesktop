@@ -14,6 +14,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "../fixtures/bloomTest";
+import { kFlowTextFeatures } from "../helpers/flowText";
 import {
     kFolioTestBooks,
     makeFolio,
@@ -36,8 +37,15 @@ const destination = Path.join(
     "folio-test-collection",
 );
 
+// Folio needs a Pro subscription and, until flow text is ready, the flow-text experimental feature.
+// makeFolio gives this run's collection the Pro tier; whoever opens the saved collection needs a
+// subscription of their own, and the feature turned on in Settings.
 test.use({
-    collectionSpec: { name: "Folio Test Collection", languages: ["en"] },
+    collectionSpec: {
+        name: "Folio Test Collection",
+        languages: ["en"],
+    },
+    experimentalFeatures: kFlowTextFeatures,
 });
 
 test("make the folio test collection", async ({ page, bloomApp }) => {

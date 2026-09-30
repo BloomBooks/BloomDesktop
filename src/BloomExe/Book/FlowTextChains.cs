@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.ImageProcessing;
@@ -26,6 +27,70 @@ namespace Bloom.Book
         /// </summary>
         public const string kSeamSpaceAttrName = "data-flow-seam-space";
         public const string kNormalStyleClass = "normal-style";
+
+        /// <summary>
+        /// On a translation group whose text may flow whatever its style (see kFlowableGroupClass
+        /// in bookEdit/flowText/flowConstants.ts). Without it, only normal-style boxes flow.
+        /// </summary>
+        public const string kFlowableGroupClass = "bloom-flowable";
+
+        /// <summary>
+        /// Is this a box that text flows through: a bloom-editable that is normal-style, or that
+        /// is in a group marked kFlowableGroupClass?
+        /// </summary>
+        public static bool IsFlowBox(SafeXmlElement element)
+        {
+            if (element == null || !element.HasClass("bloom-editable"))
+                return false;
+            return element.HasClass(kNormalStyleClass)
+                || (element.ParentNode as SafeXmlElement)?.HasClass(kFlowableGroupClass) == true;
+        }
+
+        /// <summary>
+        /// The style class of a box ("normal-style", "FolioToc-style" and so on), or null.
+        /// </summary>
+        public static string GetStyleClass(SafeXmlElement editable)
+        {
+            return editable
+                ?.GetAttribute("class")
+                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault(c => c.EndsWith("-style"));
+        }
+
+        /// <summary>
+        /// Make the boxes of a group on a page Bloom has just made for flowing text take the style
+        /// of the boxes the text comes from, and mark the group flowable when that group is, so
+        /// the text looks the same on the new page and can flow on from it.
+        /// </summary>
+        public static void TakeStyleFrom(SafeXmlElement sourceGroup, SafeXmlElement newGroup)
+        {
+            if (sourceGroup == null || newGroup == null)
+                return;
+            if (sourceGroup.HasClass(kFlowableGroupClass))
+                newGroup.AddClass(kFlowableGroupClass);
+            var sourceBoxes = sourceGroup
+                .ChildNodes.OfType<SafeXmlElement>()
+                .Where(IsFlowBox)
+                .ToList();
+            foreach (
+                var box in newGroup
+                    .ChildNodes.OfType<SafeXmlElement>()
+                    .Where(child => child.HasClass("bloom-editable"))
+            )
+            {
+                var source =
+                    sourceBoxes.FirstOrDefault(s =>
+                        s.GetAttribute("lang") == box.GetAttribute("lang")
+                    ) ?? sourceBoxes.FirstOrDefault();
+                var style = GetStyleClass(source);
+                var oldStyle = GetStyleClass(box);
+                if (style == null || style == oldStyle)
+                    continue;
+                if (oldStyle != null)
+                    box.RemoveClass(oldStyle);
+                box.AddClass(style);
+            }
+        }
 
         /// <summary>
         /// One translation group of a chain, and where it is in the book.
@@ -123,7 +188,7 @@ namespace Bloom.Book
         /// <summary>
         /// The nearest page before beforePageId that holds a box of this language whose text
         /// stops fitting, or null when there is none. "A box" here means an ordinary text box of
-        /// the page's own layout: normal-style, not inside a bloom-canvas, and not in the front or
+        /// the page's own layout that text flows through (IsFlowBox), not inside a bloom-canvas, and not in the front or
         /// back matter, whose text carries the span that says where the fit ends.
         ///
         /// getPageLabel, when given, says what the reader calls a page; without it the label is
@@ -169,8 +234,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// The box of this language whose text flows, in this translation group: a normal-style
-        /// bloom-editable that is a child of the group. Null when the group has none.
+        /// The box of this language whose text flows, in this translation group: a bloom-editable
+        /// child of the group that IsFlowBox accepts. Null when the group has none.
         /// </summary>
         public static SafeXmlElement GetFlowEditable(SafeXmlElement group, string lang)
         {
@@ -179,11 +244,7 @@ namespace Bloom.Book
 
             return group
                 .ChildNodes.OfType<SafeXmlElement>()
-                .FirstOrDefault(child =>
-                    child.HasClass("bloom-editable")
-                    && child.HasClass(kNormalStyleClass)
-                    && child.GetAttribute("lang") == lang
-                );
+                .FirstOrDefault(child => IsFlowBox(child) && child.GetAttribute("lang") == lang);
         }
 
         /// <summary>
@@ -199,7 +260,7 @@ namespace Bloom.Book
 
             foreach (var child in group.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (!child.HasClass("bloom-editable") || !child.HasClass(kNormalStyleClass))
+                if (!IsFlowBox(child))
                     continue;
                 var lang = child.GetAttribute("lang");
                 if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
@@ -558,8 +619,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Every language whose box in this group is one that text flows through: a normal-style
-        /// bloom-editable child with a language of its own.
+        /// Every language whose box in this group is one that text flows through (IsFlowBox), with
+        /// a language of its own.
         /// </summary>
         public static List<string> GetFlowLanguages(SafeXmlElement group)
         {
@@ -569,7 +630,7 @@ namespace Bloom.Book
 
             foreach (var child in group.ChildNodes.OfType<SafeXmlElement>())
             {
-                if (!child.HasClass("bloom-editable") || !child.HasClass(kNormalStyleClass))
+                if (!IsFlowBox(child))
                     continue;
                 var lang = child.GetAttribute("lang");
                 if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
@@ -882,6 +943,46 @@ namespace Bloom.Book
                 changed.Add(stillLinked[0]);
             }
 
+            return changed;
+        }
+
+        /// <summary>
+        /// Empty every box of the chain that comes after this group, leaving each holding one
+        /// empty paragraph, as a new box does. The groups stay in the chain. This is for text the
+        /// program rewrites as a whole (a folio's table of contents): the new text goes into the
+        /// first box, and a refit then carries what does not fit on into the emptied boxes, where
+        /// the old text would otherwise stay and be repeated. Returns the groups it changed, so
+        /// the caller can save their pages.
+        /// </summary>
+        public static List<FlowGroup> EmptyAfter(
+            HtmlDom dom,
+            string chainId,
+            string fromPageId,
+            int fromIndexInPage
+        )
+        {
+            var changed = new List<FlowGroup>();
+            var groups = GetChainGroups(dom, chainId);
+            var startAt = groups.FindIndex(group =>
+                group.PageId == fromPageId && group.IndexInPage == fromIndexInPage
+            );
+            if (startAt < 0)
+                return changed;
+
+            for (var i = startAt + 1; i < groups.Count; i++)
+            {
+                foreach (
+                    var editable in groups[i]
+                        .Group.ChildNodes.OfType<SafeXmlElement>()
+                        .Where(child => child.HasClass("bloom-editable"))
+                )
+                {
+                    foreach (var child in editable.ChildNodes.ToArray())
+                        editable.RemoveChild(child);
+                    editable.AppendChild(editable.OwnerDocument.CreateElement("p"));
+                }
+                changed.Add(groups[i]);
+            }
             return changed;
         }
 

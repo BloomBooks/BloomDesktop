@@ -679,6 +679,9 @@ namespace Bloom.web.controllers
                         folderPath = info.FolderPath,
                         isFactory = collection.IsFactoryInstalled,
                         isFolio = info.IsFolio,
+                        // The feature a book made from this one needs, if any, as WorkspaceView
+                        // tells the book pane for the selected book.
+                        requiredFeature = info.IsFolio ? "Folio" : null,
                     };
                 })
                 .ToArray();

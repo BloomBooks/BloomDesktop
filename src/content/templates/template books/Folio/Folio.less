@@ -1,20 +1,45 @@
 // The table of contents page of a folio (see Folio.pug and bookEdit/js/folioToc.ts).
 .bloom-folio-toc {
-    .bloom-folio-toc-heading .bloom-editable {
-        margin-bottom: 0.5em;
+    // The list takes the rest of the page below the heading, so that a list too long for the page
+    // overflows its box; that overflow is what makes flow text offer the pages it goes on into.
+    .marginBox {
+        display: flex;
+        flex-direction: column;
     }
-    .bloom-folio-toc-list .bloom-editable {
-        // Room to click in even when no books are chosen yet.
-        min-height: 3em;
+    .bloom-folio-toc-heading {
+        flex: 0 0 auto;
+        .bloom-editable {
+            margin-bottom: 0.5em;
+        }
+    }
+    .bloom-folio-toc-list {
+        flex: 1 1 0;
+        min-height: 0;
+        .bloom-editable {
+            height: 100%;
+        }
+    }
+    // Flow text offers to make pages for a list too long for this page. folioToc.ts takes the offer
+    // as soon as it is made, so the author never sees it.
+    .bloom-folio-toc-list > .bloom-flow-createPages {
+        display: none !important;
     }
 }
 
-// One printed line: a book's title, then the number of its first page at the right.
+// One entry: a book's title, then the number of its first page at the right, level with the last
+// line of a title that takes more than one.
 .bloom-folio-toc-entry {
     display: flex;
-    align-items: baseline;
+    align-items: last baseline;
     gap: 1em;
     .bloom-folio-toc-title {
         flex: 1;
+        // A long title wraps between its words. Text boxes may otherwise break inside a word,
+        // which a flex item squeezed by a large number takes up, a letter to a line.
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+    .bloom-folio-toc-page-number {
+        flex: none;
     }
 }

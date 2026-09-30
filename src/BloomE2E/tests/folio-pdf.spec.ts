@@ -5,8 +5,11 @@
 // from the one it starts on when printed alone.
 //
 // The folio under test gets its books the way a person gives them: click Choose Books… beside the
-// list on its table of contents page and choose them in the dialog, on two such pages, since a long list can need more
-// than one. The dialog offers neither folios nor a book another of the folio's pages already lists.
+// list on its table of contents page and choose them in the dialog, which offers no folios. A folio
+// has exactly one table of contents page, so Add Page does not offer another. Folio needs a Pro
+// subscription and, until flow text is ready, the flow-text experimental feature: the Bloom is
+// launched with the feature, and its collection given the Pro tier after each launch
+// (enableFlowTextFeature), since there is no real Pro subscription code for tests.
 // The second folio, which holds an A4 book, is setup for the refusal test, so it gets its books by
 // the fast route instead: written into its page while Bloom is stopped (setFolioBooks). The PDF
 // is read with the Ghostscript Bloom ships (helpers/pdf.ts).
@@ -16,13 +19,18 @@
 import * as Path from "node:path";
 import { expect, test } from "../fixtures/bloomTest";
 import type { Page } from "@playwright/test";
-import { addPageFromDialog, openAddPageDialog } from "../helpers/addPageDialog";
+import {
+    closeAddPageDialog,
+    getAddPageDialogGroups,
+    openAddPageDialog,
+} from "../helpers/addPageDialog";
 import {
     editablePageFrame,
     getContentPages,
     goToPage,
 } from "../helpers/bookMaking";
 import { selectBook } from "../helpers/collection";
+import { enableFlowTextFeature, kFlowTextFeatures } from "../helpers/flowText";
 import {
     chooseFolioBooks,
     makeFolio,
@@ -38,7 +46,13 @@ import { makePdfInPublishTab } from "../helpers/pdfPublish";
 import { selectPublishDestination } from "../helpers/publish";
 import { switchTab } from "../helpers/workspace";
 
-test.use({ collectionSpec: { name: "folio-pdf", languages: ["en"] } });
+test.use({
+    collectionSpec: {
+        name: "folio-pdf",
+        languages: ["en"],
+    },
+    experimentalFeatures: kFlowTextFeatures,
+});
 test.describe.configure({ mode: "serial" });
 
 // Two content pages make a Basic Book of seven pages, an odd number, so the book after it needs a
@@ -105,7 +119,7 @@ function printedNumber(page: IPdfPage): number {
     return Number(page.texts[page.texts.length - 1].text);
 }
 
-test("make the books, and choose a folio's books on its table of contents pages", async ({
+test("make the books, and choose a folio's books on its table of contents page", async ({
     page,
     bloomApp,
 }) => {
@@ -121,6 +135,7 @@ test("make the books, and choose a folio's books on its table of contents pages"
         ]),
     );
     page = bloomApp.page;
+    await enableFlowTextFeature(page);
     folioWithA4BookFolder = Path.join(
         bloomApp.collectionDir,
         Path.basename(folioWithA4BookFolder),
@@ -129,37 +144,27 @@ test("make the books, and choose a folio's books on its table of contents pages"
     folioFolder = await makeFolio(page, "Folio Under Test");
     await selectBook(page, folioFolder);
     await switchTab(page, "edit");
-    const [firstToc] = await getContentPages(page);
-    const offeredFirst = await chooseFolioBooks(page, firstToc.id, [
+    const [toc] = await getContentPages(page);
+    const offered = await chooseFolioBooks(page, toc.id, [
         oddBook.title,
-    ]);
-    expect(offeredFirst).toEqual(
-        expect.arrayContaining([oddBook.title, styledBook.title, a4Book.title]),
-    );
-    expect(
-        offeredFirst,
-        "a folio cannot hold a folio, nor itself",
-    ).not.toContain("Folio With A4 Book");
-    expect(offeredFirst).not.toContain("Folio Under Test");
-
-    // A second table of contents page, for when the list does not fit on one, added through the
-    // Add Page dialog. Add Page puts the new page after the one being shown, so show the first one.
-    await goToPage(page, firstToc.id);
-    await openAddPageDialog(page);
-    await addPageFromDialog(page, "Table of Contents", "Folio");
-    const tocPages = await getContentPages(page);
-    expect(
-        tocPages.map((p) => p.id)[0],
-        "the first table of contents page stays first",
-    ).toBe(firstToc.id);
-    const secondToc = tocPages[1];
-    const offeredSecond = await chooseFolioBooks(page, secondToc.id, [
         styledBook.title,
     ]);
+    expect(offered).toEqual(
+        expect.arrayContaining([oddBook.title, styledBook.title, a4Book.title]),
+    );
+    expect(offered, "a folio cannot hold a folio, nor itself").not.toContain(
+        "Folio With A4 Book",
+    );
+    expect(offered).not.toContain("Folio Under Test");
+
+    // A folio has one table of contents page; a long list flows on into pages Bloom adds.
+    await openAddPageDialog(page);
+    const groups = await getAddPageDialogGroups(page);
     expect(
-        offeredSecond,
-        "a book the first page lists is not offered again",
-    ).not.toContain(oddBook.title);
+        groups.flatMap((g) => g.pages.map((p) => p.label)),
+        "Add Page does not offer a second table of contents page",
+    ).not.toContain("Table of Contents");
+    await closeAddPageDialog(page);
     await switchTab(page, "collection");
 });
 
@@ -174,7 +179,7 @@ test("a folio's PDF is its books glued together, on their own sides, numbered th
     for (const [i, p] of pages.entries()) expectSize(p, A5, `page ${i + 1}`);
 
     // Each book starts with its own cover, whose first text is its title. The table of contents
-    // pages name the books too, so look after them.
+    // page names the books too, so look after it.
     const oddCover = indexOfPageWith(
         pages,
         "Odd Book",
@@ -224,18 +229,15 @@ test("a folio's PDF is its books glued together, on their own sides, numbered th
     expect(countPixels(pdfPath, oddFirst + 1, yellow)).toBe(0);
     indexOfPageWith(pages, "Folio Test Holder", styledCover);
 
-    // Each table of contents page lists its books with the first number printed in each.
-    const firstToc = indexOfPageWith(pages, "Odd Book");
-    expect(
-        firstToc,
-        "the table of contents comes before the books",
-    ).toBeLessThan(oddCover);
-    expect(pages[firstToc].compactText).toContain(
+    // The table of contents lists the books with the first number printed in each.
+    const toc = indexOfPageWith(pages, "Odd Book");
+    expect(toc, "the table of contents comes before the books").toBeLessThan(
+        oddCover,
+    );
+    expect(pages[toc].compactText).toContain(
         `OddBook${printedNumber(pages[oddFirst])}`,
     );
-    const secondToc = indexOfPageWith(pages, "Styled Book");
-    expect(secondToc).toBe(firstToc + 1);
-    expect(pages[secondToc].compactText).toContain(
+    expect(pages[toc].compactText).toContain(
         `StyledBook${printedNumber(pages[styledFirst])}`,
     );
 });

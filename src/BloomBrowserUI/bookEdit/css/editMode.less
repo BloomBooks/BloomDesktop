@@ -2083,6 +2083,23 @@ svg.bloom-videoControl {
 .bloom-folio-toc-qtip .qtip-content {
     padding: 0;
 }
+// The bubble beside the heading of a folio's table of contents page, saying that the page numbers
+// are added when the PDF is made: an info icon, then the sentence.
+.bloom-folio-toc-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 220px;
+    padding: 12px 16px;
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.3;
+    color: darken(@bloom-purple, 35%);
+    .bloom-folio-toc-info-icon {
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+}
 .bloom-folio-toc-bubble {
     display: flex;
     flex-direction: column;
@@ -2128,4 +2145,11 @@ svg.bloom-videoControl {
             background-color: fade(@bloom-purple, 12%);
         }
     }
+}
+
+// A text box whose text Bloom writes and the person editing may not change (lockedEditable.ts).
+// It takes the focus, for its format gear, but shows no caret.
+.bloom-editable.bloom-locked {
+    caret-color: transparent;
+    cursor: default;
 }

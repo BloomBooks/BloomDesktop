@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as Path from "node:path";
 import { test } from "../fixtures/bloomTest";
+import { enableFlowTextFeature, kFlowTextFeatures } from "../helpers/flowText";
 import { selectBook } from "../helpers/collection";
 import {
     addPage,
@@ -32,7 +33,15 @@ import { switchTab } from "../helpers/workspace";
 const kBookCount = 40;
 const kPagesPerBook = 8;
 
-test.use({ collectionSpec: { name: "folio-scale", languages: ["en"] } });
+// Folio needs a Pro subscription and, until flow text is ready, the flow-text experimental feature.
+// The collection is given the Pro tier after each launch (enableFlowTextFeature).
+test.use({
+    collectionSpec: {
+        name: "folio-scale",
+        languages: ["en"],
+    },
+    experimentalFeatures: kFlowTextFeatures,
+});
 
 /** A 3000 × 2000 photograph-like JPEG, which is what makes a PDF heavy. */
 function makeLargeImage(): string {
@@ -155,6 +164,7 @@ test("make a PDF of a folio of 40 books with large photographs", async ({
         setFolioBooks(folio, ids);
     });
     const shell = bloomApp.page;
+    await enableFlowTextFeature(shell);
 
     await selectBook(shell, folio);
     // Every request to make a PDF, with when it was made, so a second one would show.

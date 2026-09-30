@@ -2676,6 +2676,11 @@
         <note>ID: Folio.BookNoLongerInCollection</note>
         <note>{0} is the title of a book. Shown in the bubble beside the list on a folio's table of contents page when Bloom removes a book from the list because it was deleted from the collection, and in the message when Bloom cannot make the folio's PDF for that reason. A folio is a book that publishes other books of its collection as one book.</note>
       </trans-unit>
+      <trans-unit id="EditTab.Folio.PageNumbersInfo" translate="no">
+        <source xml:lang="en">Page numbers will be added when you make the PDF.</source>
+        <note>ID: EditTab.Folio.PageNumbersInfo</note>
+        <note>Shown in a bubble with an information icon beside the heading of a folio's table of contents page, in the Edit tab. It tells the user not to type page numbers into the list: Bloom adds each book's first page number when it makes the PDF. A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Folio.Settings" translate="no">
         <source xml:lang="en">Settings…</source>
         <note>ID: EditTab.Folio.Settings</note>

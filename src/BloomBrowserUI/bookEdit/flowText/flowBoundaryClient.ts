@@ -335,6 +335,25 @@ export function unlinkFrom(
 }
 
 /**
+ * Empty every box of the chain after this one, on the later pages, before the browser rewrites
+ * the text of this box as a whole (see FlowTextChains.EmptyAfter). A refit then carries what does
+ * not fit on into the emptied boxes.
+ */
+export function emptyChainAfter(
+    chainId: string,
+    fromPageId: string,
+    fromIndexInPage: number,
+): Promise<void> {
+    return enqueue(async () => {
+        await postJsonAsync("flowText/emptyAfter", {
+            chainId,
+            fromPageId,
+            fromIndexInPage,
+        });
+    }).then(() => undefined);
+}
+
+/**
  * Say where the caret should go when the next page loads. The text the user was typing in has
  * just moved onto that page, so the caret follows it there.
  */

@@ -24,6 +24,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import { BookInfoIndicator } from "../../react_components/BookInfoIndicator";
 import { useGetFeatureStatus } from "../../react_components/featureStatus";
+import { RequiresSubscriptionAdjacentIconWrapper } from "../../react_components/requiresSubscription";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -55,6 +56,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         saveable,
         collectionKind,
         aboutBookInfoUrl,
+        requiredFeature,
     } = useMonitorBookSelection();
 
     React.useEffect(() => {
@@ -87,6 +89,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     }, [selectedBookId, saveable, reload, reloadStatus]);
 
     const canMakeBook = collectionKind !== "main";
+    // A source that needs a feature (a folio template needs Folio) can be read about by anyone,
+    // but a book is made from it only when the feature is both in the subscription and visible,
+    // which for an experimental feature means turned on.
+    const featureForNewBook = canMakeBook ? requiredFeature : undefined;
+    const featureForNewBookStatus = useGetFeatureStatus(featureForNewBook);
+    const featureAllowsNewBook =
+        !featureForNewBook ||
+        (!!featureForNewBookStatus?.enabled && featureForNewBookStatus.visible);
     // History, and thus the tab controls, are only relevant if there's a selected book
     // that is in the main collection, and only allowed if enterprise tier allows it.
     // We currently only collect useful history in team collections, so hide it otherwise.
@@ -135,7 +145,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
 
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
     // but you still want the button to be enabled
-    const isButtonEnabled = canMakeBook || saveable;
+    const isButtonEnabled = canMakeBook ? featureAllowsNewBook : saveable;
 
     const editOrMakeButton: JSX.Element | boolean = collectionKind !==
         "error" && (
@@ -247,7 +257,15 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         margin-bottom: 10px;
                     `}
                 >
-                    {editOrMakeButton}
+                    {featureForNewBook && editOrMakeButton ? (
+                        <RequiresSubscriptionAdjacentIconWrapper
+                            featureName={featureForNewBook}
+                        >
+                            {editOrMakeButton}
+                        </RequiresSubscriptionAdjacentIconWrapper>
+                    ) : (
+                        editOrMakeButton
+                    )}
                 </div>
                 {selectedBookId && (
                     <BookInfoIndicator bookId={selectedBookId} />

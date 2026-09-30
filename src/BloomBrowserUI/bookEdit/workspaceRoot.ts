@@ -43,7 +43,6 @@ export interface IWorkspaceExports {
         setLinksCallback: (links: Link[]) => void,
     ): void;
     showFolioBooksDialog(
-        tocPageId: string,
         currentLinks: Link[],
         setLinksCallback: (links: Link[]) => void,
     ): void;

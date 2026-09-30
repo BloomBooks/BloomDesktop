@@ -32,6 +32,7 @@ import {
     openFormatDialog,
     showFormatDialogTab,
 } from "./formatDialog";
+import { enableFlowTextFeature, waitForReflowIdle } from "./flowText";
 import { chooseImageFile } from "./images";
 import { clickToFixMissingItem, openPublishToWeb } from "./libraryPublish";
 import { setPageSize } from "./pageSize";
@@ -132,9 +133,13 @@ export async function makeFolioTestBook(
 
 /**
  * Make a folio from the Folio template with this title, leave it saved, and return its folder.
- * It holds no books until setFolioBooks gives it some.
+ * It holds no books until setFolioBooks gives it some. First gives the collection the Pro tier,
+ * without which Bloom makes no folio; that lasts until Bloom restarts, so a test that restarts
+ * Bloom and then makes a folio's PDF calls enableFlowTextFeature again. The Bloom must have been
+ * launched with the flow-text experimental feature (kFlowTextFeatures).
  */
 export async function makeFolio(page: Page, title: string): Promise<string> {
+    await enableFlowTextFeature(page);
     await makeBookFromTemplate(page, "Folio");
     await typeInGroup(page, ".bookTitle", "en", title);
     await goToPage(page, (await getPages(page))[1].id);
@@ -143,14 +148,20 @@ export async function makeFolio(page: Page, title: string): Promise<string> {
 }
 
 /**
- * In the Edit tab, on the folio page with this id (a table of contents page), click Choose Books…
- * in the bubble beside the list, and in the dialog that opens add these books in this order, then OK. Returns the titles
- * the dialog offered before any were added. Leaves the page saved.
+ * In the Edit tab, on the folio's table of contents page (the page with this id), click Choose
+ * Books… in the bubble beside the text box that lists the books, and in the dialog that opens
+ * remove the books titled in `options.remove` (default none), then add the books titled in
+ * `titles`, in this order, then OK. Returns the titles the dialog offered before any were added.
+ *
+ * Choosing rewrites the text box as one line per book, and a list too long for the page flows on
+ * into pages Bloom adds, so this waits for the flow to settle. Then it leaves the page so that
+ * Bloom saves it, unless `options.stay`, for a test that looks at where Bloom left it.
  */
 export async function chooseFolioBooks(
     page: Page,
     tocPageId: string,
     titles: string[],
+    options: { remove?: string[]; stay?: boolean } = {},
 ): Promise<string[]> {
     await goToPage(page, tocPageId);
     await editablePageFrame(page)
@@ -163,20 +174,28 @@ export async function chooseFolioBooks(
     const sources = dialog.locator('[data-testid^="source-book-"]');
     await expect(sources.first()).toBeVisible({ timeout: 30000 });
     const offered = (await sources.allInnerTexts()).map((t) => t.trim());
+    for (const title of options.remove ?? []) {
+        const chosen = dialog
+            .locator('[data-testid^="target-book-"]')
+            .filter({ hasText: title })
+            .first();
+        await chosen.hover();
+        await chosen.getByTestId("remove-book-button").click();
+        await expect(
+            dialog
+                .locator('[data-testid^="target-book-"]')
+                .filter({ hasText: title }),
+        ).toHaveCount(0);
+    }
     for (const title of titles) {
         await sources.filter({ hasText: title }).first().click();
         await dialog.getByRole("button", { name: /Add Book/ }).click();
     }
     await dialog.getByRole("button", { name: "OK", exact: true }).click();
     await expect(dialog).toHaveCount(0, { timeout: 30000 });
-    // The list's box shows one line per chosen book.
-    await expect(
-        editablePageFrame(page).locator(
-            ".bloom-folio-toc-list .bloom-content1 p",
-        ),
-    ).toHaveCount(titles.length);
+    await waitForReflowIdle(page);
     // Leave the page so Bloom saves it.
-    await goToPage(page, (await getPages(page))[0].id);
+    if (!options.stay) await goToPage(page, (await getPages(page))[0].id);
     return offered;
 }
 

@@ -399,6 +399,10 @@ export default class StyleEditor {
                 return "Quiz Question";
             case "QuizAnswer":
                 return "Quiz Answer";
+            case "TableOfContents":
+                return "Table of Contents";
+            case "TableOfContentsHeading":
+                return "Table of Contents Heading";
             case "Equation": // If the id is the same as the English, just fall through to default.
             default:
                 return ruleId;
@@ -1216,21 +1220,28 @@ export default class StyleEditor {
         if (!ckeditor) return;
         const editorInstances = ckeditor.instances;
         // (The instances property leads to an object in which each property is an instance of CkEditor)
+        // A postponed attach runs only if the box still has the focus. As a page opens, Bloom can
+        // focus more than one box before CkEditor is ready, and the postponed attaches then run in
+        // no particular order; one for a box that has lost the focus would put the gear there,
+        // and clicking the box that has the focus fires no focusin to bring it back.
+        const attachIfStillFocused = () => {
+            const active = targetBox.ownerDocument.activeElement;
+            if (active && targetBox.contains(active))
+                this.AttachToBox(targetBox);
+        };
         let gotOne = false;
         for (const property in editorInstances) {
             const instance = editorInstances[property];
             gotOne = true;
             if (!instance.instanceReady) {
-                instance.on("instanceReady", (e) =>
-                    this.AttachToBox(targetBox),
-                );
+                instance.on("instanceReady", attachIfStillFocused);
                 return;
             }
         }
         if (!gotOne) {
             // If any editable divs exist, call us again once the page gets set up with ckeditor.
             // no instance at all...if one is later created, get us invoked.
-            ckeditor.on("instanceReady", (e) => this.AttachToBox(targetBox));
+            ckeditor.on("instanceReady", attachIfStillFocused);
             return;
         }
         const oldCog = document.getElementById("formatButton");

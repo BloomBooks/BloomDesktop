@@ -1563,6 +1563,16 @@
         <source xml:lang="en">Quiz Answer</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizAnswer-style</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.TableOfContents-style" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Table of Contents</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.TableOfContents-style</note>
+        <note>Style of the list of books on a folio's table of contents page (the Folio template). A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.DefaultStyles.TableOfContentsHeading-style" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Table of Contents Heading</source>
+        <note>ID: EditTab.FormatDialog.DefaultStyles.TableOfContentsHeading-style</note>
+        <note>Style of the heading on a folio's table of contents page (the Folio template). A folio is a book that publishes other books of its collection as one book.</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.DefaultStyles.QuizHeader-style" sil:dynamic="true">
         <source xml:lang="en">Quiz Header</source>
         <note>ID: EditTab.FormatDialog.DefaultStyles.QuizHeader-style</note>

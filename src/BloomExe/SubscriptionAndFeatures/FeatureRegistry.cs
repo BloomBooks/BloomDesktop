@@ -31,6 +31,7 @@ namespace Bloom.SubscriptionAndFeatures
         AppBuilder,
         AiImageEditing,
         FlowText,
+        Folio,
     }
 
     public static class FeatureRegistry
@@ -214,6 +215,21 @@ namespace Bloom.SubscriptionAndFeatures
                 ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kFlowText,
                 // A book whose text flows publishes as it stands: the boxes hold ordinary text
                 // by the time anything is published, so no medium has to be told about it.
+                PreventPublishingInDerivativeBooks = PreventionMethod.None,
+                PreventPublishingInOriginalBooks = PreventionMethod.None,
+            },
+            new FeatureInfo
+            {
+                // A book that publishes other books of its collection as one PDF (the Folio
+                // template). Its table of contents runs on into further pages by flowing its text,
+                // so it needs what flow text needs, including its experimental token until flow
+                // text is ready. FolioPdfPartsMaker checks this before making a folio's PDF.
+                Feature = FeatureName.Folio,
+                SubscriptionTier = SubscriptionTier.Pro,
+                ExperimentalFeatureToken = Bloom.ExperimentalFeatures.kFlowText,
+                // A folio publishes other books of the collection, so a selected Playground book
+                // must not unlock it (compare AppBuilder).
+                UnlockedByPlayground = false,
                 PreventPublishingInDerivativeBooks = PreventionMethod.None,
                 PreventPublishingInOriginalBooks = PreventionMethod.None,
             },

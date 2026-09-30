@@ -736,6 +736,10 @@ window.showWorkspaceInitializationFailure = function(message) {
                     collectionKind,
                     aboutBookInfoUrl,
                     isTemplate = book?.IsTemplateBook,
+                    // The feature a book made from this one needs, if any: the Collections tab
+                    // shows such a source to anyone, but makes a book from it only when the
+                    // subscription includes the feature.
+                    requiredFeature = book != null && book.IsFolio ? "Folio" : null,
                 }
             );
             return result;

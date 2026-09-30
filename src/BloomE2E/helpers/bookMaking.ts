@@ -58,6 +58,19 @@ export async function makeBookFromTemplate(
     // Selecting the template while the Edit tab is showing a book has also been seen to leave the
     // Edit tab showing the template, which has no page to edit, once the new book is made (every
     // time the book being left had a reader tool turned on).
+    await selectFactoryTemplate(page, templateTitle);
+    return makeBookFromSelectedBook(page, templateTitle);
+}
+
+/**
+ * Show the Collection tab with one of Bloom's factory templates, e.g. "Basic Book", selected in
+ * Sources For New Books, as a person does before clicking MAKE A BOOK USING THIS SOURCE. Returns
+ * the template's folder.
+ */
+export async function selectFactoryTemplate(
+    page: Page,
+    templateTitle: string,
+): Promise<string> {
     await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
@@ -69,7 +82,7 @@ export async function makeBookFromTemplate(
         `collections/selected-book?path=${encodeURIComponent(template.folderPath)}` +
             `&collection-id=${encodeURIComponent(collectionId)}`,
     );
-    return makeBookFromSelectedBook(page, templateTitle);
+    return template.folderPath;
 }
 
 /**

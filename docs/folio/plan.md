@@ -180,14 +180,30 @@ translation groups, so the user can edit the heading and format either with the 
   stays, because it is on the box, not in its text. With the "leave out the table of contents"
   option these pages are not printed, though they still decide which books go in.
 
-**More than one table of contents page.** Extra pages exist only because a long list may not fit
-on one page; they don't divide the folio into parts. The template has the page twice: a new folio
-starts with the first, and Add Page offers the second, which is marked `data-page="extra"` because
-Add Page offers only such pages and a new book leaves them out. The template's `template` folder
-holds that page's thumbnails and a `NotForAddPage.txt`, so other books don't offer it. The folio's books are the books on all its table of
-contents pages, in page order and then in list order within each page. A book can be on only one
-of them: the dialog leaves out books already chosen on another page. All table of contents pages
-print where they sit in the folio, before the first child book.
+**One table of contents page.** A folio has exactly one. It is `data-page="required"`, so it can't
+be deleted, duplicated, moved or copied (`Page.IsFolioTableOfContents`), and Add Page doesn't offer
+another. A list too long for the page flows on into pages Bloom adds and removes as needed, using
+flow text (`folioToc.ts`); when the PDF is made, `FillTablesOfContents` fills the whole flow chain.
+The folio's books are the list's books, in list order. The page prints before the first child book.
+
+**The list is a locked text box.** It is an ordinary `bloom-editable` with the `bloom-locked`
+class (`lockedEditable.ts`): it takes the focus, so its format gear shows, but it shows no caret and
+ignores typing, pasting, cutting and dropping. Bloom writes it: one entry per book, the title and
+"##" where the page number will go, with the number level with the title's last line. Its style is
+"Table of Contents" (`TableOfContents-style`) and the heading's is "Table of Contents Heading"
+(`TableOfContentsHeading-style`). The list's group has `bloom-flowable`, which lets flow text flow a
+box that is not `normal-style`; the pages flow text adds take the box's style and are locked too.
+Each entry has `bloom-flow-keepWhole`, which flow text does not act on yet (to do: keep an entry
+whole instead of splitting it between pages); the PDF already puts a split entry whole on the later
+page. Rewriting the list first empties the later boxes of its chain (`flowText/emptyAfter`). Flow
+text refuses right-to-left boxes, so a right-to-left folio's list cannot run on to more pages yet.
+
+Before a held book goes into the PDF it is brought up to date (`EnsureUpToDate`), as the book being
+published and a selected book are.
+
+Folio needs a Pro subscription and, while flow text is experimental, the `flow-text` experimental
+feature (`FeatureName.Folio`). Without them the template can still be read about, but no book is
+made from it, and `FolioPdfPartsMaker` refuses to make a folio's PDF.
 
 **Folios aren't choosable.** The dialog leaves out other folios, so a folio can't contain one.
 
@@ -268,7 +284,7 @@ Each book is there for a reason and has as few pages as that reason needs:
 | a second folio | not offered in the book chooser |
 | a book with broken HTML | reported by name, no PDF |
 | another page size; another full-bleed setting | PDF refused, book named |
-| enough books to overflow one table of contents page | second table of contents page |
+| enough books to overflow the table of contents page | the list flows on into pages Bloom adds |
 
 ### What is checked in the PDF
 
@@ -306,9 +322,8 @@ Each book is there for a reason and has as few pages as that reason needs:
    `BloomTests` (`FolioPdfTests`); e2e spec `tests/folio-pdf.spec.ts`; the test collection script
    `scripts/make-folio-test-collection.script.ts`; `./go.sh --collection <path>` opens a
    collection with its own user settings.
-2. **Choosing books on the table of contents pages** (section 6): the Choose Books… button beside the list opens
-   `FolioBooksDialog` (`BookGridSetup` with `"books-in-folio"`), which leaves out folios and books on
-   the folio's other table of contents pages (`editView/folioBooksOnOtherTocPages`); the printed
+2. **Choosing books on the table of contents page** (section 6): the Choose Books… button beside the list opens
+   `FolioBooksDialog` (`BookGridSetup` with `"books-in-folio"`), which leaves out folios; the printed
    table of contents gets each book's title and first page number (`FillTablesOfContents`).
 3. **Book Settings Folio section and the non-default options** (section 1): "chapters of one
    book", per-book numbering, packing without blanks, leaving out the table of contents.

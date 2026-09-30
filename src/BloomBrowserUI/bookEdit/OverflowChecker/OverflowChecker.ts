@@ -15,6 +15,7 @@ import { pageScrollsInsteadOfOverflowing } from "../js/scrollingLayouts";
 import { updateContinueButtons } from "../flowText/flowContinueButton";
 import { updateCreatePagesButtons } from "../flowText/flowCreatePagesButton";
 import { suppressesOverflowMarking } from "../flowText/flowIndicators";
+import { isFlowStyleBox } from "../flowText/flowSupport";
 import {
     placeOverflowMarker,
     removeOverflowMarker,
@@ -30,17 +31,15 @@ interface qtipInterface extends JQuery {
 // the input method is still working on, so the overflow marker waits for compositionend.
 const composingEditables = new WeakSet<HTMLElement>();
 
-const kNormalStyleClass = "normal-style";
-
 /**
- * Does this box get a marker at the character where its text stops fitting? Only a
- * normal-style box in the page's own layout does: a canvas element grows to fit its text
+ * Does this box get a marker at the character where its text stops fitting? Only a box of a
+ * style that flows (isFlowStyleBox) in the page's own layout does: a canvas element grows to fit its text
  * instead, and a box that hands its extra text to a following linked box has no character
  * at which its text runs out.
  */
 function wantsOverflowMarker(editable: HTMLElement): boolean {
     return (
-        editable.classList.contains(kNormalStyleClass) &&
+        isFlowStyleBox(editable) &&
         !editable.closest(kBloomCanvasSelector) &&
         !composingEditables.has(editable) &&
         !suppressesOverflowMarking(editable)

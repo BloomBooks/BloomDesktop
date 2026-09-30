@@ -237,6 +237,63 @@ namespace BloomTests.Publish.PDF
         }
 
         [Test]
+        public void FillTablesOfContents_ListFlowsOnIntoAnotherPage_FillsEachBoxWithTheLinesThatEndedInIt()
+        {
+            // The list's text flowed on into a page Bloom made: the TOC page's box held one whole
+            // line and the start of the second, and the rest went on the next page.
+            var folio = MakeDom(
+                "<div class='bloom-page bloom-folio-toc' id='toc'><div class='marginBox'>"
+                    + "<div class='bloom-translationGroup bloom-folio-toc-list' data-flow-chain='toc-chain' data-folio-book-ids='a b c'>"
+                    + "<div class='bloom-editable bloom-content1' lang='en'><p>Book A</p><p>Book</p></div>"
+                    + "</div></div></div>"
+                    + "<div class='bloom-page numberedPage' id='more'><div class='marginBox'>"
+                    + "<div class='bloom-translationGroup' data-flow-chain='toc-chain'>"
+                    + "<div class='bloom-editable bloom-content1' lang='en'><p data-flow-continuation='true'>B</p><p>Book C</p></div>"
+                    + "</div></div></div>"
+                    + "<div class='bloom-page numberedPage' id='other'><div class='marginBox'>"
+                    + "<div class='bloom-translationGroup' data-flow-chain='some-other-chain'>"
+                    + "<div class='bloom-editable bloom-content1' lang='en'><p>Unrelated</p></div>"
+                    + "</div></div></div>"
+            );
+            var books = new List<(string, string, HtmlDom)>
+            {
+                ("a", "Book A", MakeDom("<div class='bloom-page' data-page-number='5'/>")),
+                ("b", "Book B", MakeDom("<div class='bloom-page' data-page-number='9'/>")),
+                ("c", "Book C", MakeDom("<div class='bloom-page' data-page-number='13'/>")),
+            };
+
+            FolioPdfPartsMaker.FillTablesOfContents(new[] { folio }, books);
+
+            string[] Titles(string pageId) =>
+                folio
+                    .RawDom.SafeSelectElements(
+                        $"//div[@id='{pageId}']//span[@class='{FolioPdfPartsMaker.kTocTitleClass}']"
+                    )
+                    .Select(span => span.InnerText)
+                    .ToArray();
+            Assert.That(Titles("toc"), Is.EqualTo(new[] { "Book A" }));
+            Assert.That(
+                Titles("more"),
+                Is.EqualTo(new[] { "Book B", "Book C" }),
+                "a split line goes whole into the box it ended in, since the first had room for only part of it"
+            );
+            Assert.That(
+                folio.RawDom.SafeSelectElements("//p[@data-flow-continuation]"),
+                Is.Empty,
+                "no line is left split"
+            );
+            Assert.That(
+                folio.RawDom.SafeSelectElements("//div[@id='other']//p").Single().InnerText,
+                Is.EqualTo("Unrelated"),
+                "another chain's box is left alone"
+            );
+            Assert.That(
+                FolioPdfPartsMaker.GetTocContinuationPages(folio).Select(p => p.GetAttribute("id")),
+                Is.EqualTo(new[] { "more" })
+            );
+        }
+
+        [Test]
         public void GetFolioBookIds_ReadsEveryTocPageInOrder()
         {
             var dom = MakeDom(

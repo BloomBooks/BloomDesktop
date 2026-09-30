@@ -2,7 +2,7 @@
 <rect x="1.26746" y="0.510002" width="49.4651" height="69" fill="#F2C96B"/>
 <rect x="1.26746" y="0.510002" width="49.4651" height="69" stroke="black" stroke-dasharray="8 2"/>
 <!-- The folio icon (BloomBrowserUI/images/folio.svg), scaled to fit. -->
-<g transform="translate(8 17) scale(0.75)" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<g transform="translate(1.2 10.3) scale(1.05)" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
 <path d="M6.70001 8.59999V41.4C8.90001 42.4 11.0667 42.9333 13.2 43C15.1333 43.9333 17.1 44.4333 19.1 44.5C20.7 45.3667 22.3333 45.8333 24 45.9L40.5 37V4.29999"/>
 <path d="M6.70001 8.59998C8.90001 10.2 11.0667 10.5333 13.2 9.59998C15.1333 11.3333 17.1 11.8 19.1 11C20.7 12.6 22.3333 12.9 24 11.9"/>
 <path d="M13.2 9.59998V43"/>

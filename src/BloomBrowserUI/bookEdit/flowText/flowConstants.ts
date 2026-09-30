@@ -25,6 +25,16 @@ export const kContinuationAttrValue = "true";
 export const kSeamSpaceAttr = "data-flow-seam-space";
 export const kSeamSpaceAttrValue = "true";
 
+// Goes on a translation group whose text may flow whatever its style, such as a folio's table of
+// contents. Without it, only normal-style boxes flow. The pages flow text makes for such a group
+// get the class too, and their boxes the style of the box the text came from
+// (FlowTextChains.TakeStyleFrom).
+export const kFlowableGroupClass = "bloom-flowable";
+
+// Goes on a paragraph that should move on to the next box whole rather than be split between two
+// boxes, such as one entry of a folio's table of contents. Flow text does not act on it yet.
+export const kKeepWholeClass = "bloom-flow-keepWhole";
+
 // Marks the character at which the text of a box stops fitting in it. OverflowChecker puts
 // it in whenever a normal-style box overflows, whether or not the box is part of a chain,
 // and takes it out again when the box fits. It is content markup: it is saved with the page,

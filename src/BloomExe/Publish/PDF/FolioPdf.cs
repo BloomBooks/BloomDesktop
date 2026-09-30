@@ -4,6 +4,7 @@ using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
+using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 
 namespace Bloom.Publish.PDF
@@ -127,6 +128,7 @@ namespace Bloom.Publish.PDF
         /// </summary>
         public List<FolioPdfPart> MakeParts()
         {
+            CheckSubscription();
             var children = GetChildBooks();
             CheckChildrenMatchFolio(children);
 
@@ -138,13 +140,18 @@ namespace Bloom.Publish.PDF
             // The folio's own pages before the books: its front matter and its content pages,
             // which include the table of contents unless that is not to be printed.
             var front = _folio.GetDomForPrinting(_portion, _pageLayout);
+            var tocContinuationPages = GetTocContinuationPages(front);
             var folioPagesBeforeBackMatter = 0;
             foreach (var page in GetPages(front))
             {
                 if (
                     page.HasClass("bloom-backMatter")
                     || (
-                        !settings.ShowTableOfContents && page.HasClass(Book.Book.kFolioTocPageClass)
+                        !settings.ShowTableOfContents
+                        && (
+                            page.HasClass(Book.Book.kFolioTocPageClass)
+                            || tocContinuationPages.Contains(page)
+                        )
                     )
                 )
                     RemovePage(page);
@@ -234,6 +241,39 @@ namespace Bloom.Publish.PDF
         }
 
         /// <summary>
+        /// Throw FolioPublishingException when this collection's subscription does not include
+        /// folios. The Collections tab will not make a folio without one, but a folio can arrive
+        /// in a collection some other way.
+        /// </summary>
+        private void CheckSubscription()
+        {
+            var status = FeatureStatus.GetFeatureStatus(
+                _folio.CollectionSettings.Subscription,
+                FeatureName.Folio,
+                _folio,
+                forPublishing: true
+            );
+            if (status.Enabled && status.Visible)
+                return;
+            ThrowIfProblems(
+                new List<string>
+                {
+                    string.Format(
+                        LocalizationManager.GetString(
+                            "Subscription.RequiredTierForFeatureSentence",
+                            "This feature requires a Bloom subscription tier of at least \"{0}\"."
+                        ),
+                        LocalizationManager.GetDynamicString(
+                            appId: "Bloom",
+                            id: "Subscription.Tier." + status.SubscriptionTier,
+                            englishText: status.SubscriptionTier.ToString()
+                        )
+                    ),
+                }
+            );
+        }
+
+        /// <summary>
         /// The books the folio lists, in its order. Throws FolioPublishingException when any is
         /// missing from the collection, cannot be read, or is itself a folio.
         /// </summary>
@@ -291,6 +331,10 @@ namespace Bloom.Publish.PDF
                     );
                     continue;
                 }
+                // As PublishModel does for the book it publishes, and as selecting a book does:
+                // bring it up to date (layout, xmatter, migrations) before making it into a PDF.
+                if (child.IsSaveable)
+                    child.EnsureUpToDate();
                 children.Add(child);
             }
             ThrowIfProblems(problems);
@@ -439,11 +483,16 @@ namespace Bloom.Publish.PDF
         public const string kTocEntryClass = "bloom-folio-toc-entry";
 
         /// <summary>
-        /// Rewrite the text of each table of contents list in `folioDoms` (the language 1 box of the
-        /// list's translation group) as one line per book it names: the book's title and the first
-        /// page number printed in that book, which the pages must already have (see
-        /// NumberPagesAcrossFolio). The box keeps its own classes and so its style. `books` gives
-        /// each held book's id, title and printing DOM.
+        /// Rewrite the text of each table of contents list in `folioDoms` as one line per book it
+        /// names: the book's title and the first page number printed in that book, which the pages
+        /// must already have (see NumberPagesAcrossFolio). `books` gives each held book's id, title
+        /// and printing DOM.
+        ///
+        /// The lines go into the language 1 box of the list's translation group and, when the list
+        /// is long enough to flow on into further pages, into the boxes of that flow chain. Each box
+        /// but the last gets as many lines as ended in it when the book was last edited, which is
+        /// as many as fit it (a line the Edit tab split between two boxes goes whole into the
+        /// second); the last gets the rest. A box keeps its own classes and so its style.
         /// </summary>
         internal static void FillTablesOfContents(
             IEnumerable<HtmlDom> folioDoms,
@@ -462,20 +511,50 @@ namespace Bloom.Publish.PDF
                         )
                     )
                     {
-                        var box = list.SafeSelectElements(
-                                ".//div[contains(concat(' ', @class, ' '), ' bloom-editable ') and contains(concat(' ', @class, ' '), ' bloom-content1 ')]"
-                            )
-                            .FirstOrDefault();
-                        if (box == null)
+                        var boxes = GetTocListBoxes(dom, list);
+                        if (boxes.Count == 0)
                             continue;
-                        foreach (var child in box.ChildNodes.ToArray())
-                            box.RemoveChild(child);
+                        var capacities = boxes
+                            .Select(box =>
+                                box.ChildNodes.OfType<SafeXmlElement>()
+                                    .Count(child =>
+                                        child.Name == "p"
+                                        && child.GetAttribute("data-flow-continuation") != "true"
+                                    )
+                            )
+                            .ToList();
+                        // An entry the Edit tab split between two boxes goes whole into the
+                        // second: the first box held only part of it, so it has no room for all.
+                        for (var i = 0; i < boxes.Count - 1; i++)
+                        {
+                            var firstOfNext = boxes[i + 1]
+                                .ChildNodes.OfType<SafeXmlElement>()
+                                .FirstOrDefault(child => child.Name == "p");
+                            if (
+                                firstOfNext?.GetAttribute("data-flow-continuation") == "true"
+                                && capacities[i] > 0
+                            )
+                                capacities[i]--;
+                        }
+                        foreach (var box in boxes)
+                        {
+                            foreach (var child in box.ChildNodes.ToArray())
+                                box.RemoveChild(child);
+                        }
                         var ids = list.GetAttribute(Book.Book.kFolioBookIdsAttribute)
                             .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        var boxIndex = 0;
+                        var linesInBox = 0;
                         foreach (var id in ids)
                         {
                             if (!byId.TryGetValue(id, out var book))
                                 continue;
+                            while (boxIndex < boxes.Count - 1 && linesInBox >= capacities[boxIndex])
+                            {
+                                boxIndex++;
+                                linesInBox = 0;
+                            }
+                            var box = boxes[boxIndex];
                             var firstNumber =
                                 GetPages(book.dom)
                                     .Select(p => p.GetAttribute("data-page-number"))
@@ -486,10 +565,68 @@ namespace Bloom.Publish.PDF
                             AddSpan(line, kTocTitleClass, book.title);
                             AddSpan(line, kTocPageNumberClass, firstNumber);
                             box.AppendChild(line);
+                            linesInBox++;
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// The language 1 boxes a table of contents list's text is in, in order: its own, then those
+        /// of the later groups of its flow chain, if it has one (the pages Bloom made for the part
+        /// of the list that did not fit).
+        /// </summary>
+        private static List<SafeXmlElement> GetTocListBoxes(HtmlDom dom, SafeXmlElement list)
+        {
+            var groups = new List<SafeXmlElement> { list };
+            var chain = list.GetAttribute(HtmlDom.kFlowChainAttrName);
+            if (!string.IsNullOrEmpty(chain))
+            {
+                groups.AddRange(
+                    dom.RawDom.SafeSelectElements(
+                            $"//div[contains(concat(' ', @class, ' '), ' bloom-translationGroup ') and @{HtmlDom.kFlowChainAttrName}='{chain}']"
+                        )
+                        .Where(group => group != list)
+                );
+            }
+            return groups
+                .Select(group =>
+                    group
+                        .SafeSelectElements(
+                            ".//div[contains(concat(' ', @class, ' '), ' bloom-editable ') and contains(concat(' ', @class, ' '), ' bloom-content1 ')]"
+                        )
+                        .FirstOrDefault()
+                )
+                .Where(box => box != null)
+                .ToList();
+        }
+
+        /// <summary>
+        /// The pages the table of contents lists of a printing DOM run on into: the pages, other
+        /// than table of contents pages, that hold a later group of a list's flow chain.
+        /// </summary>
+        internal static List<SafeXmlElement> GetTocContinuationPages(HtmlDom dom)
+        {
+            var chains = GetPages(dom)
+                .Where(p => p.HasClass(Book.Book.kFolioTocPageClass))
+                .SelectMany(p =>
+                    p.SafeSelectElements(
+                        $".//div[contains(concat(' ', @class, ' '), ' {Book.Book.kFolioTocListClass} ')]"
+                    )
+                )
+                .Select(list => list.GetAttribute(HtmlDom.kFlowChainAttrName))
+                .Where(chain => !string.IsNullOrEmpty(chain))
+                .ToHashSet();
+            return GetPages(dom)
+                .Where(page =>
+                    !page.HasClass(Book.Book.kFolioTocPageClass)
+                    && page.SafeSelectElements($".//div[@{HtmlDom.kFlowChainAttrName}]")
+                        .Any(group =>
+                            chains.Contains(group.GetAttribute(HtmlDom.kFlowChainAttrName))
+                        )
+                )
+                .ToList();
         }
 
         private static void AddSpan(SafeXmlElement line, string className, string text)

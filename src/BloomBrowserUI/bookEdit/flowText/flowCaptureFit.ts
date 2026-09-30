@@ -19,11 +19,8 @@ import {
     splitCombinedAcrossPages,
 } from "./flowDomMove";
 import { placeOverflowMarker } from "./flowOverflowMarker";
+import { isFlowStyleBox } from "./flowSupport";
 import { getPretextMeasurer } from "./flowPretextMeasurer";
-
-// The class that says a box holds ordinary flowing text. C# looks for it on the box itself
-// (FlowTextChains.GetFlowEditable), so the two sides must pick out the same box.
-const kNormalStyleClass = "normal-style";
 
 /** The two halves of a box's text: what fits in it, and what has to go on to the next box. */
 export interface IFlowFitResult {
@@ -184,12 +181,15 @@ function findFlowEditable(groupIndex: number, lang: string): HTMLElement {
         );
     }
 
-    const editable = group.querySelector<HTMLElement>(
-        `:scope > .bloom-editable.${kNormalStyleClass}[lang="${lang}"]`,
-    );
+    // C# picks out the same box (FlowTextChains.GetFlowEditable), so the two sides agree on it.
+    const editable = Array.from(
+        group.querySelectorAll<HTMLElement>(
+            `:scope > .bloom-editable[lang="${lang}"]`,
+        ),
+    ).find(isFlowStyleBox);
     if (!editable) {
         throw new Error(
-            `captureFlowFit: group ${groupIndex} has no ${kNormalStyleClass} box for "${lang}".`,
+            `captureFlowFit: group ${groupIndex} has no box for "${lang}" that text flows through.`,
         );
     }
 

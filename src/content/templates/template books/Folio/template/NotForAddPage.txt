@@ -1,1 +1,1 @@
-A folio's table of contents page belongs only in a folio, which offers it from its own template.
+The Folio template offers no pages to add: a folio has exactly one table of contents page, which each new folio starts with.

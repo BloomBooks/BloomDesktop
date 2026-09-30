@@ -1,5 +1,6 @@
 {
     "bookInstanceId": "788fa287-ae9d-4176-9f75-e586e9157c09",
     "suitableForMakingShells": "true",
-    "suitableForVernacularLibrary": "true"
+    "suitableForVernacularLibrary": "true",
+    "folio": true
 }

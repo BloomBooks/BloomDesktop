@@ -9,6 +9,9 @@ export interface ISelectedBookInfo {
     collectionKind: "main" | "factory" | "error" | "other"; //error indicates the book is not usable for anything.
     aboutBookInfoUrl: string | undefined;
     isTemplate: boolean;
+    // The feature a book made from this one needs, if any (e.g. "Folio"). Such a source is shown to
+    // anyone, but a book is made from it only when the subscription includes the feature.
+    requiredFeature?: string;
 }
 
 export const DefaultSelectedBookInfo: ISelectedBookInfo = {

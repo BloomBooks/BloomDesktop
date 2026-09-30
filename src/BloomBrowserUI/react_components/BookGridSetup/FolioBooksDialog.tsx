@@ -14,7 +14,6 @@ import {
 import {
     useWatchApiData,
     useApiString,
-    useApiData,
     postBoolean,
 } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../../bookEdit/workspaceRoot";
@@ -23,11 +22,9 @@ import { BookInfoForLinks, Link } from "./BookLinkTypes";
 import { IBookInfo } from "../../collectionsTab/BooksOfCollection";
 import { useL10n } from "../l10nHooks";
 
-// Choose the books one table of contents page of a folio lists, and their order. The collection's
-// books are offered except the folio itself, other folios (a folio cannot hold one), and books
-// already on another of this folio's table of contents pages (a book is listed only once).
+// Choose the books a folio's table of contents lists, and their order. The collection's books are
+// offered except the folio itself and other folios (a folio cannot hold one).
 export const FolioBooksDialog: React.FunctionComponent<{
-    tocPageId: string;
     initialLinks: Link[];
     setLinksCallback: (links: Link[]) => void;
 }> = (props) => {
@@ -57,18 +54,9 @@ export const FolioBooksDialog: React.FunctionComponent<{
         "unused",
     );
     const currentBookId = useApiString("editView/currentBookId", "");
-    const onOtherTocPages = useApiData<string[]>(
-        `editView/folioBooksOnOtherTocPages?page-id=${encodeURIComponent(props.tocPageId)}`,
-        [],
-    );
 
     const sourceBooks: BookInfoForLinks[] = collectionBooks
-        .filter(
-            (book) =>
-                book.id !== currentBookId &&
-                !book.isFolio &&
-                !onOtherTocPages.includes(book.id),
-        )
+        .filter((book) => book.id !== currentBookId && !book.isFolio)
         .map((book) => ({
             id: book.id,
             folderName: book.folderName,
@@ -134,13 +122,11 @@ export const FolioBooksDialog: React.FunctionComponent<{
 };
 
 export function showFolioBooksDialog(
-    tocPageId: string,
     currentLinks: Link[],
     setLinksCallback: (links: Link[]) => void,
 ) {
     ShowEditViewDialog(
         <FolioBooksDialog
-            tocPageId={tocPageId}
             initialLinks={currentLinks}
             setLinksCallback={setLinksCallback}
         />,

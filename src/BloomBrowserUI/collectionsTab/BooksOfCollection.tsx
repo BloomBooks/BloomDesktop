@@ -23,6 +23,8 @@ export interface IBookInfo {
     isFactory: boolean;
     /** True for a folio, a book that publishes other books of its collection as one book. */
     isFolio: boolean;
+    // The feature a book made from this one needs, if any (e.g. "Folio").
+    requiredFeature?: string;
 }
 
 // A very minimal set of collection properties for now

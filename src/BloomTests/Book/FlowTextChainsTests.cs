@@ -437,6 +437,76 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void IsFlowBox_NormalStyleOrInAFlowableGroup()
+        {
+            var dom = MakeBookDom(
+                Page("normal", Group(Editable("<p>a</p>")))
+                    + Page("heading", Group(Editable("<p>b</p>", style: "Heading1-style")))
+                    + Page(
+                        "toc",
+                        $"<div class='bloom-translationGroup {FlowTextChains.kFlowableGroupClass}'>"
+                            + Editable("<p>c</p>", style: "TableOfContents-style")
+                            + "</div>"
+                    )
+            );
+
+            Assert.That(FlowTextChains.IsFlowBox(FirstEditable(dom, "normal")), Is.True);
+            Assert.That(FlowTextChains.IsFlowBox(FirstEditable(dom, "heading")), Is.False);
+            Assert.That(FlowTextChains.IsFlowBox(FirstEditable(dom, "toc")), Is.True);
+        }
+
+        [Test]
+        public void TakeStyleFrom_GivesTheNewBoxTheSourceStyleAndMarksTheGroupFlowable()
+        {
+            var dom = MakeBookDom(
+                Page(
+                    "toc",
+                    $"<div class='bloom-translationGroup {FlowTextChains.kFlowableGroupClass}'>"
+                        + Editable("<p>c</p>", style: "TableOfContents-style")
+                        + "</div>"
+                ) + Page("new", Group(Editable("<p></p>")))
+            );
+            var newBox = FirstEditable(dom, "new");
+            Assert.That(newBox.HasClass("normal-style"), Is.True);
+
+            FlowTextChains.TakeStyleFrom(
+                (SafeXmlElement)FirstEditable(dom, "toc").ParentNode,
+                (SafeXmlElement)newBox.ParentNode
+            );
+
+            Assert.That(newBox.HasClass("TableOfContents-style"), Is.True);
+            Assert.That(newBox.HasClass("normal-style"), Is.False);
+            Assert.That(
+                ((SafeXmlElement)newBox.ParentNode).HasClass(FlowTextChains.kFlowableGroupClass),
+                Is.True
+            );
+        }
+
+        [Test]
+        public void EmptyAfter_EmptiesTheLaterBoxesOnly_AndKeepsThemInTheChain()
+        {
+            var dom = MakeBookDom(
+                Page("p1", Group(Editable("<p>one</p>"), "chain"))
+                    + Page("p2", Group(Editable("<p>two</p>"), "chain"))
+                    + Page("p3", Group(Editable("<p>three</p><p>four</p>"), "chain"))
+            );
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[text()]", 4);
+
+            var changed = FlowTextChains.EmptyAfter(dom, "chain", "p1", 0);
+
+            Assert.That(changed.Select(group => group.PageId), Is.EqualTo(new[] { "p2", "p3" }));
+            AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//p[text()]", 1);
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@id='p1']//p[text()='one']", 1);
+            // Each emptied box holds one empty paragraph, as a new box does.
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath("//div[@id='p3']//p", 1);
+            Assert.That(FlowTextChains.GetChainGroups(dom, "chain").Count, Is.EqualTo(3));
+        }
+
+        [Test]
         public void ContinueInto_SavesTheSourcePageWithSaveForPageChangedAndNeverSaves()
         {
             SetDom(

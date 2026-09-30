@@ -400,6 +400,10 @@ namespace Bloom.web.controllers
                     return "Quiz Question";
                 case "QuizAnswer":
                     return "Quiz Answer";
+                case "TableOfContents":
+                    return "Table of Contents";
+                case "TableOfContentsHeading":
+                    return "Table of Contents Heading";
                 case "Equation": // If the id is the same as the English, just fall through to default.
                 default:
                     return ruleId;

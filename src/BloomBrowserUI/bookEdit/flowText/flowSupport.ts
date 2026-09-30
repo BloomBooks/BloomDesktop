@@ -1,7 +1,11 @@
 // Whether we are willing to flow text through a box, and why not when we are not.
 
 import { supportsChainedEditable } from "./flowChain";
-import { kRefusedClass, kRefusedReasonAttr } from "./flowConstants";
+import {
+    kFlowableGroupClass,
+    kRefusedClass,
+    kRefusedReasonAttr,
+} from "./flowConstants";
 
 const kTranslationGroupSelector = ".bloom-translationGroup";
 const kNormalStyleClass = "normal-style";
@@ -26,6 +30,20 @@ export const kRefusalReasons = {
 } as const;
 
 /**
+ * Is this box of a style that text flows through: normal-style, or in a group marked
+ * kFlowableGroupClass? FlowTextChains.IsFlowBox answers the same question in C#.
+ */
+export function isFlowStyleBox(editable: HTMLElement): boolean {
+    const group = editable.closest(kTranslationGroupSelector);
+    // Bloom puts the style class on the editable; a template may put it on the group instead.
+    return (
+        editable.classList.contains(kNormalStyleClass) ||
+        !!group?.classList.contains(kNormalStyleClass) ||
+        !!group?.classList.contains(kFlowableGroupClass)
+    );
+}
+
+/**
  * Why flow will not move text through this box, or undefined if it will. The order of the
  * checks decides which reason a box with more than one problem reports.
  */
@@ -35,11 +53,7 @@ export function getRefusalReason(editable: HTMLElement): string | undefined {
         return kRefusalReasons.noGroup;
     }
 
-    // Bloom puts the style class on the editable; a template may put it on the group instead.
-    if (
-        !editable.classList.contains(kNormalStyleClass) &&
-        !group.classList.contains(kNormalStyleClass)
-    ) {
+    if (!isFlowStyleBox(editable)) {
         return kRefusalReasons.notNormalStyle;
     }
 

@@ -59,6 +59,16 @@ describe("getRefusalReason", () => {
         expect(getRefusalReason(editable)).toBeUndefined();
     });
 
+    it("accepts a box of another style in a group marked flowable", () => {
+        const editable = makeBox({
+            groupClasses: "bloom-flowable TableOfContents-style",
+            editableClasses: "TableOfContents-style",
+        });
+        expect(editable.classList.contains("normal-style")).toBe(false);
+
+        expect(getRefusalReason(editable)).toBeUndefined();
+    });
+
     it("refuses a box with dir=rtl on the box", () => {
         const editable = makeBox();
         editable.setAttribute("dir", "rtl");

@@ -27,6 +27,10 @@ import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./menuHelpers";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
+import {
+    useGetFeatureAvailabilityMessage,
+    useGetFeatureStatus,
+} from "../react_components/featureStatus";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { showBookSettingsDialog } from "../bookEdit/bookAndPageSettings/BookAndPageSettingsDialog";
 import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
@@ -534,9 +538,30 @@ export const BookButton: React.FunctionComponent<{
                 onContextMenu={(e) => handleContextClick(e)}
                 startIcon={
                     <div className={"thumbnail-wrapper"}>
-                        <img
-                            src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
-                        />
+                        <span
+                            // Shrinks to the picture, so the badge can sit on its corner.
+                            css={css`
+                                position: relative;
+                                display: flex;
+                                margin: auto;
+                            `}
+                        >
+                            <img
+                                src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
+                            />
+                            {
+                                // Only on the source a book is made from, not on the books made
+                                // from it.
+                                props.book.requiredFeature &&
+                                    !props.collection.isEditableCollection && (
+                                        <RequiredFeatureBadge
+                                            featureName={
+                                                props.book.requiredFeature
+                                            }
+                                        />
+                                    )
+                            }
+                        </span>
                         {props.collection.isEditableCollection && (
                             <BookOnBlorgBadge book={props.book} />
                         )}
@@ -663,5 +688,30 @@ export const BookButtonPlaceHolder: React.FunctionComponent<{
                 width: bookButtonWidth.toString(10) + "px",
             }}
         ></div>
+    );
+};
+
+/**
+ * The subscription badge, over the top right corner of the thumbnail of a source whose books need
+ * a feature of a subscription, part on the picture and part outside it. Its tip says what tier the
+ * feature needs.
+ */
+const RequiredFeatureBadge: React.FunctionComponent<{
+    featureName: string;
+}> = (props) => {
+    const featureStatus = useGetFeatureStatus(props.featureName);
+    const message = useGetFeatureAvailabilityMessage(featureStatus);
+    return (
+        <img
+            src="/bloom/images/bloom-enterprise-badge.svg"
+            title={message}
+            css={css`
+                position: absolute;
+                top: -6px;
+                right: -8px;
+                width: 16px;
+                height: 16px;
+            `}
+        />
     );
 };

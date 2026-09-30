@@ -20,6 +20,7 @@ namespace Bloom.Book
         Book Book { get; set; }
         bool IsBackMatter { get; }
         bool IsXMatter { get; }
+        bool IsFolioTableOfContents { get; }
         bool IsCoverPage { get; }
         bool IsOutsideFrontCoverPage { get; }
         string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId);
@@ -133,6 +134,19 @@ namespace Bloom.Book
         public bool IsXMatter
         {
             get { return IsBackMatter || IsFrontMatter; }
+        }
+
+        /// <summary>
+        /// True for a folio's table of contents page (see Book.kFolioTocPageClass). A folio has
+        /// exactly one, so it may not be copied.
+        /// </summary>
+        public bool IsFolioTableOfContents
+        {
+            get
+            {
+                return _getDivNodeForThisPageMethod(this)
+                    .HasClass(Bloom.Book.Book.kFolioTocPageClass);
+            }
         }
 
         public bool IsCoverPage

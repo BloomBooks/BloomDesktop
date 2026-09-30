@@ -9,6 +9,7 @@ using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.MiscUI;
 using Bloom.Publish;
+using Bloom.SafeXml;
 using Bloom.SubscriptionAndFeatures;
 using L10NSharp;
 using SIL.IO;
@@ -277,6 +278,11 @@ namespace Bloom.web.controllers
             apiHandler.RegisterEndpointHandler(
                 kApiUrlPart + "unlinkFrom",
                 Gated(HandleUnlinkFrom),
+                true
+            );
+            apiHandler.RegisterEndpointHandler(
+                kApiUrlPart + "emptyAfter",
+                Gated(HandleEmptyAfter),
                 true
             );
             apiHandler.RegisterEndpointHandler(kApiUrlPart + "walk", Gated(HandleWalk), true);
@@ -681,11 +687,20 @@ namespace Bloom.web.controllers
             // it belongs on the UI thread with everything else that changes the book's structure.
             FlowTextWalk.InvokeOnUiThread(() =>
             {
-                var newPageId = book.InsertPageAfter(
-                    FlowTextChains.FindPage(book, afterPageId),
-                    templatePage
-                );
+                var afterPage = FlowTextChains.FindPage(book, afterPageId);
+                // The text runs out of the last box it flows through on the page before, so the
+                // new page's box takes that box's style.
+                var styleSource = FlowTextChains
+                    .GetFlowGroupsOfPage(afterPage.GetDivNodeForThisPage(), afterPageId, 0)
+                    .LastOrDefault(group =>
+                        group
+                            .Group.ChildNodes.OfType<SafeXmlElement>()
+                            .Any(FlowTextChains.IsFlowBox)
+                    );
+                var newPageId = book.InsertPageAfter(afterPage, templatePage);
                 added = FindGroupOnPage(book, newPageId, 0);
+                if (added != null)
+                    FlowTextChains.TakeStyleFrom(styleSource?.Group, added.Group);
             });
 
             if (added == null)
@@ -1067,6 +1082,47 @@ namespace Bloom.web.controllers
                     {
                         if (pageId == currentPageId)
                             continue; // The browser has already done this page.
+                        var page = FlowTextChains.FindPage(book, pageId);
+                        SavePage(book, page);
+                        _editingModel.RefreshThumbnail(page);
+                    }
+
+                    request.PostSucceeded();
+                }
+            );
+        }
+
+        /// <summary>
+        /// POST flowText/emptyAfter: empty every box of the chain after this one
+        /// (FlowTextChains.EmptyAfter), for text the browser is about to rewrite as a whole in
+        /// this box. The body is the same as unlinkFrom's. Only the later pages are changed and
+        /// saved here: the browser owns the page it is editing.
+        /// </summary>
+        private void HandleEmptyAfter(ApiRequest request)
+        {
+            RunHandler(
+                request,
+                () =>
+                {
+                    var body = request.RequiredPostObject<UnlinkFromRequest>();
+                    var book = _bookSelection.CurrentSelection;
+                    if (book == null)
+                    {
+                        request.Failed("No book is selected.");
+                        return;
+                    }
+
+                    var currentPageId = _editingModel.CurrentPage?.Id;
+                    var changed = FlowTextChains.EmptyAfter(
+                        book.OurHtmlDom,
+                        body.chainId,
+                        body.fromPageId,
+                        body.fromIndexInPage
+                    );
+                    foreach (var pageId in changed.Select(group => group.PageId).Distinct())
+                    {
+                        if (pageId == currentPageId)
+                            continue;
                         var page = FlowTextChains.FindPage(book, pageId);
                         SavePage(book, page);
                         _editingModel.RefreshThumbnail(page);

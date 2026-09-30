@@ -15,4 +15,4 @@ When Bloom makes the PDF, it adds each book's first page number to the table of 
 
 - A folio can only use books that are in the same collection. {i18n="folio.template.know.collection"}
 - A folio can only be published as a PDF. {i18n="folio.template.know.pdf"}
-- If the list does not fit on one page, use **Add Page** to add another Table of Contents page. {i18n="folio.template.know.morepages"}
+- If the list does not fit on one page, Bloom adds pages after it for the rest of the list, and takes them away again when they are no longer needed. {i18n="folio.template.know.morepages"}

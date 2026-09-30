@@ -887,7 +887,9 @@ namespace Bloom.Edit
             {
                 return _pageSelection != null
                     && _pageSelection.CurrentSelection != null
-                    && !_pageSelection.CurrentSelection.IsXMatter;
+                    && !_pageSelection.CurrentSelection.IsXMatter
+                    // A folio has exactly one table of contents page.
+                    && !_pageSelection.CurrentSelection.IsFolioTableOfContents;
             }
         }
 
