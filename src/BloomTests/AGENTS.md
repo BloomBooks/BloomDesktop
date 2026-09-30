@@ -110,7 +110,7 @@ string really should be invariant, as log lines should be — fix the production
 test asserting the period.
 
 The weekly `.github/workflows/culture-sweep.yml` already runs the whole suite under `fr-FR`,
-`tr-TR` and `th-TH`, so **do not run under another culture as a matter of routine** — it costs a full
+`tr-TR`, `th-TH` and `ar-SA`, so **do not run under another culture as a matter of routine** — it costs a full
 build and a full run for nothing new. Do it only when your change parses or formats numbers, dates,
 casing, or string searches, or when reproducing a sweep failure locally. `src/BloomTests/TestCulture.cs` makes it one environment
 variable, and does nothing when it is unset:
