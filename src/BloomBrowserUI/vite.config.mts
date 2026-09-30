@@ -953,6 +953,20 @@ export default defineConfig(async ({ command }) => {
             include: [
                 "jquery", // Always pre-bundle jQuery
                 "comicaljs", // Pre-bundle comicaljs (webpack UMD bundle needs processing)
+                // bloom-table is excluded below, so Vite never scans its imports. Any of
+                // these it imports that is not pre-bundled would be served raw, and the page
+                // then fails to load (react/jsx-runtime is CommonJS; MUI's ESM files import
+                // the CommonJS prop-types).
+                "bloom-table > @mui/material/Divider",
+                "bloom-table > @mui/material/IconButton",
+                "bloom-table > @mui/material/ListItemIcon",
+                "bloom-table > @mui/material/ListItemText",
+                "bloom-table > @mui/material/MenuItem",
+                "bloom-table > @mui/material/ToggleButton",
+                "bloom-table > react",
+                "bloom-table > react/jsx-runtime",
+                "bloom-table > react-dom",
+                "bloom-table > react-dom/client",
             ],
             exclude: [
                 "lib/localizationManager/localizationManager", // Don't pre-bundle this

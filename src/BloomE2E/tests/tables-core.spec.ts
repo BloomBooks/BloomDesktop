@@ -31,7 +31,6 @@ import {
     getContentPages,
     goToPage,
     makeBookFromTemplate,
-    reloadPageBeingEdited,
     type IBookPage,
 } from "../helpers/bookMaking";
 import { waitForBookWithPageCount } from "../helpers/bookHtml";
@@ -60,6 +59,7 @@ import {
     dragBoundary,
     dragTableBy,
     clickCell,
+    clickCellPicture,
     clickTableMenuCommand,
     expectCellsTile,
     expectFormatGearInsideCell,
@@ -465,19 +465,26 @@ test.describe("a table on a canvas page", () => {
         });
 
         await step(
-            "Rebuild the page, to clear the drawing surface",
+            "Press the picture, and check it selects its cell",
             async () => {
-                // Putting a picture in a cell leaves the canvas element's drawing surface
-                // (canvas.comical-generated) over the table, and it takes every press from then on:
-                // the first press on a cell reaches the cell, every one after that reaches the
-                // surface, and no cell can be selected again. Pressing elsewhere on the page does not
-                // clear it. So the page is rebuilt here, which does, and the tests that follow start
-                // from a table that answers a click. Reported in the branch's own review; a person
-                // hits it too, and for them there is no test to rebuild the page.
-                await reloadPageBeingEdited(page);
-                await waitForTableAttached(page);
+                // A cell made a picture cell after the page loaded needs a drawing surface of its
+                // own. Without one, the surface of the canvas the table sits on lies over the
+                // picture and takes the press, and a different cell ends up selected.
+                // Another cell first: the Cell menu that made the picture cell left it selected,
+                // and a press on a cell that is already selected proves nothing.
+                await clickCell(page, 0, 0);
+                await clickCellPicture(page, 1, 1);
             },
         );
+
+        await step("Press a text cell, and check it takes typing", async () => {
+            await clickCell(page, 0, 1);
+            await typeInCell(page, 0, 1, "en", "Pear");
+            expect(
+                await getCellText(page, 0, 1, "en"),
+                "After the picture was pressed, a text cell should still take typing.",
+            ).toBe("Pear");
+        });
     });
 
     test("duplicates the whole table as one canvas element", async ({

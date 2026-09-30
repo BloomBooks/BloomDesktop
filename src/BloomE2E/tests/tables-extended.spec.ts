@@ -540,11 +540,6 @@ test.describe("more ways to use a table", () => {
         await step("Put a picture in one of the cells", async () => {
             await setCellContentType(page, 1, 1, "image");
             await chooseImageFile(page, IMAGE_FILE, await cell(page, 1, 1));
-            // Putting a picture in a cell leaves the canvas element's drawing surface over the
-            // table, and it then takes every press (see the note in tables-core.spec.ts).
-            // Rebuilding the page is what clears it.
-            await reloadPageBeingEdited(page);
-            await waitForTableAttached(page);
         });
 
         await step("Drag the table's side handle outwards", async () => {

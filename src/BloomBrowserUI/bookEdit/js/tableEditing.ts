@@ -190,7 +190,19 @@ function wireBloomContentOfNewCells(root: HTMLElement): void {
         root.querySelectorAll<HTMLElement>(imageCellSelector),
     );
     if (root.matches(imageCellSelector)) imageCells.push(root);
-    imageCells.forEach((cell) => SetupImagesInContainer(cell));
+    imageCells.forEach((cell) => {
+        SetupImagesInContainer(cell);
+        // A picture cell made after the page loaded also needs the drawing
+        // surface every other picture got when canvas editing started;
+        // without it the surface of the canvas the table sits on takes the
+        // press on the picture.
+        cell.querySelectorAll<HTMLElement>(":scope > .bloom-canvas").forEach(
+            (bloomCanvas) =>
+                theOneCanvasElementManager?.startEditingNewBloomCanvas(
+                    bloomCanvas,
+                ),
+        );
+    });
     observeImageCells(root);
     wireVideoContainersOfNewCells(root);
 }

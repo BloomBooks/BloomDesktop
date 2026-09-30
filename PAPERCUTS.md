@@ -19,6 +19,10 @@ House rules:
 
 ---
 
+## 2026-09-30 — `winformsUia.ps1 close` can pick a disabled window in a stack of dialogs
+- **Cut:** With about 40 "Bloom had a problem" dialogs stacked, `close -Window ReactDialog` reported "closed" for the first match, which was disabled (`enabled=False`) and ignored the close. Two-dialog stacks made later both came up enabled, so this was not reproduced.
+- **Idea:** When several windows match, have `close` prefer the enabled one, and report failure when the window is still there afterwards.
+
 ## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
 - **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.

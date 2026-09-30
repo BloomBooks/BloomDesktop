@@ -164,15 +164,10 @@ test.describe("a book with a table where tables cannot be made", () => {
         });
 
         await step("Fill the table with text and a picture", async () => {
-            // The picture last: putting one in a cell leaves a drawing surface over the table
-            // that takes every press afterwards, so nothing that needs a cell click can follow
-            // it until the page is rebuilt (AUTOMATION-DEBT.md).
             await typeInCell(page, 0, 0, "en", "Apple");
             await typeInCell(page, 0, 1, "en", "Banana");
             await setCellContentType(page, 1, 0, "image");
             await chooseImageFile(page, FIRST_IMAGE, await cell(page, 1, 0));
-            await reloadPageBeingEdited(page);
-            await waitForTableAttached(page);
         });
 
         await step("Put a video in a table on a page of its own", async () => {

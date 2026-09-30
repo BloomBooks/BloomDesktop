@@ -261,6 +261,9 @@ const FOLDERS_THAT_ARE_NOT_SOURCE = new Set([
     "component-tests",
     "canvas-e2e-tests",
     "test",
+    // Playwright's own output, written by every component-test run in src/BloomBrowserUI.
+    "test-results",
+    "playwright-report",
 ]);
 
 /**

@@ -137,6 +137,34 @@ const resolveInstance = async (httpPort) => {
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// How long to watch for the next queued report after closing one. Bloom opens the
+// next dialog after the previous one closes, and its page needs time to load.
+const kNextDialogGraceMs = 3000;
+
+// findProblemDialog, polled for up to `ms`. Returns undefined if none appears.
+const waitForProblemDialog = async (browser, ms) => {
+    const deadline = Date.now() + ms;
+    for (;;) {
+        const found = await findProblemDialog(browser);
+        if (found || Date.now() >= deadline) return found;
+        await delay(250);
+    }
+};
+
+// How many CDP pages are showing a problem dialog right now.
+const countProblemDialogs = async (browser) => {
+    let count = 0;
+    for (const page of browser
+        .contexts()
+        .flatMap((context) => context.pages())) {
+        const showing = await page
+            .evaluate(() => !!document.querySelector(".problem-dialog"))
+            .catch(() => false);
+        if (showing) count++;
+    }
+    return count;
+};
+
 // Look through every CDP page for one whose DOM contains a .problem-dialog root.
 // The dialog is its own WinForms-hosted WebView, so it is a separate page target
 // (in dev it is even served from the Vite port, not the Bloom http port), which
@@ -267,26 +295,31 @@ const main = async () => {
                 );
             }
 
-            // Wait for THIS dialog to go away, then look for the next queued one.
+            // Wait for THIS dialog's page to go away. Identify it by its page, not its
+            // heading: a backlog of the same report has identical headings, and the
+            // next one must not be mistaken for this one refusing to close.
             const closeDeadline = Date.now() + 5000;
-            let next = found;
-            while (Date.now() < closeDeadline) {
+            while (!found.page.isClosed() && Date.now() < closeDeadline) {
                 await delay(200);
-                next = await findProblemDialog(browser);
-                if (!next || next.heading !== found.heading) {
-                    break;
-                }
             }
-            if (next && next.heading === found.heading) {
-                // Same dialog still up after 5s: closing isn't taking, or it is
-                // re-firing immediately. Stop and report rather than spin.
-                found = next;
+            if (!found.page.isClosed()) {
+                // Still up after 5s: closing isn't taking. Stop and report rather
+                // than spin.
                 break;
             }
-            found = next;
+            // Bloom shows the next queued report a moment AFTER closing this one, so
+            // "nothing showing right now" does not yet mean the backlog is empty.
+            found = await waitForProblemDialog(browser, kNextDialogGraceMs);
         }
 
-        const stillPresent = Boolean(await findProblemDialog(browser));
+        const stillPresent = Boolean(
+            await waitForProblemDialog(browser, kNextDialogGraceMs),
+        );
+        // Every problem dialog still on screen, not just the first: a stack of them is
+        // the case where a caller most needs to know that some are left.
+        const stillShowing = stillPresent
+            ? await countProblemDialogs(browser)
+            : 0;
         const result = {
             instance: {
                 processId: instance.processId,
@@ -298,6 +331,7 @@ const main = async () => {
                 ? gathered.length - 1
                 : gathered.length,
             stillPresent,
+            stillShowing,
             problems: gathered,
         };
 
@@ -309,9 +343,7 @@ const main = async () => {
         if (gathered.length === 0) {
             console.log("No problem dialog was showing.");
         } else {
-            console.log(
-                `Handled ${gathered.length} problem dialog(s)${stillPresent ? " (one still present — likely re-firing)" : ""}:`,
-            );
+            console.log(`Handled ${gathered.length} problem dialog(s):`);
             for (const p of gathered) {
                 console.log(`\n• ${p.problem || p.heading}`);
                 if (p.detail) {
@@ -324,6 +356,12 @@ const main = async () => {
                 }
             }
         }
+        if (stillShowing > 0)
+            console.log(
+                `
+${stillShowing} problem dialog(s) are STILL SHOWING. Closing them did not ` +
+                    "take; if nothing is still generating them, stop this Bloom process.",
+            );
     } finally {
         await browser.close();
     }

@@ -533,11 +533,32 @@ export async function clickCell(
             )
             .catch(() => false);
     }
-    if (!selected) {
-        // Say what the press landed on. A cell that will not take a click is nearly always a
-        // cell with something over it: Bloom's toolbar for the selected canvas element, or a
-        // piece of the table's own chrome that has been positioned across it.
-        const whatIsThere = await target.evaluate((element) => {
+    if (!selected)
+        throw new Error(
+            `Clicking the cell at row ${row}, column ${column} did not select it. ` +
+                (await describePressPoint(page, target, {
+                    x: box.x + box.width / 2,
+                    y: box.y + box.height / 2,
+                })),
+        );
+    return target;
+}
+
+/**
+ * Say what a press at `at` (in Playwright's mouse coordinates) landed on, for the message of a
+ * press that did not select the cell `target`. A cell that will not take a click is nearly always
+ * a cell with something over it: Bloom's toolbar for the selected canvas element, a drawing
+ * surface, or a piece of the table's own chrome that has been positioned across it.
+ */
+async function describePressPoint(
+    page: Page,
+    target: Locator,
+    at: { x: number; y: number },
+): Promise<string> {
+    const box = await requireBox(target, "the cell");
+    const inThePage = await target.evaluate(
+        (element, fraction) => {
+            // The page is zoomed, so the press point goes over as a fraction of the cell.
             const r = element.getBoundingClientRect();
             const describe = (node: Element | null) =>
                 node
@@ -548,39 +569,69 @@ export async function clickCell(
             return {
                 atThePressPoint: describe(
                     doc.elementFromPoint(
-                        r.left + r.width / 2,
-                        r.top + r.height / 2,
+                        r.left + fraction.x * r.width,
+                        r.top + fraction.y * r.height,
                     ),
                 ),
                 selectedCells: doc.querySelectorAll(".cell--selected").length,
                 focused: describe(doc.activeElement),
             };
-        });
-        // And what Bloom's own window has there. A press goes to the shell document first, so a
-        // dialog it has left up, even an invisible one, takes the press and the page never sees
-        // it. Over the page, the shell should report nothing but the page's iframe.
-        const inTheShell = await page.evaluate(
-            (at) => {
-                const node = document.elementFromPoint(at.x, at.y);
-                return {
-                    atThePressPoint: node
-                        ? `${node.tagName.toLowerCase()}${node.id ? "#" + node.id : ""}` +
-                          `.${node.className || "(no class)"}`
-                        : "(nothing)",
-                    dialogs: document.querySelectorAll(
-                        ".MuiDialog-root, .MuiModal-root, .MuiBackdrop-root",
-                    ).length,
-                };
-            },
-            { x: box.x + box.width / 2, y: box.y + box.height / 2 },
-        );
+        },
+        { x: (at.x - box.x) / box.width, y: (at.y - box.y) / box.height },
+    );
+    // And what Bloom's own window has there. A press goes to the shell document first, so a
+    // dialog it has left up, even an invisible one, takes the press and the page never sees it.
+    // Over the page, the shell should report nothing but the page's iframe.
+    const inTheShell = await page.evaluate((point) => {
+        const node = document.elementFromPoint(point.x, point.y);
+        return {
+            atThePressPoint: node
+                ? `${node.tagName.toLowerCase()}${node.id ? "#" + node.id : ""}` +
+                  `.${node.className || "(no class)"}`
+                : "(nothing)",
+            dialogs: document.querySelectorAll(
+                ".MuiDialog-root, .MuiModal-root, .MuiBackdrop-root",
+            ).length,
+        };
+    }, at);
+    return (
+        `At the point pressed, in the page: ${inThePage.atThePressPoint}; ` +
+        `in Bloom's window: ${inTheShell.atThePressPoint} ` +
+        `(${inTheShell.dialogs} dialog or backdrop elements in the window). ` +
+        `Cells marked selected in the page: ${inThePage.selectedCells}. ` +
+        `Focus: ${inThePage.focused}.`
+    );
+}
+
+/**
+ * Press once in the middle of the picture in a picture cell, the way a person does to select the
+ * cell and get at its picture, and wait until the table marks that cell selected. One press only,
+ * unlike clickCell: a picture that takes a second press to answer is the failure this is for.
+ */
+export async function clickCellPicture(
+    page: Page,
+    row: number,
+    column: number,
+    tableIndex = 0,
+): Promise<Locator> {
+    const target = await cell(page, row, column, tableIndex);
+    const picture = target.locator(".bloom-imageContainer img").first();
+    await picture.waitFor({ state: "visible", timeout: 30000 });
+    const box = await requireBox(
+        picture,
+        `the picture in the cell at row ${row}, column ${column}`,
+    );
+    const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    // A real press, for the same reason as in clickCell.
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.mouse.up();
+    try {
+        await expect(target).toHaveClass(/cell--selected/, { timeout: 5000 });
+    } catch {
         throw new Error(
-            `Clicking the cell at row ${row}, column ${column} did not select it. ` +
-                `At the point pressed, in the page: ${whatIsThere.atThePressPoint}; ` +
-                `in Bloom's window: ${inTheShell.atThePressPoint} ` +
-                `(${inTheShell.dialogs} dialog or backdrop elements in the window). ` +
-                `Cells marked selected in the page: ${whatIsThere.selectedCells}. ` +
-                `Focus: ${whatIsThere.focused}.`,
+            `Pressing the picture in the cell at row ${row}, column ${column} did not select ` +
+                `that cell. ${await describePressPoint(page, target, at)}`,
         );
     }
     return target;

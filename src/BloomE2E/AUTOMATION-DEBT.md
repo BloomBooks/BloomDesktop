@@ -639,20 +639,6 @@ being given `data-testid`s, and match on that. Until then a table test cannot ch
 person actually reads, because the words are not Bloom's to translate.
 (Found 2026-09-04, writing the table suites.)
 
-## A picture in a cell leaves a drawing surface that swallows every press
-
-Once a picture goes into a cell, the canvas element's own drawing surface
-(`canvas.comical-generated`) lies over the table and takes the presses aimed at cells and at
-the table's chrome, so the next step in a test hits the surface instead of the thing it was
-aimed at. The tests get past it by rebuilding the page (`reloadPageBeingEdited`), which is not
-something a person does and hides whatever a person would actually hit.
-
-Fix direction: this is a product question first, so it belongs with the table work rather than
-with the automation layer; the tests should not need the rebuild at all. It is recorded here
-because until it is settled, any table test that puts a picture in a cell has that rebuild in
-the middle of it.
-(Found 2026-09-04, writing the table suites.)
-
 ## Nothing in the markup marks the boundary between two rows or columns
 
 A person resizes a row or a column by dragging the line between them, and that line is not an
