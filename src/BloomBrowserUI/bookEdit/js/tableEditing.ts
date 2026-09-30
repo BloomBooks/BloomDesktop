@@ -34,7 +34,7 @@ import {
     refreshTableFeatureStatus,
     tablesMayBeRestructured,
 } from "./tableFeature";
-import { noteTableChange } from "./undoOrdering";
+import { noteTableHistoryUpdate } from "./undoOrdering";
 
 // The library's own "something changed in a table" notification. It fires on the
 // page's document at the end of every operation that goes through the table's
@@ -254,9 +254,10 @@ function onTableCellContentChanged(e: Event): void {
 
 /** Handle the library finishing a table operation. Attached via SetupTableEditing. */
 function onTableHistoryUpdated(e: Event): void {
-    const table = (
-        e as CustomEvent<{ table?: HTMLElement }>
-    ).detail?.table?.closest<HTMLElement>(".bloom-table");
+    const detail = (
+        e as CustomEvent<{ table?: HTMLElement; operation?: string }>
+    ).detail;
+    const table = detail?.table?.closest<HTMLElement>(".bloom-table");
     // Deleting a table takes it out of the document, so there may be nothing to
     // wire; and an operation on a nested table hands us that table, while an
     // undo can have restored the cells of the table that holds it. Wiring from
@@ -265,7 +266,7 @@ function onTableHistoryUpdated(e: Event): void {
     // After the wiring, not before: wiring attaches CKEditor to the cells the operation built,
     // and an attach can be reported as a CKEditor change. Recording the table's change last
     // leaves the table as the more recent of the two, which is what it is.
-    noteTableChange();
+    noteTableHistoryUpdate(detail?.operation);
 }
 
 /** The table that holds `table`, and holds no other table itself. */

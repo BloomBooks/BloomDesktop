@@ -414,6 +414,17 @@ namespace Bloom
         /// </summary>
         private static bool RunIsAutomated => Program.RunningE2eTests || Program.StartupAutomation;
 
+        /// <summary>
+        /// Whether this browser's window has (or, not created yet, will get) a DPI awareness other
+        /// than the PerMonitorV2 the rest of Bloom uses; see LegacyDpiDialogLauncher.
+        /// </summary>
+        private bool IsInLegacyDpiWindow()
+        {
+            return _webview.IsHandleCreated
+                ? LegacyDpiDialogLauncher.IsWindowLegacyDpiAware(_webview.Handle)
+                : LegacyDpiDialogLauncher.IsThreadLegacyDpiAware();
+        }
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr FindWindowEx(
             IntPtr parent,
@@ -710,7 +721,15 @@ namespace Bloom
             // a browser built on a server thread hangs that thread: publishing a BloomPUB, which
             // makes its browsers on the thread serving the API call, waited forever and the preview
             // never appeared.
-            if (env == null && RunIsAutomated && Program.RunningOnUiThread)
+            //
+            // And not for a browser in a legacy-DPI window (the Settings dialog, and the other
+            // dialogs LegacyDpiDialogLauncher shows): WebView2 refuses to put a controller of one
+            // DPI awareness into an environment whose browser process was started from another, so
+            // sharing makes that dialog fail to initialize and Bloom exits. Such a browser gets an
+            // environment of its own, and is not visible over the debugging port.
+            var mayShareEnvironment =
+                RunIsAutomated && Program.RunningOnUiThread && !IsInLegacyDpiWindow();
+            if (env == null && mayShareEnvironment)
                 env = _environmentForAutomation;
             if (env == null)
             {
@@ -735,7 +754,7 @@ namespace Bloom
                 // after it would inherit that: no browser in the run would ever listen, and the
                 // suite would report a startup timeout rather than a reason. No browser is built
                 // that early today, and this keeps it that way if one ever is.
-                if (RunIsAutomated && Program.RunningOnUiThread && RemoteDebuggingPort.HasValue)
+                if (mayShareEnvironment && RemoteDebuggingPort.HasValue)
                     _environmentForAutomation = env;
             }
             await _webview.EnsureCoreWebView2Async(env);

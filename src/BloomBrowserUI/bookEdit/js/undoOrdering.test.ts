@@ -3,7 +3,7 @@ import {
     getCkeditorChangeOrder,
     getTableChangeOrder,
     noteCkeditorChange,
-    noteTableChange,
+    noteTableHistoryUpdate,
     resetUndoOrderingForTests,
     shouldUndoGoToTable,
 } from "./undoOrdering";
@@ -95,7 +95,7 @@ describe("the recorded order of the two stacks", () => {
     });
 
     it("puts each change after the one before it, whichever stack it is on", () => {
-        noteTableChange();
+        noteTableHistoryUpdate("Add Row");
         expect(
             getTableChangeOrder(),
             "The table's change should have come after CKEditor's non-existent one.",
@@ -107,7 +107,7 @@ describe("the recorded order of the two stacks", () => {
             "Typing after adding a row should be recorded as the later of the two.",
         ).toBeGreaterThan(getTableChangeOrder());
 
-        noteTableChange();
+        noteTableHistoryUpdate("Add Row");
         expect(
             getTableChangeOrder(),
             "Adding a second row should put the table back in front.",
@@ -116,7 +116,7 @@ describe("the recorded order of the two stacks", () => {
 
     it("routes Undo to the typing after a row is added and then typed in", () => {
         // The two calls the real code makes, in the order the page makes them.
-        noteTableChange();
+        noteTableHistoryUpdate("Add Row");
         noteCkeditorChange();
         expect(
             shouldUndoGoToTable({
@@ -126,5 +126,47 @@ describe("the recorded order of the two stacks", () => {
                 ckeditorChangeOrder: getCkeditorChangeOrder(),
             }),
         ).toBe(false);
+    });
+
+    it("routes Undo to the typing once the row added after it has been undone", () => {
+        // Add a row, type, add a second row, then Undo takes the second row back off.
+        noteTableHistoryUpdate("Add Row");
+        noteCkeditorChange();
+        const typing = getCkeditorChangeOrder();
+        noteTableHistoryUpdate("Add Row");
+        expect(
+            getTableChangeOrder(),
+            "Sanity check: before the Undo, the second row is the latest change.",
+        ).toBeGreaterThan(typing);
+
+        noteTableHistoryUpdate("Undo Add Row");
+
+        expect(
+            getTableChangeOrder(),
+            "After the Undo, what is left of the table's history (the first row) came before the typing.",
+        ).toBeLessThan(typing);
+        expect(
+            shouldUndoGoToTable({
+                tableCanUndo: true,
+                ckeditorCanUndo: true,
+                tableChangeOrder: getTableChangeOrder(),
+                ckeditorChangeOrder: getCkeditorChangeOrder(),
+            }),
+            "The next Undo should take back the typing, not the first row.",
+        ).toBe(false);
+    });
+
+    it("puts a redone operation back in front", () => {
+        noteTableHistoryUpdate("Add Row");
+        noteTableHistoryUpdate("Undo Add Row");
+        noteCkeditorChange();
+        noteTableHistoryUpdate("Redo Add Row");
+        expect(getTableChangeOrder()).toBeGreaterThan(getCkeditorChangeOrder());
+    });
+
+    it("forgets the table's history when the library clears it", () => {
+        noteTableHistoryUpdate("Add Row");
+        noteTableHistoryUpdate("Clear History");
+        expect(getTableChangeOrder()).toBe(0);
     });
 });

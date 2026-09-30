@@ -11,12 +11,23 @@
 // same millisecond are ordinary and a tie has no right answer.
 
 let changeCounter = 0;
-let tableChangeOrder = 0;
+// One entry per operation in the table library's history, oldest first, so that undoing one
+// hands the "last changed" answer back to the operation before it rather than leaving the table
+// marked as more recent than typing it came before.
+let tableChangeOrders: number[] = [];
 let ckeditorChangeOrder = 0;
 
-/** Record that the table library has just finished an operation of its own. */
-export function noteTableChange(): void {
-    tableChangeOrder = ++changeCounter;
+/**
+ * Record what the table library just did to its history, given the `operation` its
+ * tableHistoryUpdated event names: an operation of its own or a redo adds an entry, an undo
+ * ("Undo <label>") takes the latest off, and "Clear History" empties it.
+ */
+export function noteTableHistoryUpdate(operation: string | undefined): void {
+    if (operation?.startsWith("Undo ")) tableChangeOrders.pop();
+    else if (operation === "Clear History") tableChangeOrders = [];
+    // Detaching a table drops only redo entries, which have no place in this list.
+    else if (operation !== "Detach Table")
+        tableChangeOrders.push(++changeCounter);
 }
 
 /** Record that CKEditor has just recorded a change of its own (a keystroke, a paste, ...). */
@@ -24,9 +35,9 @@ export function noteCkeditorChange(): void {
     ckeditorChangeOrder = ++changeCounter;
 }
 
-/** When the table library last finished an operation, on the shared counter. */
+/** When the operation now at the top of the table library's history was made, on the shared counter. */
 export function getTableChangeOrder(): number {
-    return tableChangeOrder;
+    return tableChangeOrders[tableChangeOrders.length - 1] ?? 0;
 }
 
 /** When CKEditor last recorded a change, on the shared counter. */
@@ -55,6 +66,6 @@ export function shouldUndoGoToTable(state: {
 /** Forget both stacks' recorded order. For tests, and for tearing table editing down. */
 export function resetUndoOrderingForTests(): void {
     changeCounter = 0;
-    tableChangeOrder = 0;
+    tableChangeOrders = [];
     ckeditorChangeOrder = 0;
 }
