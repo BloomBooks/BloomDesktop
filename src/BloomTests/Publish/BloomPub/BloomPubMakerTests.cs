@@ -2594,6 +2594,117 @@ namespace BloomTests.Publish.BloomPub
         }
 
         [Test]
+        public void CompressImages_SameBasenameJpgAndPng_BothReferencesResolveToDistinctFiles()
+        {
+            // BL-16954: photo.jpg and photo.png share the same basename. The large images
+            // ensure both are resized and the PNG is converted to JPEG, so both outputs
+            // compete for photo_r.jpg. GetUniqueNewFilename must assign distinct names so
+            // neither file overwrites the other.
+            const string bodyContent =
+                @"<div class='bloom-page A5Portrait' id='page-jpg'>
+                    <div class='marginBox'>
+                        <div class='bloom-imageContainer bloom-background-image-in-style-attr'
+                             style=""background-image:url('photo.jpg')""></div>
+                    </div>
+                </div>
+                <div class='bloom-page A5Portrait' id='page-png'>
+                    <div class='marginBox'>
+                        <div class='bloom-imageContainer bloom-background-image-in-style-attr'
+                             style=""background-image:url('photo.png')""></div>
+                    </div>
+                </div>";
+
+            TestHtmlAfterCompression(
+                bodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
+                actionsOnFolderBeforeCompressing: folderPath =>
+                {
+                    // Large images ensure both need resize; the PNG converts to JPEG,
+                    // making both outputs .jpg and triggering the basename collision.
+                    RobustFile.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            _pathToTestImages,
+                            "LakePendOreille.jpg"
+                        ),
+                        Path.Combine(folderPath, "photo.jpg")
+                    );
+                    RobustFile.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            _pathToTestImages,
+                            "Othello 199.png"
+                        ),
+                        Path.Combine(folderPath, "photo.png")
+                    );
+                },
+                assertionsOnZipArchive: paramObj =>
+                {
+                    var zip = paramObj.ZipFile;
+                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
+
+                    string GetBackgroundImageUrl(string pageId)
+                    {
+                        var div = htmlDom
+                            .SafeSelectNodes(
+                                $"//div[@id='{pageId}']//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                            )
+                            .Cast<SafeXmlElement>()
+                            .FirstOrDefault();
+                        Assert.That(
+                            div,
+                            Is.Not.Null,
+                            $"page '{pageId}' should contain a background-image div"
+                        );
+                        var style = div.GetAttribute("style") ?? "";
+                        var m = System.Text.RegularExpressions.Regex.Match(
+                            style,
+                            @"url\('([^']+)'\)"
+                        );
+                        Assert.That(
+                            m.Success,
+                            Is.True,
+                            $"page '{pageId}' style should contain url('...')"
+                        );
+                        return m.Groups[1].Value;
+                    }
+
+                    var jpgUrl = GetBackgroundImageUrl("page-jpg");
+                    var pngUrl = GetBackgroundImageUrl("page-png");
+
+                    // The two colliding basenames must produce distinct output filenames.
+                    Assert.That(
+                        jpgUrl,
+                        Is.Not.EqualTo(pngUrl),
+                        "photo.jpg and photo.png must not overwrite each other"
+                    );
+
+                    // The two output files must be resized and converted to JPEG, so both should end with "_r.jpg".
+                    Assert.That(
+                        jpgUrl,
+                        Is.EqualTo("photo_r.jpg"),
+                        "jpgUrl should be resized to 'photo_r.jpg'"
+                    );
+                    Assert.That(
+                        pngUrl,
+                        Is.EqualTo("photo_1_r.jpg"),
+                        "pngUrl should be resized to 'photo_1_r.jpg'"
+                    );
+
+                    // Both output files must be present in the archive.
+                    Assert.That(
+                        zip.FindEntry(jpgUrl, false),
+                        Is.Not.EqualTo(-1),
+                        $"'{jpgUrl}' (from photo.jpg) should be in the zip"
+                    );
+                    Assert.That(
+                        zip.FindEntry(pngUrl, false),
+                        Is.Not.EqualTo(-1),
+                        $"'{pngUrl}' (from photo.png) should be in the zip"
+                    );
+                }
+            );
+        }
+
+        [Test]
         public void GetUniqueNewFilename_NoConflict_ReturnsSimpleName()
         {
             using (var folder = new TemporaryFolder("GetUniqueNewFilename_NoConflict"))
