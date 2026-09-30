@@ -24,19 +24,6 @@ House rules:
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
 - **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
 
-## 2026-09-17 — A running Bloom locks Bloom.xlf and fails the C# suite
-- **Cut:** `LocalizationManager.Create` writes `%LOCALAPPDATA%\SIL\Bloom\localizations\en\Bloom.xlf`,
-  a machine-global path outside the per-run temp isolation, so the developer's own running Bloom.exe
-  collides with a test run: `IOException ... being used by another process` out of `BookDataTests.Setup`
-  (also seen as an NRE in `XliffTransUnitUpdater..ctor` from the same path). It looks like a flaky test.
-- **Idea:** point the localization folder at the per-run temp dir the way `TestTempDirectory.cs` already
-  does for everything else, or at minimum say in AGENTS.md that this one path is still shared — it
-  currently reads as though `agent-dotnet.sh` plus temp isolation fully solve "build/test while Bloom runs".
-- **Context:** hit twice on BL-16806 (PR #8286); passed clean on re-run both times.
-- seen earlier, 2026-09-02 (preflight of PR #8275): an e2e Bloom switching UI languages while
-  `agent-dotnet test` ran gave 3 NREs in `XliffLocalizedStringCache..ctor` during test Setup —
-  an e2e Bloom writes the same shared localization folder a developer's Bloom does.
-
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
   {"message":"Unexpected promise failure ..."}` lines, all inside the React component-test step —

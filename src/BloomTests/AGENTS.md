@@ -74,6 +74,11 @@ Two consequences worth knowing:
   `Console.Error` for anything a developer must see.
 - Every temp path is longer by `BloomTests\<key>-p<pid>\`. Deeply-nested temp paths in tests are
   that much closer to `MAX_PATH`.
+- **L10NSharp's writable xlf files are the exception**: L10NSharp puts them under `%LOCALAPPDATA%`
+  whatever temp is, and Bloom's own `"SIL/Bloom"` there is shared with every running Bloom. A test
+  that creates a `LocalizationManager` must pass `TestTempDirectory.LocalizationSettingPath` as the
+  relative setting path, which is a folder of this run's own
+  (`%LOCALAPPDATA%\SIL\BloomTests\runs\<key>-p<pid>\`) and cleaned up the same way as the temp folder.
 
 ## The opt-in Reading App Builder real-build test
 
