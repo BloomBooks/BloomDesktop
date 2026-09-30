@@ -22,32 +22,32 @@
       </trans-unit>
       <trans-unit id="Common.Gathering">
         <source xml:lang="en">Gathering…</source>
-        <target xml:lang="id" state="needs-translation">Gathering…</target>
+        <target xml:lang="id" state="translated">Sedang Mengumpul...</target>
         <note>ID: Common.Gathering</note>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense.CopyToAllImages">
         <source xml:lang="en">Add this info to all images in this book</source>
-        <target xml:lang="id" state="needs-translation">Add this info to all images in this book</target>
+        <target xml:lang="id" state="translated">Tambah informasi ini kepada semua gambar dalam buku ini</target>
         <note>ID: CopyrightAndLicense.CopyToAllImages</note>
       </trans-unit>
       <trans-unit id="Common.Working">
         <source xml:lang="en">Working…</source>
-        <target xml:lang="id" state="needs-translation">Working…</target>
+        <target xml:lang="id" state="translated">Sedang bekerja...</target>
         <note>ID: Common.Working</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder">
         <source xml:lang="en">App Builder</source>
-        <target xml:lang="id" state="needs-translation">App Builder</target>
+        <target xml:lang="id" state="translated">Buat Aplikasi</target>
         <note>ID: CollectionSettingsDialog.AdvancedTab.Experimental.AppBuilder</note>
       </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
-        <target xml:lang="id" state="needs-translation">Edit Images with AI</target>
+        <target xml:lang="id" state="translated">Mengubah Gambar-gambar dengan AI</target>
         <note>ID: Feature.AiImageEditing</note>
       </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>
-        <target xml:lang="id" state="needs-translation">Edit with AI...</target>
+        <target xml:lang="id" state="translated">Mengubah dengan AI...</target>
         <note>ID: EditTab.Image.EditWithAI</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.SlotLabel.CanvasBackground">
@@ -63,7 +63,7 @@
       <!-- Drag Activity Tool -->
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound">
         <source xml:lang="en">Choose...</source>
-        <target xml:lang="id" state="needs-translation">Choose...</target>
+        <target xml:lang="id" state="translated">Pilih...</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSound.Help">
@@ -73,12 +73,12 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ChooseSoundFile">
         <source xml:lang="en">Choose Sound File</source>
-        <target xml:lang="id" state="needs-translation">Choose Sound File</target>
+        <target xml:lang="id" state="translated">Pilih Berkas Audio</target>
         <note>ID: EditTab.Toolbox.DragActivity.ChooseSoundFile</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Correct">
         <source xml:lang="en">Correct</source>
-        <target xml:lang="id" state="needs-translation">Correct</target>
+        <target xml:lang="id" state="translated">Benar</target>
         <note>ID: EditTab.Toolbox.DragActivity.Correct</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectInstructions">
@@ -134,17 +134,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Text">
         <source xml:lang="en">Text</source>
-        <target xml:lang="id" state="needs-translation">Text</target>
+        <target xml:lang="id" state="translated">Teks</target>
         <note>ID: EditTab.Toolbox.DragActivity.Text</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Letter">
         <source xml:lang="en">M</source>
-        <target xml:lang="id" state="needs-translation">M</target>
+        <target xml:lang="id" state="translated">M</target>
         <note>ID: EditTab.Toolbox.DragActivity.Letter</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.None">
         <source xml:lang="en">None</source>
-        <target xml:lang="id" state="needs-translation">None</target>
+        <target xml:lang="id" state="translated">Tidak ada</target>
         <note>ID: EditTab.Toolbox.DragActivity.None</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.OrderSentenceHeading">
@@ -157,7 +157,7 @@
       </trans-unit> -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Options">
         <source xml:lang="en">Options</source>
-        <target xml:lang="id" state="needs-translation">Options</target>
+        <target xml:lang="id" state="translated">Pilihan</target>
         <note>ID: EditTab.Toolbox.DragActivity.Options</note>
       </trans-unit>
       <!-- <trans-unit id="EditTab.Toolbox.DragActivity.OrderCircle">
@@ -190,7 +190,7 @@
       -->
       <trans-unit id="EditTab.Toolbox.DragActivity.Play">
         <source xml:lang="en">Play</source>
-        <target xml:lang="id" state="needs-translation">Play</target>
+        <target xml:lang="id" state="translated">Mainkan</target>
         <note>ID: EditTab.Toolbox.DragActivity.Play</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TargetsSameSize">
@@ -200,57 +200,57 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SentenceHint">
         <source xml:lang="en">Type a sentence. The reader will be asked to sort the words.</source>
-        <target xml:lang="id" state="needs-translation">Type a sentence. The reader will be asked to sort the words.</target>
+        <target xml:lang="id" state="translated">Ketik kalimat. Pembaca akan sortir kata-kata.</target>
         <note>ID: EditTab.Toolbox.DragActivity.SentenceHint</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.SetupMode">
         <source xml:lang="en">Game Setup mode:</source>
-        <target xml:lang="id" state="needs-translation">Game Setup mode:</target>
+        <target xml:lang="id" state="translated">Mode Siapkan Pemainan:</target>
         <note>ID: EditTab.Toolbox.DragActivity.SetupMode</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowTargetsPlay">
         <source xml:lang="en">Show drag targets during Play</source>
-        <target xml:lang="id" state="needs-translation">Show drag targets during Play</target>
+        <target xml:lang="id" state="translated">Tampakkan Sasaran sedang Dimainkan</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowTargetsPlay</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.ShowAnswersInTargets">
         <source xml:lang="en">Show Answer even during Play</source>
-        <target xml:lang="id" state="needs-translation">Show Answer even during Play</target>
+        <target xml:lang="id" state="translated">Tampakkan Jawaban sedang Dimainkan</target>
         <note>ID: EditTab.Toolbox.DragActivity.ShowAnswersInTargets</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Start">
         <source xml:lang="en">Start</source>
-        <target xml:lang="id" state="needs-translation">Start</target>
+        <target xml:lang="id" state="translated">Mulai</target>
         <note>ID: EditTab.Toolbox.DragActivity.Start</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.TestInstructions">
         <source xml:lang="en">Try it out!</source>
-        <target xml:lang="id" state="needs-translation">Try it out!</target>
+        <target xml:lang="id" state="translated">Cobalah!</target>
         <note>ID: EditTab.Toolbox.DragActivity.TestInstructions</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.CorrectSound">
         <source xml:lang="en">Correct Sound</source>
-        <target xml:lang="id" state="needs-translation">Correct Sound</target>
+        <target xml:lang="id" state="translated">Bunyinya kalau Benar</target>
         <note>ID: EditTab.Toolbox.DragActivity.CorrectSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongSound">
         <source xml:lang="en">Wrong Sound</source>
-        <target xml:lang="id" state="needs-translation">Wrong Sound</target>
+        <target xml:lang="id" state="translated">Bunyinya kalau Salah</target>
         <note>ID: EditTab.Toolbox.DragActivity.WrongSound</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Word">
         <source xml:lang="en">Word</source>
-        <target xml:lang="id" state="needs-translation">Word</target>
+        <target xml:lang="id" state="translated">Kata</target>
         <note>ID: EditTab.Toolbox.DragActivity.Word</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WordToSpell">
         <source xml:lang="en">Enter the word to spell</source>
-        <target xml:lang="id" state="needs-translation">Enter the word to spell</target>
+        <target xml:lang="id" state="translated">Masukan kata untuk buat ejaan</target>
         <note>ID: EditTab.Toolbox.DragActivity.WordToSpell</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.Wrong">
         <source xml:lang="en">Wrong</source>
-        <target xml:lang="id" state="needs-translation">Wrong</target>
+        <target xml:lang="id" state="translated">Salah</target>
         <note>ID: EditTab.Toolbox.DragActivity.Wrong</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DragActivity.WrongInstructions">
@@ -260,17 +260,17 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsDecodable" sil:dynamic="true">
         <source xml:lang="en">Book is Decodable</source>
-        <target xml:lang="id" state="needs-translation">Book is Decodable</target>
+        <target xml:lang="id" state="translated">Buku ini dapat Dibongkar</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsDecodable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable" sil:dynamic="true">
         <source xml:lang="en">Book is not Decodable</source>
-        <target xml:lang="id" state="needs-translation">Book is not Decodable</target>
+        <target xml:lang="id" state="translated">Buku ini tidak dapat Dibongkar</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.BookIsNotDecodable</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport" sil:dynamic="true">
         <source xml:lang="en">Generate Report</source>
-        <target xml:lang="id" state="needs-translation">Generate Report</target>
+        <target xml:lang="id" state="translated">Buat Laporan</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.GenerateReport</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.GenerateReport.ToolTip" sil:dynamic="true">
@@ -280,27 +280,27 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNumber" sil:dynamic="true">
         <source xml:lang="en">Stage {0}</source>
-        <target xml:lang="id" state="needs-translation">Stage {0}</target>
+        <target xml:lang="id" state="translated">Tahap {0}</target>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNumber</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.ReaderTools.OfCount" sil:dynamic="true">
         <source xml:lang="en">of {0}</source>
-        <target xml:lang="id" state="needs-translation">of {0}</target>
+        <target xml:lang="id" state="translated">dari {0}</target>
         <note>ID: EditTab.Toolbox.ReaderTools.OfCount</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Theme">
         <source xml:lang="en">Theme</source>
-        <target xml:lang="id" state="needs-translation">Theme</target>
+        <target xml:lang="id" state="translated">Tema</target>
         <note>ID: EditTab.Toolbox.Games.Theme</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.blue-on-white">
         <source xml:lang="en">Blue on white</source>
-        <target xml:lang="id" state="needs-translation">Blue on white</target>
+        <target xml:lang="id" state="translated">Biru atas putih</target>
         <note>ID: EditTab.Toolbox.Games.Themes.blue-on-white</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.white-and-orange-on-blue">
         <source xml:lang="en">White and orange on blue</source>
-        <target xml:lang="id" state="needs-translation">White and orange on blue</target>
+        <target xml:lang="id" state="translated">Putih dan oranye atas biru</target>
         <note>ID: EditTab.Toolbox.Games.Themes.white-and-orange-on-blue</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.Games.Themes.red-on-white">
