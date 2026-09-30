@@ -120,7 +120,10 @@ namespace Bloom.Publish.BloomLibrary
 
         internal bool IsBookPublicDomain =>
             _license?.Url != null
-            && _license.Url.StartsWith("http://creativecommons.org/publicdomain/zero/");
+            && _license.Url.StartsWith(
+                "http://creativecommons.org/publicdomain/zero/",
+                StringComparison.Ordinal
+            );
 
         public const string kNameOfFileAboutABlorgBookWeHaveDownloadedForEditing =
             "downloadForEdit.json";
@@ -995,7 +998,10 @@ namespace Bloom.Publish.BloomLibrary
         internal string CheckSubscriptionMatchBeforeUpload()
         {
             var subscription = Book.BookInfo.SubscriptionDescriptor;
-            if (subscription != null && subscription.ToLowerInvariant().EndsWith("-pro"))
+            if (
+                subscription != null
+                && subscription.ToLowerInvariant().EndsWith("-pro", StringComparison.Ordinal)
+            )
             {
                 var subscriptionEmail = subscription.Substring(0, subscription.Length - 4);
                 if (

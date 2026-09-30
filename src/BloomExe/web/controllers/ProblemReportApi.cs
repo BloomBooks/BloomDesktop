@@ -261,7 +261,12 @@ namespace Bloom.web.controllers
                             null
                         );
 
-                        if (issueLinkOrFailureWithZipPath.StartsWith(kFailureResult))
+                        if (
+                            issueLinkOrFailureWithZipPath.StartsWith(
+                                kFailureResult,
+                                StringComparison.Ordinal
+                            )
+                        )
                         {
                             bool failed = true;
                             string zippedReportPath = issueLinkOrFailureWithZipPath.Substring(
@@ -986,7 +991,7 @@ namespace Bloom.web.controllers
                 _showingProblemReport = false;
             }
 
-            string message = issueLink.StartsWith(kFailureResult)
+            string message = issueLink.StartsWith(kFailureResult, StringComparison.Ordinal)
                 ? "Failed to report issue. Please email Bloom team manually."
                 : "Successfully reported issue: " + issueLink;
 
@@ -1296,7 +1301,7 @@ namespace Bloom.web.controllers
 
         private static string GetDomainlessEmail(string rawEmail)
         {
-            var atIndex = rawEmail.IndexOf("@");
+            var atIndex = rawEmail.IndexOf("@", StringComparison.Ordinal);
             return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
         }
 

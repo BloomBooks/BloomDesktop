@@ -141,7 +141,7 @@ namespace Bloom.Publish
         {
             _browser =
                 _environment == null
-                    ? new WebView2Browser()
+                    ? WebView2Browser.CreateForOffScreenUse()
                     : WebView2Browser.CreateWithInjectedEnvironment(_environment);
             // Realize the HWND now; CoreWebView2 initialization can only complete once the control has a
             // window handle, and nothing else (no parent Form) will create it for us. Same trick as

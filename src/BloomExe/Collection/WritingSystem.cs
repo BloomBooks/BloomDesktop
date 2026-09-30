@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using Bloom.ToPalaso;
 using SIL.Windows.Forms.WritingSystems;
 using SIL.WritingSystems;
 
@@ -94,11 +95,11 @@ namespace Bloom.Collection
                 if (string.IsNullOrEmpty(Tag))
                     return string.Empty;
 
-                var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
+                var name = IetfLanguageTagExtra.GetLocalizedLanguageName(Tag, inLanguage);
                 if (name == Tag)
                 {
                     string match;
-                    if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
+                    if (!IetfLanguageTagExtra.GetBestLanguageName(Tag, out match))
                     {
                         return $"Unknown-{Tag}";
                     }
@@ -284,6 +285,12 @@ namespace Bloom.Collection
                 // of languages in the collection.  So we retry with the migrated name.
                 Name = ReadString(xml, "Language1Name", "");
             }
+            // Under a Thai regional format, Bloom computed and saved the invariant culture's name,
+            // "Invariant Language (Invariant Country)", for a language named from its tag, such as
+            // the default Language2 of a new collection (BL-16945). No real language has that
+            // exact name, so look it up again.
+            if (Name == CultureInfo.InvariantCulture.EnglishName)
+                Name = "";
             if (Name == "")
             {
                 Name = GetLanguageName_NoCache(

@@ -241,7 +241,7 @@ namespace Bloom.web.controllers
                             // Read and parse inside the try as well: a malformed body is exactly
                             // the sort of one-cell failure the catch below is meant to absorb.
                             var body = request.RequiredPostString();
-                            if (body.TrimStart().StartsWith("{"))
+                            if (body.TrimStart().StartsWith("{", StringComparison.Ordinal))
                             {
                                 var o = Newtonsoft.Json.Linq.JObject.Parse(body);
                                 branding = (string)o["branding"];

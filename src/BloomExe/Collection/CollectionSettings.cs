@@ -13,6 +13,7 @@ using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -388,7 +389,7 @@ namespace Bloom.Collection
             try
             {
                 // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
+                return IetfLanguageTagExtra.GetLocalizedLanguageName(tag, inLanguage);
             }
             catch (Exception)
             {
@@ -771,7 +772,7 @@ namespace Bloom.Collection
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                 var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
                 var defaultBookshelfTag = defaultTags
-                    .Where(t => t.StartsWith("bookshelf:"))
+                    .Where(t => t.StartsWith("bookshelf:", StringComparison.Ordinal))
                     .FirstOrDefault();
                 DefaultBookshelf =
                     (

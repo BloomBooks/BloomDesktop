@@ -1273,10 +1273,10 @@ window.showWorkspaceInitializationFailure = function(message) {
         {
             // Get the language name in its own language if at all possible.
             // Add an English name suffix if it's not in a Latin script.
-            var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
+            var menuText = IetfLanguageTagExtra.GetNativeLanguageNameWithEnglishSubtitle(code);
             var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(
                 code,
-                () => IetfLanguageTag.GetLocalizedLanguageName(code, "en")
+                () => IetfLanguageTagExtra.GetLocalizedLanguageName(code, "en")
             );
             return new LanguageItem
             {
@@ -1318,16 +1318,20 @@ window.showWorkspaceInitializationFailure = function(message) {
             return (float)translatedCount / (float)totalCount;
         }
 
+        /// <summary>
+        /// Shorten a UI-language menu entry for the language button by dropping the part in
+        /// parentheses, e.g. "ไทย (Thai)" becomes "ไทย".
+        /// </summary>
         public static string GetShortenedLanguageName(string itemText)
         {
-            var idxChinese = itemText.IndexOf(" (Chinese");
+            var idxChinese = itemText.IndexOf(" (Chinese", StringComparison.Ordinal);
             if (idxChinese > 0)
             {
                 return itemText.Substring(0, idxChinese);
             }
             else
             {
-                var idxCountry = itemText.IndexOf(" (");
+                var idxCountry = itemText.IndexOf(" (", StringComparison.Ordinal);
                 if (idxCountry > 0)
                     return itemText.Substring(0, idxCountry);
                 else
