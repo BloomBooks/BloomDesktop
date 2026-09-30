@@ -49,7 +49,7 @@ namespace BloomTests.Book
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -59,7 +59,7 @@ namespace BloomTests.Book
                 "Palaso",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );

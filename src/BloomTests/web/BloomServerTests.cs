@@ -49,7 +49,7 @@ namespace BloomTests.web
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
