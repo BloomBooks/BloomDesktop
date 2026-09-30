@@ -457,10 +457,13 @@ namespace BloomTests.TeamCollection
         /// <summary>
         /// The lock time is shared with every team member, so it must mean the same thing whatever
         /// the regional format of the computer that wrote it and the one that reads it (BL-16948).
-        /// Thai uses the Buddhist calendar, whose year is 543 ahead of the Gregorian one.
+        /// Thai uses the Buddhist calendar, whose year is 543 ahead of the Gregorian one; Saudi uses
+        /// the Um al-Qura calendar, which cannot read a Gregorian year like 2026 at all.
         /// </summary>
         [TestCase("th-TH", "en-US")]
         [TestCase("en-US", "th-TH")]
+        [TestCase("ar-SA", "en-US")]
+        [TestCase("en-US", "ar-SA")]
         public void WhenWasBookLocked_WrittenAndReadInDifferentCultures_RetrievesTime(
             string lockingCulture,
             string readingCulture
