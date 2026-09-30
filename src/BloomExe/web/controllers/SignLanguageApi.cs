@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -951,7 +954,7 @@ namespace Bloom.web.controllers
             return true;
         }
 
-        private static void ConvertRawTimingsToDecimalArray(string rawTimings, decimal[] timings)
+        internal static void ConvertRawTimingsToDecimalArray(string rawTimings, decimal[] timings)
         {
             if (string.IsNullOrEmpty(rawTimings))
                 return; // do nothing. timings array will hold default values
@@ -1043,49 +1046,49 @@ namespace Bloom.web.controllers
             // We might modify the current page, but the user may also have modified it
             // without doing anything to cause a Save before the deactivate. So save their
             // changes before we go to work on it.
-            Model.MergeCurrentPageThenSave(
-                () =>
+            Model.MergeCurrentPageThenSave(() =>
+            {
+                foreach (var videoPath in filesModifiedSinceDeactivate)
                 {
-                    foreach (var videoPath in filesModifiedSinceDeactivate)
-                    {
-                        // The encoded form of the real file name is what we search for, because
-                        // that is what is in the src (BL-16669).
-                        var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                        );
-                        var videoElts = CurrentBook.RawDom.SafeSelectNodes(
-                            $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
-                        );
-                        if (videoElts.Length == 0)
-                            continue; // not used in book, ignore
+                    // The encoded form of the real file name is what we search for, because
+                    // that is what is in the src (BL-16669).
+                    var expectedSrcAttr = UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                    );
+                    var videoElts = CurrentBook.RawDom.SafeSelectNodes(
+                        $"//video/source[contains(@src,'{expectedSrcAttr.UrlEncodedForHttpPath}')]"
+                    );
+                    if (videoElts.Length == 0)
+                        continue; // not used in book, ignore
 
-                        // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
-                        // Defeat it by setting a fake param.
-                        // Note that doing this will discard any fragment in the existing URL, typically trimming.
-                        // I think this is good...if the user has edited the video, we should start over assuming he
-                        // wants all of it.
+                    // OK, the user has modified the file outside of Bloom. Something is determined to cache video.
+                    // Defeat it by setting a fake param.
+                    // Note that doing this will discard any fragment in the existing URL, typically trimming.
+                    // I think this is good...if the user has edited the video, we should start over assuming he
+                    // wants all of it.
 
-                        var newSrcAttr = UrlPathString.CreateFromUnencodedString(
-                            BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
-                        );
-                        HtmlDom.SetSrcOfVideoElement(
-                            newSrcAttr,
-                            (SafeXmlElement)videoElts[0],
-                            true,
-                            "?now=" + DateTime.Now.Ticks
-                        );
-                    }
-
-                    // Likewise, this is probably overkill, but it's a probably-rare case.
-                    View.UpdateAllThumbnails();
-                    return _pageSelection.CurrentSelection.Id;
+                    var newSrcAttr = UrlPathString.CreateFromUnencodedString(
+                        BookStorage.GetVideoFolderName + Path.GetFileName(videoPath)
+                    );
+                    HtmlDom.SetSrcOfVideoElement(
+                        newSrcAttr,
+                        (SafeXmlElement)videoElts[0],
+                        true,
+                        "?now=" + DateTime.Now.Ticks
+                    );
                 }
-            );
+
+                // Likewise, this is probably overkill, but it's a probably-rare case.
+                View.UpdateAllThumbnails();
+                return _pageSelection.CurrentSelection.Id;
+            });
         }
 
         /// <summary>
         /// When publishing videos in any form but PDF, we want to trim the actual video to just the part that
         /// the user wants to see and add the controls attribute, so that the video controls are visible.
+        /// (The PDF is made from the book's own folder, so PdfVideoEmbedder trims into a temporary folder instead,
+        /// using TrimVideoForPublishing as this does.)
         /// </summary>
         /// <param name="videoContainerElement">bloom-videoContainer element from copied DOM</param>
         /// <param name="sourceBookFolder">This is assumed to be a staging folder, we may replace videos here!</param>
@@ -1117,33 +1120,16 @@ namespace Bloom.web.controllers
             if (!RobustFile.Exists(originalVideoFilePath))
                 return string.Empty;
 
-            var tempName = originalVideoFilePath;
-            if (
-                !string.IsNullOrEmpty(FfmpegProgram)
-                && !string.IsNullOrEmpty(timings)
-                && IsVideoMarkedForTrimming(sourceBookFolder, videoUrl, timings)
-            )
+            var tempName = TrimVideoForPublishing(originalVideoFilePath, timings, videoFolder);
+            if (tempName != originalVideoFilePath)
             {
-                tempName = Path.Combine(videoFolder, GetNewVideoFileName());
-                var successful = TrimVideoUsingFfmpeg(originalVideoFilePath, tempName, timings);
-                if (successful)
-                {
-                    RobustFile.Delete(originalVideoFilePath);
-                    var trimmedFileName =
-                        BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
-                    HtmlDom.SetVideoElementUrl(
-                        videoContainerElement,
-                        UrlPathString.CreateFromUnencodedString(trimmedFileName),
-                        false
-                    );
-                }
-                else
-                {
-                    // probably doesn't exist, but if it does we don't need it.
-                    // RobustFile.Delete does not throw if the file doesn't exist.
-                    RobustFile.Delete(tempName);
-                    tempName = originalVideoFilePath;
-                }
+                RobustFile.Delete(originalVideoFilePath);
+                var trimmedFileName = BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
+                HtmlDom.SetVideoElementUrl(
+                    videoContainerElement,
+                    UrlPathString.CreateFromUnencodedString(trimmedFileName),
+                    false
+                );
             }
 
             if (videoControls)
@@ -1180,11 +1166,37 @@ namespace Bloom.web.controllers
             }
         }
 
-        private static bool IsVideoMarkedForTrimming(
-            string sourceBookFolder,
-            string videoUrl,
-            string rawTimings
+        /// <summary>
+        /// Every form of publishing trims its videos with this. If the book plays only part of the
+        /// video (rawTimings is the "start,end" of the #t= fragment of the video's url), write that part
+        /// to a new file in destinationFolder and return its path. Otherwise, or if there is no ffmpeg
+        /// or it fails, return videoFilePath.
+        /// </summary>
+        public static string TrimVideoForPublishing(
+            string videoFilePath,
+            string rawTimings,
+            string destinationFolder
         )
+        {
+            if (
+                string.IsNullOrEmpty(FfmpegProgram)
+                || string.IsNullOrEmpty(rawTimings)
+                || !IsVideoMarkedForTrimming(videoFilePath, rawTimings)
+            )
+                return videoFilePath;
+            var trimmedPath = Path.Combine(
+                destinationFolder,
+                GetNewVideoFileName(Path.GetExtension(videoFilePath))
+            );
+            if (TrimVideoUsingFfmpeg(videoFilePath, trimmedPath, rawTimings))
+                return trimmedPath;
+            // probably doesn't exist, but if it does we don't need it.
+            // RobustFile.Delete does not throw if the file doesn't exist.
+            RobustFile.Delete(trimmedPath);
+            return videoFilePath;
+        }
+
+        private static bool IsVideoMarkedForTrimming(string videoFilePath, string rawTimings)
         {
             var timings = new[] { 0.0m, 0.0m };
             ConvertRawTimingsToDecimalArray(rawTimings, timings);
@@ -1194,7 +1206,6 @@ namespace Bloom.web.controllers
                 return true;
 
             var stats = new Dictionary<string, object>();
-            var videoFilePath = Path.Combine(sourceBookFolder, videoUrl);
             var output = RunFfmpegOnVideoToGetStatistics(null, videoFilePath);
             ParseDuration(output, stats);
             var durStr = stats["duration"] as string;
@@ -1202,6 +1213,66 @@ namespace Bloom.web.controllers
             // if our trim setting is less than 1/10 second from the end of the whole video, don't bother trimming the video.
             // duration in seconds is equal to the endpoint of the (untrimmed) video.
             return duration - endTrimPoint > 0.1m;
+        }
+
+        /// <summary>
+        /// A PNG of the frame of the video at the given time, or null if there is no ffmpeg, the time is
+        /// past the end of the video, or ffmpeg fails. Bloom's ffmpeg has no image encoders, so it writes
+        /// the frame as raw pixels and we make the PNG.
+        /// </summary>
+        public static byte[] GetVideoFrameAsPng(string videoFilePath, decimal seconds)
+        {
+            if (string.IsNullOrEmpty(FfmpegProgram))
+                return null;
+            using (var raw = TempFile.CreateAndGetPathButDontMakeTheFile())
+            {
+                // -ss before -i seeks the input; -frames:v 1 writes just the frame there.
+                var time = seconds.ToString("0.###", CultureInfo.InvariantCulture);
+                var parameters =
+                    $"-hide_banner -ss {time} -i \"{videoFilePath}\" -frames:v 1 -f rawvideo -pix_fmt bgra \"{raw.Path}\"";
+                var result = CommandLineRunnerExtra.RunWithInvariantCulture(
+                    FfmpegProgram,
+                    parameters,
+                    "",
+                    60,
+                    new NullProgress()
+                );
+                if (result.DidTimeOut || !RobustFile.Exists(raw.Path))
+                    return null;
+                // The size of the frame is in ffmpeg's description of its output, e.g.
+                // "Stream #0:0: Video: rawvideo (BGRA / 0x41524742), bgra(pc, progressive), 640x480, ..."
+                var output = result.StandardError;
+                var outputStart = output.IndexOf("Output #0", StringComparison.Ordinal);
+                if (outputStart < 0)
+                    return null;
+                var size = Regex.Match(
+                    output.Substring(outputStart),
+                    @"Video: rawvideo.*?, (\d+)x(\d+)"
+                );
+                if (!size.Success)
+                    return null;
+                var width = int.Parse(size.Groups[1].Value, CultureInfo.InvariantCulture);
+                var height = int.Parse(size.Groups[2].Value, CultureInfo.InvariantCulture);
+                var pixels = RobustFile.ReadAllBytes(raw.Path);
+                if (pixels.Length != width * height * 4)
+                    return null;
+                // Format32bppArgb is stored as B, G, R, A bytes, in rows of width * 4 bytes, as ffmpeg writes them.
+                using (var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb))
+                {
+                    var bits = bitmap.LockBits(
+                        new Rectangle(0, 0, width, height),
+                        ImageLockMode.WriteOnly,
+                        PixelFormat.Format32bppArgb
+                    );
+                    Marshal.Copy(pixels, 0, bits.Scan0, pixels.Length);
+                    bitmap.UnlockBits(bits);
+                    using (var png = new MemoryStream())
+                    {
+                        bitmap.Save(png, ImageFormat.Png);
+                        return png.ToArray();
+                    }
+                }
+            }
         }
 
         private static bool TrimVideoUsingFfmpeg(
@@ -1245,6 +1316,11 @@ namespace Bloom.web.controllers
             )
             {
                 Logger.WriteEvent("ffmpeg did not return normal output");
+                return false;
+            }
+            if (!RobustFile.Exists(destinationPath) || new FileInfo(destinationPath).Length == 0)
+            {
+                Logger.WriteEvent("ffmpeg did not write the trimmed video");
                 return false;
             }
 

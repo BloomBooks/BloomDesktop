@@ -20,6 +20,7 @@ import { RequiresSubscriptionDialog } from "../../react_components/requiresSubsc
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import { NoteBox } from "../../react_components/boxes";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -74,6 +75,8 @@ export const PDFPrintPublishScreen = () => {
         "publish/isPlaygroundBook",
         true,
     );
+
+    const [bookHasVideos] = useApiBoolean("publish/hasVideo", false);
 
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
@@ -150,6 +153,16 @@ export const PDFPrintPublishScreen = () => {
                     setIsProgressDialogOpen(false);
                 }}
             />
+            {bookHasVideos && (
+                <NoteBox
+                    l10nKey="PublishTab.PdfPrint.VideosNotInPreview"
+                    l10Msg="Videos in PDFs cannot be played in Bloom, Chrome, Edge, etc. However, Adobe Acrobat Reader can play them."
+                    css={css`
+                        margin-top: 20px;
+                        margin-right: 20px;
+                    `}
+                />
+            )}
             {/* push everything to the bottom */}
             <div
                 css={css`

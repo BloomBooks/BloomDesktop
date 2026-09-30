@@ -164,7 +164,7 @@ namespace WebView2PdfMaker
 
         private void OnCheckForBrowserNavigatedTimer_Tick(object sender, EventArgs e)
         {
-            if (_uriOfDocument != null && _navigationCompleted)
+            if (_uriOfDocument != null && _navigationCompleted && VideosHaveFrames())
             {
                 _checkForBrowserNavigatedTimer.Enabled = false;
                 StartMakingPdf();
@@ -173,6 +173,42 @@ namespace WebView2PdfMaker
             {
                 ReportSimulatedProgress("Loading");
             }
+        }
+
+        private Task<string> _videoFrameCheck;
+        private DateTime _startedWaitingForVideos;
+
+        /// <summary>
+        /// True once every video in the document has a frame to print, or once we have waited long enough.
+        /// Navigation completes before videos load, and a video with no frame prints as a blank box.
+        /// This is called repeatedly by the navigation timer; it starts a check and returns false until
+        /// a check reports that all the videos are ready.
+        /// </summary>
+        private bool VideosHaveFrames()
+        {
+            if (_videoFrameCheck == null)
+            {
+                if (_startedWaitingForVideos == default(DateTime))
+                    _startedWaitingForVideos = DateTime.Now;
+                // readyState 2 is HAVE_CURRENT_DATA: the frame at the current position is available.
+                // networkState 3 is NETWORK_NO_SOURCE: no source could be loaded, so there will never be a frame.
+                _videoFrameCheck = _webview.CoreWebView2.ExecuteScriptAsync(
+                    "Array.from(document.getElementsByTagName('video')).every(v => v.readyState >= 2 || v.networkState === 3)"
+                );
+                return false;
+            }
+            if (!_videoFrameCheck.IsCompleted)
+                return false;
+            var ready = _videoFrameCheck.Result == "true";
+            _videoFrameCheck = null;
+            if (ready)
+                return true;
+            if (DateTime.Now - _startedWaitingForVideos > TimeSpan.FromSeconds(20))
+            {
+                Console.Error.WriteLine("Some videos still had no frame to print after 20 seconds");
+                return true;
+            }
+            return false;
         }
 
         private void ReportSimulatedProgress(string doingWhat)
@@ -261,6 +297,7 @@ namespace WebView2PdfMaker
             _webview.Size = new Size(1920, 1320);
             _uriOfDocument = new Uri(_options.InputHtmlUri);
             _navigationCompleted = false;
+            _startedWaitingForVideos = default(DateTime);
 
             if (_options.Debug)
                 Console.Out.WriteLine(

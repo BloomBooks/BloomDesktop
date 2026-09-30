@@ -600,6 +600,11 @@
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.VideosNotInPreview" translate="no">
+        <source xml:lang="en">Videos in PDFs cannot be played in Bloom, Chrome, Edge, etc. However, Adobe Acrobat Reader can play them.</source>
+        <note>ID: PublishTab.PdfPrint.VideosNotInPreview</note>
+        <note>A note in the settings panel of the PDF &amp; Print screen, shown only when the book contains videos. "Chrome", "Edge" and "Adobe Acrobat Reader" are product names.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Feature.Games.None">
         <source xml:lang="en">This book does not have any games.</source>
         <note>ID: PublishTab.Feature.Games.None</note>

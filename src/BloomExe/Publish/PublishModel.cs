@@ -389,6 +389,7 @@ namespace Bloom.Publish
                             PrintWithFullBleed = GetPrintingWithFullBleed(),
                             ColorProfile = _currentlyLoadedBook.UserPrefs.ColorProfileForPdf,
                             HtmlPageCount = this.HtmlPageCount,
+                            Videos = _pdfVideos,
                             Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
                             Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
                             Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
@@ -452,6 +453,9 @@ namespace Bloom.Publish
             get { return _currentlyLoadedBook.BookData.Language1.IsRightToLeft; }
         }
 
+        // The videos that MakeFinalHtmlForPdfMaker marked in the html it made for the PDF maker.
+        private List<PdfVideo> _pdfVideos;
+
         public InMemoryHtmlFile MakeFinalHtmlForPdfMaker()
         {
             if (_currentlyLoadedBook == null)
@@ -495,6 +499,8 @@ namespace Bloom.Publish
             // which sits above the page.  That doesn't exist in the PDF's HTML, so we
             // use the body element instead.
             dom.Body.AddClass("drag-activity-play");
+
+            _pdfVideos = PdfVideoEmbedder.MarkVideosForPdf(dom, _currentlyLoadedBook.FolderPath);
 
             return BloomServer.MakeInMemoryHtmlFileInBookFolder(
                 dom,

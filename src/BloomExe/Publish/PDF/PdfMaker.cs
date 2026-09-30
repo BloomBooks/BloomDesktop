@@ -109,10 +109,7 @@ namespace Bloom.Publish.PDF
                 /*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
                 AddMetadataAndRemoveBlankPagesIfNecessary(specs);
                 /*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
-                if (
-                    specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet
-                    || specs.PrintWithFullBleed
-                )
+                if (WillMakeBooklet(specs))
                 {
                     //remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
                     MakeBooklet(specs);
@@ -204,9 +201,25 @@ namespace Bloom.Publish.PDF
                     for (int i = lastEven; i > 0; i -= 2)
                         pdfDoc.Pages.RemoveAt(i);
                 }
+                // Making a booklet redraws the pages and loses their annotations, and videos are
+                // no use on paper anyway.
+                PdfVideoEmbedder.ReplaceMarkerLinks(
+                    pdfDoc,
+                    specs.Videos,
+                    embed: !WillMakeBooklet(specs)
+                );
                 pdfDoc.Save(specs.OutputPdfPath);
             }
             //Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
+        }
+
+        /// <summary>
+        /// True if MakePdf will remake the pdf by laying out its pages on new sheets.
+        /// </summary>
+        private static bool WillMakeBooklet(PdfMakingSpecs specs)
+        {
+            return specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet
+                || specs.PrintWithFullBleed;
         }
 
         public static string GetDistributedColorProfilesFolder()

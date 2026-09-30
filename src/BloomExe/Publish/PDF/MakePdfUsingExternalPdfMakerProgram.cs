@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -461,6 +462,7 @@ namespace Bloom.Publish.PDF
         public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
         public string ColorProfile; // the name of the ICC color profile file to use, empty string if none
         public int HtmlPageCount;
+        public List<PdfVideo> Videos; // the videos marked in the input html by PdfVideoEmbedder.MarkVideosForPdf
 
         // metadata
         public string Author;
