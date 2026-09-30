@@ -561,6 +561,140 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAnAndroidSdkElsewhere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+            };
+            service.InstallSdksOutputLines.Add("Android SDK is already installed at: C:\\sdk");
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.False,
+                "setup: the build tools should not be installed yet"
+            );
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(error.Message, Does.Contain("used the Android SDK in C:\\sdk"));
+            Assert.That(error.Message, Does.Contain(service.RabAndroidSdkInstallFolder));
+            Assert.That(error.Message, Does.Contain("rename C:\\sdk (for example to C:\\sdk-old)"));
+            Assert.That(error.Message, Does.Not.Contain("JDK"), "the JDK was installed");
+            Assert.That(
+                service.Commands,
+                Has.Count.EqualTo(1),
+                "Prepare should stop after installing the SDKs"
+            );
+            Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_AndNamesBloomsFolders_WhenRabInstallsNeitherToolAndSaysWhereNeitherIs()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesJdk = false,
+                InstallSdksCreatesAndroidSdk = false,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"without installing the JDK that Bloom needs in {service.RabJdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"without installing the Android SDK that Bloom needs in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(error.Message, Does.Not.Contain("rename"));
+        }
+
+        [Test]
+        public async Task BuildAsync_Fails_WhenTheAndroidSdkGoesMissingAndRabReportsBloomsOwnFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            );
+            await service.PrepareAsync();
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.True,
+                "setup: Prepare should have installed the build tools"
+            );
+
+            // The Android SDK goes missing and RAB's reinstall exits 0 without restoring it, even
+            // though it names Bloom's own folder.
+            RobustIO.DeleteDirectoryAndContents(service.RabAndroidSdkInstallFolder);
+            service.InstallSdksCreatesAndroidSdk = false;
+            service.InstallSdksOutputLines.Add(
+                "Android SDK is already installed at: " + service.RabAndroidSdkInstallFolder
+            );
+            var commandCountBeforeBuild = service.Commands.Count;
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.BuildAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    $"Reading App Builder finished without installing the Android SDK that Bloom needs in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                service.Commands,
+                Has.Count.EqualTo(commandCountBeforeBuild + 1),
+                "Build should stop after installing the SDKs"
+            );
+            Assert.That(service.Commands.Last(), Does.StartWith("-install-sdks-if-needed "));
+        }
+
+        private static List<RabBookPublishInfo> MakeOneTrackedBook(
+            TemporaryFolder tempFolder,
+            RabWorkspacePaths paths
+        )
+        {
+            var book = new RabBookPublishInfo
+            {
+                BookId = "book-1",
+                FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                Title = "Book One",
+                BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+            };
+            Directory.CreateDirectory(book.FolderPath);
+            return new List<RabBookPublishInfo> { book };
+        }
+
+        [Test]
         public void RunRabCommand_WritesUtf8ArgumentFile_AndInvokesRabWithDashI()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2570,6 +2704,13 @@ namespace BloomTests.Publish.Rab
             public List<string> UninstallCommands { get; } = new List<string>();
             public List<string> RunProcessCommands { get; } = new List<string>();
             public int InstallCommandCount { get; private set; }
+
+            // What the simulated -install-sdks-if-needed command installs and prints. Turning an
+            // install off mimics Reading App Builder exiting 0 without putting that tool in
+            // Bloom's folder, e.g. because it found one in C:\sdk (BL-16943).
+            public bool InstallSdksCreatesJdk { get; set; } = true;
+            public bool InstallSdksCreatesAndroidSdk { get; set; } = true;
+            public List<string> InstallSdksOutputLines { get; } = new List<string>();
             public RabAdbConnectedDevice ConnectedDeviceToReturn { get; set; } =
                 new RabAdbConnectedDevice
                 {
@@ -2677,6 +2818,8 @@ namespace BloomTests.Publish.Rab
                         Path.Combine(GetRabJdkRootPath(), "lib", "tzdb.dat")
                     );
                     CreateBuildToolMarkers();
+                    foreach (var line in InstallSdksOutputLines)
+                        ReportProcessOutputLine(line);
                     return;
                 }
 
@@ -2878,6 +3021,22 @@ namespace BloomTests.Publish.Rab
 
             private void CreateBuildToolMarkers()
             {
+                if (InstallSdksCreatesJdk)
+                    CreateJdkMarkers();
+                if (InstallSdksCreatesAndroidSdk)
+                {
+                    var adbPath = Path.Combine(
+                        RabAndroidSdkInstallFolder,
+                        "platform-tools",
+                        "adb.exe"
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(adbPath));
+                    RobustFile.WriteAllText(adbPath, "adb");
+                }
+            }
+
+            private void CreateJdkMarkers()
+            {
                 var javaPath = Path.Combine(
                     RabJdkInstallFolder,
                     "zulu17.42.19-ca-jdk17.0.7-win_x64",
@@ -2895,10 +3054,6 @@ namespace BloomTests.Publish.Rab
                 );
                 Directory.CreateDirectory(Path.GetDirectoryName(tzdbPath));
                 RobustFile.WriteAllText(tzdbPath, "tzdb");
-
-                var adbPath = Path.Combine(RabAndroidSdkInstallFolder, "platform-tools", "adb.exe");
-                Directory.CreateDirectory(Path.GetDirectoryName(adbPath));
-                RobustFile.WriteAllText(adbPath, "adb");
             }
 
             private List<RabBookPublishInfo> ExportBooks(
