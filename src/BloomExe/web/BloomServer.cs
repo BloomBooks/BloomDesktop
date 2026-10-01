@@ -528,7 +528,10 @@ namespace Bloom.Api
                 {
                     if (
                         !string.IsNullOrEmpty(vidNodeId)
-                        && vidNodeId.StartsWith(PublishHelper.kTempIdMarker)
+                        && vidNodeId.StartsWith(
+                            PublishHelper.kTempIdMarker,
+                            StringComparison.Ordinal
+                        )
                     )
                         placeHolderNode.SetAttribute("id", vidNodeId);
                 }
@@ -545,7 +548,7 @@ namespace Bloom.Api
             var realKey = key.FromLocalhost();
             Action removeIt = () =>
             {
-                if (key.StartsWith("file://"))
+                if (key.StartsWith("file://", StringComparison.Ordinal))
                 {
                     var uri = new Uri(key);
                     RobustFile.Delete(uri.LocalPath);
@@ -645,7 +648,7 @@ namespace Bloom.Api
                 return false;
 
             // this alias is used by the javascript preview pane
-            if (localPath.StartsWith("book-preview"))
+            if (localPath.StartsWith("book-preview", StringComparison.Ordinal))
             {
                 if (localPath == "book-preview")
                 {
@@ -658,7 +661,7 @@ namespace Bloom.Api
                     request.WriteCompleteOutput("");
                     return true;
                 }
-                if (localPath.EndsWith("video-placeholder.svg"))
+                if (localPath.EndsWith("video-placeholder.svg", StringComparison.Ordinal))
                 {
                     Book.Book.EnsureVideoPlaceholderFile(_bookSelection.CurrentSelection);
                 }
@@ -721,12 +724,15 @@ namespace Bloom.Api
             }
 
             // process request for directory index
-            if (request.RawUrl.EndsWith("/") && (Directory.Exists(localPath)))
+            if (
+                request.RawUrl.EndsWith("/", StringComparison.Ordinal)
+                && (Directory.Exists(localPath))
+            )
             {
                 request.WriteError(403, "Directory listing denied");
                 return true;
             }
-            if (localPath.EndsWith("testconnection"))
+            if (localPath.EndsWith("testconnection", StringComparison.Ordinal))
             {
                 request.WriteCompleteOutput("OK");
                 return true;
@@ -862,7 +868,10 @@ namespace Bloom.Api
 
             if (
                 CurrentBook?.FolderPath != null
-                && localPath.StartsWith(UrlPrefixForCurrentBookPage(CurrentBook.FolderPath))
+                && localPath.StartsWith(
+                    UrlPrefixForCurrentBookPage(CurrentBook.FolderPath),
+                    StringComparison.Ordinal
+                )
             )
             {
                 var startIndex = UrlPrefixForCurrentBookPage(CurrentBook.FolderPath).Length;
@@ -877,7 +886,7 @@ namespace Bloom.Api
                 return true;
             }
 
-            if (localPath.StartsWith(OriginalImageMarker))
+            if (localPath.StartsWith(OriginalImageMarker, StringComparison.Ordinal))
             {
                 // Path relative to in memory page file, and we want the file contents without modification.
                 // (Note that the in memory page file's own URL starts with this, so it's important to check
@@ -898,7 +907,9 @@ namespace Bloom.Api
                     localPath = temp;
             }
             // this is used only by the readium viewer
-            else if (localPath.StartsWith("node_modules/jquery/dist/jquery.js"))
+            else if (
+                localPath.StartsWith("node_modules/jquery/dist/jquery.js", StringComparison.Ordinal)
+            )
             {
                 localPath = BloomFileLocator.GetBrowserFile(false, "jquery.min.js");
                 // Avoid having "output/browser/" removed on Linux developer machines.
@@ -933,7 +944,8 @@ namespace Bloom.Api
         {
             if (CurrentBook == null || CurrentBook.FolderPath == null) // FolderPath may be null in unit tests
                 return false;
-            return path.Replace("\\", "/").StartsWith(CurrentBook.FolderPath.Replace("\\", "/"));
+            return path.Replace("\\", "/")
+                .StartsWith(CurrentBook.FolderPath.Replace("\\", "/"), StringComparison.Ordinal);
         }
 
         private bool TryHandlePlaceholderImageRequest(IRequestInfo info, string imageFile)
@@ -973,7 +985,7 @@ namespace Bloom.Api
 
             var processImage = !isSvg;
 
-            if (imageFile.StartsWith(OriginalImageMarker + "/"))
+            if (imageFile.StartsWith(OriginalImageMarker + "/", StringComparison.Ordinal))
             {
                 imageFile = imageFile.Substring((OriginalImageMarker + "/").Length);
 
@@ -1073,14 +1085,14 @@ namespace Bloom.Api
                     // is still in origami in case the user doesn't actually add the video or widget.
                     // So while origami is open, it hits this path and we grab the .svgs from their
                     // original locations.
-                    else if (imageFile.EndsWith("video-placeholder.svg"))
+                    else if (imageFile.EndsWith("video-placeholder.svg", StringComparison.Ordinal))
                     {
                         imageFile = Path.Combine(
                             bloomRoot,
                             "templates/template books/Sign Language/video-placeholder.svg"
                         );
                     }
-                    else if (imageFile.EndsWith("widget-placeholder.svg"))
+                    else if (imageFile.EndsWith("widget-placeholder.svg", StringComparison.Ordinal))
                     {
                         imageFile = Path.Combine(bloomRoot, "images/widget-placeholder.svg");
                     }
@@ -1185,7 +1197,7 @@ namespace Bloom.Api
 
         private bool ProcessContent(IRequestInfo info, string localPath)
         {
-            if (localPath.EndsWith(".css"))
+            if (localPath.EndsWith(".css", StringComparison.Ordinal))
             {
                 return ProcessCssFile(info, localPath);
             }
@@ -1256,7 +1268,7 @@ namespace Bloom.Api
             // "OriginalImages/" at the beginning means we're generating a pdf and want full images,
             // but it has nothing to do with the actual file location.
             string OriginalImageMarkerWithSuffix = OriginalImageMarker + "/";
-            if (localPath.StartsWith(OriginalImageMarkerWithSuffix))
+            if (localPath.StartsWith(OriginalImageMarkerWithSuffix, StringComparison.Ordinal))
                 possibleFullImagePath = localPath.Substring(OriginalImageMarkerWithSuffix.Length);
             if (
                 RobustFileExistsWithCaseCheck(possibleFullImagePath)
@@ -1304,14 +1316,14 @@ namespace Bloom.Api
             // book folders. So instead redirect to our browser file folder.
             if (String.IsNullOrEmpty(path) || !RobustFileExistsWithCaseCheck(path))
             {
-                var isMap = localPath.EndsWith(".map");
-                var startOfBookLayout = localPath.IndexOf("bookLayout");
+                var isMap = localPath.EndsWith(".map", StringComparison.Ordinal);
+                var startOfBookLayout = localPath.IndexOf("bookLayout", StringComparison.Ordinal);
                 if (startOfBookLayout > 0)
                     path = BloomFileLocator.GetBrowserFile(
                         isMap,
                         localPath.Substring(startOfBookLayout)
                     );
-                var startOfBookEdit = localPath.IndexOf("bookEdit");
+                var startOfBookEdit = localPath.IndexOf("bookEdit", StringComparison.Ordinal);
                 if (startOfBookEdit > 0)
                     path = BloomFileLocator.GetBrowserFile(
                         isMap,
@@ -1353,7 +1365,7 @@ namespace Bloom.Api
 
             if (
                 !RobustFileExistsWithCaseCheck(path)
-                && localPath.StartsWith("pageChooser/")
+                && localPath.StartsWith("pageChooser/", StringComparison.Ordinal)
                 && IsImageTypeThatCanBeReturned(localPath)
             )
             {
@@ -1444,7 +1456,7 @@ namespace Bloom.Api
             if (
                 !RobustFileExistsWithCaseCheck(path)
                 && path.Length > kBloomPrefix.Length
-                && path.StartsWith(kBloomPrefix)
+                && path.StartsWith(kBloomPrefix, StringComparison.Ordinal)
             )
             {
                 // On developer machines, we can lose part of path earlier.  Try one more thing, the
@@ -1467,7 +1479,10 @@ namespace Bloom.Api
 
         private bool IsAudioFileWhichCanHaveCompressedCounterpart(string path)
         {
-            return path.EndsWith($".{AudioRecording.kRecordableExtension}");
+            return path.EndsWith(
+                $".{AudioRecording.kRecordableExtension}",
+                StringComparison.Ordinal
+            );
         }
 
         private static void ReportMissingFile(string localPath, string path, IRequestInfo info)
@@ -1647,7 +1662,7 @@ namespace Bloom.Api
         private static bool IsSimulatedFileUrl(string localPath)
         {
             var extension = Path.GetExtension(localPath);
-            if (extension != null && !extension.StartsWith(".htm"))
+            if (extension != null && !extension.StartsWith(".htm", StringComparison.Ordinal))
                 return false;
 
             // a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
@@ -2331,7 +2346,7 @@ namespace Bloom.Api
 
             // If we are requesting another book, and that book is not there,
             // we don't need both bloom-player and Bloom reporting it.
-            if (info.LocalPathWithoutQuery.StartsWith("/book/"))
+            if (info.LocalPathWithoutQuery.StartsWith("/book/", StringComparison.Ordinal))
                 return false;
 
             var localPath = GetLocalPathWithoutQuery(info);
@@ -2347,13 +2362,16 @@ namespace Bloom.Api
             // and should be adequately documented by the browser message saying the file is missing.
             // BL-11162 This includes showing up here with "OriginalImages" prefixed to the url for
             // publishing.
-            if (localFolderTestPath.StartsWith(OriginalImageMarker))
+            if (localFolderTestPath.StartsWith(OriginalImageMarker, StringComparison.Ordinal))
             {
                 localFolderTestPath = localFolderTestPath.Substring(OriginalImageMarker.Length + 1);
             }
             if (
                 currentBookFolderPath != null
-                && localFolderTestPath.StartsWith(currentBookFolderPath.Replace("\\", "/"))
+                && localFolderTestPath.StartsWith(
+                    currentBookFolderPath.Replace("\\", "/"),
+                    StringComparison.Ordinal
+                )
             )
                 return false;
             // Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
@@ -2361,7 +2379,10 @@ namespace Bloom.Api
             // for one example.
             if (
                 PublishApi.CurrentPublicationFolder != null
-                && localPath.StartsWith(PublishApi.CurrentPublicationFolder.Replace("\\", "/"))
+                && localPath.StartsWith(
+                    PublishApi.CurrentPublicationFolder.Replace("\\", "/"),
+                    StringComparison.Ordinal
+                )
             )
             {
                 return false;
@@ -2375,7 +2396,7 @@ namespace Bloom.Api
                 currentBookFolderPath == null
                 && !Directory.Exists(Path.GetDirectoryName(localPath))
                 && collectionPath != null
-                && localPath.StartsWith(collectionPath.Replace("\\", "/"))
+                && localPath.StartsWith(collectionPath.Replace("\\", "/"), StringComparison.Ordinal)
             )
             {
                 return false;
@@ -2439,7 +2460,7 @@ namespace Bloom.Api
 
         private static string GetLocalPathWithoutQuery(string localPath)
         {
-            if (localPath.StartsWith(kBloomPrefix))
+            if (localPath.StartsWith(kBloomPrefix, StringComparison.Ordinal))
             {
                 localPath = localPath.Substring(kBloomPrefix.Length);
 #if __MonoCS__
@@ -2448,7 +2469,7 @@ namespace Bloom.Api
 #endif
             }
             // and if the file is using localhost:1234/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
-            else if (localPath.StartsWith("/"))
+            else if (localPath.StartsWith("/", StringComparison.Ordinal))
             {
                 localPath = localPath.Substring(1);
             }
@@ -2472,7 +2493,8 @@ namespace Bloom.Api
                 return localPath;
 
             Debug.Assert(
-                !localPath.StartsWith("/") && !localPath.StartsWith("\\"),
+                !localPath.StartsWith("/", StringComparison.Ordinal)
+                    && !localPath.StartsWith("\\", StringComparison.Ordinal),
                 "Precondition violated. localPath is not supposed to have a leading slash"
             );
 
@@ -2497,7 +2519,8 @@ namespace Bloom.Api
                 return localPath;
 
             Debug.Assert(
-                !localPath.StartsWith("/") && !localPath.StartsWith("\\"),
+                !localPath.StartsWith("/", StringComparison.Ordinal)
+                    && !localPath.StartsWith("\\", StringComparison.Ordinal),
                 "Precondition violated. localPath is not supposed to have a leading slash"
             );
 
@@ -2811,7 +2834,7 @@ namespace Bloom.Api
             // AppData is for Windows and /tmp/ is for Linux (when we use it again)
             // Installed versions of Bloom are in AppData too, but we'll only make this check if we're in Debug mode.
             if (
-                localPath.EndsWith(".htm")
+                localPath.EndsWith(".htm", StringComparison.Ordinal)
                 && (localPath.Contains("AppData") || localPath.Contains("/tmp/"))
             )
                 return true; // probably the Temp folder and most likely a random temporary filename).

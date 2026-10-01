@@ -98,7 +98,20 @@ namespace Bloom.web.controllers
                 {
                     // Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation)
                     PublishHelper.Cancel();
-                    request.PostSucceeded();
+                    // Every tool publishes the book's pages, so a book that needs its page layout
+                    // update must have it before a tool opens. If it does, the update runs behind
+                    // its dialog and we tell the tab to hold the tool back; when the dialog closes
+                    // we send pagesUpToDate and the tab opens the tool. (When no update is needed the
+                    // event goes out at once, with no tool waiting for it.)
+                    var book = _publishModel.BookSelection.CurrentSelection;
+                    var pagesBeingUpdated =
+                        book != null
+                        && BookProcessor.UpdatePageLayoutIfNeededThen(
+                            book,
+                            (BloomWebSocketServer)_webSocketServer,
+                            () => _webSocketServer.SendEvent("publish", "pagesUpToDate")
+                        );
+                    request.ReplyWithJson(new { pagesBeingUpdated });
                 },
                 false
             );

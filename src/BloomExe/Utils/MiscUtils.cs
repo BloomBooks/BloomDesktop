@@ -236,8 +236,13 @@ namespace Bloom.Utils
                 bldr.AppendLine(firstLine);
             if (FileAccessDiagnostics.FileIsPresent(path))
             {
+                // The user sees this text in NotifyDialog, which renders it as HTML, so the URL
+                // must be an anchor to be clickable, and the line breaks must be <br> to show
+                // (BL-16915). Logs just get the markup.
+                const string helpUrl =
+                    "https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445";
                 bldr.AppendLine(
-                    $"You may find help for this problem at https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445."
+                    $"<br>You may find help for this problem at <a href='{helpUrl}'>{helpUrl}</a>.<br>"
                 );
                 bldr.AppendLine($"The following specific information may also be helpful.");
                 bldr.Append(CollectFilePermissionInformation(path));
@@ -459,8 +464,14 @@ namespace Bloom.Utils
         /// <returns><c>true</c> if the collection pointed to by path is not valid to edit, <c>false</c> otherwise.</returns>
         public static bool IsInvalidCollectionToEdit(string path)
         {
-            return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
-                || path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
+            return path.StartsWith(
+                    ProjectContext.GetInstalledCollectionsDirectory(),
+                    StringComparison.Ordinal
+                )
+                || path.StartsWith(
+                    BloomFileLocator.FactoryTemplateBookDirectory,
+                    StringComparison.Ordinal
+                );
         }
 
         /// <summary>
@@ -781,7 +792,7 @@ namespace Bloom.Utils
         {
             var trimmedEmail = email.Trim();
 
-            if (trimmedEmail.EndsWith("."))
+            if (trimmedEmail.EndsWith(".", StringComparison.Ordinal))
             {
                 return false; // suggested by @TK-421
             }
@@ -834,7 +845,7 @@ namespace Bloom.Utils
         public static string NormalizeLanguageTagCapitalization(string tag)
         {
             // Degenerate (albeit valid) case that may only ever occur in unit tests.
-            if (tag.StartsWith("x-"))
+            if (tag.StartsWith("x-", StringComparison.Ordinal))
                 return tag;
             // The IetfLanguageTag parser appears to be case insensitive.
             // We need to ensure the pieces are properly capitalized.

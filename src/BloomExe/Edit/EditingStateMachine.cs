@@ -292,7 +292,7 @@ public class EditingStateMachine
                     LogTransition("saved, then navigating", _pageId);
                     if (pageContent != null)
                     {
-                        if (pageContent.StartsWith("ERROR:"))
+                        if (pageContent.StartsWith("ERROR:", StringComparison.Ordinal))
                             throw new ApplicationException(pageContent);
                         _updateBookWithPageContents(_pageId, pageContent);
                     }

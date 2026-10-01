@@ -1223,7 +1223,10 @@ namespace Bloom.ImageProcessing
             // know when to just replace the existing one with the same name... some other process will have
             // to remove unused images.
             string basename;
-            if (String.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+            if (
+                String.IsNullOrEmpty(imageInfo.FileName)
+                || imageInfo.FileName.StartsWith("tmp", StringComparison.Ordinal)
+            )
             {
                 basename = "image";
             }
@@ -1359,12 +1362,14 @@ namespace Bloom.ImageProcessing
             {
                 var filePaths = Directory.GetFiles(folderPath, "*.*");
                 var pngFiles = filePaths
-                    .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                    .Where(path =>
+                        path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal)
+                    )
                     .ToArray();
                 var jpgFiles = filePaths
                     .Where(path =>
-                        path.ToLowerInvariant().EndsWith(".jpg")
-                        || path.ToLowerInvariant().EndsWith(".jpeg")
+                        path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                        || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                     )
                     .ToArray();
                 foreach (string path in pngFiles)
@@ -1484,12 +1489,12 @@ namespace Bloom.ImageProcessing
             // in a system independent way.
             var filePaths = Directory.GetFiles(folderPath, "*.*");
             var pngFiles = filePaths
-                .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                .Where(path => path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal))
                 .ToArray();
             var jpgFiles = filePaths
                 .Where(path =>
-                    path.ToLowerInvariant().EndsWith(".jpg")
-                    || path.ToLowerInvariant().EndsWith(".jpeg")
+                    path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                    || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                 )
                 .ToArray();
             int completed = 0;
@@ -2287,7 +2292,10 @@ namespace Bloom.ImageProcessing
                                 )
                             )
                             {
-                                if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
+                                if (
+                                    options.JpegQuality == 0
+                                    && sourcePath.EndsWith(".jpg", StringComparison.Ordinal)
+                                )
                                     argsBldr.Append(" -define jpeg:preserve-settings"); // preserve input quality and sampling factor
                                 else if (options.JpegQuality > 0)
                                     argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
@@ -3647,7 +3655,9 @@ namespace Bloom.ImageProcessing
         internal static double GetNumberFromPx(string label, string input)
         {
             var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            var part = parts.FirstOrDefault(p =>
+                p.Trim().StartsWith(label + ":", StringComparison.Ordinal)
+            );
             if (part == null)
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);

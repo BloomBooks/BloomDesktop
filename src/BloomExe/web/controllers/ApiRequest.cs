@@ -130,7 +130,9 @@ namespace Bloom.Api
 
         public void ReplyWithAudioFileContents(string path)
         {
-            _requestInfo.ResponseContentType = path.EndsWith(".mp3") ? "audio/mpeg" : "audio/wav";
+            _requestInfo.ResponseContentType = path.EndsWith(".mp3", StringComparison.Ordinal)
+                ? "audio/mpeg"
+                : "audio/wav";
             _requestInfo.ReplyWithFileContent(path);
         }
 

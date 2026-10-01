@@ -334,8 +334,8 @@ namespace Bloom
             // not there but directly in output. So we need to back up two levels to find the folder to test.
             var pathLessOne = Path.GetDirectoryName(folder);
             if (
-                pathLessOne.EndsWith($"{slash}output{slash}Debug")
-                || pathLessOne.EndsWith($"{slash}output{slash}Release")
+                pathLessOne.EndsWith($"{slash}output{slash}Debug", StringComparison.Ordinal)
+                || pathLessOne.EndsWith($"{slash}output{slash}Release", StringComparison.Ordinal)
             )
                 folder = Path.GetDirectoryName(pathLessOne);
 

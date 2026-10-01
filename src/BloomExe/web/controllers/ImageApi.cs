@@ -111,7 +111,7 @@ namespace Bloom.web.controllers
             return GetWhichImagesAreUsedOnWhichPages(domBody, langs)
                 .Keys.Where(name =>
                     !nonCreditableImages.Contains(BookStorage.GetNormalizedPathForOS(name))
-                    && !name.ToLowerInvariant().StartsWith("placeholder")
+                    && !name.ToLowerInvariant().StartsWith("placeholder", StringComparison.Ordinal)
                 )
                 .ToList();
         }
@@ -340,7 +340,7 @@ namespace Bloom.web.controllers
             // includes CC license image, placeholder and branding images
             var normalName = BookStorage.GetNormalizedPathForOS(name);
             return _nonCreditableImages.Contains(normalName)
-                || name.ToLowerInvariant().StartsWith("placeholder");
+                || name.ToLowerInvariant().StartsWith("placeholder", StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -446,7 +446,7 @@ namespace Bloom.web.controllers
                     result.height = -1;
                     result.bitDepth = "unknown";
                 }
-                else if (path.ToLowerInvariant().EndsWith("svg"))
+                else if (path.ToLowerInvariant().EndsWith("svg", StringComparison.Ordinal))
                 {
                     result.bytes = -1;
                     result.width = -1;

@@ -134,9 +134,9 @@ namespace Bloom.Spreadsheet
                 for (int i = StandardLeadingColumns.Length; i < Header.ColumnCount; i++)
                 {
                     var content = Header.ColumnIdRow.GetCell(i).Content.Trim();
-                    if (!content.StartsWith("["))
+                    if (!content.StartsWith("[", StringComparison.Ordinal))
                         continue;
-                    if (!content.EndsWith("]"))
+                    if (!content.EndsWith("]", StringComparison.Ordinal))
                         continue;
                     // A valid language tag must be two or three letters (at least before the
                     // first hyphen). The main point of this, though, isn't to validate them,

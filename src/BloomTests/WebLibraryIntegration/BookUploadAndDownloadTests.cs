@@ -484,7 +484,10 @@ namespace BloomTests.WebLibraryIntegration
                 var record = _bloomLibraryBookApiClient.TestOnly_GetSingleBookRecord(metadata.Id);
                 string baseUrl = record.baseUrl;
                 Assert.That(
-                    baseUrl.StartsWith("https://s3.amazonaws.com/BloomLibraryBooks"),
+                    baseUrl.StartsWith(
+                        "https://s3.amazonaws.com/BloomLibraryBooks",
+                        StringComparison.Ordinal
+                    ),
                     "baseUrl should start with s3 prefix"
                 );
 
@@ -737,7 +740,8 @@ namespace BloomTests.WebLibraryIntegration
             var count = Directory
                 .GetFiles(bookPath)
                 .Count(p =>
-                    !p.EndsWith(".bak") && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
+                    !p.EndsWith(".bak", StringComparison.Ordinal)
+                    && !p.Contains(BookStorage.PrefixForCorruptHtmFiles)
                 );
             for (int i = 0; i < 30; i++)
             {
