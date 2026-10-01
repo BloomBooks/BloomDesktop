@@ -2672,6 +2672,79 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void ReportFailure_ShowsBloomsOwnWrapperMessage_NotTheErrorItWraps()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+            var wrapped = new ApplicationException(
+                "Bloom could not update Reading App Builder.",
+                new ApplicationException("Reading App Builder installer exited with code 1.")
+            );
+
+            service.ReportFailure("Prepare", wrapped);
+
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare failed: Bloom could not update Reading App Builder.")
+            );
+        }
+
+        [Test]
+        public void ReportFailure_UnwrapsAsyncWrapperExceptions()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            service.ReportFailure(
+                "Build",
+                new AggregateException(new ApplicationException("The real problem."))
+            );
+
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Build failed: The real problem.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_KeepsTheOriginalError_WhenRabItselfCannotBeFound()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var notFound = new ApplicationException(
+                "Bloom could not find Reading App Builder at C:\\Program Files\\SIL\\Reading App Builder for Bloom."
+            );
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+                InstallSdksFailure = notFound,
+                RabLauncherPathToReturn = null,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error,
+                Is.SameAs(notFound),
+                "a missing Reading App Builder should not be reported as missing build tools"
+            );
+        }
+
+        [Test]
         public void PrepareAsync_KeepsTheOriginalError_WhenTheInstallSdksCommandFailsButTheToolsAreThere()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");

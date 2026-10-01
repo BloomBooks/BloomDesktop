@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -455,8 +456,17 @@ namespace Bloom.Publish.Rab
         public void ReportFailure(string action, Exception error)
         {
             Logger.WriteError($"Reading App Builder {action} failed.", error);
+            // Unwrap only the wrappers that async and reflection calls add. Bloom's own wrappers
+            // (e.g. the plain "Bloom could not set up the tools..." message) are what the user should
+            // see; the exceptions they wrap are in the log.
+            var shownError = error;
+            while (
+                (shownError is AggregateException || shownError is TargetInvocationException)
+                && shownError.InnerException != null
+            )
+                shownError = shownError.InnerException;
             _progress.MessageWithoutLocalizing(
-                $"{action} failed: {error.GetBaseException().Message}",
+                $"{action} failed: {shownError.Message}",
                 ProgressKind.Error
             );
             if (!string.IsNullOrWhiteSpace(Logger.LogPath))
@@ -748,7 +758,8 @@ namespace Bloom.Publish.Rab
             {
                 RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
             }
-            catch (ApplicationException error) when (!AreRabBuildToolsInstalled())
+            catch (ApplicationException error)
+                when (!AreRabBuildToolsInstalled() && !string.IsNullOrEmpty(FindRabLauncherPath()))
             {
                 // The command itself failed, e.g. a download failed while offline (once RAB's exit
                 // code reaches Bloom). Give the same plain message as below rather than the raw
