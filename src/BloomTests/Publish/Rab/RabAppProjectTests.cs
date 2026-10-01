@@ -2550,6 +2550,86 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task PrepareAsync_ContinuesWithTheInstalledRab_WhenTheUpdateInstallerFails()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 1."
+                ),
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(
+                service.InstalledRabFromSetupPaths,
+                Is.EqualTo(new[] { installerPath }),
+                "setup: the update should have been attempted"
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain(
+                    "The Reading App Builder update did not finish (Reading App Builder installer exited with code 1.). Continuing with version 1.0."
+                )
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_WhenTheUpdateInstallerFailsAndBreaksTheInstalledRab()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 1."
+                ),
+                InstallerFailureRemovesRab = true,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo("Reading App Builder installer exited with code 1.")
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
         public async Task PrepareAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -3151,9 +3231,20 @@ namespace BloomTests.Publish.Rab
                 InstalledRabFromSetupPaths.Add(installerPath);
                 if (LaunchExternalTargetException != null)
                     throw LaunchExternalTargetException;
+                if (InstallerFailure != null)
+                {
+                    if (InstallerFailureRemovesRab)
+                        IsRabInstalledForPrepareResult = false;
+                    throw InstallerFailure;
+                }
 
                 IsRabInstalledForPrepareResult = true;
             }
+
+            // When set, the simulated installer starts but then fails with this exception, leaving
+            // any installed Reading App Builder in place unless InstallerFailureRemovesRab is true.
+            public Exception InstallerFailure { get; set; }
+            public bool InstallerFailureRemovesRab { get; set; }
 
             internal override string GetRabInstallerStagingDirectory()
             {

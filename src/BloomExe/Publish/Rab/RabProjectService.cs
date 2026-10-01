@@ -622,6 +622,20 @@ namespace Bloom.Publish.Rab
                     // When updating, the installed version still works, so carry on with it.
                     return isInstalled;
                 }
+                catch (Exception error)
+                    when (isInstalled
+                        && !(error is OperationCanceledException)
+                        && IsRabInstalledForPrepare()
+                    )
+                {
+                    // The update failed but left the older version installed, so carry on with it.
+                    // If the failed update broke the install, the exception stops Prepare instead.
+                    _progress.MessageWithoutLocalizing(
+                        $"The Reading App Builder update did not finish ({error.Message}). Continuing with version {installedVersion}.",
+                        ProgressKind.Warning
+                    );
+                    return true;
+                }
                 if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
                         "Reading App Builder installer finished, but Bloom still could not find the installed program."
@@ -667,9 +681,18 @@ namespace Bloom.Publish.Rab
             if (string.IsNullOrWhiteSpace(rabLauncher))
                 return null;
             var versionFile = Path.Combine(Path.GetDirectoryName(rabLauncher), "VERSION");
-            return RobustFile.Exists(versionFile)
-                ? RobustFile.ReadAllText(versionFile).Trim()
-                : null;
+            try
+            {
+                return RobustFile.Exists(versionFile)
+                    ? RobustFile.ReadAllText(versionFile).Trim()
+                    : null;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // An unreadable VERSION file just means the version is unknown.
+                return null;
+            }
         }
 
         /// <summary>
