@@ -5,7 +5,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.Rab;
 using BloomTests.Book;
@@ -141,6 +143,62 @@ namespace BloomTests.Publish.Rab
                     archive.Entries.Any(entry => entry.FullName == "AndroidManifest.xml"),
                     Is.True,
                     "The generated APK should contain AndroidManifest.xml."
+                );
+                AssertEmbeddedFontsReachedTheApp(status.AppDefPath, archive);
+            }
+        }
+
+        // BL-16959: Bloom lists each font embedded in the book in the .appDef, and RAB takes the
+        // font files from the project's fonts folder. RAB 14.0-14.4 silently leaves out a font whose
+        // file isn't there (14.5+ fails the build), so check both that each file got there and that
+        // the APK contains it. RAB may obfuscate font file names in the APK, so match by content.
+        private static void AssertEmbeddedFontsReachedTheApp(string appDefPath, ZipArchive apk)
+        {
+            var fontFileNames = XDocument
+                .Load(appDefPath)
+                .Root.Element("fonts")
+                .Elements("font")
+                .Select(font => font.Element("filename").Value)
+                .ToList();
+            Assert.That(
+                fontFileNames,
+                Does.Contain("ABeeZee-Regular.woff2"),
+                "test input check: Book4.bloompub embeds ABeeZee, so the .appDef should list it"
+            );
+
+            var fontsFolder = Path.Combine(
+                Path.GetDirectoryName(appDefPath),
+                Path.GetFileNameWithoutExtension(appDefPath) + "_data",
+                "fonts"
+            );
+            // The book's own copy of each font also goes into the APK, under assets/books/; leave
+            // those out, or this check would pass in exactly the case it is meant to catch.
+            var apkEntryHashes = apk
+                .Entries.Where(entry =>
+                    entry.Length > 0
+                    && !entry.FullName.StartsWith("assets/books/", StringComparison.Ordinal)
+                )
+                .Select(entry =>
+                {
+                    using var stream = entry.Open();
+                    return Convert.ToBase64String(SHA256.HashData(stream));
+                })
+                .ToHashSet();
+            foreach (var fileName in fontFileNames)
+            {
+                var fontPath = Path.Combine(fontsFolder, fileName);
+                Assert.That(
+                    RobustFile.Exists(fontPath),
+                    Is.True,
+                    $"{fileName} should be in the project's fonts folder, where RAB looks for it"
+                );
+                var fontHash = Convert.ToBase64String(
+                    SHA256.HashData(RobustFile.ReadAllBytes(fontPath))
+                );
+                Assert.That(
+                    apkEntryHashes,
+                    Does.Contain(fontHash),
+                    $"The APK should contain {fileName} as one of the app's fonts"
                 );
             }
         }
