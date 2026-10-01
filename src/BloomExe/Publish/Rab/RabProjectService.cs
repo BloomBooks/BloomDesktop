@@ -619,24 +619,13 @@ namespace Bloom.Publish.Rab
                         ProgressKind.Warning
                     );
                     _progress.MessageWithoutLocalizing($"Installer: {installerPath}");
-                    // When updating, the installed version still works, so carry on with it.
+                    // The installer never started, so when updating, the installed version is
+                    // untouched: carry on with it.
                     return isInstalled;
                 }
-                catch (Exception error)
-                    when (isInstalled
-                        && IsRabInstalledForPrepare()
-                        && GetInstalledRabVersionText() == installedVersion
-                    )
-                {
-                    // The update failed without changing the installed version, so the older
-                    // version is still intact: carry on with it. If the update got partway (the
-                    // version changed, or the program is gone), the exception stops Prepare instead.
-                    _progress.MessageWithoutLocalizing(
-                        $"The Reading App Builder update did not finish ({error.Message}). Continuing with version {installedVersion}.",
-                        ProgressKind.Warning
-                    );
-                    return true;
-                }
+                // Any other installer failure propagates, even during an update: once the installer
+                // has run, Bloom can't tell whether the older version is still intact (the registry
+                // version is only updated at the very end), so it must not carry on with it.
                 if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
                         "Reading App Builder installer finished, but Bloom still could not find the installed program."
