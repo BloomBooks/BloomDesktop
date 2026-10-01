@@ -508,17 +508,24 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
- * Delete the selected canvas element through its "..." menu, and wait until the page has one fewer.
+ * Delete the selected canvas element through its "..." menu, and wait until it and every canvas
+ * element inside it are gone. A table's picture and video cells each hold a canvas element of
+ * their own, so deleting a table can take several off the page.
  */
 export async function deleteCanvasElement(page: Page): Promise<void> {
     const countBefore = await getCanvasElementCount(page);
+    const countInside = await activeCanvasElement(page)
+        .locator(".bloom-canvas-element")
+        .count();
     await clickCanvasElementMenuItem(page, "Common.Delete");
     await expect
         .poll(async () => getCanvasElementCount(page), {
-            timeout: 30000,
-            message: `Delete did not remove a canvas element (there are still ${countBefore}).`,
+            timeout: 5000,
+            message:
+                `Delete did not remove the selected canvas element and the ${countInside} inside ` +
+                `it (there are still ${countBefore}).`,
         })
-        .toBe(countBefore - 1);
+        .toBe(countBefore - 1 - countInside);
 }
 
 /** The corners of a selected canvas element, by the names its resize handles use. */

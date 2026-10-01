@@ -513,11 +513,25 @@ export async function clickCell(
         { x: box.x + 3, y: box.y + 3 },
         { x: box.x + box.width / 2, y: box.y + box.height / 2 },
     ];
+    // A cell of a table inside a cell takes a double-click. The table library gives a single
+    // press to the cell at the level of the table already selected, which is the outer cell, and
+    // a double-click goes one level in (clickTargetCell and doubleClickTargetCell in the library).
+    // A person gets into the inner table the same way.
+    const isInNestedTable = await target.evaluate(
+        (element) =>
+            !!element
+                .closest(".bloom-table")
+                ?.parentElement?.closest(".bloom-table"),
+    );
     let selected = false;
     for (let attempt = 0; attempt < places.length && !selected; attempt++) {
         await page.mouse.move(places[attempt].x, places[attempt].y);
-        await page.mouse.down();
-        await page.mouse.up();
+        if (isInNestedTable)
+            await page.mouse.dblclick(places[attempt].x, places[attempt].y);
+        else {
+            await page.mouse.down();
+            await page.mouse.up();
+        }
         // A press that lands marks the cell within a frame or two, so one second is plenty.
         //
         // The polling runs here, not in the page: Bloom runs with --dont-disturb, so its window
