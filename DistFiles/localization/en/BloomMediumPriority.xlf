@@ -567,7 +567,7 @@
         <note>Label for an expandable section in the Canvas Tool that contains navigation-related objects (e.g. buttons and book grids) that can be dragged onto a page.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.CanvasTool.Table" translate="no">
-        <source xml:lang="en">A table of rows and columns, which can hold text or pictures</source>
+        <source xml:lang="en">A table whose cells can hold text or pictures</source>
         <note>ID: EditTab.Toolbox.CanvasTool.Table</note>
         <note>Tooltip on the table icon in the Canvas Tool. The user drags the icon onto a page to add a table.</note>
       </trans-unit>

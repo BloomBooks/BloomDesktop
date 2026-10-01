@@ -10,7 +10,7 @@ const elementHolding = (innerHtml: string): HTMLElement => {
 };
 
 describe("inferCanvasElementType", () => {
-    test("a table is a table whatever its cells hold", () => {
+    test("a canvas element holding a table has the table type, whatever is in the cells", () => {
         // A cell can hold a video, a picture or a text box. Each of those has a type of its
         // own, and none of them may win over the table that holds it: the type decides which
         // toolbar the element gets and which subscription rules gate it.
@@ -31,7 +31,7 @@ describe("inferCanvasElementType", () => {
         }
     });
 
-    test("a video outside a table is still a video", () => {
+    test("a canvas element holding a video that is not in a table has the video type", () => {
         expect(
             inferCanvasElementType(
                 elementHolding('<div class="bloom-videoContainer"></div>'),
