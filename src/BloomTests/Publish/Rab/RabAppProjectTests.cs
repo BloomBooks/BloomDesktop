@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
@@ -2630,6 +2632,159 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task PrepareAsync_ContinuesWithTheInstalledRab_WhenTheUpdateDownloadTimesOut()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = null,
+                // What HttpClient throws when its timeout runs out.
+                DownloadFailure = new TaskCanceledException("The request timed out."),
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain(
+                    "Bloom could not download the newer Reading App Builder (The request timed out.). Continuing with version 1.0."
+                )
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void DownloadRabSetupInstallerFromUrl_LeavesNoInstallerBehind_WhenTheDownloadIsInterrupted()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                InstallerHttpHandler = new FixedResponseHandler(
+                    new FailingAfterSomeBytesStream(1000)
+                ),
+            };
+
+            Assert.Throws<IOException>(() =>
+                service.DownloadRabSetupInstallerFromUrl(installerPath, (_, _) => { })
+            );
+
+            Assert.That(RobustFile.Exists(installerPath), Is.False);
+            Assert.That(RobustFile.Exists(installerPath + ".partial"), Is.False);
+        }
+
+        [Test]
+        public void DownloadRabSetupInstallerFromUrl_WritesTheInstaller_WhenTheDownloadCompletes()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            var bytes = Encoding.UTF8.GetBytes("installer bytes");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                InstallerHttpHandler = new FixedResponseHandler(new MemoryStream(bytes)),
+            };
+
+            service.DownloadRabSetupInstallerFromUrl(installerPath, (_, _) => { });
+
+            Assert.That(RobustFile.ReadAllBytes(installerPath), Is.EqualTo(bytes));
+            Assert.That(RobustFile.Exists(installerPath + ".partial"), Is.False);
+        }
+
+        /// <summary>
+        /// Answers every request with a 200 whose body is the given stream
+        /// </summary>
+        private class FixedResponseHandler : HttpMessageHandler
+        {
+            private readonly Stream _body;
+
+            public FixedResponseHandler(Stream body)
+            {
+                _body = body;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken
+            )
+            {
+                return Task.FromResult(
+                    new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = new StreamContent(_body),
+                    }
+                );
+            }
+        }
+
+        /// <summary>
+        /// A readable stream that yields some bytes and then throws, like a dropped connection
+        /// </summary>
+        private class FailingAfterSomeBytesStream : Stream
+        {
+            private long _remaining;
+
+            public FailingAfterSomeBytesStream(long bytesBeforeFailure)
+            {
+                _remaining = bytesBeforeFailure;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (_remaining <= 0)
+                    throw new IOException("The connection was reset.");
+                var n = (int)Math.Min(count, _remaining);
+                _remaining -= n;
+                return n;
+            }
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush() { }
+
+            public override long Seek(long offset, SeekOrigin origin) =>
+                throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) =>
+                throw new NotSupportedException();
+        }
+
+        [Test]
         public async Task PrepareAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -3196,9 +3351,14 @@ namespace BloomTests.Publish.Rab
                 return RabSetupInstallerPathToReturn;
             }
 
+            // When set, the simulated installer download throws this (e.g. a timeout).
+            public Exception DownloadFailure { get; set; }
+
             internal override string DownloadRabSetupInstaller()
             {
                 DownloadedRabSetupInstallerPaths.Add(RabSetupInstallerDownloadPathToReturn);
+                if (DownloadFailure != null)
+                    throw DownloadFailure;
 
                 if (!string.IsNullOrWhiteSpace(RabSetupInstallerDownloadPathToReturn))
                 {
@@ -3239,6 +3399,16 @@ namespace BloomTests.Publish.Rab
                 }
 
                 IsRabInstalledForPrepareResult = true;
+            }
+
+            // When set, the real download code talks to this handler instead of the network.
+            public HttpMessageHandler InstallerHttpHandler { get; set; }
+
+            internal override HttpClient CreateRabInstallerHttpClient()
+            {
+                return InstallerHttpHandler == null
+                    ? base.CreateRabInstallerHttpClient()
+                    : new HttpClient(InstallerHttpHandler, false);
             }
 
             // When set, the simulated installer starts but then fails with this exception, leaving

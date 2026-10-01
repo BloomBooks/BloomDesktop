@@ -589,7 +589,7 @@ namespace Bloom.Publish.Rab
             {
                 installerPath = GetRabSetupInstallerPath(isInstalled);
             }
-            catch (Exception error) when (isInstalled && !(error is OperationCanceledException))
+            catch (Exception error) when (isInstalled)
             {
                 // An update is optional: the installed version still works, so a user who is
                 // offline can carry on with it.
@@ -622,11 +622,7 @@ namespace Bloom.Publish.Rab
                     // When updating, the installed version still works, so carry on with it.
                     return isInstalled;
                 }
-                catch (Exception error)
-                    when (isInstalled
-                        && !(error is OperationCanceledException)
-                        && IsRabInstalledForPrepare()
-                    )
+                catch (Exception error) when (isInstalled && IsRabInstalledForPrepare())
                 {
                     // The update failed but left the older version installed, so carry on with it.
                     // If the failed update broke the install, the exception stops Prepare instead.
@@ -2696,18 +2692,35 @@ namespace Bloom.Publish.Rab
 
             Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
 
-            using var responseStream = response
-                .Content.ReadAsStreamAsync()
-                .GetAwaiter()
-                .GetResult();
-            using var fileStream = RobustFile.Create(installerPath);
-
-            CopyRabInstallerDownloadStream(
-                responseStream,
-                fileStream,
-                response.Content.Headers.ContentLength ?? -1,
-                reportProgress
-            );
+            // Download under a temporary name and rename only when complete, so an interrupted
+            // download never leaves a truncated installer that later Prepares would find and run.
+            var partialPath = installerPath + ".partial";
+            try
+            {
+                using (
+                    var responseStream = response
+                        .Content.ReadAsStreamAsync()
+                        .GetAwaiter()
+                        .GetResult()
+                )
+                using (var fileStream = RobustFile.Create(partialPath))
+                {
+                    CopyRabInstallerDownloadStream(
+                        responseStream,
+                        fileStream,
+                        response.Content.Headers.ContentLength ?? -1,
+                        reportProgress
+                    );
+                }
+                if (RobustFile.Exists(installerPath))
+                    RobustFile.Delete(installerPath);
+                RobustFile.Move(partialPath, installerPath);
+            }
+            finally
+            {
+                if (RobustFile.Exists(partialPath))
+                    RobustFile.Delete(partialPath);
+            }
         }
 
         internal virtual void CopyRabInstallerDownloadStream(
