@@ -114,6 +114,9 @@ const kAdjustContainerAspectRatioDelayId =
     "adjustContainerAspectRatioImageLoad";
 
 const kTransformPropName = "bloom-zoomTransformForInitialFocus";
+// The fewest milliseconds between two realignments of the control frame after zoom changes;
+// see onPageZoomChanged.
+const kZoomRealignIntervalMs = 100;
 export { kBackgroundImageClass } from "../../toolbox/canvas/canvasElementConstants";
 
 export {
@@ -159,6 +162,10 @@ export class CanvasElementManager {
 
     // Used by stopMoving() to clear cursor style after a drag.
     private lastMoveContainer: HTMLElement;
+
+    // Used by onPageZoomChanged() to realign at most once per kZoomRealignIntervalMs.
+    private zoomRealignTimer: number | undefined;
+    private lastZoomRealignTime = 0;
 
     public constructor() {
         initializeImageUndoManager({
@@ -1807,7 +1814,33 @@ export class CanvasElementManager {
      * meant for a table cell then hits Delete.
      */
     public onPageZoomChanged() {
-        this.alignControlFrameWithActiveElement();
+        // Holding Ctrl and spinning the mouse wheel sends a burst of zoom changes, and when the
+        // UI thread is busy they arrive back to back. Each realignment forces a layout of the
+        // page, so do not realign for every one of them: the first change in a burst realigns
+        // at once, and the rest within kZoomRealignIntervalMs share one realignment at the end.
+        // Anything added here must stay cheap and must not call Bloom.
+        if (this.zoomRealignTimer !== undefined) {
+            return;
+        }
+        const now = Date.now();
+        const sinceLast = now - this.lastZoomRealignTime;
+        if (sinceLast >= kZoomRealignIntervalMs) {
+            this.realignAfterZoom();
+            return;
+        }
+        this.zoomRealignTimer = window.setTimeout(() => {
+            this.zoomRealignTimer = undefined;
+            this.realignAfterZoom();
+        }, kZoomRealignIntervalMs - sinceLast);
+    }
+
+    // Realigns the control frame and toolbar for the page's new scale; see onPageZoomChanged.
+    private realignAfterZoom() {
+        this.lastZoomRealignTime = Date.now();
+        alignCanvasElementControlFrameWithActiveElement(
+            this.activeElement,
+            false,
+        );
     }
 
     adjustContextControlPosition(

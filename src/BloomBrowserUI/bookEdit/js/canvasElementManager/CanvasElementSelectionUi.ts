@@ -219,8 +219,11 @@ export async function getHandleTitlesAsync(
 }
 
 // Align the control frame with the active canvas element.
+// updateHandleTitles false skips the handle tooltips, which cost a request to Bloom each time;
+// callers that only move or rescale the frame (a zoom change) cannot change them.
 export function alignControlFrameWithActiveElement(
     activeElement: HTMLElement | undefined,
+    updateHandleTitles: boolean = true,
 ): void {
     const controlFrame = document.getElementById(
         "canvas-element-control-frame",
@@ -259,28 +262,30 @@ export function alignControlFrameWithActiveElement(
     );
 
     const hasText = controlFrame.classList.contains("has-text");
-    // We don't need to await these, they are just async so the handle titles can be updated
-    // once the localization manager retrieves them.
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-resize-handle",
-        "Resize",
-    );
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-side-handle",
-        hasText ? "ChangeShape" : "Crop",
-        // We don't need to change it while we're moving the frame, only if we're switching
-        // between text and image. And there's another state we want
-        // when cropping a background image and snapped.
-        !controlFrame.classList.contains("moving"),
-        "data-title",
-    );
-    void getHandleTitlesAsync(
-        controlFrame,
-        "bloom-ui-canvas-element-move-crop-handle",
-        "Shift",
-    );
+    if (updateHandleTitles) {
+        // We don't need to await these, they are just async so the handle titles can be updated
+        // once the localization manager retrieves them.
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-resize-handle",
+            "Resize",
+        );
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-side-handle",
+            hasText ? "ChangeShape" : "Crop",
+            // We don't need to change it while we're moving the frame, only if we're switching
+            // between text and image. And there's another state we want
+            // when cropping a background image and snapped.
+            !controlFrame.classList.contains("moving"),
+            "data-title",
+        );
+        void getHandleTitlesAsync(
+            controlFrame,
+            "bloom-ui-canvas-element-move-crop-handle",
+            "Shift",
+        );
+    }
     // Text boxes get a little extra padding, making the control frame bigger than
     // the canvas element itself. The extra needed corresponds roughly to the (.less) @sideHandleRadius,
     // but one pixel less seems to be enough to prevent the side handles actually overlapping text,
