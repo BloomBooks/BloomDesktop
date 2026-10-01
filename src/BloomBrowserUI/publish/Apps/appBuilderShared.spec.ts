@@ -20,6 +20,16 @@ describe("appBuilderShared prepare steps", () => {
         ]);
     });
 
+    it("normalizes the Reading App Builder update version, if any", () => {
+        expect(
+            normalizeStatus({ RabUpdateVersion: "14.0.1" }).rabUpdateVersion,
+        ).toBe("14.0.1");
+        expect(
+            normalizeStatus({ rabUpdateVersion: "14.0.1" }).rabUpdateVersion,
+        ).toBe("14.0.1");
+        expect(normalizeStatus({}).rabUpdateVersion).toBeUndefined();
+    });
+
     it("maps prepare websocket stages onto prepare step ids", () => {
         expect(getPrepareStepIdForStage("prepare", "running-installer")).toBe(
             "rab-installed",

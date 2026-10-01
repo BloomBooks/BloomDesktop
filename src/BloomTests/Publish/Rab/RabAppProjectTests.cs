@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Bloom.Collection;
@@ -561,6 +563,242 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAnAndroidSdkElsewhere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+            };
+            service.InstallSdksOutputLines.Add("Android SDK is already installed at: C:\\sdk");
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.False,
+                "setup: the build tools should not be installed yet"
+            );
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.StartWith("Bloom could not set up the tools it needs to build Android apps.")
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder used the Android SDK in C:\\sdk instead of installing it in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.Not.Contain("rename"),
+                "the user cannot be expected to fix this"
+            );
+            Assert.That(error.Message, Does.Not.Contain("JDK"), "the JDK was installed");
+            Assert.That(
+                service.Commands,
+                Has.Count.EqualTo(1),
+                "Prepare should stop after installing the SDKs"
+            );
+            Assert.That(service.Commands[0], Does.StartWith("-install-sdks-if-needed "));
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_AndNamesTheOtherFolder_WhenRabUsesAJdkElsewhere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesJdk = false,
+            };
+            const string otherJdk = "C:\\Program Files\\Zulu\\zulu-17";
+            service.InstallSdksOutputLines.Add(
+                "JDK folder is already installed with version: 17.0.7"
+            );
+            service.InstallSdksOutputLines.Add("JDK folder: " + otherJdk);
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder used the JDK in {otherJdk} instead of installing it in {service.RabJdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.Not.Contain("Android SDK"),
+                "the Android SDK was installed"
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_AndNamesBloomsFolders_WhenRabInstallsNeitherToolAndSaysWhereNeitherIs()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesJdk = false,
+                InstallSdksCreatesAndroidSdk = false,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder did not install the JDK in {service.RabJdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(error.Message, Does.Not.Contain("used the"));
+        }
+
+        [Test]
+        public async Task BuildAsync_Fails_WhenTheAndroidSdkGoesMissingAndRabReportsBloomsOwnFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            );
+            await service.PrepareAsync();
+            Assert.That(
+                service.AreRabBuildToolsInstalled(),
+                Is.True,
+                "setup: Prepare should have installed the build tools"
+            );
+
+            // The Android SDK goes missing and RAB's reinstall exits 0 without restoring it, even
+            // though it names Bloom's own folder.
+            RobustIO.DeleteDirectoryAndContents(service.RabAndroidSdkInstallFolder);
+            service.InstallSdksCreatesAndroidSdk = false;
+            service.InstallSdksOutputLines.Add(
+                "Android SDK is already installed at: " + service.RabAndroidSdkInstallFolder
+            );
+            var commandCountBeforeBuild = service.Commands.Count;
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.BuildAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    "Bloom could not set up the tools it needs to build Android apps. "
+                        + "Please use Help > Report a Problem so that we can help you. "
+                        + $"Details: Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                service.Commands,
+                Has.Count.EqualTo(commandCountBeforeBuild + 1),
+                "Build should stop after installing the SDKs"
+            );
+            Assert.That(service.Commands.Last(), Does.StartWith("-install-sdks-if-needed "));
+        }
+
+        private const string kBloomRabInstallDirForTests =
+            @"C:\Program Files\SIL\Reading App Builder for Bloom";
+
+        [TestCase(
+            "java",
+            "Reading App Builder - English Books",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            true
+        )]
+        [TestCase(
+            "javaw",
+            "Reading App Builder",
+            kBloomRabInstallDirForTests + @"\runtime\bin\javaw.exe",
+            true
+        )]
+        [TestCase(
+            "java",
+            "Reading App Builder - My Standalone Project",
+            @"C:\Program Files\SIL\Reading App Builder\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase(
+            "msedge",
+            "Reading App Builder - Search",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase(
+            "java",
+            "Some other Java app",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase("java", "Reading App Builder", null, false)]
+        public void IsBloomRabWindow_MatchesOnlyBloomsOwnRabInstall(
+            string processName,
+            string windowTitle,
+            string executablePath,
+            bool expected
+        )
+        {
+            Assert.That(
+                RabProjectService.IsBloomRabWindow(
+                    processName,
+                    windowTitle,
+                    executablePath,
+                    kBloomRabInstallDirForTests
+                ),
+                Is.EqualTo(expected)
+            );
+        }
+
+        private static List<RabBookPublishInfo> MakeOneTrackedBook(
+            TemporaryFolder tempFolder,
+            RabWorkspacePaths paths
+        )
+        {
+            var book = new RabBookPublishInfo
+            {
+                BookId = "book-1",
+                FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                Title = "Book One",
+                BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+            };
+            Directory.CreateDirectory(book.FolderPath);
+            return new List<RabBookPublishInfo> { book };
+        }
+
+        [Test]
         public void RunRabCommand_WritesUtf8ArgumentFile_AndInvokesRabWithDashI()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -659,29 +897,6 @@ namespace BloomTests.Publish.Rab
                     _ => @"C:\Users\POLK~1\Documents\KASIM~1"
                 ),
                 Is.EqualTo(@"C:\Users\POLK~1\Documents\KASIM~1\Bloom App Data\RabWork")
-            );
-        }
-
-        [Test]
-        public void GetRabRegistrySubKeys_PrefersBloomInstallerRegistryKey()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(
-                paths,
-                "Sample App",
-                new List<RabBookPublishInfo>()
-            );
-
-            Assert.That(
-                service.GetRabRegistrySubKeys(),
-                Is.EqualTo(
-                    new[]
-                    {
-                        @"Software\SIL\Reading App Builder for Bloom",
-                        @"Software\SIL\Reading App Builder",
-                    }
-                )
             );
         }
 
@@ -2127,6 +2342,40 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public async Task GetStatus_RequiresPrepare_WhenTheInstalledRabIsOlderThanBloomNeeds()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            );
+            await service.PrepareAsync();
+            Assert.That(
+                service.GetStatus().PrepareSteps.All(step => step.Complete),
+                Is.True,
+                "setup: with the current Reading App Builder, Prepare should be complete"
+            );
+            Assert.That(service.GetStatus().RabUpdateVersion, Is.Null);
+
+            service.InstalledRabVersionText = "1.0";
+            var status = service.GetStatus();
+
+            Assert.That(
+                status.RabUpdateVersion,
+                Is.EqualTo(RabProjectService.kRabInstallerVersionNumber.ToString())
+            );
+            AssertPrepareStep(status, "rab-installed", false);
+            Assert.That(
+                status.PrepareSteps.Single(step => step.Id == "rab-installed").IncompleteTooltip,
+                Is.EqualTo(
+                    $"Bloom needs Reading App Builder {RabProjectService.kRabInstallerVersionNumber}. Click Prepare to update it."
+                )
+            );
+        }
+
+        [Test]
         public async Task GetStatus_ReportsCompletedPrepareSteps_AfterPrepareAsync()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -2217,6 +2466,546 @@ namespace BloomTests.Publish.Rab
                 service.Progress.Messages.Select(message => message.Item1),
                 Does.Contain("Reading App Builder installation complete.")
             );
+        }
+
+        [TestCase("13.9", "14.0", true)]
+        [TestCase("14.0", "14.6", true)]
+        [TestCase("14.6", "14.10", true)]
+        [TestCase("14.0", "14.0.1", true)]
+        [TestCase("14.0.1", "14.0.2", true)]
+        [TestCase("14.0.1", "14.0.1", false)]
+        [TestCase("14.0.1", "14.0", false)]
+        [TestCase("14", "14.6", true)]
+        [TestCase("14.6", "14.6", false)]
+        [TestCase("14.10", "14.6", false)]
+        [TestCase("15", "14.6", false)]
+        [TestCase(null, "14.6", false)]
+        [TestCase("", "14.6", false)]
+        [TestCase("not a version", "14.6", false)]
+        public void IsRabVersionOlderThan_ComparesNumerically_AndTreatsUnknownAsCurrent(
+            string installedVersionText,
+            string version,
+            bool expected
+        )
+        {
+            Assert.That(
+                RabProjectService.IsRabVersionOlderThan(installedVersionText, new Version(version)),
+                Is.EqualTo(expected)
+            );
+        }
+
+        [Test]
+        public async Task PrepareAsync_InstallsTheNewerRab_WhenAnOlderVersionIsInstalled()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+            };
+            Assert.That(
+                service.IsRabInstalledForPrepare(),
+                Is.True,
+                "setup: an (older) Reading App Builder for Bloom should already be installed"
+            );
+
+            Assert.That(
+                service.GetStatus().RabUpdateVersion,
+                Is.Not.Null,
+                "setup: the Apps screen should ask for the update"
+            );
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Has.Some.StartsWith("Updating Reading App Builder from version 1.0 to ")
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+            var status = service.GetStatus();
+            Assert.That(status.RabUpdateVersion, Is.Null, "the update should be done");
+            Assert.That(status.PrepareSteps.All(step => step.Complete), Is.True);
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_WhenTheInstalledVersionIsStillOldAfterTheUpdate()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                InstalledRabVersionTextAfterInstall = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    $"Bloom could not update Reading App Builder. Please use Help > Report a Problem so that we can help you. Details: the installer finished, but the installed version is still 1.0, not {RabProjectService.kRabInstallerVersionNumber}."
+                )
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [TestCase("999.0")]
+        [TestCase(null)]
+        public async Task PrepareAsync_DoesNotReinstallRab_WhenTheInstalledVersionIsCurrentOrUnknown(
+            string installedVersionText
+        )
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = installedVersionText,
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public async Task PrepareAsync_Stops_WhenTheUpdateCannotBeDownloaded()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = null,
+                RabSetupInstallerDownloadPathToReturn = null,
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain(
+                    $"Bloom could not download Reading App Builder {RabProjectService.kRabInstallerVersionNumber}. Please check that this computer is connected to the internet and click Prepare again."
+                )
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+            Assert.That(service.Commands, Is.Empty, "Prepare should not go on to the build tools");
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_WhenTheUpdateInstallerFails_EvenThoughTheOldRabIsStillThere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 1."
+                ),
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                service.IsRabInstalledForPrepare(),
+                Is.True,
+                "setup: the older Reading App Builder's files are still there"
+            );
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    "Bloom could not update Reading App Builder. Please use Help > Report a Problem so that we can help you. Details: Reading App Builder installer exited with code 1."
+                )
+            );
+            Assert.That(
+                error.InnerException?.Message,
+                Is.EqualTo("Reading App Builder installer exited with code 1.")
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_GivesAPlainMessage_WhenInstallingRabFails()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                IsRabInstalledForPrepareResult = false,
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 2."
+                ),
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    "Bloom could not install Reading App Builder. Please use Help > Report a Problem so that we can help you. Details: Reading App Builder installer exited with code 2."
+                )
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_GivesThePlainBuildToolsMessage_WhenTheInstallSdksCommandFails()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var rabFailure = new ApplicationException("cmd.exe exited with code 1.");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+                InstallSdksFailure = rabFailure,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.StartWith("Bloom could not set up the tools it needs to build Android apps.")
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.EndWith("Reading App Builder reported: cmd.exe exited with code 1.")
+            );
+            Assert.That(error.InnerException, Is.SameAs(rabFailure));
+        }
+
+        [Test]
+        public void ReportFailure_ShowsBloomsOwnWrapperMessage_NotTheErrorItWraps()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+            var wrapped = new ApplicationException(
+                "Bloom could not update Reading App Builder.",
+                new ApplicationException("Reading App Builder installer exited with code 1.")
+            );
+
+            service.ReportFailure("Prepare", wrapped);
+
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare failed: Bloom could not update Reading App Builder.")
+            );
+        }
+
+        [Test]
+        public void ReportFailure_UnwrapsAsyncWrapperExceptions()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var service = new TestRabProjectService(
+                new RabWorkspacePaths(tempFolder.Path),
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            );
+
+            service.ReportFailure(
+                "Build",
+                new AggregateException(new ApplicationException("The real problem."))
+            );
+
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Build failed: The real problem.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_KeepsTheOriginalError_WhenRabItselfCannotBeFound()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var notFound = new ApplicationException(
+                "Bloom could not find Reading App Builder at C:\\Program Files\\SIL\\Reading App Builder for Bloom."
+            );
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+                InstallSdksFailure = notFound,
+                RabLauncherPathToReturn = null,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error,
+                Is.SameAs(notFound),
+                "a missing Reading App Builder should not be reported as missing build tools"
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_KeepsTheOriginalError_WhenTheInstallSdksCommandFailsButTheToolsAreThere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var rabFailure = new ApplicationException("cmd.exe exited with code 1.");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksFailure = rabFailure,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error,
+                Is.SameAs(rabFailure),
+                "a failure unrelated to missing build tools should not be relabeled"
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_Fails_WhenTheUpdateDownloadTimesOut()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = null,
+                // What HttpClient throws when its timeout runs out.
+                DownloadFailure = new TaskCanceledException("The request timed out."),
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    $"Bloom could not download Reading App Builder {RabProjectService.kRabInstallerVersionNumber}. Please check that this computer is connected to the internet and click Prepare again. Details: The request timed out."
+                )
+            );
+            Assert.That(error.InnerException, Is.InstanceOf<TaskCanceledException>());
+        }
+
+        [Test]
+        public void DownloadRabSetupInstallerFromUrl_LeavesNoInstallerBehind_WhenTheDownloadIsInterrupted()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                InstallerHttpHandler = new FixedResponseHandler(
+                    new FailingAfterSomeBytesStream(1000)
+                ),
+            };
+
+            Assert.Throws<IOException>(() =>
+                service.DownloadRabSetupInstallerFromUrl(installerPath, (_, _) => { })
+            );
+
+            Assert.That(RobustFile.Exists(installerPath), Is.False);
+            Assert.That(RobustFile.Exists(installerPath + ".partial"), Is.False);
+        }
+
+        [Test]
+        public void DownloadRabSetupInstallerFromUrl_WritesTheInstaller_WhenTheDownloadCompletes()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            var bytes = Encoding.UTF8.GetBytes("installer bytes");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                new List<RabBookPublishInfo>()
+            )
+            {
+                InstallerHttpHandler = new FixedResponseHandler(new MemoryStream(bytes)),
+            };
+
+            service.DownloadRabSetupInstallerFromUrl(installerPath, (_, _) => { });
+
+            Assert.That(RobustFile.ReadAllBytes(installerPath), Is.EqualTo(bytes));
+            Assert.That(RobustFile.Exists(installerPath + ".partial"), Is.False);
+        }
+
+        /// <summary>
+        /// Answers every request with a 200 whose body is the given stream
+        /// </summary>
+        private class FixedResponseHandler : HttpMessageHandler
+        {
+            private readonly Stream _body;
+
+            public FixedResponseHandler(Stream body)
+            {
+                _body = body;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken
+            )
+            {
+                return Task.FromResult(
+                    new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                    {
+                        Content = new StreamContent(_body),
+                    }
+                );
+            }
+        }
+
+        /// <summary>
+        /// A readable stream that yields some bytes and then throws, like a dropped connection
+        /// </summary>
+        private class FailingAfterSomeBytesStream : Stream
+        {
+            private long _remaining;
+
+            public FailingAfterSomeBytesStream(long bytesBeforeFailure)
+            {
+                _remaining = bytesBeforeFailure;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (_remaining <= 0)
+                    throw new IOException("The connection was reset.");
+                var n = (int)Math.Min(count, _remaining);
+                _remaining -= n;
+                return n;
+            }
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush() { }
+
+            public override long Seek(long offset, SeekOrigin origin) =>
+                throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) =>
+                throw new NotSupportedException();
         }
 
         [Test]
@@ -2570,6 +3359,17 @@ namespace BloomTests.Publish.Rab
             public List<string> UninstallCommands { get; } = new List<string>();
             public List<string> RunProcessCommands { get; } = new List<string>();
             public int InstallCommandCount { get; private set; }
+
+            // What the simulated -install-sdks-if-needed command installs and prints. Turning an
+            // install off mimics Reading App Builder exiting 0 without putting that tool in
+            // Bloom's folder, e.g. because it found one in C:\sdk (BL-16943).
+            public bool InstallSdksCreatesJdk { get; set; } = true;
+            public bool InstallSdksCreatesAndroidSdk { get; set; } = true;
+            public List<string> InstallSdksOutputLines { get; } = new List<string>();
+
+            // When set, the simulated -install-sdks-if-needed command then fails with this, as
+            // RunProcess does when RAB exits non-zero (e.g. a download failed while offline).
+            public Exception InstallSdksFailure { get; set; }
             public RabAdbConnectedDevice ConnectedDeviceToReturn { get; set; } =
                 new RabAdbConnectedDevice
                 {
@@ -2677,6 +3477,10 @@ namespace BloomTests.Publish.Rab
                         Path.Combine(GetRabJdkRootPath(), "lib", "tzdb.dat")
                     );
                     CreateBuildToolMarkers();
+                    foreach (var line in InstallSdksOutputLines)
+                        ReportProcessOutputLine(line);
+                    if (InstallSdksFailure != null)
+                        throw InstallSdksFailure;
                     return;
                 }
 
@@ -2762,14 +3566,29 @@ namespace BloomTests.Publish.Rab
                 return IsRabInstalledForPrepareResult;
             }
 
+            // The installed Reading App Builder for Bloom version the test pretends to have. Null
+            // (unknown) means Prepare never updates it, so tests don't depend on this machine's
+            // real registry.
+            public string InstalledRabVersionText { get; set; }
+
+            internal override string GetInstalledRabVersionText()
+            {
+                return InstalledRabVersionText;
+            }
+
             internal override string FindRabSetupInstallerPath()
             {
                 return RabSetupInstallerPathToReturn;
             }
 
+            // When set, the simulated installer download throws this (e.g. a timeout).
+            public Exception DownloadFailure { get; set; }
+
             internal override string DownloadRabSetupInstaller()
             {
                 DownloadedRabSetupInstallerPaths.Add(RabSetupInstallerDownloadPathToReturn);
+                if (DownloadFailure != null)
+                    throw DownloadFailure;
 
                 if (!string.IsNullOrWhiteSpace(RabSetupInstallerDownloadPathToReturn))
                 {
@@ -2802,9 +3621,32 @@ namespace BloomTests.Publish.Rab
                 InstalledRabFromSetupPaths.Add(installerPath);
                 if (LaunchExternalTargetException != null)
                     throw LaunchExternalTargetException;
+                if (InstallerFailure != null)
+                    throw InstallerFailure;
 
                 IsRabInstalledForPrepareResult = true;
+                InstalledRabVersionText =
+                    InstalledRabVersionTextAfterInstall
+                    ?? RabProjectService.kRabInstallerVersionNumber.ToString();
             }
+
+            // The version the installed Reading App Builder reports after InstallRabFromSetup;
+            // by default, the version Bloom installs.
+            public string InstalledRabVersionTextAfterInstall { get; set; }
+
+            // When set, the real download code talks to this handler instead of the network.
+            public HttpMessageHandler InstallerHttpHandler { get; set; }
+
+            internal override HttpClient CreateRabInstallerHttpClient()
+            {
+                return InstallerHttpHandler == null
+                    ? base.CreateRabInstallerHttpClient()
+                    : new HttpClient(InstallerHttpHandler, false);
+            }
+
+            // When set, the simulated installer starts but then fails with this exception, leaving
+            // any installed Reading App Builder in place.
+            public Exception InstallerFailure { get; set; }
 
             internal override string GetRabInstallerStagingDirectory()
             {
@@ -2878,6 +3720,22 @@ namespace BloomTests.Publish.Rab
 
             private void CreateBuildToolMarkers()
             {
+                if (InstallSdksCreatesJdk)
+                    CreateJdkMarkers();
+                if (InstallSdksCreatesAndroidSdk)
+                {
+                    var adbPath = Path.Combine(
+                        RabAndroidSdkInstallFolder,
+                        "platform-tools",
+                        "adb.exe"
+                    );
+                    Directory.CreateDirectory(Path.GetDirectoryName(adbPath));
+                    RobustFile.WriteAllText(adbPath, "adb");
+                }
+            }
+
+            private void CreateJdkMarkers()
+            {
                 var javaPath = Path.Combine(
                     RabJdkInstallFolder,
                     "zulu17.42.19-ca-jdk17.0.7-win_x64",
@@ -2895,10 +3753,6 @@ namespace BloomTests.Publish.Rab
                 );
                 Directory.CreateDirectory(Path.GetDirectoryName(tzdbPath));
                 RobustFile.WriteAllText(tzdbPath, "tzdb");
-
-                var adbPath = Path.Combine(RabAndroidSdkInstallFolder, "platform-tools", "adb.exe");
-                Directory.CreateDirectory(Path.GetDirectoryName(adbPath));
-                RobustFile.WriteAllText(adbPath, "adb");
             }
 
             private List<RabBookPublishInfo> ExportBooks(
