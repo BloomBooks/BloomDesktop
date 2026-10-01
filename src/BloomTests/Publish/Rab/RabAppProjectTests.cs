@@ -728,6 +728,58 @@ namespace BloomTests.Publish.Rab
             Assert.That(service.Commands.Last(), Does.StartWith("-install-sdks-if-needed "));
         }
 
+        private const string kBloomRabInstallDirForTests =
+            @"C:\Program Files\SIL\Reading App Builder for Bloom";
+
+        [TestCase(
+            "java",
+            "Reading App Builder - English Books",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            true
+        )]
+        [TestCase(
+            "javaw",
+            "Reading App Builder",
+            kBloomRabInstallDirForTests + @"\runtime\bin\javaw.exe",
+            true
+        )]
+        [TestCase(
+            "java",
+            "Reading App Builder - My Standalone Project",
+            @"C:\Program Files\SIL\Reading App Builder\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase(
+            "msedge",
+            "Reading App Builder - Search",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase(
+            "java",
+            "Some other Java app",
+            kBloomRabInstallDirForTests + @"\runtime\bin\java.exe",
+            false
+        )]
+        [TestCase("java", "Reading App Builder", null, false)]
+        public void IsBloomRabWindow_MatchesOnlyBloomsOwnRabInstall(
+            string processName,
+            string windowTitle,
+            string executablePath,
+            bool expected
+        )
+        {
+            Assert.That(
+                RabProjectService.IsBloomRabWindow(
+                    processName,
+                    windowTitle,
+                    executablePath,
+                    kBloomRabInstallDirForTests
+                ),
+                Is.EqualTo(expected)
+            );
+        }
+
         private static List<RabBookPublishInfo> MakeOneTrackedBook(
             TemporaryFolder tempFolder,
             RabWorkspacePaths paths

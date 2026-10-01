@@ -2901,8 +2901,17 @@ namespace Bloom.Publish.Rab
             return Path.Combine(GetBloomOwnedRabToolchainRoot(), "appdata");
         }
 
+        /// <summary>
+        /// Brings a running window of Bloom's own Reading App Builder to the front. Returns false
+        /// if there is none, including when only a standalone RAB the user installed is open.
+        /// </summary>
         internal virtual bool TryBringRunningRabToFront()
         {
+            var rabLauncher = FindRabLauncherPath();
+            if (string.IsNullOrWhiteSpace(rabLauncher))
+                return false;
+            var rabInstallDir = Path.GetDirectoryName(rabLauncher);
+
             var processes = Process.GetProcesses();
             try
             {
@@ -2913,29 +2922,13 @@ namespace Bloom.Publish.Rab
                         if (process.MainWindowHandle == IntPtr.Zero)
                             continue;
 
-                        // RAB is a Java (Eclipse) app. Depending on how it is launched, its
-                        // window may belong to either java.exe or the console-less javaw.exe, so
-                        // accept both. This keeps us from matching, e.g., a browser tab whose
-                        // title happens to contain "Reading App Builder".
                         if (
-                            !string.Equals(
+                            !IsBloomRabWindow(
                                 process.ProcessName,
-                                "java",
-                                StringComparison.OrdinalIgnoreCase
+                                process.MainWindowTitle,
+                                process.MainModule?.FileName,
+                                rabInstallDir
                             )
-                            && !string.Equals(
-                                process.ProcessName,
-                                "javaw",
-                                StringComparison.OrdinalIgnoreCase
-                            )
-                        )
-                            continue;
-
-                        if (
-                            process.MainWindowTitle.IndexOf(
-                                "Reading App Builder",
-                                StringComparison.OrdinalIgnoreCase
-                            ) < 0
                         )
                             continue;
 
@@ -2957,6 +2950,34 @@ namespace Bloom.Publish.Rab
                 foreach (var process in processes)
                     process.Dispose();
             }
+        }
+
+        /// <summary>
+        /// True if a process's main window belongs to Bloom's own Reading App Builder: a Java
+        /// process whose window title names Reading App Builder and whose program is inside Bloom's
+        /// RAB install folder. A standalone RAB the user has open does not count (BL-16943).
+        /// </summary>
+        internal static bool IsBloomRabWindow(
+            string processName,
+            string windowTitle,
+            string executablePath,
+            string rabInstallDir
+        )
+        {
+            // RAB is a Java (Eclipse) app. Depending on how it is launched, its
+            // window may belong to either java.exe or the console-less javaw.exe, so
+            // accept both. This keeps us from matching, e.g., a browser tab whose
+            // title happens to contain "Reading App Builder".
+            var isJava =
+                string.Equals(processName, "java", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(processName, "javaw", StringComparison.OrdinalIgnoreCase);
+            return isJava
+                && (windowTitle ?? string.Empty).IndexOf(
+                    "Reading App Builder",
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0
+                && !string.IsNullOrWhiteSpace(executablePath)
+                && IsSameOrInsideFolder(executablePath, rabInstallDir);
         }
 
         internal virtual string GetRabSettingsFilePath()
