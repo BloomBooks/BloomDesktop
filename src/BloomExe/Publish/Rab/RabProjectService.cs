@@ -39,7 +39,11 @@ namespace Bloom.Publish.Rab
         private const string kBloomOwnedRabToolchainFolderName = "ReadingAppBuilder";
         private const string kRabInstallFolderParentName = "SIL";
         private const string kBloomRabInstallFolderName = "Reading App Builder for Bloom";
-        private const string kRabRegistrySubKey = @"Software\SIL\Reading App Builder";
+
+        // Bloom only ever uses the private "Reading App Builder for Bloom" install, which it
+        // installs itself, along with its own JDK and Android SDK. It never falls back to a
+        // standalone Reading App Builder the user has installed: that one's version and the
+        // tools it uses are outside Bloom's control (BL-16148, BL-16943).
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
@@ -657,15 +661,17 @@ namespace Bloom.Publish.Rab
         }
 
         /// <summary>
-        /// Explains, for each of the JDK and Android SDK that is missing from Bloom's folders after
-        /// -install-sdks-if-needed, what went wrong. When RAB's output says it used a copy in some
-        /// other folder, the message names that folder and tells the user how to get past it.
+        /// The error shown when the JDK or Android SDK is missing from Bloom's folders after
+        /// -install-sdks-if-needed. It opens with a plain sentence for the user, who cannot fix this
+        /// themselves, then gives details for whoever handles their problem report: for each missing
+        /// tool, whether RAB said it used a copy in some other folder (and which), or just did not
+        /// install it.
         /// </summary>
         internal string DescribeMissingRabBuildTools(IReadOnlyList<string> rabOutput)
         {
-            var problems = new List<string>();
+            var details = new List<string>();
             if (!IsRabJdkInstalled())
-                problems.Add(
+                details.Add(
                     DescribeMissingRabBuildTool(
                         "JDK",
                         GetRabJdkInstallFolder(),
@@ -673,14 +679,17 @@ namespace Bloom.Publish.Rab
                     )
                 );
             if (!IsRabAndroidSdkInstalled())
-                problems.Add(
+                details.Add(
                     DescribeMissingRabBuildTool(
                         "Android SDK",
                         GetRabAndroidSdkInstallFolder(),
                         FindFolderReportedByRab(rabOutput, "Android SDK is already installed at:")
                     )
                 );
-            return string.Join(" ", problems);
+            return "Bloom could not set up the tools it needs to build Android apps. "
+                + "Please use Help > Report a Problem so that we can help you. "
+                + "Details: "
+                + string.Join(" ", details);
         }
 
         private static string DescribeMissingRabBuildTool(
@@ -693,11 +702,9 @@ namespace Bloom.Publish.Rab
                 string.IsNullOrWhiteSpace(folderReportedByRab)
                 || IsSameOrInsideFolder(folderReportedByRab, bloomFolder)
             )
-                return $"Reading App Builder finished without installing the {toolName} that Bloom needs in {bloomFolder}.";
+                return $"Reading App Builder did not install the {toolName} in {bloomFolder}.";
 
-            return $"Reading App Builder used the {toolName} in {folderReportedByRab} instead of installing one for Bloom in {bloomFolder}, but Bloom can only use its own copy. "
-                + $"To fix this, rename {folderReportedByRab} (for example to {folderReportedByRab.TrimEnd('\\', '/')}-old) and click Prepare again. "
-                + "Any other program that uses that folder may not work until you rename it back.";
+            return $"Reading App Builder used the {toolName} in {folderReportedByRab} instead of installing it in {bloomFolder}.";
         }
 
         /// <summary>
@@ -2682,11 +2689,6 @@ namespace Bloom.Publish.Rab
             return $"{byteCount} B";
         }
 
-        internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
-        {
-            return new[] { kBloomRabRegistrySubKey, kRabRegistrySubKey };
-        }
-
         internal static bool IsUserCanceledShellLaunch(Win32Exception error)
         {
             return error != null && error.NativeErrorCode == kUserCanceledShellLaunchErrorCode;
@@ -3876,6 +3878,10 @@ namespace Bloom.Publish.Rab
             return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         }
 
+        /// <summary>
+        /// Reads a value from the Reading App Builder for Bloom registry key (64-bit view first,
+        /// then 32-bit). Returns null if the key or value is missing or unreadable.
+        /// </summary>
         internal virtual string GetRabRegistryValue(string valueName)
         {
             try
@@ -3883,13 +3889,10 @@ namespace Bloom.Publish.Rab
                 foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
                 {
                     using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-                    foreach (var subKeyPath in GetRabRegistrySubKeys())
-                    {
-                        using var rabKey = baseKey.OpenSubKey(subKeyPath);
-                        var value = rabKey?.GetValue(valueName) as string;
-                        if (!string.IsNullOrWhiteSpace(value))
-                            return value;
-                    }
+                    using var rabKey = baseKey.OpenSubKey(kBloomRabRegistrySubKey);
+                    var value = rabKey?.GetValue(valueName) as string;
+                    if (!string.IsNullOrWhiteSpace(value))
+                        return value;
                 }
             }
             catch (Exception error)
