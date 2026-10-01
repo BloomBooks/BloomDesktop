@@ -423,10 +423,14 @@ namespace Bloom.Publish.BloomPub
                     ImageTransparencyMode.Auto => "_t",
                     _ => "_r", // None mode: resize / format-conversion only
                 };
-                var newFilename = GetUniqueNewFilename(
-                    Path.GetFileNameWithoutExtension(filename),
+                // The mode suffix keeps different modes apart, but two sources whose names
+                // differ only by extension (e.g. "photo.jpg" and "photo.png", which the AI image
+                // editor readily creates) can both come out as "photo_r.jpg" in the same mode, and
+                // the book may already contain a file with that name. So we take an unused name,
+                // adding a counter if necessary (e.g. "photo_r1.jpg"). See BL-16954.
+                var newFilename = ImageUtils.GetUnusedFilename(
                     bookFolderPath,
-                    modeSuffix,
+                    Path.GetFileNameWithoutExtension(filename) + modeSuffix,
                     adjustedExt
                 );
                 RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
@@ -438,33 +442,6 @@ namespace Bloom.Publish.BloomPub
 
             processedImages[cacheKey] = result;
             return result;
-        }
-
-        /// <summary>
-        /// Avoid overwriting an existing file (e.g. a different mode already created it).
-        /// For example, if "photo.jpg" is resized to "photo_r.jpg" and then later a different
-        /// "photo.png" is resized to "photo_r.png" and then changed to jpeg, we don't want to
-        /// overwrite the original resized jpg with the new jpg.  Instead, we add a numeric suffix
-        /// to the basename.
-        /// </summary>
-        /// <remarks>
-        /// See BL-16954.
-        /// </remarks>
-        internal static string GetUniqueNewFilename(
-            string basename,
-            string bookFolderPath,
-            string modeSuffix,
-            string adjustedExt
-        )
-        {
-            var newFilename = basename + modeSuffix + adjustedExt;
-            int i = 1;
-            while (RobustFile.Exists(Path.Combine(bookFolderPath, newFilename)))
-            {
-                newFilename = basename + "_" + i + modeSuffix + adjustedExt;
-                i++;
-            }
-            return newFilename;
         }
 
         private const string kBackgroundImage = "background-image:url('"; // must match format string in HtmlDom.SetImageElementUrl()

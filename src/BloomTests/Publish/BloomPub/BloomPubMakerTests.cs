@@ -2596,10 +2596,10 @@ namespace BloomTests.Publish.BloomPub
         [Test]
         public void CompressImages_SameBasenameJpgAndPng_BothReferencesResolveToDistinctFiles()
         {
-            // BL-16954: photo.jpg and photo.png share the same basename. The large images
-            // ensure both are resized and the PNG is converted to JPEG, so both outputs
-            // compete for photo_r.jpg. GetUniqueNewFilename must assign distinct names so
-            // neither file overwrites the other.
+            // BL-16954: photo.jpg and photo.png share the same basename. Both are large opaque
+            // photos, so both are resized and the PNG is converted to JPEG; both outputs then
+            // compete for photo_r.jpg.
+            // ProcessImageFile must assign distinct names so neither file overwrites the other.
             const string bodyContent =
                 @"<div class='bloom-page A5Portrait' id='page-jpg'>
                     <div class='marginBox'>
@@ -2619,22 +2619,19 @@ namespace BloomTests.Publish.BloomPub
                 bookHeadContent: kMinimumValidBookHeadContent,
                 actionsOnFolderBeforeCompressing: folderPath =>
                 {
-                    // Large images ensure both need resize; the PNG converts to JPEG,
-                    // making both outputs .jpg and triggering the basename collision.
-                    RobustFile.Copy(
-                        FileLocationUtilities.GetFileDistributedWithApplication(
-                            _pathToTestImages,
-                            "LakePendOreille.jpg"
-                        ),
-                        Path.Combine(folderPath, "photo.jpg")
+                    var lakePhoto = FileLocationUtilities.GetFileDistributedWithApplication(
+                        _pathToTestImages,
+                        "LakePendOreille.jpg"
                     );
-                    RobustFile.Copy(
-                        FileLocationUtilities.GetFileDistributedWithApplication(
-                            _pathToTestImages,
-                            "Othello 199.png"
-                        ),
-                        Path.Combine(folderPath, "photo.png")
-                    );
+                    RobustFile.Copy(lakePhoto, Path.Combine(folderPath, "photo.jpg"));
+                    // The same photo saved as a PNG: large and opaque, so it is resized and
+                    // converted to JPEG, making both outputs .jpg.
+                    using (var image = Image.FromFile(lakePhoto))
+                        RobustImageIO.SaveImage(
+                            image,
+                            Path.Combine(folderPath, "photo.png"),
+                            ImageFormat.Png
+                        );
                 },
                 assertionsOnZipArchive: paramObj =>
                 {
@@ -2677,16 +2674,17 @@ namespace BloomTests.Publish.BloomPub
                         "photo.jpg and photo.png must not overwrite each other"
                     );
 
-                    // The two output files must be resized and converted to JPEG, so both should end with "_r.jpg".
+                    // Both outputs are JPEGs in the same mode, so both start out as "photo_r.jpg";
+                    // the second one processed gets a counter.
                     Assert.That(
                         jpgUrl,
                         Is.EqualTo("photo_r.jpg"),
-                        "jpgUrl should be resized to 'photo_r.jpg'"
+                        "photo.jpg should be published as 'photo_r.jpg'"
                     );
                     Assert.That(
                         pngUrl,
-                        Is.EqualTo("photo_1_r.jpg"),
-                        "pngUrl should be resized to 'photo_1_r.jpg'"
+                        Is.EqualTo("photo_r1.jpg"),
+                        "photo.png should be published as 'photo_r1.jpg'"
                     );
 
                     // Both output files must be present in the archive.
@@ -2702,44 +2700,6 @@ namespace BloomTests.Publish.BloomPub
                     );
                 }
             );
-        }
-
-        [Test]
-        public void GetUniqueNewFilename_NoConflict_ReturnsSimpleName()
-        {
-            using (var folder = new TemporaryFolder("GetUniqueNewFilename_NoConflict"))
-            {
-                // No file exists yet, so no numeric suffix is needed.
-                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
-                Assert.That(result, Is.EqualTo("photo_r.jpg"));
-            }
-        }
-
-        [Test]
-        public void GetUniqueNewFilename_OneConflict_AddsNumericSuffix()
-        {
-            using (var folder = new TemporaryFolder("GetUniqueNewFilename_OneConflict"))
-            {
-                // Simulate a previous image already occupying "photo_r.jpg".
-                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_r.jpg"), "dummy");
-
-                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
-                Assert.That(result, Is.EqualTo("photo_1_r.jpg"));
-            }
-        }
-
-        [Test]
-        public void GetUniqueNewFilename_TwoConflicts_IncrementsUntilUnique()
-        {
-            using (var folder = new TemporaryFolder("GetUniqueNewFilename_TwoConflicts"))
-            {
-                // Both "photo_r.jpg" and "photo_1_r.jpg" already exist.
-                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_r.jpg"), "dummy");
-                RobustFile.WriteAllText(Path.Combine(folder.Path, "photo_1_r.jpg"), "dummy");
-
-                var result = BloomPubMaker.GetUniqueNewFilename("photo", folder.Path, "_r", ".jpg");
-                Assert.That(result, Is.EqualTo("photo_2_r.jpg"));
-            }
         }
     }
 }
