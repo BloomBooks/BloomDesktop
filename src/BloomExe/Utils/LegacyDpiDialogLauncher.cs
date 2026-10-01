@@ -23,9 +23,6 @@ namespace Bloom.Utils
         [DllImport("user32.dll")]
         private static extern bool AreDpiAwarenessContextsEqual(IntPtr a, IntPtr b);
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetThreadDpiAwarenessContext();
-
         private sealed class DpiAwarenessScope : IDisposable
         {
             private readonly IntPtr _previousContext;
@@ -76,30 +73,6 @@ namespace Bloom.Utils
             catch (EntryPointNotFoundException)
             {
                 return false; // pre-1607 Windows; Bloom is not mixing awareness there either
-            }
-            catch (DllNotFoundException)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// True while the current thread is inside EnterLegacyDpiScope (or otherwise runs with a DPI
-        /// awareness other than PerMonitorV2), so windows created now get that awareness. Like
-        /// IsWindowLegacyDpiAware, "we cannot tell" answers false.
-        /// </summary>
-        public static bool IsThreadLegacyDpiAware()
-        {
-            try
-            {
-                var context = GetThreadDpiAwarenessContext();
-                if (context == IntPtr.Zero)
-                    return false;
-                return !AreDpiAwarenessContextsEqual(context, PerMonitorAwareV2DpiContext);
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return false;
             }
             catch (DllNotFoundException)
             {

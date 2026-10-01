@@ -205,11 +205,12 @@ What to know:
   so it lands on the developer's screen even in a headless run.
 - **`close` really closes.** `close -Window Shell` shuts Bloom down exactly like the title-bar
   X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
-- **The dialog's own WebView2 and CDP.** Under `--automation` or `--e2e` (so any Bloom the launcher
-  or the suite started), every browser built on the UI thread shares one WebView2 environment, so
-  the dialogs' pages are targets on the same CDP port as the shell. A Bloom started without either
-  flag gives each ReactControl its own browser process, all asking for the same port: only one of
-  them gets it, and the others are invisible over CDP.
+- **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
+  WebView2 environment and browser process, and each is given the same
+  `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
+  the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
+  closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
+  dialog opens or closes rather than holding on to a page handle.
 - **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
   are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
   awareness mismatch against the shared e2e environment) before writing a test that opens it.
@@ -258,8 +259,7 @@ root in any target. Never leave one on screen and never move past it silently.
   finds the dialog by DOM (so it never closes a legitimate modal), clicks its own "Learn More" to
   gather the exception and stack, prints them, and closes it with the same action as its Close
   button (`POST /bloom/api/common/closeReactDialog`), which does not submit. It drains a backlog,
-  up to a cap, and reports `stillShowing`, the number of problem dialogs left on screen. If
-  closing does not take and nothing is still generating them, stop the Bloom process.
+  up to a cap.
 - **Never click Submit or POST `problemReport/submit`** in automation: that sends a report, with
   a screenshot and the book, to Bloom's servers.
 - A problem that reappears after being closed is a real recurring error in the code under test;
