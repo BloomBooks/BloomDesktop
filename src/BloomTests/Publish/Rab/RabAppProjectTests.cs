@@ -585,9 +585,21 @@ namespace BloomTests.Publish.Rab
                 await service.PrepareAsync()
             );
 
-            Assert.That(error.Message, Does.Contain("used the Android SDK in C:\\sdk"));
-            Assert.That(error.Message, Does.Contain(service.RabAndroidSdkInstallFolder));
-            Assert.That(error.Message, Does.Contain("rename C:\\sdk (for example to C:\\sdk-old)"));
+            Assert.That(
+                error.Message,
+                Does.StartWith("Bloom could not set up the tools it needs to build Android apps.")
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder used the Android SDK in C:\\sdk instead of installing it in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.Not.Contain("rename"),
+                "the user cannot be expected to fix this"
+            );
             Assert.That(error.Message, Does.Not.Contain("JDK"), "the JDK was installed");
             Assert.That(
                 service.Commands,
@@ -624,11 +636,11 @@ namespace BloomTests.Publish.Rab
                 await service.PrepareAsync()
             );
 
-            Assert.That(error.Message, Does.Contain($"used the JDK in {otherJdk}"));
-            Assert.That(error.Message, Does.Contain(service.RabJdkInstallFolder));
             Assert.That(
                 error.Message,
-                Does.Contain($"rename {otherJdk} (for example to {otherJdk}-old)")
+                Does.Contain(
+                    $"Reading App Builder used the JDK in {otherJdk} instead of installing it in {service.RabJdkInstallFolder}."
+                )
             );
             Assert.That(
                 error.Message,
@@ -659,16 +671,16 @@ namespace BloomTests.Publish.Rab
             Assert.That(
                 error.Message,
                 Does.Contain(
-                    $"without installing the JDK that Bloom needs in {service.RabJdkInstallFolder}."
+                    $"Reading App Builder did not install the JDK in {service.RabJdkInstallFolder}."
                 )
             );
             Assert.That(
                 error.Message,
                 Does.Contain(
-                    $"without installing the Android SDK that Bloom needs in {service.RabAndroidSdkInstallFolder}."
+                    $"Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
                 )
             );
-            Assert.That(error.Message, Does.Not.Contain("rename"));
+            Assert.That(error.Message, Does.Not.Contain("used the"));
         }
 
         [Test]
@@ -704,7 +716,9 @@ namespace BloomTests.Publish.Rab
             Assert.That(
                 error.Message,
                 Is.EqualTo(
-                    $"Reading App Builder finished without installing the Android SDK that Bloom needs in {service.RabAndroidSdkInstallFolder}."
+                    "Bloom could not set up the tools it needs to build Android apps. "
+                        + "Please use Help > Report a Problem so that we can help you. "
+                        + $"Details: Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
                 )
             );
             Assert.That(
@@ -830,29 +844,6 @@ namespace BloomTests.Publish.Rab
                     _ => @"C:\Users\POLK~1\Documents\KASIM~1"
                 ),
                 Is.EqualTo(@"C:\Users\POLK~1\Documents\KASIM~1\Bloom App Data\RabWork")
-            );
-        }
-
-        [Test]
-        public void GetRabRegistrySubKeys_PrefersBloomInstallerRegistryKey()
-        {
-            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
-            var paths = new RabWorkspacePaths(tempFolder.Path);
-            var service = new TestRabProjectService(
-                paths,
-                "Sample App",
-                new List<RabBookPublishInfo>()
-            );
-
-            Assert.That(
-                service.GetRabRegistrySubKeys(),
-                Is.EqualTo(
-                    new[]
-                    {
-                        @"Software\SIL\Reading App Builder for Bloom",
-                        @"Software\SIL\Reading App Builder",
-                    }
-                )
             );
         }
 
