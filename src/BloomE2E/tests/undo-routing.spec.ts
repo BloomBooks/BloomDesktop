@@ -134,21 +134,24 @@ test.describe("undo reaches the mechanism that owns the change", () => {
     }) => {
         await goToPage(page, picturePage.id);
         await setChangeLayoutMode(page, true);
-        const before = await sections(page).count();
+        // Two splits, so that a key handled twice would undo or redo both, and show.
         await splitSection(page, "bottom");
+        const afterOneSplit = await sections(page).count();
+        await splitSection(page, "bottom");
+        const afterTwoSplits = await sections(page).count();
         await waitForUndoAvailableFrom(page, "changeLayout");
         await watchUndoMechanisms(page);
 
         await pressKey(page, "Control+z");
         await expect(
             sections(page),
-            "Ctrl+Z did not undo the split.",
-        ).toHaveCount(before);
+            "Ctrl+Z did not undo exactly the last split.",
+        ).toHaveCount(afterOneSplit);
         await pressKey(page, "Control+y");
         await expect(
             sections(page),
-            "Ctrl+Y did not redo the split, or redid it more than once.",
-        ).toHaveCount(before + 1);
+            "Ctrl+Y did not redo exactly the last split.",
+        ).toHaveCount(afterTwoSplits);
         await expectUndoMechanismCalls(
             page,
             { ...NOTHING_REACHED, stackRedo: 0, ckeditorCommands: [] },
@@ -158,8 +161,8 @@ test.describe("undo reaches the mechanism that owns the change", () => {
         await clickUndoButton(page);
         await expect(
             sections(page),
-            "The Undo button did not undo the split.",
-        ).toHaveCount(before);
+            "The Undo button did not undo exactly the last split.",
+        ).toHaveCount(afterOneSplit);
         await expectUndoMechanismCalls(
             page,
             { ...NOTHING_REACHED, changeLayout: 1 },
