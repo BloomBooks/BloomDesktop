@@ -604,9 +604,11 @@ async function describePressPoint(
 }
 
 /**
- * Press once in the middle of the picture in a picture cell, the way a person does to select the
- * cell and get at its picture, and wait until the table marks that cell selected. One press only,
- * unlike clickCell: a picture that takes a second press to answer is the failure this is for.
+ * Press once in the middle of the picture box in a picture cell, the way a person does to get at
+ * the picture, and wait until the table marks that cell selected and the picture is the selected
+ * canvas element, which is what puts the picture's own toolbar (Choose image and the rest) below
+ * the table. One press only, unlike clickCell: a picture that takes a second press to answer is
+ * the failure this is for.
  */
 export async function clickCellPicture(
     page: Page,
@@ -615,11 +617,12 @@ export async function clickCellPicture(
     tableIndex = 0,
 ): Promise<Locator> {
     const target = await cell(page, row, column, tableIndex);
-    const picture = target.locator(".bloom-imageContainer img").first();
-    await picture.waitFor({ state: "visible", timeout: 30000 });
+    // The picture box, not its <img>: until a picture is chosen the <img> holds the placeholder,
+    // which is not displayed, and what a person sees and clicks is the box.
+    const pictureBox = target.locator(".bloom-canvas").first();
     const box = await requireBox(
-        picture,
-        `the picture in the cell at row ${row}, column ${column}`,
+        pictureBox,
+        `the picture box in the cell at row ${row}, column ${column}`,
     );
     const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     // A real press, for the same reason as in clickCell.
@@ -634,7 +637,52 @@ export async function clickCellPicture(
                 `that cell. ${await describePressPoint(page, target, at)}`,
         );
     }
+    // Bloom marks the selected canvas element data-bloom-active. In a picture cell that is the
+    // picture's own canvas element, inside the cell; the table's canvas element holds the cell.
+    await expect(
+        target.locator('.bloom-canvas-element[data-bloom-active="true"]'),
+        `Pressing the picture in the cell at row ${row}, column ${column} selected the cell but ` +
+            `not its picture, so the picture's toolbar is not on offer.`,
+    ).toHaveCount(1, { timeout: 5000 });
     return target;
+}
+
+/**
+ * Press once in the middle of one language's text box in a cell, the way a person does to start
+ * typing there, and wait until the box has the focus. One press only, unlike clickCell and
+ * typeInCell, which press again when the first does not take: a text cell that ignores the first
+ * click is the failure this is for.
+ */
+export async function clickCellText(
+    page: Page,
+    row: number,
+    column: number,
+    languageTag: string,
+    tableIndex = 0,
+): Promise<Locator> {
+    const target = await cell(page, row, column, tableIndex);
+    const textBox = target
+        .locator(`.bloom-editable[lang="${languageTag}"]`)
+        .first();
+    const box = await requireBox(
+        textBox,
+        `the "${languageTag}" text box in the cell at row ${row}, column ${column}`,
+    );
+    const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    // A real press, for the same reason as in clickCell.
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.mouse.up();
+    try {
+        await expect(textBox).toBeFocused({ timeout: 5000 });
+    } catch {
+        throw new Error(
+            `One click on the "${languageTag}" text box in the cell at row ${row}, column ` +
+                `${column} did not put the caret in it. ` +
+                (await describePressPoint(page, target, at)),
+        );
+    }
+    return textBox;
 }
 
 /** One language's text box inside a cell. */

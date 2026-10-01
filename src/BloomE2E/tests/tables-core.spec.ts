@@ -35,9 +35,11 @@ import {
 } from "../helpers/bookMaking";
 import { waitForBookWithPageCount } from "../helpers/bookHtml";
 import {
+    closeCanvasElementMenu,
     duplicateCanvasElement,
     dragPaletteItemOntoCanvas,
     getCanvasElementCount,
+    getCanvasElementMenuItems,
     getCanvasRect,
     openCanvasTool,
 } from "../helpers/canvasElements";
@@ -60,6 +62,7 @@ import {
     dragTableBy,
     clickCell,
     clickCellPicture,
+    clickCellText,
     clickTableMenuCommand,
     expectCellsTile,
     expectFormatGearInsideCell,
@@ -440,6 +443,26 @@ test.describe("a table on a canvas page", () => {
             ).toHaveCount(1);
         });
 
+        await step(
+            "Press the picture, and check its own toolbar offers Choose image",
+            async () => {
+                // Another cell first: the Cell menu that made the picture cell left it selected,
+                // and a press on a cell that is already selected proves nothing.
+                await clickCell(page, 0, 0);
+                // The press has to reach the picture's own canvas, which makes the picture the
+                // selected canvas element. The canvas the table sits on used to take it and select
+                // the table, so the picture's controls could not be reached at all.
+                await clickCellPicture(page, 1, 1);
+                const commands = await getCanvasElementMenuItems(page);
+                expect(
+                    commands.find((c) => c.id === "EditTab.Image.ChooseImage"),
+                    `The picture's menu should offer Choose image. It offers: ` +
+                        commands.map((c) => c.id).join(", "),
+                ).toEqual({ id: "EditTab.Image.ChooseImage", enabled: true });
+                await closeCanvasElementMenu(page);
+            },
+        );
+
         await step("Choose a picture for the cell", async () => {
             const target = await cell(page, 1, 1);
             await chooseImageFile(page, IMAGE_FILE, target);
@@ -465,26 +488,19 @@ test.describe("a table on a canvas page", () => {
         });
 
         await step(
-            "Press the picture, and check it selects its cell",
+            "Press a text cell once, and check it takes typing",
             async () => {
-                // A cell made a picture cell after the page loaded needs a drawing surface of its
-                // own. Without one, the surface of the canvas the table sits on lies over the
-                // picture and takes the press, and a different cell ends up selected.
-                // Another cell first: the Cell menu that made the picture cell left it selected,
-                // and a press on a cell that is already selected proves nothing.
-                await clickCell(page, 0, 0);
-                await clickCellPicture(page, 1, 1);
+                // One press, not clickCell's retries: after a picture went into a cell, a press on
+                // another cell's text used to start dragging the table instead of putting the caret
+                // there.
+                await clickCellText(page, 0, 1, "en");
+                await typeInCell(page, 0, 1, "en", "Pear");
+                expect(
+                    await getCellText(page, 0, 1, "en"),
+                    "After the picture went in, a text cell should still take typing.",
+                ).toBe("Pear");
             },
         );
-
-        await step("Press a text cell, and check it takes typing", async () => {
-            await clickCell(page, 0, 1);
-            await typeInCell(page, 0, 1, "en", "Pear");
-            expect(
-                await getCellText(page, 0, 1, "en"),
-                "After the picture was pressed, a text cell should still take typing.",
-            ).toBe("Pear");
-        });
     });
 
     test("duplicates the whole table as one canvas element", async ({

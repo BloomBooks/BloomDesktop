@@ -478,7 +478,9 @@ export async function clickCanvasElementMenuItem(
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    await page.keyboard.press("Escape");
+    // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
+    // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.
+    await menu.press("Escape");
     await menu.waitFor({ state: "hidden", timeout: 30000 });
 }
 

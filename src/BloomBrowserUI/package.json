@@ -149,7 +149,7 @@
         "bloom-ai-image-tools": "github:BloomBooks/bloom-ai-image-tools#dist-v0.2.13",
         "bloom-image-gallery": "github:BloomBooks/bloom-image-gallery",
         "bloom-player": "alpha",
-        "bloom-table": "github:BloomBooks/bloom-table#dist-v0.1.0",
+        "bloom-table": "github:BloomBooks/bloom-table#dist-v0.1.1",
         "calculate-aspect-ratio": "0.1.3",
         "clsx": "1.2.1",
         "color-blind": "0.1.1",

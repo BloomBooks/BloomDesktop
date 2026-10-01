@@ -222,6 +222,21 @@ export class CanvasElementPointerInteractions {
             return;
         }
 
+        // A press on the picture in a picture cell belongs to the bloom-canvas that picture is
+        // in, which has this same handler: it makes the picture the active canvas element, so
+        // the toolbar below the cell offers Choose image and the rest. Both listen in the
+        // capture phase and the outer one runs first; left to itself it would start dragging
+        // the canvas element the table sits in, and stop the press before the inner one sees it.
+        const pressedCanvas = (event.target as HTMLElement).closest?.(
+            kBloomCanvasSelector,
+        );
+        if (
+            pressedCanvas &&
+            pressedCanvas !== bloomCanvas &&
+            bloomCanvas.contains(pressedCanvas)
+        )
+            return;
+
         this.gotAMoveWhileMouseDown = false;
 
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
@@ -334,6 +349,28 @@ export class CanvasElementPointerInteractions {
                     startDraggingBubble(new Bubble(newCanvasElement));
                     return;
                 }
+            }
+
+            // A plain press on the text of a table cell is a click into that text. For other text
+            // canvas elements the first press selects the element and may start dragging it, and
+            // only a second press edits; a table is moved by its own chrome, and a cell whose first
+            // click is swallowed reads as a cell that cannot be typed in. So select the table,
+            // count it as being text-edited, and leave the press to the browser, which puts the
+            // caret where it landed.
+            const pressedText = (event.target as HTMLElement).closest?.(
+                ".bloom-cell .bloom-editable",
+            );
+            if (
+                event.button === 0 &&
+                !event.ctrlKey &&
+                pressedText &&
+                bubble.content.contains(pressedText)
+            ) {
+                if (bubble.content !== this.host.getActiveElement())
+                    this.host.setActiveElement(bubble.content);
+                this.host.setCanvasElementWeAreTextEditing(bubble.content);
+                bubble.content.classList.add("bloom-focusedCanvasElement");
+                return;
             }
 
             const canvasElementWeAreEditing =
