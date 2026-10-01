@@ -1066,8 +1066,9 @@ Active, tested (52 tests) and live-verified. What remains:
    first caller by design.
 6. ~~Where `clearPageScopedEntries()` hangs off~~ — settled: `switchContentPage`, which every
    page-frame navigation goes through.
-7. **PR into `master` and run `preflight`** on `BL-16900-undo-stack` (the earlier draft PR #8317 into
-   the integration branch is superseded). Then squash at review and merge (§5.2).
+7. ~~PR into `master` and run `preflight`~~ — draft PR **#8387**, preflighted 2026-09-21 and again
+   2026-10-01 after a rebase onto `master`. **Next: John's own review**, then `pr-ready-for-human`
+   (squash) and merge (§5.2).
 
 ### Stage 2 — after the Stage 1 PR
 
@@ -1136,3 +1137,13 @@ Later, not Stage 0:
   §10 "what the first review changed" subsection re-added, `REVIEW-NOTES.md` dropped, §5 rewritten
   for the new topology); the inventory's two-line Stage 1 change re-applied.
 - `BL-6681-stage1-undostack`, `BL-6681-ckeditor` and PR #8317 are superseded and kept for history.
+
+### 2026-10-01 — Stage 1 rebased onto `master` and re-preflighted
+
+- John asked for PR #8387 to be rebased onto current `master` (165 commits newer) rather than
+  merged, overriding §5.3 for this once. No human had reviewed the PR yet, so the force-push
+  discarded nothing a reviewer had seen. The rebase replayed the four commits without conflict.
+- The drift that mattered was master's toolbox refactor: `toolbox.ts` lost ~1000 lines to
+  `pageEditingMarkup.ts` and `toolboxBootstrap.ts`. The toolbox-frame exports the legacy providers
+  call (`canUndo`, `undo`, `updateMarkupAfterUndoOrRedo`) all survive it, in `toolboxBootstrap.ts`.
+  Typecheck clean; the 66 undo tests pass.
