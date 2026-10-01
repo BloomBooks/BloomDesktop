@@ -11,6 +11,8 @@ import { CanvasGuideProvider } from "./CanvasGuideProvider";
 import { CanvasSnapProvider } from "./CanvasSnapProvider";
 import { convertPointFromViewportToElementFrame } from "./CanvasElementGeometry";
 import { inPlayMode } from "./CanvasElementPositioning";
+import { dragToResize } from "bloom-table";
+import { tablesMayBeRestructured } from "../tableFeature";
 
 export interface ICanvasElementPointerInteractionsHost {
     getActiveElement: () => HTMLElement | undefined;
@@ -163,6 +165,31 @@ export class CanvasElementPointerInteractions {
         return range as Range;
     };
 
+    /**
+     * Whether a press landed in a table whose own right-click menu owns it.
+     *
+     * event.target cannot answer this: the Comical canvas covers the table, so a
+     * press on a cell reports the canvas as its target. Two ways to be in a table:
+     * this bloom-canvas is the picture inside a cell, or the canvas element under
+     * the pointer is the one a table sits in.
+     */
+    private isPressInsideTable(
+        bloomCanvas: HTMLElement,
+        bubble: Bubble | undefined,
+    ): boolean {
+        // A press on the picture of a picture cell. The table's Cell menu owns that press,
+        // except in a book whose tables are frozen: there the library opens no Cell menu (see
+        // installHostHooks in tableEditing.ts), so the press should reach the ordinary canvas
+        // element handling below and open the picture's own menu, which is what the same
+        // picture outside a table gets.
+        if (bloomCanvas.closest(".bloom-cell"))
+            return tablesMayBeRestructured();
+        return (
+            !!bubble &&
+            bubble.content.getElementsByClassName("bloom-table").length > 0
+        );
+    }
+
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     public onMouseDown = (event: MouseEvent) => {
@@ -172,6 +199,44 @@ export class CanvasElementPointerInteractions {
         if (this.isMouseEventAlreadyHandled(event)) {
             return;
         }
+        // A press on a row or column boundary of a table resizes that row or column,
+        // which has to win over dragging the canvas element the table sits in. The
+        // table cannot claim the press for itself: we listen in the capture phase, and
+        // the Comical canvas covers the table anyway, so the press never reaches it.
+        // So we hand it over, and the table's own document-level handlers take the drag
+        // from here.
+        // Resizing a row or column is restructuring the table, so it is one of the
+        // things withheld from a book whose tables are frozen (see installHostHooks
+        // in tableEditing.ts). Not handing the press over leaves it to the ordinary
+        // canvas element handling below, which is what a press anywhere else in a
+        // frozen table does.
+        // Only the main button starts a resize: a right-click near a boundary is
+        // asking for a menu, and taking the press away from it would show none.
+        if (
+            event.button === 0 &&
+            tablesMayBeRestructured() &&
+            dragToResize.beginResizeAtPoint(event)
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
+        // A press on the picture in a picture cell belongs to the bloom-canvas that picture is
+        // in, which has this same handler: it makes the picture the active canvas element, so
+        // the toolbar below the cell offers Choose image and the rest. Both listen in the
+        // capture phase and the outer one runs first; left to itself it would start dragging
+        // the canvas element the table sits in, and stop the press before the inner one sees it.
+        const pressedCanvas = (event.target as HTMLElement).closest?.(
+            kBloomCanvasSelector,
+        );
+        if (
+            pressedCanvas &&
+            pressedCanvas !== bloomCanvas &&
+            bloomCanvas.contains(pressedCanvas)
+        )
+            return;
+
         this.gotAMoveWhileMouseDown = false;
 
         const coordinates = this.getPointRelativeToCanvas(event, bloomCanvas);
@@ -185,6 +250,16 @@ export class CanvasElementPointerInteractions {
             coordinates.getUnscaledY(),
             true, // only consider canvas elements with pointer events allowed.
         );
+        if (
+            event.button === 2 &&
+            this.isPressInsideTable(bloomCanvas, bubble)
+        ) {
+            // The table puts up its own Cell menu, from the contextmenu event that
+            // follows this press, so leave the press alone: claiming it here would
+            // show this canvas element's menu (Duplicate, Delete) over a cell.
+            return;
+        }
+
         if (bubble && event.button === 2) {
             // Right mouse button
             if (bubble.content !== this.host.getActiveElement()) {
@@ -276,6 +351,28 @@ export class CanvasElementPointerInteractions {
                 }
             }
 
+            // A plain press on the text of a table cell is a click into that text. For other text
+            // canvas elements the first press selects the element and may start dragging it, and
+            // only a second press edits; a table is moved by its own chrome, and a cell whose first
+            // click is swallowed reads as a cell that cannot be typed in. So select the table,
+            // count it as being text-edited, and leave the press to the browser, which puts the
+            // caret where it landed.
+            const pressedText = (event.target as HTMLElement).closest?.(
+                ".bloom-cell .bloom-editable",
+            );
+            if (
+                event.button === 0 &&
+                !event.ctrlKey &&
+                pressedText &&
+                bubble.content.contains(pressedText)
+            ) {
+                if (bubble.content !== this.host.getActiveElement())
+                    this.host.setActiveElement(bubble.content);
+                this.host.setCanvasElementWeAreTextEditing(bubble.content);
+                bubble.content.classList.add("bloom-focusedCanvasElement");
+                return;
+            }
+
             const canvasElementWeAreEditing =
                 this.host.getCanvasElementWeAreTextEditing();
             const clickOnCanvasElementWeAreEditing =
@@ -310,6 +407,7 @@ export class CanvasElementPointerInteractions {
             return;
         }
         if (!this.bubbleToDrag) {
+            this.showTableResizeCursor(event);
             return;
         }
         const deltaX = event.clientX - this.clientXAtMouseDown;
@@ -329,6 +427,25 @@ export class CanvasElementPointerInteractions {
         const container = event.currentTarget as HTMLElement;
         this.handleMouseMoveDragCanvasElement(event, container);
     };
+
+    // Show the row or column resize cursor over a table's boundaries. The table
+    // does this for itself when it gets the mouse moves, but the Comical canvas is
+    // painted over it, so here the moves arrive with the canvas as their target.
+    private showTableResizeCursor(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (!target?.style) {
+            return;
+        }
+        // No resize cursor where the press would not start a resize; see onMouseDown.
+        const edge = tablesMayBeRestructured()
+            ? dragToResize.resizeEdgeAtPoint(event)
+            : undefined;
+        if (edge) {
+            target.style.cursor = edge === "row" ? "ns-resize" : "ew-resize";
+        } else if (target.style.cursor.endsWith("-resize")) {
+            target.style.cursor = "";
+        }
+    }
 
     private handleMouseMoveDragCanvasElement(
         event: MouseEvent,

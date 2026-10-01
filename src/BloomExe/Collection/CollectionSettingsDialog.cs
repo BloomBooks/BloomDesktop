@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -54,6 +54,7 @@ namespace Bloom.Collection
         internal bool ShowExperimentalBookSourcesOption = false;
 
         internal bool PendingAllowTeamCollection;
+        internal bool PendingAllowTables;
         internal bool AllowTeamCollectionOptionEnabled = false;
 
         // "Internal" so CollectionSettingsApi can update these.
@@ -120,6 +121,9 @@ namespace Bloom.Collection
             );
             PendingAllowTeamCollection = ExperimentalFeatures.IsFeatureEnabled(
                 ExperimentalFeatures.kTeamCollections
+            );
+            PendingAllowTables = ExperimentalFeatures.IsFeatureEnabled(
+                ExperimentalFeatures.kTables
             );
 
             if (
@@ -417,6 +421,7 @@ namespace Bloom.Collection
             Settings.Default.Save();
             UpdateExperimentalBookSources();
             UpdateTeamCollectionAllowed();
+            UpdateTablesAllowed();
 
             _collectionSettings.Country = _countryText.Text.Trim();
             _collectionSettings.Province = _provinceText.Text.Trim();
@@ -833,6 +838,14 @@ namespace Bloom.Collection
 
             if (wasTeamCollectionsEnabled != PendingAllowTeamCollection)
                 ChangeThatRequiresRestart();
+        }
+
+        private void UpdateTablesAllowed()
+        {
+            // NB: This change does not require a restart. The Table link in a
+            // custom page's section chooser asks the features API each time the
+            // page loads, so the next page load reflects the new value.
+            ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, PendingAllowTables);
         }
     }
 }
