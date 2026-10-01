@@ -205,15 +205,15 @@ What to know:
   so it lands on the developer's screen even in a headless run.
 - **`close` really closes.** `close -Window Shell` shuts Bloom down exactly like the title-bar
   X (and with the launcher, takes the whole stack with it). Use it only on the window you mean.
-- **The dialog's own WebView2 and CDP.** Outside `--e2e`, every ReactControl gets its own
-  WebView2 environment and browser process, and each is given the same
-  `--remote-debugging-port`. It can happen that while the Book Making tab is showing,
-  the CDP endpoint listed *only* the dialog's page, and the shell page came back when the dialog
-  closed. So the endpoint can flip between browser processes; re-list targets after a WinForms
-  dialog opens or closes rather than holding on to a page handle.
-- **Under `--e2e`, opening the Settings dialog currently kills Bloom.** See "WinForms surfaces
-  are invisible to CDP" in `src/BloomE2E/AUTOMATION-DEBT.md` for the cause (a WebView2 DPI
-  awareness mismatch against the shared e2e environment) before writing a test that opens it.
+- **The dialog's own WebView2 and CDP.** Under `--automation` or `--e2e` (so any Bloom the launcher
+  or the suite started), every browser built on the UI thread shares one WebView2 environment, so
+  the dialogs' pages, including "Bloom had a problem", are targets on the same CDP port as the
+  shell. The exception is a browser inside a dialog shown under
+  `LegacyDpiDialogLauncher.EnterLegacyDpiScope()` (Settings, `ConfigurationDialog`,
+  `LicenseDialog`): it gets an environment of its own, because WebView2 refuses to mix DPI
+  awarenesses in one environment, so its page is not visible over CDP. A Bloom started without
+  either flag gives each ReactControl its own browser process, all asking for the same port: only
+  one of them gets it, and the others are invisible over CDP.
 
 ## Driving Bloom HTTP APIs over CDP (host-header and IPv6 gotchas)
 

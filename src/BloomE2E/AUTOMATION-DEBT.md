@@ -104,10 +104,14 @@ investigated 2026-09-16, which splits this entry in two:
   (`ScriptSettingsDialog`, `JpegWarningDialog`, `BloomOpenFileDialog`). Fix direction: give a WebView2
   created under the legacy DPI scope its own environment even in `--e2e`, or stop entering that
   scope for dialogs that host a ReactControl. **Do not** fix it by making dialogs share the main
-  window's environment outside `--e2e`: that reproduces the crash for every user. Until it is
-  fixed, an e2e test must not open the Settings dialog; `helpers/collectionSettings.ts` and the
-  `e2e/*` hooks remain the route. The exact exception text has not been captured yet; the
-  `winformsUia.ps1` `tree -Window Error` command is how to read it before the box is dismissed.
+  window's environment outside `--e2e`: that reproduces the crash for every user. The exact
+  exception text has not been captured yet; the `winformsUia.ps1` `tree -Window Error` command is
+  how to read it before the box is dismissed.
+
+  `WebView2Browser.InitWebView` now takes the first fix direction: a browser whose window is (or
+  will be) legacy-DPI-aware gets its own environment under `--e2e` and `--automation`. Settings
+  opened in an `--automation` Bloom with this in place; no e2e test has opened it yet, so until
+  one does, `helpers/collectionSettings.ts` and the `e2e/*` hooks remain the route.
 
 ## Native OS dialogs hang automation
 
