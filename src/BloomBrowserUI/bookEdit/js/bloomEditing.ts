@@ -82,6 +82,10 @@ import {
     getHexColorsForPalette,
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import {
+    isShowingOtherPagesHere,
+    wasOpenedByClickingItInTheGrid,
+} from "./bookGridView";
 import { EditableDivUtils } from "./editableDivUtils";
 import {
     externalCaptureErrorForPendingWork,
@@ -120,6 +124,16 @@ export function makeElement(
         result.draggable(draggableArgs);
     }
     return result;
+}
+
+// Focus the text box Bloom picks for the user when a page loads. With the other pages of the book
+// showing, the page is where the user clicked it (see bookGridView.ts), and the browser's usual
+// scroll to a focused box that is off screen would move the page out from under the click that
+// opened it.
+function focusTextBoxOnNewPage(textBox: Element): void {
+    (textBox as HTMLElement).focus({
+        preventScroll: isShowingOtherPagesHere(),
+    });
 }
 
 function isBrOrWhitespace(node) {
@@ -913,7 +927,7 @@ export function SetupElements(
                 // I'm not sure whether this is desirable when we found one from data-bloom-active,
                 // but there may be a case where the page gets reloaded while a text-editable canvas element is active.
                 if (elementToFocus && focusable) {
-                    focusable.focus();
+                    focusable.each((_, e) => focusTextBoxOnNewPage(e));
                     // Ideally calling focus above has this as a side effect.
                     // However, the focusin event handler doesn't seem to get called at this point
                     // for image containers, even though we have set tabindex to zero,
@@ -923,7 +937,8 @@ export function SetupElements(
                     BloomSourceBubbles.ShowSourceBubbleForElement(
                         elementToFocus,
                     );
-                } else {
+                } else if (!wasOpenedByClickingItInTheGrid()) {
+                    // (A page opened by clicking it in the grid gets the focus from that click.)
                     // It's OK not to focus anything.  The priority for focusing text boxes is:
                     // 1) empty canvas element "Text Box" which has no border to indicate that it's there
                     // 2) empty text box, whether canvas element or origami
@@ -960,11 +975,11 @@ export function SetupElements(
                         );
                         if (emptyTextBlockCanvasElement) {
                             // We want to focus on the first empty canvas element text with style "none".
-                            $(emptyTextBlockCanvasElement).focus();
+                            focusTextBoxOnNewPage(emptyTextBlockCanvasElement);
                             return;
                         } else {
                             // otherwise, focus on the first empty text box, whether canvas element or origami.
-                            $(emptyEditables[0]).focus();
+                            focusTextBoxOnNewPage(emptyEditables[0]);
                             return;
                         }
                     }
@@ -974,7 +989,7 @@ export function SetupElements(
                     );
                     if (editable) {
                         // focus on the first available origami text box
-                        $(editable).focus();
+                        focusTextBoxOnNewPage(editable);
                     }
                 }
             }

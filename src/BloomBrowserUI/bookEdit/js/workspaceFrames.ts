@@ -16,6 +16,7 @@
 import type { IPageFrameExports } from "../editablePage";
 import type { IWorkspaceExports } from "../workspaceRoot";
 import type { IToolboxFrameExports } from "../toolbox/toolboxBootstrap";
+import type { IPageListFrameExports } from "../pageThumbnailList/pageThumbnailList";
 
 export function getToolboxBundleExports(): IToolboxFrameExports | null {
     const frameWindow = getFrame("toolbox") as
@@ -32,6 +33,15 @@ export function getEditablePageBundleExports(): IPageFrameExports | null {
         | null;
     return (
         (frameWindow?.["editablePageBundle"] as unknown as IPageFrameExports) ??
+        null
+    );
+}
+export function getPageListBundleExports(): IPageListFrameExports | null {
+    const frameWindow = getFrame("pageList") as
+        | (Window & { [key: string]: unknown })
+        | null;
+    return (
+        (frameWindow?.["pageListBundle"] as unknown as IPageListFrameExports) ??
         null
     );
 }

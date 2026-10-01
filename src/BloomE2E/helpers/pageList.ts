@@ -1,5 +1,5 @@
 // Drive the page list: the strip of page thumbnails down the left of the Edit tab, and the
-// Add Page / Duplicate / Delete controls under it.
+// Add Page / Duplicate / Delete controls under it, and the dialog that confirms removing a page.
 //
 // The list lives in its own iframe (id "pageList"), so every locator here starts from that frame.
 // Its right-click menu is the one exception: the list portals the menu into the shell document so
@@ -11,7 +11,12 @@
 
 import { expect, type Frame, type Page } from "@playwright/test";
 import { apiPost } from "./api";
-import { getPages, waitForEditablePage, type IBookPage } from "./bookMaking";
+import {
+    editablePageFrame,
+    getPages,
+    waitForEditablePage,
+    type IBookPage,
+} from "./bookMaking";
 
 /** The Edit tab's frame holding the page thumbnails. Throws if the Edit tab is not showing. */
 export function pageListFrame(page: Page): Frame {
@@ -186,4 +191,87 @@ export async function duplicateCurrentPage(
         })
         .toBe(before + times);
     await waitForEditablePage(page);
+}
+
+/** The dialog Bloom shows to confirm removing a page, in the shell document. */
+function removePageDialog(page: Page) {
+    return page.getByRole("dialog").filter({ hasText: "Really Remove Page?" });
+}
+
+/**
+ * Click the Remove button under the page list, which asks to remove the page being edited, and
+ * wait for the dialog that asks the user to confirm. Nothing is removed until the dialog's Remove
+ * button is clicked.
+ */
+export async function openRemovePageDialog(page: Page): Promise<void> {
+    const button = pageListFrame(page).getByTestId("remove-page-button");
+    await button.waitFor({ state: "visible", timeout: 30000 });
+    await expect(
+        button,
+        "The Remove button is disabled, so this page cannot be removed.",
+    ).toBeEnabled({ timeout: 30000 });
+    await button.click();
+    await expect(
+        removePageDialog(page),
+        "Clicking the Remove button never brought up the dialog asking to confirm.",
+    ).toBeVisible({ timeout: 30000 });
+}
+
+/** Click Cancel in the dialog that confirms removing a page, and wait for the dialog to close. */
+export async function cancelRemovePageDialog(page: Page): Promise<void> {
+    const dialog = removePageDialog(page);
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(
+        dialog,
+        "The dialog asking to confirm removing a page did not close after Cancel.",
+    ).toHaveCount(0, { timeout: 30000 });
+}
+
+/** The red X Bloom draws across a page while it asks to confirm removing it. */
+export interface IRemovalMark {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    // Each line of the X as [x1, y1, x2, y2], relative to the mark's top left.
+    lines: number[][];
+    lineColors: string[];
+    lineWidths: number[];
+}
+
+/**
+ * The red X across the page Bloom is asking to confirm removing, in the page frame's viewport, or
+ * undefined when there is none. There is never more than one.
+ */
+export async function getRemovalMark(
+    page: Page,
+): Promise<IRemovalMark | undefined> {
+    const marks = await editablePageFrame(page).evaluate(() =>
+        Array.from(
+            document.querySelectorAll("svg.bloom-page-removal-mark"),
+        ).map((svg) => {
+            const r = svg.getBoundingClientRect();
+            const lines = Array.from(svg.querySelectorAll("line"));
+            return {
+                left: r.left,
+                top: r.top,
+                width: r.width,
+                height: r.height,
+                lines: lines.map((line) =>
+                    ["x1", "y1", "x2", "y2"].map((name) =>
+                        Number(line.getAttribute(name)),
+                    ),
+                ),
+                lineColors: lines.map((line) => line.getAttribute("stroke")!),
+                lineWidths: lines.map((line) =>
+                    Number(line.getAttribute("stroke-width")),
+                ),
+            };
+        }),
+    );
+    if (marks.length > 1)
+        throw new Error(
+            `The page frame shows ${marks.length} red X's; Bloom should draw one at most.`,
+        );
+    return marks[0];
 }

@@ -16,7 +16,18 @@ import {
     CanvasElementManager,
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
-import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    renderDragActivityTabControl,
+    updateAbovePageControls,
+} from "./js/AbovePageControls";
+import {
+    replayTheClickThatOpenedThisPage,
+    setupBookGridView,
+    setupControlsBar,
+    setShowingOtherPages,
+} from "./js/bookGridView";
+import { markPageForRemoval } from "./js/pageRemovalMark";
+import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
 import {
     getPageLoadId,
     notePageContentMayHaveChanged,
@@ -62,6 +73,11 @@ export interface IPageFrameExports {
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // Show or hide the other pages of the book around the page being edited.
+    setShowingOtherPages(show: boolean): void;
+    // Bring the page being edited into view and draw a red X across it, while the user confirms
+    // removing it. Returns a function that takes the X away.
+    markPageForRemoval(): () => void;
     // Say that the saved form of the page may have changed in a way the page watcher cannot see --
     // the user's style definitions, which are changed through the CSSOM and mutate no DOM node.
     notePageContentMayHaveChanged(): void;
@@ -393,6 +409,25 @@ window["PasteImageCredits"] = () => {
 $(document).ready(() => {
     $("body").find("*[data-i18n]").localize();
     bootstrap();
+    // Only the live Edit tab has the controls above the page and the book's other pages; the
+    // same code also loads pages off-screen to process them.
+    if (window.frameElement?.id === "page") {
+        updateAbovePageControls({});
+        setupControlsBar();
+        // The page being left stays on screen until this one is loaded and laid out (see
+        // switchContentPage), so the Edit tab holds steady while it changes pages.
+        const loaded = new Promise<void>((resolve) => {
+            if (document.readyState === "complete") resolve();
+            else
+                window.addEventListener("load", () => resolve(), {
+                    once: true,
+                });
+        });
+        Promise.all([loaded, setupBookGridView()]).then(() => {
+            tryGetWorkspaceBundleExports()?.pageFrameIsReadyToShow(window);
+            replayTheClickThatOpenedThisPage();
+        });
+    }
     // Step 1 of the off-screen page-capture handshake (see __bloomEditablePageReady in the
     // `declare global` block below): bootstrap()/SetupElements() has now run. That applies the
     // load-time DOM fix-ups (canvas-element layout, image sizing, etc.) — but note that some of them,
@@ -428,6 +463,8 @@ interface EditablePageBundleApi {
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
     getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    setShowingOtherPages: typeof setShowingOtherPages;
+    markPageForRemoval: typeof markPageForRemoval;
     notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
@@ -508,6 +545,8 @@ window.editablePageBundle = {
     captureContentForExternalProcessing,
     getPageContentForSaveWhenReady,
     pageUnloading,
+    setShowingOtherPages,
+    markPageForRemoval,
     notePageContentMayHaveChanged,
     copySelection,
     cutSelection,

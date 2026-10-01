@@ -1126,6 +1126,16 @@ function postPageClicked(
     });
 }
 
+// What this frame offers other frames; see getPageListBundleExports() in workspaceFrames.ts.
+export interface IPageListFrameExports {
+    // Other pages clicked in the page frame's grid (bookGridView.ts) go through the same queue as
+    // clicks and commands here, so they reach C# in the order the user made them.
+    postPageClicked(pageId: string, detail: string): Promise<void>;
+}
+(
+    window as unknown as { pageListBundle: IPageListFrameExports }
+).pageListBundle = { postPageClicked };
+
 function ContinueAutomatedPageClicking(
     pagesRemaining: IPage[],
     count: number = 0,

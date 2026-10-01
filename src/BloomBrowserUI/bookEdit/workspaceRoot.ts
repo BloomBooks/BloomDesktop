@@ -18,6 +18,10 @@ export interface IWorkspaceExports {
         options: JQueryUI.DialogOptions,
     ): JQuery;
     closeDialog(id: string): void;
+    pageFrameIsReadyToShow(pageWindow: Window | null): void;
+    showPageLoadingCover(): void;
+    isShowingOtherPages(): boolean;
+    storeShowingOtherPages(show: boolean): void;
     setToolboxEnabled(enabled: boolean): void;
     toolboxIsShowing(): boolean;
     doWhenToolboxLoaded(
@@ -171,6 +175,130 @@ export function switchThumbnailPage(newSource: string) {
     updateWorkspaceUrlParam("pageListSrc", newSource);
 }
 
+const kPageFrameId = "page";
+const kOutgoingPageFrameId = "page-outgoing";
+const kPageLoadingCoverId = "page-loading-cover";
+const kMaxWaitForPageReadyAfterLoadMs = 3000;
+const kMaxWaitForPageChangeToStartMs = 5000;
+const kShowOtherPagesKey = "bloom-edit-showOtherPages";
+
+// The cursor shown while the Edit tab changes pages: a plain clock face, rather than the spinning
+// circle Windows draws for the standard "wait" cursor. Falls back to that standard cursor.
+const kClockSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
+    '<circle cx="12" cy="12" r="10" fill="white" stroke="#333" stroke-width="2"/>' +
+    '<path d="M12 12V6.5M12 12l3.5 2" stroke="#333" stroke-width="2" stroke-linecap="round"/>' +
+    "</svg>";
+const kWaitCursor = `url("data:image/svg+xml,${encodeURIComponent(
+    kClockSvg,
+)}") 12 12, wait`;
+
+/**
+ * Whether the user wants to see the other pages of the book around the page being edited (see
+ * bookGridView.ts). Remembered for every page, and across Bloom sessions.
+ */
+export function isShowingOtherPages(): boolean {
+    try {
+        return localStorage.getItem(kShowOtherPagesKey) === "true";
+    } catch {
+        return false;
+    }
+}
+
+/** Remember whether the user wants to see the other pages of the book. */
+export function storeShowingOtherPages(show: boolean): void {
+    try {
+        localStorage.setItem(kShowOtherPagesKey, show ? "true" : "false");
+    } catch {
+        // Without storage the choice lasts only until the next page is loaded.
+    }
+}
+
+/**
+ * Cover the page frame with the wait cursor, and take its clicks, from a click on another page until
+ * that page shows (see pageFrameIsReadyToShow). If no page change follows, take the cover away again.
+ */
+export function showPageLoadingCover(): void {
+    if (document.getElementById(kPageLoadingCoverId)) return;
+    const host = document.getElementById(kPageFrameId)!.parentElement!;
+    const cover = document.createElement("div");
+    cover.id = kPageLoadingCoverId;
+    cover.style.position = "absolute";
+    cover.style.inset = "0";
+    cover.style.zIndex = "2";
+    cover.style.cursor = kWaitCursor;
+    host.appendChild(cover);
+    window.setTimeout(() => {
+        if (!document.getElementById(kOutgoingPageFrameId)) cover.remove();
+    }, kMaxWaitForPageChangeToStartMs);
+}
+
+/**
+ * Make the iframe that holds the page being edited. The Edit tab has one, except while it changes
+ * pages, when the page being left stays on screen over the new one until the new one is ready
+ * (see switchContentPage), so the view holds steady instead of blanking and rebuilding.
+ */
+export function createPageFrame(src: string): HTMLIFrameElement {
+    const frame = document.createElement("iframe");
+    frame.id = kPageFrameId;
+    // The name must be set before the frame is in the document, so the frame is created with it.
+    frame.name = kPageFrameId;
+    frame.title = "page";
+    frame.src = src;
+    frame.style.display = "block";
+    frame.style.width = "100%";
+    frame.style.height = "100%";
+    frame.style.border = "0 none";
+    return frame;
+}
+
+// Put a new page frame, loading newSource, underneath the one on screen, and return it. The old
+// frame keeps showing, frozen, until the new page calls pageFrameIsReadyToShow(). If an earlier
+// switch is still waiting, the frame the user sees is already the outgoing one, so the frame that
+// was loading underneath is simply replaced.
+function startLoadingPageFrameBehindCurrentOne(
+    newSource: string,
+): HTMLIFrameElement {
+    const current = document.getElementById(kPageFrameId) as HTMLIFrameElement;
+    const host = current.parentElement!;
+    if (document.getElementById(kOutgoingPageFrameId)) {
+        current.remove();
+    } else {
+        // Over both frames until the new page shows: the wait cursor, and no clicks on a page that
+        // is going away or one that is not ready. (It finds its place by the frame's id, so before
+        // that changes.)
+        showPageLoadingCover();
+        current.id = kOutgoingPageFrameId;
+        current.name = kOutgoingPageFrameId;
+        current.style.position = "absolute";
+        current.style.left = "0";
+        current.style.top = "0";
+        current.style.zIndex = "1";
+        current.style.pointerEvents = "none";
+        // What the page's own beforeunload handlers would do if it were really leaving now.
+        current.contentWindow?.dispatchEvent(new Event("beforeunload"));
+    }
+    const frame = createPageFrame(newSource);
+    host.appendChild(frame);
+    return frame;
+}
+
+/**
+ * Called by a page frame once it looks the way it will (laid out, scrolled, and with the other
+ * pages drawn if they are showing), to replace the page that was covering it.
+ */
+export function pageFrameIsReadyToShow(pageWindow: Window | null): void {
+    const current = document.getElementById(kPageFrameId) as
+        | HTMLIFrameElement
+        | undefined;
+    if (!current || !pageWindow || current.contentWindow !== pageWindow) {
+        // A page that has already been replaced by a newer one.
+        return;
+    }
+    document.getElementById(kOutgoingPageFrameId)?.remove();
+    document.getElementById(kPageLoadingCoverId)?.remove();
+}
+
 export function switchContentPage(newSource: string) {
     try {
         const editablePageBundle = getEditablePageBundleExports();
@@ -190,7 +318,7 @@ export function switchContentPage(newSource: string) {
             // swallow
         }
     }
-    const iframe = <HTMLIFrameElement>document.getElementById("page");
+    const iframe = startLoadingPageFrameBehindCurrentOne(newSource);
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
@@ -209,7 +337,14 @@ export function switchContentPage(newSource: string) {
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
-    iframe.src = newSource;
+    iframe.addEventListener("load", () =>
+        // If the page never says it is ready (say an error stopped its script), don't leave the
+        // old page covering it for good.
+        window.setTimeout(
+            () => pageFrameIsReadyToShow(iframe.contentWindow),
+            kMaxWaitForPageReadyAfterLoadMs,
+        ),
+    );
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
     // and record a new one, we switchContentPage to make the new video show up.
@@ -220,6 +355,12 @@ export function switchContentPage(newSource: string) {
     window.setTimeout(() => {
         if (!handlerCalled) {
             handler();
+            // Taking down the page being left waits for load too, both in the new page and in
+            // the fallback above, so it needs the same rescue.
+            window.setTimeout(
+                () => pageFrameIsReadyToShow(iframe.contentWindow),
+                kMaxWaitForPageReadyAfterLoadMs,
+            );
         }
     }, 1500);
 }
@@ -465,6 +606,10 @@ interface WorkspaceBundleApi {
     handleUndo: typeof handleUndo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
+    pageFrameIsReadyToShow: typeof pageFrameIsReadyToShow;
+    showPageLoadingCover: typeof showPageLoadingCover;
+    isShowingOtherPages: typeof isShowingOtherPages;
+    storeShowingOtherPages: typeof storeShowingOtherPages;
     showDialog: typeof showDialog;
     closeDialog: typeof closeDialog;
     setToolboxEnabled: typeof setToolboxEnabled;
@@ -513,6 +658,10 @@ window.workspaceBundle = {
     handleUndo,
     switchThumbnailPage,
     switchContentPage,
+    pageFrameIsReadyToShow,
+    showPageLoadingCover,
+    isShowingOtherPages,
+    storeShowingOtherPages,
     showDialog,
     closeDialog,
     setToolboxEnabled,
