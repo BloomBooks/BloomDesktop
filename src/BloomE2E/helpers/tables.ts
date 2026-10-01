@@ -1231,6 +1231,57 @@ export async function measureChrome(
  */
 const kCornerHandleReach = 24;
 
+/**
+ * Where along the top edge of the table at `tableIndex` (whose window rect is `rect`) a press
+ * reaches that table, as an x in Playwright's mouse coordinates. Bloom places a duplicate so that
+ * it overlaps the original, and a press on a stretch of edge that another canvas element covers
+ * picks that element instead. So the press goes at the first point past the corner handle that no
+ * other canvas element covers.
+ */
+async function findUncoveredPointAlongTopEdge(
+    page: Page,
+    tableIndex: number,
+    rect: IRect,
+): Promise<number> {
+    const frameOffset = await pageFrameOffset(page);
+    const others = await table(page, tableIndex).evaluate((element) => {
+        const own = element.closest(".bloom-canvas-element");
+        return Array.from(document.querySelectorAll(".bloom-canvas-element"))
+            .filter(
+                (other) =>
+                    other !== own &&
+                    !own?.contains(other) &&
+                    !other.classList.contains("bloom-backgroundImage"),
+            )
+            .map((other) => {
+                const box = other.getBoundingClientRect();
+                return {
+                    x: box.x,
+                    y: box.y,
+                    width: box.width,
+                    height: box.height,
+                };
+            });
+    });
+    const y = rect.y + 2 - frameOffset.y;
+    const isCovered = (x: number) =>
+        others.some(
+            (o) =>
+                x >= o.x &&
+                x <= o.x + o.width &&
+                y >= o.y &&
+                y <= o.y + o.height,
+        );
+    const first = Math.min(kCornerHandleReach, rect.width / 2);
+    for (let along = first; along < rect.width - first; along += 4) {
+        if (!isCovered(rect.x + along - frameOffset.x)) return rect.x + along;
+    }
+    throw new Error(
+        `Every point along the top edge of table ${tableIndex} is covered by another canvas ` +
+            `element, so there is nowhere to press to drag it.`,
+    );
+}
+
 export async function dragTableBy(
     page: Page,
     tableIndex: number,
@@ -1238,7 +1289,11 @@ export async function dragTableBy(
     dy: number,
 ): Promise<{ before: IRect; after: IRect }> {
     const before = (await measureTable(page, tableIndex)).rect;
-    const startX = before.x + Math.min(kCornerHandleReach, before.width / 2);
+    const startX = await findUncoveredPointAlongTopEdge(
+        page,
+        tableIndex,
+        before,
+    );
     const startY = before.y + 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
