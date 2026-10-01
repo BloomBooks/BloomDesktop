@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+    afterAll,
+    beforeAll,
+    beforeEach,
+    describe,
+    expect,
+    test,
+    vi,
+} from "vitest";
 
 // Comical wants paper.js and a real <canvas>, which jsdom doesn't give us, and nothing here
 // draws a bubble.
@@ -23,23 +31,24 @@ import { CanvasElementManager } from "./CanvasElementManager";
 
 // The page has one CanvasElementManager, and making a second one throws.
 let manager: CanvasElementManager;
-let testStartTime = new Date(2026, 9, 1, 12, 0, 0).getTime();
 
 describe("onPageZoomChanged", () => {
-    beforeEach(() => {
-        vi.useFakeTimers();
-        // Fake timers: nothing here waits in real time. Setting the fake clock a minute past
-        // where the last test left it keeps the manager from treating this test's first zoom
-        // change as part of the last test's burst.
-        testStartTime += 60000;
-        vi.setSystemTime(testStartTime);
-        manager ??= new CanvasElementManager();
-        alignSpy.mockClear();
+    beforeAll(() => {
+        // Fake timers, including performance.now(), for the whole file: nothing here waits in
+        // real time, and the fake clock only runs forward from one test to the next.
+        vi.useFakeTimers({
+            toFake: ["setTimeout", "clearTimeout", "Date", "performance"],
+        });
+        manager = new CanvasElementManager();
     });
-    afterEach(() => {
-        vi.runOnlyPendingTimers();
-        testStartTime = Date.now();
+    afterAll(() => {
         vi.useRealTimers();
+    });
+    beforeEach(() => {
+        // Let any realignment the last test left pending run, and move a minute past it, so
+        // the manager does not treat this test's first zoom change as part of that burst.
+        vi.advanceTimersByTime(60000);
+        alignSpy.mockClear();
     });
 
     test("a single zoom change realigns at once, without asking Bloom for handle titles", () => {

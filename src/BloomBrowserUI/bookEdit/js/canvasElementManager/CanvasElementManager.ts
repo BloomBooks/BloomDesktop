@@ -165,7 +165,7 @@ export class CanvasElementManager {
 
     // Used by onPageZoomChanged() to realign at most once per kZoomRealignIntervalMs.
     private zoomRealignTimer: number | undefined;
-    private lastZoomRealignTime = 0;
+    private lastZoomRealignTime = -Infinity;
 
     public constructor() {
         initializeImageUndoManager({
@@ -1822,7 +1822,7 @@ export class CanvasElementManager {
         if (this.zoomRealignTimer !== undefined) {
             return;
         }
-        const now = Date.now();
+        const now = performance.now();
         const sinceLast = now - this.lastZoomRealignTime;
         if (sinceLast >= kZoomRealignIntervalMs) {
             this.realignAfterZoom();
@@ -1836,7 +1836,7 @@ export class CanvasElementManager {
 
     // Realigns the control frame and toolbar for the page's new scale; see onPageZoomChanged.
     private realignAfterZoom() {
-        this.lastZoomRealignTime = Date.now();
+        this.lastZoomRealignTime = performance.now();
         alignCanvasElementControlFrameWithActiveElement(
             this.activeElement,
             false,
