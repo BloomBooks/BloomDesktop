@@ -1741,7 +1741,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-crayon.Name" approved="yes">
         <source xml:lang="en">Crayon Line Overlay</source>
-        <target xml:lang="fr" state="final">Superposition en Ligne de Crayon</target>
+        <target xml:lang="fr" state="final">Superposition en ligne de crayon de cire</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-crayon.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name" approved="yes">
