@@ -623,9 +623,19 @@ namespace Bloom.Publish.Rab
                     // untouched: carry on with it.
                     return isInstalled;
                 }
-                // Any other installer failure propagates, even during an update: once the installer
-                // has run, Bloom can't tell whether the older version is still intact (the registry
-                // version is only updated at the very end), so it must not carry on with it.
+                catch (Exception error)
+                {
+                    // Any other installer failure stops Prepare, even during an update: once the
+                    // installer has run, Bloom can't tell whether the older version is still intact
+                    // (the registry version is only updated at the very end), so it must not carry
+                    // on with it. Clicking Prepare again retries the install.
+                    throw new ApplicationException(
+                        $"Bloom could not {(isInstalled ? "update" : "install")} Reading App Builder. "
+                            + "Please use Help > Report a Problem so that we can help you. "
+                            + $"Details: {error.Message}",
+                        error
+                    );
+                }
                 if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
                         "Reading App Builder installer finished, but Bloom still could not find the installed program."
@@ -738,6 +748,16 @@ namespace Bloom.Publish.Rab
             {
                 RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
             }
+            catch (ApplicationException error) when (!AreRabBuildToolsInstalled())
+            {
+                // The command itself failed, e.g. a download failed while offline (once RAB's exit
+                // code reaches Bloom). Give the same plain message as below rather than the raw
+                // command error, which goes in the details.
+                throw new ApplicationException(
+                    DescribeMissingRabBuildTools(installOutput, error.Message),
+                    error
+                );
+            }
             finally
             {
                 _rabOutputCapture = null;
@@ -756,9 +776,12 @@ namespace Bloom.Publish.Rab
         /// -install-sdks-if-needed. It opens with a plain sentence for the user, who cannot fix this
         /// themselves, then gives details for whoever handles their problem report: for each missing
         /// tool, whether RAB said it used a copy in some other folder (and which), or just did not
-        /// install it.
+        /// install it, plus RAB's own error when its command failed.
         /// </summary>
-        internal string DescribeMissingRabBuildTools(IReadOnlyList<string> rabOutput)
+        internal string DescribeMissingRabBuildTools(
+            IReadOnlyList<string> rabOutput,
+            string rabError = null
+        )
         {
             var details = new List<string>();
             if (!IsRabJdkInstalled())
@@ -777,6 +800,8 @@ namespace Bloom.Publish.Rab
                         FindFolderReportedByRab(rabOutput, "Android SDK is already installed at:")
                     )
                 );
+            if (!string.IsNullOrWhiteSpace(rabError))
+                details.Add($"Reading App Builder reported: {rabError}");
             return "Bloom could not set up the tools it needs to build Android apps. "
                 + "Please use Help > Report a Problem so that we can help you. "
                 + "Details: "

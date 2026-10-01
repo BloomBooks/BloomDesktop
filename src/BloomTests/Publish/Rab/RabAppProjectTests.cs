@@ -2585,11 +2585,115 @@ namespace BloomTests.Publish.Rab
             );
             Assert.That(
                 error.Message,
+                Is.EqualTo(
+                    "Bloom could not update Reading App Builder. Please use Help > Report a Problem so that we can help you. Details: Reading App Builder installer exited with code 1."
+                )
+            );
+            Assert.That(
+                error.InnerException?.Message,
                 Is.EqualTo("Reading App Builder installer exited with code 1.")
             );
             Assert.That(
                 service.Progress.Messages.Select(message => message.Item1),
                 Does.Not.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_GivesAPlainMessage_WhenInstallingRabFails()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                IsRabInstalledForPrepareResult = false,
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 2."
+                ),
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo(
+                    "Bloom could not install Reading App Builder. Please use Help > Report a Problem so that we can help you. Details: Reading App Builder installer exited with code 2."
+                )
+            );
+        }
+
+        [Test]
+        public void PrepareAsync_GivesThePlainBuildToolsMessage_WhenTheInstallSdksCommandFails()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var rabFailure = new ApplicationException("cmd.exe exited with code 1.");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksCreatesAndroidSdk = false,
+                InstallSdksFailure = rabFailure,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Does.StartWith("Bloom could not set up the tools it needs to build Android apps.")
+            );
+            Assert.That(
+                error.Message,
+                Does.Contain(
+                    $"Reading App Builder did not install the Android SDK in {service.RabAndroidSdkInstallFolder}."
+                )
+            );
+            Assert.That(
+                error.Message,
+                Does.EndWith("Reading App Builder reported: cmd.exe exited with code 1.")
+            );
+            Assert.That(error.InnerException, Is.SameAs(rabFailure));
+        }
+
+        [Test]
+        public void PrepareAsync_KeepsTheOriginalError_WhenTheInstallSdksCommandFailsButTheToolsAreThere()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var rabFailure = new ApplicationException("cmd.exe exited with code 1.");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstallSdksFailure = rabFailure,
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error,
+                Is.SameAs(rabFailure),
+                "a failure unrelated to missing build tools should not be relabeled"
             );
         }
 
@@ -3104,6 +3208,10 @@ namespace BloomTests.Publish.Rab
             public bool InstallSdksCreatesJdk { get; set; } = true;
             public bool InstallSdksCreatesAndroidSdk { get; set; } = true;
             public List<string> InstallSdksOutputLines { get; } = new List<string>();
+
+            // When set, the simulated -install-sdks-if-needed command then fails with this, as
+            // RunProcess does when RAB exits non-zero (e.g. a download failed while offline).
+            public Exception InstallSdksFailure { get; set; }
             public RabAdbConnectedDevice ConnectedDeviceToReturn { get; set; } =
                 new RabAdbConnectedDevice
                 {
@@ -3213,6 +3321,8 @@ namespace BloomTests.Publish.Rab
                     CreateBuildToolMarkers();
                     foreach (var line in InstallSdksOutputLines)
                         ReportProcessOutputLine(line);
+                    if (InstallSdksFailure != null)
+                        throw InstallSdksFailure;
                     return;
                 }
 
