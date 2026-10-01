@@ -18,7 +18,10 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
-import { selectVideoContainer } from "../../js/videoUtils";
+import {
+    selectVideoContainer,
+    videoContainerToRecordInto,
+} from "../../js/videoUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
@@ -891,7 +894,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
 
         const activeVideoContainer =
-            SignLanguageTool.videoContainerToRecordInto(activeCanvasElement);
+            videoContainerToRecordInto(activeCanvasElement);
         if (
             !activeVideoContainer ||
             activeVideoContainer.closest("[data-target-of]")
@@ -900,24 +903,6 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
 
         return activeVideoContainer;
-    }
-
-    /**
-     * The video container inside `canvasElement` that the user means. A canvas
-     * element normally holds one, but a table in a canvas element can have a
-     * video in any number of its cells, and there the first one in the markup is
-     * usually the wrong one: clicking a cell's video selects it, so an already
-     * selected container is the answer whenever there is one.
-     */
-    private static videoContainerToRecordInto(
-        canvasElement: HTMLElement,
-    ): HTMLElement | null {
-        return (
-            canvasElement.querySelector<HTMLElement>(
-                ".bloom-videoContainer.bloom-selected",
-            ) ??
-            canvasElement.querySelector<HTMLElement>(".bloom-videoContainer")
-        );
     }
 
     private updateEnabledStateForSelectedVideo(): void {
@@ -963,7 +948,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         }
 
         const activeVideoContainer =
-            SignLanguageTool.videoContainerToRecordInto(activeCanvasElement);
+            videoContainerToRecordInto(activeCanvasElement);
         if (
             !activeVideoContainer ||
             activeVideoContainer.closest("[data-target-of]")

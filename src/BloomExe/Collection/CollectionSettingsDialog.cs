@@ -842,9 +842,8 @@ namespace Bloom.Collection
 
         private void UpdateTablesAllowed()
         {
-            // NB: This change does not require a restart. The Table link in a
-            // custom page's section chooser asks the features API each time the
-            // page loads, so the next page load reflects the new value.
+            // The restart this change needs is requested by CollectionSettingsApi
+            // when the checkbox changes.
             ExperimentalFeatures.SetValue(ExperimentalFeatures.kTables, PendingAllowTables);
         }
     }

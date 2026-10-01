@@ -434,7 +434,13 @@ namespace Bloom.web.controllers
             var allowTablesToken = data["allowTables"];
             if (allowTablesToken != null)
             {
-                dialog.PendingAllowTables = allowTablesToken.Value<bool>();
+                var allowTables = allowTablesToken.Value<bool>();
+                var previousValue = dialog.PendingAllowTables;
+                dialog.PendingAllowTables = allowTables;
+                // An open edit page fetched the table feature's status when it loaded and keeps
+                // that answer (tableFeature.ts), so only a restart makes it see the new value.
+                if (allowTables != previousValue)
+                    dialog.ChangeThatRequiresRestart();
             }
 
             var showQrCodeToken = data["showQrCode"];

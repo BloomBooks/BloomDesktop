@@ -50,6 +50,12 @@ export type StepFunction = <T>(
 // an evaluate pending for as long as the navigation takes, and no test should wait on that.
 const kCaptionCallTimeoutMs = 2000;
 
+// The current test's "begin", and the shell page that received it. A restarted Bloom has a new
+// shell whose caption knows no test and shows nothing, so the first instruction sent to a page
+// other than this one sends the "begin" again first (the test's clock restarts with it).
+let currentBegin: Extract<CaptionCommand, { kind: "begin" }> | undefined;
+let pageThatHasBegun: Page | undefined;
+
 /**
  * Send one instruction to the caption in the shell. Never throws, and never waits long.
  * `getPage` is a function rather than a page because bloomApp.restart() replaces the page.
@@ -58,10 +64,29 @@ async function sendToCaption(
     getPage: () => Page,
     command: CaptionCommand,
 ): Promise<void> {
+    if (command.kind === "begin") {
+        currentBegin = command;
+        pageThatHasBegun = getPage();
+    } else if (currentBegin && getPage() !== pageThatHasBegun) {
+        pageThatHasBegun = getPage();
+        await sendCommandToPage(pageThatHasBegun, currentBegin);
+    }
+    await sendCommandToPage(getPage(), command);
+    if (command.kind === "finish") {
+        currentBegin = undefined;
+        pageThatHasBegun = undefined;
+    }
+}
+
+/** Send one instruction to the caption in `page`. Never throws, and never waits long. */
+async function sendCommandToPage(
+    page: Page,
+    command: CaptionCommand,
+): Promise<void> {
     const timedOut = new Promise<void>((resolve) =>
         setTimeout(resolve, kCaptionCallTimeoutMs),
     );
-    const sent = getPage()
+    const sent = page
         .evaluate((instruction: CaptionCommand) => {
             const api = (
                 window as unknown as {

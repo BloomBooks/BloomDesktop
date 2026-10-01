@@ -51,7 +51,11 @@ import {
 import { pxToNumber as pxToNumberFromCssUtils } from "../../toolbox/canvas/canvasElementCssUtils";
 import { updateCanvasElementClass } from "../../toolbox/canvas/canvasElementDomUtils";
 import OverflowChecker from "../../OverflowChecker/OverflowChecker";
-import { kVideoContainerClass, selectVideoContainer } from "../videoUtils";
+import {
+    kVideoContainerClass,
+    selectVideoContainer,
+    videoContainerToRecordInto,
+} from "../videoUtils";
 import { needsToBeKeptSameSize } from "../../toolbox/games/gameUtilities";
 import { CanvasElementType } from "../../toolbox/canvas/canvasElementTypes";
 import { CanvasGuideProvider } from "./CanvasGuideProvider";
@@ -1343,9 +1347,7 @@ export class CanvasElementManager {
             // record a non-canvas element video and wanting to show that one as active.
             // Indeed, we might have been called from the code that makes that so.
             selectVideoContainer(
-                this.activeElement.getElementsByClassName(
-                    "bloom-videoContainer",
-                )[0] as HTMLElement,
+                videoContainerToRecordInto(this.activeElement),
                 false,
             );
             // if the active element isn't a text one, we don't want anything to have focus.
