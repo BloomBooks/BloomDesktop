@@ -622,10 +622,15 @@ namespace Bloom.Publish.Rab
                     // When updating, the installed version still works, so carry on with it.
                     return isInstalled;
                 }
-                catch (Exception error) when (isInstalled && IsRabInstalledForPrepare())
+                catch (Exception error)
+                    when (isInstalled
+                        && IsRabInstalledForPrepare()
+                        && GetInstalledRabVersionText() == installedVersion
+                    )
                 {
-                    // The update failed but left the older version installed, so carry on with it.
-                    // If the failed update broke the install, the exception stops Prepare instead.
+                    // The update failed without changing the installed version, so the older
+                    // version is still intact: carry on with it. If the update got partway (the
+                    // version changed, or the program is gone), the exception stops Prepare instead.
                     _progress.MessageWithoutLocalizing(
                         $"The Reading App Builder update did not finish ({error.Message}). Continuing with version {installedVersion}.",
                         ProgressKind.Warning

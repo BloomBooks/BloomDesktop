@@ -2594,6 +2594,45 @@ namespace BloomTests.Publish.Rab
         }
 
         [Test]
+        public void PrepareAsync_Fails_WhenTheUpdateInstallerFailsPartway()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+                InstallerFailure = new ApplicationException(
+                    "Reading App Builder installer exited with code 1."
+                ),
+                InstallerFailureLeavesVersion = "2.0",
+            };
+
+            var error = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.PrepareAsync()
+            );
+
+            Assert.That(
+                error.Message,
+                Is.EqualTo("Reading App Builder installer exited with code 1.")
+            );
+            Assert.That(
+                service.IsRabInstalledForPrepare(),
+                Is.True,
+                "the program files are still there; only the version shows the update got partway"
+            );
+        }
+
+        [Test]
         public void PrepareAsync_Fails_WhenTheUpdateInstallerFailsAndBreaksTheInstalledRab()
         {
             using var tempFolder = new TemporaryFolder("RabAppProjectTests");
@@ -3395,6 +3434,8 @@ namespace BloomTests.Publish.Rab
                 {
                     if (InstallerFailureRemovesRab)
                         IsRabInstalledForPrepareResult = false;
+                    if (InstallerFailureLeavesVersion != null)
+                        InstalledRabVersionText = InstallerFailureLeavesVersion;
                     throw InstallerFailure;
                 }
 
@@ -3415,6 +3456,10 @@ namespace BloomTests.Publish.Rab
             // any installed Reading App Builder in place unless InstallerFailureRemovesRab is true.
             public Exception InstallerFailure { get; set; }
             public bool InstallerFailureRemovesRab { get; set; }
+
+            // When set with InstallerFailure, the failed installer got partway and changed the
+            // installed version to this before failing.
+            public string InstallerFailureLeavesVersion { get; set; }
 
             internal override string GetRabInstallerStagingDirectory()
             {
