@@ -811,6 +811,8 @@ namespace BloomTests.Publish.Rab
             await service.BuildAsync();
             var previousApk = service.FindLatestApkPath(paths);
             Assert.That(previousApk, Is.Not.Null, "setup: the first build should leave an APK");
+            // In real use the previous APK is from an earlier build, minutes old.
+            new FileInfo(previousApk).LastWriteTimeUtc = DateTime.UtcNow.AddMinutes(-5);
             var previousWriteTime = RobustFile.GetLastWriteTimeUtc(previousApk);
 
             service.SkipApkOnNextBuild = true;

@@ -700,7 +700,9 @@ namespace Bloom.Publish.Rab
                 // "no APK was found" message that gives the user nothing to act on (BL-16467).
                 var buildOutput = new List<string>();
                 _rabOutputCapture = buildOutput;
-                var buildStartedUtc = DateTime.UtcNow;
+                // File write times can be up to a clock tick behind DateTime.UtcNow, so allow a
+                // margin; a stale APK is from an earlier build, minutes older.
+                var buildStartedUtc = DateTime.UtcNow.AddSeconds(-2);
                 try
                 {
                     RunRabCommand(
