@@ -46,11 +46,15 @@ export interface IImagePlacement {
 /**
  * Put the image file at `filePath` into the first image slot of the page being edited, the way
  * choosing that file in the image chooser would, and wait until the page shows it.
+ *
+ * The real chooser makes the change undoable. This does not, unless `undoable` is set, so that
+ * the Undo button in a test about something else is not taken by the picture.
  */
 export async function chooseImageFile(
     page: Page,
     filePath: string,
     within?: Locator,
+    undoable = false,
 ): Promise<void> {
     const result = await apiPost(
         page,
@@ -82,7 +86,7 @@ export async function chooseImageFile(
             ).editablePageBundle;
             bundle.changeImageByElement(img as HTMLElement, imageInfo);
         },
-        { ...info, undoable: "false" },
+        { ...info, undoable: undoable ? "true" : "false" },
     );
     const fileName = Path.basename(decodeURIComponent(info.src));
     await expect
@@ -144,14 +148,8 @@ export async function cropImage(
     pixels: number,
     within?: Locator,
 ): Promise<void> {
-    const frame = editablePageFrame(page);
-    const img = imageIn(page, within);
-    await img.waitFor({ state: "visible", timeout: 30000 });
-    // A real press at the picture's centre. The drawing canvas Bloom lays over the page takes the
-    // click and selects the picture under it, so Playwright's own click, which refuses to press
-    // on an element something else covers, would wait forever here.
-    await realClick(img);
-    const handle = frame.locator(SIDE_HANDLE[side]);
+    await selectImage(page, within);
+    const handle = editablePageFrame(page).locator(SIDE_HANDLE[side]);
     await handle.waitFor({ state: "visible", timeout: 30000 });
     const box = (await handle.boundingBox())!;
     const x = box.x + box.width / 2;
@@ -175,6 +173,23 @@ export async function cropImage(
             message: `Dragging the ${side} handle by ${pixels}px did not crop the image.`,
         })
         .toBe(true);
+}
+
+/**
+ * Select the first image on the page being edited, the way a person does, by clicking it, and wait
+ * until Bloom shows the frame with its handles around it. A selected picture is also what the Undo
+ * button needs before it will undo a change to that picture.
+ */
+export async function selectImage(page: Page, within?: Locator): Promise<void> {
+    const img = imageIn(page, within);
+    await img.waitFor({ state: "visible", timeout: 30000 });
+    // A real press at the picture's centre. The drawing canvas Bloom lays over the page takes the
+    // click and selects the picture under it, so Playwright's own click, which refuses to press
+    // on an element something else covers, would wait forever here.
+    await realClick(img);
+    await editablePageFrame(page)
+        .locator(SIDE_HANDLE.e)
+        .waitFor({ state: "visible", timeout: 30000 });
 }
 
 /**

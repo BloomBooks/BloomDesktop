@@ -49,8 +49,9 @@ frame build the entry. Design it with Stage 2's first real caller, not before.
 
 - [x] `pnpm test` green; `bookEdit/undo` specs green (52 tests, 21 of them added with the edits).
 - [x] **The point of Stage 1 is that nothing changes**, so the verification is behavioural, in a
-  running Bloom. Done 2026-09-07 with the harnesses in `liveChecks/` (see its README); results in
-  PROGRESS.md under that date:
+  running Bloom. Done 2026-09-07 with the harnesses in `liveChecks/` (kept on branch
+  `BL-6681-bug-repros`; the e2e spec `src/BloomE2E/tests/undo-routing.spec.ts` now does the
+  same checks); results in PROGRESS.md under that date:
   - [x] Change Layout mode: a split, Ctrl+Z undoes it, Ctrl+Y redoes it, each exactly once (origami's
         own handler; ours declined). The Undo button reaches `origamiUndo` through the stack.
   - [x] Decodable Reader tool active: type, Undo button — the reader-tools undo runs (`tb=1`), not

@@ -59,7 +59,8 @@ Stage 0 checklist (PLAN.md §6):
       it found that **the paste filter is bypassed whenever the payload contains a styled span**
       (BL-12357's `cke/id` test is always true), letting tables/iframes/images/divs into the book.
 - [x] Handler-accumulation repro (§4.10) — **reproduced** 2026-09-07 (1 → 2 → 3 handlers);
-      `liveChecks/handlerAccumulation.mjs` is the X4 test, failing until §4.10 lands
+      `liveChecks/handlerAccumulation.mjs` (now on branch `BL-6681-bug-repros`) is the X4 test,
+      failing until §4.10 lands
 - [~] Page-reload timing baseline (§4.11) — superseded by BL-13502's measurements (see 2026-09-07)
 - [x] Rebased onto `origin/master` (was 64 behind; one conflict in `toolbox.ts`, resolved). Now 0
       behind. Typecheck clean, 63 tests green.
@@ -1018,8 +1019,10 @@ removes both mechanisms anyway.
 ## Next actions
 
 Everything below is pushed; nothing is half-applied, and both branches are green with a clean
-working tree. Bloom can be launched from this worktree with the `run-bloom` skill; the live checks in
-`docs/retire-ckeditor/liveChecks/` drive it.
+working tree. The undo routing checks are the e2e spec `src/BloomE2E/tests/undo-routing.spec.ts`,
+which launches its own Bloom; re-run it after every stage that moves a mechanism. The bug repros
+and the other live-check scripts are kept, unchanged, on branch `BL-6681-bug-repros` (see the
+2026-10-01 entry).
 
 ### Decisions John needs to make
 
@@ -1052,8 +1055,8 @@ files below are new; nothing conflicts).
 2. ~~Capture the paste/drop baseline~~ — done 2026-09-07 with synthetic events; **remaining:** one
    manual confirmation with a real clipboard (copy a web-page table containing coloured text into a
    Bloom box) that the styled-span bypass happens for real pastes too, then file it.
-3. ~~Handler-accumulation repro~~ — **reproduced 2026-09-07** (`liveChecks/handlerAccumulation.mjs`,
-   1 → 2 → 3 handlers). Remaining: file its card (John's call), and keep that script as the X4
+3. ~~Handler-accumulation repro~~ — **reproduced 2026-09-07** (`liveChecks/handlerAccumulation.mjs`
+   on branch `BL-6681-bug-repros`, 1 → 2 → 3 handlers). Remaining: file its card (John's call), and keep that script as the X4
    listener-leak test — it fails today and should pass once §4.10's signal-scoped teardown lands.
 4. ~~Page-reload timing baseline~~ — adopt BL-13502's measurements (see the 2026-09-07 entry) once it
    merges; re-run its `benchPageChange.mjs` on our branch only if something looks off.
@@ -1147,3 +1150,36 @@ Later, not Stage 0:
   `pageEditingMarkup.ts` and `toolboxBootstrap.ts`. The toolbox-frame exports the legacy providers
   call (`canUndo`, `undo`, `updateMarkupAfterUndoOrRedo`) all survive it, in `toolboxBootstrap.ts`.
   Typecheck clean; the 66 undo tests pass.
+- **The live checks became an e2e spec.** John asked for this PR to hold only the undo stack and its
+  docs, with the checks in the repo's own TypeScript e2e suite (`src/BloomE2E`) instead of
+  `liveChecks/*.mjs`. `tests/undo-routing.spec.ts` does what `verifyCk`, `verifyOrigami`,
+  `verifyImage` and `verifyReader` did: each gesture reaches the mechanism that owns the change, and
+  only that one, counted by `helpers/undo.ts` (the same wrapping `verifyCommon.mjs` did). It clicks
+  the real Undo button (new `data-testid="undo-button"`). It leaves out `verifyReader`'s A4/A6/A7,
+  which pin the two reader-tools bugs below, because Stage 3 removes them. Three green runs locally.
+- **`liveChecks/` is gone from this branch** and kept, unchanged and still runnable, on branch
+  **`BL-6681-bug-repros`** (cut at `0c27183`, Stage 1 as it stood). The scripts there that
+  reproduce a bug, for whenever these are filed:
+
+  | Script | Bug |
+  | --- | --- |
+  | `pasteFilterBypass.mjs` | A styled span in a paste bypasses the paste filter (BL-12357's `cke/id` test) |
+  | `verifyReader.mjs` A6, A7 | With a reader tool active, Ctrl+Z runs the reader-tools undo AND CKEditor's; the Ctrl+Y round trip loses typing |
+  | `verifyReader.mjs` A4 | The reader-tools undo restores a stale `cke_bm_` bookmark span |
+  | `handlerAccumulation.mjs` | Edit key handlers accumulate on every `SetupElements` re-run (F6 double-wraps) |
+
+  The fifth, the dead `data-page-id` check in `ImageUndoManager`, is code reading and needs no
+  script. `pasteDropBaseline.mjs` is also there; its output, `PASTE-DROP-BASELINE.md`, stays here.
+- **Ctrl+Z reaches the page.** `src/BloomE2E` had claimed Ctrl+Z is a WinForms accelerator that
+  never reaches the browser. It is not: the shell's `ProcessCmdKey` only raises an event (used for
+  Ctrl+N) and lets the key through, and nothing claims Ctrl+Z or Ctrl+Y. So a person's Ctrl+Z does
+  reach CKEditor, the reader tools and origami, which makes the reader-tools double undo
+  user-visible. The helper comments are corrected. Playwright's key presses go over CDP and skip the
+  shell, so `tests/undo-physical-keys.spec.ts`, skipped unless `BLOOM_E2E_PHYSICAL_KEYS` is set,
+  waits for a person to press the real keys.
+- **Real key presses, tried once by sending OS key events to an e2e Bloom** (a one-off; it has to
+  take the foreground, which the suite otherwise never does). A real Ctrl+Z reached CKEditor's own
+  undo all five times. A real Ctrl+Y redid it three times out of five; one of those also picked up a
+  stray keystroke from whoever was at the keyboard, and the two misses are unexplained (CDP Ctrl+Y
+  redoes reliably after any pause from 0 to 2 s, so it is not timing). The opt-in
+  `undo-physical-keys.spec.ts`, run by a person at the keyboard, is the way to settle it.

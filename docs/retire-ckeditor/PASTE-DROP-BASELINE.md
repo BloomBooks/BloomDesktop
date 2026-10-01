@@ -1,6 +1,6 @@
 # Paste / drop baseline — what today's filter lets through
 
-Captured 2026-09-07 by `liveChecks/pasteDropBaseline.mjs` against Bloom on branch `BL-6681-stage1-undostack` (CKEditor 4 with Bloom's `config.js` pasteFilter). This is the behaviour the replacement sanitizer (PLAN.md 4.8) must reproduce; rows are inventory C1–C7.
+Captured 2026-09-07 by `liveChecks/pasteDropBaseline.mjs` (kept on branch `BL-6681-bug-repros`) against Bloom on branch `BL-6681-stage1-undostack` (CKEditor 4 with Bloom's `config.js` pasteFilter). This is the behaviour the replacement sanitizer (PLAN.md 4.8) must reproduce; rows are inventory C1–C7.
 
 Each row: the box started as `<p>Start end</p>` with the caret after "Start "; the event carried both `text/html` and `text/plain`.
 
@@ -160,7 +160,7 @@ are CKEditor bookkeeping that its `getData()` removes on save.
    letter-spacing…), not just `font-variant` and `color`. The filter itself is fine: applied directly,
    `pasteFilter` reduces the same soup to `<span style="color:#ff0000; font-variant:small-caps">` and
    `<span>`. What undoes it is Bloom's own paste handler, one step later
-   (`liveChecks/pasteFilterBypass.mjs` logs both):
+   (`liveChecks/pasteFilterBypass.mjs` on branch `BL-6681-bug-repros` logs both):
 
    `BloomField.restoreHtmlMarkupIfNecessary` (BL-12357) exists to put spans back when the paste came
    from *inside* CKEditor. It decides that by `dataTransfer.getData("cke/id")` — but CKEditor 4.5's
