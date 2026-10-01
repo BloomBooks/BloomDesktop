@@ -2701,5 +2701,102 @@ namespace BloomTests.Publish.BloomPub
                 }
             );
         }
+
+        [Test]
+        public void CompressImages_OutputNameAlreadyUsedByBookImage_BookImageIsPreserved()
+        {
+            // BL-16954: the book already contains an image named "photo_r.jpg", which is exactly
+            // the name the resized photo.jpg would get. The resized output must take another
+            // name rather than overwrite (or fail to copy over) the book's own image.
+            const string bodyContent =
+                @"<div class='bloom-page A5Portrait' id='page-photo'>
+                    <div class='marginBox'>
+                        <div class='bloom-imageContainer bloom-background-image-in-style-attr'
+                             style=""background-image:url('photo.jpg')""></div>
+                    </div>
+                </div>
+                <div class='bloom-page A5Portrait' id='page-existing'>
+                    <div class='marginBox'>
+                        <div class='bloom-imageContainer bloom-background-image-in-style-attr'
+                             style=""background-image:url('photo_r.jpg')""></div>
+                    </div>
+                </div>";
+            var smallPhoto = FileLocationUtilities.GetFileDistributedWithApplication(
+                _pathToTestImages,
+                "man.jpg"
+            );
+
+            TestHtmlAfterCompression(
+                bodyContent,
+                bookHeadContent: kMinimumValidBookHeadContent,
+                actionsOnFolderBeforeCompressing: folderPath =>
+                {
+                    // Large, so it is resized and would be published as "photo_r.jpg".
+                    RobustFile.Copy(
+                        FileLocationUtilities.GetFileDistributedWithApplication(
+                            _pathToTestImages,
+                            "LakePendOreille.jpg"
+                        ),
+                        Path.Combine(folderPath, "photo.jpg")
+                    );
+                    // Small, so it is published unchanged under its own name.
+                    RobustFile.Copy(smallPhoto, Path.Combine(folderPath, "photo_r.jpg"));
+                },
+                assertionsOnZipArchive: paramObj =>
+                {
+                    var zip = paramObj.ZipFile;
+                    var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(paramObj.Html);
+
+                    string GetBackgroundImageUrl(string pageId)
+                    {
+                        var div = htmlDom
+                            .SafeSelectNodes(
+                                $"//div[@id='{pageId}']//div[contains(@class,'bloom-background-image-in-style-attr')]"
+                            )
+                            .Cast<SafeXmlElement>()
+                            .FirstOrDefault();
+                        Assert.That(
+                            div,
+                            Is.Not.Null,
+                            $"page '{pageId}' should contain a background-image div"
+                        );
+                        var m = System.Text.RegularExpressions.Regex.Match(
+                            div.GetAttribute("style") ?? "",
+                            @"url\('([^']+)'\)"
+                        );
+                        Assert.That(
+                            m.Success,
+                            Is.True,
+                            $"page '{pageId}' style should contain url('...')"
+                        );
+                        return m.Groups[1].Value;
+                    }
+
+                    Assert.That(
+                        GetBackgroundImageUrl("page-existing"),
+                        Is.EqualTo("photo_r.jpg"),
+                        "the small book image should be published unchanged under its own name"
+                    );
+                    Assert.That(
+                        GetBackgroundImageUrl("page-photo"),
+                        Is.EqualTo("photo_r1.jpg"),
+                        "the resized photo.jpg should step around the name the book already uses"
+                    );
+
+                    var existingEntry = zip.GetEntry("photo_r.jpg");
+                    Assert.That(existingEntry, Is.Not.Null, "photo_r.jpg should be in the zip");
+                    Assert.That(
+                        existingEntry.Size,
+                        Is.EqualTo(new FileInfo(smallPhoto).Length),
+                        "photo_r.jpg in the zip should still be the book's own image, not the resized photo"
+                    );
+                    Assert.That(
+                        zip.FindEntry("photo_r1.jpg", false),
+                        Is.Not.EqualTo(-1),
+                        "photo_r1.jpg (from photo.jpg) should be in the zip"
+                    );
+                }
+            );
+        }
     }
 }
