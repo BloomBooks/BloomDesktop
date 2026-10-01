@@ -700,6 +700,9 @@ namespace Bloom.Publish.Rab
                 // "no APK was found" message that gives the user nothing to act on (BL-16467).
                 var buildOutput = new List<string>();
                 _rabOutputCapture = buildOutput;
+                // File write times can be up to a clock tick behind DateTime.UtcNow, so allow a
+                // margin; a stale APK is from an earlier build, minutes older.
+                var buildStartedUtc = DateTime.UtcNow.AddSeconds(-2);
                 try
                 {
                     RunRabCommand(
@@ -732,8 +735,14 @@ namespace Bloom.Publish.Rab
 
                 ReportProgressStage("finalizing-apk", 98);
 
+                // Only an APK this build wrote counts. An older one left in the folder means RAB
+                // stopped without building; reporting it as the result would have "Try on phone"
+                // install a stale app (BL-16959).
                 var apkPath = FindLatestApkPath(paths);
-                if (string.IsNullOrEmpty(apkPath))
+                if (
+                    string.IsNullOrEmpty(apkPath)
+                    || RobustFile.GetLastWriteTimeUtc(apkPath) < buildStartedUtc
+                )
                     throw new ApplicationException(DescribeMissingApkFailure(buildOutput));
 
                 ReportProgressStage("complete", 100);
@@ -2188,7 +2197,12 @@ namespace Bloom.Publish.Rab
             var argumentFilePath = CreateRabArgumentFile(rabArguments);
             try
             {
-                var command = $"\"{rabLauncher}\" -i {QuoteArgument(argumentFilePath)}";
+                // The trailing "exit /b" is required for RAB's exit code to reach us: rab.bat runs
+                // Java and then ends with "GOTO :EOF", and a batch file that ends that way under
+                // "cmd /c" makes cmd.exe exit 0 even when Java exited 1, so every RAB failure looked
+                // like success. "exit /b" re-reads the error level after rab.bat returns. ("call"
+                // would also work, but it doubles any ^ in the argument file's path.) (BL-16959)
+                var command = $"\"{rabLauncher}\" -i {QuoteArgument(argumentFilePath)} & exit /b";
                 RunProcess(
                     "cmd.exe",
                     $"/d /c \"{command}\"",
