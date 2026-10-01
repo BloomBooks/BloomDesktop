@@ -9,6 +9,12 @@
 // The two stacks cannot be merged, so we record the order they were last written in and let that
 // decide. The counter is a bare sequence number rather than a clock because two changes in the
 // same millisecond are ordinary and a tie has no right answer.
+//
+// Two known gaps, left until BL-16900 (one undo stack behind the Undo button) is in master, which
+// is when this file should be revisited: CKEditor's side keeps only its latest change, so undoing
+// typing does not hand the turn back to an earlier table operation ("type, add a row, type, Undo,
+// Undo" takes the first typing before the row); and a table Undo rebuilds the cells, which
+// discards their CKEditor typing history.
 
 let changeCounter = 0;
 // One entry per operation in the table library's history, oldest first, so that undoing one

@@ -111,7 +111,7 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
     );
     await expect
         .poll(async () => (await getZoom(page)).zoom, {
-            timeout: 30000,
+            timeout: 5000,
             message: `Bloom never reported the zoom as ${percent}%.`,
         })
         .toBe(percent);
@@ -130,7 +130,7 @@ export async function setZoom(page: Page, percent: number): Promise<void> {
                         return match ? Math.round(Number(match[1]) * 100) : 0;
                     }),
             {
-                timeout: 30000,
+                timeout: 5000,
                 message: `The page being edited was never drawn at ${percent}%.`,
             },
         )

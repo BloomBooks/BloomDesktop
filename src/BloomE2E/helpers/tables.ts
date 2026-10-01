@@ -38,6 +38,11 @@ import {
 } from "./geometry";
 import { realClick } from "./realClick";
 
+// How long a table helper waits for the page to show something. Everything waited for here is
+// done by the page's own script in a few milliseconds, so a wait that runs out is a failure, and a
+// long timeout only delays the report of it.
+const kTableWaitMs = 5000;
+
 /** What a cell holds, as the table records it in `data-content-type`. */
 export type CellContentType = "text" | "image" | "video" | "table";
 
@@ -138,7 +143,7 @@ export async function waitForTableAttached(
     await expect(
         table(page, tableIndex),
         `Bloom never attached its table editing to table ${tableIndex}.`,
-    ).toHaveAttribute("data-table-attached", "1", { timeout: 30000 });
+    ).toHaveAttribute("data-table-attached", "1", { timeout: kTableWaitMs });
 }
 
 /**
@@ -159,7 +164,10 @@ export async function waitForNestedTableAttached(
     await expect
         .poll(
             async () => {
-                await target.waitFor({ state: "attached", timeout: 30000 });
+                await target.waitFor({
+                    state: "attached",
+                    timeout: kTableWaitMs,
+                });
                 return target.evaluate(
                     (element) =>
                         !!element.getAttribute("data-column-widths") &&
@@ -167,7 +175,7 @@ export async function waitForNestedTableAttached(
                 );
             },
             {
-                timeout: 30000,
+                timeout: kTableWaitMs,
                 message:
                     `The table library never wired table ${tableIndex}: it has no column or row ` +
                     `sizes of its own.`,
@@ -182,7 +190,7 @@ export async function getTableShape(
     tableIndex = 0,
 ): Promise<ITableShape> {
     const target = table(page, tableIndex);
-    await target.waitFor({ state: "attached", timeout: 30000 });
+    await target.waitFor({ state: "attached", timeout: kTableWaitMs });
     return target.evaluate((element) => {
         // An empty attribute means no columns yet, and "".split(",") would wrongly say one.
         const list = (name: string) => {
@@ -274,7 +282,7 @@ export async function measureTableIn(
     tableSelector = ".bloom-table",
 ): Promise<ITableMeasurement> {
     const target = frame.locator(tableSelector).nth(tableIndex);
-    await target.waitFor({ state: "attached", timeout: 30000 });
+    await target.waitFor({ state: "attached", timeout: kTableWaitMs });
     const shape = await target.evaluate((element) => {
         const list = (name: string) => {
             const value = element.getAttribute(name) ?? "";
@@ -461,7 +469,7 @@ export function expectTilingOf(
  * waits for it to stop moving.
  */
 async function clickChrome(target: Locator, what: string): Promise<void> {
-    await target.click({ timeout: 30000 }).catch((reason) => {
+    await target.click({ timeout: kTableWaitMs }).catch((reason) => {
         throw new Error(`Could not press ${what}: ${reason}`);
     });
 }
@@ -479,7 +487,7 @@ export async function clickCell(
     tableIndex = 0,
 ): Promise<Locator> {
     const target = await cell(page, row, column, tableIndex);
-    await target.waitFor({ state: "visible", timeout: 30000 });
+    await target.waitFor({ state: "visible", timeout: kTableWaitMs });
     const box = await requireBox(
         target,
         `the cell at row ${row}, column ${column}`,
@@ -510,27 +518,14 @@ export async function clickCell(
         await page.mouse.move(places[attempt].x, places[attempt].y);
         await page.mouse.down();
         await page.mouse.up();
-        // A press that lands marks the cell within a frame or two, so an attempt that is going to
-        // be retried anyway waits only long enough to cover a slow frame. The last attempt gets the
-        // full five seconds, because after it there is nothing left to try and a wrong answer there
-        // fails the test. Waiting five seconds on every attempt cost about seven seconds a run.
-        const isLastAttempt = attempt === places.length - 1;
-        const waitFor = isLastAttempt ? 5000 : 750;
-        selected = await target
-            .evaluate(
-                (element, allowedMs: number) =>
-                    new Promise<boolean>((resolve) => {
-                        const deadline = Date.now() + allowedMs;
-                        const check = () => {
-                            if (element.classList.contains("cell--selected"))
-                                return resolve(true);
-                            if (Date.now() > deadline) return resolve(false);
-                            setTimeout(check, 50);
-                        };
-                        check();
-                    }),
-                waitFor,
-            )
+        // A press that lands marks the cell within a frame or two, so one second is plenty.
+        //
+        // The polling runs here, not in the page: Bloom runs with --dont-disturb, so its window
+        // is hidden and the browser throttles the page's timers to about once a minute. A
+        // setTimeout loop inside the page turned this one-second wait into several minutes.
+        selected = await expect(target)
+            .toHaveClass(/\bcell--selected\b/, { timeout: 1000 })
+            .then(() => true)
             .catch(() => false);
     }
     if (!selected)
@@ -714,7 +709,7 @@ async function focusCellTextBox(
     tableIndex = 0,
 ): Promise<Locator> {
     const box = await cellTextBox(page, row, column, languageTag, tableIndex);
-    await box.waitFor({ state: "visible", timeout: 30000 });
+    await box.waitFor({ state: "visible", timeout: kTableWaitMs });
     // A cell made a moment ago gets its CKEditor late, and the editor wipes whatever was typed
     // before it was ready (AUTOMATION-DEBT.md, "CKEditor discards what you type while it is
     // still starting up").
@@ -892,12 +887,12 @@ export async function clickAddButton(
         `button[data-table-overlay="add-button"][aria-label="${ADD_BUTTON_LABEL[what]}"]`,
     );
     await page.mouse.move(hoverAt.x, hoverAt.y);
-    await button.waitFor({ state: "visible", timeout: 30000 });
+    await button.waitFor({ state: "visible", timeout: kTableWaitMs });
     await clickChrome(button, `the "add ${what}" button`);
     const grew = what === "row" ? "rows" : "columns";
     await expect
         .poll(async () => (await getTableShape(page, tableIndex))[grew], {
-            timeout: 30000,
+            timeout: kTableWaitMs,
             message:
                 `Pressing the "+" button on the ${what === "row" ? "bottom" : "right"} edge did ` +
                 `not add a ${what} (the table still has ${before[grew]} ${grew}).`,
@@ -930,11 +925,11 @@ export async function openTableMenu(
     );
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     const pill = frame.locator(`button[data-btable-menu-pill="${which}"]`);
-    await pill.waitFor({ state: "visible", timeout: 30000 });
+    await pill.waitFor({ state: "visible", timeout: kTableWaitMs });
     await clickChrome(pill, `the ${which} pill`);
     await frame
         .locator(`[data-btable-menu="${which}"]`)
-        .waitFor({ state: "visible", timeout: 30000 });
+        .waitFor({ state: "visible", timeout: kTableWaitMs });
 }
 
 /**
@@ -949,7 +944,7 @@ export async function clickTableMenuCommand(
 ): Promise<void> {
     const frame = editablePageFrame(page);
     const menu = frame.locator("[data-btable-menu]:visible").first();
-    await menu.waitFor({ state: "visible", timeout: 30000 });
+    await menu.waitFor({ state: "visible", timeout: kTableWaitMs });
     const item = menu.locator(`[role="menuitem"][aria-label="${command}"]`);
     if ((await item.count()) === 0) {
         const offered = await menu
@@ -963,7 +958,7 @@ export async function clickTableMenuCommand(
         );
     }
     await item.click();
-    await menu.waitFor({ state: "hidden", timeout: 30000 });
+    await menu.waitFor({ state: "hidden", timeout: kTableWaitMs });
 }
 
 /**
@@ -981,7 +976,7 @@ export async function rightClickCell(
     await pressRightOnCell(page, row, column, tableIndex);
     await editablePageFrame(page)
         .locator('[data-btable-menu="cell"]')
-        .waitFor({ state: "visible", timeout: 30000 })
+        .waitFor({ state: "visible", timeout: kTableWaitMs })
         .catch(() => undefined);
     return getOpenMenus(page);
 }
@@ -1166,7 +1161,7 @@ export async function setCellContentType(
         target,
         `Choosing the "${type}" content type did not change what the cell at row ${row}, ` +
             `column ${column} holds.`,
-    ).toHaveAttribute("data-content-type", type, { timeout: 30000 });
+    ).toHaveAttribute("data-content-type", type, { timeout: kTableWaitMs });
     await closeAnyMenu(page);
 }
 
@@ -1244,7 +1239,7 @@ export async function dragTableBy(
                 return Math.abs(now.x - before.x) + Math.abs(now.y - before.y);
             },
             {
-                timeout: 30000,
+                timeout: kTableWaitMs,
                 message:
                     `Dragging table ${tableIndex} by ${Math.round(dx)},${Math.round(dy)} did not ` +
                     `move it.`,
@@ -1339,7 +1334,7 @@ export async function dragBoundary(
             async () =>
                 (await getTableShape(page, tableIndex))[sizes].join(","),
             {
-                timeout: 30000,
+                timeout: kTableWaitMs,
                 message:
                     `Dragging the ${what} ${index} boundary by ${distance}px did not change the ` +
                     `table's recorded sizes (still ${before[sizes].join(",")}).`,
@@ -1466,8 +1461,8 @@ async function pageFrameOffset(page: Page): Promise<{ x: number; y: number }> {
 }
 
 async function requireBox(locator: Locator, what: string): Promise<IRect> {
-    await locator.waitFor({ state: "visible", timeout: 30000 });
-    const box = await locator.boundingBox({ timeout: 30000 });
+    await locator.waitFor({ state: "visible", timeout: kTableWaitMs });
+    const box = await locator.boundingBox({ timeout: kTableWaitMs });
     if (!box)
         throw new Error(
             `${what} is visible but has no on-screen box, so there is nowhere to measure or click.`,
@@ -1498,7 +1493,7 @@ export async function expectFormatGearInsideCell(
     const target = await cell(page, row, column, tableIndex);
     const frame = editablePageFrame(page);
     const gear = frame.locator("#formatButton");
-    await gear.waitFor({ state: "visible", timeout: 30000 });
+    await gear.waitFor({ state: "visible", timeout: kTableWaitMs });
     const rects = await frame.evaluate(
         ({ gearSelector }) => {
             const asRect = (element: Element | null) => {
@@ -1563,7 +1558,7 @@ export async function expectTablesRenderAsGrids(
     const found = frame.locator(tableSelector);
     await expect
         .poll(async () => found.count(), {
-            timeout: 30000,
+            timeout: kTableWaitMs,
             message: "The preview never showed the expected number of tables.",
         })
         .toBe(expectedCount);
@@ -1740,7 +1735,7 @@ export async function expectPictureInsideCell(
 ): Promise<void> {
     const target = await cell(page, row, column, tableIndex);
     const picture = target.locator(".bloom-imageContainer img").first();
-    await picture.waitFor({ state: "visible", timeout: 30000 });
+    await picture.waitFor({ state: "visible", timeout: kTableWaitMs });
     const rects = await picture.evaluate((image) => {
         const asRect = (element: Element) => {
             const box = element.getBoundingClientRect();

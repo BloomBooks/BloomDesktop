@@ -1589,6 +1589,12 @@ export class CanvasElementManager {
             this.alignControlFrameWithActiveElement();
             return;
         }
+        // A table's shape comes from its rows and columns. A picture or video in one of its cells
+        // is not the table's content in the sense meant here, so it must not reshape the table.
+        if (canvasElement.getElementsByClassName("bloom-table").length > 0) {
+            this.alignControlFrameWithActiveElement();
+            return;
+        }
         const imgOrVideo = this.getImageOrVideo();
         if (!imgOrVideo || imgOrVideo.style.width) {
             // We don't have an image, or we've already done cropping on it, so we should not force the
@@ -1793,6 +1799,16 @@ export class CanvasElementManager {
     private alignControlFrameWithActiveElement = () => {
         alignCanvasElementControlFrameWithActiveElement(this.activeElement);
     };
+
+    /**
+     * Called when the Edit tab's zoom has changed the scale of the page. A zoom change does not
+     * reload the page, so the control frame and the toolbar under it would otherwise keep their
+     * old position and scale, and the toolbar can land on top of the active element: a press
+     * meant for a table cell then hits Delete.
+     */
+    public onPageZoomChanged() {
+        this.alignControlFrameWithActiveElement();
+    }
 
     adjustContextControlPosition(
         controlFrame: HTMLElement | null,
