@@ -2432,6 +2432,123 @@ namespace BloomTests.Publish.Rab
             );
         }
 
+        [TestCase("13.9", "14.0", true)]
+        [TestCase("14.0", "14.6", true)]
+        [TestCase("14.6", "14.10", true)]
+        [TestCase("14", "14.6", true)]
+        [TestCase("14.6", "14.6", false)]
+        [TestCase("14.10", "14.6", false)]
+        [TestCase("15", "14.6", false)]
+        [TestCase(null, "14.6", false)]
+        [TestCase("", "14.6", false)]
+        [TestCase("not a version", "14.6", false)]
+        public void IsRabVersionOlderThan_ComparesNumerically_AndTreatsUnknownAsCurrent(
+            string installedVersionText,
+            string version,
+            bool expected
+        )
+        {
+            Assert.That(
+                RabProjectService.IsRabVersionOlderThan(installedVersionText, new Version(version)),
+                Is.EqualTo(expected)
+            );
+        }
+
+        [Test]
+        public async Task PrepareAsync_InstallsTheNewerRab_WhenAnOlderVersionIsInstalled()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var installerPath = Path.Combine(
+                tempFolder.Path,
+                RabProjectService.kRabSetupInstallerFileName
+            );
+            RobustFile.WriteAllText(installerPath, "installer");
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = installerPath,
+            };
+            Assert.That(
+                service.IsRabInstalledForPrepare(),
+                Is.True,
+                "setup: an (older) Reading App Builder for Bloom should already be installed"
+            );
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.EqualTo(new[] { installerPath }));
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Has.Some.StartsWith("Updating Reading App Builder from version 1.0 to ")
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
+        [TestCase("999.0")]
+        [TestCase(null)]
+        public async Task PrepareAsync_DoesNotReinstallRab_WhenTheInstalledVersionIsCurrentOrUnknown(
+            string installedVersionText
+        )
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = installedVersionText,
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
+        [Test]
+        public async Task PrepareAsync_ContinuesWithTheInstalledRab_WhenTheUpdateCannotBeDownloaded()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var service = new TestRabProjectService(
+                paths,
+                "Sample App",
+                MakeOneTrackedBook(tempFolder, paths)
+            )
+            {
+                InstalledRabVersionText = "1.0",
+                RabSetupInstallerPathToReturn = null,
+                RabSetupInstallerDownloadPathToReturn = null,
+            };
+
+            await service.PrepareAsync();
+
+            Assert.That(service.InstalledRabFromSetupPaths, Is.Empty);
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain(
+                    "Bloom could not download the newer Reading App Builder. Continuing with version 1.0."
+                )
+            );
+            Assert.That(
+                service.Progress.Messages.Select(message => message.Item1),
+                Does.Contain("Prepare complete.")
+            );
+        }
+
         [Test]
         public async Task PrepareAsync_DoesNotFail_WhenInstallerLaunchIsCanceledByUser()
         {
@@ -2982,6 +3099,16 @@ namespace BloomTests.Publish.Rab
             internal override bool IsRabInstalledForPrepare()
             {
                 return IsRabInstalledForPrepareResult;
+            }
+
+            // The installed Reading App Builder for Bloom version the test pretends to have. Null
+            // (unknown) means Prepare never updates it, so tests don't depend on this machine's
+            // real registry.
+            public string InstalledRabVersionText { get; set; }
+
+            internal override string GetInstalledRabVersionText()
+            {
+                return InstalledRabVersionText;
             }
 
             internal override string FindRabSetupInstallerPath()

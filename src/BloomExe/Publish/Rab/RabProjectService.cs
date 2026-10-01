@@ -48,7 +48,13 @@ namespace Bloom.Publish.Rab
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
+
+        // When this changes, Prepare installs the new version over an older Reading App Builder for
+        // Bloom the next time the user runs it. Upload the matching installer first (see kRabSetupDownloadUrl).
         private const string kRabInstallerVersion = "14-0";
+        private static readonly Version kRabInstallerVersionNumber = new Version(
+            kRabInstallerVersion.Replace('-', '.')
+        );
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         internal const string kRabSetupInstallerFileName =
             kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
@@ -563,19 +569,43 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        /// <summary>
+        /// Makes sure Reading App Builder for Bloom is installed, installing it if needed. If an
+        /// older version is installed, installs kRabInstallerVersion over it; if that update cannot
+        /// be downloaded or started, carries on with the installed version. Returns false if
+        /// Prepare cannot continue.
+        /// </summary>
         private bool EnsureRabInstalledForPrepare()
         {
             ReportProgressStage("checking-installer", 0);
 
-            if (IsRabInstalledForPrepare())
+            var isInstalled = IsRabInstalledForPrepare();
+            var installedVersion = isInstalled ? GetInstalledRabVersionText() : null;
+            if (isInstalled && !IsRabVersionOlderThan(installedVersion, kRabInstallerVersionNumber))
                 return true;
 
-            var installerPath = GetRabSetupInstallerPath();
+            string installerPath;
+            try
+            {
+                installerPath = GetRabSetupInstallerPath(isInstalled);
+            }
+            catch (Exception error) when (isInstalled && !(error is OperationCanceledException))
+            {
+                // An update is optional: the installed version still works, so a user who is
+                // offline can carry on with it.
+                _progress.MessageWithoutLocalizing(
+                    $"Bloom could not download the newer Reading App Builder ({error.Message}). Continuing with version {installedVersion}.",
+                    ProgressKind.Warning
+                );
+                return true;
+            }
             if (!string.IsNullOrWhiteSpace(installerPath))
             {
                 ReportProgressStage("running-installer", 0);
                 _progress.MessageWithoutLocalizing(
-                    "Reading App Builder is not installed at the registry install path. Installing it now...",
+                    isInstalled
+                        ? $"Updating Reading App Builder from version {installedVersion} to {kRabInstallerVersionNumber}..."
+                        : "Reading App Builder is not installed at the registry install path. Installing it now...",
                     ProgressKind.Heading
                 );
                 try
@@ -589,7 +619,8 @@ namespace Bloom.Publish.Rab
                         ProgressKind.Warning
                     );
                     _progress.MessageWithoutLocalizing($"Installer: {installerPath}");
-                    return false;
+                    // When updating, the installed version still works, so carry on with it.
+                    return isInstalled;
                 }
                 if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
@@ -604,6 +635,15 @@ namespace Bloom.Publish.Rab
                 return true;
             }
 
+            if (isInstalled)
+            {
+                _progress.MessageWithoutLocalizing(
+                    $"Bloom could not download the newer Reading App Builder. Continuing with version {installedVersion}.",
+                    ProgressKind.Warning
+                );
+                return true;
+            }
+
             ReportProgressStage("downloading-installer", 0);
             _progress.MessageWithoutLocalizing(
                 "Reading App Builder is not installed at the registry install path. Bloom could not download the installer.",
@@ -613,7 +653,43 @@ namespace Bloom.Publish.Rab
             return false;
         }
 
-        internal virtual string GetRabSetupInstallerPath()
+        /// <summary>
+        /// The installed Reading App Builder for Bloom's version (e.g. "14.6"), from its registry key
+        /// or, failing that, the VERSION file in its install folder. Null if neither says.
+        /// </summary>
+        internal virtual string GetInstalledRabVersionText()
+        {
+            var version = GetRabRegistryValue("Version");
+            if (!string.IsNullOrWhiteSpace(version))
+                return version.Trim();
+
+            var rabLauncher = FindRabLauncherPath();
+            if (string.IsNullOrWhiteSpace(rabLauncher))
+                return null;
+            var versionFile = Path.Combine(Path.GetDirectoryName(rabLauncher), "VERSION");
+            return RobustFile.Exists(versionFile)
+                ? RobustFile.ReadAllText(versionFile).Trim()
+                : null;
+        }
+
+        /// <summary>
+        /// True if the installed version text (e.g. "14.0" or "14") is older than the given
+        /// version. An unknown or unreadable version counts as not older, so Bloom does not
+        /// reinstall Reading App Builder on every Prepare.
+        /// </summary>
+        internal static bool IsRabVersionOlderThan(string installedVersionText, Version version)
+        {
+            if (string.IsNullOrWhiteSpace(installedVersionText))
+                return false;
+
+            // Version.TryParse needs at least major.minor.
+            var text = installedVersionText.Trim();
+            if (!text.Contains('.'))
+                text += ".0";
+            return Version.TryParse(text, out var installedVersion) && installedVersion < version;
+        }
+
+        internal virtual string GetRabSetupInstallerPath(bool isUpdate = false)
         {
             var existingInstallerPath = FindRabSetupInstallerPath();
             if (!string.IsNullOrWhiteSpace(existingInstallerPath))
@@ -621,7 +697,9 @@ namespace Bloom.Publish.Rab
 
             ReportProgressStage("downloading-installer", 0);
             _progress.MessageWithoutLocalizing(
-                "Reading App Builder is not installed at the registry install path. Downloading it now...",
+                isUpdate
+                    ? "A newer Reading App Builder is available. Downloading it now..."
+                    : "Reading App Builder is not installed at the registry install path. Downloading it now...",
                 ProgressKind.Heading
             );
 
