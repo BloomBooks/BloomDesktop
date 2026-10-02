@@ -434,12 +434,299 @@ export async function clickCanvasElementMenuItem(
         .waitFor({ state: "hidden", timeout: 30000 });
 }
 
-/** Close the canvas element menu without choosing anything, the way pressing Escape does. */
+/**
+ * Open the submenu of one row of the selected canvas element's "..." menu, such as Flip, by
+ * resting the real pointer on that row, and wait until the submenu is showing beside the menu. The
+ * row is named by localization id. Opens the menu first if it is shut. The submenu stays open only
+ * while the pointer stays on the row or on the submenu itself.
+ */
+export async function openCanvasElementSubmenu(
+    page: Page,
+    parentL10nId: string,
+): Promise<void> {
+    await openCanvasElementMenu(page);
+    const frame = editablePageFrame(page);
+    const parent = frame
+        .locator(`${MENU} li[data-testid="${parentL10nId}"]`)
+        .first();
+    if ((await parent.count()) === 0) {
+        const offered = (await getCanvasElementMenuItems(page)).map(
+            (i) => i.id,
+        );
+        throw new Error(
+            `The canvas element menu has no "${parentL10nId}" row. It offers: ` +
+                `${offered.join(", ") || "(nothing)"}.`,
+        );
+    }
+    await parent.hover();
+    // The submenu is a second menu list, drawn beside the first, and it exists only while open.
+    await expect
+        .poll(async () => frame.locator(MENU).count(), {
+            timeout: 15000,
+            message: `Resting the pointer on "${parentL10nId}" did not open its submenu.`,
+        })
+        .toBeGreaterThan(1);
+}
+
+/**
+ * The panels of the selected canvas element's "..." menu that are showing: the menu itself, and
+ * beside it the submenu of the row the pointer rests on, if one is open. For a picture of the menu.
+ */
+export function canvasElementMenuPanels(page: Page): Locator {
+    return editablePageFrame(page).locator(".MuiMenu-paper:visible");
+}
+
+/**
+ * Click one command on a submenu of the selected canvas element's "..." menu, such as Flip, then
+ * Flip horizontal. Both rows are named by localization id. Opens the menu first if it is shut, and
+ * waits until it has closed, so the command has been sent before this returns.
+ *
+ * A submenu opens only while the pointer is over its parent row (mui-nested-menu-item listens for
+ * mouseenter), so this hovers the parent with the real pointer, then jumps straight to the command.
+ * A path that crossed other rows on the way would close the submenu before the click arrived.
+ */
+export async function clickCanvasElementSubmenuItem(
+    page: Page,
+    parentL10nId: string,
+    l10nId: string,
+): Promise<void> {
+    await openCanvasElementSubmenu(page, parentL10nId);
+    const frame = editablePageFrame(page);
+    const item = frame.locator(`${MENU} li[data-testid="${l10nId}"]`).first();
+    const opened = await item
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false);
+    if (!opened) {
+        const offered = await frame
+            .locator(`${MENU} li[role="menuitem"]`)
+            .evaluateAll((items) =>
+                items.map((i) => i.getAttribute("data-testid") ?? ""),
+            );
+        throw new Error(
+            `Hovering "${parentL10nId}" did not show a "${l10nId}" command. The open menus offer: ` +
+                `${offered.join(", ") || "(nothing)"}.`,
+        );
+    }
+    await item.click();
+    await frame
+        .locator(MENU)
+        .first()
+        .waitFor({ state: "hidden", timeout: 30000 });
+}
+
+/**
+ * The selected canvas element's "..." menu as the person sees it: its commands, by localization id,
+ * in groups, where each group is what lies between two of the menu's dividing lines. A row that
+ * opens a submenu (Flip, Transparency) is in the list under its own id; its submenu is not.
+ */
+export async function getCanvasElementMenuGroups(
+    page: Page,
+): Promise<string[][]> {
+    // Waits for every item to know its feature status, so the menu has finished drawing.
+    await getCanvasElementMenuItems(page);
+    return editablePageFrame(page)
+        .locator(`${MENU} li[role="menuitem"], ${MENU} .MuiDivider-root`)
+        .evaluateAll((rows) => {
+            const groups: string[][] = [[]];
+            for (const row of rows) {
+                if (row.classList.contains("MuiDivider-root")) groups.push([]);
+                else
+                    groups[groups.length - 1].push(
+                        row.getAttribute("data-testid") ?? "",
+                    );
+            }
+            return groups.filter((group) => group.length > 0);
+        });
+}
+
+/**
+ * Rotate the selected picture 90 degrees clockwise with the Rotate right command on its "..."
+ * menu. What rotates is Bloom's business: an overlay picture rotates as a whole box, while the page's
+ * background picture rotates inside its box and the box changes shape.
+ */
+export async function rotateSelectedImageRight90Degrees(
+    page: Page,
+): Promise<void> {
+    await clickCanvasElementMenuItem(page, "EditTab.Image.RotateRight");
+}
+
+/**
+ * Mirror the selected picture with the Flip submenu of its "..." menu. "horizontal" swaps the left
+ * and the right of the picture as it is seen on screen, "vertical" the top and the bottom, however
+ * the picture or its box is rotated.
+ */
+export async function flipSelectedImage(
+    page: Page,
+    axis: "horizontal" | "vertical",
+): Promise<void> {
+    await clickCanvasElementSubmenuItem(
+        page,
+        "EditTab.Image.Flip",
+        axis === "horizontal"
+            ? "EditTab.Image.FlipHorizontal"
+            : "EditTab.Image.FlipVertical",
+    );
+}
+
+/**
+ * Put the selected picture back the way it arrived with the Reset Image command on its "..." menu.
+ */
+export async function resetSelectedImage(page: Page): Promise<void> {
+    await clickCanvasElementMenuItem(page, "EditTab.Image.Reset");
+}
+
+/** The round knob above the selected canvas element that rotates it when dragged. */
+function rotateHandle(page: Page): Locator {
+    return editablePageFrame(page).locator(
+        "#canvas-element-control-frame .bloom-ui-canvas-element-rotate-handle",
+    );
+}
+
+/**
+ * Wait until the selected canvas element's rotation knob is showing, or until it is not, as
+ * `shown` says. Bloom offers the knob only for an element it can rotate; `what` names the element
+ * for the failure message.
+ */
+export async function expectRotateHandleShown(
+    page: Page,
+    shown: boolean,
+    what: string,
+): Promise<void> {
+    await editablePageFrame(page)
+        .locator("#canvas-element-control-frame")
+        .waitFor({ state: "visible", timeout: 30000 });
+    await expect
+        .poll(async () => rotateHandle(page).isVisible(), {
+            timeout: 15000,
+            message: shown
+                ? `The rotation knob never appeared for ${what}.`
+                : `The rotation knob is showing for ${what}, which Bloom should not offer to rotate.`,
+        })
+        .toBe(shown);
+}
+
+/**
+ * The angle a canvas element is rotated by, in degrees clockwise from 0 up to 360, read from the
+ * rotate() in its inline style, which is what Bloom saves in the book. 0 when it has none.
+ */
+export async function getCanvasElementRotation(
+    element: Locator,
+): Promise<number> {
+    return element.evaluate((el) => {
+        const match = /rotate\(\s*(-?[0-9]*\.?[0-9]+)deg\s*\)/.exec(
+            (el as HTMLElement).style.transform,
+        );
+        if (!match) return 0;
+        const degrees = parseFloat(match[1]) % 360;
+        return degrees < 0 ? degrees + 360 : degrees;
+    });
+}
+
+/**
+ * Where a canvas element sits on its canvas and how big it is, as the four numbers in its inline
+ * style, in CSS pixels. A rotation is about the element's centre, so these do not change when it rotates,
+ * and a rotated element that moved on its own shows here.
+ */
+export async function getCanvasElementPlacement(element: Locator): Promise<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}> {
+    return element.evaluate((el) => {
+        const style = (el as HTMLElement).style;
+        return {
+            left: parseFloat(style.left),
+            top: parseFloat(style.top),
+            width: parseFloat(style.width),
+            height: parseFloat(style.height),
+        };
+    });
+}
+
+/**
+ * Rotate the selected canvas element by dragging its rotation knob `degrees` around the element's
+ * centre, clockwise when positive, the way a person does. With `withCtrl`, Ctrl is held for the
+ * drag, which stops the angle snapping to the nearest multiple of 45 degrees. Returns the angle the
+ * element ends at, once it has changed.
+ *
+ * The pointer travels round a circle through the knob, in small steps, so that the angle Bloom
+ * measures from the centre to the pointer never jumps. Bloom rotates the element by however far that
+ * angle moves, so where the knob starts (above the element, or below it once rotated past 135
+ * degrees) does not matter.
+ */
+export async function dragRotateHandle(
+    page: Page,
+    degrees: number,
+    options: { withCtrl?: boolean } = {},
+): Promise<number> {
+    const element = activeCanvasElement(page);
+    const before = await getCanvasElementRotation(element);
+    const knob = await requireBox(rotateHandle(page), "the rotation knob");
+    // Bloom rotates about the centre of the element's on-screen box, rotated or not.
+    const box = await getActiveCanvasElementRect(page);
+    const centreX = box.x + box.width / 2;
+    const centreY = box.y + box.height / 2;
+    const startX = knob.x + knob.width / 2;
+    const startY = knob.y + knob.height / 2;
+    const radius = Math.hypot(startX - centreX, startY - centreY);
+    const startAngle = Math.atan2(startY - centreY, startX - centreX);
+    const steps = Math.max(8, Math.ceil(Math.abs(degrees) / 5));
+
+    await page.mouse.move(startX, startY);
+    if (options.withCtrl) await page.keyboard.down("Control");
+    // Always let go of the button and of Ctrl, even when a move fails: the tests after this one
+    // drive the same Bloom, and a key held down would change every click they make.
+    try {
+        await page.mouse.down();
+        for (let i = 1; i <= steps; i++) {
+            const angle =
+                startAngle + ((degrees * Math.PI) / 180) * (i / steps);
+            await page.mouse.move(
+                centreX + radius * Math.cos(angle),
+                centreY + radius * Math.sin(angle),
+            );
+        }
+    } finally {
+        await page.mouse.up();
+        if (options.withCtrl) await page.keyboard.up("Control");
+    }
+
+    await expect
+        .poll(async () => getCanvasElementRotation(element), {
+            timeout: 15000,
+            message: `Dragging the rotation knob by ${degrees} degrees did not rotate the element.`,
+        })
+        .not.toBe(before);
+    return getCanvasElementRotation(element);
+}
+
+/**
+ * Close the canvas element menu without choosing anything by pressing Escape, the way a person
+ * does, into whatever has the focus: the menu does not take it when it opens. Waits until neither
+ * the menu nor a submenu open beside it is showing.
+ */
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
     await page.keyboard.press("Escape");
-    await menu.waitFor({ state: "hidden", timeout: 30000 });
+    await expect
+        .poll(async () => getOpenCanvasElementMenuCount(page), {
+            timeout: 30000,
+            message: "Pressing Escape did not close the canvas element menu.",
+        })
+        .toBe(0);
+}
+
+/**
+ * How many of the selected canvas element's menus are showing: 0 when the "..." menu is shut, 1
+ * when it is open, 2 when a submenu is open beside it.
+ */
+export async function getOpenCanvasElementMenuCount(
+    page: Page,
+): Promise<number> {
+    return editablePageFrame(page).locator(MENU).count();
 }
 
 /**
