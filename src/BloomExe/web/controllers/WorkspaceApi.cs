@@ -182,6 +182,14 @@ namespace Bloom.web.controllers
                         new ApplicationException("Toast test unobtrusive error")
                     );
                     break;
+                case "errorReporter/notifyWithReport":
+                    // Not a toast: the ordinary "Bloom had a problem" notify dialog, with its Report
+                    // button, which is otherwise hard to bring up on purpose.
+                    SIL.Reporting.ErrorReport.NotifyUserOfProblem(
+                        new ApplicationException("Toast test notify with report"),
+                        "Toast test: notify dialog with a Report button"
+                    );
+                    break;
                 case "workspace/teamCollectionClobber":
                     WorkspaceView?.ShowTeamCollectionClobberToast();
                     break;
