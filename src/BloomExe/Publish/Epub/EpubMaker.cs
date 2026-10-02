@@ -2458,9 +2458,12 @@ namespace Bloom.Publish.Epub
                     as SafeXmlElement;
                 if (divAck != null && !String.IsNullOrWhiteSpace(divAck.InnerText))
                     divAck.SetAttribute("type", kEpubNamespace, "acknowledgements");
+                // Either the sentence Bloom generates, or the editable field it becomes once the
+                // user takes it over; both say the same thing about the original book.
                 var divOrigCopyright =
-                    div.SelectSingleNode(".//div[@data-derived='originalCopyrightAndLicense']")
-                    as SafeXmlElement;
+                    div.SelectSingleNode(
+                        ".//div[@data-derived='originalCopyrightAndLicense' or @data-book='userOriginalCopyrightAndLicense']"
+                    ) as SafeXmlElement;
                 if (
                     divOrigCopyright != null
                     && !String.IsNullOrWhiteSpace(divOrigCopyright.InnerText)
@@ -2539,7 +2542,7 @@ namespace Bloom.Publish.Epub
                 );
                 SetRoleAndLabelForMatchingDiv(
                     div,
-                    "@data-derived='originalCopyrightAndLicense'",
+                    "@data-derived='originalCopyrightAndLicense' or @data-book='userOriginalCopyrightAndLicense'",
                     "PublishTab.AccessibleEpub.Original Copyright",
                     "Original Copyright"
                 );
