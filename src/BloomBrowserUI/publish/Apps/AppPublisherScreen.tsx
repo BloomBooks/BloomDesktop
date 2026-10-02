@@ -3,6 +3,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import PrecisionManufacturingIcon from "@mui/icons-material/PrecisionManufacturing";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
+    Alert,
     Button,
     Step,
     StepContent,
@@ -48,7 +49,7 @@ const apkToPhoneIconUrl = new URL(
 
 // Keep this URL in sync with kRabSetupDownloadUrl in BloomExe/Publish/Rab/RabProjectService.cs.
 export const rabInstallerDownloadUrl =
-    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-Setup.exe";
+    "https://bloomlibrary.org/RAB/installers/Reading-App-Builder-For-Bloom-14-0-1-Setup.exe";
 
 const AppActionButton: React.FunctionComponent<{
     enabled: boolean;
@@ -121,6 +122,12 @@ const AppPublisherScreenContents: React.FunctionComponent<{
     const prepareRequiredTooltip = useL10n(
         "Run Prepare before using this step.",
         "PublishTab.Apps.PrepareRequiredTooltip",
+    );
+    const rabUpdateNeededMessage = useL10n(
+        "This version of Bloom needs Reading App Builder %0. Click Prepare to update.",
+        "PublishTab.Apps.RabUpdateNeeded",
+        undefined,
+        screenState.status.rabUpdateVersion ?? "",
     );
     const buildNeedsPrepareTooltip = useL10n(
         "Run Prepare before building the app.",
@@ -368,6 +375,18 @@ const AppPublisherScreenContents: React.FunctionComponent<{
                                 </AppActionButton>
                             </StepLabel>
                             <StepContent>
+                                {screenState.status.rabUpdateVersion && (
+                                    <Alert
+                                        severity="warning"
+                                        data-testid="rab-update-needed"
+                                        css={css`
+                                            margin-bottom: 12px;
+                                            width: min(640px, 100%);
+                                        `}
+                                    >
+                                        {rabUpdateNeededMessage}
+                                    </Alert>
+                                )}
                                 <PrepareAppStepper
                                     steps={prepareSteps}
                                     activeStepId={activePrepareStepId}
