@@ -9,3 +9,8 @@ csharpier.json
 # leave a dirty working tree, and prettier outright fails on the book .htm files. Leave the
 # whole tree alone so the fetched fixtures match what Bloom writes.
 output/testing-inputs/
+
+# Overflow test fixtures, generated from their .pug. Also listed in src/BloomBrowserUI/.prettierignore,
+# but the pre-commit hook's pretty-quick does not apply that file to them, and prettier's whitespace
+# inside the test boxes changes what the overflow tests measure.
+src/BloomBrowserUI/bookEdit/OverflowChecker/*Fixture.html
