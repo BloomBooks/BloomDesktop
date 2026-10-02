@@ -439,6 +439,63 @@ describe("UndoStack", () => {
             expect(stack.canUndo()).toBe(false);
         });
 
+        it("after a part's redo fails, undoes the parts that redo had re-applied, so nothing is stranded", () => {
+            let failNextTime = true;
+            const flaky: IUndoEntry = {
+                ...makeEntry("flaky", log),
+                redo: () => {
+                    if (failNextTime) {
+                        failNextTime = false;
+                        throw new Error("flaky redo failed");
+                    }
+                    log.push("redo flaky");
+                },
+            };
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("first", log));
+            stack.push(flaky);
+            stack.endUndoableScope();
+            stack.undo();
+            expect(log).toEqual(["undo flaky", "undo first"]); // sanity
+
+            expect(() => stack.redo()).toThrow("flaky redo failed");
+            // "first" was redone and then rolled back: the gesture is wholly undone again, which
+            // is what its place on the redo branch means.
+            expect(log).toEqual([
+                "undo flaky",
+                "undo first",
+                "redo first",
+                "undo first",
+            ]);
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.peekRedoLabel()).toBe("gesture");
+
+            stack.redo();
+            expect(log.slice(4)).toEqual(["redo first", "redo flaky"]);
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("rolls back the same way when an asynchronous part's redo rejects", async () => {
+            const rejecting: IUndoEntry = {
+                ...makeEntry("rejecting", log),
+                redo: () => Promise.reject(new Error("async redo failed")),
+            };
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("first", log));
+            stack.push(rejecting);
+            stack.endUndoableScope();
+            stack.undo();
+
+            await expect(stack.redo()).rejects.toThrow("async redo failed");
+            expect(log).toEqual([
+                "undo rejecting",
+                "undo first",
+                "redo first",
+                "undo first",
+            ]);
+            expect(stack.peekRedoLabel()).toBe("gesture");
+        });
+
         it("waits for an asynchronous part before undoing the one before it", async () => {
             let finishSlow: () => void = () => {
                 throw new Error(
