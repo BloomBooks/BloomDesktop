@@ -1239,6 +1239,9 @@ window.showWorkspaceInitializationFailure = function(message) {
             Settings.Default.UserInterfaceLanguage = langTag;
             Settings.Default.UserInterfaceLanguageSetExplicitly = true;
             Settings.Default.Save();
+            // The problem dialogs' Report label is looked up once and kept, so look it up again
+            // in the new language.
+            Bloom.ErrorReporter.HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
 
             // Currently needed for the language chooser to update its localization
             // BloomWebSocketServer.Instance is set only while loading a collection.
