@@ -18,7 +18,10 @@ import calculateAspectRatio from "calculate-aspect-ratio";
 import VideoTrimSlider from "../../../react_components/videoTrimSlider";
 import { updateVideoInContainer } from "../../js/bloomVideo";
 import { chooseAndProcessVideo } from "../../js/ChooseAndProcessVideo";
-import { selectVideoContainer } from "../../js/videoUtils";
+import {
+    selectVideoContainer,
+    videoContainerToRecordInto,
+} from "../../js/videoUtils";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { kCanvasElementSelector } from "../canvas/canvasElementConstants";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
@@ -890,9 +893,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             return undefined;
         }
 
-        const activeVideoContainer = activeCanvasElement.querySelector(
-            ".bloom-videoContainer",
-        ) as HTMLElement | null;
+        const activeVideoContainer =
+            videoContainerToRecordInto(activeCanvasElement);
         if (
             !activeVideoContainer ||
             activeVideoContainer.closest("[data-target-of]")
@@ -945,9 +947,8 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
             return;
         }
 
-        const activeVideoContainer = activeCanvasElement.querySelector(
-            ".bloom-videoContainer",
-        ) as HTMLElement | null;
+        const activeVideoContainer =
+            videoContainerToRecordInto(activeCanvasElement);
         if (
             !activeVideoContainer ||
             activeVideoContainer.closest("[data-target-of]")

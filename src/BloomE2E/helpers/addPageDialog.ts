@@ -273,6 +273,42 @@ export async function addPageFromDialog(
     label: string,
     templateBookFolderName?: string,
 ): Promise<void> {
+    const dialog = await selectPageInAddPageDialog(
+        page,
+        label,
+        templateBookFolderName,
+    );
+    const before = (await getPages(page)).length;
+    await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
+    await expect
+        .poll(() => isAddPageDialogOpen(page), {
+            timeout: 30000,
+            message: "The Add Page dialog did not close after Add Page.",
+        })
+        .toBe(false);
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: `Bloom never added the "${label}" page from the dialog.`,
+        })
+        .toBe(before + 1);
+    await waitForEditablePage(page);
+}
+
+/**
+ * In the open Add Page dialog, select the thumbnail with this label and wait until the dialog's
+ * right-hand pane is showing it. Returns the dialog, so a caller can go on to read what the pane
+ * offers for the selected page. Adds nothing to the book.
+ *
+ * This is separate from addPageFromDialog because a page whose feature the collection's
+ * subscription tier does not include can be selected but not added: the pane replaces the Add
+ * Page button with a notice saying what subscription it needs.
+ */
+export async function selectPageInAddPageDialog(
+    page: Page,
+    label: string,
+    templateBookFolderName?: string,
+): Promise<Locator> {
     const dialog = await findAddPageDialog(page);
     const groups = await getAddPageDialogGroups(page);
     const group = groups.find(
@@ -314,20 +350,35 @@ export async function addPageFromDialog(
         dialog.getByText(label, { exact: true }),
         `Selecting "${label}" never showed it in the dialog's preview pane.`,
     ).toBeVisible({ timeout: 15000 });
+    return dialog;
+}
 
-    const before = (await getPages(page)).length;
-    await dialog.getByRole("button", { name: "Add Page", exact: true }).click();
-    await expect
-        .poll(() => isAddPageDialogOpen(page), {
-            timeout: 30000,
-            message: "The Add Page dialog did not close after Add Page.",
-        })
-        .toBe(false);
-    await expect
-        .poll(async () => (await getPages(page)).length, {
-            timeout: 60000,
-            message: `Bloom never added the "${label}" page from the dialog.`,
-        })
-        .toBe(before + 1);
-    await waitForEditablePage(page);
+/** What the Add Page dialog offers for the page that is selected. */
+export interface IAddPageOffer {
+    /** True when the dialog is offering its Add Page button, so the page can be added. */
+    addButtonOffered: boolean;
+    /**
+     * True when the pane is showing the notice that names the subscription the selected page's
+     * feature needs. That notice takes the place of the Add Page button.
+     */
+    requiresSubscriptionNotice: boolean;
+}
+
+/**
+ * What the dialog is offering for the page that is selected: the Add Page button, or the notice
+ * that says what subscription the page's feature needs. Select a page first.
+ *
+ * The notice is found by the class its own markup carries rather than by its words, which are
+ * localized (RequiresSubscriptionNotice in react_components/requiresSubscription.tsx).
+ */
+export async function getAddPageOffer(page: Page): Promise<IAddPageOffer> {
+    const dialog = await findAddPageDialog(page);
+    return {
+        addButtonOffered:
+            (await dialog
+                .getByRole("button", { name: "Add Page", exact: true })
+                .count()) > 0,
+        requiresSubscriptionNotice:
+            (await dialog.locator(".messageSettingsDialogWrapper").count()) > 0,
+    };
 }

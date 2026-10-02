@@ -23,7 +23,13 @@ import { showToolbox, toolboxFrame } from "./toolbox";
  * is what the palette's test ids are built from. "none" is the plain Text Block: the type is
  * genuinely called that, because a text block is a canvas element with no special behaviour.
  */
-export type PaletteItem = "image" | "video" | "speech" | "sound" | "none";
+export type PaletteItem =
+    | "table"
+    | "image"
+    | "video"
+    | "speech"
+    | "sound"
+    | "none";
 
 /** The controls the Canvas tool shows once it is open. */
 const CANVAS_TOOL_CONTROLS = "#canvasToolControls";
@@ -281,6 +287,35 @@ export async function dragPaletteItemOntoCanvas(
 }
 
 /**
+ * Which items the Canvas tool's palette is offering, by the canvas element type each one makes.
+ * Opens the Canvas tool first.
+ *
+ * An item whose feature is off, or whose subscription tier the collection has not got, is simply
+ * absent from the palette rather than dimmed, so this is how a test asks whether a feature is on
+ * offer. Below the canvas feature's own tier the whole tool sits behind a subscription notice (see
+ * subscriptionToolIds in ToolboxRoot.tsx) while its items stay in the document underneath it, so a
+ * test about a tier should say which of the two it means.
+ */
+export async function getPaletteItemsOffered(
+    page: Page,
+): Promise<PaletteItem[]> {
+    const toolbox = await openCanvasTool(page);
+    const anyItem = toolbox.locator("[data-testid^=palette-]:visible").first();
+    // Wait for one item rather than reading at once: the palette is drawn before it has heard
+    // back from features/status, and an item behind a feature appears only afterwards, so an
+    // immediate read can miss items that are on their way.
+    await anyItem.waitFor({ state: "visible", timeout: 20000 });
+    const ids = await toolbox
+        .locator("[data-testid^=palette-]:visible")
+        .evaluateAll((elements) =>
+            elements.map(
+                (element) => element.getAttribute("data-testid") ?? "",
+            ),
+        );
+    return ids.map((id) => id.replace(/^palette-/, "") as PaletteItem);
+}
+
+/**
  * Select a canvas element by clicking it, and wait until Bloom marks it active. Returns it.
  *
  * The click is a real mouse press, not Playwright's own: Bloom lays a drawing surface over the
@@ -303,6 +338,11 @@ export async function selectCanvasElement(
 /** Where on the page a locator is drawn. Throws naming it when it has no on-screen box. */
 export async function getRect(locator: Locator, what: string): Promise<IRect> {
     return requireBox(locator, what);
+}
+
+/** Where on the page the canvas of the page being edited is drawn. */
+export async function getCanvasRect(page: Page): Promise<IRect> {
+    return requireBox(canvas(page), "the canvas of the page being edited");
 }
 
 /** Where on the page the selected canvas element is drawn. */
@@ -438,7 +478,9 @@ export async function clickCanvasElementMenuItem(
 export async function closeCanvasElementMenu(page: Page): Promise<void> {
     const menu = editablePageFrame(page).locator(MENU).first();
     if (!(await menu.isVisible().catch(() => false))) return;
-    await page.keyboard.press("Escape");
+    // On the menu itself, not page.keyboard: the menu closes on an Escape it receives, and the
+    // focus may be elsewhere, e.g. on a picture in a table cell that was just pressed.
+    await menu.press("Escape");
     await menu.waitFor({ state: "hidden", timeout: 30000 });
 }
 
@@ -466,17 +508,24 @@ export async function duplicateCanvasElement(page: Page): Promise<number> {
 }
 
 /**
- * Delete the selected canvas element through its "..." menu, and wait until the page has one fewer.
+ * Delete the selected canvas element through its "..." menu, and wait until it and every canvas
+ * element inside it are gone. A table's picture and video cells each hold a canvas element of
+ * their own, so deleting a table can take several off the page.
  */
 export async function deleteCanvasElement(page: Page): Promise<void> {
     const countBefore = await getCanvasElementCount(page);
+    const countInside = await activeCanvasElement(page)
+        .locator(".bloom-canvas-element")
+        .count();
     await clickCanvasElementMenuItem(page, "Common.Delete");
     await expect
         .poll(async () => getCanvasElementCount(page), {
-            timeout: 30000,
-            message: `Delete did not remove a canvas element (there are still ${countBefore}).`,
+            timeout: 5000,
+            message:
+                `Delete did not remove the selected canvas element and the ${countInside} inside ` +
+                `it (there are still ${countBefore}).`,
         })
-        .toBe(countBefore - 1);
+        .toBe(countBefore - 1 - countInside);
 }
 
 /** The corners of a selected canvas element, by the names its resize handles use. */
@@ -520,6 +569,63 @@ export async function dragCanvasElementCorner(
                 timeout: 30000,
                 message:
                     `Dragging the ${corner} handle by ${dx},${dy} did not change the canvas ` +
+                    `element's size.`,
+            },
+        )
+        .toBeGreaterThan(2);
+    return { before, after: await getActiveCanvasElementRect(page) };
+}
+
+/** Which side handle to drag, as the handles themselves are named. */
+export type Side = "n" | "e" | "s" | "w";
+
+/**
+ * Resize the selected canvas element by dragging one of its side handles, and wait until it has
+ * changed size. `distance` is how far the handle moves, in the page's own pixels: outwards for a
+ * positive number on the east or south side, and for a negative one on the west or north.
+ *
+ * A canvas element holding text gets the east and west handles, plus the south one when its
+ * height is not automatic, and no corners (`has-text` in `editMode.less`). A table gets these and
+ * the corners as well, so either helper works on one.
+ *
+ * Returns the element's rect before and after, so the caller can say what should have changed.
+ */
+export async function dragCanvasElementSide(
+    page: Page,
+    side: Side,
+    distance: number,
+): Promise<{ before: IRect; after: IRect }> {
+    const frame = editablePageFrame(page);
+    const handle = frame.locator(
+        `#canvas-element-control-frame .bloom-ui-canvas-element-side-handle-${side}`,
+    );
+    await handle.waitFor({ state: "visible", timeout: 30000 });
+    const before = await getActiveCanvasElementRect(page);
+    const box = await requireBox(handle, `the ${side} side handle`);
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const horizontal = side === "e" || side === "w";
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(
+        horizontal ? x + distance : x,
+        horizontal ? y : y + distance,
+        { steps: 12 },
+    );
+    await page.mouse.up();
+    await expect
+        .poll(
+            async () => {
+                const now = await getActiveCanvasElementRect(page);
+                return (
+                    Math.abs(now.width - before.width) +
+                    Math.abs(now.height - before.height)
+                );
+            },
+            {
+                timeout: 30000,
+                message:
+                    `Dragging the ${side} handle by ${distance} did not change the canvas ` +
                     `element's size.`,
             },
         )

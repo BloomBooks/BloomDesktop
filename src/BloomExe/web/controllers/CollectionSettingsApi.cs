@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
@@ -394,6 +394,8 @@ namespace Bloom.web.controllers
                         ?? ExperimentalFeatures.IsFeatureEnabled(
                             ExperimentalFeatures.kTeamCollections
                         ),
+                    allowTables = dialog?.PendingAllowTables
+                        ?? ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTables),
                     showQrCode = dialog?.PendingShowQrCode
                         ?? _collectionSettings.ShowBlorgLanguageQrCode,
                     qrcodeCaption = dialog?.PendingBadgeQrCodeCaption
@@ -426,6 +428,18 @@ namespace Bloom.web.controllers
                 var previousValue = dialog.PendingAllowTeamCollection;
                 dialog.PendingAllowTeamCollection = allowTeamCollection;
                 if (allowTeamCollection != previousValue)
+                    dialog.ChangeThatRequiresRestart();
+            }
+
+            var allowTablesToken = data["allowTables"];
+            if (allowTablesToken != null)
+            {
+                var allowTables = allowTablesToken.Value<bool>();
+                var previousValue = dialog.PendingAllowTables;
+                dialog.PendingAllowTables = allowTables;
+                // An open edit page fetched the table feature's status when it loaded and keeps
+                // that answer (tableFeature.ts), so only a restart makes it see the new value.
+                if (allowTables != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
 
