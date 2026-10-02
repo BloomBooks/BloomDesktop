@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-10-02 — Merging master reformats master's own files, and the PR then carries the churn
+- **Cut:** The pre-commit hook's `pretty-quick --staged` formats every staged file, and a merge stages everything master changed. Committing a merge of origin/master reformatted five master files this branch never touched (the three `OverflowChecker/*Fixture.html` and two `src/BloomE2E/tests/*.spec.ts`), so the PR diff gained ~500 lines of formatting. Restoring master's versions is impossible without `--no-verify`: the hook reformats them again and the commit comes out empty.
+- **Idea:** Make master's committed files hook-stable (format them once on master, or add the generated fixtures to `.prettierignore`), or have the hook skip files a merge brings in unchanged from the other parent.
+- **Context:** BL-16859 merge commit f44dafe8fe, 2026-10-02.
+
 ## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
 - **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
@@ -92,24 +97,9 @@ House rules:
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
 
 ## 2026-09-10 — `vitest run` finishes every test and then never exits
-
-In a fresh worktree (`pnpm install` run today, vitest 4.0.8), `pnpm exec vitest run` prints all
-its ✓ lines and then hangs forever instead of printing the summary and exiting. Nothing has
-failed — the tests are done — but there is no summary line, no exit code, and no way to tell
-"still running" from "wedged". `--no-file-parallelism` (which AGENTS.md recommends for the older
-worker-pool hang) and `--pool=forks` both hang the same way.
-
-It reads exactly like a hung test, so the reflex is to go hunting for the file that hangs. There
-isn't one: run any single directory and its files all pass, then that run hangs too. Something
-keeps the event loop alive after teardown.
-
-**Workaround:** run a directory at a time under `timeout`, and read the results out of the ✓
-lines rather than the summary — e.g.
-`timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`. Note that
-`timeout` does not kill the pnpm child, so a loop over directories has to be watched.
-
-**Context:** preflight on BL-16859. Whole front-end suite green this way (~350 tests), but it
-took an hour of wall-clock to establish.
+- **Cut:** In a fresh worktree (vitest 4.0.8), `pnpm exec vitest run` prints every ✓ line, then hangs with no summary and no exit code; `--no-file-parallelism` and `--pool=forks` hang the same way. It looks like a hung test, but every directory run alone passes and then hangs too: something keeps the event loop alive after teardown.
+- **Idea:** Find what keeps the process alive after teardown. Until then, document the workaround: run one directory at a time under `timeout` (e.g. `timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`) and read the ✓ lines; `timeout` does not kill the pnpm child, so a loop over directories must be watched.
+- **Context:** preflight on BL-16859; the whole front-end suite (~350 tests) was green this way but took an hour to establish.
 
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).

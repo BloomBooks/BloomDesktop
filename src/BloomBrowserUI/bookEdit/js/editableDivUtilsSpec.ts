@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import $ from "jquery";
 import { EditableDivUtils } from "./editableDivUtils";
-import { post } from "../../utils/bloomApi";
+import { postThatMightNavigate } from "../../utils/bloomApi";
 
 vi.mock("../../utils/bloomApi", async (importOriginal) => ({
     ...((await importOriginal()) as object),
-    post: vi.fn(),
+    postThatMightNavigate: vi.fn(),
 }));
 
 describe("EditableDivUtils Tests", () => {
@@ -734,8 +734,18 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
     it("asks the server to hand the notice over to the user", () => {
         EditableDivUtils.unlockOriginalCredits();
 
-        expect(post).toHaveBeenCalledWith(
+        expect(postThatMightNavigate).toHaveBeenCalledWith(
             "copyrightAndLicense/unlockOriginalCopyrightNotice",
+        );
+    });
+
+    // The server saves the page, which stores what the user typed, and reloads it with the
+    // sentence read-only again.
+    it("relocking asks the server to save and reload the page", () => {
+        EditableDivUtils.relockOriginalCredits();
+
+        expect(postThatMightNavigate).toHaveBeenCalledWith(
+            "common/saveChangesAndRethinkPageEvent",
         );
     });
 });

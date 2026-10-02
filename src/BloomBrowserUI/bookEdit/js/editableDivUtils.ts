@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { get, post, postString } from "../../utils/bloomApi";
+import { get, postString, postThatMightNavigate } from "../../utils/bloomApi";
 import $ from "jquery";
 
 interface qtipInterface extends JQuery {
@@ -281,15 +281,18 @@ export class EditableDivUtils {
     // to hand the text over: it stores the current wording in the data div, stops generating the
     // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
     // The server saves the page and reloads it, so we have nothing to change here ourselves.
+    // The reload can cut the request off, which must not be reported as an error.
     public static unlockOriginalCredits() {
-        post("copyrightAndLicense/unlockOriginalCopyrightNotice");
+        postThatMightNavigate(
+            "copyrightAndLicense/unlockOriginalCopyrightNotice",
+        );
     }
 
     // Close the sentence about the original book again. The wording the user has just typed is
     // theirs from now on; saving the page stores it in the data div, and the page comes back
     // with that spot read-only, as it is on every other visit.
     public static relockOriginalCredits() {
-        post("common/saveChangesAndRethinkPageEvent");
+        postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
     }
 
     public static pasteImageCredits() {
