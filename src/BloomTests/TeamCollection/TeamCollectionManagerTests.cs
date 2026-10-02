@@ -15,6 +15,89 @@ namespace BloomTests.TeamCollection
     public class TeamCollectionManagerTests
     {
         /// <summary>
+        /// When we disconnect part way through a session, CurrentCollection becomes null and the
+        /// DisconnectedTeamCollection standing in for it carries a message log of its own -- the
+        /// one holding the "you are now disconnected" messages. Since an ordinary append gives up
+        /// quickly on a busy log file and leaves the message to be written later, shutting down
+        /// has to flush that log too, or those messages are lost. See BL-16729.
+        /// </summary>
+        [Test]
+        public void Dispose_DisconnectedMidSession_FlushesTheDisconnectedCollectionsLog()
+        {
+            using (var collectionFolder = new TemporaryFolder("FlushDisconnectedLog_Collection"))
+            using (var sharedFolder = new TemporaryFolder("FlushDisconnectedLog_Shared"))
+            {
+                var settingsPath = Path.Combine(
+                    collectionFolder.FolderPath,
+                    Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                );
+                RobustFile.WriteAllText(settingsPath, "<Collection version=\"0.2\"/>");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    sharedFolder.FolderPath
+                );
+                var tcManager = new TeamCollectionManager(
+                    settingsPath,
+                    null,
+                    new BookStatusChangeEvent(),
+                    null,
+                    null,
+                    null
+                );
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Not.Null,
+                    "setup problem: it should have connected, or there is nothing to disconnect"
+                );
+
+                var logPath = TeamCollectionManager.GetTcLogPathFromLcPath(
+                    collectionFolder.FolderPath
+                );
+                // Disconnect while nothing can write to the log file, so the disconnect messages
+                // have to wait in the message log instead of reaching the file.
+                using (
+                    new FileStream(logPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)
+                )
+                {
+                    tcManager.MakeDisconnected(
+                        new TeamCollectionMessage(
+                            MessageAndMilestoneType.Error,
+                            "TeamCollection.NoNetwork",
+                            "No network is available on this computer."
+                        ),
+                        "test repo"
+                    );
+                }
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Null,
+                    "setup problem: it should now be disconnected"
+                );
+                Assert.That(
+                    tcManager.CurrentCollectionEvenIfDisconnected.MessageLog.Messages.Any(m =>
+                        m.L10NId == "TeamCollection.OperatingDisconnected"
+                    ),
+                    Is.True,
+                    "setup problem: the disconnect messages should be in memory"
+                );
+                Assert.That(
+                    RobustFile.ReadAllText(logPath),
+                    Does.Not.Contain("OperatingDisconnected"),
+                    "setup problem: the busy file should not have received them yet"
+                );
+
+                // sut
+                tcManager.Dispose();
+
+                Assert.That(
+                    RobustFile.ReadAllText(logPath),
+                    Does.Contain("OperatingDisconnected"),
+                    "disposing the manager should have flushed the disconnected collection's log"
+                );
+            }
+        }
+
+        /// <summary>
         /// A collection whose name ends with a period gets a folder without it, because Windows drops
         /// trailing periods when it creates a folder, so its settings file name does not match its
         /// folder name. OkToEditCollectionSettings is asked during the startup sync of a Team
@@ -75,6 +158,80 @@ namespace BloomTests.TeamCollection
 
                 // sut: this used to throw, because it looked for a settings file named after the folder.
                 Assert.That(tcManager.OkToEditCollectionSettings, Is.True);
+            }
+        }
+
+        /// <summary>
+        /// The DisconnectedTeamCollection that stands in after a disconnect answers book-status
+        /// questions from the local status files, and only trusts a local status whose
+        /// collectionId matches its own CollectionId. Nothing sets that id after the collection
+        /// has been opened, so a stand-in built part way through a session must inherit it from
+        /// the collection it replaces; otherwise every book looks like a new local book that was
+        /// never in the repo. See BL-16729.
+        /// </summary>
+        [Test]
+        public void MakeDisconnected_MidSession_StandInInheritsTheCollectionId()
+        {
+            using (var collectionFolder = new TemporaryFolder("DisconnectKeepsId_Collection"))
+            using (var sharedFolder = new TemporaryFolder("DisconnectKeepsId_Shared"))
+            {
+                var settingsPath = Path.Combine(
+                    collectionFolder.FolderPath,
+                    Path.GetFileName(collectionFolder.FolderPath) + ".bloomCollection"
+                );
+                RobustFile.WriteAllText(settingsPath, "<Collection version=\"0.2\"/>");
+                FolderTeamCollection.CreateTeamCollectionLinkFile(
+                    collectionFolder.FolderPath,
+                    sharedFolder.FolderPath
+                );
+                var tcManager = new TeamCollectionManager(
+                    settingsPath,
+                    null,
+                    new BookStatusChangeEvent(),
+                    null,
+                    null,
+                    null
+                );
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Not.Null,
+                    "setup problem: it should have connected, or there is nothing to disconnect"
+                );
+                // What WorkspaceModel does once, when the collection is opened.
+                var collectionId = Bloom.TeamCollection.TeamCollection.GenerateCollectionId();
+                tcManager.SetCollectionId(collectionId);
+                Assert.That(
+                    tcManager.CurrentCollection.CollectionId,
+                    Is.EqualTo(collectionId),
+                    "setup problem: the live collection should be carrying the id we are about to lose"
+                );
+
+                // sut
+                tcManager.MakeDisconnected(
+                    new TeamCollectionMessage(
+                        MessageAndMilestoneType.Error,
+                        "TeamCollection.NoNetwork",
+                        "No network is available on this computer."
+                    ),
+                    "test repo"
+                );
+
+                Assert.That(
+                    tcManager.CurrentCollection,
+                    Is.Null,
+                    "setup problem: it should now be disconnected"
+                );
+                Assert.That(
+                    tcManager.CurrentCollectionEvenIfDisconnected,
+                    Is.TypeOf<DisconnectedTeamCollection>(),
+                    "setup problem: a stand-in should have replaced the live collection"
+                );
+                Assert.That(
+                    tcManager.CurrentCollectionEvenIfDisconnected.CollectionId,
+                    Is.EqualTo(collectionId),
+                    "the stand-in must keep the collection id, or every book's local status looks "
+                        + "like it belongs to a different collection"
+                );
             }
         }
     }

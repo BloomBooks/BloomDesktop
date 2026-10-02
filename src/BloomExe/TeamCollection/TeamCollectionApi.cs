@@ -251,12 +251,10 @@ namespace Bloom.TeamCollection
 
         private void HandleShowStatusDialog(ApiRequest request)
         {
-            dynamic messageBundle = new DynamicJson();
-            messageBundle.showReloadButton = _tcManager.MessageLog.ShouldShowReloadButton;
-            _socketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
-            _tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(
-                MessageAndMilestoneType.LogDisplayed
-            );
+            // The manager owns this because the toast we raise when we notice a connection
+            // problem opens the same dialog, and both routes must record the LogDisplayed
+            // milestone. See BL-16729.
+            _tcManager.ShowStatusDialog();
             request.PostSucceeded();
         }
 

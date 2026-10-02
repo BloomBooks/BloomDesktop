@@ -12,4 +12,8 @@ pnpm-lock.yaml
 
 # Overflow test fixtures, generated from their .pug (see the note there). Prettier would add
 # whitespace inside the test boxes, which changes what the overflow tests measure.
-bookEdit/OverflowChecker/*Fixture.html
+# The leading **/ matters: the pre-commit hook runs pretty-quick, which resolves the git
+# root and passes repo-root-relative paths (src/BloomBrowserUI/bookEdit/...). A pattern
+# anchored at this directory does not match those, so the fixtures got reformatted --
+# and four OverflowChecker tests failed -- on any commit that happened to stage them.
+**/bookEdit/OverflowChecker/*Fixture.html

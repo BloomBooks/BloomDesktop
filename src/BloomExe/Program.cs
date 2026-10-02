@@ -2971,6 +2971,46 @@ namespace Bloom
             }
         }
 
+        /// <summary>
+        /// Run the action on the UI thread on a LATER turn of the message pump.
+        ///
+        /// It must be later, not inline, because one caller is TryStartWatching in the middle of
+        /// StartMonitoring: disconnecting inline there would tear the watchers down while that
+        /// method is still setting them up. And it must not block, because the other callers are
+        /// on a file system watcher's thread or the heartbeat's, where a synchronous invoke can
+        /// deadlock against a UI thread waiting on the BloomServer.
+        ///
+        /// Program.MainContext is the WinForms synchronization context, captured once at startup.
+        /// Post satisfies both requirements, is safe to call from any thread, and -- unlike
+        /// looking a form up -- never enumerates Application.OpenForms, which is not thread-safe
+        /// and which every caller here would be enumerating from a background thread.
+        /// </summary>
+        internal static void RunOnUiThreadLater(Action action)
+        {
+            var uiContext = MainContext;
+            if (uiContext == null)
+            {
+                // No UI thread exists: unit tests, or startup before Application.Run. Nobody can
+                // be racing us, and the state change matters more than the notification, so just
+                // do it here.
+                action();
+                return;
+            }
+            try
+            {
+                uiContext.Post(_ => action(), null);
+            }
+            catch (Exception ex)
+            {
+                // Each action() is responsible for its own exception handling as needed.
+                // This catch is largely a safety net for the Post itself, handling the case where
+                // the uiContext has been disposed just as the Post is being called.  We don't want
+                // to crash the app because of that, and we do want to report it to Sentry because
+                // it is unexpected and should be investigated.
+                NonFatalProblem.ReportSentryOnly(ex);
+            }
+        }
+
         /// ------------------------------------------------------------------------------------
         internal static void SetUpErrorHandling()
         {
