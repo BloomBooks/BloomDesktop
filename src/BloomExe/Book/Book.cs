@@ -5004,7 +5004,7 @@ namespace Bloom.Book
             if (
                 XmlString.IsNullOrEmpty(
                     _bookData.GetVariableOrNull(
-                        BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
                         "*"
                     )
                 )

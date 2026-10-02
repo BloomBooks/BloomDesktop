@@ -274,14 +274,14 @@ namespace Bloom.Book
             CopyItemToFieldsInPages(dom, "licenseNotes");
             CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute: "src");
             // The sentence about the original book. Bloom generates it, unless the user has
-            // taken it over, in which case their wording is in the data div: nothing else puts
-            // originalCopyrightAndLicense there. If they empty the field, the data div loses the
+            // taken it over, in which case their wording is in the data div under
+            // userOriginalCopyrightAndLicense. If they empty the field, the data div loses the
             // item and Bloom generates the sentence again. Either way the book's own copy of the
             // page holds it locked; the editable form exists only in the copy of the page sent
             // to the editor, and only for one rendering, so that leaving the page or refreshing
             // it locks the sentence again.
             var usersOriginalCopyrightNotice = bookData
-                .GetVariableOrNull(kOriginalCopyrightAndLicense, "*")
+                .GetVariableOrNull(kUserOriginalCopyrightAndLicense, "*")
                 ?.Xml;
             string originalCopyrightNotice;
             if (useOriginalCopyright)
@@ -312,6 +312,12 @@ namespace Bloom.Book
 
         internal const string kOriginalCopyrightAndLicense = "originalCopyrightAndLicense";
 
+        // The data div key for the user's own wording of the sentence, and the data-book of the
+        // field they edit it in. It must differ from originalCopyrightAndLicense: Bloom versions
+        // before mid-2017 stored the generated sentence in the data div under that key, and books
+        // made then still carry it, so finding that key cannot mean the user took the sentence over.
+        internal const string kUserOriginalCopyrightAndLicense = "userOriginalCopyrightAndLicense";
+
         // The English here must exactly match what RuntimeInformationInjector registers for this
         // key; that dictionary is keyed by the English, not by the l10n id.
         internal const string kOriginalCopyrightNoticeHint = "Original copyright & license";
@@ -324,8 +330,8 @@ namespace Bloom.Book
         /// The place on the credits page where the sentence about the original book goes, in
         /// whichever of its two shapes it is currently in: the plain div Bloom writes the
         /// generated sentence into, or the translation group it becomes while the user is
-        /// editing it. The data div holds the user's wording under the same key, so it is
-        /// excluded here.
+        /// editing it. The data div holds the user's wording under the same data-book key as
+        /// that translation group's editable, so it is excluded here.
         /// </summary>
         private static IEnumerable<SafeXmlElement> GetOriginalCopyrightNoticeSpots(
             SafeXmlNode pageOrDom
@@ -337,7 +343,7 @@ namespace Bloom.Book
                         + kOriginalCopyrightAndLicense
                         + "']"
                         + " | .//*[div[@data-book='"
-                        + kOriginalCopyrightAndLicense
+                        + kUserOriginalCopyrightAndLicense
                         + "']][not(ancestor-or-self::div[@id='bloomDataDiv'])]"
                 )
                 .OfType<SafeXmlElement>();
@@ -377,7 +383,7 @@ namespace Bloom.Book
                 // others are the empty ones Bloom makes for every language in the book.
                 var editable =
                     spot.SelectSingleNode(
-                        "div[@data-book='" + kOriginalCopyrightAndLicense + "' and @lang='*']"
+                        "div[@data-book='" + kUserOriginalCopyrightAndLicense + "' and @lang='*']"
                     ) as SafeXmlElement;
                 LockOriginalCopyrightNoticeSpot(spot, editable?.InnerXml ?? "", true);
             }
@@ -453,7 +459,7 @@ namespace Bloom.Book
                     "class",
                     "bloom-editable Credits-Page-style bloom-visibility-code-on"
                 );
-                editable.SetAttribute("data-book", kOriginalCopyrightAndLicense);
+                editable.SetAttribute("data-book", kUserOriginalCopyrightAndLicense);
                 editable.SetAttribute("lang", "*");
                 editable.InnerXml = notice;
                 // The bubble stays on the group rather than moving to the editable: anything on
@@ -520,7 +526,7 @@ namespace Bloom.Book
             // strand the italicized title on a line of its own.
             if (!string.IsNullOrEmpty(notice))
                 notice = "<p>" + notice + "</p>";
-            bookData.Set(kOriginalCopyrightAndLicense, XmlString.FromXml(notice), "*");
+            bookData.Set(kUserOriginalCopyrightAndLicense, XmlString.FromXml(notice), "*");
         }
 
         /// <summary>

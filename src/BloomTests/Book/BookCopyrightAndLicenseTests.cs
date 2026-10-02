@@ -669,7 +669,7 @@ namespace BloomTests.Book
                 );
             // The wording is in the data div, which is what makes the user's edits stick.
             Assert.That(
-                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                bookData.GetVariableOrNull("userOriginalCopyrightAndLicense", "*").Xml,
                 Does.Contain("This book is an adaptation of the original")
             );
         }
@@ -687,7 +687,7 @@ namespace BloomTests.Book
                 @"<html><head></head><body>
 							<div id='bloomDataDiv'>
 								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
-								<div data-book='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+								<div data-book='userOriginalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
 							</div>
 							<div id='test' class='test'>
 								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
@@ -715,9 +715,55 @@ namespace BloomTests.Book
             AssertThatXmlIn.Dom(bookDom.RawDom).HasNoMatchForXpath("//*[@data-link-icon]");
             // Their wording is still there for when they turn the option off again.
             Assert.That(
-                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                bookData.GetVariableOrNull("userOriginalCopyrightAndLicense", "*").Xml,
                 Does.Contain("My own words about the original")
             );
+        }
+
+        /// <summary>
+        /// Bloom versions before mid-2017 stored the generated sentence in the data div under
+        /// originalCopyrightAndLicense, and books made then still carry it. That is not the user
+        /// taking the sentence over, so Bloom must go on generating the sentence rather than show
+        /// the stored text.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_OldStoredSentenceInDataDiv_StillGeneratesTheSentence()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+								<div data-book='originalCopyrightAndLicense' lang='*'>A sentence stored by an old Bloom.</div>
+							</div>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'>A sentence stored by an old Bloom.</div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+            Assert.That(
+                bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
+                Does.Contain("A sentence stored by an old Bloom"),
+                "Test setup problem: the old stored sentence should be in the data div."
+            );
+
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense'"
+                        + " and @data-link-icon='lock'"
+                        + " and contains(text(),'This book is an adaptation of the original')]",
+                    1
+                );
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasNoMatchForXpath(
+                    "//div[@class='test']//*[contains(., 'A sentence stored by an old Bloom')]"
+                );
         }
 
         /// <summary>
@@ -734,7 +780,7 @@ namespace BloomTests.Book
 								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
 								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
 								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
-								<div data-book='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+								<div data-book='userOriginalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
 							</div>
 							<div id='test' class='test'>
 								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
@@ -754,14 +800,14 @@ namespace BloomTests.Book
 
             // This is what saving the page does when the user has emptied the field.
             bookData.Set(
-                BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
                 XmlString.Empty,
                 "*"
             );
             Assert.That(
                 XmlString.IsNullOrEmpty(
                     bookData.GetVariableOrNull(
-                        BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                        BookCopyrightAndLicense.kUserOriginalCopyrightAndLicense,
                         "*"
                     )
                 ),
@@ -810,7 +856,7 @@ namespace BloomTests.Book
                         + " and @data-link-icon='unlock'"
                         + " and @data-link-target='RelockOriginalCredits()'"
                         + " and not(@data-link-icon-tooltip)]"
-                        + "/div[@data-book='originalCopyrightAndLicense' and @lang='*'"
+                        + "/div[@data-book='userOriginalCopyrightAndLicense' and @lang='*'"
                         + " and contains(@class,'bloom-editable')"
                         + " and contains(@class,'Credits-Page-style')"
                         + " and not(@data-hint) and not(@data-link-icon)"
@@ -844,14 +890,14 @@ namespace BloomTests.Book
             // Stand in for the user's editing, and for the empty fields Bloom adds for the
             // book's other languages.
             var editable =
-                pageDom.SelectSingleNode("//div[@data-book='originalCopyrightAndLicense']")
+                pageDom.SelectSingleNode("//div[@data-book='userOriginalCopyrightAndLicense']")
                 as SafeXmlElement;
             editable.InnerXml = "<p>My own <em>wording</em>.</p>";
             var otherLanguage =
                 editable.ParentNode.AppendChild(pageDom.RawDom.CreateElement("div"))
                 as SafeXmlElement;
             otherLanguage.SetAttribute("class", "bloom-editable");
-            otherLanguage.SetAttribute("data-book", "originalCopyrightAndLicense");
+            otherLanguage.SetAttribute("data-book", "userOriginalCopyrightAndLicense");
             otherLanguage.SetAttribute("lang", "fr");
 
             BookCopyrightAndLicense.LockOriginalCopyrightNotice(pageDom.RawDom);
@@ -921,7 +967,7 @@ namespace BloomTests.Book
 
             BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
 
-            var stored = bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml;
+            var stored = bookData.GetVariableOrNull("userOriginalCopyrightAndLicense", "*").Xml;
             Assert.That(stored, Does.Not.Contain("cite"));
             Assert.That(stored, Does.Not.Contain("data-book"));
             Assert.That(stored, Does.Contain("<em>Aat ni Tata</em>"));
@@ -958,7 +1004,7 @@ namespace BloomTests.Book
 
             BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
 
-            var stored = bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml;
+            var stored = bookData.GetVariableOrNull("userOriginalCopyrightAndLicense", "*").Xml;
             Assert.That(stored, Does.Contain("SIL &amp; LASI"));
             Assert.That(stored, Does.Contain("<em>Tom &amp; Jerry</em>"));
             // The stored wording goes back onto the page with InnerXml, so it has to parse.

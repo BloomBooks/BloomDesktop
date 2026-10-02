@@ -2462,7 +2462,7 @@ namespace Bloom.Publish.Epub
                 // user takes it over; both say the same thing about the original book.
                 var divOrigCopyright =
                     div.SelectSingleNode(
-                        ".//div[@data-derived='originalCopyrightAndLicense' or @data-book='originalCopyrightAndLicense']"
+                        ".//div[@data-derived='originalCopyrightAndLicense' or @data-book='userOriginalCopyrightAndLicense']"
                     ) as SafeXmlElement;
                 if (
                     divOrigCopyright != null
@@ -2542,7 +2542,7 @@ namespace Bloom.Publish.Epub
                 );
                 SetRoleAndLabelForMatchingDiv(
                     div,
-                    "@data-derived='originalCopyrightAndLicense' or @data-book='originalCopyrightAndLicense'",
+                    "@data-derived='originalCopyrightAndLicense' or @data-book='userOriginalCopyrightAndLicense'",
                     "PublishTab.AccessibleEpub.Original Copyright",
                     "Original Copyright"
                 );

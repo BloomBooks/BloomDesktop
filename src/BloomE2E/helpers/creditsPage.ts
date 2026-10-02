@@ -5,7 +5,7 @@
 // data-derived="originalCopyrightAndLicense", which the user cannot type in. Its hint bubble,
 // "Original copyright & license", carries a closed padlock; clicking the padlock asks Bloom to hand
 // the sentence over, and Bloom reloads the page with the same spot turned into a translation group
-// holding one editable box (data-book="originalCopyrightAndLicense", lang="*"). That shape lasts for
+// holding one editable box (data-book="userOriginalCopyrightAndLicense", lang="*"). That shape lasts for
 // one showing of the page: leaving the page, or clicking the open padlock that replaces the closed
 // one, brings back the plain div, now holding whatever the user typed. See
 // BookCopyrightAndLicense.MakeOriginalCopyrightNoticeEditable and LockOriginalCopyrightNotice.
@@ -26,10 +26,11 @@ import { waitForCopyrightDialog } from "./copyrightAndLicense";
 import { realClick } from "./realClick";
 
 const ORIGINAL_NOTICE_KEY = "originalCopyrightAndLicense";
+const USER_ORIGINAL_NOTICE_KEY = "userOriginalCopyrightAndLicense";
 
 // The translation group the sentence becomes while the user may edit it. Passed to typeInGroup,
 // which finds the box inside it.
-const UNLOCKED_SENTENCE_GROUP = `.bloom-page .bloom-translationGroup:has(> [data-book="${ORIGINAL_NOTICE_KEY}"])`;
+const UNLOCKED_SENTENCE_GROUP = `.bloom-page .bloom-translationGroup:has(> [data-book="${USER_ORIGINAL_NOTICE_KEY}"])`;
 
 /**
  * Show the book's credits page in the Edit tab. Throws, listing the pages there are, when the book
