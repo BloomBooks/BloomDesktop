@@ -423,8 +423,16 @@ namespace Bloom.Publish.BloomPub
                     ImageTransparencyMode.Auto => "_t",
                     _ => "_r", // None mode: resize / format-conversion only
                 };
-                var newFilename =
-                    Path.GetFileNameWithoutExtension(filename) + modeSuffix + adjustedExt;
+                // The mode suffix keeps different modes apart, but two sources whose names
+                // differ only by extension (e.g. "photo.jpg" and "photo.png", which the AI image
+                // editor readily creates) can both come out as "photo_r.jpg" in the same mode, and
+                // the book may already contain a file with that name. So we take an unused name,
+                // adding a counter if necessary (e.g. "photo_r1.jpg"). See BL-16954.
+                var newFilename = ImageUtils.GetUnusedFilename(
+                    bookFolderPath,
+                    Path.GetFileNameWithoutExtension(filename) + modeSuffix,
+                    adjustedExt
+                );
                 RobustFile.Copy(adjustedPath, Path.Combine(bookFolderPath, newFilename));
                 // Defer deletion: a later element with a different mode may still need
                 // the original. The actual delete happens after all elements are processed.
