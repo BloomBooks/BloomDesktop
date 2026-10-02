@@ -51,7 +51,7 @@ namespace BloomTests.Book
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -61,7 +61,7 @@ namespace BloomTests.Book
                 "Palaso",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -1264,7 +1264,13 @@ namespace BloomTests.Book
             );
             var result = GetFrenchOriginalCopyrightAndLicense(dom);
             // We could try to mock what L10NSharp returns for this one test..., or we could just test that it's not using English.
-            Assert.That(result.StartsWith("This book is an adaptation of the original"), Is.False);
+            Assert.That(
+                result.StartsWith(
+                    "This book is an adaptation of the original",
+                    StringComparison.Ordinal
+                ),
+                Is.False
+            );
             Assert.That(result.Contains("Licensed under CC BY 4.0"), Is.False);
         }
 

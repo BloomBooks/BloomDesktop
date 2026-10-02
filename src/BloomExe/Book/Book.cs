@@ -889,7 +889,8 @@ namespace Bloom.Book
             return new HtmlDom(builder.ToString());
         }
 
-        private bool IsDownloaded => FolderPath.StartsWith(BookDownload.DownloadFolder);
+        private bool IsDownloaded =>
+            FolderPath.StartsWith(BookDownload.DownloadFolder, StringComparison.Ordinal);
 
         // BL-2678: we want the user to be able to delete troublesome/no longer needed books
         // downloaded from BloomLibrary.org
@@ -2024,9 +2025,20 @@ namespace Bloom.Book
             // language.
             // (The commit label when these were added says "so that a single branding can vary things by lang."
             // We don't appear to actually do that but it still seems like it might be useful.)
-            bookDom.Body.SetAttribute("data-L1", this._bookData.Language1Tag);
-            bookDom.Body.SetAttribute("data-L2", this._bookData.Language2Tag);
-            bookDom.Body.SetAttribute("data-L3", this._bookData.Language3Tag);
+            SetLanguageAttributeOnBody(bookDom, 1, this._bookData.Language1Tag);
+            SetLanguageAttributeOnBody(bookDom, 2, this._bookData.Language2Tag);
+            SetLanguageAttributeOnBody(bookDom, 3, this._bookData.Language3Tag);
+        }
+
+        /// <summary>
+        /// Set data-l1 (etc.) on the body. The name must be lower case: HTML does not allow upper case
+        /// in data- attribute names, and browsers lower-case them anyway. Bloom used to write data-L1;
+        /// our DOM treats that as a different attribute, so remove it or the book would carry both.
+        /// </summary>
+        private static void SetLanguageAttributeOnBody(HtmlDom bookDom, int number, string tag)
+        {
+            bookDom.Body.RemoveAttribute("data-L" + number);
+            bookDom.Body.SetAttribute("data-l" + number, tag);
         }
 
         private void AddReaderBodyAttributes(HtmlDom bookDom)
@@ -2257,7 +2269,12 @@ namespace Bloom.Book
             }
             // Rename/remove/create files that have changed names or locations to match link href changes above.
             // Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
-            if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
+            if (
+                !FolderPath.StartsWith(
+                    BloomFileLocator.FactoryCollectionsDirectory,
+                    StringComparison.Ordinal
+                )
+            )
             {
                 BookStorage.CssFilesThatAreObsolete.ForEach(filename =>
                 {
@@ -2336,9 +2353,9 @@ namespace Bloom.Book
                 for (var index = 0; index < cssLines.Length; ++index)
                 {
                     var line = cssLines[index].Trim();
-                    if (line.StartsWith(kLangTag))
+                    if (line.StartsWith(kLangTag, StringComparison.Ordinal))
                     {
-                        var idxQuote = line.IndexOf("'", kLangTag.Length);
+                        var idxQuote = line.IndexOf("'", kLangTag.Length, StringComparison.Ordinal);
                         if (idxQuote > 0)
                         {
                             var lang = line.Substring(kLangTag.Length, idxQuote - kLangTag.Length);
@@ -2471,7 +2488,10 @@ namespace Bloom.Book
             {
                 // If we already have a data-i18n attribute with the right contents, skip this one.
                 var i18nValue = pageLabelElt.GetOptionalStringAttribute(i18nAttr, i18nPrefix);
-                if (i18nValue.StartsWith(i18nPrefix) && i18nValue.Length > prefixLength)
+                if (
+                    i18nValue.StartsWith(i18nPrefix, StringComparison.Ordinal)
+                    && i18nValue.Length > prefixLength
+                )
                 {
                     // As best we can tell, this already has the right localization attribute contents.
                     continue;
@@ -2651,6 +2671,9 @@ namespace Bloom.Book
             //we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
             // Per BL-3571, if it's using a layout we don't know (e.g., from a newer Bloom) we switch to A5Portrait.
             // Various things, especially publication, don't work with unknown page sizes.
+            var sizeClassBefore = Layout
+                .FromDom(bookDOM, Layout.A5Portrait)
+                .SizeAndOrientation.ClassName;
             Layout layout = Layout.FromDomAndChoices(bookDOM, Layout.A5Portrait, fileLocator);
             var oldIds = new List<string>();
             var customLayoutIds = XMatterHelper.GatherCustomLayoutIds(bookDOM);
@@ -2658,6 +2681,11 @@ namespace Bloom.Book
             // this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
             // still requiring it to be a valid layout.
             layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
+            // A size the xmatter or branding does not support, or one we do not know, was replaced
+            // above. VerifyLayout later spreads the new size to every page, but by then the first
+            // page already has it, so SetLayout sees no change; record it here instead.
+            if (layout.SizeAndOrientation.ClassName != sizeClassBefore)
+                BookProcessor.RecordPageLayoutChanged(bookDOM);
             helper.InjectXMatter(
                 _bookData.WritingSystemAliases,
                 layout,
@@ -3384,7 +3412,12 @@ namespace Bloom.Book
                             )
                         )
                             return false; // missing audio file
-                        if (!textOfDiv.StartsWith(audioSentenceChildNode.InnerText))
+                        if (
+                            !textOfDiv.StartsWith(
+                                audioSentenceChildNode.InnerText,
+                                StringComparison.Ordinal
+                            )
+                        )
                             return false; // missing audio span?
                         textOfDiv = textOfDiv.Substring(audioSentenceChildNode.InnerText.Length);
                         textOfDiv = textOfDiv.TrimStart();
@@ -4350,7 +4383,7 @@ namespace Bloom.Book
             {
                 try
                 {
-                    // A book still recording a browser maintenance level above ours has to go
+                    // A book still recording a page layout update level above ours has to go
                     // through the full Save, which is what brings that level down to what we can
                     // honestly claim (BL-16852). SaveForPageChanged copies the existing file through
                     // and replaces one page, so it would leave the old level in the head. This costs
@@ -4358,7 +4391,7 @@ namespace Bloom.Book
                     if (
                         pageToSaveToDisk != null
                         && !reallyNeedFullSave
-                        && !BookProcessor.RecordsBrowserMaintenanceLevelAboveOurs(OurHtmlDom)
+                        && !BookProcessor.RecordsPageLayoutUpdateLevelAboveOurs(OurHtmlDom)
                     )
                     {
                         string pageId = pageToSaveToDisk.GetAttribute("id");
@@ -4901,6 +4934,10 @@ namespace Bloom.Book
 
         public void SetLayout(Layout layout)
         {
+            // The page layout update records measurements relative to the page, so a new size or
+            // orientation leaves them stale.
+            if (GetLayout().SizeAndOrientation.ClassName != layout.SizeAndOrientation.ClassName)
+                BookProcessor.RecordPageLayoutChanged(OurHtmlDom);
             SizeAndOrientation.AddClassesForLayout(OurHtmlDom, layout);
         }
 

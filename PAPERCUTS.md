@@ -19,15 +19,10 @@ House rules:
 
 ---
 
-## 2026-09-17 — A running Bloom locks Bloom.xlf and fails the C# suite
-- **Cut:** `LocalizationManager.Create` writes `%LOCALAPPDATA%\SIL\Bloom\localizations\en\Bloom.xlf`,
-  a machine-global path outside the per-run temp isolation, so the developer's own running Bloom.exe
-  collides with a test run: `IOException ... being used by another process` out of `BookDataTests.Setup`
-  (also seen as an NRE in `XliffTransUnitUpdater..ctor` from the same path). It looks like a flaky test.
-- **Idea:** point the localization folder at the per-run temp dir the way `TestTempDirectory.cs` already
-  does for everything else, or at minimum say in AGENTS.md that this one path is still shared — it
-  currently reads as though `agent-dotnet.sh` plus temp isolation fully solve "build/test while Bloom runs".
-- **Context:** hit twice on BL-16806 (PR #8286); passed clean on re-run both times.
+## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
+- **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
+- **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
+- **Context:** BL-16893 worktree, 2026-09-25; the empty folder dated from the worktree's install on 2026-09-24.
 
 ## 2026-09-16 — The React component tests log 249 errors in a fully green run
 - **Cut:** A passing nightly (35076535729) carries 249 `[WebServer] Error reported from component:
@@ -120,6 +115,7 @@ took an hour of wall-clock to establish.
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
 - **Idea:** Find what differs when `watchBloomExe.mjs` spawns dotnet watch (`--vite-port`/`--label` args, control-port env, stdout piping) and make the launcher print dotnet watch's later output or the Bloom PID's window titles when it gives up, so the failure is diagnosable. Consider making the timeout configurable.
 - **Context:** worktree Format-Gear-Positioning-356 at the Version6.5 tip, while fixing BL-16809; hit by Claude.
+- seen again 2026-09-22: main worktree `C:\github\BloomDesktop` on Version6.5, three launches in a row, this time with `--nowatch`, so the `dotnet watch` layer is not the culprit. The log stops after `dotnet PID: <n>`. Running `node ./src/BloomBrowserUI/scripts/dev.mjs --port 51990` and then `dotnet run --project src/BloomExe/BloomExe.csproj -- --automation --vite-port 51990` by hand reached the marker in about 20s and drove fine for an hour. Worth ruling out stdout piping from a plain `dotnet run` child before anything else. Hit by Claude while doing BL-16893.
 
 ## 2026-09-04 — An e2e test cannot use a data-testid you just added to the front end
 - **Cut:** `src/BloomE2E` launches a real `Bloom.exe`, and that Bloom loads its UI from the
@@ -159,6 +155,15 @@ took an hour of wall-clock to establish.
   `output/browser`), and log the chosen path once at launch so a stale exe is visible in the output.
 - **Context:** Test Case ID 358, PR #8289; cost about 20 minutes of misdiagnosis.
 
+## 2026-09-02 — Two BloomE2E sessions on one machine compete for the same port block
+
+- **Cut:** BloomE2E runs from two worktrees at once (e.g. a developer session plus
+  improve-test-automation-coverage workers) probe the same candidate port block, so a launch
+  can time out while another session's Blooms hold the ports. It looks like a real regression.
+  (Their user settings no longer collide: each launched Bloom has its own --user-settings-folder.)
+- **Idea:** A cross-session lock file that launchBloom waits on, or a per-session port range.
+- **Context:** preflight of PR #8275.
+
 ## 2026-09-02 — notion_automation.py needs Python, which not every dev machine has
 
 - **Cut:** `.github/skills/improve-test-automation-coverage/notion_automation.py` is the only way the
@@ -171,6 +176,17 @@ took an hour of wall-clock to establish.
 - seen again 2026-09-03 (Test Case ID 358): ported to Node once more, this time with the card
   split (`[Automated portion]` / `[Manual portion]`, related both ways) that `add-e2e-test` asks
   for and the Python script has no command for either.
+
+## 2026-09-01 — run-bloom skill doesn't warn that Bloom's ports change across restarts
+
+- **Cut:** Bloom picks a free HTTP port at startup, so after `Program.RestartBloom` (e.g.
+  toggling "Show translations which have not been approved yet") the launcher-relaunched Bloom
+  can come back on different HTTP/CDP ports (observed 8089→8095→8092 in one session). Tooling
+  holding a fixed HTTP port or CDP endpoint silently breaks mid-session.
+- **Idea:** Warn in `.claude/skills/run-bloom/SKILL.md` and point at the launcher's control
+  server (`output/bloom-launcher.json` → `/status`), which reports the current
+  `httpPort`/`cdpPort`, so tooling re-asks it around anything that can restart Bloom.
+- **Context:** hit while building the UI-language e2e test on branch automateTests.
 
 ## 2026-09-01 — VR suite: a slow first preview load fails its case via Playwright's default 30s goto timeout
 

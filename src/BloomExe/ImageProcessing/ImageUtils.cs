@@ -1223,7 +1223,10 @@ namespace Bloom.ImageProcessing
             // know when to just replace the existing one with the same name... some other process will have
             // to remove unused images.
             string basename;
-            if (String.IsNullOrEmpty(imageInfo.FileName) || imageInfo.FileName.StartsWith("tmp"))
+            if (
+                String.IsNullOrEmpty(imageInfo.FileName)
+                || imageInfo.FileName.StartsWith("tmp", StringComparison.Ordinal)
+            )
             {
                 basename = "image";
             }
@@ -1359,12 +1362,14 @@ namespace Bloom.ImageProcessing
             {
                 var filePaths = Directory.GetFiles(folderPath, "*.*");
                 var pngFiles = filePaths
-                    .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                    .Where(path =>
+                        path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal)
+                    )
                     .ToArray();
                 var jpgFiles = filePaths
                     .Where(path =>
-                        path.ToLowerInvariant().EndsWith(".jpg")
-                        || path.ToLowerInvariant().EndsWith(".jpeg")
+                        path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                        || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                     )
                     .ToArray();
                 foreach (string path in pngFiles)
@@ -1484,12 +1489,12 @@ namespace Bloom.ImageProcessing
             // in a system independent way.
             var filePaths = Directory.GetFiles(folderPath, "*.*");
             var pngFiles = filePaths
-                .Where(path => path.ToLowerInvariant().EndsWith(".png"))
+                .Where(path => path.ToLowerInvariant().EndsWith(".png", StringComparison.Ordinal))
                 .ToArray();
             var jpgFiles = filePaths
                 .Where(path =>
-                    path.ToLowerInvariant().EndsWith(".jpg")
-                    || path.ToLowerInvariant().EndsWith(".jpeg")
+                    path.ToLowerInvariant().EndsWith(".jpg", StringComparison.Ordinal)
+                    || path.ToLowerInvariant().EndsWith(".jpeg", StringComparison.Ordinal)
                 )
                 .ToArray();
             int completed = 0;
@@ -2287,7 +2292,10 @@ namespace Bloom.ImageProcessing
                                 )
                             )
                             {
-                                if (options.JpegQuality == 0 && sourcePath.EndsWith(".jpg"))
+                                if (
+                                    options.JpegQuality == 0
+                                    && sourcePath.EndsWith(".jpg", StringComparison.Ordinal)
+                                )
                                     argsBldr.Append(" -define jpeg:preserve-settings"); // preserve input quality and sampling factor
                                 else if (options.JpegQuality > 0)
                                     argsBldr.AppendFormat(" -quality {0}", options.JpegQuality);
@@ -2747,9 +2755,13 @@ namespace Bloom.ImageProcessing
                 // files).
                 // BL-9533: these errors keep happening, but we can't help users who respond to a toast and send in an error report.
                 // Logging it will allow us to possibly correlate an error here with another problem that does get reported.
+                var details = MiscUtils.GetExtendedFileCopyErrorInformation(
+                    imagePath,
+                    out var likelyCause
+                );
                 var message = $"Could not update PNG image (BL-3227) at {imagePath}";
-                string details;
-                details = MiscUtils.GetExtendedFileCopyErrorInformation(imagePath);
+                if (likelyCause != null)
+                    message += " " + likelyCause;
                 NonFatalProblem.Report(
                     ModalIf.None,
                     PassiveIf.All,
@@ -3013,6 +3025,7 @@ namespace Bloom.ImageProcessing
                     fileName,
                     preserveCropStyleForUpload
                 );
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
                 return;
             }
 
@@ -3024,7 +3037,8 @@ namespace Bloom.ImageProcessing
                 imageDestFolder,
                 needNewName,
                 preserveCropStyleForUpload,
-                bloomDataDivEntriesByDataBook
+                bloomDataDivEntriesByDataBook,
+                out var cropSucceeded
             );
 
             // Track if we replaced an original file with a new one
@@ -3032,7 +3046,10 @@ namespace Bloom.ImageProcessing
             {
                 replacedOriginals.Add(src);
             }
-            cropped[key] = croppedFileName;
+            // Don't let a duplicate treat a failed crop as done; that would take the duplicate
+            // path, which syncs the data-div as if the file had been cropped.
+            if (cropSucceeded)
+                cropped[key] = croppedFileName;
         }
 
         private static void UpdateCropStyleForAlreadyCroppedImage(
@@ -3240,11 +3257,13 @@ namespace Bloom.ImageProcessing
             string imageDestFolder,
             bool useNewName,
             bool preserveCropStyleForUpload,
-            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook,
+            out bool cropSucceeded
         )
         {
             var cropMetadata = preserveCropStyleForUpload ? TryGetCropMetadata(img) : null;
             var croppedImagePath = MakeCroppedImage(img, imageSourceFolder, imageDestFolder);
+            cropSucceeded = croppedImagePath != null;
             var src = img.GetAttribute("src");
             // a good default if we can't produce a cropped image for any reason.
             // (The tests in MakeCroppedImage are a bit more robust than the ones we do before
@@ -3292,11 +3311,20 @@ namespace Bloom.ImageProcessing
             {
                 UpdateStyleToCoverCanvasElement(img, cropMetadata, croppedImageSize);
             }
+            else if (!cropSucceeded && preserveCropStyleForUpload)
+            {
+                // The file is unchanged, so the crop style is still right; keeping it is the only
+                // way the uploaded book shows this image cropped at all.
+            }
             else
             {
                 // so nothing can possibly think it needs more cropping
                 img.RemoveAttribute("style");
             }
+
+            // If the crop failed, the file is unchanged, so leave the data-div's crop style alone.
+            if (cropSucceeded)
+                SyncDataDivStyle(img, bloomDataDivEntriesByDataBook);
 
             return result;
         }
@@ -3415,6 +3443,41 @@ namespace Bloom.ImageProcessing
                 dataDivElement.SetAttribute("src", src);
                 dataDivElement.InnerText = src;
             }
+        }
+
+        /// <summary>
+        /// After cropping has changed or removed the style of an img, give its bloomDataDiv entry
+        /// (if any) the same style. Otherwise, the next time the book is opened, the data-div's old
+        /// crop style gets copied back onto the img, where it crops the already-cropped image
+        /// again (BL-16907).
+        /// An img on a custom layout page is different: its style fits the custom layout, while the
+        /// data-div entry describes the standard layout's crop of the original file, in a canvas
+        /// element sized for the original file's shape (BL-16357). Neither applies to the cropped
+        /// file, so the entry loses them. If the book goes back to the standard layout, BookData
+        /// then copies only the src onto the template's plain img, and the picture shows whole;
+        /// the editor lays it out afresh, as for a newly chosen picture.
+        /// </summary>
+        private static void SyncDataDivStyle(
+            SafeXmlElement img,
+            Dictionary<string, SafeXmlElement> bloomDataDivEntriesByDataBook
+        )
+        {
+            var dataBook = img.GetAttribute("data-book");
+            if (string.IsNullOrWhiteSpace(dataBook))
+                return;
+
+            if (!bloomDataDivEntriesByDataBook.TryGetValue(dataBook, out var dataDivElement))
+                return;
+            if (HtmlDom.IsInCustomLayoutPage(img))
+            {
+                dataDivElement.RemoveAttribute("style");
+                foreach (var name in HtmlDom.BackgroundImgTupleNames)
+                    dataDivElement.RemoveAttribute(name);
+            }
+            else if (img.HasAttribute("style"))
+                dataDivElement.SetAttribute("style", img.GetAttribute("style"));
+            else
+                dataDivElement.RemoveAttribute("style");
         }
 
         /// <summary>
@@ -3592,7 +3655,9 @@ namespace Bloom.ImageProcessing
         internal static double GetNumberFromPx(string label, string input)
         {
             var parts = input.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            var part = parts.FirstOrDefault(p => p.Trim().StartsWith(label + ":"));
+            var part = parts.FirstOrDefault(p =>
+                p.Trim().StartsWith(label + ":", StringComparison.Ordinal)
+            );
             if (part == null)
                 return 0;
             var number = part.Trim().Substring(label.Length + 1);

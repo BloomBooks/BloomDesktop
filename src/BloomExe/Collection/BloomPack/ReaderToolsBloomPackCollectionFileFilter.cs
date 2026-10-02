@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Bloom.Collection
 {
@@ -17,7 +18,8 @@ namespace Bloom.Collection
             // Plus a couple extra files for a Reader Tools BloomPack.
             if (IsFileInRootFolder(fullPath, out var _))
                 return Path.GetExtension(fullPath).ToLowerInvariant() == ".json"
-                    && Path.GetFileName(fullPath).StartsWith("ReaderTools");
+                    && Path.GetFileName(fullPath)
+                        .StartsWith("ReaderTools", StringComparison.Ordinal);
 
             return baseResult;
         }
