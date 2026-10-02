@@ -1183,3 +1183,13 @@ Later, not Stage 0:
   stray keystroke from whoever was at the keyboard, and the two misses are unexplained (CDP Ctrl+Y
   redoes reliably after any pause from 0 to 2 s, so it is not timing). The opt-in
   `undo-physical-keys.spec.ts`, run by a person at the keyboard, is the way to settle it.
+
+### 2026-10-02 — John's review of Stage 1: one compound entry per `runUndoable` gesture
+
+- Answered five review comments on PR #8387 (clarifying comments in `runUndoable` and `canRedo`,
+  a simpler `keepOnly`, undoable pictures by default in the e2e helper).
+- **Decision (PLAN.md §10.6, §4.13):** everything pushed inside an outermost `runUndoable` scope
+  becomes one compound entry (`bookEdit/undo/compoundUndoEntry.ts`) that undoes the parts last
+  first and redoes them in order, redoable only if every part is. The parts stand or fall
+  together: a page change that invalidates any of them drops the whole gesture. Replaces the
+  earlier rule, which kept one push and dropped the rest.

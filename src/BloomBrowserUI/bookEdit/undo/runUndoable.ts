@@ -11,9 +11,11 @@ import { theOneUndoStack, UndoStack } from "./UndoStack";
 /**
  * Run `operation` as a single undoable step, however many nested operations record undos inside it.
  *
- * The outermost scope wins: the first entry pushed inside it is kept and takes `label` as its
- * label, and any further pushes within the scope are dropped. `label` is what the user would call
- * the whole gesture — "Delete canvas element" — not what the innermost layer of code calls it.
+ * The outermost scope defines the step: everything pushed while it runs, by it or by anything nested
+ * inside it, becomes part of one entry labelled `label`, which undoes the parts in reverse order and
+ * redoes them in the original order (see makeCompoundUndoEntry). A nested runUndoable adds nothing
+ * of its own. `label` is what the user would call the whole gesture, "Delete canvas element", not
+ * what the innermost layer of code calls it.
  *
  * Works for a synchronous or an asynchronous operation: if `operation` returns a promise the scope
  * stays open until it settles, and the promise is passed through. Two *independent* asynchronous

@@ -723,9 +723,20 @@ This is the one hard calendar deadline in the whole project — note it in Stage
 (`CanvasElementManager.ts:2755-2770`: `prepareUndoForImageOperation` … 
 `commitPendingImageOperationUndo`). Naïvely wrapping `deleteCurrentCanvasElement` in
 `runUndoable` would then produce **two** entries for one gesture, so the first Ctrl+Z
-half-undoes. Nested wrapping will keep happening as call sites accrete, so specify the
-semantics in `undoTypes.ts` up front: a depth counter, outermost entry wins, inner pushes are
-no-ops.
+half-undoes. Nested wrapping will keep happening as call sites accrete, so the semantics are fixed
+up front (`UndoStack.endUndoableScope`, `compoundUndoEntry.ts`):
+
+- **The outermost scope defines the one entry.** Everything pushed while it runs, by it or by
+  anything nested inside it, becomes a part of that entry, which carries the outermost label. A
+  nested `runUndoable` only deepens the scope; closing it records nothing.
+- **Undo reverses every part, last first; redo replays them in the original order.** The entry is
+  redoable only if every part is. Each part captures its redo state just before its own undo, and a
+  retry after a part fails continues from that part. A single push is recorded as it is.
+- **The parts stand or fall together.** The entry is page-scoped if any part is, so a page change
+  discards it whole. If the page frame is replaced while the scope is still open and any part is
+  page-scoped, nothing is recorded: keeping only the page-independent parts would leave half a
+  gesture to undo. So a gesture that changes the page itself (deleting a page) must consist only of
+  page-independent parts, or it loses its undo.
 
 ## 5. Keeping up with master
 
@@ -1208,6 +1219,13 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    entry is `translate="no"`, so removal is free — **but must happen before that release goes beta**,
    the project's one hard calendar deadline. Deliberately *not* clearing the obsolete token from
    testers' settings.
+6. **A `runUndoable` gesture is one compound entry of everything pushed inside it** (§4.13),
+   decided 2026-10-02 in John's review of Stage 1. Undo reverses all the parts, last first; redo
+   replays them in order, and only if every part can. Keeping just one of the pushes would work only
+   if the outer operation's entry happened to capture the whole gesture, and would oblige every inner
+   layer to wrap itself in a scope of its own. The parts stand or fall together: if a page change
+   invalidates any of them, the whole gesture goes, because recording the rest would undo half of
+   it.
 
 ### What the first review changed (2026-08-04)
 
@@ -1237,7 +1255,7 @@ changing course.
   a drag-activity target are the two things to verify first.
 - **Delete-page capture happens inside the `SaveThen` callback**, and restore re-raises the
   page-list events and navigates rather than just renumbering (Stage 2a).
-- **`runUndoable` nests from day one** (§4.13): depth counter, outermost wins.
+- **`runUndoable` nests from day one** (§4.13; its rule is decision 6 above).
 - **Selection anchors locate the editable structurally, not by `id`** (§4.3): ordinary
   `.bloom-editable` divs have none. The capture side is new code — the draft overstated what
   existed. Range anchors are deferred; snapshots use a caret marker in the captured *string*.

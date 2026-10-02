@@ -318,7 +318,7 @@ describe("UndoStack", () => {
     });
 
     describe("undoable scopes (runUndoable's mechanism)", () => {
-        it("keeps only the first entry pushed in a scope, relabelled with the scope label", () => {
+        it("makes one entry of everything pushed in a scope, labelled with the scope label", () => {
             stack.beginUndoableScope("Delete canvas element");
             stack.push(makeEntry("inner image undo", log));
             stack.push(makeEntry("another inner push", log));
@@ -326,6 +326,26 @@ describe("UndoStack", () => {
 
             expect(stack.getEntryCount()).toBe(1);
             expect(stack.peekUndoLabel()).toBe("Delete canvas element");
+            // One undo reverses every part.
+            stack.undo();
+            expect(log).toEqual([
+                "undo another inner push",
+                "undo inner image undo",
+            ]);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("records a single push as it is, with the scope's label", () => {
+            const only = makeEntry("the one push", log);
+            stack.beginUndoableScope("gesture");
+            stack.push(only);
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("gesture");
+            stack.undo();
+            expect(log).toEqual(["undo the one push"]);
+            expect(only.label).toBe("gesture");
         });
 
         it("treats a nested scope as part of the outer one", () => {
@@ -333,6 +353,8 @@ describe("UndoStack", () => {
             stack.beginUndoableScope("inner");
             stack.push(makeEntry("pushed by inner", log));
             stack.endUndoableScope();
+            // Closing the inner scope recorded nothing.
+            expect(stack.getEntryCount()).toBe(0);
             stack.push(makeEntry("pushed by outer", log));
             stack.endUndoableScope();
 
@@ -340,9 +362,7 @@ describe("UndoStack", () => {
             expect(stack.peekUndoLabel()).toBe("outer");
         });
 
-        it("keeps the outer operation's own entry even when an inner scope pushed first", () => {
-            // The inner layer usually runs, and records, before the outer operation gets to
-            // record its own entry. The outer entry describes the whole gesture, so it must win.
+        it("undoes the parts last first, and redoes them in the order they happened", () => {
             stack.beginUndoableScope("outer");
             stack.beginUndoableScope("inner");
             stack.push(makeEntry("inner", log));
@@ -351,23 +371,118 @@ describe("UndoStack", () => {
             stack.endUndoableScope();
 
             stack.undo();
-            expect(log).toEqual(["undo outer"]);
+            expect(log).toEqual(["undo outer", "undo inner"]);
+            expect(stack.canRedo()).toBe(true);
+            stack.redo();
+            expect(log).toEqual([
+                "undo outer",
+                "undo inner",
+                "redo inner",
+                "redo outer",
+            ]);
+            expect(stack.canUndo()).toBe(true);
+            expect(stack.canRedo()).toBe(false);
         });
 
-        it("falls back to the first inner entry when the outer scope records nothing itself", () => {
-            stack.beginUndoableScope("outer wrapper");
-            stack.beginUndoableScope("inner a");
-            stack.push(makeEntry("a", log));
-            stack.endUndoableScope();
-            stack.beginUndoableScope("inner b");
-            stack.push(makeEntry("b", log));
-            stack.endUndoableScope();
+        it("cannot be redone unless every part can", () => {
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("can redo", log));
+            stack.push(makeEntry("cannot redo", log, { canRedo: false }));
             stack.endUndoableScope();
 
-            expect(stack.getEntryCount()).toBe(1);
-            expect(stack.peekUndoLabel()).toBe("outer wrapper");
             stack.undo();
-            expect(log).toEqual(["undo a"]);
+            expect(log.length).toBe(2); // sanity: both parts were undone
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("calls each part's prepareRedo just before that part's own undo", () => {
+            const withPrepare = (label: string): IUndoEntry => ({
+                ...makeEntry(label, log),
+                prepareRedo: () => {
+                    log.push(`prepare ${label}`);
+                },
+            });
+            stack.beginUndoableScope("gesture");
+            stack.push(withPrepare("a"));
+            stack.push(withPrepare("b"));
+            stack.endUndoableScope();
+            expect(log).toEqual([]); // sanity: nothing is captured at push time
+
+            stack.undo();
+
+            expect(log).toEqual(["prepare b", "undo b", "prepare a", "undo a"]);
+        });
+
+        it("after a part fails, a retry continues from that part instead of repeating the others", () => {
+            let failNextTime = true;
+            const flaky: IUndoEntry = {
+                ...makeEntry("flaky", log),
+                undo: () => {
+                    if (failNextTime) {
+                        failNextTime = false;
+                        throw new Error("flaky failed");
+                    }
+                    log.push("undo flaky");
+                },
+            };
+            stack.beginUndoableScope("gesture");
+            stack.push(flaky);
+            stack.push(makeEntry("last", log));
+            stack.endUndoableScope();
+
+            expect(() => stack.undo()).toThrow("flaky failed");
+            expect(log).toEqual(["undo last"]);
+            // The stack offers the gesture again, and the retry undoes only what is left.
+            expect(stack.peekUndoLabel()).toBe("gesture");
+            stack.undo();
+            expect(log).toEqual(["undo last", "undo flaky"]);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("waits for an asynchronous part before undoing the one before it", async () => {
+            let finishSlow: () => void = () => {
+                throw new Error(
+                    "test bug: finishSlow called before it was set",
+                );
+            };
+            const slow: IUndoEntry = {
+                ...makeEntry("slow", log),
+                undo: () =>
+                    new Promise<void>((resolve) => {
+                        finishSlow = () => {
+                            log.push("undo slow");
+                            resolve();
+                        };
+                    }),
+            };
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("first", log));
+            stack.push(slow);
+            stack.endUndoableScope();
+
+            const undone = stack.undo();
+            expect(log).toEqual([]); // the slow part is still running
+            finishSlow();
+            await undone;
+
+            expect(log).toEqual(["undo slow", "undo first"]);
+        });
+
+        it("is discarded whole by a page change if any part belongs to the page", () => {
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(1); // sanity
+
+            stack.setCurrentPageId("page2");
+
+            // Keeping the page-independent part would leave half the gesture to undo.
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
         });
 
         it("records nothing while the scope is still open", () => {
@@ -379,7 +494,7 @@ describe("UndoStack", () => {
             expect(stack.getEntryCount()).toBe(1);
         });
 
-        it("starts a fresh claim for each new outermost scope", () => {
+        it("starts a fresh entry for each new outermost scope", () => {
             stack.beginUndoableScope("first gesture");
             stack.push(makeEntry("a", log));
             stack.endUndoableScope();
@@ -553,22 +668,35 @@ describe("UndoStack", () => {
             expect(stack.getEntryCount()).toBe(2);
         });
 
-        it("drops a held page-scoped push when the page is left before the scope closes", () => {
+        it("drops the whole held gesture when the page is left before the scope closes, if any part is page-scoped", () => {
             stack.setCurrentPageId("page1");
             stack.beginUndoableScope("async gesture");
             stack.push(makeEntry("old page work", log));
-            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
             // Navigation happens while the gesture is still awaiting.
             stack.clearPageScopedEntries();
             stack.endUndoableScope();
 
-            // The page-scoped entry is gone; the one that survives page changes was kept.
+            // Not even the page-independent part: that would undo half the gesture.
+            expect(stack.getEntryCount()).toBe(0);
+        });
+
+        it("keeps a held gesture across a page change when none of its parts is page-scoped", () => {
+            // Deleting a page navigates the frame inside its own scope, so its entry must survive.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("Delete page");
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.setCurrentPageId("page2");
+            stack.endUndoableScope();
+
             expect(stack.getEntryCount()).toBe(1);
             stack.undo();
             expect(log).toEqual(["undo delete page"]);
         });
 
-        it("drops a page-scoped push that arrives after a same-page reload, inside a scope opened before it", () => {
+        it("drops a gesture with a page-scoped push that arrives after a same-page reload, inside a scope opened before it", () => {
             // A reload that keeps the page id (leaving Change Layout mode, say) rebuilds every
             // element, so a push describing the old elements is stale even though its page id
             // still matches — which is why record()'s page-id check alone cannot catch this.
@@ -577,22 +705,20 @@ describe("UndoStack", () => {
             stack.clearPageScopedEntries(); // the reload, while the gesture is still awaiting
             stack.setCurrentPageId("page1"); // ...and it comes back with the same id
             stack.push(makeEntry("stale page work", log, { pageId: "page1" }));
-            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
             stack.endUndoableScope();
 
-            // Only the entry that survives page changes was recorded.
-            expect(stack.getEntryCount()).toBe(1);
-            expect(stack.peekUndoLabel()).toBe("async gesture");
+            expect(stack.getEntryCount()).toBe(0);
 
             // Control: the same gesture with no reload in the middle records its page work.
             stack.beginUndoableScope("quiet gesture");
             stack.push(makeEntry("page work", log, { pageId: "page1" }));
             stack.endUndoableScope();
-            expect(stack.getEntryCount()).toBe(2);
-
+            expect(stack.getEntryCount()).toBe(1);
             stack.undo();
-            stack.undo();
-            expect(log).toEqual(["undo page work", "undo delete page"]);
+            expect(log).toEqual(["undo page work"]);
         });
     });
 

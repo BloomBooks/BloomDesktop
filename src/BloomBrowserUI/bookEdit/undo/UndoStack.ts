@@ -5,6 +5,7 @@
 // can be unit-tested directly; everything frame-specific lives in legacyUndoProviders.ts or in the
 // factories that build entries.
 
+import { makeCompoundUndoEntry } from "./compoundUndoEntry";
 import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
 
 /**
@@ -37,10 +38,10 @@ export class UndoStack {
     private openScopeLabels: string[] = [];
 
     /**
-     * Entries pushed while a scope was open, with the scope depth each arrived at, in order. One
-     * of them is recorded when the outermost scope closes; see {@link endUndoableScope}.
+     * Entries pushed while a scope was open, in order. They become one entry when the outermost
+     * scope closes; see {@link endUndoableScope}.
      */
-    private heldPushes: { entry: IUndoEntry; depth: number }[] = [];
+    private heldPushes: IUndoEntry[] = [];
 
     /** True while an undo or redo is being applied, to stop a re-entrant one interleaving. */
     private applying = false;
@@ -48,8 +49,8 @@ export class UndoStack {
     /**
      * Counts the times the page frame has been replaced (a navigation to another page, or a reload
      * of the same one). A `runUndoable` scope remembers the generation it opened in; if that has
-     * moved on by the time it closes, its page-scoped pushes describe elements that no longer exist
-     * and are dropped. This catches what the page-id check in {@link record} cannot: a reload that
+     * moved on by the time it closes, any page-scoped part describes elements that no longer exist,
+     * and the whole gesture is dropped. This catches what the page-id check in {@link record} cannot: a reload that
      * keeps the same page id.
      */
     private pageGeneration = 0;
@@ -84,13 +85,13 @@ export class UndoStack {
      * Record an undoable step.
      *
      * If a `runUndoable` scope is open the entry is not recorded yet but *held*: one user gesture
-     * must produce exactly one entry, however many layers of code it passes through, and which of
-     * the held entries that is can only be decided once the whole gesture has run. See
+     * must produce exactly one entry, however many layers of code it passes through, so the held
+     * entries become parts of a single entry once the whole gesture has run. See
      * {@link endUndoableScope} for the rule, and PLAN.md 4.13.
      */
     public push(entry: IUndoEntry): void {
         if (this.openScopeLabels.length > 0) {
-            this.heldPushes.push({ entry, depth: this.openScopeLabels.length });
+            this.heldPushes.push(entry);
             return;
         }
         this.record(entry);
@@ -318,28 +319,24 @@ export class UndoStack {
     }
 
     /**
-     * Close the innermost `runUndoable` scope. Closing the *outermost* one records exactly one of
-     * the entries pushed while it was open, labelled with the outermost scope's label:
-     *
-     * - the first entry the outermost operation pushed **itself** (at depth 1), if it pushed one —
-     *   that entry describes the whole gesture, which is what a single Ctrl+Z must reverse; or
-     * - failing that, the first entry pushed by anything nested inside it, since a scope that
-     *   records nothing of its own is just a wrapper saying "these inner steps are one gesture".
-     *
-     * "First push wins" alone would be wrong: an inner layer usually runs, and pushes, *before* the
-     * outer operation gets to record its own entry, and keeping the inner one would leave an undo
-     * that reverses only part of the gesture (an image reverting to a placeholder, say, but not the
-     * canvas element coming back). The corollary is a discipline for inner layers: an operation
-     * that records its own undo does so inside its own `runUndoable`, so that its push sits at
-     * depth 2 or more when it happens inside a larger gesture. See PLAN.md 4.13.
+     * Close the innermost `runUndoable` scope. Closing a nested one does nothing more: the
+     * outermost scope defines the gesture. Closing the *outermost* one records a single entry,
+     * labelled with that scope's label, made of everything pushed while it was open, in order
+     * (see makeCompoundUndoEntry): one Ctrl+Z undoes the whole gesture, last part first, and
+     * Ctrl+Y redoes it, if every part can redo. A single push is recorded as it is, relabelled.
      *
      * If the stack was cleared while the scope was open, nothing it holds is recorded: the clear
      * meant "forget everything", and a gesture that settles afterwards must not repopulate the
-     * stack. If instead the page frame was replaced while the scope was open, only its page-scoped
-     * pushes are dropped: an asynchronous gesture that straddled a reload of the same page (which
-     * the page-id check cannot detect) would otherwise record state describing elements that no
-     * longer exist, while pushes with no page id survive, as they do in `keepOnly` — deleting a
-     * page is itself what navigates the frame, and its entry arrives inside exactly such a scope.
+     * stack.
+     *
+     * If instead the page frame was replaced while the scope was open, and any part is
+     * page-scoped, the whole gesture is dropped. An asynchronous gesture that straddled a reload
+     * (which the page-id check in {@link record} cannot detect when the page keeps its id) would
+     * otherwise record state describing elements that no longer exist; and recording only its
+     * page-independent parts would leave an entry that undoes half the gesture. A gesture made
+     * only of page-independent parts survives. Deleting a page is the gesture that needs this: it
+     * navigates the frame itself, inside its own scope, so its entry must be page-independent, and
+     * it must not include a page-scoped part, or the whole undo is lost.
      */
     public endUndoableScope(): void {
         const label = this.openScopeLabels[0];
@@ -347,24 +344,21 @@ export class UndoStack {
         if (this.openScopeLabels.length > 0 || this.heldPushes.length === 0) {
             return;
         }
+        const parts = this.heldPushes;
+        this.heldPushes = [];
         if (this.scopeResetGeneration !== this.resetGeneration) {
-            this.heldPushes = [];
             return;
         }
-        if (this.scopeGeneration !== this.pageGeneration) {
-            this.heldPushes = this.heldPushes.filter(
-                (held) => held.entry.pageId === undefined,
-            );
-            if (this.heldPushes.length === 0) {
-                return;
-            }
+        if (
+            this.scopeGeneration !== this.pageGeneration &&
+            parts.some((part) => part.pageId !== undefined)
+        ) {
+            return;
         }
-        const chosen =
-            this.heldPushes.find((held) => held.depth === 1) ??
-            this.heldPushes[0];
-        this.heldPushes = [];
-        chosen.entry.label = label;
-        this.record(chosen.entry);
+        const entry =
+            parts.length === 1 ? parts[0] : makeCompoundUndoEntry(label, parts);
+        entry.label = label;
+        this.record(entry);
     }
 
     /** Whether a `runUndoable` scope is currently open. */
@@ -409,9 +403,9 @@ export class UndoStack {
     /**
      * Filter entries, keeping `currentIndex` pointing at the same entry it did before.
      *
-     * Pushes held by an open `runUndoable` scope are filtered too: an asynchronous gesture can be
-     * awaiting while the page changes, and without this its held entry, scoped to the page just
-     * left, would be recorded when the scope closes and later undone against the new page.
+     * Pushes held by an open `runUndoable` scope are left alone. They are parts of one gesture, so
+     * they stand or fall together, and the scope decides when it closes: every caller of this
+     * moves the page generation on, which {@link endUndoableScope} checks.
      *
      * The redo branch (everything above `currentIndex`) is a sequence that must be replayed in
      * order, so dropping one entry from it invalidates everything after the hole: those entries
@@ -419,9 +413,6 @@ export class UndoStack {
      * at the first entry it loses, rather than keeping a gap that one Ctrl+Y would step over.
      */
     private keepOnly(predicate: (entry: IUndoEntry) => boolean): void {
-        this.heldPushes = this.heldPushes.filter((held) =>
-            predicate(held.entry),
-        );
         const kept: IUndoEntry[] = [];
         let newIndex = -1;
         for (let i = 0; i < this.entries.length; i++) {
