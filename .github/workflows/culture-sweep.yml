@@ -42,9 +42,11 @@ on:
     workflow_dispatch:
         inputs:
             cultures:
-                description: "Comma-separated cultures, e.g. fr-FR,tr-TR,th-TH"
+                description: "Comma-separated cultures, e.g. fr-FR,tr-TR,th-TH,ar-SA"
                 type: string
-                default: "fr-FR,tr-TR"
+                # Keep the same as the scheduled run's fallback in matrix-setup's CULTURES, so a manual
+                # run starts from the weekly set. (A dispatch default can't refer to a variable.)
+                default: "fr-FR,tr-TR,th-TH,ar-SA"
 
 # One sweep at a time. Unlike a PR check there is nothing to be gained by racing a manual run
 # against the scheduled one, and they would fight over the same runners.
@@ -58,9 +60,10 @@ jobs:
     # have not adopted, without editing this file. The scheduled run has no inputs, so it falls back
     # to the default.
     #
-    # The two cultures are chosen to cover DIFFERENT failure modes, not just "somewhere that uses a
-    # comma". Both use a comma decimal separator, but they differ in what happens to a
-    # period-decimal string like "1.5" that came out of CSS or a tool's output:
+    # The cultures are chosen to cover DIFFERENT failure modes, not just "somewhere that uses a
+    # comma". fr-FR and tr-TR both use a comma decimal separator, but they differ in what happens to
+    # a period-decimal string like "1.5" that came out of CSS or a tool's output. th-TH and ar-SA
+    # cover calendars (and th-TH string searching) instead:
     #
     #   fr-FR  Group separator is U+202F, a narrow no-break space. double.TryParse("1.5") FAILS
     #          here, so the bug is loud — an exception, or a TryParse returning false and the value
@@ -75,21 +78,28 @@ jobs:
     #          culture-sensitive ToUpper()/ToLower() against ASCII literals stops matching. That is
     #          a real bug we found and fixed under BL-16754 (InternalSpreadsheet's label mapping).
     #
+    #   th-TH  Buddhist calendar, so the year is 2569 rather than 2026: any date formatted with the
+    #          current culture and read elsewhere is 543 years off (BL-16948, Team Collection lock
+    #          dates). PLUS Thai collation ignores punctuation and spaces, so culture-sensitive
+    #          IndexOf/LastIndexOf, and NUnit's Does.Contain, match text that isn't there
+    #          (BL-16932, a crash; BL-16934).
+    #
+    #   ar-SA  Um al-Qura (Hijri) calendar, which covers only 1900-2077 and THROWS on a date outside
+    #          that range instead of just being off like Thai (BL-16948: the Team Collection status
+    #          failed for every book). PLUS non-ASCII native digits and right-to-left text.
+    #
     # Deliberately NOT included:
     #   sv-SE  the first culture we ever tried, but comma-decimal like French and otherwise
     #          unremarkable; its only distinct property is collation order.
     #   de-DE  tempting, and it does have the silent-misparse property French lacks — but it shares
-    #          that with tr-TR (same "." group separator), so on top of the pair above it adds
+    #          that with tr-TR (same "." group separator), so on top of the cultures above it adds
     #          essentially nothing but runtime.
     #
     # Adding a culture: trial it with a manual run first, and only adopt it once it is green or its
     # failures are fixed. A scheduled job that has been red since the day it was turned on teaches
     # everybody to ignore it, which is worse than not having it. Candidates worth trialling, roughly
     # best first:
-    #   th-TH  Buddhist calendar, so the year is 2569 rather than 2026 — the cheapest test of date
-    #          handling, and we do format dates in the current culture (BloomLibraryPublishModel).
-    #   ar-SA / fa-IR  non-Gregorian calendar AND non-ASCII digits, plus RTL. Most likely to find
-    #          real bugs, and most likely to produce noise on the first run.
+    #   fa-IR  Persian calendar AND non-ASCII digits, plus RTL: like ar-SA, but a different calendar.
     #   hi-IN  Indian digit grouping (1,00,000 rather than 100,000) breaks assumptions that groups
     #          are three digits — but we do not appear to format numbers big enough for it to show.
     matrix-setup:
@@ -106,8 +116,8 @@ jobs:
               env:
                   # Defaulted here as well as on the input, because a scheduled run supplies no
                   # inputs at all and would otherwise produce an empty matrix and silently test
-                  # nothing.
-                  CULTURES: ${{ inputs.cultures || 'fr-FR,tr-TR' }}
+                  # nothing. Keep this list identical to the input's default.
+                  CULTURES: ${{ inputs.cultures || 'fr-FR,tr-TR,th-TH,ar-SA' }}
               run: |
                   set -euo pipefail
                   # Split on commas, trim surrounding whitespace, drop empties, and emit a JSON

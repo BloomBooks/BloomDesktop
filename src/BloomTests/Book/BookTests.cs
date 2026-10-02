@@ -1733,7 +1733,14 @@ namespace BloomTests.Book
             var newVideoSrc = newDivNode.SelectSingleNode(".//source") as SafeXmlElement;
             var srcAttrVal = newVideoSrc?.GetAttribute("src");
             Assert.That(srcAttrVal, Does.StartWith("video/"));
-            Assert.That(srcAttrVal, Does.Not.Contain("#").And.Not.Contain("t="));
+            Assert.That(
+                srcAttrVal,
+                Is.Not.Matches(Contains.Substring("#").Using(StringComparison.Ordinal))
+            );
+            Assert.That(
+                srcAttrVal,
+                Is.Not.Matches(Contains.Substring("t=").Using(StringComparison.Ordinal))
+            );
             Assert.That(srcAttrVal, Does.EndWith(".mp4"));
             var fileName = srcAttrVal.Substring("video/".Length);
             Assert.That(fileName, Is.Not.EqualTo("Crow.mp4"));
