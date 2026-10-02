@@ -188,16 +188,10 @@ export class UndoStack {
         }
         const entry = this.entries[this.currentIndex];
         this.currentIndex--;
-        // If the entry fails to undo, it becomes the next thing to undo again (so the user can
-        // retry, or see that it is stuck), instead of being silently skipped and offered as a Redo
-        // of something that never happened.
-        return this.apply(
-            () => {
-                entry.prepareRedo?.();
-                return entry.undo();
-            },
-            () => this.makeNextToUndo(entry),
-        );
+        return this.apply(() => {
+            entry.prepareRedo?.();
+            return entry.undo();
+        });
     }
 
     /**
@@ -212,33 +206,7 @@ export class UndoStack {
         }
         const entry = this.entries[this.currentIndex + 1];
         this.currentIndex++;
-        // As in undo(): a redo that fails is still the next Redo rather than being treated as done.
-        return this.apply(
-            () => entry.redo!(),
-            () => this.makeNextToRedo(entry),
-        );
-    }
-
-    /**
-     * After a failed undo, point the index back at `entry` — by identity, not by the number it had
-     * before. An asynchronous undo can be in flight while the page changes, and `keepOnly` may have
-     * dropped entries (including this one) and renumbered the rest meanwhile; restoring the old
-     * number would then point past the end, and `canUndo` would advertise an entry that is not
-     * there. If the entry is gone, the index `keepOnly` computed is already right.
-     */
-    private makeNextToUndo(entry: IUndoEntry): void {
-        const i = this.entries.indexOf(entry);
-        if (i >= 0) {
-            this.currentIndex = i;
-        }
-    }
-
-    /** The redo counterpart of {@link makeNextToUndo}. */
-    private makeNextToRedo(entry: IUndoEntry): void {
-        const i = this.entries.indexOf(entry);
-        if (i >= 0) {
-            this.currentIndex = i - 1;
-        }
+        return this.apply(() => entry.redo!());
     }
 
     /**
@@ -275,7 +243,8 @@ export class UndoStack {
     }
 
     /**
-     * Discard everything. Used when leaving the edit tab, and by tests.
+     * Discard everything. Used when leaving the edit tab, after an undo or redo fails (see
+     * {@link apply}), and by tests.
      *
      * Including pushes held by a scope that is still open across an `await`: when that scope
      * closes it must not resurrect an entry this call discarded — whether it pushed before the
@@ -367,21 +336,25 @@ export class UndoStack {
     }
 
     /**
-     * Run an entry's undo/redo, holding the re-entrancy guard until it finishes, and calling
-     * `onFailure` (after releasing the guard) if it throws or rejects. The failure itself is still
-     * propagated to the caller.
+     * Run an entry's undo/redo, holding the re-entrancy guard until it finishes.
+     *
+     * If it throws or rejects, the whole stack is discarded ({@link clear}) and the failure is
+     * propagated, so that it reaches Bloom's error reporting. A retry would rarely help: a failure
+     * is almost always a bug, which fails the same way again, or a page frame mid-reload, whose
+     * page-scoped entries are about to be discarded anyway. And what the failure leaves behind is
+     * a document in a state no entry recorded, so the entries below it, each of which assumes the
+     * state the ones above it left, could no longer be trusted to undo correctly. Losing undo is
+     * better than corrupting the page. The legacy mechanisms do not depend on the stack and keep
+     * working.
      */
-    private apply(
-        action: () => void | Promise<void>,
-        onFailure: () => void,
-    ): void | Promise<void> {
+    private apply(action: () => void | Promise<void>): void | Promise<void> {
         this.applying = true;
         let result: void | Promise<void>;
         try {
             result = action();
         } catch (e) {
             this.applying = false;
-            onFailure();
+            this.clear();
             throw e;
         }
         if (!result) {
@@ -394,7 +367,7 @@ export class UndoStack {
             },
             (e) => {
                 this.applying = false;
-                onFailure();
+                this.clear();
                 throw e;
             },
         );

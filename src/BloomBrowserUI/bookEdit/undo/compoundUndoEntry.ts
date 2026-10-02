@@ -19,15 +19,8 @@ import { IUndoEntry } from "./undoTypes";
  *   whole gesture rather than leaving the parts that survive it, which would undo half a gesture.
  *   (Within one scope that did not straddle a page change, every page-scoped part was recorded
  *   against the same page; see UndoStack.endUndoableScope.)
- * - **A part whose undo fails** stops the undo where it is and propagates the failure. The
- *   compound remembers how many parts are still in effect, and the stack keeps a failed entry as
- *   the next thing to undo, so a retry continues from the part that failed instead of repeating
- *   the parts already undone.
- * - **A part whose redo fails** makes the compound undo the parts this redo had already
- *   re-applied, and then propagates the failure. The stack keeps a failed entry on the redo
- *   branch, where a new edit would discard it; parts left applied there could never be undone.
- *   Rolling them back leaves the gesture wholly undone, which is what that position means. (If the
- *   rollback itself fails there is nothing better to do; its failure is what propagates.)
+ * - **A part that fails** stops the run and propagates the failure, and the stack then discards
+ *   everything (UndoStack.apply), so nothing here tries to resume or roll back.
  *
  * Parts may be synchronous or asynchronous. When every part is synchronous, so is the compound,
  * which keeps an ordinary gesture's undo synchronous.
@@ -36,66 +29,37 @@ export function makeCompoundUndoEntry(
     label: string,
     parts: IUndoEntry[],
 ): IUndoEntry {
-    // parts[0 .. inEffect) are applied; the rest have been undone.
-    let inEffect = parts.length;
-
-    // Undo parts, last applied first, until only `floor` of them are still in effect.
-    const undoDownTo = (floor: number): void | Promise<void> => {
-        while (inEffect > floor) {
-            const part = parts[inEffect - 1];
-            part.prepareRedo?.();
-            const pending = part.undo();
-            if (pending) {
-                return pending.then(() => {
-                    inEffect--;
-                    return undoDownTo(floor);
-                });
-            }
-            inEffect--;
-        }
-    };
-
-    const redo = (): void | Promise<void> => {
-        const start = inEffect;
-        const rollBack = (failure: unknown): void | Promise<void> => {
-            const pending = undoDownTo(start);
-            if (pending) {
-                return pending.then(() => {
-                    throw failure;
-                });
-            }
-            throw failure;
-        };
-        let pending: void | Promise<void>;
-        try {
-            pending = redoRemaining();
-        } catch (failure) {
-            return rollBack(failure);
-        }
-        return pending?.catch(rollBack);
-    };
-
-    const redoRemaining = (): void | Promise<void> => {
-        while (inEffect < parts.length) {
-            const pending = parts[inEffect].redo!();
-            if (pending) {
-                return pending.then(() => {
-                    inEffect++;
-                    return redoRemaining();
-                });
-            }
-            inEffect++;
-        }
-    };
-
     const entry: IUndoEntry = {
         label,
         pageId: parts.find((part) => part.pageId !== undefined)?.pageId,
         kind: "custom",
-        undo: () => undoDownTo(0),
+        undo: () =>
+            runInSequence(
+                [...parts].reverse().map((part) => () => {
+                    part.prepareRedo?.();
+                    return part.undo();
+                }),
+            ),
     };
     if (parts.every((part) => part.redo)) {
-        entry.redo = redo;
+        entry.redo = () =>
+            runInSequence(parts.map((part) => () => part.redo!()));
     }
     return entry;
+}
+
+/**
+ * Run `steps` one after another, each starting only when the one before has finished. Stays
+ * synchronous until a step returns a promise, and returns a promise from then on.
+ */
+function runInSequence(
+    steps: (() => void | Promise<void>)[],
+    from = 0,
+): void | Promise<void> {
+    for (let i = from; i < steps.length; i++) {
+        const pending = steps[i]();
+        if (pending) {
+            return pending.then(() => runInSequence(steps, i + 1));
+        }
+    }
 }

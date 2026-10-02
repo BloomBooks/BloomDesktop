@@ -413,89 +413,27 @@ describe("UndoStack", () => {
             expect(log).toEqual(["prepare b", "undo b", "prepare a", "undo a"]);
         });
 
-        it("after a part fails, a retry continues from that part instead of repeating the others", () => {
-            let failNextTime = true;
-            const flaky: IUndoEntry = {
-                ...makeEntry("flaky", log),
+        it("stops at a part that fails, and the stack discards everything", () => {
+            const failing: IUndoEntry = {
+                ...makeEntry("failing", log),
                 undo: () => {
-                    if (failNextTime) {
-                        failNextTime = false;
-                        throw new Error("flaky failed");
-                    }
-                    log.push("undo flaky");
+                    throw new Error("part failed");
                 },
             };
+            stack.push(makeEntry("earlier gesture", log));
             stack.beginUndoableScope("gesture");
-            stack.push(flaky);
+            stack.push(makeEntry("first", log));
+            stack.push(failing);
             stack.push(makeEntry("last", log));
             stack.endUndoableScope();
 
-            expect(() => stack.undo()).toThrow("flaky failed");
+            expect(() => stack.undo()).toThrow("part failed");
+
+            // "first" never ran: the run stopped at the failure.
             expect(log).toEqual(["undo last"]);
-            // The stack offers the gesture again, and the retry undoes only what is left.
-            expect(stack.peekUndoLabel()).toBe("gesture");
-            stack.undo();
-            expect(log).toEqual(["undo last", "undo flaky"]);
-            expect(stack.canUndo()).toBe(false);
-        });
-
-        it("after a part's redo fails, undoes the parts that redo had re-applied, so nothing is stranded", () => {
-            let failNextTime = true;
-            const flaky: IUndoEntry = {
-                ...makeEntry("flaky", log),
-                redo: () => {
-                    if (failNextTime) {
-                        failNextTime = false;
-                        throw new Error("flaky redo failed");
-                    }
-                    log.push("redo flaky");
-                },
-            };
-            stack.beginUndoableScope("gesture");
-            stack.push(makeEntry("first", log));
-            stack.push(flaky);
-            stack.endUndoableScope();
-            stack.undo();
-            expect(log).toEqual(["undo flaky", "undo first"]); // sanity
-
-            expect(() => stack.redo()).toThrow("flaky redo failed");
-            // "first" was redone and then rolled back: the gesture is wholly undone again, which
-            // is what its place on the redo branch means.
-            expect(log).toEqual([
-                "undo flaky",
-                "undo first",
-                "redo first",
-                "undo first",
-            ]);
-            expect(stack.canUndo()).toBe(false);
-            expect(stack.peekRedoLabel()).toBe("gesture");
-
-            stack.redo();
-            expect(log.slice(4)).toEqual(["redo first", "redo flaky"]);
+            expect(stack.getEntryCount()).toBe(0);
             expect(stack.canRedo()).toBe(false);
         });
-
-        it("rolls back the same way when an asynchronous part's redo rejects", async () => {
-            const rejecting: IUndoEntry = {
-                ...makeEntry("rejecting", log),
-                redo: () => Promise.reject(new Error("async redo failed")),
-            };
-            stack.beginUndoableScope("gesture");
-            stack.push(makeEntry("first", log));
-            stack.push(rejecting);
-            stack.endUndoableScope();
-            stack.undo();
-
-            await expect(stack.redo()).rejects.toThrow("async redo failed");
-            expect(log).toEqual([
-                "undo rejecting",
-                "undo first",
-                "redo first",
-                "undo first",
-            ]);
-            expect(stack.peekRedoLabel()).toBe("gesture");
-        });
-
         it("waits for an asynchronous part before undoing the one before it", async () => {
             let finishSlow: () => void = () => {
                 throw new Error(
@@ -604,26 +542,30 @@ describe("UndoStack", () => {
             };
         }
 
-        it("leaves a synchronously failing entry as the next thing to undo", () => {
+        it("discards the whole stack when an undo throws, and still reports the failure", () => {
             stack.push(makeEntry("a", log));
             stack.push(failingEntry("b", { failUndo: true }));
-            expect(stack.peekUndoLabel()).toBe("b"); // sanity
+            expect(stack.getEntryCount()).toBe(2); // sanity
 
             expect(() => stack.undo()).toThrow("undo failed");
 
-            expect(stack.peekUndoLabel()).toBe("b");
+            // "a" was not undone, and is gone: it assumed the state "b" would have left.
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
             expect(stack.canRedo()).toBe(false);
             expect(log).toEqual([]);
         });
 
         it("does the same when prepareRedo is what fails", () => {
+            stack.push(makeEntry("a", log));
             stack.push(failingEntry("b", { failPrepare: true }));
+
             expect(() => stack.undo()).toThrow("prepare failed");
-            expect(stack.peekUndoLabel()).toBe("b");
-            expect(stack.canRedo()).toBe(false);
+
+            expect(stack.getEntryCount()).toBe(0);
         });
 
-        it("leaves an asynchronously failing entry as the next thing to undo", async () => {
+        it("does the same when an asynchronous undo rejects, and is not wedged afterwards", async () => {
             const entry: IUndoEntry = {
                 label: "async b",
                 pageId: "page1",
@@ -636,40 +578,51 @@ describe("UndoStack", () => {
 
             await expect(stack.undo()).rejects.toThrow("async undo failed");
 
-            expect(stack.peekUndoLabel()).toBe("async b");
-            expect(stack.canRedo()).toBe(false);
-            // The guard is released, so the user can retry; it fails again, harmlessly, and the
-            // entry is still where it was.
-            await expect(stack.undo()).rejects.toThrow("async undo failed");
-            expect(stack.peekUndoLabel()).toBe("async b");
+            expect(stack.getEntryCount()).toBe(0);
+            // The guard is released: new work records and undoes normally.
+            stack.push(makeEntry("later", log));
+            stack.undo();
+            expect(log).toEqual(["undo later"]);
         });
 
-        it("leaves a failing redo as the next thing to redo", async () => {
+        it("discards the whole stack when a redo fails, synchronously or not", async () => {
+            stack.push(makeEntry("a", log));
             stack.push(failingEntry("b", { failRedo: true }));
             stack.undo();
             expect(stack.peekRedoLabel()).toBe("b"); // sanity
 
             expect(() => stack.redo()).toThrow("redo failed");
 
-            expect(stack.peekRedoLabel()).toBe("b");
+            expect(stack.getEntryCount()).toBe(0);
             expect(stack.canUndo()).toBe(false);
+            expect(stack.canRedo()).toBe(false);
 
-            const asyncEntry: IUndoEntry = {
+            stack.push({
                 label: "async c",
                 pageId: "page1",
                 kind: "custom",
                 undo: () => {},
                 redo: () => Promise.reject(new Error("async redo failed")),
-            };
-            stack.push(asyncEntry);
+            });
             stack.undo();
             await expect(stack.redo()).rejects.toThrow("async redo failed");
-            expect(stack.peekRedoLabel()).toBe("async c");
+            expect(stack.getEntryCount()).toBe(0);
+        });
+
+        it("also drops what a gesture still being recorded was holding", () => {
+            stack.push(failingEntry("b", { failUndo: true }));
+            stack.beginUndoableScope("gesture in progress");
+            stack.push(makeEntry("held", log));
+
+            expect(() => stack.undo()).toThrow("undo failed");
+            stack.endUndoableScope();
+
+            // The gesture started from a state the failure has since changed.
+            expect(stack.getEntryCount()).toBe(0);
         });
     });
-
     describe("a page change during an in-flight or held operation", () => {
-        it("does not leave a dangling index when the failing entry was cleared meanwhile", async () => {
+        it("leaves an empty, working stack when a failing undo settles after a page change", async () => {
             let reject: (e: Error) => void = () => {
                 throw new Error("test bug: reject called before it was set");
             };
@@ -694,7 +647,6 @@ describe("UndoStack", () => {
             reject(new Error("too late"));
             await expect(pending).rejects.toThrow("too late");
 
-            // A numeric rollback would have pointed past the end here.
             expect(stack.canUndo()).toBe(false);
             expect(stack.peekUndoLabel()).toBeUndefined();
             expect(() => stack.undo()).not.toThrow();
@@ -830,12 +782,11 @@ describe("UndoStack", () => {
             expect(() => stack.undo()).toThrow("boom");
 
             // The guard is released, so the stack still works: new work can be recorded and
-            // undone. (The broken entry itself stays put as the next thing to undo — see
-            // "a failing undo or redo" — rather than being skipped.)
+            // undone. (The failure discarded everything before it; see "a failing undo or redo".)
             stack.push(makeEntry("later", log));
             stack.undo();
             expect(log).toEqual(["undo later"]);
-            expect(stack.peekUndoLabel()).toBe("bad");
+            expect(stack.canUndo()).toBe(false);
         });
     });
 

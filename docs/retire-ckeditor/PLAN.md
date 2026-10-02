@@ -730,13 +730,18 @@ up front (`UndoStack.endUndoableScope`, `compoundUndoEntry.ts`):
   anything nested inside it, becomes a part of that entry, which carries the outermost label. A
   nested `runUndoable` only deepens the scope; closing it records nothing.
 - **Undo reverses every part, last first; redo replays them in the original order.** The entry is
-  redoable only if every part is. Each part captures its redo state just before its own undo, and a
-  retry after a part fails continues from that part. A single push is recorded as it is.
+  redoable only if every part is. Each part captures its redo state just before its own undo. A
+  single push is recorded as it is.
 - **The parts stand or fall together.** The entry is page-scoped if any part is, so a page change
   discards it whole. If the page frame is replaced while the scope is still open and any part is
   page-scoped, nothing is recorded: keeping only the page-independent parts would leave half a
   gesture to undo. So a gesture that changes the page itself (deleting a page) must consist only of
   page-independent parts, or it loses its undo.
+- **A failed undo or redo discards the whole stack**, compound or not, and the error still
+  propagates to Bloom's error reporting. A retry would rarely help (a failure is almost always a
+  bug, which fails the same way again), and the failure leaves the document in a state no entry
+  recorded, so the older entries could no longer be trusted to undo correctly. The legacy
+  mechanisms are unaffected.
 
 ## 5. Keeping up with master
 
@@ -1225,7 +1230,8 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    if the outer operation's entry happened to capture the whole gesture, and would oblige every inner
    layer to wrap itself in a scope of its own. The parts stand or fall together: if a page change
    invalidates any of them, the whole gesture goes, because recording the rest would undo half of
-   it.
+   it. And a failed undo or redo, of any entry, discards the whole stack rather than offering a
+   retry, because what it leaves is a state no remaining entry can be trusted against.
 
 ### What the first review changed (2026-08-04)
 

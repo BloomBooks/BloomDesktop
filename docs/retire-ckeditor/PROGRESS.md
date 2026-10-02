@@ -1193,3 +1193,6 @@ Later, not Stage 0:
   first and redoes them in order, redoable only if every part is. The parts stand or fall
   together: a page change that invalidates any of them drops the whole gesture. Replaces the
   earlier rule, which kept one push and dropped the rest.
+- **Decision:** a failed undo or redo discards the whole stack and rethrows (`UndoStack.apply`).
+  A retry rarely helps, and the failure leaves a state the older entries were not recorded
+  against. The retry and rollback paths are gone.
