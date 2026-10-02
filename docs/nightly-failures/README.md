@@ -12,13 +12,16 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 
 - **Failed:** 2026-10-02. `BloomE2E/tests/reader-setup-dialogs-coexist.spec.ts`. After
   "Set Up Levels" is clicked, `#settings_frame` never appears (30 s timeout).
-- **What the trace shows:** opening the Leveled Reader tool saved and reloaded the page. The
-  button was clicked about 0.5 s after that reload. `showSetupDialog` then stalled before it
-  requested `readers/io/readerSettingsEditForbidden`, so either `beginLoadSynphonySettings` or
-  the `loadStrings` callback never completed. This is the first failure seen since the test
-  was added on 2026-09-23.
-- **Status:** not investigated further, and no card or PR. It may be a real Bloom bug: a click
-  right after a page reload does nothing.
+- **Cause:** a real Bloom bug (the button does nothing for users too), reproduced locally in
+  about 40% of runs. The legacy jQuery accordion still runs on the hidden `#toolbox`. When it
+  refreshes while a tool body is still sitting there, it takes that body for a header and binds
+  its header click handler, which calls `preventDefault`. The body then moves into the React
+  toolbox with the handler still attached, so the "Set Up Levels" `javascript:` link never runs.
+  This is a second cause of the BL-16732 symptom, and is about as old as the React toolbox.
+- **Status:** not fixed separately. The toolbox rework removes the jQuery accordion entirely
+  ([PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427),
+  [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)), which should fix it.
+  Confirm the test stays green once that lands.
 
 ## Link chooser: the preselected page is not scrolled into view
 
