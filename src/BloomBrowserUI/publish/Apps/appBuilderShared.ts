@@ -22,6 +22,8 @@ export interface IAppBuilderTrackedBookApi {
 
 export interface IAppBuilderStatus {
     rabInstalled: boolean;
+    // The Reading App Builder version this Bloom needs, when the installed one is older.
+    rabUpdateVersion?: string;
     projectExists: boolean;
     apkExists: boolean;
     buildNeeded: boolean;
@@ -63,6 +65,8 @@ export interface IAppBuilderPrepareStepStatusApi {
 
 export interface IAppBuilderStatusApi {
     rabInstalled?: boolean;
+    rabUpdateVersion?: string;
+    RabUpdateVersion?: string;
     projectExists?: boolean;
     apkExists?: boolean;
     buildNeeded?: boolean;
@@ -211,6 +215,8 @@ export function normalizeStatus(
 
     return {
         rabInstalled: status?.rabInstalled ?? status?.RabInstalled ?? false,
+        rabUpdateVersion:
+            status?.rabUpdateVersion ?? status?.RabUpdateVersion ?? undefined,
         projectExists: status?.projectExists ?? status?.ProjectExists ?? false,
         apkExists: status?.apkExists ?? status?.ApkExists ?? false,
         buildNeeded: status?.buildNeeded ?? status?.BuildNeeded ?? false,
