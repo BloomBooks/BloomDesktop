@@ -1,0 +1,828 @@
+// Tests for the one undo stack (BL-6681). See docs/retire-ckeditor/PLAN.md 4.1.
+//
+// These are specification tests, not characterization tests: the stack is new code, so each case
+// pins a decision the plan made rather than recording what some existing code happens to do.
+
+import { describe, it, expect, beforeEach } from "vitest";
+import { UndoStack } from "./UndoStack";
+import { ILegacyUndoProvider, IUndoEntry, kMaxUndoEntries } from "./undoTypes";
+
+/** A minimal entry that appends its label to `log` when undone or redone. */
+function makeEntry(
+    label: string,
+    log: string[],
+    options?: { pageId?: string; canRedo?: boolean },
+): IUndoEntry {
+    const entry: IUndoEntry = {
+        label,
+        pageId: options && "pageId" in options ? options.pageId : "page1",
+        kind: "custom",
+        undo: () => {
+            log.push(`undo ${label}`);
+        },
+    };
+    // Redo is optional by design (an entry without it is a redo floor), so tests must be able to
+    // create entries both ways.
+    if (options?.canRedo !== false) {
+        entry.redo = () => {
+            log.push(`redo ${label}`);
+        };
+    }
+    return entry;
+}
+
+/** A legacy-mechanism adapter whose availability the test controls. */
+function makeProvider(
+    name: string,
+    log: string[],
+    available: () => boolean,
+): ILegacyUndoProvider {
+    return {
+        name,
+        canUndo: available,
+        undo: () => {
+            log.push(`legacy ${name}`);
+        },
+    };
+}
+
+describe("UndoStack", () => {
+    let stack: UndoStack;
+    let log: string[];
+
+    beforeEach(() => {
+        stack = new UndoStack();
+        log = [];
+    });
+
+    describe("basic undo and redo", () => {
+        it("has nothing to undo or redo when empty", () => {
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("undoes the most recent entry first", () => {
+            stack.push(makeEntry("first", log));
+            stack.push(makeEntry("second", log));
+            expect(stack.canUndo()).toBe(true);
+
+            stack.undo();
+            stack.undo();
+
+            expect(log).toEqual(["undo second", "undo first"]);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("redoes in the reverse order of undoing", () => {
+            stack.push(makeEntry("first", log));
+            stack.push(makeEntry("second", log));
+            stack.undo();
+            stack.undo();
+            expect(stack.canRedo()).toBe(true);
+
+            stack.redo();
+            stack.redo();
+
+            expect(log).toEqual([
+                "undo second",
+                "undo first",
+                "redo first",
+                "redo second",
+            ]);
+            expect(stack.canRedo()).toBe(false);
+            expect(stack.canUndo()).toBe(true);
+        });
+
+        it("does nothing when asked to undo or redo past the end", () => {
+            stack.push(makeEntry("only", log));
+            stack.undo();
+            expect(log).toEqual(["undo only"]);
+
+            stack.undo(); // nothing left
+            stack.redo();
+            stack.redo(); // nothing left to redo either
+
+            expect(log).toEqual(["undo only", "redo only"]);
+        });
+    });
+
+    describe("the redo branch", () => {
+        it("is discarded by a new push, so the new entry is what gets undone", () => {
+            stack.push(makeEntry("first", log));
+            stack.push(makeEntry("second", log));
+            stack.undo();
+            // Sanity check: "second" is undone and would otherwise be redoable.
+            expect(log).toEqual(["undo second"]);
+            expect(stack.canRedo()).toBe(true);
+
+            stack.push(makeEntry("third", log));
+
+            expect(stack.canRedo()).toBe(false);
+            expect(stack.getEntryCount()).toBe(2); // first, third — "second" is gone
+            stack.undo();
+            expect(log).toEqual(["undo second", "undo third"]);
+        });
+
+        it("stops at an entry that cannot redo, rather than skipping it", () => {
+            stack.push(makeEntry("noRedo", log, { canRedo: false }));
+            stack.undo();
+
+            expect(stack.canRedo()).toBe(false);
+            stack.redo();
+
+            expect(log).toEqual(["undo noRedo"]);
+        });
+    });
+
+    describe("lazy redo capture", () => {
+        it("calls prepareRedo immediately before undo, not at push time", () => {
+            const entry = makeEntry("captured", log);
+            entry.prepareRedo = () => {
+                log.push("prepareRedo");
+            };
+
+            stack.push(entry);
+            // The whole point: pushing costs nothing extra. This is what keeps Redo cheap on the
+            // common path (every typing transaction).
+            expect(log).toEqual([]);
+
+            stack.undo();
+
+            expect(log).toEqual(["prepareRedo", "undo captured"]);
+        });
+    });
+
+    describe("page scoping", () => {
+        it("discards entries for other pages when the page changes", () => {
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("onPage1", log));
+            stack.push(makeEntry("alsoPage1", log));
+            expect(stack.getEntryCount()).toBe(2);
+
+            stack.setCurrentPageId("page2");
+
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("keeps entries with no page id, so deleting a page stays undoable", () => {
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("pageScoped", log));
+            stack.push(makeEntry("deletePage", log, { pageId: undefined }));
+
+            stack.setCurrentPageId("page2");
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("deletePage");
+            stack.undo();
+            expect(log).toEqual(["undo deletePage"]);
+        });
+
+        it("keeps the undo position pointing at the same entry after filtering", () => {
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("survives", log, { pageId: undefined }));
+            stack.push(makeEntry("dropped", log));
+            stack.push(makeEntry("alsoSurvives", log, { pageId: undefined }));
+            stack.undo(); // undoes alsoSurvives; it is now the redo entry
+            expect(stack.peekUndoLabel()).toBe("dropped");
+
+            stack.setCurrentPageId("page2");
+
+            // "dropped" is gone, so the next undo is "survives" and the redo branch is intact.
+            expect(stack.peekUndoLabel()).toBe("survives");
+            expect(stack.peekRedoLabel()).toBe("alsoSurvives");
+        });
+
+        it("discards page-scoped entries on a page-frame reload that keeps the same page", () => {
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("pageScoped", log));
+            stack.push(makeEntry("deletePage", log, { pageId: undefined }));
+
+            // Ctrl+wheel zoom and leaving Change Layout mode both rebuild the page frame without
+            // changing page, so setCurrentPageId would not notice, but the captured DOM is stale.
+            stack.clearPageScopedEntries();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("deletePage");
+        });
+
+        it("truncates the redo branch at the first entry a page change removes from it", () => {
+            // A page-scoped entry undone AFTER a page-independent one sits below it in the redo
+            // branch and must be redone before it. Once the page change drops it, redoing the
+            // survivor would replay the sequence with a hole in it.
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.undo();
+            stack.undo();
+            expect(stack.canRedo()).toBe(true); // sanity: both are on the redo branch
+
+            stack.clearPageScopedEntries();
+
+            expect(stack.canRedo()).toBe(false);
+            expect(stack.getEntryCount()).toBe(0);
+
+            // Control, the other way round: the survivor sits BELOW the hole, so it is still the
+            // next thing to redo and stays.
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.undo();
+            stack.undo();
+            stack.clearPageScopedEntries();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekRedoLabel()).toBe("delete page");
+        });
+
+        it("does not discard anything when told the page id it already has", () => {
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("onPage1", log));
+
+            stack.setCurrentPageId("page1");
+
+            expect(stack.getEntryCount()).toBe(1);
+        });
+    });
+
+    describe("bounding", () => {
+        it("drops the oldest entry rather than growing without limit", () => {
+            for (let i = 0; i < kMaxUndoEntries + 5; i++) {
+                stack.push(makeEntry(`entry${i}`, log));
+            }
+
+            expect(stack.getEntryCount()).toBe(kMaxUndoEntries);
+            expect(stack.peekUndoLabel()).toBe(
+                `entry${kMaxUndoEntries + 5 - 1}`,
+            );
+            // Undoing all the way down must stop cleanly at the truncated end.
+            for (let i = 0; i < kMaxUndoEntries; i++) {
+                stack.undo();
+            }
+            expect(stack.canUndo()).toBe(false);
+            expect(log.length).toBe(kMaxUndoEntries);
+            expect(log[log.length - 1]).toBe("undo entry5");
+        });
+    });
+
+    describe("legacy providers", () => {
+        it("consults them in registration order, before our own entries", () => {
+            stack.registerLegacyProvider(
+                makeProvider("origami", log, () => true),
+            );
+            stack.registerLegacyProvider(
+                makeProvider("toolbox", log, () => true),
+            );
+            stack.push(makeEntry("ours", log));
+
+            stack.undo();
+
+            expect(log).toEqual(["legacy origami"]);
+        });
+
+        it("falls through to the next provider, and then to our entries", () => {
+            let origamiHasSomething = true;
+            stack.registerLegacyProvider(
+                makeProvider("origami", log, () => origamiHasSomething),
+            );
+            stack.push(makeEntry("ours", log));
+
+            stack.undo();
+            expect(log).toEqual(["legacy origami"]);
+
+            origamiHasSomething = false;
+            stack.undo();
+
+            expect(log).toEqual(["legacy origami", "undo ours"]);
+        });
+
+        it("reports canUndo when only a legacy provider has something", () => {
+            expect(stack.canUndo()).toBe(false); // sanity check: nothing yet
+            stack.registerLegacyProvider(
+                makeProvider("image", log, () => true),
+            );
+
+            expect(stack.canUndo()).toBe(true);
+        });
+
+        it("takes no part in redo", () => {
+            stack.registerLegacyProvider(
+                makeProvider("origami", log, () => true),
+            );
+
+            // Origami keeps its own Ctrl+Y handler until it is converted, so the shared stack must
+            // not claim to be able to redo on its behalf.
+            expect(stack.canRedo()).toBe(false);
+            stack.redo();
+            expect(log).toEqual([]);
+        });
+    });
+
+    describe("undoable scopes (runUndoable's mechanism)", () => {
+        it("makes one entry of everything pushed in a scope, labelled with the scope label", () => {
+            stack.beginUndoableScope("Delete canvas element");
+            stack.push(makeEntry("inner image undo", log));
+            stack.push(makeEntry("another inner push", log));
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("Delete canvas element");
+            // One undo reverses every part.
+            stack.undo();
+            expect(log).toEqual([
+                "undo another inner push",
+                "undo inner image undo",
+            ]);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("records a single push as it is, with the scope's label", () => {
+            const only = makeEntry("the one push", log);
+            stack.beginUndoableScope("gesture");
+            stack.push(only);
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("gesture");
+            stack.undo();
+            expect(log).toEqual(["undo the one push"]);
+            expect(only.label).toBe("gesture");
+        });
+
+        it("treats a nested scope as part of the outer one", () => {
+            stack.beginUndoableScope("outer");
+            stack.beginUndoableScope("inner");
+            stack.push(makeEntry("pushed by inner", log));
+            stack.endUndoableScope();
+            // Closing the inner scope recorded nothing.
+            expect(stack.getEntryCount()).toBe(0);
+            stack.push(makeEntry("pushed by outer", log));
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            expect(stack.peekUndoLabel()).toBe("outer");
+        });
+
+        it("undoes the parts last first, and redoes them in the order they happened", () => {
+            stack.beginUndoableScope("outer");
+            stack.beginUndoableScope("inner");
+            stack.push(makeEntry("inner", log));
+            stack.endUndoableScope();
+            stack.push(makeEntry("outer", log));
+            stack.endUndoableScope();
+
+            stack.undo();
+            expect(log).toEqual(["undo outer", "undo inner"]);
+            expect(stack.canRedo()).toBe(true);
+            stack.redo();
+            expect(log).toEqual([
+                "undo outer",
+                "undo inner",
+                "redo inner",
+                "redo outer",
+            ]);
+            expect(stack.canUndo()).toBe(true);
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("cannot be redone unless every part can", () => {
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("can redo", log));
+            stack.push(makeEntry("cannot redo", log, { canRedo: false }));
+            stack.endUndoableScope();
+
+            stack.undo();
+            expect(log.length).toBe(2); // sanity: both parts were undone
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("calls each part's prepareRedo just before that part's own undo", () => {
+            const withPrepare = (label: string): IUndoEntry => ({
+                ...makeEntry(label, log),
+                prepareRedo: () => {
+                    log.push(`prepare ${label}`);
+                },
+            });
+            stack.beginUndoableScope("gesture");
+            stack.push(withPrepare("a"));
+            stack.push(withPrepare("b"));
+            stack.endUndoableScope();
+            expect(log).toEqual([]); // sanity: nothing is captured at push time
+
+            stack.undo();
+
+            expect(log).toEqual(["prepare b", "undo b", "prepare a", "undo a"]);
+        });
+
+        it("stops at a part that fails, and the stack discards everything", () => {
+            const failing: IUndoEntry = {
+                ...makeEntry("failing", log),
+                undo: () => {
+                    throw new Error("part failed");
+                },
+            };
+            stack.push(makeEntry("earlier gesture", log));
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("first", log));
+            stack.push(failing);
+            stack.push(makeEntry("last", log));
+            stack.endUndoableScope();
+
+            expect(() => stack.undo()).toThrow("part failed");
+
+            // "first" never ran: the run stopped at the failure.
+            expect(log).toEqual(["undo last"]);
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canRedo()).toBe(false);
+        });
+        it("waits for an asynchronous part before undoing the one before it", async () => {
+            let finishSlow: () => void = () => {
+                throw new Error(
+                    "test bug: finishSlow called before it was set",
+                );
+            };
+            const slow: IUndoEntry = {
+                ...makeEntry("slow", log),
+                undo: () =>
+                    new Promise<void>((resolve) => {
+                        finishSlow = () => {
+                            log.push("undo slow");
+                            resolve();
+                        };
+                    }),
+            };
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("first", log));
+            stack.push(slow);
+            stack.endUndoableScope();
+
+            const undone = stack.undo();
+            expect(log).toEqual([]); // the slow part is still running
+            finishSlow();
+            await undone;
+
+            expect(log).toEqual(["undo slow", "undo first"]);
+        });
+
+        it("is discarded whole by a page change if any part belongs to the page", () => {
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(1); // sanity
+
+            stack.setCurrentPageId("page2");
+
+            // Keeping the page-independent part would leave half the gesture to undo.
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+        });
+
+        it("records nothing while the scope is still open", () => {
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("a", log));
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(1);
+        });
+
+        it("starts a fresh entry for each new outermost scope", () => {
+            stack.beginUndoableScope("first gesture");
+            stack.push(makeEntry("a", log));
+            stack.endUndoableScope();
+            stack.beginUndoableScope("second gesture");
+            stack.push(makeEntry("b", log));
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(2);
+            expect(stack.peekUndoLabel()).toBe("second gesture");
+        });
+
+        it("records normally again once the scope is closed", () => {
+            stack.beginUndoableScope("gesture");
+            stack.push(makeEntry("a", log));
+            stack.push(makeEntry("b", log));
+            stack.endUndoableScope();
+            expect(stack.isInUndoableScope()).toBe(false);
+
+            stack.push(makeEntry("afterwards", log));
+
+            expect(stack.getEntryCount()).toBe(2);
+            expect(stack.peekUndoLabel()).toBe("afterwards");
+        });
+    });
+
+    describe("a failing undo or redo", () => {
+        function failingEntry(
+            label: string,
+            options: {
+                failUndo?: boolean;
+                failRedo?: boolean;
+                failPrepare?: boolean;
+            },
+        ): IUndoEntry {
+            return {
+                label,
+                pageId: "page1",
+                kind: "custom",
+                prepareRedo: () => {
+                    if (options.failPrepare) throw new Error("prepare failed");
+                },
+                undo: () => {
+                    if (options.failUndo) throw new Error("undo failed");
+                    log.push(`undo ${label}`);
+                },
+                redo: () => {
+                    if (options.failRedo) throw new Error("redo failed");
+                    log.push(`redo ${label}`);
+                },
+            };
+        }
+
+        it("discards the whole stack when an undo throws, and still reports the failure", () => {
+            stack.push(makeEntry("a", log));
+            stack.push(failingEntry("b", { failUndo: true }));
+            expect(stack.getEntryCount()).toBe(2); // sanity
+
+            expect(() => stack.undo()).toThrow("undo failed");
+
+            // "a" was not undone, and is gone: it assumed the state "b" would have left.
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.canRedo()).toBe(false);
+            expect(log).toEqual([]);
+        });
+
+        it("does the same when prepareRedo is what fails", () => {
+            stack.push(makeEntry("a", log));
+            stack.push(failingEntry("b", { failPrepare: true }));
+
+            expect(() => stack.undo()).toThrow("prepare failed");
+
+            expect(stack.getEntryCount()).toBe(0);
+        });
+
+        it("does the same when an asynchronous undo rejects, and is not wedged afterwards", async () => {
+            const entry: IUndoEntry = {
+                label: "async b",
+                pageId: "page1",
+                kind: "custom",
+                undo: () => Promise.reject(new Error("async undo failed")),
+                redo: () => {},
+            };
+            stack.push(makeEntry("a", log));
+            stack.push(entry);
+
+            await expect(stack.undo()).rejects.toThrow("async undo failed");
+
+            expect(stack.getEntryCount()).toBe(0);
+            // The guard is released: new work records and undoes normally.
+            stack.push(makeEntry("later", log));
+            stack.undo();
+            expect(log).toEqual(["undo later"]);
+        });
+
+        it("discards the whole stack when a redo fails, synchronously or not", async () => {
+            stack.push(makeEntry("a", log));
+            stack.push(failingEntry("b", { failRedo: true }));
+            stack.undo();
+            expect(stack.peekRedoLabel()).toBe("b"); // sanity
+
+            expect(() => stack.redo()).toThrow("redo failed");
+
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.canRedo()).toBe(false);
+
+            stack.push({
+                label: "async c",
+                pageId: "page1",
+                kind: "custom",
+                undo: () => {},
+                redo: () => Promise.reject(new Error("async redo failed")),
+            });
+            stack.undo();
+            await expect(stack.redo()).rejects.toThrow("async redo failed");
+            expect(stack.getEntryCount()).toBe(0);
+        });
+
+        it("also drops what a gesture still being recorded was holding", () => {
+            stack.push(failingEntry("b", { failUndo: true }));
+            stack.beginUndoableScope("gesture in progress");
+            stack.push(makeEntry("held", log));
+
+            expect(() => stack.undo()).toThrow("undo failed");
+            stack.endUndoableScope();
+
+            // The gesture started from a state the failure has since changed.
+            expect(stack.getEntryCount()).toBe(0);
+        });
+    });
+    describe("a page change during an in-flight or held operation", () => {
+        it("leaves an empty, working stack when a failing undo settles after a page change", async () => {
+            let reject: (e: Error) => void = () => {
+                throw new Error("test bug: reject called before it was set");
+            };
+            const slowFailing: IUndoEntry = {
+                label: "slow failing",
+                pageId: "page1",
+                kind: "custom",
+                undo: () =>
+                    new Promise<void>((_, rej) => {
+                        reject = rej;
+                    }),
+                redo: () => {},
+            };
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("a", log));
+            stack.push(slowFailing);
+
+            const pending = stack.undo() as Promise<void>;
+            // The user changes page while the undo is still in flight.
+            stack.clearPageScopedEntries();
+            expect(stack.getEntryCount()).toBe(0); // sanity
+            reject(new Error("too late"));
+            await expect(pending).rejects.toThrow("too late");
+
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.peekUndoLabel()).toBeUndefined();
+            expect(() => stack.undo()).not.toThrow();
+        });
+
+        it("refuses an entry scoped to a page that is no longer current", () => {
+            // The push that arrives AFTER navigation, from an async gesture finishing late on the
+            // old page: keepOnly has already run, so record() itself has to turn it away.
+            stack.setCurrentPageId("page1");
+            stack.push(makeEntry("on page 1", log));
+            stack.setCurrentPageId("page2");
+            expect(stack.getEntryCount()).toBe(0); // sanity: the page-1 entry went with the page
+
+            stack.push(
+                makeEntry("late, from page 1", log, { pageId: "page1" }),
+            );
+            expect(stack.getEntryCount()).toBe(0);
+
+            // A late push inside a scope is turned away the same way when the scope closes...
+            stack.beginUndoableScope("late gesture");
+            stack.push(makeEntry("late and scoped", log, { pageId: "page1" }));
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(0);
+
+            // ...while entries for the current page, and ones that survive page changes, record.
+            stack.push(makeEntry("on page 2", log, { pageId: "page2" }));
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            expect(stack.getEntryCount()).toBe(2);
+        });
+
+        it("drops the whole held gesture when the page is left before the scope closes, if any part is page-scoped", () => {
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.push(makeEntry("old page work", log));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
+            // Navigation happens while the gesture is still awaiting.
+            stack.clearPageScopedEntries();
+            stack.endUndoableScope();
+
+            // Not even the page-independent part: that would undo half the gesture.
+            expect(stack.getEntryCount()).toBe(0);
+        });
+
+        it("keeps a held gesture across a page change when none of its parts is page-scoped", () => {
+            // Deleting a page navigates the frame inside its own scope, so its entry must survive.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("Delete page");
+            stack.push(makeEntry("delete page", log, { pageId: undefined }));
+            stack.setCurrentPageId("page2");
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(1);
+            stack.undo();
+            expect(log).toEqual(["undo delete page"]);
+        });
+
+        it("drops a gesture with a page-scoped push that arrives after a same-page reload, inside a scope opened before it", () => {
+            // A reload that keeps the page id (leaving Change Layout mode, say) rebuilds every
+            // element, so a push describing the old elements is stale even though its page id
+            // still matches — which is why record()'s page-id check alone cannot catch this.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.clearPageScopedEntries(); // the reload, while the gesture is still awaiting
+            stack.setCurrentPageId("page1"); // ...and it comes back with the same id
+            stack.push(makeEntry("stale page work", log, { pageId: "page1" }));
+            stack.push(
+                makeEntry("page-independent work", log, { pageId: undefined }),
+            );
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(0);
+
+            // Control: the same gesture with no reload in the middle records its page work.
+            stack.beginUndoableScope("quiet gesture");
+            stack.push(makeEntry("page work", log, { pageId: "page1" }));
+            stack.endUndoableScope();
+            expect(stack.getEntryCount()).toBe(1);
+            stack.undo();
+            expect(log).toEqual(["undo page work"]);
+        });
+    });
+
+    describe("asynchronous entries", () => {
+        it("waits for an async undo before allowing another", async () => {
+            let release: () => void = () => {
+                throw new Error("test bug: release called before it was set");
+            };
+            const slow: IUndoEntry = {
+                label: "slow",
+                pageId: "page1",
+                kind: "custom",
+                undo: () =>
+                    new Promise<void>((resolve) => {
+                        release = () => {
+                            log.push("undo slow finished");
+                            resolve();
+                        };
+                    }),
+            };
+            stack.push(slow);
+            stack.push(makeEntry("fast", log));
+
+            // "fast" is on top and is synchronous, so this completes before returning.
+            const inFlight = stack.undo();
+            expect(log).toEqual(["undo fast"]);
+            expect(inFlight).toBeUndefined();
+
+            const slowPromise = stack.undo();
+            // While that is in flight a second undo must be ignored rather than interleaved.
+            stack.undo();
+            expect(log).toEqual(["undo fast"]);
+
+            release();
+            await slowPromise;
+
+            expect(log).toEqual(["undo fast", "undo slow finished"]);
+        });
+
+        it("releases the guard when an undo throws, so undo is not wedged", () => {
+            const bad: IUndoEntry = {
+                label: "bad",
+                pageId: "page1",
+                kind: "custom",
+                undo: () => {
+                    throw new Error("boom");
+                },
+            };
+            stack.push(makeEntry("good", log));
+            stack.push(bad);
+
+            expect(() => stack.undo()).toThrow("boom");
+
+            // The guard is released, so the stack still works: new work can be recorded and
+            // undone. (The failure discarded everything before it; see "a failing undo or redo".)
+            stack.push(makeEntry("later", log));
+            stack.undo();
+            expect(log).toEqual(["undo later"]);
+            expect(stack.canUndo()).toBe(false);
+        });
+    });
+
+    describe("clear", () => {
+        it("discards everything, including entries that survive page changes", () => {
+            stack.push(makeEntry("pageScoped", log));
+            stack.push(makeEntry("deletePage", log, { pageId: undefined }));
+            expect(stack.canUndo()).toBe(true); // sanity check
+
+            stack.clear();
+
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+            expect(stack.canRedo()).toBe(false);
+        });
+
+        it("also discards what a scope still open across the clear was holding, and what it pushes afterwards", () => {
+            // Leaving the edit tab mid-gesture: the scope's finally runs later and must not
+            // resurrect an entry the clear discarded.
+            stack.setCurrentPageId("page1");
+            stack.beginUndoableScope("async gesture");
+            stack.push(makeEntry("held before clear", log));
+            expect(stack.isInUndoableScope()).toBe(true); // sanity
+
+            stack.clear();
+            stack.push(makeEntry("pushed after clear", log));
+            // Unlike a page change, a clear discards even the entries that survive page changes.
+            stack.push(
+                makeEntry("delete page after clear", log, {
+                    pageId: undefined,
+                }),
+            );
+            stack.endUndoableScope();
+
+            expect(stack.getEntryCount()).toBe(0);
+            expect(stack.canUndo()).toBe(false);
+        });
+    });
+});
