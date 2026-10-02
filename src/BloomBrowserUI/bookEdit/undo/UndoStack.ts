@@ -346,6 +346,11 @@ export class UndoStack {
      * state the ones above it left, could no longer be trusted to undo correctly. Losing undo is
      * better than corrupting the page. The legacy mechanisms do not depend on the stack and keep
      * working.
+     *
+     * An asynchronous undo or redo that fails late, after the user has moved to another page and
+     * recorded something there, discards that newer history too. That is accepted rather than
+     * guarded against: it needs an operation still in flight across a page change plus a new edit
+     * before the failure, and its only cost is lost undo history, never damage to the page.
      */
     private apply(action: () => void | Promise<void>): void | Promise<void> {
         this.applying = true;
