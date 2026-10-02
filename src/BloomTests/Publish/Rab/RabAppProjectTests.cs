@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -349,6 +350,115 @@ namespace BloomTests.Publish.Rab
             Assert.That(fonts[0].FileName, Is.EqualTo("ABeeZee-Regular.woff2"));
         }
 
+        // Writes a BloomPUB holding fonts.css and the given font files, each containing its own name.
+        private static void WriteBloomPubWithFonts(
+            string bloomPubPath,
+            string fontsCss,
+            params string[] fontFileNames
+        )
+        {
+            using var archive = ZipFile.Open(bloomPubPath, ZipArchiveMode.Create);
+            using (var cssWriter = new StreamWriter(archive.CreateEntry("fonts.css").Open()))
+                cssWriter.Write(fontsCss);
+            foreach (var fileName in fontFileNames)
+            {
+                using var fontWriter = new StreamWriter(archive.CreateEntry(fileName).Open());
+                fontWriter.Write("contents of " + fileName);
+            }
+        }
+
+        private const string kCharisRegularAndBoldCss =
+            "@font-face {font-family:'Charis SIL'; font-weight:normal; font-style:normal; src:url('CharisSIL-Regular.ttf') format('truetype');}"
+            + "@font-face {font-family:'Charis SIL'; font-weight:bold; font-style:normal; src:url('CharisSIL-Bold.ttf') format('truetype');}";
+
+        [Test]
+        public void CopyEmbeddedFontFiles_CopiesEachFaceOutOfTheBloomPubs()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var bookA = Path.Combine(tempFolder.Path, "a.bloompub");
+            var bookB = Path.Combine(tempFolder.Path, "b.bloompub");
+            WriteBloomPubWithFonts(
+                bookA,
+                kCharisRegularAndBoldCss,
+                "CharisSIL-Regular.ttf",
+                "CharisSIL-Bold.ttf"
+            );
+            // A second book using one of the same files must not trip over the earlier copy.
+            WriteBloomPubWithFonts(
+                bookB,
+                "@font-face {font-family:'Charis SIL'; font-weight:normal; font-style:normal; src:url('CharisSIL-Regular.ttf') format('truetype');}",
+                "CharisSIL-Regular.ttf"
+            );
+            var fontsFolder = Path.Combine(tempFolder.Path, "App_data", "fonts");
+            Assert.That(Directory.Exists(fontsFolder), Is.False, "test setup: no fonts folder yet");
+
+            RabProjectService.CopyEmbeddedFontFiles(
+                new[]
+                {
+                    new RabBookPublishInfo { BloomPubPath = bookA },
+                    new RabBookPublishInfo { BloomPubPath = bookB },
+                },
+                fontsFolder
+            );
+
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(fontsFolder, "CharisSIL-Regular.ttf")),
+                Is.EqualTo("contents of CharisSIL-Regular.ttf")
+            );
+            Assert.That(
+                RobustFile.ReadAllText(Path.Combine(fontsFolder, "CharisSIL-Bold.ttf")),
+                Is.EqualTo("contents of CharisSIL-Bold.ttf")
+            );
+            Assert.That(Directory.GetFiles(fontsFolder), Has.Length.EqualTo(2));
+        }
+
+        [Test]
+        public void CopyEmbeddedFontFiles_ReplacesAnOlderCopyAndKeepsOtherFiles()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var book = Path.Combine(tempFolder.Path, "a.bloompub");
+            WriteBloomPubWithFonts(
+                book,
+                kCharisRegularAndBoldCss,
+                "CharisSIL-Regular.ttf",
+                "CharisSIL-Bold.ttf"
+            );
+            var fontsFolder = Path.Combine(tempFolder.Path, "fonts");
+            Directory.CreateDirectory(fontsFolder);
+            var regularPath = Path.Combine(fontsFolder, "CharisSIL-Regular.ttf");
+            var rabFontPath = Path.Combine(fontsFolder, "Andika-Regular.ttf");
+            RobustFile.WriteAllText(regularPath, "old");
+            RobustFile.WriteAllText(rabFontPath, "put here by RAB");
+
+            RabProjectService.CopyEmbeddedFontFiles(
+                new[] { new RabBookPublishInfo { BloomPubPath = book } },
+                fontsFolder
+            );
+
+            Assert.That(
+                RobustFile.ReadAllText(regularPath),
+                Is.EqualTo("contents of CharisSIL-Regular.ttf")
+            );
+            Assert.That(RobustFile.ReadAllText(rabFontPath), Is.EqualTo("put here by RAB"));
+        }
+
+        [Test]
+        public void CopyEmbeddedFontFiles_ThrowsWhenTheBloomPubLacksAFontFile()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var book = Path.Combine(tempFolder.Path, "a.bloompub");
+            WriteBloomPubWithFonts(book, kCharisRegularAndBoldCss, "CharisSIL-Regular.ttf");
+
+            var exception = Assert.Throws<ApplicationException>(() =>
+                RabProjectService.CopyEmbeddedFontFiles(
+                    new[] { new RabBookPublishInfo { BloomPubPath = book } },
+                    Path.Combine(tempFolder.Path, "fonts")
+                )
+            );
+
+            Assert.That(exception.Message, Does.Contain("CharisSIL-Bold.ttf"));
+        }
+
         [TestCase("My Collection", "my-collection", "org.sil.bloom.my.collection")]
         [TestCase("123 Numbers First", "123-numbers-first", "org.sil.bloom.a123.numbers.first")]
         [TestCase("***", "bloom-app", "org.sil.bloom.bloom.app")]
@@ -599,6 +709,124 @@ namespace BloomTests.Publish.Rab
                 Is.EqualTo(new byte[] { 0xEF, 0xBB, 0xBF })
             );
             Assert.That(service.ArgumentFileExistsAfterRun, Is.False);
+        }
+
+        // A stand-in for rab.bat with the same ending: run a command (in RAB, Java), then GOTO :EOF.
+        private static string WriteFakeRabLauncher(string folder, int exitCode)
+        {
+            var path = Path.Combine(folder, $"rab-exits-{exitCode}.bat");
+            RobustFile.WriteAllText(
+                path,
+                $"@echo off\r\ncmd /c exit {exitCode}\r\nGOTO :EOF\r\n\r\n:EOF\r\n",
+                Encoding.ASCII
+            );
+            return path;
+        }
+
+        [Test]
+        public void RunRabCommand_WhenRabFails_ThrowsWithItsExitCode()
+        {
+            // BL-16959: a failing rab.bat run as `cmd /c "rab.bat ..."` made cmd.exe exit 0, so Bloom
+            // treated every RAB failure as success.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var launcher = WriteFakeRabLauncher(tempFolder.Path, 3);
+            using (
+                var oldLaunch = Process.Start(
+                    new ProcessStartInfo("cmd.exe", $"/d /c \"\"{launcher}\" -i x\"")
+                    {
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    }
+                )
+            )
+            {
+                oldLaunch.WaitForExit();
+                Assert.That(
+                    oldLaunch.ExitCode,
+                    Is.EqualTo(0),
+                    "sanity check: the old launch loses the exit code, which is what this test guards against"
+                );
+            }
+            // ^, & and spaces in the argument file's path must survive the launch.
+            var argumentFolder = Path.Combine(tempFolder.Path, "A^B & C");
+            Directory.CreateDirectory(argumentFolder);
+            var service = new RealProcessRabProjectService(launcher, argumentFolder);
+
+            var exception = Assert.Throws<ApplicationException>(() =>
+                service.RunRabCommand(new[] { "-build" }, tempFolder.Path)
+            );
+
+            Assert.That(exception.Message, Is.EqualTo("cmd.exe exited with code 3."));
+        }
+
+        [Test]
+        public void RunRabCommand_WhenRabSucceeds_PassesTheArgumentFileAndDoesNotThrow()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            // This launcher records the path it was given, then exits 0 the way rab.bat does.
+            var launcher = Path.Combine(tempFolder.Path, "rab-records-args.bat");
+            var recordPath = Path.Combine(tempFolder.Path, "received.txt");
+            RobustFile.WriteAllText(
+                launcher,
+                // Delayed expansion (!p!) keeps ^ and & in the path from being parsed as syntax.
+                "@echo off\r\nsetlocal EnableDelayedExpansion\r\nset \"p=%~2\"\r\n"
+                    + $"> \"{recordPath}\" echo(!p!\r\nGOTO :EOF\r\n\r\n:EOF\r\n",
+                Encoding.ASCII
+            );
+            var argumentFolder = Path.Combine(tempFolder.Path, "A^B & C");
+            Directory.CreateDirectory(argumentFolder);
+            var service = new RealProcessRabProjectService(launcher, argumentFolder);
+
+            Assert.DoesNotThrow(() => service.RunRabCommand(new[] { "-build" }, tempFolder.Path));
+
+            var received = RobustFile.ReadAllText(recordPath).Trim();
+            Assert.That(
+                Path.GetDirectoryName(received),
+                Is.EqualTo(argumentFolder),
+                "rab.bat should receive the argument file's real path"
+            );
+        }
+
+        [Test]
+        public async Task BuildAsync_WhenRabWritesNoNewApk_FailsInsteadOfReportingThePreviousApk()
+        {
+            // BL-16959: RAB failed ("A required file for this app is missing") but its exit code
+            // was lost, so Bloom reported "Build complete" with the APK from an earlier build.
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Book One",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "book-1.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            await service.PrepareAsync();
+            await service.BuildAsync();
+            var previousApk = service.FindLatestApkPath(paths);
+            Assert.That(previousApk, Is.Not.Null, "setup: the first build should leave an APK");
+            // In real use the previous APK is from an earlier build, minutes old.
+            new FileInfo(previousApk).LastWriteTimeUtc = DateTime.UtcNow.AddMinutes(-5);
+            var previousWriteTime = RobustFile.GetLastWriteTimeUtc(previousApk);
+
+            service.SkipApkOnNextBuild = true;
+            var exception = Assert.ThrowsAsync<ApplicationException>(async () =>
+                await service.BuildAsync()
+            );
+
+            Assert.That(exception.Message, Does.Contain("without producing an Android app"));
+            Assert.That(exception.Message, Does.Contain("A required file for this app is missing"));
+            Assert.That(
+                RobustFile.GetLastWriteTimeUtc(previousApk),
+                Is.EqualTo(previousWriteTime),
+                "the previous build's APK should be left alone"
+            );
         }
 
         [Test]
@@ -1342,6 +1570,56 @@ namespace BloomTests.Publish.Rab
                 fonts[0].Element("filename")?.Attribute("format")?.Value,
                 Is.EqualTo("woff2")
             );
+        }
+
+        [Test]
+        public async Task BuildAsync_CopiesEmbeddedFontFilesIntoProjectFontsFolder()
+        {
+            using var tempFolder = new TemporaryFolder("RabAppProjectTests");
+            var paths = new RabWorkspacePaths(tempFolder.Path);
+            var trackedBooks = new List<RabBookPublishInfo>
+            {
+                new RabBookPublishInfo
+                {
+                    BookId = "book-1",
+                    FolderPath = Path.Combine(tempFolder.Path, "book-1"),
+                    Title = "Flower",
+                    BloomPubPath = Path.Combine(paths.BloomPubRoot, "Flower.bloompub"),
+                },
+            };
+            Directory.CreateDirectory(trackedBooks[0].FolderPath);
+
+            var service = new TestRabProjectService(paths, "Sample App", trackedBooks);
+            service.FontsCssByFolderPath[trackedBooks[0].FolderPath] = kCharisRegularAndBoldCss;
+
+            await service.PrepareAsync();
+            var appDefPath = service.GetStatus().AppDefPath;
+            var fontsFolder = Path.Combine(
+                Path.GetDirectoryName(appDefPath),
+                Path.GetFileNameWithoutExtension(appDefPath) + "_data",
+                "fonts"
+            );
+            // Simulate a font that the project did not have when it was created.
+            Directory.Delete(fontsFolder, true);
+
+            await service.BuildAsync();
+
+            var fontFileNames = XDocument
+                .Load(appDefPath)
+                .Root.Element("fonts")
+                .Elements("font")
+                .Select(font => font.Element("filename").Value)
+                .ToList();
+            Assert.That(
+                fontFileNames,
+                Is.EquivalentTo(new[] { "CharisSIL-Regular.ttf", "CharisSIL-Bold.ttf" })
+            );
+            foreach (var fileName in fontFileNames)
+                Assert.That(
+                    RobustFile.Exists(Path.Combine(fontsFolder, fileName)),
+                    Is.True,
+                    $"RAB needs {fileName} in the project's fonts folder to build"
+                );
         }
 
         [Test]
@@ -2703,9 +2981,21 @@ namespace BloomTests.Publish.Rab
                 if (tokens.Contains("-load") && tokens.Contains("-build"))
                 {
                     EmitSimulatedBuildOutput(string.Join(" ", rabArguments));
+                    if (SkipApkOnNextBuild)
+                    {
+                        SkipApkOnNextBuild = false;
+                        ReportProcessOutputLine(
+                            "Exception in thread \"main\" java.io.UncheckedIOException: A required file for this app is missing: CharisSIL-Regular.ttf"
+                        );
+                        return;
+                    }
                     CreateApk(tokens);
                 }
             }
+
+            // When true, the next simulated build exits normally without writing an APK, as RAB did
+            // when it failed but its exit code was lost (BL-16959).
+            public bool SkipApkOnNextBuild { get; set; }
 
             internal override string GetUserDownloadsDirectory()
             {
@@ -3308,6 +3598,38 @@ namespace BloomTests.Publish.Rab
 
                 var argumentFilePath = CapturedArgumentFileReference;
                 ArgumentFileExistsAfterRun = RobustFile.Exists(argumentFilePath);
+            }
+        }
+
+        // Runs RAB commands through the real cmd.exe process path, with a given launcher.
+        private class RealProcessRabProjectService : RabProjectService
+        {
+            private readonly string _launcherPath;
+            private readonly string _argumentFileDirectory;
+
+            public RealProcessRabProjectService(string launcherPath, string argumentFileDirectory)
+                : base(null, null, null, null, null, new ProgressSpy())
+            {
+                _launcherPath = launcherPath;
+                _argumentFileDirectory = argumentFileDirectory;
+            }
+
+            internal override string FindRabLauncherPath()
+            {
+                return _launcherPath;
+            }
+
+            internal override IReadOnlyDictionary<
+                string,
+                string
+            > GetRabProcessEnvironmentVariables()
+            {
+                return new Dictionary<string, string>();
+            }
+
+            internal override string GetRabArgumentFileDirectory()
+            {
+                return _argumentFileDirectory;
             }
         }
 
