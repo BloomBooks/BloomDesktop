@@ -47,14 +47,14 @@ export interface IImagePlacement {
  * Put the image file at `filePath` into the first image slot of the page being edited, the way
  * choosing that file in the image chooser would, and wait until the page shows it.
  *
- * The real chooser makes the change undoable. This does not, unless `undoable` is set, so that
- * the Undo button in a test about something else is not taken by the picture.
+ * Like the real chooser, this makes the change undoable. Pass `undoable` false for a test that
+ * needs the Undo button to skip the picture.
  */
 export async function chooseImageFile(
     page: Page,
     filePath: string,
     within?: Locator,
-    undoable = false,
+    undoable = true,
 ): Promise<void> {
     const result = await apiPost(
         page,

@@ -144,7 +144,16 @@ export class UndoStack {
         );
     }
 
-    /** Whether anything can be redone. O(1); false at a redo floor (an entry with no `redo`). */
+    /**
+     * Whether anything can be redone. O(1); false at a redo floor (an entry with no `redo`).
+     *
+     * Unlike {@link canUndo}, this does not ask the legacy providers, because none of them redoes
+     * through the stack. Each mechanism that has a redo (origami, the reader tools, CKEditor)
+     * handles Ctrl+Y in its own key handler, and there is no Redo button. The only caller is the
+     * page frame's last-resort Ctrl+Y binding (redoKeyBinding.ts), which must act only for entries
+     * on this stack. Saying yes on a legacy mechanism's behalf would make that binding swallow the
+     * keystroke and call {@link redo}, which has nothing of its own to redo.
+     */
     public canRedo(): boolean {
         const next = this.entries[this.currentIndex + 1];
         return !!next?.redo;
@@ -406,9 +415,8 @@ export class UndoStack {
      *
      * The redo branch (everything above `currentIndex`) is a sequence that must be replayed in
      * order, so dropping one entry from it invalidates everything after the hole: those entries
-     * were undone *before* the dropped one and must be redone *after* it. The branch is therefore
-     * truncated at the first entry it loses, rather than left with a gap that one Ctrl+Y would
-     * step over.
+     * were undone *before* the dropped one and must be redone *after* it. The branch therefore ends
+     * at the first entry it loses, rather than keeping a gap that one Ctrl+Y would step over.
      */
     private keepOnly(predicate: (entry: IUndoEntry) => boolean): void {
         this.heldPushes = this.heldPushes.filter((held) =>
@@ -416,12 +424,11 @@ export class UndoStack {
         );
         const kept: IUndoEntry[] = [];
         let newIndex = -1;
-        // kept.length at the first entry dropped from the redo branch; -1 if none was.
-        let truncateRedoAt = -1;
         for (let i = 0; i < this.entries.length; i++) {
             if (!predicate(this.entries[i])) {
-                if (i > this.currentIndex && truncateRedoAt < 0) {
-                    truncateRedoAt = kept.length;
+                if (i > this.currentIndex) {
+                    // The first entry lost from the redo branch: nothing after it can be redone.
+                    break;
                 }
                 continue;
             }
@@ -429,9 +436,6 @@ export class UndoStack {
             if (i <= this.currentIndex) {
                 newIndex = kept.length - 1;
             }
-        }
-        if (truncateRedoAt >= 0) {
-            kept.length = truncateRedoAt;
         }
         this.entries = kept;
         this.currentIndex = newIndex;

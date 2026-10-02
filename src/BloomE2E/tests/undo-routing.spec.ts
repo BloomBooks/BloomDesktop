@@ -175,7 +175,7 @@ test.describe("undo reaches the mechanism that owns the change", () => {
         page,
     }) => {
         await goToPage(page, picturePage.id);
-        await chooseImageFile(page, IMAGE_FILE, undefined, true);
+        await chooseImageFile(page, IMAGE_FILE);
         // The picture undo answers only while its picture is selected.
         await selectImage(page);
         await waitForUndoAvailableFrom(page, "picture");

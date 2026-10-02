@@ -38,10 +38,13 @@ export function runUndoable<T>(
     }
     const promise = result as unknown as Promise<unknown> | undefined;
     if (typeof promise?.finally === "function") {
-        return promise.finally(() => {
-            stack.endUndoableScope();
-        }) as unknown as T;
+        // An asynchronous operation has not finished yet, so its scope must stay open until it
+        // settles. We return at once, handing the caller a promise that settles with the
+        // operation's own result or rejection, after the scope has closed.
+        const settled = promise.finally(() => stack.endUndoableScope());
+        return settled as unknown as T;
     }
+    // A synchronous operation has finished, so its scope closes now.
     stack.endUndoableScope();
     return result;
 }
