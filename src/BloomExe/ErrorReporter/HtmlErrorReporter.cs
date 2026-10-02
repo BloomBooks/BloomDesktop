@@ -49,7 +49,7 @@ namespace Bloom.ErrorReporter
         internal void LocalizeDefaultReportLabel()
         {
             DefaultReportLabel = L10NSharp.LocalizationManager.GetString(
-                "ErrorReportDialog.Report",
+                "ErrorReport.Report",
                 "Report"
             );
         }
