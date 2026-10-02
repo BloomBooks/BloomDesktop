@@ -735,7 +735,7 @@ describe("EditableDivUtils.unlockOriginalCredits", () => {
         EditableDivUtils.unlockOriginalCredits();
 
         expect(post).toHaveBeenCalledWith(
-            "copyrightAndLicense/userEditsOriginalCopyrightNotice",
+            "copyrightAndLicense/unlockOriginalCopyrightNotice",
         );
     });
 });

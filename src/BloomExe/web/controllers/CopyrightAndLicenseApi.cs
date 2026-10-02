@@ -49,8 +49,8 @@ namespace Bloom.web.controllers
                 false
             );
             apiHandler.RegisterEndpointHandler(
-                "copyrightAndLicense/userEditsOriginalCopyrightNotice",
-                HandleUserEditsOriginalCopyrightNotice,
+                "copyrightAndLicense/unlockOriginalCopyrightNotice",
+                HandleUnlockOriginalCopyrightNotice,
                 true
             );
         }
@@ -102,9 +102,9 @@ namespace Bloom.web.controllers
         /// stops generating the original copyright and license sentence and turns its place on
         /// the page into an editable field holding the same words.
         /// </summary>
-        private void HandleUserEditsOriginalCopyrightNotice(ApiRequest request)
+        private void HandleUnlockOriginalCopyrightNotice(ApiRequest request)
         {
-            Model.UserEditsOriginalCopyrightNotice();
+            Model.UnlockOriginalCopyrightNotice();
             request.PostSucceeded();
         }
 

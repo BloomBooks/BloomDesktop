@@ -174,8 +174,7 @@ namespace Bloom.Book
             HtmlDom dom,
             string bookFolderPath,
             BookData bookData,
-            bool useOriginalCopyright,
-            bool userEditsOriginalCopyrightNotice = false
+            bool useOriginalCopyright
         )
         {
             dom.SetBookSetting(
@@ -243,13 +242,7 @@ namespace Bloom.Book
                 dom.RemoveBookSetting("licenseImage");
             }
 
-            UpdateDomFromDataDiv(
-                dom,
-                bookFolderPath,
-                bookData,
-                useOriginalCopyright,
-                userEditsOriginalCopyrightNotice
-            );
+            UpdateDomFromDataDiv(dom, bookFolderPath, bookData, useOriginalCopyright);
         }
 
         private static string ConvertNewLinesToHtmlBreaks(string s)
@@ -266,8 +259,7 @@ namespace Bloom.Book
             HtmlDom dom,
             string bookFolderPath,
             BookData bookData,
-            bool useOriginalCopyright,
-            bool userEditsOriginalCopyrightNotice = false
+            bool useOriginalCopyright
         )
         {
             CopyItemToFieldsInPages(dom, "copyright");
@@ -282,10 +274,15 @@ namespace Bloom.Book
             CopyItemToFieldsInPages(dom, "licenseNotes");
             CopyItemToFieldsInPages(dom, "licenseImage", valueAttribute: "src");
             // The sentence about the original book. Bloom generates it, unless the user has
-            // taken it over, in which case their wording is in the data div. Either way the
-            // book's own copy of the page holds it locked; the editable form exists only in the
-            // copy of the page sent to the editor, and only for one rendering, so that leaving
-            // the page or refreshing it locks the sentence again.
+            // taken it over, in which case their wording is in the data div: nothing else puts
+            // originalCopyrightAndLicense there. If they empty the field, the data div loses the
+            // item and Bloom generates the sentence again. Either way the book's own copy of the
+            // page holds it locked; the editable form exists only in the copy of the page sent
+            // to the editor, and only for one rendering, so that leaving the page or refreshing
+            // it locks the sentence again.
+            var usersOriginalCopyrightNotice = bookData
+                .GetVariableOrNull(kOriginalCopyrightAndLicense, "*")
+                ?.Xml;
             string originalCopyrightNotice;
             if (useOriginalCopyright)
             {
@@ -295,11 +292,9 @@ namespace Bloom.Book
                 // See https://issues.bloomlibrary.org/youtrack/issue/BL-7381.
                 originalCopyrightNotice = null;
             }
-            else if (userEditsOriginalCopyrightNotice)
+            else if (!string.IsNullOrEmpty(usersOriginalCopyrightNotice))
             {
-                originalCopyrightNotice = bookData
-                    .GetVariableOrNull(kOriginalCopyrightAndLicense, "*")
-                    ?.Xml;
+                originalCopyrightNotice = usersOriginalCopyrightNotice;
             }
             else
             {
@@ -308,7 +303,7 @@ namespace Bloom.Book
             ShowOriginalCopyrightNoticeLocked(
                 dom,
                 originalCopyrightNotice,
-                userEditsOriginalCopyrightNotice
+                !string.IsNullOrEmpty(usersOriginalCopyrightNotice)
             );
 
             if (!String.IsNullOrEmpty(bookFolderPath)) //unit tests may not be interested in checking this part
@@ -506,8 +501,7 @@ namespace Bloom.Book
         /// Hand the generated original copyright and license sentence over to the user: put the
         /// wording Bloom is currently showing into the data div, which is where the editable
         /// field that replaces it reads its text from.
-        /// Call this before setting BookInfo.MetaData.UserEditsOriginalCopyrightNotice, while
-        /// Bloom is still generating the sentence.
+        /// Once this item is in the data div, Bloom stops generating the sentence.
         /// </summary>
         internal static void SeedUserEditableOriginalCopyrightNotice(HtmlDom dom, BookData bookData)
         {

@@ -1875,7 +1875,7 @@ namespace Bloom.Edit
         /// original book's copyright and license. We save the page first, then hand the sentence
         /// over and reload, so the page comes back with an editable field in its place.
         /// </summary>
-        internal void UserEditsOriginalCopyrightNotice()
+        internal void UnlockOriginalCopyrightNotice()
         {
             if (CannotSavePage())
                 return;

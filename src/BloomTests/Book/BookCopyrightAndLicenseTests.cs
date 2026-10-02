@@ -1,4 +1,5 @@
 using System;
+using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.SafeXml;
@@ -601,13 +602,13 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// Once the user has asked to edit the generated original-copyright sentence, Bloom
-        /// stops generating it and shows their wording instead. The book's own copy of the page
+        /// Once the user has asked to edit the generated original-copyright sentence, their
+        /// wording is in the data div, so Bloom stops generating it and shows theirs instead. The book's own copy of the page
         /// still holds it locked: only the copy sent to the editor is opened up, which is what
         /// makes leaving the page or refreshing it lock the sentence again.
         /// </summary>
         [Test]
-        public void UpdateDomFromDataDiv_UserEditsOriginalCopyrightNotice_ShowsTheirWordingStillLocked()
+        public void UpdateDomFromDataDiv_UsersOwnNoticeInDataDiv_ShowsTheirWordingStillLocked()
         {
             var html =
                 @"<html><head></head><body>
@@ -623,10 +624,10 @@ namespace BloomTests.Book
             var bookDom = new HtmlDom(html);
             var bookData = new BookData(bookDom, _collectionSettings, null);
 
-            // Sanity check: with the flag off we get Bloom's sentence, with the padlock that
+            // Sanity check: before the padlock is clicked we get Bloom's sentence, with the padlock that
             // offers to hand it over. Without this, the assertions below could pass on a DOM
             // where the notice never appeared in the first place.
-            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, false);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -644,7 +645,7 @@ namespace BloomTests.Book
 
             // This is what the API does when the user clicks the padlock.
             BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(bookDom, bookData);
-            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, true);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 
             // The user's wording is what shows now, and it is still locked.
             AssertThatXmlIn
@@ -696,7 +697,7 @@ namespace BloomTests.Book
             var bookData = new BookData(bookDom, _collectionSettings, null);
 
             // Sanity check: without the option, the user's wording is what shows.
-            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, true);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -704,7 +705,7 @@ namespace BloomTests.Book
                     1
                 );
 
-            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, true, true);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, true);
 
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)
@@ -717,6 +718,67 @@ namespace BloomTests.Book
                 bookData.GetVariableOrNull("originalCopyrightAndLicense", "*").Xml,
                 Does.Contain("My own words about the original")
             );
+        }
+
+        /// <summary>
+        /// Emptying the field takes originalCopyrightAndLicense out of the data div, and with it
+        /// the user's claim on the sentence, so Bloom generates its own sentence again rather
+        /// than leaving a blank line with no padlock to bring it back.
+        /// </summary>
+        [Test]
+        public void UpdateDomFromDataDiv_UsersOwnNoticeEmptied_GeneratesTheSentenceAgain()
+        {
+            var html =
+                @"<html><head></head><body>
+							<div id='bloomDataDiv'>
+								<div data-book='copyright' lang='*'>Copyright © 2008, Bar Publishers</div>
+								<div data-book='originalLicenseUrl' lang='*'>http://creativecommons.org/licenses/by-nc/4.0/</div>
+								<div data-book='originalCopyright' lang='*'>Copyright © 2007, Foo Publishers</div>
+								<div data-book='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+							<div id='test' class='test'>
+								<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'><p>My own words about the original.</p></div>
+							</div>
+						</body></html>";
+            var bookDom = new HtmlDom(html);
+            var bookData = new BookData(bookDom, _collectionSettings, null);
+
+            // Sanity check: while the item is in the data div, the user's wording is what shows.
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[contains(., 'My own words about the original')]",
+                    1
+                );
+
+            // This is what saving the page does when the user has emptied the field.
+            bookData.Set(
+                BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                XmlString.Empty,
+                "*"
+            );
+            Assert.That(
+                XmlString.IsNullOrEmpty(
+                    bookData.GetVariableOrNull(
+                        BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                        "*"
+                    )
+                ),
+                Is.True,
+                "Test setup problem: the user's wording should be gone from the data div."
+            );
+
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
+
+            AssertThatXmlIn
+                .Dom(bookDom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div[@class='test']/*[@data-derived='originalCopyrightAndLicense'"
+                        + " and @data-link-icon='lock'"
+                        + " and contains(text(),'This book is an adaptation of the original')]",
+                    1
+                );
         }
 
         /// <summary>
@@ -928,7 +990,7 @@ namespace BloomTests.Book
                 "Test setup problem: this book was supposed to not be a derivative."
             );
 
-            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false, false);
+            BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 
             AssertThatXmlIn
                 .Dom(bookDom.RawDom)

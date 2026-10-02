@@ -282,7 +282,7 @@ export class EditableDivUtils {
     // sentence, and rebuilds the credits page with that spot as an ordinary editable field.
     // The server saves the page and reloads it, so we have nothing to change here ourselves.
     public static unlockOriginalCredits() {
-        post("copyrightAndLicense/userEditsOriginalCopyrightNotice");
+        post("copyrightAndLicense/unlockOriginalCopyrightNotice");
     }
 
     // Close the sentence about the original book again. The wording the user has just typed is

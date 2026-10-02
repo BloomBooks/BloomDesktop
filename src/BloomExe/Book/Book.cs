@@ -1615,8 +1615,7 @@ namespace Bloom.Book
                     bookDom,
                     this.FolderPath,
                     bookData,
-                    false,
-                    BookInfo.MetaData.UserEditsOriginalCopyrightNotice
+                    false
                 );
             }
         }
@@ -2146,8 +2145,7 @@ namespace Bloom.Book
                 OurHtmlDom,
                 FolderPath,
                 _bookData,
-                BookInfo.MetaData.UseOriginalCopyright,
-                BookInfo.MetaData.UserEditsOriginalCopyrightNotice
+                BookInfo.MetaData.UseOriginalCopyright
             );
             _bookData.MergeBrandingSettings(CollectionSettings.Subscription.BrandingKey);
             _bookData.SynchronizeDataItemsThroughoutDOM();
@@ -2172,8 +2170,7 @@ namespace Bloom.Book
                 OurHtmlDom,
                 FolderPath,
                 _bookData,
-                BookInfo.MetaData.UseOriginalCopyright,
-                BookInfo.MetaData.UserEditsOriginalCopyrightNotice
+                BookInfo.MetaData.UseOriginalCopyright
             );
 
             OurHtmlDom.RemoveMetaElement(
@@ -4947,8 +4944,7 @@ namespace Bloom.Book
                 OurHtmlDom,
                 FolderPath,
                 _bookData,
-                BookInfo.MetaData.UseOriginalCopyright,
-                BookInfo.MetaData.UserEditsOriginalCopyrightNotice
+                BookInfo.MetaData.UseOriginalCopyright
             );
             BookInfo.SetLicenseAndCopyrightMetadata(metadata);
         }
@@ -4962,22 +4958,25 @@ namespace Bloom.Book
 
         /// <summary>
         /// Hand the sentence about the original book's copyright and license over to the user.
-        /// The wording Bloom is showing right now goes into the data div, the flag is set so
-        /// that Bloom stops generating it, and the next rendering of the page shows it as an
-        /// editable field.
+        /// The wording Bloom is showing right now goes into the data div, which makes Bloom stop
+        /// generating it, and the next rendering of the page shows it as an editable field.
         /// </summary>
         public void LetUserEditOriginalCopyrightNotice()
         {
             // Only the first time: after that the data div already holds the user's own wording.
-            if (!BookInfo.MetaData.UserEditsOriginalCopyrightNotice)
+            if (
+                XmlString.IsNullOrEmpty(
+                    _bookData.GetVariableOrNull(
+                        BookCopyrightAndLicense.kOriginalCopyrightAndLicense,
+                        "*"
+                    )
+                )
+            )
             {
                 BookCopyrightAndLicense.SeedUserEditableOriginalCopyrightNotice(
                     OurHtmlDom,
                     _bookData
                 );
-                BookInfo.MetaData.UserEditsOriginalCopyrightNotice = true;
-                // Book.Save() does not write meta.json, so this has to be explicit.
-                BookInfo.Save();
                 SetMetadata(GetLicenseMetadata());
             }
             OriginalCopyrightNoticeIsUnlockedForOneRendering = true;
