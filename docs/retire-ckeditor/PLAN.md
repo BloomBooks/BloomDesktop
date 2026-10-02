@@ -270,10 +270,14 @@ That makes DOM-mutating bookmarks actively hostile to the current architecture, 
 inelegant — inserting and removing marker spans around the caret is exactly the kind of node
 churn those Ranges cannot survive. It also imposes a new obligation on *our* work; see §4.11.
 
-Defer range (non-collapsed) anchors: every identified consumer needs only a caret. And for the
-*snapshot* case specifically there's a simpler trick — inject a caret marker into the captured
-HTML **string** (not the live DOM, so none of the bookmark downsides apply) and strip it on
-restore. Offsets then only have to serve the toolbox-markup case.
+**Anchors must cover a selected range, not just a caret.** Three consumers need a range: undo,
+which restores the selection each step had, so undoing bold re-selects the text (§4.14 item 20);
+the colour dialog, which runs in the workspace frame and must apply to the selection the user made
+before it opened; and the SetupLink hyperlink dialog, which relies on the range surviving a dialog
+(`BloomField.ts` `setupHyperlink`). So an anchor is a start and an end, each in the form above. For
+the *snapshot* case there's a simpler trick: inject start and end markers into the captured HTML
+**string** (not the live DOM, so none of the bookmark downsides apply) and strip them on restore.
+Offsets then only have to serve the toolbox-markup case and the dialogs.
 
 ### 4.4 Build on `beforeinput`, and fence off native undo
 
@@ -289,7 +293,8 @@ correct behaviour under composition (suspend DOM meddling between `compositionst
 Chromium's own undo stack, and today CKEditor's undo plugin is what intercepts Ctrl+Z inside a
 box. If native undo ever fires, the DOM changes outside our stack and the two histories
 diverge. So the new editor **must** intercept `beforeinput` with `inputType`
-`historyUndo`/`historyRedo`, `preventDefault()`, and route to the shared stack. This is
+`historyUndo`/`historyRedo`, `preventDefault()`, and route to the shared stack; that includes
+Ctrl+Shift+Z, which is Redo today alongside Ctrl+Y (§4.14 item 23). This is
 correctness, not polish, and it is the replacement for `BloomField.PreventRemovalOfSomeElements`'s
 `document.execCommand("undo")` too: block any `delete*` whose `getTargetRanges()` covers a
 `.bloom-preventRemoval` element, rather than letting the deletion happen and undoing it.
@@ -311,8 +316,10 @@ plumbing in `attachToCkEditor`.
 ### 4.6 Typing transactions
 
 One undo entry per keystroke is useless. Close the current transaction on a word boundary
-(space / punctuation / Enter), a caret move or focus change, an idle timeout (~1 s), or any
-non-typing command. This approximates CKEditor's `undoManager` and matches user expectation. A
+(space / punctuation / Enter), a switch between inserting and deleting, a caret move or focus
+change, an idle timeout (~1 s), or any non-typing command. A transaction that leaves the content
+as it found it records nothing, and each entry restores the selection as well as the text (§4.14
+items 20–22). This approximates CKEditor's `undoManager` and matches user expectation. A
 transaction holds the snapshot taken when it opened; closing it commits that entry.
 
 ### 4.7 `getData()` replacement
@@ -369,6 +376,11 @@ Four things the new `pasteSanitizer.ts` must get right:
    but *verify* rather than assume, and decide explicitly what to do when only `text/rtf` or an
    unknown flavour is on offer (recommended: fall back to `text/plain`, never attempt to parse
    an unknown format).
+
+§4.14 items 13–19 add the details of what CKEditor's filter and paste pipeline actually do, which
+the sanitizer and the paste handler must reproduce: content copied within the same page session is
+not filtered, disallowed blocks become paragraphs rather than vanishing, pasted HTML is
+normalized, and pasted blocks merge into the current paragraph.
 
 Because its absence is silent, this needs **adversarial tests**, not just happy-path ones: paste
 a table, a nested `div`, an `iframe`, a `<script>`, an `<img>`, a styled `<span>` soup from a real
@@ -743,6 +755,144 @@ up front (`UndoStack.endUndoableScope`, `compoundUndoEntry.ts`):
   recorded, so the older entries could no longer be trusted to undo correctly. The legacy
   mechanisms are unaffected.
 
+### 4.14 What CKEditor does without being asked
+
+§2 lists the services Bloom calls CKEditor for. A read of the CKEditor 4.5.1 code we ship
+(`lib/ckeditor/ckeditor.js` and its `plugins/`), done 2026-10-02, found more that it does
+implicitly, in Chromium, with Bloom's config. None of it is a service Bloom asked for, so none of it
+would be noticed missing until a user hit it. Each item below names the Stage 3 file that owns it.
+Where an item says what Chromium does instead, that is expected behaviour, not a measurement:
+**verify each in WebView2** before building against it.
+
+**Enter and Backspace** (owner: `keyCommands.ts`, through `beforeinput` `insertParagraph` and
+`delete*`). Stage 3 must not leave Enter to the browser.
+1. **Enter always makes a `<p>`**, also at the end of a heading, and wraps bare text in a `<p>`
+   first (`enterkey` plugin, `enterBlock`). Chromium's paragraph separator defaults to `<div>`,
+   which Bloom's paragraph CSS, `kBlockElementSelector`, the reader tools and Talking Book would not
+   treat as a paragraph. At minimum set `defaultParagraphSeparator` to `p` for every page.
+2. **Splitting an element at the caret drops its `id` from the second half** (`range.splitBlock` /
+   `node.clone` without ids). Chromium copies every attribute, so pressing Enter inside a recorded
+   `span.audio-sentence` would give two spans with the same id. The split must remove the id from
+   the new half.
+3. **The new paragraph inherits the inline formatting at the caret as `strong`/`em`/`u`/`sup`**
+   (the elements in `CKEDITOR.dtd.$removeEmpty`; `span` excluded by Bloom's config). Chromium
+   re-applies a "typing style", which tends to produce `<b>`, `<i>` or `<font>`.
+4. **BL-16649 "Do Not Indent This Paragraph"** removes `bloom-noIndent` from paragraphs that Enter
+   creates. It hooks CKEditor's `key` event and its `enter` command (`BloomField.WireToCKEditor`).
+   Without them every paragraph started from a no-indent paragraph stays unindented, so it needs an
+   `insertParagraph` hook of its own.
+5. **Backspace or Delete across a block boundary is done by CKEditor**, not the browser
+   (`mergeBlocksCollapsedSelection`, `mergeBlocksNonCollapsedSelection`, "Prevent Webkit/Blink from
+   going rogue when joining blocks"). Blink wraps moved text in `<span style="font-size:…;
+   line-height:…">` to keep its old look, which would then ignore the Format dialog and pollute the
+   saved HTML. Join blocks by moving the nodes ourselves.
+
+**Inline formatting** (owner: `inlineFormat.ts`, `keyCommands.ts`, `FormatToolbar.tsx`).
+6. **A format applied to a collapsed caret applies to what is typed next.** Ctrl+B with nothing
+   selected, then typing, gives bold text; clear-formatting at a caret inside bold splits the bold
+   there. CKEditor inserts an empty element with a ZWSP filling char to hold the caret. Since §4.7
+   removes the filling char, the new engine needs a **pending format** applied to the next
+   `insertText` in `beforeinput`, cleared by a caret move.
+7. **Which tags count as the same format, and the toggle rule.** CKEditor writes `strong`/`em`/`u`/
+   `sup`, but treats legacy `b`/`i` as bold/italic when checking and removing, and removes a nested
+   `b` when applying bold. Whether a click applies or removes depends on the format at the
+   selection's *start* (`style.checkActive` on the start path). Adjacent identical elements are
+   merged (`mergeSiblings`). Without this, Bold over old `<b>` text nests `<strong>` inside it, and
+   markup fragments into `<strong>a</strong><strong>b</strong>`.
+8. **Toolbar buttons show their state.** Bold, italic, underline and superscript appear pressed
+   (`cke_button_on`, `aria-pressed`) when the selection has that format, updated on every selection
+   change. `FormatToolbar.tsx` needs the same, from the rule in item 7.
+9. **Colour.** Applying a colour first removes or splits every existing colour span in the range,
+   so colours never nest; "default" just removes the colour; inside a link the colour span goes
+   *inside* the `<a>`, or the link's own colour wins (`colorbutton` plugin). Using
+   `colorPickerDialog` (§4.5) adds its own requirements: it reports colours live while the user
+   drags, so each report must replace the last and the whole drag must be one undo step; Cancel
+   must restore the original, possibly mixed, colours rather than re-applying one colour; and it can
+   return transparent or gradient values, which text colour must refuse.
+10. **Clear formatting** (`removeformat` plugin) enlarges the range to whole formatting elements,
+    splits partly selected ones at both ends, stops at the block, skips non-editable subtrees,
+    unwraps rather than deletes, and re-selects the original range afterwards.
+11. **The toolbar keeps the selection and follows the box.** Pressing a toolbar control must not
+    move focus or the selection (`preventDefault` on `mousedown`, as CKEditor's floating space
+    does), or Bloom's blur handlers (qtip, `hideInvisibles`, change detection) run. The toolbar
+    repositions on scroll, resize and content change while the box has focus, and hides on blur.
+12. Probably low value, recorded so it is a choice: Alt+F10 moves focus to the toolbar, arrow keys
+    move between buttons and Esc returns to the text, with `role`/`aria` attributes throughout. And
+    Ctrl+B/I/U and Ctrl+Space still work in `bloom-userCannotModifyStyles` fields, where only the
+    toolbar is hidden today (A4); keep that unless decided otherwise.
+
+**Paste, drop and copy** (owner: `pasteSanitizer.ts`, `pasteHandler.ts`, `clipboard.ts`; adds to
+§4.8 and §4.9).
+13. **Copies made within the same page session are not filtered.** CKEditor marks its own copies
+    (`cke/id`) and applies `pasteFilter` only to external pastes and drops
+    (`DATA_TRANSFER_EXTERNAL`). That is why pasted `bloom-linebreak` spans (D4) and audio-sentence
+    spans (D5) survive today. `clipboard.ts` therefore needs its own "copied from this page" marker,
+    and the sanitizer must treat marked content the way CKEditor does. A copy from another page or
+    book stays external, which is what keeps BL-3899's duplicate ids out.
+14. **What a disallowed element becomes** (`filter.js` `removeElement`): a block or table row becomes
+    a `<p>` (`stripBlock`), `script`/`style` disappear with their content, void elements disappear,
+    other inline elements are unwrapped keeping their text, and empty inline elements are removed
+    (`span` excepted). "Discard the rest" in §4.8 must mean this, or table cells and list items run
+    together on one line.
+15. **Normalizing pasted HTML.** Keep only what lies between `<!--StartFragment-->` and
+    `<!--EndFragment-->`; turn a trailing `<br class="Apple-interchange-newline">` into a paragraph
+    end rather than a stray line break; collapse whitespace runs to one space and wrap top-level
+    inline text in paragraphs; give an empty paragraph a `<br>` so the caret can enter it.
+16. **Pasted blocks merge into the current paragraph** (`editable.insertHtml`): it splits the
+    paragraph, joins leading inline text to it, inserts following blocks as siblings, and never nests
+    `<p>`. The existing first-`<p>` unwrapping (D7) assumes this has already happened, so it does not
+    "move unchanged" on its own. Neither `Range.insertNode` nor Chromium's `insertHTML` behaves this
+    way.
+17. **Plain text is converted, not inserted.** The toolbar Paste path (`pasteImpl` → `insertText`)
+    HTML-encodes the text, turns a blank line into a new paragraph and a single newline into `<br>`,
+    and tabs into spaces. Today that path skips every BloomField transform, so Ctrl+V and the Paste
+    button give different results; the new handler should give both the same treatment.
+    `reconstituteParagraphsOnPlainTextPaste` (BL-9961) must HTML-encode each line before wrapping it;
+    today it does not (see "Found while reading", below).
+18. **Copy and cut write CKEditor's own HTML** (`preventDefault`, then `getSelectedHtml` and
+    `getSelectedText`). Chromium's own serializer bakes computed colours and fonts into spans, which
+    would pass the `span{color}` allowance and freeze theme colours into every paste within Bloom.
+    `clipboard.ts` must serialize the selection itself.
+19. **Drops.** CKEditor cancels every drop, files included, so an Explorer file dropped on a box does
+    nothing; the new code must decide that deliberately (check it cannot navigate the frame;
+    `WebView2Browser.cs` `NavigationStarting`). It computes the insertion point from the drop
+    position, and a drag within one box is a *move* recorded as one undo step (`internalDrop`); a drag
+    between boxes deletes from the source box. If the sanitizer takes over drops, it must do the move
+    itself, or a drag-move becomes a copy.
+
+**Undo** (owner: `typingTransactions.ts`; adds to §4.6).
+20. **Undo restores the selection, ranges included.** Each CKEditor snapshot stores the selection
+    (`createBookmarks2`), and one is taken around every command, so undoing bold re-selects the text
+    that was bold. See §4.3.
+21. **A switch between inserting and deleting closes a step** (CKEditor's PRINTABLE and FUNCTIONAL
+    key groups). Typing "abc", Backspace twice, then "xy", then Ctrl+Z removes only "xy".
+22. **A step that changes nothing is not recorded** (`equalsContent`), so Ctrl+Z never appears to do
+    nothing and the Undo button is never enabled with nothing to undo.
+23. **Ctrl+Shift+Z is Redo today**, as well as Ctrl+Y. It stays (§10 decision 1): the `historyRedo`
+    fence (§4.4) routes it to the stack, and the Stage 1 Ctrl+Y binding (`redoKeyBinding.ts`) gains
+    it when the stack first holds entries (Stage 2).
+24. CKEditor groups typing more coarsely than §4.6 (a step every 25 input events, or on a navigation
+    key or click), so word-level steps will feel finer than today. That is intended, but it is a
+    change testers may notice. It ignores IME keydowns (keyCode 229) and does not count paste or drop
+    as typing; copy that.
+
+**Accessibility attributes** (owner: `BloomTextEditor.ts`).
+25. CKEditor sets `role="textbox"`, `aria-label` (the literal `"false"`, because Bloom sets
+    `config.title = false`) and `tabindex` on every inline editable, and they get saved into books.
+    `EditableDivUtils.pasteImageCredits` relies on `role=="textbox"` and `aria-label=="false"` to
+    take its Source Bubble path. Change that test to something Bloom owns rather than reproduce the
+    odd `aria-label`.
+
+**Not a loss:** CKEditor 4.5.1 does nothing for IME composition, so §4.4 is an improvement there.
+Tab, tables and lists are not used by Bloom. Wrapping a caret left directly in the editable into a
+`<p>` (`fixDom`) is mostly covered by `BloomField.EnsureParagraphsPresent` and
+`ManageWhatHappensIfTheyDeleteEverything`; those keyup fix-ups must not open undo steps of their own.
+
+**Found while reading, independent of this project:** `BloomField.reconstituteParagraphsOnPlainTextPaste`
+(BL-9961) wraps each line of a plain-text paste in `<p>` without HTML-encoding it, *after*
+CKEditor's paste filter has run. So a multi-line paste of "a < b" is mangled, and a line such as
+`<img src=x onerror=…>` would run script in the page.
+
 ## 5. Keeping up with master
 
 The project runs for months against a fast-moving `master`, and its files are among the most
@@ -983,6 +1133,9 @@ proves messy, fall back to a **`.bloom-canvas`-subtree snapshot** restored throu
 Also honour §4.13: the background-image branch already records an image undo, so the wrapper
 must not double-record.
 
+**Ctrl+Shift+Z.** Stage 2 is the first time the stack holds entries, so `redoKeyBinding.ts`'s
+`isRedoKeystroke` must accept Ctrl+Shift+Z as well as Ctrl+Y here (§4.14 item 23), with a test.
+
 **2c** *(deferred, documented not built)*: undo for style changes — a snapshot of
 `userModifiedStyles` would cover it, and the entry contract already allows it.
 
@@ -995,16 +1148,16 @@ renumbering and navigation are correct after undo; exactly one entry per gesture
 
 | File | What |
 | --- | --- |
-| `inlineFormat.ts` | Pure `Range`→DOM formatting engine: bold, italic, underline, superscript, colour, remove-format. **Do this first and test it hard.** Must preserve structural spans (`audio-sentence`, `bloom-highlightSegment`, `bloom-linebreak`) exactly as today's `addRemoveFormatFilter` does. |
+| `inlineFormat.ts` | Pure `Range`→DOM formatting engine: bold, italic, underline, superscript, colour, remove-format. **Do this first and test it hard.** Must preserve structural spans (`audio-sentence`, `bloom-highlightSegment`, `bloom-linebreak`) exactly as today's `addRemoveFormatFilter` does. Must also reproduce §4.14 items 6, 7, 9 and 10: a pending format for a collapsed caret, legacy `b`/`i` counted as bold/italic, the start-of-selection toggle rule, merging, non-nesting colours, and clear-formatting's splitting. |
 | `selectionApi.ts` | `getSelectionAnchor` / `restoreSelectionAnchor` (§4.3 — the capture side is new code), `getCleanHtml(div)`. |
-| `pasteSanitizer.ts` | **Default-deny allow-list** replacing `config.pasteFilter` (§4.8) — the project's main safety guarantee, applied to **both paste and drop**. Pure function, so it can be tested adversarially. Build it early (right after `inlineFormat.ts`) rather than late: it is the one piece whose absence is silent. |
-| `clipboard.ts` | Owns `cut` and `copy` on `.bloom-editable`, replacing CKEditor's interception (service 13). Produces the payload as **both** `text/html` and `text/plain` and keeps the write behind one seam, so a safe cut (§4.9) becomes possible. Read `origin/BL-16459-clipboard-failure-reporting` and PR #8140 first. Also subsumes `bloomEditing.cutSelectionImpl`, which currently uses `undoManager.lock/save` to make the cut one undo step. |
-| `pasteHandler.ts` | Owns the `paste` event **and** the C#-initiated `pasteClipboard` entry point. Must cover *both* existing paths: normal insert-at-selection, and `pasteImpl`'s replace-whole-content path for a canvas element that is selected but not being text-edited (`bloomEditing.ts:1792-1842`: `setData("<p><p>")` + `insertText` under an undo lock, then `updateAutoHeight()` + `scheduleMarkupUpdateAfterPaste()`). Calls the BloomField transforms; pushes **one** undo entry. |
-| `typingTransactions.ts` | `beforeinput`-driven coalescing (§4.6), composition-aware, plus the `historyUndo`/`historyRedo` fence (§4.4). |
-| `keyCommands.ts` | Shift+Enter → `span.bloom-linebreak`; F6/F7/F8; Ctrl+Alt+0/1/2; justify; Ctrl+Space (remove-format); Ctrl+B/I/U. Replaces every `execCommand` call **in the page frame** (`readerSetup.ui.ts:454` lives in the reader-setup dialog and is out of scope). |
-| `autolink.ts` | Word-boundary URL detection (BL-6845). |
-| `FormatToolbar.tsx` | React floating toolbar replacing `.cke_float`, positioned from the selection rect, localized directly (so `localizeCkeditorTooltips` dies), hidden for `bloom-userCannotModifyStyles` (BL-14947). Hosts the SetupLink hyperlink button. |
-| `BloomTextEditor.ts` | Per-editable attach/detach. **Synchronous** — no `instanceReady`, no async DOM rewrite. Also owns the BL-13779 content-changed hook, the BL-11745 qtip z-order handling, and `EnsureCaretNotInsideLineBreakSpan` on `selectionchange`. |
+| `pasteSanitizer.ts` | **Default-deny allow-list** replacing `config.pasteFilter` (§4.8) — the project's main safety guarantee, applied to **both paste and drop**. Pure function, so it can be tested adversarially. Build it early (right after `inlineFormat.ts`) rather than late: it is the one piece whose absence is silent. Reproduces §4.14 items 13–15: same-session copies pass, disallowed blocks become paragraphs, pasted HTML is normalized. |
+| `clipboard.ts` | Owns `cut` and `copy` on `.bloom-editable`, replacing CKEditor's interception (service 13). Produces the payload as **both** `text/html` and `text/plain` and keeps the write behind one seam, so a safe cut (§4.9) becomes possible. Read `origin/BL-16459-clipboard-failure-reporting` and PR #8140 first. Also subsumes `bloomEditing.cutSelectionImpl`, which currently uses `undoManager.lock/save` to make the cut one undo step. Serializes the selection itself and marks same-session copies (§4.14 items 13, 18). |
+| `pasteHandler.ts` | Owns the `paste` event **and** the C#-initiated `pasteClipboard` entry point. Must cover *both* existing paths: normal insert-at-selection, and `pasteImpl`'s replace-whole-content path for a canvas element that is selected but not being text-edited (`bloomEditing.ts:1792-1842`: `setData("<p><p>")` + `insertText` under an undo lock, then `updateAutoHeight()` + `scheduleMarkupUpdateAfterPaste()`). Calls the BloomField transforms; pushes **one** undo entry. Merges pasted blocks into the current paragraph, converts plain text the same way for Ctrl+V and the Paste button, and owns drops, including moves and files (§4.14 items 16, 17, 19). |
+| `typingTransactions.ts` | `beforeinput`-driven coalescing (§4.6), composition-aware, plus the `historyUndo`/`historyRedo` fence (§4.4), routing Ctrl+Y and Ctrl+Shift+Z to the stack. Each entry restores the selection, ranges included (§4.14 items 20–24). |
+| `keyCommands.ts` | Enter and block joins (§4.14 items 1–5: always `<p>`, no duplicated ids, inherited formatting as `strong`/`em`, BL-16649's no-indent rule, joins without style spans); Shift+Enter → `span.bloom-linebreak`; F6/F7/F8; Ctrl+Alt+0/1/2; justify; Ctrl+Space (remove-format); Ctrl+B/I/U. Replaces every `execCommand` call **in the page frame** (`readerSetup.ui.ts:454` lives in the reader-setup dialog and is out of scope). |
+| `autolink.ts` | Turns a paste that is exactly one URL (`http`, `https` or `ftp`) or one email address into a link (BL-6845). **Paste only**, as CKEditor's `autolink` plugin is: Bloom has never linked a URL as it is typed. Skips pastes containing markup and copies from within the page. Called from `pasteHandler.ts`. |
+| `FormatToolbar.tsx` | React floating toolbar replacing `.cke_float`, positioned from the selection rect, localized directly (so `localizeCkeditorTooltips` dies), hidden for `bloom-userCannotModifyStyles` (BL-14947). Hosts the SetupLink hyperlink button. Buttons show pressed state; pressing one keeps focus and selection; the toolbar follows scroll, resize and content change (§4.14 items 8, 11, 12). |
+| `BloomTextEditor.ts` | Per-editable attach/detach. **Synchronous** — no `instanceReady`, no async DOM rewrite. Also owns the BL-13779 content-changed hook, the BL-11745 qtip z-order handling, `EnsureCaretNotInsideLineBreakSpan` on `selectionchange`, and the `role`/`aria-label` dependency of `pasteImageCredits` (§4.14 item 25). |
 | `useNewTextEditor.ts` | The one flag read: `document.body.classList.contains("bloom-newTextEditor")` (§4.12). Synchronous by design. |
 
 Plus four small additive edits outside the new directory, all covered by §4.12: a
@@ -1035,8 +1188,11 @@ Integration dispatches (one line each, added as late as possible): `attachToCkEd
 `dataValue`. With CKEditor gone, nothing stamps `cke/id` and nothing strips the spans, so the
 transform is meaningless as written — and the problem it solves may simply not exist when
 `pasteHandler.ts` reads raw `clipboardData`. **Verify against the BL-12357 repro; don't port.**
-Everything else in the paste pipeline (verse markers, audio-id copying, `<p>` unwrapping) moves
-unchanged.
+The verse-marker and audio-id transforms move unchanged. The first-`<p>` unwrapping does not move
+on its own: it only makes sense on top of CKEditor's merging of pasted blocks into the current
+paragraph, which `pasteHandler.ts` must now do itself (§4.14 item 16). The transforms also assume
+HTML in CKEditor's normalized form (a bare `<p>`, `<b style="font-weight:normal">`), so they run
+after the sanitizer and normalizer, not on raw clipboard HTML.
 
 With the flag on, text edits push onto the **same** stack as everything else — the payoff of the
 whole project. At that point the reader-tools and CKEditor legacy providers become redundant
@@ -1201,7 +1357,8 @@ CKEditor's doing. Measure before touching it.
 
 Everything here is settled. Recorded with the reasoning so a later session doesn't reopen it.
 
-1. **Redo: in scope, extended rather than dropped — but Ctrl+Y only, no toolbar button.**
+1. **Redo: in scope, extended rather than dropped — keys only (Ctrl+Y, and Ctrl+Shift+Z, which
+   is also Redo today and stays), no toolbar button.**
    Origami has a Redo today, and removing it while unifying the stacks would be a small regression
    for layout-mode users. The cost is small provided we take the two cheap routes in §4.1: an
    index-based stack, and capturing the redo state lazily at undo time (origami's existing trick),

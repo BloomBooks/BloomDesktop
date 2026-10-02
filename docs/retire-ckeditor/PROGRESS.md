@@ -1026,6 +1026,11 @@ and the other live-check scripts are kept, unchanged, on branch `BL-6681-bug-rep
 
 ### Decisions John needs to make
 
+- **The plain-text paste bug found 2026-10-02** (PLAN.md §4.14, "Found while reading"): BL-9961's
+  `reconstituteParagraphsOnPlainTextPaste` inserts unescaped text, so a multi-line paste containing
+  `<` is mangled and could run script. Independent of this project: file it, fix it now, or leave
+  it for Stage 3 (where `pasteHandler.ts` replaces it).
+
 - ~~The merge window~~ — **decided 2026-09-16: the project targets `master`**; done 2026-09-21
   (Stage 0 merged; Stage 1 on `BL-16900-undo-stack` off `master`; §5 rewritten; integration branch
   retired).
@@ -1196,3 +1201,15 @@ Later, not Stage 0:
 - **Decision:** a failed undo or redo discards the whole stack and rethrows (`UndoStack.apply`).
   A retry rarely helps, and the failure leaves a state the older entries were not recorded
   against. The retry and rollback paths are gone.
+- **Read the CKEditor 4.5.1 code we ship** for problems it solves that the plan did not cover
+  (four parallel read-only reviews, spot-checked). Recorded as PLAN.md §4.14 (25 items, each with
+  an owning Stage 3 file) and BEHAVIOR-INVENTORY.md section L, with the Stage 3 table, §4.3,
+  §4.4, §4.6, §4.8 and §10 decision 1 updated to match. The ones most likely to bite: Enter must
+  not be left to the browser (paragraph separator, duplicated audio-sentence ids, BL-16649's
+  no-indent rule, Blink's style spans on block joins); a format at a collapsed caret; same-session
+  copies are not filtered today, which is what keeps pasted line breaks and audio spans; undo
+  restores selected ranges, so anchors need ranges (§4.3 said otherwise). Two corrections:
+  BEHAVIOR-INVENTORY B12 (autolink is paste-only, never on typing) and §4.3.
+- **Decision:** Ctrl+Shift+Z stays a Redo key alongside Ctrl+Y. Stage 2 adds it to
+  `redoKeyBinding.ts` when the stack first holds entries.
+- Found a pre-existing bug in the BL-9961 plain-text paste; see "Decisions John needs to make".
