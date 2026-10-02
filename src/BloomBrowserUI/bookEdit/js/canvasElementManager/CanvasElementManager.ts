@@ -97,6 +97,7 @@ import { CanvasElementEditingSuspension } from "./CanvasElementEditingSuspension
 import { adjustCanvasElementChildrenIfSizeChanged } from "./CanvasElementResizeAdjustments";
 import {
     adjustBackgroundImageSize as adjustCanvasBackgroundImageSize,
+    getBackgroundCanvasElement,
     handleResizeAdjustments as handleBackgroundResizeAdjustments,
     setupBackgroundImageAttributes,
     type BackgroundImageManagerState,
@@ -2845,6 +2846,23 @@ export class CanvasElementManager {
         // but dragging gets stopped by mouse up, so we need to do it here.
         theOneCanvasElementManager.handleResizeAdjustments();
     }
+    /**
+     * Run the same adjustments on every bloom-canvas on the page that an origami splitter
+     * drag runs on its panes: convert a legacy background image to a canvas element if
+     * needed, then rescale every canvas element to the size the bloom-canvas has now.
+     * A host that resizes a container with JavaScript after Bloom's page-load pass has
+     * run needs this, so that a picture follows its container the way an origami image
+     * follows its pane.
+     *
+     * The rescale only touches canvas elements that already have a position. A background
+     * image whose bloom-canvas had no size when it was created never got one (see the
+     * zero-area guard in adjustBackgroundImageSizeToFit), so this method leaves it alone;
+     * use refitBackgroundImage for that canvas.
+     */
+    public adjustAfterContainerResize(): void {
+        this.handleResizeAdjustments();
+    }
+
     private handleResizeAdjustments(): void {
         handleBackgroundResizeAdjustments(
             this.backgroundImageManagerState,
@@ -3129,6 +3147,27 @@ export class CanvasElementManager {
             () => this.activeElement,
             this.alignControlFrameWithActiveElement,
             cropInfo,
+        );
+    }
+
+    /**
+     * Re-fit the background image of one bloom-canvas to the size the canvas has now.
+     *
+     * The general resize path (AdjustChildrenIfSizeChanged) keeps each child's offsets
+     * and scales them, which is right for canvas elements the user placed but wrong for
+     * a background image that was fitted while its bloom-canvas had no real size yet.
+     * That is the case whenever something lays out a container with JavaScript after
+     * the page-load pass, so the bloom-canvas inside it gets its real size later.
+     */
+    public refitBackgroundImage(bloomCanvas: HTMLElement): Promise<void> {
+        const bgCanvasElement = getBackgroundCanvasElement(bloomCanvas);
+        if (!bgCanvasElement) return Promise.resolve();
+        // The promise settles once the image has loaded and been fitted, so a caller
+        // that lays out other things around the picture can wait for it.
+        return this.adjustBackgroundImageSize(
+            bloomCanvas,
+            bgCanvasElement,
+            false,
         );
     }
 
