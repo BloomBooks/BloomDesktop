@@ -2491,6 +2491,146 @@
         <note>This is part of the interface for the Bloom AI Image Editor.</note>
         <note>Heading of the dialog shown the first time the user opens the editor.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.ShareButton" translate="no">
+        <source xml:lang="en">Share</source>
+        <note>ID: CollectionTab.ShareButton</note>
+        <note>Label of the button at the top of the Collections tab that opens the Share dialog, for sharing the collection with other people.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.Title" translate="no">
+        <source xml:lang="en">Share “%0”</source>
+        <note>ID: Sharing.ShareDialog.Title</note>
+        <note>Title of the Share dialog. %0 is replaced by the name of the collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.SignInFirst" translate="no">
+        <source xml:lang="en">To share this collection, first sign in to BloomLibrary.org. The people you invite will use their own BloomLibrary.org accounts.</source>
+        <note>ID: Sharing.ShareDialog.SignInFirst</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown when the user is not signed in. "BloomLibrary.org" is a website name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.OnlyAdmins" translate="no">
+        <source xml:lang="en">Only admins can invite people or change roles.</source>
+        <note>ID: Sharing.ShareDialog.OnlyAdmins</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown to people who are not administrators of the collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.OnlyAdminsCanShare" translate="no">
+        <source xml:lang="en">This collection is not shared yet. Only an administrator of this collection can share it.</source>
+        <note>ID: Sharing.ShareDialog.OnlyAdminsCanShare</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown to someone who is not an administrator of the collection, before it has been shared.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.EmailAddress" translate="no">
+        <source xml:lang="en">Email address</source>
+        <note>ID: Sharing.ShareDialog.EmailAddress</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Placeholder in the box where the administrator types the email address of someone to invite.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.InvalidEmail" translate="no">
+        <source xml:lang="en">That does not look like an email address.</source>
+        <note>ID: Sharing.ShareDialog.InvalidEmail</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Error shown under the email address box.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.AlreadyHasAccess" translate="no">
+        <source xml:lang="en">That person already has access.</source>
+        <note>ID: Sharing.ShareDialog.AlreadyHasAccess</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Error shown under the email address box when the email typed belongs to someone already in the list.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.Invite" translate="no">
+        <source xml:lang="en">Invite</source>
+        <note>ID: Sharing.ShareDialog.Invite</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that invites the person whose email address was typed.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.You" translate="no">
+        <source xml:lang="en">(you)</source>
+        <note>ID: Sharing.ShareDialog.You</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Appears after the user's own name in the list of people.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.LastSeen" translate="no">
+        <source xml:lang="en">Last seen %0</source>
+        <note>ID: Sharing.ShareDialog.LastSeen</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under a person's role, saying when they last used the collection. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.InvitedWhen" translate="no">
+        <source xml:lang="en">Invited %0</source>
+        <note>ID: Sharing.ShareDialog.InvitedWhen</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown under the role of someone whom Bloom has no record of using the collection yet, saying when they were given access. %0 is replaced by a phrase such as "today", "yesterday" or "3 weeks ago", which Bloom gets already translated from the computer.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.RemoveFromCollection" translate="no">
+        <source xml:lang="en">Remove from collection</source>
+        <note>ID: Sharing.ShareDialog.RemoveFromCollection</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Menu item that takes away a person's access to the collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.OwnRole" translate="no">
+        <source xml:lang="en">You can't change your own role. Another admin can do that for you.</source>
+        <note>ID: Sharing.ShareDialog.OwnRole</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Tooltip on an administrator's own role in the list of people, explaining why it can't be changed there.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.LearnAboutSharing" translate="no">
+        <source xml:lang="en">Learn about sharing</source>
+        <note>ID: Sharing.ShareDialog.LearnAboutSharing</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Link at the top right of the dialog that opens a help page in the web browser.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.StartExplanation" translate="no">
+        <source xml:lang="en">When you start sharing, Bloom copies this collection to the cloud, and the people you share it with can open it and work on it with you. After that, you can invite more people and change what each person may do.</source>
+        <note>ID: Sharing.ShareDialog.StartExplanation</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Shown before the collection has been shared, above the Start sharing button.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.WhoWillHaveAccess" translate="no">
+        <source xml:lang="en">Who will have access</source>
+        <note>ID: Sharing.ShareDialog.WhoWillHaveAccess</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Heading above the list of people who will be able to use the collection once the administrator presses Start sharing.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.StartSharing" translate="no">
+        <source xml:lang="en">Start sharing</source>
+        <note>ID: Sharing.ShareDialog.StartSharing</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Button that shares the collection for the first time, with the people listed. Also the confirming button of the dialog that asks whether to go ahead, for a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.Heading" translate="no">
+        <source xml:lang="en">What happens to the Team Collection</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.Heading</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Heading of a warning, shown before sharing starts, listing what starting to share does to the collection's existing Team Collection (Bloom's older way of sharing a collection through a shared folder such as Dropbox).</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.Frozen" translate="no">
+        <source xml:lang="en">The Team Collection will be frozen for everyone. Nobody will be able to check books in or out of it any more.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.Frozen</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. One point of the warning about what happens to the Team Collection (Bloom's older way of sharing through a shared folder) when sharing starts.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.KeepCheckedOutWork" translate="no">
+        <source xml:lang="en">People keep the books they have checked out, but they will need Bloom %0 or later to go on working on them. Older versions of Bloom will not open this collection.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.KeepCheckedOutWork</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. One point of the warning about what happens to the Team Collection when sharing starts. %0 is replaced by a Bloom version number such as 6.6.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.TeamCollection.CannotUndo" translate="no">
+        <source xml:lang="en">This can't be undone from Bloom.</source>
+        <note>ID: Sharing.ShareDialog.TeamCollection.CannotUndo</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. The last point of the warning about what happens to the Team Collection when sharing starts.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.ConfirmStart.Title" translate="no">
+        <source xml:lang="en">Start sharing this collection?</source>
+        <note>ID: Sharing.ShareDialog.ConfirmStart.Title</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. Title of the small dialog that asks an administrator to confirm starting to share a Team Collection.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.ShareDialog.ConfirmStart.Message" translate="no">
+        <source xml:lang="en">The Team Collection will be frozen for everyone, and everyone will need Bloom %0 or later to open this collection. People keep the books they have checked out. This can't be undone from Bloom.</source>
+        <note>ID: Sharing.ShareDialog.ConfirmStart.Message</note>
+        <note>Part of the Share dialog, where the administrators of a collection invite other people to work on it with them. The message of the small dialog that asks an administrator to confirm starting to share a Team Collection (Bloom's older way of sharing through a shared folder). %0 is replaced by a Bloom version number such as 6.6.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.Role.Admin" translate="no">
+        <source xml:lang="en">Admin</source>
+        <note>ID: Sharing.Role.Admin</note>
+        <note>The name of a role in a shared collection: someone who can do everything an Editor can, and also change the collection's settings and who it is shared with.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.Role.Admin.Description" translate="no">
+        <source xml:lang="en">Editor + collection settings and sharing</source>
+        <note>ID: Sharing.Role.Admin.Description</note>
+        <note>Describes the Admin role in the Share dialog's role menu: everything an Editor can do, plus changing collection settings and sharing. "Editor" is the name of the other role.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.Role.Editor" translate="no">
+        <source xml:lang="en">Editor</source>
+        <note>ID: Sharing.Role.Editor</note>
+        <note>The name of a role in a shared collection: someone who can add, remove, and edit books.</note>
+      </trans-unit>
+      <trans-unit id="Sharing.Role.Editor.Description" translate="no">
+        <source xml:lang="en">Add, remove, and edit books</source>
+        <note>ID: Sharing.Role.Editor.Description</note>
+        <note>Describes the Editor role in the Share dialog's role menu.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -18,6 +18,9 @@ export interface IBloomButtonProps extends ILocalizationProps, ButtonProps {
     // If only one is provided, no image will show in the other state (e.g. if disabled and no disabledImageFile).
     enabledImageFile?: string;
     disabledImageFile?: string;
+    // An element (e.g. an MUI icon) to show where the image file would go. It shows in both the
+    // enabled and disabled states; an icon that uses currentColor follows the text color.
+    imageElement?: React.ReactNode;
     l10nTipEnglishEnabled?: string; // existence of these two strings (or one of them) enables tooltips on the button.
     l10nTipEnglishDisabled?: string;
     iconBeforeText?: React.ReactNode;
@@ -35,7 +38,14 @@ export default class BloomButton extends LocalizableElement<
         super(props);
     }
 
-    private getButtonImage(): JSX.Element | null {
+    private getButtonImage(): React.ReactNode {
+        if (this.props.imageElement) {
+            return (
+                <React.Fragment key={0}>
+                    {this.props.imageElement}
+                </React.Fragment>
+            );
+        }
         if (this.props.enabled && this.props.enabledImageFile) {
             return <img src={this.props.enabledImageFile} key={0} />;
         } else if (!this.props.enabled && this.props.disabledImageFile) {
@@ -78,6 +88,7 @@ export default class BloomButton extends LocalizableElement<
             transparent,
             enabledImageFile,
             disabledImageFile,
+            imageElement,
             hasText,
             iconBeforeText,
             l10nTipEnglishEnabled,
