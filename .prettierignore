@@ -9,3 +9,8 @@ csharpier.json
 # leave a dirty working tree, and prettier outright fails on the book .htm files. Leave the
 # whole tree alone so the fetched fixtures match what Bloom writes.
 output/testing-inputs/
+
+# The overflow checker's layout fixtures: the whitespace between their inline elements is
+# part of what OverflowChecker.browser.spec.ts measures, and prettier's reflow changes it
+# enough to turn its answers around.
+src/BloomBrowserUI/bookEdit/OverflowChecker/*Fixture.html

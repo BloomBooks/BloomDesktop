@@ -32,21 +32,33 @@ namespace Bloom.Edit
 
             _thumbNailList.Thumbnailer = thumbnailProvider;
             _thumbNailList.RelocatePageEvent = relocatePageEvent;
-            _thumbNailList.PageSelectedChanged += new EventHandler(OnPageSelectedChanged);
+            _thumbNailList.PageSelectedChanged += OnPageSelectedChanged;
             _thumbNailList.Model = model;
         }
 
-        private void OnPageSelectedChanged(object page, EventArgs e)
+        private void OnPageSelectedChanged(object page, PageSelectedChangedEventArgs e)
         {
             if (page == null)
                 return;
-            if (!_dontForwardSelectionEvent)
-            {
-                // The only necessary action after saving is to navigate to the desired page.
-                // This is achieved by returning the right ID in the trivial doAfterSaving function
-                // passed as the first argument to SaveThen.
-                _model.SaveThen(() => (page as Page).Id, () => { });
-            }
+            if (_dontForwardSelectionEvent)
+                return;
+
+            var pageId = (page as Page).Id;
+
+            // The only necessary action after saving is to go to the desired page, which is what
+            // returning its ID from the first argument achieves.
+            //
+            // The click usually brings the outgoing page's content with it, which is the freshest
+            // copy there is; when it does not, MergeCurrentPageThenSave uses the snapshot the
+            // browser last volunteered.
+            _model.MergeCurrentPageThenSave(
+                () => pageId,
+                // Clicking a thumbnail changes nothing in the book. This is the case the whole "do
+                // not write a page nobody edited" optimisation exists for, so it must not claim
+                // the book changed.
+                actionChangesTheBook: false,
+                pageContent: e.PageContent
+            );
         }
 
         public void SetBook(Book.Book book) //review: could do this instead by giving this class the bookselection object

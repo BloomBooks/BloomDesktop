@@ -874,7 +874,8 @@ export class CanvasElementFactories {
                         bloomCanvas.getElementsByClassName(kCanvasElementClass),
                     ) as HTMLElement[]
                 ).filter((x) => x !== backgroundImage),
-                Bubble.getBubbleSpec(backgroundImage).level + 1,
+                // A missing level counts as 0, as everywhere else we do this arithmetic.
+                (Bubble.getBubbleSpec(backgroundImage).level ?? 0) + 1,
             );
         }
     }
