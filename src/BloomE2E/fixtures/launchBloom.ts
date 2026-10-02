@@ -508,13 +508,17 @@ async function readInstanceInfo(
     port: number,
 ): Promise<IInstanceInfo | undefined> {
     try {
+        // A request that reaches a Bloom still starting its server can go unanswered for good, and
+        // without a timeout that one request would hold up discovery until its deadline; a fresh
+        // request a moment later is answered at once.
         const response = await fetch(
             `http://localhost:${port}/bloom/api/common/instanceInfo`,
+            { signal: AbortSignal.timeout(5000) },
         );
         if (!response.ok) return undefined;
         return (await response.json()) as IInstanceInfo;
     } catch {
-        // Nothing responding on that port.
+        // Nothing responding on that port, or not in time.
         return undefined;
     }
 }
