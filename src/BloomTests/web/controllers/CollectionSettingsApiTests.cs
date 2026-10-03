@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using Bloom;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace BloomTests.web.controllers
@@ -62,6 +65,74 @@ namespace BloomTests.web.controllers
             dynamic result = JsonConvert.DeserializeObject(json);
             Assert.That((string)result.languageName, Is.EqualTo("Kaqchikel"));
             Assert.That((string)result.languageCode, Is.EqualTo("cak"));
+        }
+
+        /// <summary>
+        /// Values with a third language and nothing unusual about them, so each test can change
+        /// just the one thing it is about.
+        /// </summary>
+        private static CollectionSettingsValues MakeValues()
+        {
+            return new CollectionSettingsValues
+            {
+                Languages = new LanguagesValues
+                {
+                    Language1 = new LanguageValues
+                    {
+                        Tag = "cak",
+                        Name = "Kaqchikel",
+                        FontName = "Andika",
+                        LineHeight = 1.5m,
+                    },
+                    Language2 = new LanguageValues
+                    {
+                        Tag = "en",
+                        Name = "English",
+                        FontName = "Andika",
+                    },
+                    Language3 = new LanguageValues
+                    {
+                        Tag = "fr",
+                        Name = "French",
+                        FontName = "Andika",
+                    },
+                    SignLanguage = new SignLanguageValues { Tag = "ase", Name = "ASL" },
+                },
+                FrontBackMatter = new FrontBackMatterValues
+                {
+                    Xmatter = "Traditional",
+                    PageNumberStyle = "Decimal",
+                    ShowQrCode = true,
+                    QrcodeCaption = "Find this book",
+                    Country = "Guatemala",
+                },
+                Advanced = new AdvancedValues { AutoUpdate = true, CollectionName = "Test" },
+                Experimental = new Dictionary<string, bool>
+                {
+                    { ExperimentalFeatures.kTeamCollections, false },
+                },
+            };
+        }
+
+        /// <summary>
+        /// A path that names nothing resolves to null, so a typo in the list would silently stop
+        /// that setting ever being noticed as needing a restart.
+        /// </summary>
+        [Test]
+        public void EveryRestartPath_ResolvesInFullyPopulatedValues()
+        {
+            var json = JObject.Parse(
+                JsonConvert.SerializeObject(MakeValues(), CollectionSettingsApi.kCamelCaseSettings)
+            );
+
+            foreach (var path in CollectionSettingsValues.GetRestartPaths())
+            {
+                Assert.That(
+                    json.SelectToken(path),
+                    Is.Not.Null,
+                    $"restart path '{path}' names nothing in the settings values"
+                );
+            }
         }
     }
 }
