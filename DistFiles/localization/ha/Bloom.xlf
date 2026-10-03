@@ -3869,11 +3869,6 @@
         <target xml:lang="ha" state="final">Me kake buƙatar kiran wannan tarin bayanai?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="ha" state="final">Matsalar Sunan Tarin Bayanai</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="ha" state="final">Za a ƙirƙiri tarin bayanai a: {0}</target>
