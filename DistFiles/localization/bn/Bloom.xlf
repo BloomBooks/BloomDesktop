@@ -3869,11 +3869,6 @@
         <target xml:lang="bn" state="final">আপনি এই সংগ্রহকে কি নামে ডাকতে চান?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="bn" state="final">সংগ্রহ নামে সমস্যা</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="bn" state="final">সংগ্রহ তৈরি হবে এখানে: {0}</target>
