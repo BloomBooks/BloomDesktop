@@ -150,10 +150,6 @@ namespace Bloom.CollectionCreating
                 "NewCollectionWizard.CollectionName",
                 "Collection Name"
             );
-            _collectionNameProblemPage.Text = LocalizationManager.GetString(
-                "NewCollectionWizard.CollectionNameProblem",
-                "Collection Name Problem"
-            );
             _languageLocationPage.Text = LocalizationManager.GetString(
                 "NewCollectionWizard.LocationPage",
                 "Give Language Location"
@@ -322,8 +318,6 @@ namespace Bloom.CollectionCreating
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
-
-        private void _languageLocationControl_Load(object sender, EventArgs e) { }
 
         private void _finishPage_Initialize(object sender, EventArgs e)
         {
