@@ -3870,11 +3870,6 @@
         <target xml:lang="hi" state="final">इस संग्रह को आप क्या कहना चाहते हैं?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="hi" state="final">संग्रह नाम समस्या</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="hi" state="final">संग्रह {0} में निर्माण किया जाएगा:</target>
