@@ -3871,11 +3871,6 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="final">¿Jas ub'i' kawaj chech we wokcha'talik ri'?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="quc" state="final">K'axk'olil ruk' ub'i' we wokcha'talik ri'</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="quc" state="final">Le wokcha'talik kwok na pa: {0}</target>
