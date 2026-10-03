@@ -3869,11 +3869,6 @@
         <target xml:lang="te" state="final">మీరు ఈ సేకరణ కాల్ ఏమి చేయాలనుకుంటున్నారు?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="te" state="final">సేకరణ పేరును సమస్య</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="te" state="final">సేకరణ రూపొందించినవారు ఉంటుంది {0}</target>
