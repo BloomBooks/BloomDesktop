@@ -3869,11 +3869,6 @@
         <target xml:lang="fr" state="final">Comment voulez-vous appeler cette collection ?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="fr" state="final">Problème avec le nom de la collection</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="fr" state="final">La collection va être créée sur : {0}</target>
