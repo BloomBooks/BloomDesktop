@@ -3869,11 +3869,6 @@
         <target xml:lang="mam" state="final">Tza'n tb'i kyxe'l tq'o'na te k'loj te ila' wiq?</target>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem" approved="yes">
-        <source xml:lang="en">Collection Name Problem</source>
-        <target xml:lang="mam" state="final">At mya' b'a'n ti'j k'loj te ila' wiq tu'n tlaj b'ib'aj</target>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt" approved="yes">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <target xml:lang="mam" state="final">Kyb'inchetil K'loj te ila' wiq tuj: {0}</target>
