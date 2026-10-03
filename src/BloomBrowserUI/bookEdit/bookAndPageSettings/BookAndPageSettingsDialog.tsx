@@ -1,13 +1,11 @@
-import { css } from "@emotion/react";
 import { ConfigrArea, ConfigrPane, ConfigrValues } from "@sillsdev/config-r";
 import * as React from "react";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { DialogBottomButtons } from "../../react_components/BloomDialog/BloomDialog";
 import {
-    BloomDialog,
-    DialogBottomButtons,
-    DialogMiddle,
-    DialogTitle,
-} from "../../react_components/BloomDialog/BloomDialog";
+    ConfigrDialogFrame,
+    kConfigrPaneClassName,
+    kConfigrThemeOverrides,
+} from "../../react_components/ConfigrDialogFrame";
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
@@ -39,9 +37,6 @@ import { isLegacyThemeName } from "./appearanceThemeUtils";
 import { useBookSettingsAreaDefinition } from "./BookSettingsConfigrPages";
 
 let isOpenAlready = false;
-const kBookSettingsDialogWidthPx = 900;
-const kBookSettingsDialogHeightPx = 720;
-const kConfigrPaneClassName = "book-page-settings-configr-pane";
 
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
@@ -426,127 +421,69 @@ export const BookAndPageSettingsDialog: React.FunctionComponent<{
     }
 
     return (
-        <BloomDialog
-            css={css`
-                height: 100%;
-                box-sizing: border-box;
-
-                .MuiDialog-paper {
-                    width: ${kBookSettingsDialogWidthPx}px;
-                    height: ${kBookSettingsDialogHeightPx}px;
-                }
-            `}
-            ref={dialogRef}
-            {...propsForBloomDialog}
-            onClose={() => cancelAndCloseDialog()}
+        <ConfigrDialogFrame
+            title={bookSettingsTitle}
+            propsForBloomDialog={propsForBloomDialog}
             onCancel={() => cancelAndCloseDialog()}
-            draggable={false}
-            maxWidth={false}
+            dialogRef={dialogRef}
+            footer={
+                <DialogBottomButtons>
+                    <DialogOkButton
+                        default={true}
+                        onClick={saveSettingsAndCloseDialog}
+                    />
+                    <DialogCancelButton />
+                </DialogBottomButtons>
+            }
         >
-            <DialogTitle title={bookSettingsTitle} />
-            <DialogMiddle
-                css={css`
-                    &:first-child {
-                        margin-top: 0; // override the default that sees a lack of a title and adds a margin
-                    }
-                    overflow-y: hidden;
-                    min-height: 0;
+            {configrInitialValues && (
+                <ConfigrPane
+                    key={configrPaneKey}
+                    className={kConfigrPaneClassName}
+                    label={bookSettingsTitle}
+                    initialValues={configrInitialValues}
+                    themeOverrides={kConfigrThemeOverrides}
+                    showAppBar={false}
+                    showJson={false}
+                    onChange={(s) => {
+                        const parsedPageSettings =
+                            parsePageSettingsFromConfigrValue(s);
+                        const changedPageSettings = pageSettings
+                            ? getChangedPageSettings(
+                                  pageSettings,
+                                  parsedPageSettings,
+                              )
+                            : undefined;
 
-                    .${kConfigrPaneClassName} {
-                        height: 100%;
-                        min-height: 0;
-                    }
+                        // Config-r may call onChange while rendering, so defer state updates.
+                        latestSettingsRef.current = s;
+                        window.setTimeout(() => {
+                            setSettingsToReturnLater(s);
+                        }, 0);
 
-                    // Let config-r consume the available dialog height in both the page form and
-                    // the area-description states so the button row stays pinned to the bottom.
-                    form {
-                        overflow-y: auto;
-                        height: 100%;
-                        min-height: 0;
-                        width: 100%;
-                        box-sizing: border-box;
-                        #groups {
-                            margin-right: 10px; // make room for the scrollbar
+                        if (
+                            !pageSettings ||
+                            !initialPageAttributeSnapshot.current
+                        ) {
+                            return;
                         }
-                    }
 
-                    a {
-                        color: ${kBloomBlue};
-                    }
+                        initialPageAttributeSnapshot.current.restoreToElement(
+                            getCurrentPageElement(),
+                        );
 
-                    // config-r's ConfigrSelect sets "padding: 3px !important", which removes the
-                    // space MUI reserves for the down arrow, so a long (e.g. translated) choice runs
-                    // under the arrow (BL-16958). The doubled class outranks config-r's rule.
-                    // We plan to fix this in config-r itself, but didn't want to risk a config-r
-                    // update in 6.4. Remove this once Bloom uses a config-r with the fix.
-                    .MuiSelect-select.MuiSelect-select {
-                        padding-right: 32px !important;
-                    }
-                `}
-            >
-                {configrInitialValues && (
-                    <ConfigrPane
-                        key={configrPaneKey}
-                        className={kConfigrPaneClassName}
-                        label={bookSettingsTitle}
-                        initialValues={configrInitialValues}
-                        themeOverrides={{
-                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                            palette: {
-                                primary: { main: kBloomBlue },
-                            },
-                        }}
-                        showAppBar={false}
-                        showJson={false}
-                        onChange={(s) => {
-                            const parsedPageSettings =
-                                parsePageSettingsFromConfigrValue(s);
-                            const changedPageSettings = pageSettings
-                                ? getChangedPageSettings(
-                                      pageSettings,
-                                      parsedPageSettings,
-                                  )
-                                : undefined;
-
-                            // Config-r may call onChange while rendering, so defer state updates.
-                            latestSettingsRef.current = s;
-                            window.setTimeout(() => {
-                                setSettingsToReturnLater(s);
-                            }, 0);
-
-                            if (
-                                !pageSettings ||
-                                !initialPageAttributeSnapshot.current
-                            ) {
-                                return;
-                            }
-
-                            initialPageAttributeSnapshot.current.restoreToElement(
-                                getCurrentPageElement(),
-                            );
-
-                            if (!changedPageSettings) {
-                                return;
-                            }
-
-                            applyChangedPageSettings(changedPageSettings);
-                        }}
-                        initiallySelectedTopLevelPageKey={
-                            selectedConfigrPageKey
+                        if (!changedPageSettings) {
+                            return;
                         }
-                    >
-                        {configrAreas}
-                    </ConfigrPane>
-                )}
-            </DialogMiddle>
-            <DialogBottomButtons>
-                <DialogOkButton
-                    default={true}
-                    onClick={saveSettingsAndCloseDialog}
-                />
-                <DialogCancelButton />
-            </DialogBottomButtons>
-        </BloomDialog>
+
+                        applyChangedPageSettings(changedPageSettings);
+                    }}
+                    initiallySelectedTopLevelPageKey={selectedConfigrPageKey}
+                >
+                    {configrAreas}
+                </ConfigrPane>
+            )}
+        </ConfigrDialogFrame>
     );
 };
 

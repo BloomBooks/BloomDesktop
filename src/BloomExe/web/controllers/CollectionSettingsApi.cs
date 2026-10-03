@@ -7,10 +7,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.TeamCollection;
 using Bloom.WebLibraryIntegration;
+using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SIL.Code;
 using SIL.IO;
 using SIL.Progress;
@@ -29,23 +32,49 @@ namespace Bloom.web.controllers
         // we keep a reference to it here so pending settings can be updated there.
         public static CollectionSettingsDialog DialogBeingEdited;
 
+        /// <summary>
+        /// The TypeScript side expects the names in the collection/settings contract in camelCase,
+        /// while the C# classes spell them the way C# does.
+        /// </summary>
+        internal static readonly JsonSerializerSettings kCamelCaseSettings =
+            new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+            };
+
         private readonly CollectionSettings _collectionSettings;
         private readonly List<object> _numberingStyles = new List<object>();
         private readonly XMatterPackFinder _xmatterPackFinder;
         private readonly BookSelection _bookSelection;
+        private readonly TeamCollectionManager _tcManager;
+        private readonly QueueRenameOfCollection _queueRenameOfCollection;
 
         public static event EventHandler<LanguageChangeEventArgs> LanguageChange;
 
         public CollectionSettingsApi(
             CollectionSettings collectionSettings,
             XMatterPackFinder xmatterPackFinder,
-            BookSelection bookSelection
+            BookSelection bookSelection,
+            TeamCollectionManager tcManager,
+            QueueRenameOfCollection queueRenameOfCollection
         )
         {
             _collectionSettings = collectionSettings;
             _xmatterPackFinder = xmatterPackFinder;
             this._bookSelection = bookSelection;
+            _tcManager = tcManager;
+            _queueRenameOfCollection = queueRenameOfCollection;
         }
+
+        /// <summary>
+        /// Whether the collection we have open is a Team Collection, even if we cannot reach the
+        /// repository just now.
+        /// </summary>
+        private bool CurrentCollectionIsTeamCollection =>
+            _tcManager.CurrentCollectionEvenIfDisconnected != null;
 
         public void RegisterWithApiHandler(BloomApiHandler apiHandler)
         {
@@ -54,14 +83,9 @@ namespace Bloom.web.controllers
                 request =>
                 {
                     if (request.HttpMethod == HttpMethods.Get)
-                    {
-                        // Just a placeholder for the skeleton dialog for now.
-                        request.ReplyWithJson("{}");
-                    }
-                    else if (request.HttpMethod == HttpMethods.Post)
-                    {
-                        request.PostSucceeded();
-                    }
+                        HandleGetCollectionSettings(request);
+                    else
+                        HandleSaveCollectionSettings(request);
                 },
                 true
             );
@@ -451,6 +475,217 @@ namespace Bloom.web.controllers
                 if (qrcodeCaption != previousValue)
                     dialog.ChangeThatRequiresRestart();
             }
+        }
+
+        /// <summary>
+        /// Replies to GET collection/settings with the values the collection has now. A Team
+        /// Collection member who is not an administrator gets only the reason they may not edit.
+        /// </summary>
+        private void HandleGetCollectionSettings(ApiRequest request)
+        {
+            if (!_tcManager.OkToEditCollectionSettings)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsResponse
+                        {
+                            // MustBeAdminMessage is HTML for BloomMessageBox; the dialog shows
+                            // plain text with its line breaks kept.
+                            NotAllowedMessage = WorkspaceView
+                                .MustBeAdminMessage(_collectionSettings)
+                                .Replace("<br>", "\n"),
+                        },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+            var response = new CollectionSettingsResponse
+            {
+                Values = GetCurrentValues(_collectionSettings),
+                RestartPaths = CollectionSettingsValues.GetRestartPaths(),
+            };
+            request.ReplyWithJson(JsonConvert.SerializeObject(response, kCamelCaseSettings));
+        }
+
+        /// <summary>
+        /// Handles POST collection/settings: the complete values as the user left them, and whether
+        /// the dialog found a change that needs a restart (it already knows, to label OK). On a
+        /// validation failure nothing is saved and the dialog stays up so the user can fix it.
+        /// </summary>
+        private void HandleSaveCollectionSettings(ApiRequest request)
+        {
+            var saveRequest = JsonConvert.DeserializeObject<CollectionSettingsSaveRequest>(
+                request.RequiredPostJson()
+            );
+            var pending = new PendingCollectionSettings(_collectionSettings);
+            CopyIntoPendingSettings(saveRequest.Values, pending);
+            if (saveRequest.RestartRequired)
+                pending.ChangeThatRequiresRestart();
+
+            var errorMessage = CollectionSettingsUpdater.Validate(
+                pending,
+                CurrentCollectionIsTeamCollection
+            );
+            if (errorMessage != null)
+            {
+                request.ReplyWithJson(
+                    JsonConvert.SerializeObject(
+                        new CollectionSettingsSaveResult { ErrorMessage = errorMessage },
+                        kCamelCaseSettings
+                    )
+                );
+                return;
+            }
+
+            var restartRequired = CollectionSettingsUpdater.Apply(
+                pending,
+                _collectionSettings,
+                CurrentCollectionIsTeamCollection,
+                _xmatterPackFinder,
+                newName => _queueRenameOfCollection.Raise(newName)
+            );
+            request.ReplyWithJson(
+                JsonConvert.SerializeObject(new CollectionSettingsSaveResult(), kCamelCaseSettings)
+            );
+            if (restartRequired)
+                WorkspaceApi.ReopenCollectionWhenIdle();
+        }
+
+        /// <summary>
+        /// The editable settings as the collection has them now.
+        /// </summary>
+        internal static CollectionSettingsValues GetCurrentValues(CollectionSettings settings)
+        {
+            var thirdLanguage = settings.AllLanguages[2];
+            return new CollectionSettingsValues
+            {
+                Languages = new LanguagesValues
+                {
+                    Language1 = MakeLanguageValues(settings.AllLanguages[0]),
+                    Language2 = MakeLanguageValues(settings.AllLanguages[1]),
+                    Language3 = string.IsNullOrEmpty(thirdLanguage?.Tag)
+                        ? null
+                        : MakeLanguageValues(thirdLanguage),
+                    // The collection stores "no sign language" as an empty (or, if never saved,
+                    // null) tag; the dialog gets null instead.
+                    SignLanguage = string.IsNullOrEmpty(settings.SignLanguage.Tag)
+                        ? null
+                        : new SignLanguageValues
+                        {
+                            Tag = settings.SignLanguage.Tag,
+                            Name = settings.SignLanguage.Name,
+                            IsCustomName = settings.SignLanguage.IsCustomName,
+                        },
+                },
+                FrontBackMatter = new FrontBackMatterValues
+                {
+                    Xmatter = settings.XMatterPackName,
+                    PageNumberStyle = settings.PageNumberStyle,
+                    ShowQrCode = settings.ShowBlorgLanguageQrCode,
+                    QrcodeCaption = settings.BadgeQrCodeLabelLocalized,
+                    // A collection whose settings file never carried these leaves them null.
+                    Country = settings.Country ?? "",
+                    Province = settings.Province ?? "",
+                    District = settings.District ?? "",
+                },
+                Advanced = new AdvancedValues
+                {
+                    AutoUpdate =
+                        CollectionSettingsDialog.AutoUpdateSupportedOnThisPlatform
+                        && Settings.Default.AutoUpdate,
+                    CollectionName = settings.CollectionName,
+                },
+                Experimental = new Dictionary<string, bool>
+                {
+                    {
+                        ExperimentalFeatures.kTeamCollections,
+                        ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections)
+                    },
+                },
+            };
+        }
+
+        private static LanguageValues MakeLanguageValues(WritingSystem language)
+        {
+            return new LanguageValues
+            {
+                Tag = language.Tag,
+                Name = language.Name,
+                IsCustomName = language.IsCustomName,
+                FontName = language.FontName,
+                IsRightToLeft = language.IsRightToLeft,
+                LineHeight = language.LineHeight,
+                BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces,
+                BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints,
+            };
+        }
+
+        /// <summary>
+        /// Copies the values the React dialog posted onto a pending-settings object built from the
+        /// collection's current settings, which is what CollectionSettingsUpdater works from. The
+        /// subscription, the administrators and the bookshelf are not part of the values, so they
+        /// keep their current settings.
+        /// </summary>
+        internal static void CopyIntoPendingSettings(
+            CollectionSettingsValues values,
+            PendingCollectionSettings pending
+        )
+        {
+            CopyLanguage(values.Languages.Language1, pending, 0);
+            CopyLanguage(values.Languages.Language2, pending, 1);
+            CopyLanguage(values.Languages.Language3, pending, 2);
+            // A null sign language means the collection has none, which it stores as an empty tag.
+            var signLanguage = values.Languages.SignLanguage;
+            pending.SignLanguage.ChangeTag(signLanguage?.Tag ?? String.Empty);
+            pending.SignLanguage.SetName(
+                signLanguage?.Name ?? String.Empty,
+                signLanguage?.IsCustomName ?? false
+            );
+
+            pending.Xmatter = values.FrontBackMatter.Xmatter;
+            pending.NumberingStyle = values.FrontBackMatter.PageNumberStyle;
+            pending.ShowQrCode = values.FrontBackMatter.ShowQrCode;
+            pending.BadgeQrCodeCaption = values.FrontBackMatter.QrcodeCaption;
+            pending.Country = values.FrontBackMatter.Country;
+            pending.Province = values.FrontBackMatter.Province;
+            pending.District = values.FrontBackMatter.District;
+
+            pending.AutomaticallyUpdate = values.Advanced.AutoUpdate;
+            pending.CollectionName = values.Advanced.CollectionName;
+
+            // Team Collections is the only experimental feature the dialog offers (GetCurrentValues).
+            pending.AllowTeamCollection = values.Experimental[
+                ExperimentalFeatures.kTeamCollections
+            ];
+        }
+
+        /// <summary>
+        /// Copies one posted language onto the pending one. A null language (only the third can
+        /// be) means the collection has none, so the pending one is cleared.
+        /// </summary>
+        private static void CopyLanguage(
+            LanguageValues language,
+            PendingCollectionSettings pending,
+            int zeroBasedLanguageNumber
+        )
+        {
+            var pendingLanguage = pending.Languages[zeroBasedLanguageNumber];
+            if (language == null)
+            {
+                pendingLanguage.ChangeTag(String.Empty);
+                pendingLanguage.SetName(String.Empty, false);
+                pending.FontSelections[zeroBasedLanguageNumber] = "";
+                return;
+            }
+            // Setting the tag also sets a default name, so set the name we were given afterwards.
+            pendingLanguage.ChangeTag(language.Tag);
+            pendingLanguage.SetName(language.Name, language.IsCustomName);
+            pendingLanguage.IsRightToLeft = language.IsRightToLeft;
+            pendingLanguage.LineHeight = language.LineHeight;
+            pendingLanguage.BreaksLinesOnlyAtSpaces = language.BreaksLinesOnlyAtSpaces;
+            pendingLanguage.BaseUIFontSizeInPoints = language.BaseUIFontSizeInPoints;
+            pending.FontSelections[zeroBasedLanguageNumber] = language.FontName;
         }
 
         private void ResetBookshelf()
