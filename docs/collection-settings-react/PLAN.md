@@ -372,6 +372,8 @@ existing data, exercises the restart path (xmatter change), and retires `xmatter
 `showAutoUpdate`; note it is a user-level setting, not collection XML), Collection > Collection
 Name (disabled in a TC with explanation; the `CollectionName` setter already queues the rename;
 trim in the client). Small.
+*Done: the GET reply gained `autoUpdateSupported`. The e2e test cannot press Restart after a
+rename, because the rename relaunches Bloom without the suite's launch flags (AUTOMATION-DEBT.md).*
 
 **Step 3. BL-16736 Settings: Bloom Library.** Bookshelf `ConfigrSelect` fed by
 `useGetEnterpriseBookshelves` (Contentful), or `DefaultBookshelfControl` inside a
