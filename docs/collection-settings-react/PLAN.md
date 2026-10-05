@@ -366,7 +366,11 @@ inside a `ConfigrStatic`, with `tabMargins` removed. Its own endpoints write onl
 dialog today, so this card has to get its edits to the React POST (§3.2.3), and reset its
 preview on the React dialog's Cancel as well as on the WinForms `DialogCancelled`. Pro-in-TC refusal and
 bookshelf clearing on descriptor change stay in the updater. Verify the "fix invalid branding"
-startup path opens this page.
+startup path opens this page. Decide whether the other pages' subscription gating (Experimental's
+Team Collections box, the Bloom Library bookshelf) should follow a code typed here but not yet
+saved; `features/status` only knows the saved one. If so, replace the dialog's own
+`useGetFeatureStatus` call (added by BL-16738 so the answer arrives before the Experimental page
+mounts) with a small dialog-level subscription context that every page reads.
 
 **Step 5. BL-16735 Settings: Team Collection.** `TeamCollectionSettingsPanel` inside a
 `ConfigrStatic`, keeping its overlay wrapper and experimental warning. Administrators reach the

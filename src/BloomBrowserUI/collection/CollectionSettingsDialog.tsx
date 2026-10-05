@@ -56,16 +56,13 @@ const kTeamCollectionsFeatureToken = "team-collections";
 // feature today; it also needs a high enough subscription tier, so the row carries the badge.
 // (Config-R requires a page's children to be ConfigrGroups, so the group itself stays inline.)
 const TeamCollectionsExperimentalSetting: React.FunctionComponent<{
+    tierAllowsTeamCollections: boolean;
     locked: boolean;
 }> = (props) => {
     const teamCollectionsLabel = useL10n(
         "Team Collections",
         "TeamCollection.TeamCollections",
     );
-    const teamCollectionStatus = useGetFeatureStatus("TeamCollection");
-    // Disabled until the status arrives, so nobody can tick it and save on a tier that lacks it.
-    // (The old dialog treated "not known yet" as available.)
-    const tierAllowsTeamCollections = teamCollectionStatus?.enabled === true;
     return (
         // One element around both keeps Config-R from drawing a divider between the checkbox
         // and its subscription badge.
@@ -73,7 +70,7 @@ const TeamCollectionsExperimentalSetting: React.FunctionComponent<{
             <ConfigrBoolean
                 label={teamCollectionsLabel}
                 path={`experimental.${kTeamCollectionsFeatureToken}`}
-                disabled={!tierAllowsTeamCollections || props.locked}
+                disabled={!props.tierAllowsTeamCollections || props.locked}
             />
             <div
                 css={css`
@@ -132,6 +129,14 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         React.useState<ICollectionSettingsValues>();
     const [saveErrorMessage, setSaveErrorMessage] = React.useState<string>();
     const [saving, setSaving] = React.useState(false);
+
+    // Asked as soon as the dialog opens, not when the Experimental page mounts (Config-R mounts only
+    // the page showing), so the answer is in before anyone gets there and the checkbox doesn't
+    // flash greyed out. Until it arrives the checkbox stays disabled, so nobody can tick it and
+    // save on a tier that lacks it. (The old dialog treated "not known yet" as available.)
+    const teamCollectionStatus = useGetFeatureStatus(
+        propsForBloomDialog.open ? "TeamCollection" : undefined,
+    );
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -217,6 +222,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 // No label: the page title already says "Experimental".
                 <ConfigrGroup>
                     <TeamCollectionsExperimentalSetting
+                        tierAllowsTeamCollections={
+                            teamCollectionStatus?.enabled === true
+                        }
                         // As in the WinForms dialog, someone in a Team Collection may not turn
                         // the feature off.
                         locked={
