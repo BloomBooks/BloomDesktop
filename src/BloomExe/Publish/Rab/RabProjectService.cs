@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -39,12 +40,30 @@ namespace Bloom.Publish.Rab
         private const string kBloomOwnedRabToolchainFolderName = "ReadingAppBuilder";
         private const string kRabInstallFolderParentName = "SIL";
         private const string kBloomRabInstallFolderName = "Reading App Builder for Bloom";
-        private const string kRabRegistrySubKey = @"Software\SIL\Reading App Builder";
+
+        // Bloom only ever uses the private "Reading App Builder for Bloom" install, which it
+        // installs itself, along with its own JDK and Android SDK. It never falls back to a
+        // standalone Reading App Builder the user has installed: that one's version and the
+        // tools it uses are outside Bloom's control (BL-16148, BL-16943).
         private const string kBloomRabRegistrySubKey =
             @"Software\SIL\Reading App Builder for Bloom";
         private const int kUserCanceledShellLaunchErrorCode = 1223;
         private const string kRabSetupInstallerPrefix = "Reading-App-Builder-For-Bloom-";
-        private const string kRabInstallerVersion = "14-0";
+
+        // Policy: users get a new Reading App Builder for Bloom only by getting a new Bloom that asks
+        // for it. This constant names the one RAB version this Bloom has been tested with; the
+        // installer URL is built from it, so publishing a newer installer cannot reach an older
+        // Bloom, and nothing else (RAB itself included) updates RAB. That way no one gets a RAB
+        // update until we have decided it is safe with a particular Bloom. When a Bloom with a
+        // newer version here finds an older one installed, the Apps screen tells the user to run
+        // Prepare and keeps Build disabled until Prepare has installed this version. A newer
+        // RAB that is already installed is left alone, not downgraded: Bloom channels installed side
+        // by side share one RAB install, and an exact match would make them reinstall over each
+        // other. Before changing this, upload the matching installer (see kRabSetupDownloadUrl).
+        private const string kRabInstallerVersion = "14-0-1";
+        internal static readonly Version kRabInstallerVersionNumber = new Version(
+            kRabInstallerVersion.Replace('-', '.')
+        );
         private const string kRabSetupInstallerSuffix = "-Setup.exe";
         internal const string kRabSetupInstallerFileName =
             kRabSetupInstallerPrefix + kRabInstallerVersion + kRabSetupInstallerSuffix;
@@ -352,8 +371,20 @@ namespace Bloom.Publish.Rab
             var latestApk = FindLatestApkPath(paths);
             var apkExists = !string.IsNullOrEmpty(latestApk) && RobustFile.Exists(latestApk);
             var rabInstalled = IsRabInstalledForPrepare();
+            // An older Reading App Builder for Bloom than this Bloom asks for leaves the "Run
+            // installer" step incomplete, so the user must run Prepare (which updates it) before
+            // they can build.
+            var rabUpdateNeeded =
+                rabInstalled
+                && IsRabVersionOlderThan(GetInstalledRabVersionText(), kRabInstallerVersionNumber);
             var state = EnsureStateHasProjectAndSigningInfo(paths, LoadState(paths), appDefPath);
-            var prepareSteps = GetPrepareSteps(paths, state, appDefPath, rabInstalled);
+            var prepareSteps = GetPrepareSteps(
+                paths,
+                state,
+                appDefPath,
+                rabInstalled,
+                rabUpdateNeeded
+            );
             var trackedBooks = GetConfiguredTrackedBooks(paths).ToArray();
             var currentInputSignature = ComputeBuildInputSignature(
                 GetEffectiveAppSettings(paths),
@@ -375,6 +406,7 @@ namespace Bloom.Publish.Rab
             var status = new RabProjectStatus()
             {
                 RabInstalled = rabInstalled,
+                RabUpdateVersion = rabUpdateNeeded ? kRabInstallerVersionNumber.ToString() : null,
                 ProjectExists = !string.IsNullOrEmpty(appDefPath) && RobustFile.Exists(appDefPath),
                 ApkExists = apkExists,
                 BuildNeeded = buildNeeded,
@@ -445,8 +477,17 @@ namespace Bloom.Publish.Rab
         public void ReportFailure(string action, Exception error)
         {
             Logger.WriteError($"Reading App Builder {action} failed.", error);
+            // Unwrap only the wrappers that async and reflection calls add. Bloom's own wrappers
+            // (e.g. the plain "Bloom could not set up the tools..." message) are what the user should
+            // see; the exceptions they wrap are in the log.
+            var shownError = error;
+            while (
+                (shownError is AggregateException || shownError is TargetInvocationException)
+                && shownError.InnerException != null
+            )
+                shownError = shownError.InnerException;
             _progress.MessageWithoutLocalizing(
-                $"{action} failed: {error.GetBaseException().Message}",
+                $"{action} failed: {shownError.Message}",
                 ProgressKind.Error
             );
             if (!string.IsNullOrWhiteSpace(Logger.LogPath))
@@ -559,19 +600,43 @@ namespace Bloom.Publish.Rab
             }
         }
 
+        /// <summary>
+        /// Makes sure the Reading App Builder for Bloom version this Bloom asks for is installed,
+        /// installing it, or updating an older version to it, if needed. An update is required, not
+        /// optional: the Apps screen keeps Build disabled until it is done (see GetStatus), so if the
+        /// update can't be downloaded or installed, Prepare stops and says so. Returns false if
+        /// Prepare cannot continue.
+        /// </summary>
         private bool EnsureRabInstalledForPrepare()
         {
             ReportProgressStage("checking-installer", 0);
 
-            if (IsRabInstalledForPrepare())
+            var isInstalled = IsRabInstalledForPrepare();
+            var installedVersion = isInstalled ? GetInstalledRabVersionText() : null;
+            if (isInstalled && !IsRabVersionOlderThan(installedVersion, kRabInstallerVersionNumber))
                 return true;
 
-            var installerPath = GetRabSetupInstallerPath();
+            string installerPath;
+            try
+            {
+                installerPath = GetRabSetupInstallerPath(isInstalled);
+            }
+            catch (Exception error)
+            {
+                throw new ApplicationException(
+                    $"Bloom could not download Reading App Builder {kRabInstallerVersionNumber}. "
+                        + "Please check that this computer is connected to the internet and click Prepare again. "
+                        + $"Details: {error.Message}",
+                    error
+                );
+            }
             if (!string.IsNullOrWhiteSpace(installerPath))
             {
                 ReportProgressStage("running-installer", 0);
                 _progress.MessageWithoutLocalizing(
-                    "Reading App Builder is not installed at the registry install path. Installing it now...",
+                    isInstalled
+                        ? $"Updating Reading App Builder from version {installedVersion} to {kRabInstallerVersionNumber}..."
+                        : "Reading App Builder is not installed at the registry install path. Installing it now...",
                     ProgressKind.Heading
                 );
                 try
@@ -587,9 +652,28 @@ namespace Bloom.Publish.Rab
                     _progress.MessageWithoutLocalizing($"Installer: {installerPath}");
                     return false;
                 }
+                catch (Exception error)
+                {
+                    // Clicking Prepare again retries the install.
+                    throw new ApplicationException(
+                        $"Bloom could not {(isInstalled ? "update" : "install")} Reading App Builder. "
+                            + "Please use Help > Report a Problem so that we can help you. "
+                            + $"Details: {error.Message}",
+                        error
+                    );
+                }
                 if (!IsRabInstalledForPrepare())
                     throw new ApplicationException(
                         "Reading App Builder installer finished, but Bloom still could not find the installed program."
+                    );
+                // GetStatus keeps Build disabled while the installed version is older, so saying
+                // "complete" here would leave the user stuck, reinstalling on every Prepare.
+                var versionAfterInstall = GetInstalledRabVersionText();
+                if (IsRabVersionOlderThan(versionAfterInstall, kRabInstallerVersionNumber))
+                    throw new ApplicationException(
+                        $"Bloom could not {(isInstalled ? "update" : "install")} Reading App Builder. "
+                            + "Please use Help > Report a Problem so that we can help you. "
+                            + $"Details: the installer finished, but the installed version is still {versionAfterInstall}, not {kRabInstallerVersionNumber}."
                     );
 
                 _progress.MessageWithoutLocalizing(
@@ -602,14 +686,61 @@ namespace Bloom.Publish.Rab
 
             ReportProgressStage("downloading-installer", 0);
             _progress.MessageWithoutLocalizing(
-                "Reading App Builder is not installed at the registry install path. Bloom could not download the installer.",
+                isInstalled
+                    ? $"Bloom could not download Reading App Builder {kRabInstallerVersionNumber}. Please check that this computer is connected to the internet and click Prepare again."
+                    : "Reading App Builder is not installed at the registry install path. Bloom could not download the installer.",
                 ProgressKind.Heading
             );
             _progress.MessageWithoutLocalizing($"Download: {kRabSetupDownloadUrl}");
             return false;
         }
 
-        internal virtual string GetRabSetupInstallerPath()
+        /// <summary>
+        /// The installed Reading App Builder for Bloom's version (e.g. "14.6"), from its registry key
+        /// or, failing that, the VERSION file in its install folder. Null if neither says.
+        /// </summary>
+        internal virtual string GetInstalledRabVersionText()
+        {
+            var version = GetRabRegistryValue("Version");
+            if (!string.IsNullOrWhiteSpace(version))
+                return version.Trim();
+
+            var rabLauncher = FindRabLauncherPath();
+            if (string.IsNullOrWhiteSpace(rabLauncher))
+                return null;
+            var versionFile = Path.Combine(Path.GetDirectoryName(rabLauncher), "VERSION");
+            try
+            {
+                return RobustFile.Exists(versionFile)
+                    ? RobustFile.ReadAllText(versionFile).Trim()
+                    : null;
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // An unreadable VERSION file just means the version is unknown.
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// True if the installed version text (e.g. "14.0" or "14") is older than the given
+        /// version. An unknown or unreadable version counts as not older, so Bloom does not
+        /// reinstall Reading App Builder on every Prepare.
+        /// </summary>
+        internal static bool IsRabVersionOlderThan(string installedVersionText, Version version)
+        {
+            if (string.IsNullOrWhiteSpace(installedVersionText))
+                return false;
+
+            // Version.TryParse needs at least major.minor.
+            var text = installedVersionText.Trim();
+            if (!text.Contains('.'))
+                text += ".0";
+            return Version.TryParse(text, out var installedVersion) && installedVersion < version;
+        }
+
+        internal virtual string GetRabSetupInstallerPath(bool isUpdate = false)
         {
             var existingInstallerPath = FindRabSetupInstallerPath();
             if (!string.IsNullOrWhiteSpace(existingInstallerPath))
@@ -617,7 +748,9 @@ namespace Bloom.Publish.Rab
 
             ReportProgressStage("downloading-installer", 0);
             _progress.MessageWithoutLocalizing(
-                "Reading App Builder is not installed at the registry install path. Downloading it now...",
+                isUpdate
+                    ? "A newer Reading App Builder is available. Downloading it now..."
+                    : "Reading App Builder is not installed at the registry install path. Downloading it now...",
                 ProgressKind.Heading
             );
 
@@ -634,7 +767,114 @@ namespace Bloom.Publish.Rab
                 ProgressKind.Heading
             );
             ResetIncompleteRabBuildToolFolders();
-            RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
+
+            // Keep RAB's output so that, if the tools end up missing, we can say where RAB found
+            // the ones it used instead.
+            var installOutput = new List<string>();
+            _rabOutputCapture = installOutput;
+            try
+            {
+                RunRabCommand(BuildRabArgsForInstallingSdks(), paths.RabRoot);
+            }
+            catch (ApplicationException error)
+                when (!AreRabBuildToolsInstalled() && !string.IsNullOrEmpty(FindRabLauncherPath()))
+            {
+                // The command itself failed, e.g. a download failed while offline (once RAB's exit
+                // code reaches Bloom). Give the same plain message as below rather than the raw
+                // command error, which goes in the details.
+                throw new ApplicationException(
+                    DescribeMissingRabBuildTools(installOutput, error.Message),
+                    error
+                );
+            }
+            finally
+            {
+                _rabOutputCapture = null;
+            }
+
+            // RAB 14 exits 0 from -install-sdks-if-needed without installing anything when it finds
+            // a JDK or Android SDK somewhere else, such as the C:\sdk left by a standalone RAB
+            // (BL-16943). Bloom only uses its own copies, so stop here instead of reporting success
+            // while the Apps screen shows the build tools as missing.
+            if (!AreRabBuildToolsInstalled())
+                throw new ApplicationException(DescribeMissingRabBuildTools(installOutput));
+        }
+
+        /// <summary>
+        /// The error shown when the JDK or Android SDK is missing from Bloom's folders after
+        /// -install-sdks-if-needed. It opens with a plain sentence for the user, who cannot fix this
+        /// themselves, then gives details for whoever handles their problem report: for each missing
+        /// tool, whether RAB said it used a copy in some other folder (and which), or just did not
+        /// install it, plus RAB's own error when its command failed.
+        /// </summary>
+        internal string DescribeMissingRabBuildTools(
+            IReadOnlyList<string> rabOutput,
+            string rabError = null
+        )
+        {
+            var details = new List<string>();
+            if (!IsRabJdkInstalled())
+                details.Add(
+                    DescribeMissingRabBuildTool(
+                        "JDK",
+                        GetRabJdkInstallFolder(),
+                        FindFolderReportedByRab(rabOutput, "JDK folder:")
+                    )
+                );
+            if (!IsRabAndroidSdkInstalled())
+                details.Add(
+                    DescribeMissingRabBuildTool(
+                        "Android SDK",
+                        GetRabAndroidSdkInstallFolder(),
+                        FindFolderReportedByRab(rabOutput, "Android SDK is already installed at:")
+                    )
+                );
+            if (!string.IsNullOrWhiteSpace(rabError))
+                details.Add($"Reading App Builder reported: {rabError}");
+            return "Bloom could not set up the tools it needs to build Android apps. "
+                + "Please use Help > Report a Problem so that we can help you. "
+                + "Details: "
+                + string.Join(" ", details);
+        }
+
+        private static string DescribeMissingRabBuildTool(
+            string toolName,
+            string bloomFolder,
+            string folderReportedByRab
+        )
+        {
+            if (
+                string.IsNullOrWhiteSpace(folderReportedByRab)
+                || IsSameOrInsideFolder(folderReportedByRab, bloomFolder)
+            )
+                return $"Reading App Builder did not install the {toolName} in {bloomFolder}.";
+
+            return $"Reading App Builder used the {toolName} in {folderReportedByRab} instead of installing it in {bloomFolder}.";
+        }
+
+        /// <summary>
+        /// Returns the folder from the last line of RAB output that starts with the given label
+        /// (e.g. "Android SDK is already installed at: C:\sdk"), or null if there is none.
+        /// </summary>
+        private static string FindFolderReportedByRab(IReadOnlyList<string> rabOutput, string label)
+        {
+            var line = rabOutput
+                .Select(outputLine => outputLine.Trim())
+                .LastOrDefault(outputLine =>
+                    outputLine.StartsWith(label, StringComparison.Ordinal)
+                );
+            return line?.Substring(label.Length).Trim();
+        }
+
+        private static bool IsSameOrInsideFolder(string path, string folder)
+        {
+            var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
+            var fullFolder = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar);
+            return string.Equals(fullPath, fullFolder, StringComparison.OrdinalIgnoreCase)
+                || fullPath.StartsWith(
+                    fullFolder + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase
+                );
         }
 
         private void ResetIncompleteRabBuildToolFolders()
@@ -2497,11 +2737,32 @@ namespace Bloom.Publish.Rab
                     continue;
 
                 var installerPath = Path.Combine(directory, kRabSetupInstallerFileName);
-                if (RobustFile.Exists(installerPath))
+                if (RobustFile.Exists(installerPath) && IsWindowsProgram(installerPath))
                     return installerPath;
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// True if the file starts with "MZ", the signature of every Windows program. Asking
+        /// bloomlibrary.org for an installer that isn't there redirects to a web page, which comes
+        /// back as a success, so a "downloaded installer" can really be HTML. Without this check
+        /// Bloom would try to run that page, and keep finding it on every later Prepare.
+        /// </summary>
+        internal static bool IsWindowsProgram(string path)
+        {
+            try
+            {
+                using var stream = RobustFile.OpenRead(path);
+                return stream.ReadByte() == 'M' && stream.ReadByte() == 'Z';
+            }
+            catch (Exception error)
+                when (error is IOException || error is UnauthorizedAccessException)
+            {
+                // A file we can't read is no use as an installer either.
+                return false;
+            }
         }
 
         /// <summary>
@@ -2559,18 +2820,39 @@ namespace Bloom.Publish.Rab
 
             Directory.CreateDirectory(Path.GetDirectoryName(installerPath));
 
-            using var responseStream = response
-                .Content.ReadAsStreamAsync()
-                .GetAwaiter()
-                .GetResult();
-            using var fileStream = RobustFile.Create(installerPath);
-
-            CopyRabInstallerDownloadStream(
-                responseStream,
-                fileStream,
-                response.Content.Headers.ContentLength ?? -1,
-                reportProgress
-            );
+            // Download under a temporary name and rename only when complete, so an interrupted
+            // download never leaves a truncated installer that later Prepares would find and run.
+            var partialPath = installerPath + ".partial";
+            try
+            {
+                using (
+                    var responseStream = response
+                        .Content.ReadAsStreamAsync()
+                        .GetAwaiter()
+                        .GetResult()
+                )
+                using (var fileStream = RobustFile.Create(partialPath))
+                {
+                    CopyRabInstallerDownloadStream(
+                        responseStream,
+                        fileStream,
+                        response.Content.Headers.ContentLength ?? -1,
+                        reportProgress
+                    );
+                }
+                if (!IsWindowsProgram(partialPath))
+                    throw new ApplicationException(
+                        $"{kRabSetupDownloadUrl} did not return an installer. It may not have been published yet."
+                    );
+                if (RobustFile.Exists(installerPath))
+                    RobustFile.Delete(installerPath);
+                RobustFile.Move(partialPath, installerPath);
+            }
+            finally
+            {
+                if (RobustFile.Exists(partialPath))
+                    RobustFile.Delete(partialPath);
+            }
         }
 
         internal virtual void CopyRabInstallerDownloadStream(
@@ -2651,11 +2933,6 @@ namespace Bloom.Publish.Rab
                 return $"{byteCount / kilobyte:0.0} KB";
 
             return $"{byteCount} B";
-        }
-
-        internal virtual IReadOnlyList<string> GetRabRegistrySubKeys()
-        {
-            return new[] { kBloomRabRegistrySubKey, kRabRegistrySubKey };
         }
 
         internal static bool IsUserCanceledShellLaunch(Win32Exception error)
@@ -2870,8 +3147,17 @@ namespace Bloom.Publish.Rab
             return Path.Combine(GetBloomOwnedRabToolchainRoot(), "appdata");
         }
 
+        /// <summary>
+        /// Brings a running window of Bloom's own Reading App Builder to the front. Returns false
+        /// if there is none, including when only a standalone RAB the user installed is open.
+        /// </summary>
         internal virtual bool TryBringRunningRabToFront()
         {
+            var rabLauncher = FindRabLauncherPath();
+            if (string.IsNullOrWhiteSpace(rabLauncher))
+                return false;
+            var rabInstallDir = Path.GetDirectoryName(rabLauncher);
+
             var processes = Process.GetProcesses();
             try
             {
@@ -2882,29 +3168,13 @@ namespace Bloom.Publish.Rab
                         if (process.MainWindowHandle == IntPtr.Zero)
                             continue;
 
-                        // RAB is a Java (Eclipse) app. Depending on how it is launched, its
-                        // window may belong to either java.exe or the console-less javaw.exe, so
-                        // accept both. This keeps us from matching, e.g., a browser tab whose
-                        // title happens to contain "Reading App Builder".
                         if (
-                            !string.Equals(
+                            !IsBloomRabWindow(
                                 process.ProcessName,
-                                "java",
-                                StringComparison.OrdinalIgnoreCase
+                                process.MainWindowTitle,
+                                process.MainModule?.FileName,
+                                rabInstallDir
                             )
-                            && !string.Equals(
-                                process.ProcessName,
-                                "javaw",
-                                StringComparison.OrdinalIgnoreCase
-                            )
-                        )
-                            continue;
-
-                        if (
-                            process.MainWindowTitle.IndexOf(
-                                "Reading App Builder",
-                                StringComparison.OrdinalIgnoreCase
-                            ) < 0
                         )
                             continue;
 
@@ -2926,6 +3196,34 @@ namespace Bloom.Publish.Rab
                 foreach (var process in processes)
                     process.Dispose();
             }
+        }
+
+        /// <summary>
+        /// True if a process's main window belongs to Bloom's own Reading App Builder: a Java
+        /// process whose window title names Reading App Builder and whose program is inside Bloom's
+        /// RAB install folder. A standalone RAB the user has open does not count (BL-16943).
+        /// </summary>
+        internal static bool IsBloomRabWindow(
+            string processName,
+            string windowTitle,
+            string executablePath,
+            string rabInstallDir
+        )
+        {
+            // RAB is a Java (Eclipse) app. Depending on how it is launched, its
+            // window may belong to either java.exe or the console-less javaw.exe, so
+            // accept both. This keeps us from matching, e.g., a browser tab whose
+            // title happens to contain "Reading App Builder".
+            var isJava =
+                string.Equals(processName, "java", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(processName, "javaw", StringComparison.OrdinalIgnoreCase);
+            return isJava
+                && (windowTitle ?? string.Empty).IndexOf(
+                    "Reading App Builder",
+                    StringComparison.OrdinalIgnoreCase
+                ) >= 0
+                && !string.IsNullOrWhiteSpace(executablePath)
+                && IsSameOrInsideFolder(executablePath, rabInstallDir);
         }
 
         internal virtual string GetRabSettingsFilePath()
@@ -3012,7 +3310,8 @@ namespace Bloom.Publish.Rab
             RabWorkspacePaths paths,
             RabPrepareState state,
             string appDefPath,
-            bool rabInstalled
+            bool rabInstalled,
+            bool rabUpdateNeeded = false
         )
         {
             var installerPath = FindRabSetupInstallerPath();
@@ -3021,8 +3320,9 @@ namespace Bloom.Publish.Rab
             var hasProject =
                 !string.IsNullOrWhiteSpace(appDefPath) && RobustFile.Exists(appDefPath);
             string installerCompleteTooltip = null;
+            var rabIsCurrent = rabInstalled && !rabUpdateNeeded;
 
-            if (rabInstalled)
+            if (rabIsCurrent)
                 installerCompleteTooltip =
                     "Reading App Builder is already installed, so you can skip downloading the installer."; // Reading App Builder is already installed, so this step is complete without needing an installer file.
             else if (installerIsAvailable)
@@ -3033,7 +3333,7 @@ namespace Bloom.Publish.Rab
                 new RabPrepareStepStatus()
                 {
                     Id = "installer-available",
-                    Complete = rabInstalled || installerIsAvailable,
+                    Complete = rabIsCurrent || installerIsAvailable,
                     IncompleteTooltip =
                         "Download the Reading App Builder installer so Bloom can run it for you.",
                     CompleteTooltip = installerCompleteTooltip,
@@ -3041,9 +3341,10 @@ namespace Bloom.Publish.Rab
                 new RabPrepareStepStatus()
                 {
                     Id = "rab-installed",
-                    Complete = rabInstalled,
-                    IncompleteTooltip =
-                        "Run the Reading App Builder installer to install the app on this computer.",
+                    Complete = rabIsCurrent,
+                    IncompleteTooltip = rabUpdateNeeded
+                        ? $"Bloom needs Reading App Builder {kRabInstallerVersionNumber}. Click Prepare to update it."
+                        : "Run the Reading App Builder installer to install the app on this computer.",
                     CompleteTooltip = "Reading App Builder is installed and ready to use.",
                 },
                 new RabPrepareStepStatus()
@@ -3847,6 +4148,10 @@ namespace Bloom.Publish.Rab
             return Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         }
 
+        /// <summary>
+        /// Reads a value from the Reading App Builder for Bloom registry key (64-bit view first,
+        /// then 32-bit). Returns null if the key or value is missing or unreadable.
+        /// </summary>
         internal virtual string GetRabRegistryValue(string valueName)
         {
             try
@@ -3854,13 +4159,10 @@ namespace Bloom.Publish.Rab
                 foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
                 {
                     using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
-                    foreach (var subKeyPath in GetRabRegistrySubKeys())
-                    {
-                        using var rabKey = baseKey.OpenSubKey(subKeyPath);
-                        var value = rabKey?.GetValue(valueName) as string;
-                        if (!string.IsNullOrWhiteSpace(value))
-                            return value;
-                    }
+                    using var rabKey = baseKey.OpenSubKey(kBloomRabRegistrySubKey);
+                    var value = rabKey?.GetValue(valueName) as string;
+                    if (!string.IsNullOrWhiteSpace(value))
+                        return value;
                 }
             }
             catch (Exception error)

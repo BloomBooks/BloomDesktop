@@ -1430,6 +1430,11 @@
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
         <note>Tooltip shown when a later step is disabled until Prepare has been run.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.RabUpdateNeeded" translate="no">
+        <source xml:lang="en">This version of Bloom needs Reading App Builder %0. Click Prepare to update.</source>
+        <note>ID: PublishTab.Apps.RabUpdateNeeded</note>
+        <note>Warning shown in the Prepare step when the installed Reading App Builder is older than the one this Bloom requires. %0 is the required version number, e.g. 14.0.1.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip">
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
         <note>ID: PublishTab.Apps.Prepare.DoneTooltip</note>
