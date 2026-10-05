@@ -98,6 +98,11 @@ namespace Bloom.web.controllers
                 request.ReplyWithBoolean(false);
                 return;
             }
+            // Set once the change has been applied. The save can decline without running it (the
+            // editor is mid-navigation), or the change can throw; either way the page keeps its old
+            // layout and the chooser must not set up the template's tool. A failed disk write after
+            // the change ran still leaves the page showing the new layout, so that counts.
+            var layoutChanged = false;
             _editingModel.MergeCurrentPageThenSave(() =>
             {
                 CopyVideoPlaceHolderIfNeeded(templatePage);
@@ -115,10 +120,11 @@ namespace Bloom.web.controllers
                         templatePage
                     );
 
+                layoutChanged = true;
                 return pageId;
             });
-            // True: the layout was changed (the chooser then sets up any tool the template needs).
-            request.ReplyWithBoolean(true);
+            // Whether the layout was changed; the chooser sets up the template's tool only if it was.
+            request.ReplyWithBoolean(layoutChanged);
         }
 
         private static void ChangeSimilarPagesInEntireBook(
