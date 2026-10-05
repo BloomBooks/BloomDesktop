@@ -21,7 +21,7 @@ House rules:
 
 ## 2026-10-02 — Merging master reformats master's own files, and the PR then carries the churn
 - **Cut:** The pre-commit hook's `pretty-quick --staged` formats every staged file, and a merge stages everything master changed. A merge of origin/master reformatted five master files this branch never touched; for the three `OverflowChecker/*Fixture.html` that broke four overflow tests, although `src/BloomBrowserUI/.prettierignore` lists them, so pretty-quick is not applying that file. Restoring the two reformatted `src/BloomE2E/tests/*.spec.ts` is impossible without `--no-verify`: the hook reformats them again.
-- **Idea:** Find why the front-end `.prettierignore` is not applied (the root one is; the fixtures are now listed there too), and format master's e2e specs once so a merge stops rewriting them.
+- **Idea:** Find why the front-end `.prettierignore` is not applied, and format master's e2e specs once so a merge stops rewriting them.
 - **Context:** BL-16859 merge commit f44dafe8fe, 2026-10-02.
 
 ## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
