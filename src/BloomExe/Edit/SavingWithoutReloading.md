@@ -333,8 +333,11 @@ start a save from C# — but each converted caller shrinks the surface.
   declarations import `from "bubbleSpec"` (a bare specifier TypeScript cannot resolve), so
   `BubbleSpec` silently degraded to `any` in Bloom; 0.4.x emits correct relative imports and the real
   types finally apply. They are unrelated to this work but must be fixed to pin 0.4.1. The most
-  interesting is `CanvasElementResizeAdjustments.ts:161`, `bubbleSpec.spec !== "none"` — `BubbleSpec`
-  has no `spec` member, so that comparison is always true and a Comical update is forced every time.
+  interesting was in `CanvasElementResizeAdjustments.ts`, `bubbleSpec.spec !== "none"` — `BubbleSpec`
+  has no `spec` member, so that comparison was always true and a Comical update was forced every
+  time. It now asks the real question, `comicalDrawsSomethingFor`: a bubble style, a tail, a
+  background colour or an outer border colour, which are the things Comical draws for a canvas
+  element (a plain text box, style "none", still gets a box for its background colour).
 - **"We didn't save" and "we tried and failed" are different answers, and the difference is a
   page.** `SavePageInPlaceThen` returns `InPlaceSaveOutcome`, and only `Declined` — which
   guarantees `doBeforeSaveToDisk` never ran — permits falling back to asking the browser. This is

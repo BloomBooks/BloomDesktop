@@ -1,7 +1,7 @@
 // Stateless helpers for resizing/repositioning canvas children when the
 // underlying bloom-canvas changes size.
 
-import { Bubble, Comical, TailSpec } from "comicaljs";
+import { Bubble, BubbleSpec, Comical, TailSpec } from "comicaljs";
 import { getImageFromCanvasElement, isPlaceHolderImage } from "../bloomImages";
 import {
     kBackgroundImageClass,
@@ -9,6 +9,25 @@ import {
 } from "../../toolbox/canvas/canvasElementConstants";
 import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 import { adjustCanvasElementAlternates } from "./CanvasElementAlternates";
+
+// Whether Comical draws anything for this canvas element, and so has something to redraw when it
+// moves or changes size. A bubble style draws an outline; any style can have tails. Style "none"
+// (a plain text box) draws neither, but Comical still makes a box shape for it, sized from the
+// text box, and paints it with the spec's background colour (transparent unless one was chosen in
+// the toolbox) and outer border colour. So a plain text box with neither, and no tails, is the
+// one case with nothing to redraw.
+//
+// (This once tested `bubbleSpec.spec !== "none"`. BubbleSpec has no `spec` member, so that was
+// always true; until comicaljs 0.4.x a broken import in its declarations typed BubbleSpec as
+// `any`, so the compiler never objected.)
+export function comicalDrawsSomethingFor(bubbleSpec: BubbleSpec): boolean {
+    if (bubbleSpec.style !== "none") return true;
+    if (bubbleSpec.tails?.length) return true;
+    if (bubbleSpec.outerBorderColor) return true;
+    return (bubbleSpec.backgroundColors ?? []).some(
+        (color) => color !== "transparent",
+    );
+}
 
 function updateBloomCanvasSizeData(bloomCanvas: HTMLElement): void {
     bloomCanvas.setAttribute(
@@ -155,13 +174,8 @@ export function adjustCanvasElementChildrenIfSizeChanged(
         let newChildHeight = child.clientHeight;
         let reposition = true;
         const bubbleSpec = Bubble.getBubbleSpec(child);
-        // This used to end with `|| bubbleSpec.spec !== "none"`. BubbleSpec has no `spec` member —
-        // it has `style` — so that term was always true, and this has in fact always been set for
-        // every child. Until comicaljs 0.4.x a broken import in its .d.ts files typed BubbleSpec as
-        // `any`, which is why the compiler never objected. Keeping the behavior we have actually
-        // been shipping rather than quietly changing it to `style` while bumping a dependency;
-        // whether it SHOULD test style is a separate question. See Edit/SavingWithoutReloading.md.
-        needComicalUpdate = true;
+        needComicalUpdate =
+            needComicalUpdate || comicalDrawsSomethingFor(bubbleSpec);
         if (
             Array.from(child.children).some(
                 (c: HTMLElement) =>
