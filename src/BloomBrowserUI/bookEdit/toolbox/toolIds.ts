@@ -115,11 +115,17 @@ export function getToolLabelInfo(toolId: string): {
 /**
  * Orders two tools the way the toolbox presents them: alphabetically by English label.
  * (The toolbox itself puts the "More..." tool last, whatever this says about it.)
+ *
+ * English, not the UI language: the headers show the localized label, but every user gets
+ * the same order, as they did when this list was maintained by hand. So the collation is
+ * pinned to English too, rather than following the machine's locale -- these strings are
+ * always English, and a locale that orders them its own way (Estonian puts Z between S and
+ * T) would otherwise shuffle the toolbox for some users and nobody else.
  */
 export function compareToolsByLabel(toolIdA: string, toolIdB: string): number {
     return getToolLabelInfo(toolIdA).englishLabel.localeCompare(
         getToolLabelInfo(toolIdB).englishLabel,
-        undefined,
+        "en",
         { sensitivity: "base" },
     );
 }
