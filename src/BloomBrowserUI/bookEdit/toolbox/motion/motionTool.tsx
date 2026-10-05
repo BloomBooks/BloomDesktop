@@ -270,14 +270,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.setupResizeObserver();
     }
 
-    // The start/end rectangles are the one bit of this tool's editing markup that isn't bloom-ui,
-    // so they would be saved if we didn't take them out. (Their positions are already stored in the
-    // bloom-canvas's data-initialrect/data-finalrect attributes by updateDataAttributes(), so
-    // removing the rectangles loses nothing.) We also drop the audio highlight this tool's preview
-    // leaves behind.
+    // The audio highlight this tool's preview can leave behind. The start/end rectangles need
+    // nothing here: they are bloom-ui, so the save drops them like any other editor chrome, and
+    // their positions are kept in the bloom-canvas's data-initialrect/data-finalrect attributes.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
-        pageOrClone.querySelector("#animationStart")?.remove();
-        pageOrClone.querySelector("#animationEnd")?.remove();
         MotionTool.removeCurrentAudioMarkup(pageOrClone);
     }
 
@@ -290,7 +286,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.cleanupAnimation();
         }
 
-        super.detachFromPage(); // removeToolMarkup: the rectangles and the audio highlight
+        const page = this.getPage();
+        if (page) {
+            this.removeElt(page.getElementById("animationStart"));
+            this.removeElt(page.getElementById("animationEnd"));
+        }
+        super.detachFromPage(); // removeToolMarkup: the audio highlight
 
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
