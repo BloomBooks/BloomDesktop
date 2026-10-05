@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Credits.Label">
         <source xml:lang="en">AI image generator credits</source>
-        <target xml:lang="es-ES" state="translated">Créditos del generador de imágenes con IA</target>
+        <target xml:lang="es-ES" state="translated">Créditos del generador de imágenes por IA</target>
         <note>ID: AiImageEditor.Credits.Label</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.CouldNotLoadImage">
@@ -474,39 +474,39 @@
         <target xml:lang="es-ES" state="translated">Eliminar del historial</target>
         <note>ID: AiImageEditor.History.DeleteFromHistory</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.ExtraHigh">
+      <trans-unit id="AiImageEditor.Level.ExtraHigh" approved="yes">
         <source xml:lang="en">Extra high</source>
-        <target xml:lang="es-ES" state="translated">Muy alto</target>
+        <target xml:lang="es-ES" state="final">Muy alto</target>
         <note>ID: AiImageEditor.Level.ExtraHigh</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.High">
+      <trans-unit id="AiImageEditor.Level.High" approved="yes">
         <source xml:lang="en">High</source>
-        <target xml:lang="es-ES" state="translated">Alto</target>
+        <target xml:lang="es-ES" state="final">Alto</target>
         <note>ID: AiImageEditor.Level.High</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.Low">
+      <trans-unit id="AiImageEditor.Level.Low" approved="yes">
         <source xml:lang="en">Low</source>
-        <target xml:lang="es-ES" state="translated">Mínimo</target>
+        <target xml:lang="es-ES" state="final">Mínimo</target>
         <note>ID: AiImageEditor.Level.Low</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.Max">
+      <trans-unit id="AiImageEditor.Level.Max" approved="yes">
         <source xml:lang="en">Max</source>
-        <target xml:lang="es-ES" state="translated">Máximo</target>
+        <target xml:lang="es-ES" state="final">Máximo</target>
         <note>ID: AiImageEditor.Level.Max</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.Medium">
+      <trans-unit id="AiImageEditor.Level.Medium" approved="yes">
         <source xml:lang="en">Medium</source>
-        <target xml:lang="es-ES" state="translated">Intermedio</target>
+        <target xml:lang="es-ES" state="final">Intermedio</target>
         <note>ID: AiImageEditor.Level.Medium</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Level.None">
+      <trans-unit id="AiImageEditor.Level.None" approved="yes">
         <source xml:lang="en">None</source>
-        <target xml:lang="es-ES" state="translated">Nada</target>
+        <target xml:lang="es-ES" state="final">Ninguno</target>
         <note>ID: AiImageEditor.Level.None</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.Estimate">
+      <trans-unit id="AiImageEditor.Model.Estimate" approved="yes">
         <source xml:lang="en">Estimate {0}{1}</source>
-        <target xml:lang="es-ES" state="translated">Aprox. {0}{1}</target>
+        <target xml:lang="es-ES" state="final">Aprox. {0}{1}</target>
         <note>ID: AiImageEditor.Model.Estimate</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.LastMeasured">
@@ -521,12 +521,12 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.RecommendedChip">
         <source xml:lang="en">recommended for this tool</source>
-        <target xml:lang="es-ES" state="translated">recomendado para esta herramienta</target>
+        <target xml:lang="es-ES" state="translated">Recomendado para esta herramienta</target>
         <note>ID: AiImageEditor.Model.RecommendedChip</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey">
+      <trans-unit id="AiImageEditor.OpenRouter.ForgetKey" approved="yes">
         <source xml:lang="en">Forget Key</source>
-        <target xml:lang="es-ES" state="translated">Olvidar la clave</target>
+        <target xml:lang="es-ES" state="final">Olvidar la clave</target>
         <note>ID: AiImageEditor.OpenRouter.ForgetKey</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.OpenRouter.KeyVerificationFailed">
@@ -559,9 +559,9 @@
         <target xml:lang="es-ES" state="translated">Ctrl + rueda del mouse para acercar o alejar</target>
         <note>ID: AiImageEditor.Preview.ZoomHint</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Quality.Label">
+      <trans-unit id="AiImageEditor.Quality.Label" approved="yes">
         <source xml:lang="en">Quality</source>
-        <target xml:lang="es-ES" state="translated">Calidad</target>
+        <target xml:lang="es-ES" state="final">Calidad</target>
         <note>ID: AiImageEditor.Quality.Label</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Settings.Working">
@@ -619,14 +619,14 @@
         <target xml:lang="es-ES" state="translated">OpenRouter no está conectado</target>
         <note>ID: AiImageEditor.Status.NotConnected</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.Pin">
+      <trans-unit id="AiImageEditor.Strip.Pin" approved="yes">
         <source xml:lang="en">Pin strip</source>
-        <target xml:lang="es-ES" state="translated">Anclar la tira</target>
+        <target xml:lang="es-ES" state="final">Anclar la tira</target>
         <note>ID: AiImageEditor.Strip.Pin</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Strip.ShowInGallery">
+      <trans-unit id="AiImageEditor.Strip.ShowInGallery" approved="yes">
         <source xml:lang="en">Show in full-screen gallery</source>
-        <target xml:lang="es-ES" state="translated">Ver en la galería a pantalla completa</target>
+        <target xml:lang="es-ES" state="final">Mostrar en la galería de pantalla completa</target>
         <note>ID: AiImageEditor.Strip.ShowInGallery</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Strip.Unpin">
@@ -636,7 +636,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Description">
         <source xml:lang="en">Extract images that you can use in a game.</source>
-        <target xml:lang="es-ES" state="translated">Extrae imágenes que puede usar en un juego.</target>
+        <target xml:lang="es-ES" state="translated">Extraer imágenes que pueden usarse en un juego.</target>
         <note>ID: AiImageEditor.Tool.break_into_pieces.Description</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Tool.break_into_pieces.Param.furtherInstructions.Placeholder">
