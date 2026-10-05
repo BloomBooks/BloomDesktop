@@ -852,24 +852,27 @@ function beginAddTool(
         return;
     }
 
-    // Unlike the other callers of getToolboxReactAdapter(), this one does not tolerate a
-    // missing adapter. Both paths here are already gated on the toolbox UI being up: the
-    // startup loop waits for it (whenToolboxReactAdapterReady), and showOrHideTool only runs
-    // on a user action, long after. So no adapter means a bug, and throwing is better than
-    // what skipping would do -- whenLoaded() below would still run, so the startup loop would
-    // add no tools at all and then report the toolbox built.
-    const adapter = getToolboxReactAdapter()!;
-    // Adding a tool that is already there does nothing, so it is safe to do this
-    // whether or not the toolbox is already offering it.
-    adapter.addTool(tool.id());
+    // Wait for the toolbox UI rather than assuming it, because a page can ask for a tool while
+    // it is still loading: a custom layout page enables the Canvas tool as it sets itself up,
+    // and it finds us as soon as the toolbox frame publishes its exports, which happens before
+    // ToolboxRoot has mounted and registered its adapter. Neither of the obvious alternatives
+    // is right there -- skipping would drop the request silently (and still run whenLoaded(),
+    // so the startup loop would add no tools and then report the toolbox built), and insisting
+    // on an adapter would throw on a page that has done nothing wrong. Queuing does what the
+    // caller asked, once there is something to ask.
+    whenToolboxReactAdapterReady((adapter) => {
+        // Adding a tool that is already there does nothing, so it is safe to do this
+        // whether or not the toolbox is already offering it.
+        adapter.addTool(tool.id());
 
-    if (openTool && toolbox.toolboxIsShowing()) {
-        adapter.setActiveToolByToolId(tool.id());
-    }
+        if (openTool && toolbox.toolboxIsShowing()) {
+            adapter.setActiveToolByToolId(tool.id());
+        }
 
-    if (whenLoaded) {
-        whenLoaded();
-    }
+        if (whenLoaded) {
+            whenLoaded();
+        }
+    });
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
