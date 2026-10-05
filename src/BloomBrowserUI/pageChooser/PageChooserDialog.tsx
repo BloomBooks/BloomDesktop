@@ -25,6 +25,9 @@ import {
 
 interface IPageChooserDialogProps {
     forChooseLayout: boolean;
+    // For Choose Different Layout opened from the page list: the page whose layout is to change.
+    // C# changes it only if it is still the current page.
+    pageToChangeId?: string;
 }
 
 export interface ITemplateBookInfo {
@@ -573,6 +576,7 @@ export const PageChooserDialog: React.FunctionComponent<
             }
             postData("changeLayout", {
                 pageId: pageId,
+                pageToChangeId: props.pageToChangeId,
                 templateBookPath: templateBookPath,
                 convertWholeBook: convertWholeBookChecked,
                 numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
@@ -732,8 +736,16 @@ export const PageChooserDialog: React.FunctionComponent<
     );
 };
 
-export function showPageChooserDialog(forChooseLayout: boolean) {
-    ShowEditViewDialog(<PageChooserDialog forChooseLayout={forChooseLayout} />);
+export function showPageChooserDialog(
+    forChooseLayout: boolean,
+    pageToChangeId?: string,
+) {
+    ShowEditViewDialog(
+        <PageChooserDialog
+            forChooseLayout={forChooseLayout}
+            pageToChangeId={pageToChangeId}
+        />,
+    );
 }
 
 // Utility functions used by both PageChooserDialog and TemplateBookPages

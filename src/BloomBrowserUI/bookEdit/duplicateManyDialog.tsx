@@ -6,6 +6,8 @@ import { postData } from "../utils/bloomApi";
 import { ShowEditViewDialog } from "./workspaceRoot";
 
 export const DuplicateManyDialog: React.FunctionComponent<{
+    // The page the dialog was opened for. C# duplicates only if it is still the current page.
+    pageId: string;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = (props) => {
     const title = useL10n(
@@ -26,6 +28,7 @@ export const DuplicateManyDialog: React.FunctionComponent<{
     const clickHandler = (value: number) => {
         postData("editView/duplicatePageMany", {
             numberOfTimes: value,
+            pageId: props.pageId,
         });
     };
     return (
@@ -44,9 +47,10 @@ export const DuplicateManyDialog: React.FunctionComponent<{
 // window opened while the page list's request held the API lock, which deadlocked unless the
 // command was deferred, and the deferral let a page click overtake the command. Nothing reaches C#
 // now until the user clicks OK.
-export function showDuplicateManyDialog() {
+export function showDuplicateManyDialog(pageId: string) {
     ShowEditViewDialog(
         <DuplicateManyDialog
+            pageId={pageId}
             dialogEnvironment={{
                 initiallyOpen: true,
                 dialogFrameProvidedExternally: false,

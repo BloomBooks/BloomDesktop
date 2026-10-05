@@ -589,7 +589,10 @@ namespace Bloom.web.controllers
             var model = View.Model;
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             request.PostSucceeded();
-            model.DuplicatePageManyTimes((int)requestData.numberOfTimes);
+            model.DuplicatePageManyTimes(
+                (int)requestData.numberOfTimes,
+                (string)requestData.pageId
+            );
         }
 
         /// <summary>

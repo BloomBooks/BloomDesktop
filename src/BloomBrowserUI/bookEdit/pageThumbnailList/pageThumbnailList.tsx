@@ -818,15 +818,16 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         const pageId = contextMenuPoint.pageId;
         // The two commands that ask the user something open their dialog here, in the Edit tab,
         // and talk to C# only when the user is done: Duplicate Many Times posts the count, and
-        // the page chooser applies the layout. A right-click command always acts on the current
-        // page (right-clicking selects it), which is what both of those work on.
+        // the page chooser applies the layout. Each tells C# which page it was opened for, and C#
+        // acts only if that is still the current page: a click the user made just before, still
+        // in the request queue, can change the page while the dialog is up.
         if (commandId === "duplicatePageManyTimes") {
-            getWorkspaceBundleExports().showDuplicateManyDialog();
+            getWorkspaceBundleExports().showDuplicateManyDialog(pageId);
             closeContextMenu();
             return;
         }
         if (commandId === "chooseDifferentLayout") {
-            getWorkspaceBundleExports().showPageChooserDialog(true);
+            getWorkspaceBundleExports().showPageChooserDialog(true, pageId);
             closeContextMenu();
             return;
         }

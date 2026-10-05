@@ -84,27 +84,38 @@ namespace Bloom.web.controllers
             if (templatePage == null)
                 return;
             var pageId = _pageSelection.CurrentSelection.Id;
-            _editingModel.MergeCurrentPageThenSave(
-                () =>
-                {
-                    CopyVideoPlaceHolderIfNeeded(templatePage);
-                    var pageToChange = _pageSelection.CurrentSelection;
-                    if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
-                        HtmlDom.AddStylesheetFromAnotherBook(
-                            templatePage.Book.OurHtmlDom,
-                            pageToChange.Book.OurHtmlDom
-                        );
-                    if (changeWholeBook)
-                        ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
-                    else
-                        pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
-                            pageToChange,
-                            templatePage
-                        );
+            // Opened from the page list, the chooser says which page it was opened for. If the
+            // current page has changed since (a page click still on its way when it opened),
+            // changing the current page's layout would change the wrong one; do nothing.
+            var requestData = DynamicJson.Parse(request.RequiredPostJson());
+            if (
+                requestData.IsDefined("pageToChangeId")
+                && requestData.pageToChangeId != null
+                && (string)requestData.pageToChangeId != pageId
+            )
+            {
+                request.PostSucceeded();
+                return;
+            }
+            _editingModel.MergeCurrentPageThenSave(() =>
+            {
+                CopyVideoPlaceHolderIfNeeded(templatePage);
+                var pageToChange = _pageSelection.CurrentSelection;
+                if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
+                    HtmlDom.AddStylesheetFromAnotherBook(
+                        templatePage.Book.OurHtmlDom,
+                        pageToChange.Book.OurHtmlDom
+                    );
+                if (changeWholeBook)
+                    ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
+                else
+                    pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(
+                        pageToChange,
+                        templatePage
+                    );
 
-                    return pageId;
-                }
-            );
+                return pageId;
+            });
             request.PostSucceeded();
         }
 

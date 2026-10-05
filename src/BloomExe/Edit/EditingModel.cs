@@ -456,13 +456,19 @@ namespace Bloom.Edit
         /// Used by EditingViewApi when the user clicks OK in the ReactDialog that asks how many times to duplicate.
         /// </summary>
         /// <param name="numberOfTimes"></param>
-        public void DuplicatePageManyTimes(int numberOfTimes)
+        public void DuplicatePageManyTimes(int numberOfTimes, string pageId)
         {
             var currentPage = _pageSelection?.CurrentSelection;
             if (currentPage == null || numberOfTimes > 999 || numberOfTimes < 1)
             {
                 return; // Probably can't happen, but...
             }
+            // The dialog was opened for pageId. If the current page has changed since (a page
+            // click that was still on its way when the dialog opened), duplicating whatever page is
+            // current now would act on the wrong one; do nothing, as with a click made during a
+            // page load.
+            if (currentPage.Id != pageId)
+                return;
 
             DuplicatePageInternal(_pageSelection.CurrentSelection, numberOfTimes);
         }

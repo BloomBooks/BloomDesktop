@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -10,6 +10,7 @@ import {
 import BloomButton from "./bloomButton";
 import { DialogCancelButton } from "./BloomDialog/commonDialogComponents";
 import SmallNumberPicker from "./smallNumberPicker";
+import { postBoolean } from "../utils/bloomApi";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog,
@@ -33,6 +34,16 @@ export const NumberChooserDialog: React.FunctionComponent<
         useSetupBloomDialog(props.dialogEnvironment);
 
     const [numberChosen, setNumberChosen] = useState(props.min);
+    // While it is up, lock the workspace (tabs, other books), as the other Edit-tab dialogs do:
+    // whatever the dialog is about must still be there when the user clicks OK.
+    useEffect(() => {
+        if (props.dialogEnvironment?.dialogFrameProvidedExternally) return;
+        postBoolean("editView/setModalState", propsForBloomDialog.open);
+    }, [
+        propsForBloomDialog.open,
+        props.dialogEnvironment?.dialogFrameProvidedExternally,
+    ]);
+
     // The number picker snaps back to a valid value on blur if the user clicks away from the input with an invalid value, so isNumberPickerValid will usually be true
     const [isNumberPickerValid, setIsNumberPickerValid] = useState(true);
 
