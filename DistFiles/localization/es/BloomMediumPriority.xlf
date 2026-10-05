@@ -1726,42 +1726,42 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.high-contrast-block.Name">
         <source xml:lang="en">High-Contrast Block/Woodcut</source>
-        <target xml:lang="es-ES" state="translated">Xilografía de alto contraste</target>
+        <target xml:lang="es-ES" state="translated">Imagen grabada en madera de alto contraste</target>
         <note>ID: AiImageEditor.ArtStyle.high-contrast-block.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.kawaii-doodle.Name">
         <source xml:lang="en">Kawaii Doodle</source>
-        <target xml:lang="es-ES" state="translated">Garabato kawaii</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo kawaii</target>
         <note>ID: AiImageEditor.ArtStyle.kawaii-doodle.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-colored-pencil.Name">
         <source xml:lang="en">Colored Pencil Detail</source>
-        <target xml:lang="es-ES" state="translated">Detalle en lápiz de color</target>
+        <target xml:lang="es-ES" state="translated">Detalle con lápices de colores</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-colored-pencil.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-crayon.Name">
         <source xml:lang="en">Crayon Line Overlay</source>
-        <target xml:lang="es-ES" state="translated">Trazo realzado con crayón</target>
+        <target xml:lang="es-ES" state="translated">Dibujo realizado con crayón</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-crayon.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-art-watercolor.Name">
         <source xml:lang="en">Watercolor Line Wash</source>
-        <target xml:lang="es-ES" state="translated">Trazo con aguada de acuarela</target>
+        <target xml:lang="es-ES" state="translated">Imagen lavada con tinta &amp; acuarela</target>
         <note>ID: AiImageEditor.ArtStyle.line-art-watercolor.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.line-drawing-sketch.Name">
         <source xml:lang="en">Line Drawing and Sketch Style</source>
-        <target xml:lang="es-ES" state="translated">Dibujo lineal y boceto</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo dibujo lineal y boceto</target>
         <note>ID: AiImageEditor.ArtStyle.line-drawing-sketch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.manga-style.Name">
         <source xml:lang="en">Manga Style Illustrations</source>
-        <target xml:lang="es-ES" state="translated">Ilustraciones estilo manga</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo manga</target>
         <note>ID: AiImageEditor.ArtStyle.manga-style.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.moody-illustrations.Name">
         <source xml:lang="en">Moody Illustrations</source>
-        <target xml:lang="es-ES" state="translated">Ilustraciones de atmósfera marcada</target>
+        <target xml:lang="es-ES" state="translated">Ilustraciones melancólicas</target>
         <note>ID: AiImageEditor.ArtStyle.moody-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.paper-cutout-collage.Name">
@@ -1771,52 +1771,52 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.pixel-toy.Name">
         <source xml:lang="en">Pixel Toy</source>
-        <target xml:lang="es-ES" state="translated">Juguete de píxeles</target>
+        <target xml:lang="es-ES" state="translated">Juego de píxeles</target>
         <note>ID: AiImageEditor.ArtStyle.pixel-toy.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.realistic-illustration.Name">
         <source xml:lang="en">Realistic Illustration Style</source>
-        <target xml:lang="es-ES" state="translated">Ilustración realista</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo realista</target>
         <note>ID: AiImageEditor.ArtStyle.realistic-illustration.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.retro-futurism.Name">
         <source xml:lang="en">Retro Futurism</source>
-        <target xml:lang="es-ES" state="translated">Retrofuturismo</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo retro futurista</target>
         <note>ID: AiImageEditor.ArtStyle.retro-futurism.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-engraving.Name">
         <source xml:lang="en">Vintage Engraving &amp; Etching</source>
-        <target xml:lang="es-ES" state="translated">Grabado y aguafuerte antiguos</target>
+        <target xml:lang="es-ES" state="translated">Imagen de estilo clásico grabado &amp; técnico</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-engraving.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.vintage-illustrations.Name">
         <source xml:lang="en">Vintage Style Illustrations</source>
-        <target xml:lang="es-ES" state="translated">Ilustraciones de estilo antiguo</target>
+        <target xml:lang="es-ES" state="translated">Ilustraciones de estilo clásico</target>
         <note>ID: AiImageEditor.ArtStyle.vintage-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.watercolor-dream.Name">
         <source xml:lang="en">Watercolor Dream</source>
-        <target xml:lang="es-ES" state="translated">Sueño en acuarela</target>
+        <target xml:lang="es-ES" state="translated">Sueño en tinto &amp; acuarela</target>
         <note>ID: AiImageEditor.ArtStyle.watercolor-dream.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.whimsical-illustrations.Name">
         <source xml:lang="en">Whimsical Illustrations Style</source>
-        <target xml:lang="es-ES" state="translated">Ilustraciones fantasiosas</target>
+        <target xml:lang="es-ES" state="translated">Estilo de ilustración fantasiosa</target>
         <note>ID: AiImageEditor.ArtStyle.whimsical-illustrations.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.ArtStyle.wimmelbuch.Name">
         <source xml:lang="en">Wimmelbuch Style</source>
-        <target xml:lang="es-ES" state="translated">Estilo Wimmelbuch</target>
+        <target xml:lang="es-ES" state="translated">Ilustración estilo Wimmelbuch de objetos ocultos</target>
         <note>ID: AiImageEditor.ArtStyle.wimmelbuch.Name</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Batch.AddToBatch">
         <source xml:lang="en">Add to batch</source>
-        <target xml:lang="es-ES" state="translated">Agregar al lote</target>
+        <target xml:lang="es-ES" state="translated">Agregar al procesamiento por lotes</target>
         <note>ID: AiImageEditor.Batch.AddToBatch</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Batch.SelectAllPages">
+      <trans-unit id="AiImageEditor.Batch.SelectAllPages" approved="yes">
         <source xml:lang="en">Select all pages for batch processing</source>
-        <target xml:lang="es-ES" state="translated">Seleccionar todas las páginas para el procesamiento por lotes</target>
+        <target xml:lang="es-ES" state="final">Seleccionar todas las páginas para el procesamiento por lotes</target>
         <note>ID: AiImageEditor.Batch.SelectAllPages</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Batch.WillEditSelected">
