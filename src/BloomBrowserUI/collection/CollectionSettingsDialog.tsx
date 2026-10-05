@@ -134,6 +134,9 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // the page showing), so the answer is in before anyone gets there and the checkbox doesn't
     // flash greyed out. Until it arrives the checkbox stays disabled, so nobody can tick it and
     // save on a tier that lacks it. (The old dialog treated "not known yet" as available.)
+    // Expect to refactor this with the next page that needs subscription status (likely the
+    // Subscription page, BL-16734): probably into a small dialog-level subscription context that
+    // every page reads, possibly following a code typed but not yet saved. See PLAN.md, Step 4.
     const teamCollectionStatus = useGetFeatureStatus(
         propsForBloomDialog.open ? "TeamCollection" : undefined,
     );
