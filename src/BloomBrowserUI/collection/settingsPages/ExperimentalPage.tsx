@@ -15,8 +15,8 @@ const ExperimentalFeatureSetting: React.FunctionComponent<{
     label: string;
     // The feature's token in ExperimentalFeatures.cs, which is its key in values.experimental.
     featureToken: string;
-    // The feature name features/status knows it by. Assumes every experimental feature needs a
-    // subscription tier; make this optional only when one doesn't.
+    // The feature name features/status knows it by. We assume every experimental feature needs a
+    // subscription tier; supporting one that doesn't isn't worth the extra code until there is one.
     subscriptionFeature: string;
     disabled: boolean;
 }> = (props) => (
