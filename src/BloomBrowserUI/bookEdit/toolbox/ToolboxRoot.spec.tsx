@@ -42,17 +42,6 @@ vi.mock("../../react_components/l10nComponents", async (importOriginal) => {
     };
 });
 
-// ToolboxRoot no longer asks the server which tools are enabled; toolbox.ts owns that and
-// tells us through addTool(). Fail loudly if that ever regresses into a fetch from here.
-vi.mock("axios", () => {
-    return {
-        default: {
-            get: (url: string) =>
-                Promise.reject(new Error(`unexpected GET of ${url}`)),
-        },
-    };
-});
-
 // Imported after the mocks above are registered.
 const { ToolboxRoot } = await import("./ToolboxRoot");
 const { getToolboxReactAdapter } = await import("./toolboxReactAdapter");

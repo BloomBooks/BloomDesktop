@@ -852,13 +852,19 @@ function beginAddTool(
         return;
     }
 
-    const adapter = getToolboxReactAdapter();
+    // Unlike the other callers of getToolboxReactAdapter(), this one does not tolerate a
+    // missing adapter. Both paths here are already gated on the toolbox UI being up: the
+    // startup loop waits for it (whenToolboxReactAdapterReady), and showOrHideTool only runs
+    // on a user action, long after. So no adapter means a bug, and throwing is better than
+    // what skipping would do -- whenLoaded() below would still run, so the startup loop would
+    // add no tools at all and then report the toolbox built.
+    const adapter = getToolboxReactAdapter()!;
     // Adding a tool that is already there does nothing, so it is safe to do this
     // whether or not the toolbox is already offering it.
-    adapter?.addTool(tool.id());
+    adapter.addTool(tool.id());
 
     if (openTool && toolbox.toolboxIsShowing()) {
-        adapter?.setActiveToolByToolId(tool.id());
+        adapter.setActiveToolByToolId(tool.id());
     }
 
     if (whenLoaded) {
