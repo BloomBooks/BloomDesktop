@@ -40,6 +40,21 @@
         <note>This checkbox enables the experimental publish-to-apps workflow.</note>
         <note>Obsolete as of Bloom 6.5</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description" translate="no">
+        <source xml:lang="en">When a new version of Bloom is available, Bloom will get it for you.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.AutoUpdate.Description</note>
+        <note>Shown under the "Automatically Update Bloom" checkbox on the Advanced page of the Collection Settings dialog. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.Collection" translate="no">
+        <source xml:lang="en">Collection</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.Collection</note>
+        <note>Heading of the group of settings about the collection itself (its name) on the Advanced page of the Collection Settings dialog. A collection is a folder of books that share settings.</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection" translate="no">
+        <source xml:lang="en">The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.</source>
+        <note>ID: CollectionSettingsDialog.AdvancedTab.NoRenameTeamCollection</note>
+        <note>Shown under the disabled Collection Name box on the Advanced page of the Collection Settings dialog when the collection is shared as a Team Collection. "Bloom" is a product name and must not be translated.</note>
+      </trans-unit>
       <trans-unit id="Feature.AiImageEditing">
         <source xml:lang="en">Edit Images with AI</source>
         <note>ID: Feature.AiImageEditing</note>

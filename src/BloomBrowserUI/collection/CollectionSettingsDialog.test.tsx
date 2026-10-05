@@ -49,6 +49,7 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
+    autoUpdateSupported: true,
     notAllowedMessage: null,
 };
 
@@ -201,7 +202,8 @@ vi.mock("@sillsdev/config-r", () => ({
     ),
     ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
         // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
-        React.Children.forEach(props.children, (child) => {
+        // Like it, look only at what toArray keeps, so a group left out with `&&` is fine.
+        React.Children.toArray(props.children).forEach((child) => {
             if (
                 !React.isValidElement(child) ||
                 child.type !== MockConfigrGroup
@@ -228,6 +230,25 @@ vi.mock("@sillsdev/config-r", () => ({
             data-path={props.path}
             disabled={props.disabled}
         />
+    ),
+    ConfigrInput: (props: {
+        path: string;
+        disabled?: boolean;
+        description?: string;
+    }) => (
+        <div>
+            <input
+                type="text"
+                data-testid="configr-input"
+                data-path={props.path}
+                disabled={props.disabled}
+            />
+            {props.description && (
+                <div data-testid="configr-input-description">
+                    {props.description}
+                </div>
+            )}
+        </div>
     ),
 }));
 
@@ -268,6 +289,14 @@ describe("CollectionSettingsDialog", () => {
     const okButtonLabel = () =>
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
+
+    const respondWith = (response: ICollectionSettingsResponse) => {
+        mockGet.mockImplementation(
+            (_url: string, successCallback: (r: unknown) => void) => {
+                successCallback({ data: response });
+            },
+        );
+    };
 
     beforeEach(() => {
         container = document.createElement("div");
@@ -489,6 +518,72 @@ describe("CollectionSettingsDialog", () => {
         expect(okButtonLabel()).toBe("Restart");
     });
 
+    describe("Advanced page", () => {
+        const advancedPageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="advanced"] ${selector}`,
+            ) as HTMLInputElement | null;
+
+        const collectionNameBox = () => {
+            const box = advancedPageElement(
+                '[data-path="advanced.collectionName"]',
+            );
+            if (!box) {
+                throw new Error("The Advanced page has no Collection Name box");
+            }
+            return box;
+        };
+
+        it("offers automatic updating where Bloom supports it", async () => {
+            expect(settingsResponse.autoUpdateSupported).toBe(true);
+
+            await renderDialog();
+
+            expect(
+                advancedPageElement('[data-path="advanced.autoUpdate"]'),
+            ).not.toBeNull();
+        });
+
+        it("leaves out automatic updating where Bloom does not support it", async () => {
+            respondWith({ ...settingsResponse, autoUpdateSupported: false });
+
+            await renderDialog();
+
+            expect(
+                advancedPageElement('[data-path="advanced.autoUpdate"]'),
+            ).toBeNull();
+            // The rest of the page is still there.
+            expect(collectionNameBox().disabled).toBe(false);
+        });
+
+        it("lets the user rename a collection that is not a Team Collection", async () => {
+            expect(settingsResponse.isTeamCollection).toBe(false);
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(false);
+            expect(
+                advancedPageElement(
+                    '[data-testid="configr-input-description"]',
+                ),
+            ).toBeNull();
+        });
+
+        it("will not let a Team Collection be renamed, and says why", async () => {
+            respondWith({ ...settingsResponse, isTeamCollection: true });
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(true);
+            expect(
+                advancedPageElement('[data-testid="configr-input-description"]')
+                    ?.textContent,
+            ).toBe(
+                "The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.",
+            );
+        });
+    });
+
     describe("Experimental page", () => {
         const teamCollectionsCheckbox = () => {
             const checkbox = container.querySelector(
@@ -500,14 +595,6 @@ describe("CollectionSettingsDialog", () => {
                 );
             }
             return checkbox;
-        };
-
-        const respondWith = (response: ICollectionSettingsResponse) => {
-            mockGet.mockImplementation(
-                (_url: string, successCallback: (r: unknown) => void) => {
-                    successCallback({ data: response });
-                },
-            );
         };
 
         it("offers Team Collections, with its subscription badge, when the tier allows it", async () => {
