@@ -1819,24 +1819,24 @@
         <target xml:lang="es-ES" state="final">Seleccionar todas las páginas para el procesamiento por lotes</target>
         <note>ID: AiImageEditor.Batch.SelectAllPages</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Batch.WillEditSelected">
+      <trans-unit id="AiImageEditor.Batch.WillEditSelected" approved="yes">
         <source xml:lang="en">Will edit the {0} selected images</source>
-        <target xml:lang="es-ES" state="translated">Se editarán las {0} imágenes seleccionadas</target>
+        <target xml:lang="es-ES" state="final">Se editarán las {0} imágenes seleccionadas</target>
         <note>ID: AiImageEditor.Batch.WillEditSelected</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.BookImages.Current">
+      <trans-unit id="AiImageEditor.BookImages.Current" approved="yes">
         <source xml:lang="en">Current</source>
-        <target xml:lang="es-ES" state="translated">Actual</target>
+        <target xml:lang="es-ES" state="final">Actual</target>
         <note>ID: AiImageEditor.BookImages.Current</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.BookImages.ReplaceTip">
         <source xml:lang="en">Replace images in your book with these images</source>
-        <target xml:lang="es-ES" state="translated">Reemplazar las imágenes de su libro por estas imágenes</target>
+        <target xml:lang="es-ES" state="translated">Reemplazar las imágenes de este libro por estas</target>
         <note>ID: AiImageEditor.BookImages.ReplaceTip</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.BookImages.Replacement">
         <source xml:lang="en">Replacement</source>
-        <target xml:lang="es-ES" state="translated">Reemplazo</target>
+        <target xml:lang="es-ES" state="translated">Nuevo</target>
         <note>ID: AiImageEditor.BookImages.Replacement</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Characters.NamePlaceholder">
@@ -1846,7 +1846,7 @@
       </trans-unit>
       <trans-unit id="AiImageEditor.Characters.PasteToAdd">
         <source xml:lang="en">Paste an image to add a character</source>
-        <target xml:lang="es-ES" state="translated">Pegue una imagen para agregar un personaje</target>
+        <target xml:lang="es-ES" state="translated">Insertar una imagen para añadir un personaje</target>
         <note>ID: AiImageEditor.Characters.PasteToAdd</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Error.AddReferenceImage">
@@ -1874,24 +1874,24 @@
         <target xml:lang="es-ES" state="translated">Seleccione una imagen para editar antes de aplicar esta herramienta.</target>
         <note>ID: AiImageEditor.Error.SelectImageFirst</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.LookAroundMode.Message">
+      <trans-unit id="AiImageEditor.LookAroundMode.Message" approved="yes">
         <source xml:lang="en">This tool is in "look-around" mode. To actually edit or create images, you will need a subscription and a book that is not based on the "Playground" template.</source>
-        <target xml:lang="es-ES" state="translated">Esta herramienta está en modo de "solo explorar". Para editar o crear imágenes de verdad, necesitará una suscripción y un libro que no esté basado en la plantilla "Playground".</target>
+        <target xml:lang="es-ES" state="final">Esta herramienta está en modo de "solo explorar". Para editar o crear imágenes de verdad, necesitará una suscripción y un libro que no esté basado en la plantilla "Playground".</target>
         <note>ID: AiImageEditor.LookAroundMode.Message</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.AboutPerImage">
+      <trans-unit id="AiImageEditor.Model.AboutPerImage" approved="yes">
         <source xml:lang="en">About {0} per image</source>
-        <target xml:lang="es-ES" state="translated">Unos {0} por imagen</target>
+        <target xml:lang="es-ES" state="final">Unos {0} por imagen</target>
         <note>ID: AiImageEditor.Model.AboutPerImage</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.Badge.Great">
         <source xml:lang="en">Great</source>
-        <target xml:lang="es-ES" state="translated">Excelente</target>
+        <target xml:lang="es-ES" state="translated">Muy bueno</target>
         <note>ID: AiImageEditor.Model.Badge.Great</note>
       </trans-unit>
-      <trans-unit id="AiImageEditor.Model.Badge.GreatButExpensive">
+      <trans-unit id="AiImageEditor.Model.Badge.GreatButExpensive" approved="yes">
         <source xml:lang="en">Great but Expensive</source>
-        <target xml:lang="es-ES" state="translated">Excelente pero caro</target>
+        <target xml:lang="es-ES" state="final">Excelente pero caro</target>
         <note>ID: AiImageEditor.Model.Badge.GreatButExpensive</note>
       </trans-unit>
       <trans-unit id="AiImageEditor.Model.google-gemini-3-1-flash-image.Description">
