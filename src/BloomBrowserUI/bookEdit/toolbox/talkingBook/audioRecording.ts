@@ -100,17 +100,6 @@ export function getAllAudioModes(): AudioMode[] {
 
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
-// Indicates that the element should be highlighted.
-const kEnableHighlightClass = "ui-enableHighlight";
-// Indicates that the element should NOT be highlighted.
-// For example, some elements have highlighting prevented at this level
-// because its content has been broken into child elements, only some of which show the highlight
-const kDisableHighlightClass = "ui-disableHighlight";
-// Stamped on the ui-enableHighlight spans that fixHighlighting() creates, so undoHighlightingFixes
-// can take out OUR spans and leave alone any the book itself contains. An attribute, not a
-// JS-side record of the elements, because the undo also has to work on a CLONE of the page, whose
-// elements are different objects.
-const kTempHighlightAttr = "data-bloom-temp-highlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kBloomEditableTextBoxClass = "bloom-editable";
@@ -549,7 +538,7 @@ export default class AudioRecording implements IAudioRecorder {
         }
 
         // In case of the Play -> Pause -> change page.
-        this.revertFixHighlighting();
+        this.refreshAudioTextHighlights();
     }
 
     public stopListeningForLevels() {
@@ -1651,11 +1640,6 @@ export default class AudioRecording implements IAudioRecorder {
         const oldElementsToPlay = this.elementsToPlayConsecutivelyStack;
         const oldTimings = this.subElementsWithTimings;
 
-        const audioElement = this.getCurrentAudioSentence();
-        if (audioElement) {
-            this.fixHighlighting(audioElement);
-        }
-
         this.elementsToPlayConsecutivelyStack = [];
 
         // We want to play everything (highlighted according to the unit of playback) within the unit of RECORDING.
@@ -1973,8 +1957,6 @@ export default class AudioRecording implements IAudioRecorder {
     public async listenAsync(canvasToExclude?: HTMLElement): Promise<void> {
         this.resetAudioIfPaused();
 
-        this.fixHighlighting();
-
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements(false)))
             .reverse();
@@ -2066,7 +2048,7 @@ export default class AudioRecording implements IAudioRecorder {
             }
         }
 
-        this.revertFixHighlighting();
+        this.refreshAudioTextHighlights();
 
         // As in playEndedAsync(), Split is the natural next step. ("next" is automatically
         // substituted for "split" if we're in a mode where "split" does not apply.)
@@ -2132,7 +2114,7 @@ export default class AudioRecording implements IAudioRecorder {
                     }
                 }
 
-                this.revertFixHighlighting();
+                this.refreshAudioTextHighlights();
 
                 // For Play (Check) in sentence mode, no need to adjust the current highlight. Just leave it on whatever it was on before.
                 //  (Assumption: Record by Sentence, Play by Text Box mode combination is not allowed)
@@ -2140,7 +2122,7 @@ export default class AudioRecording implements IAudioRecorder {
                 // Enhance: Or maybe for Listen To Whole Page, it should remember what the highlight was on before and move it back to there?
             }
         } else {
-            this.revertFixHighlighting();
+            this.refreshAudioTextHighlights();
         }
 
         // Change state to "Split" if possible but fallback to Next if not.
@@ -5063,278 +5045,6 @@ export default class AudioRecording implements IAudioRecorder {
                 this.finishNewRecordingOrImportAsync.bind(this),
             );
         }, kImportRecordingDelayId);
-    }
-
-    // Returns all elements that match CSS selector {expr} as an array.
-    // Querying can optionally be restricted to {container}'s descendants
-    // If includeSelf is true, it includes both itself as well as its descendants.
-    // Otherwise, it only includes descendants.
-    // Also filters out imageDescriptions if we aren't supposed to be reading them.
-    private findAll(
-        expr: string,
-        container: HTMLElement | undefined = undefined,
-        includeSelf: boolean = false,
-    ): HTMLElement[] {
-        // querySelectorAll checks all the descendants
-        const allMatches: HTMLElement[] = [].slice.call(
-            (container || document).querySelectorAll(expr),
-        );
-
-        // Now check itself
-        if (includeSelf && container && container.matches(expr)) {
-            allMatches.push(container);
-        }
-
-        return allMatches;
-    }
-
-    // Match space or &nbsp; (\u00a0) or &ZeroWidthSpace; (\u200b). Must have three or more in a row to match.
-    // Geckofx would typically give something like `&nbsp;&nbsp;&nbsp; ` but wv2 usually gives something like `&nbsp; &nbsp; `
-    private multiSpaceRegex = /[ \u00a0\u200b]{3,}/;
-    private multiSpaceRegexGlobal = new RegExp(this.multiSpaceRegex, "g");
-
-    /**
-     * Finds and fixes any elements on the page that should have their audio-highlighting disabled.
-     */
-    public fixHighlighting(currentAudioElement?: HTMLElement) {
-        const audioElements = currentAudioElement
-            ? [currentAudioElement]
-            : this.getAudioElements();
-        audioElements.forEach((audioElement) => {
-            // FYI, don't need to process the bloom-linebreak spans. Nothing bad happens, just unnecessary.
-            const matches = this.findAll(
-                "span[id]:not(.bloom-linebreak)",
-                audioElement,
-                true,
-            );
-            matches.forEach((element) => {
-                // Simple check to help ensure that elements that don't need to be modified will remain untouched.
-                // This doesn't consider whether text that shouldn't be highlighted is already in inside an
-                // element with highlight disabled, but that's ok. The code down the stack checks that.
-                const containsNonHighlightText = !!element.innerText.match(
-                    this.multiSpaceRegex,
-                );
-
-                if (containsNonHighlightText) {
-                    // Remember that we touched this one, and whether the no-highlight class was
-                    // ours to remove -- a book can carry that class itself, and then it is not
-                    // ours to take off. Keep the FIRST answer: on Play -> Pause -> Play the class
-                    // is present the second time round because WE added it.
-                    if (!this.elementsWeFixedHighlightingIn.has(element.id)) {
-                        this.elementsWeFixedHighlightingIn.set(
-                            element.id,
-                            !element.classList.contains(kDisableHighlightClass),
-                        );
-                    }
-
-                    this.fixHighlightingInNode(element, element);
-                }
-            });
-        });
-    }
-
-    /**
-     * Recursively fixes the audio-highlighting within a node (whether element node or text node)
-     * @param node The node to recursively fix
-     * @param startingSpan The starting span, AKA the one that will receive .ui-audioCurrent in the future.
-     */
-    private fixHighlightingInNode(node: Node, startingSpan: HTMLSpanElement) {
-        if (
-            node.nodeType === Node.ELEMENT_NODE &&
-            (node as Element).classList.contains(kDisableHighlightClass)
-        ) {
-            // No need to process bloom-highlightDisabled elements (they've already been processed)
-            return;
-        } else if (node.nodeType === Node.TEXT_NODE) {
-            // Leaf node. Fix the highlighting, then go back up the stack.
-            this.fixHighlightingInTextNode(node, startingSpan);
-            return;
-        } else {
-            // Recursive case
-            const childNodesCopy = Array.from(node.childNodes); // Make a copy because node.childNodes is being mutated
-            childNodesCopy.forEach((childNode) => {
-                this.fixHighlightingInNode(childNode, startingSpan);
-            });
-        }
-    }
-
-    /**
-     * Analyzes a text node and fixes its highlighting.
-     */
-    private fixHighlightingInTextNode(
-        textNode: Node,
-        startingSpan: HTMLSpanElement,
-    ) {
-        if (textNode.nodeType !== Node.TEXT_NODE) {
-            throw new Error(
-                "Invalid argument to fixMultiSpaceInTextNode: node must be a TextNode",
-            );
-        }
-
-        if (!textNode.nodeValue) {
-            return;
-        }
-
-        // string.matchAll would be cleaner, but not supported in all browsers (in particular, FF60)
-        // Use RegExp.exec for greater compatibility.
-        this.multiSpaceRegexGlobal.lastIndex = 0; // RegExp.exec is stateful! Need to reset the state.
-        const matches: {
-            text: string;
-            startIndex: number;
-            endIndex: number; // the index of the first character to exclude
-        }[] = [];
-        let regexResult: RegExpExecArray | null;
-        while (
-            (regexResult = this.multiSpaceRegexGlobal.exec(
-                textNode.nodeValue,
-            )) != null
-        ) {
-            regexResult.forEach((matchingText) => {
-                matches.push({
-                    text: matchingText,
-                    startIndex:
-                        this.multiSpaceRegexGlobal.lastIndex -
-                        matchingText.length,
-                    endIndex: this.multiSpaceRegexGlobal.lastIndex, // the index of the first character to exclude
-                });
-            });
-        }
-
-        // First, generate the new DOM elements with the fixed highlighting.
-        const newNodes: Node[] = [];
-        if (matches.length === 0) {
-            // No matches
-            newNodes.push(this.makeHighlightedSpan(textNode.nodeValue));
-        } else {
-            let lastMatchEndIndex = 0; // the index of the first character to exclude of the last match
-            for (let i = 0; i < matches.length; ++i) {
-                const match = matches[i];
-
-                const preMatchText = textNode.nodeValue.slice(
-                    lastMatchEndIndex,
-                    match.startIndex,
-                );
-                lastMatchEndIndex = match.endIndex;
-                if (preMatchText)
-                    newNodes.push(this.makeHighlightedSpan(preMatchText));
-
-                newNodes.push(document.createTextNode(match.text));
-
-                if (i === matches.length - 1) {
-                    const postMatchText = textNode.nodeValue.slice(
-                        match.endIndex,
-                    );
-                    if (postMatchText) {
-                        newNodes.push(this.makeHighlightedSpan(postMatchText));
-                    }
-                }
-            }
-        }
-
-        // Next, replace the old DOM element with the new DOM elements
-        const oldNode = textNode;
-        if (oldNode.parentNode && newNodes && newNodes.length > 0) {
-            for (let i = 0; i < newNodes.length; ++i) {
-                const nodeToInsert = newNodes[i];
-                oldNode.parentNode.insertBefore(nodeToInsert, oldNode);
-            }
-
-            oldNode.parentNode.removeChild(oldNode);
-
-            // We need to set ancestor's background back to transparent (instead of highlighted),
-            // and let each of the newNodes's styles control whether to be highlighted or transparent.
-            // If ancestor was highlighted but one of its new descendant nodes was transparent,
-            // all that would happen is the descendant would allow the ancestor's highlight color to show through,
-            // which doesn't achieve what we want :(
-            startingSpan.classList.add(kDisableHighlightClass);
-        }
-    }
-
-    private makeHighlightedSpan(textContent: string) {
-        const newSpan = document.createElement("span");
-        newSpan.classList.add(kEnableHighlightClass);
-        newSpan.setAttribute(kTempHighlightAttr, "true");
-        newSpan.appendChild(document.createTextNode(textContent));
-        return newSpan;
-    }
-
-    // The audio spans fixHighlighting() has modified in this session, by id, each mapped to
-    // whether WE added kDisableHighlightClass to it (as opposed to the book already having it).
-    // Deliberately not a snapshot of what was in them -- see undoHighlightingFixes.
-    private elementsWeFixedHighlightingIn = new Map<string, boolean>();
-
-    /**
-     * Take the temporary highlight-segment markup fixHighlighting() added back out, under
-     * 'pageOrClone'. The caller chooses what to apply it to: the live page (when the page is going
-     * away, via revertFixHighlighting) or a clone of it (when we are saving the page the user is
-     * still working on).
-     *
-     * This UNDOES the transformation rather than restoring a snapshot of what the element held
-     * beforehand, and that distinction matters: the user can type into a text box while its audio
-     * is playing, and playback is exactly when these fixes are in place. Replaying a snapshot taken
-     * when playback started would throw that typing away -- silently, and into the saved book
-     * (BL-13502). Unwrapping only what we added cannot: anything else in the element is left where
-     * it is, including text that arrived after the fix, and including the phrase-delimiter spans
-     * that removeToolMarkup wraps around a "|" just before calling us.
-     *
-     * Scoped to the elements we actually fixed, for the same reason the snapshot version was: an
-     * older book can legitimately contain ui-enableHighlight spans of its own (HtmlDom.cs even
-     * generates user-style rules targeting them), and a save must not quietly strip those.
-     *
-     * Purely DOM, and idempotent: undoing on a clone leaves the live page's fixes in place, ready
-     * to be undone again for the next save. See ITool.removeToolMarkup.
-     */
-    public undoHighlightingFixes(pageOrClone: ParentNode) {
-        this.elementsWeFixedHighlightingIn.forEach(
-            (weAddedTheNoHighlightClass, id) => {
-                // Deliberately NOT `querySelector(\`#${id}\`)`. An id that is not a valid CSS
-                // identifier -- a legacy one starting with a digit, say -- makes that form THROW, and
-                // this now runs during every save's clone cleanup, where a throw would abort the whole
-                // page gather and we would post an error string instead of the user's page. Comparing
-                // the property cannot throw whatever the id looks like.
-                const element = Array.from(
-                    pageOrClone.querySelectorAll("[id]"),
-                ).find((candidate) => candidate.id === id);
-                if (!element) {
-                    console.warn("Can't find element " + id);
-                    return;
-                }
-                // Unwrap the spans we wrapped runs of text in: put each one's children back where it
-                // was and drop it. Only OURS -- selected by the marker fixHighlighting stamps on them
-                // -- because a book can legitimately contain ui-enableHighlight spans of its own, even
-                // nested inside a sentence the tool has touched, and a save must not strip those.
-                for (const span of Array.from(
-                    element.querySelectorAll(
-                        `span.${kEnableHighlightClass}[${kTempHighlightAttr}]`,
-                    ),
-                )) {
-                    const parent = span.parentNode;
-                    if (!parent) continue;
-                    while (span.firstChild)
-                        parent.insertBefore(span.firstChild, span);
-                    parent.removeChild(span);
-                    // Rejoin the text nodes that leaves adjacent, so the result has the shape the text
-                    // had before rather than a run of separate nodes.
-                    parent.normalize();
-                }
-                // And the class we put on the audio span itself to stop the whole thing highlighting
-                // -- but only if it was ours to put there.
-                if (weAddedTheNoHighlightClass)
-                    element.classList.remove(kDisableHighlightClass);
-            },
-        );
-    }
-
-    /**
-     * This function will undo in BloomDesktop the modifications made by fixHighlighting()
-     */
-    public revertFixHighlighting() {
-        const pageDocBody = this.getPageDocBody();
-        if (pageDocBody) {
-            this.undoHighlightingFixes(pageDocBody);
-        }
-        this.elementsWeFixedHighlightingIn.clear();
-        this.refreshAudioTextHighlights();
     }
 }
 

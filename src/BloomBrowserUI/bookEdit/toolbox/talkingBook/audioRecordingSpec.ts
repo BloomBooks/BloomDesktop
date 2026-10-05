@@ -2521,346 +2521,149 @@ describe("audio recording tests", () => {
         expect(colorSpans[4].innerText).toBe("Three");
     });
 
-    describe("- undoHighlightingFixes()", () => {
-        // It takes fixHighlighting()'s temporary markup back out -- off the live page when the page
-        // is going away, and off the CLONE we are about to save while the user goes on editing.
-        // It undoes the transformation rather than restoring a snapshot of what the element held
-        // before, and that is the point: a save can happen while audio is playing, which is exactly
-        // when these fixes are in place, so by then the user may have typed. A snapshot would throw
-        // that typing away, silently, into the saved book (BL-13502).
-        const fixedUpBox = () => {
-            SetupIFrameFromHtml(
-                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp;&nbsp;&nbsp; Three</span></p></div></div></div>',
-            );
-            const box1 = getFrameElementById("page", "box1")!;
-            // The SAME recorder must do the fixing and the undoing, as in production (both go
-            // through the one theOneAudioRecorder): it only undoes in elements it knows it fixed.
+    describe("- gaps in the highlight", () => {
+        // A run of three or more spaces (ordinary, non-breaking or zero-width) is layout, so the
+        // highlight leaves it unpainted and paints the words either side separately. Two or fewer
+        // are just the gap between words. None of this may change the page: the highlight lives in
+        // the CSS highlight registry, not in markup that a save would have to strip.
+
+        const trimSpaces = (text: string) =>
+            text.replace(/^[\s\u00a0\u200b]+|[\s\u00a0\u200b]+$/g, "");
+
+        // Highlight newElement as the current audio element, and return what got painted, with
+        // the spaces at each end of each piece trimmed off (where exactly a piece starts within a
+        // run of spaces is not what these tests are about).
+        const paintedTextFor = async (
+            newElement: Element,
+        ): Promise<string[]> => {
             const recording = new AudioRecording();
-            recording.fixHighlighting(box1);
-            const span = box1.querySelector("span")!;
-            // Sanity: the fix really did happen, so the assertions below aren't watching a no-op.
-            expect(
-                span.classList.contains("ui-disableHighlight"),
-                "test setup: fixHighlighting should have marked the span",
-            ).toBe(true);
-            expect(
-                span.querySelectorAll("span.ui-enableHighlight").length,
-                "test setup: fixHighlighting should have wrapped the text runs",
-            ).toBeGreaterThan(0);
-            // fixHighlighting only re-wraps; it does not change the text. So this is what the
-            // text should still read after the undo. (Captured rather than written out, because
-            // the fixture's runs of &nbsp; are not the plain spaces they look like.)
-            const textBefore = span.textContent;
-            return { box1, span, recording, textBefore };
+            (recording as unknown as { isShowing: boolean }).isShowing = true;
+            await (
+                recording as unknown as {
+                    setHighlightToAsync(args: {
+                        newElement: Element;
+                        shouldScrollToElement: boolean;
+                        forceRedisplay?: boolean;
+                    }): Promise<void>;
+                }
+            ).setHighlightToAsync({
+                newElement,
+                shouldScrollToElement: false,
+                forceRedisplay: true,
+            });
+            return getHighlightTexts(currentHighlightName).map((text) =>
+                trimSpaces(text),
+            );
         };
 
-        // Every test below asserts the undo actually happened, not merely that something survived
-        // it -- otherwise an undo that did nothing at all would pass most of them.
-        const expectUndone = (span: Element) => {
-            expect(
-                span.querySelectorAll("span.ui-enableHighlight").length,
-                "the highlight-run spans should be gone",
-            ).toBe(0);
-            expect(
-                span.classList.contains("ui-disableHighlight"),
-                "the no-highlight marking should be gone",
-            ).toBe(false);
-        };
+        const sentenceBox = (sentences: string) =>
+            `<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on" data-audiorecordingmode="Sentence"><p>${sentences}</p></div></div></div>`;
 
-        it("puts the text back the way it was", () => {
-            const { box1, span, recording, textBefore } = fixedUpBox();
-
-            recording.undoHighlightingFixes(box1);
-
-            expectUndone(span);
-            expect(span.textContent).toBe(textBefore);
-            // Rejoined, not left as the several adjacent text nodes unwrapping produces.
-            expect(span.childNodes.length).toBe(1);
-        });
-
-        it("keeps text typed while the audio was playing", () => {
-            const { box1, span, recording } = fixedUpBox();
-            span.appendChild(document.createTextNode(" typed later"));
-
-            recording.undoHighlightingFixes(box1);
-
-            expectUndone(span);
-            expect(span.textContent).toContain("typed later");
-        });
-
-        it("keeps text typed inside one of the highlight runs", () => {
-            const { box1, span, recording } = fixedUpBox();
-            const firstRun = span.querySelector("span.ui-enableHighlight")!;
-            firstRun.textContent = firstRun.textContent + " inserted";
-
-            recording.undoHighlightingFixes(box1);
-
-            expectUndone(span);
-            expect(span.textContent).toContain("inserted");
-        });
-
-        it("leaves the phrase-delimiter spans alone", () => {
-            // removeToolMarkup enshrouds the vertical bars BEFORE calling us, so its work has to
-            // survive -- restoring a snapshot would have wiped it out and the bars would show.
-            const { box1, span, recording } = fixedUpBox();
-            const marker = document.createElement("span");
-            marker.classList.add("bloom-audio-split-marker");
-            marker.textContent = "|";
-            span.appendChild(marker);
-
-            recording.undoHighlightingFixes(box1);
-
-            expectUndone(span);
-            expect(
-                span.querySelectorAll("span.bloom-audio-split-marker").length,
-            ).toBe(1);
-        });
-
-        it("leaves alone a book's own highlight span nested inside a sentence it fixed", () => {
-            // The tighter version of the test below. Scoping by element is not enough: a book can
-            // carry ui-enableHighlight markup of its own INSIDE a sentence the tool has touched,
-            // and a save must not quietly strip that out of the file.
-            const { box1, span, recording } = fixedUpBox();
-            const fromTheBook = box1.ownerDocument.createElement("span");
-            fromTheBook.classList.add("ui-enableHighlight");
-            fromTheBook.textContent = "the book's own";
-            span.appendChild(fromTheBook);
-
-            recording.undoHighlightingFixes(box1);
-
-            expect(
-                span.querySelectorAll("span.ui-enableHighlight").length,
-                "the book's own span should survive",
-            ).toBe(1);
-            expect(span.textContent).toContain("the book's own");
-        });
-
-        it("leaves the no-highlight class alone when the book already had it", () => {
+        it("paints a sentence whole when its gaps are two spaces or fewer", async () => {
             SetupIFrameFromHtml(
-                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment ui-disableHighlight">One Two&nbsp;&nbsp;&nbsp; Three</span></p></div></div></div>',
+                sentenceBox(
+                    '<span id="span1" class="audio-sentence">One Two&nbsp; End1.</span>',
+                ),
             );
-            const box1 = getFrameElementById("page", "box1")!;
+            const htmlBefore = getFrameElementById("page", "box1")!.outerHTML;
+            expect(
+                await paintedTextFor(getFrameElementById("page", "span1")!),
+            ).toEqual(["One Two\u00a0 End1."]);
+            expect(
+                getFrameElementById("page", "box1")!.outerHTML,
+                "highlighting must not change the page",
+            ).toBe(htmlBefore);
+        });
+
+        it("leaves runs of three or more spaces unpainted, without changing the page", async () => {
+            SetupIFrameFromHtml(
+                sentenceBox(
+                    '<span id="span1" class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span>',
+                ),
+            );
+            const htmlBefore = getFrameElementById("page", "box1")!.outerHTML;
+            expect(
+                await paintedTextFor(getFrameElementById("page", "span1")!),
+            ).toEqual(["Four", "Five", "End3."]);
+            expect(
+                getFrameElementById("page", "box1")!.outerHTML,
+                "highlighting must not change the page",
+            ).toBe(htmlBefore);
+        });
+
+        it("finds a gap inside inline markup", async () => {
+            SetupIFrameFromHtml(
+                sentenceBox(
+                    '<span id="span1" class="audio-sentence">T<em>hree&nbsp;&nbsp; End2.</em></span>',
+                ),
+            );
+            expect(
+                await paintedTextFor(getFrameElementById("page", "span1")!),
+            ).toEqual(["Three", "End2."]);
+        });
+
+        it("counts zero-width spaces as part of a gap", async () => {
+            SetupIFrameFromHtml(
+                sentenceBox(
+                    '<span id="span1" class="audio-sentence">T<em>hree\u200b \u200bEnd2.</em></span>',
+                ),
+            );
+            expect(
+                await paintedTextFor(getFrameElementById("page", "span1")!),
+            ).toEqual(["Three", "End2."]);
+        });
+
+        it("leaves the gaps out of a whole text box too", async () => {
+            // The old DOM-based fix only looked inside spans with ids, so a text box recorded as a
+            // whole, not yet split, had its gaps painted. There was no reason for the difference.
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-audiorecordingmode="TextBox"><p>One Two&nbsp; End1. Four&nbsp;&nbsp;&nbsp; End3.</p></div></div></div>',
+            );
+            expect(
+                await paintedTextFor(getFrameElementById("page", "box1")!),
+            ).toEqual(["One Two\u00a0 End1. Four", "End3."]);
+        });
+
+        it("leaves the gaps out of each segment of a split text box", () => {
+            SetupIFrameFromHtml(
+                '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable audio-sentence bloom-postAudioSplit" data-test-preselect="true" data-audiorecordingmode="TextBox" data-audiorecordingendtimes="1.0 2.0 3.0"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five End3.</span></p></div></div></div>',
+            );
             const recording = new AudioRecording();
-            recording.fixHighlighting(box1);
+            setHighlightedElementFromDom(recording);
+            recording.markAudioSplit();
 
-            recording.undoHighlightingFixes(box1);
-
+            // The three split colours take segments in turn: 1 and 4 would share a colour, here
+            // segments 1, 2, 3 get one each.
             expect(
-                box1
-                    .querySelector("span")!
-                    .classList.contains("ui-disableHighlight"),
-                "a class the book brought is not ours to remove",
-            ).toBe(true);
+                getSplitHighlightTexts().map((texts) =>
+                    texts.map((text) => trimSpaces(text)),
+                ),
+            ).toEqual([
+                ["One Two\u00a0 End1."],
+                ["Three", "End2."],
+                ["Four", "Five End3."],
+            ]);
         });
 
-        it("leaves alone highlight spans it did not put there", () => {
-            // An older book can legitimately carry ui-enableHighlight spans of its own (HtmlDom.cs
-            // even generates user-style rules targeting them); a save must not quietly strip those
-            // just because the Talking Book tool happens to be open.
-            const { box1, recording } = fixedUpBox();
-            const other = box1.ownerDocument.createElement("span");
-            other.id = "notOneOfOurs";
-            other.innerHTML =
-                '<span class="ui-enableHighlight">from the book</span>';
-            box1.appendChild(other);
-
-            recording.undoHighlightingFixes(box1);
-
-            expect(
-                other.querySelectorAll("span.ui-enableHighlight").length,
-                "a span we never fixed should be left alone",
-            ).toBe(1);
-        });
-
-        it("can be run more than once", () => {
-            // Every save undoes on a clone; the live page's fixes stay, to be undone again later.
-            const { box1, span, recording } = fixedUpBox();
-
-            recording.undoHighlightingFixes(box1);
-            const afterFirst = span.textContent;
-            recording.undoHighlightingFixes(box1);
-
-            expectUndone(span);
-            expect(span.textContent).toBe(afterFirst);
-        });
-    });
-
-    describe("- fixHighlighting()", () => {
-        const scenarios: ("Check" | "Listen to whole page")[] = [
-            "Check",
-            "Listen to whole page",
-        ];
-
-        scenarios.forEach((scenario) => {
-            it(`[${scenario}] doesn't change anything for two or fewer whitespace in split text box w/single highlight segment`, () => {
-                const originalHtml =
-                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three</span></p></div></div>';
-                SetupIFrameFromHtml(originalHtml);
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.parentElement!.outerHTML).toBe(originalHtml);
-            });
-
-            it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/single highlight segment`, () => {
-                SetupIFrameFromHtml(
-                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div></div>',
-                );
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                const childSpan = box1.querySelector("span")!;
-                expect(
-                    childSpan.classList.contains("ui-disableHighlight"),
-                    "missing ui-disableHighlight",
-                ).toBe(true);
-
-                expect(childSpan.innerHTML).toBe(
-                    '<span class="ui-enableHighlight" data-bloom-temp-highlight="true">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End</span>',
-                );
-            });
-
-            it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/multiple highlight segments.`, () => {
-                const html =
-                    '<div id="page1"><div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div></div></div>';
-                SetupIFrameFromHtml(html);
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.innerHTML).toBe(
-                    "<p>" +
-                        '<span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span>' +
-                        '<span id="span2" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></span>' +
-                        '<span id="span3" class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End3.</span></span>' +
-                        "</p>",
-                );
-            });
-
-            it(`[${scenario}] doesn't do anything on unsplit text box.`, () => {
-                const originalHtml =
-                    '<div id="box1" class="bloom-editable audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p>One Two&nbsp; End1. Three&nbsp;&nbsp; End2. Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</p></div>';
-                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.outerHTML).toBe(originalHtml);
-            });
-
-            it(`[${scenario}] disables highlight on 3 or more whitespace in record-by-sentence box`, () => {
-                const originalHtml =
-                    '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">One Two&nbsp; End1.</span><span id="span2" class="audio-sentence">Three&nbsp;&nbsp; End2.</span><span id="span3" class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
-                SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`,
-                );
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.innerHTML).toBe(
-                    "<p>" +
-                        '<span id="span1" class="audio-sentence" data-test-preselect="true">One Two&nbsp; End1.</span>' +
-                        '<span id="span2" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></span>' +
-                        '<span id="span3" class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End3.</span></span>' +
-                        "</p>",
-                );
-            });
-
-            it(`[${scenario}] disables highlight on emphasized text`, () => {
-                const originalHtml =
-                    '<div class="bloom-translationGroup"><div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">T<em>hree&nbsp;&nbsp; End2.</em></span></p></div></div>';
-                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.innerHTML).toBe(
-                    "<p>" +
-                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">T</span><em><span class="ui-enableHighlight" data-bloom-temp-highlight="true">hree</span>&nbsp;&nbsp; <span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></em></span>' +
-                        "</p>",
-                );
-            });
-
-            it(`[${scenario}] disables highlight for &ZeroWidthSpace; (\u200B)`, () => {
-                const originalHtml =
-                    '<div id="box1" class="bloom-editable bloom-visibility-code-on data-audiorecordingmode="Sentence"><p><span id="span1" class="audio-sentence" data-test-preselect="true">T<em>hree\u200B \u200BEnd2.</em></span></p></div>';
-                SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${originalHtml}</div></div>`,
-                );
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.innerHTML).toBe(
-                    "<p>" +
-                        '<span id="span1" class="audio-sentence ui-disableHighlight" data-test-preselect="true"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">T</span><em><span class="ui-enableHighlight" data-bloom-temp-highlight="true">hree</span>\u200B \u200B<span class="ui-enableHighlight" data-bloom-temp-highlight="true">End2.</span></em></span>' +
-                        "</p>",
-                );
-            });
-
-            it(`[${scenario}] disables highlight for complex html from real user`, () => {
-                SetupIFrameFromHtml(
-                    `<div id="page1"><div class='bloom-translationGroup'>${getComplexHtmlFromUser()}</div></div>`,
-                );
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-
-                // Verification
-                expect(box1.innerHTML).toBe(
-                    getExpectedResultForComplexHtmlFromUser(),
-                );
-            });
-
-            it(`[${scenario}] reverts fixHighlighting() in split text box.`, () => {
-                const originalHtml =
-                    '<div id="box1" class="bloom-editable audio-sentence" data-test-preselect="true" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
-                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
-                const box1 = getFrameElementById("page", "box1")!;
-
-                const recording = new AudioRecording();
-                recording.fixHighlighting(
-                    scenario === "Check" ? box1 : undefined,
-                );
-                recording.revertFixHighlighting();
-
-                // Verification
-                expect(box1.outerHTML).toBe(originalHtml);
-            });
+        it("handles complex html from a real user", async () => {
+            SetupIFrameFromHtml(
+                `<div id="page1"><div class='bloom-translationGroup'>${getComplexHtmlFromUser()}</div></div>`,
+            );
+            const sentences = Array.from(
+                getFrameElementById("page", "box1")!.querySelectorAll(
+                    ".audio-sentence",
+                ),
+            );
+            expect(sentences.length, "test setup: two sentences").toBe(2);
+            expect(await paintedTextFor(sentences[0])).toEqual([
+                "Mientras navegaban,",
+                "Jesús se quedó",
+                "profundamente dormido.",
+            ]);
+            expect(await paintedTextFor(sentences[1])).toEqual([
+                "De pronto, una gran",
+                "tormenta se desató.",
+            ]);
         });
     });
 
@@ -3456,16 +3259,4 @@ function getComplexHtmlFromUser() {
     <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong>&nbsp;Mientras navegaban,&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;">Jesús se quedó&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;">profundamente dormido.<span class="bloom-audio-split-marker"></span></span></strong></span></p>
     <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;">De pronto, una gran&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;">tormenta se desató.</span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
 </div>`;
-}
-function getExpectedResultForComplexHtmlFromUser() {
-    return `
-    <p><strong><span style="color:#FFFFFF;">&nbsp; &nbsp; &nbsp;</span></strong></p>
-    <p></p>
-    <p></p>
-    <p></p>
-    <p></p>
-    <p></p>
-    <p><span id="i9da9787c-53f9-4e22-831a-9a427cd8b928" class="audio-sentence ui-disableHighlight" recordingmd5="64aaf12b2d884f144a6708b77b4d61cc" data-duration="4.388571">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span style="color:#FFFFFF;">&nbsp; &nbsp; <strong><span class="ui-enableHighlight" data-bloom-temp-highlight="true">&nbsp;Mientras navegaban,</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</strong></span><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">Jesús se quedó</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">profundamente dormido.</span><span class="bloom-audio-split-marker"></span></span></strong></span></p>
-    <p><span id="i2bff1986-70df-4539-8fbd-be90babc9057" class="audio-sentence ui-disableHighlight" recordingmd5="f9f36fe0a9162025c3a64a8a8bf703e5" data-duration="3.291429"><strong>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;​ ​&nbsp; &nbsp;​ <span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">De pronto, una gran</span>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span></strong><strong><span style="color:#FFFFFF;"><span class="ui-enableHighlight" data-bloom-temp-highlight="true">tormenta se desató.</span></span></strong></span><strong><span style="color:#FFFFFF;">&nbsp;</span></strong></p>
-`;
 }

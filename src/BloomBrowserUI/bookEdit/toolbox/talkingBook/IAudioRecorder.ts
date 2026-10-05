@@ -14,7 +14,6 @@ export interface IAudioRecorder {
     setRecordingMode(recordingMode: RecordingMode): Promise<void>;
     handleImportRecordingClick(): void;
     removeRecordingSetup: () => void;
-    undoHighlightingFixes: (pageOrClone: ParentNode) => void;
     getUpdateMarkupAction: () => Promise<() => void>;
     setupForRecordingAsync: () => Promise<void>;
     handleToolHiding: () => void;

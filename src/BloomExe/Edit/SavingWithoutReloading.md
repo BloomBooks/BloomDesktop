@@ -359,9 +359,13 @@ start a save from C# — but each converted caller shrinks the surface.
 - **Not blurring.** The old code blurred the active element before capturing. If any code relies on
   a blur handler to normalize text before it is saved, that normalization no longer happens on save.
   CKEditor's `getData()` gives us current text either way, so this is about side effects, not text.
-- **`ui-audioCurrent`.** The Talking Book tool deliberately leaves its highlight class on the live
-  page (BL-15300), so it can reach the saved HTML; `BookData.cs:2091` already defends against that.
-  Unchanged by this work, but worth knowing when reading the clone-cleanup code.
+- **The Talking Book highlight touches nothing in the page.** Since BL-16558 it is painted with the
+  CSS Highlight API rather than a `ui-audioCurrent` class, and since this branch so are the gaps in
+  it: runs of three or more spaces used to be carved out by wrapping the words in temporary
+  `ui-enableHighlight` spans (`fixHighlighting`), markup that then had to be kept out of every save,
+  including saves made while audio was playing. `AudioHighlightManager` now leaves those runs out
+  of the highlight ranges instead. `BookData.cs` still strips a `ui-audioCurrent` left in an older
+  book.
 
 ---
 

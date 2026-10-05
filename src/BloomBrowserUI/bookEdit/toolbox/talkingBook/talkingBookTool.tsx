@@ -138,15 +138,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     // The markup this tool adds that would otherwise reach the saved HTML: the
-    // bloom-describedImage wrappers, the visible "|" phrase-delimiter spans, and (while audio is
-    // playing or paused) the highlight-segment spans fixHighlighting() inserts. Everything else
+    // bloom-describedImage wrappers and the visible "|" phrase-delimiter spans. Everything else
     // removeRecordingSetup() deals with is either bloom-ui (the playback-order controls, the
     // recording icon), not in the DOM at all (the ::highlight registry), or purely tool state, so
     // it lives in detachFromPage below.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         unwrapDescribedImages(pageOrClone);
         TalkingBookTool.enshroudPhraseDelimiters(pageOrClone);
-        getAudioRecorder()?.undoHighlightingFixes(pageOrClone);
     }
 
     public detachFromPage() {
@@ -154,9 +152,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
         if (audioRecorder) {
-            // Live-only: takes down the playback-order UI and resets the tool's own state. It also
-            // calls revertFixHighlighting(), which does the same DOM restoration removeToolMarkup()
-            // does and then clears the record of it, so the super call below finds nothing left.
+            // Live-only: takes down the playback-order UI and resets the tool's own state.
             audioRecorder.removeRecordingSetup();
         }
         // The rest is what hideImageDescriptions() used to do for us here: the
