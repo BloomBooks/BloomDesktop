@@ -36,9 +36,12 @@ test("turning on Team Collections on the Experimental page saves it and reopens 
 
     await openCollectionSettings(page);
     await showCollectionSettingsPage(page, "Experimental");
-    expect(
-        await getCollectionSettingsCheckbox(page, "Team Collections"),
-    ).toEqual({ checked: false, enabled: true });
+    // Polled: the box stays disabled until Bloom has said the subscription includes the feature.
+    await expect
+        .poll(() => getCollectionSettingsCheckbox(page, "Team Collections"), {
+            message: "Team Collections should be offered, unticked",
+        })
+        .toEqual({ checked: false, enabled: true });
     expect(await getCollectionSettingsOkLabel(page)).toBe("OK");
 
     await toggleCollectionSettingsCheckbox(page, "Team Collections");

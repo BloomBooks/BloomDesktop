@@ -64,12 +64,16 @@ const {
     mockCloseDialog: vi.fn(),
     // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
     dialogState: { open: true },
-    // Whether the collection's subscription tier includes Team Collections.
-    teamCollectionFeature: { enabled: true },
+    // Whether Bloom has answered the subscription check yet, and whether the collection's tier
+    // includes Team Collections.
+    teamCollectionFeature: { loaded: true, enabled: true },
 }));
 
 vi.mock("../react_components/featureStatus", () => ({
-    useGetFeatureStatus: () => ({ enabled: teamCollectionFeature.enabled }),
+    useGetFeatureStatus: () =>
+        teamCollectionFeature.loaded
+            ? { enabled: teamCollectionFeature.enabled }
+            : undefined,
 }));
 
 vi.mock("../react_components/requiresSubscription", () => ({
@@ -275,6 +279,7 @@ describe("CollectionSettingsDialog", () => {
         container = document.createElement("div");
         document.body.appendChild(container);
         dialogState.open = true;
+        teamCollectionFeature.loaded = true;
         teamCollectionFeature.enabled = true;
         mockGet.mockReset();
         mockGet.mockImplementation(
@@ -560,6 +565,14 @@ describe("CollectionSettingsDialog", () => {
 
         it("disables Team Collections when the tier does not include it", async () => {
             teamCollectionFeature.enabled = false;
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("disables Team Collections until the subscription check has answered", async () => {
+            teamCollectionFeature.loaded = false;
 
             await renderDialog();
 

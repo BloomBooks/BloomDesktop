@@ -63,11 +63,9 @@ const TeamCollectionsExperimentalSetting: React.FunctionComponent<{
         "TeamCollection.TeamCollections",
     );
     const teamCollectionStatus = useGetFeatureStatus("TeamCollection");
-    // Until the status arrives, treat the feature as available, as the old dialog does.
-    const tierAllowsTeamCollections =
-        teamCollectionStatus === undefined
-            ? true
-            : teamCollectionStatus.enabled;
+    // Disabled until the status arrives, so nobody can tick it and save on a tier that lacks it.
+    // (The old dialog treated "not known yet" as available.)
+    const tierAllowsTeamCollections = teamCollectionStatus?.enabled === true;
     return (
         // One element around both keeps Config-R from drawing a divider between the checkbox
         // and its subscription badge.
