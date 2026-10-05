@@ -2,7 +2,6 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrValues,
-    ConfigrBoolean,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -25,17 +24,16 @@ import {
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WarningBox } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
-import { useGetFeatureStatus } from "../react_components/featureStatus";
-import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { get, postJson } from "../utils/bloomApi";
 import {
     ICollectionSettingsResponse,
     ICollectionSettingsSaveResult,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
-// Temporary content for every page. Each of the seven tab cards replaces its page's group with
-// real controls, so this text is deliberately plain English and is never localized.
+// Temporary content for every page not built yet. Each tab card replaces its page's placeholder
+// with real controls, so this text is deliberately plain English and is never localized.
 const PagePlaceholder: React.FunctionComponent = () => (
     <div
         css={css`
@@ -48,48 +46,6 @@ const PagePlaceholder: React.FunctionComponent = () => (
 );
 
 const kCollectionSettingsDialogId = "CollectionSettingsDialog";
-
-// ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
-const kTeamCollectionsFeatureToken = "team-collections";
-
-// The Team Collections row of the Experimental page. Team Collections is the only experimental
-// feature today; it also needs a high enough subscription tier, so the row carries the badge.
-// (Config-R requires a page's children to be ConfigrGroups, so the group itself stays inline.)
-const TeamCollectionsExperimentalSetting: React.FunctionComponent<{
-    tierAllowsTeamCollections: boolean;
-    locked: boolean;
-}> = (props) => {
-    const teamCollectionsLabel = useL10n(
-        "Team Collections",
-        "TeamCollection.TeamCollections",
-    );
-    return (
-        // One element around both keeps Config-R from drawing a divider between the checkbox
-        // and its subscription badge.
-        <div>
-            <ConfigrBoolean
-                label={teamCollectionsLabel}
-                path={`experimental.${kTeamCollectionsFeatureToken}`}
-                disabled={!props.tierAllowsTeamCollections || props.locked}
-            />
-            <div
-                css={css`
-                    display: flex;
-                    padding-bottom: 5px;
-                    font-size: 12px;
-                    font-weight: bold;
-                `}
-            >
-                <BloomSubscriptionIndicatorIconAndText
-                    feature="TeamCollection"
-                    css={css`
-                        margin-left: auto;
-                    `}
-                />
-            </div>
-        </div>
-    );
-};
 
 // Walks a dotted restart path such as "languages.language3.tag" into the values. A path through a
 // null branch (no third language) yields undefined, so adding or removing one shows as a change.
@@ -129,17 +85,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         React.useState<ICollectionSettingsValues>();
     const [saveErrorMessage, setSaveErrorMessage] = React.useState<string>();
     const [saving, setSaving] = React.useState(false);
-
-    // Asked as soon as the dialog opens, not when the Experimental page mounts (Config-R mounts only
-    // the page showing), so the answer is in before anyone gets there and the checkbox doesn't
-    // flash greyed out. Until it arrives the checkbox stays disabled, so nobody can tick it and
-    // save on a tier that lacks it. (The old dialog treated "not known yet" as available.)
-    // Expect to refactor this with the next page that needs subscription status (likely the
-    // Subscription page, BL-16734): probably into a small dialog-level subscription context that
-    // every page reads, possibly following a code typed but not yet saved. See PLAN.md, Step 4.
-    const teamCollectionStatus = useGetFeatureStatus(
-        propsForBloomDialog.open ? "TeamCollection" : undefined,
-    );
 
     // Config-r can call onChange while rendering, so state updates from it are deferred; the OK
     // handler reads this ref to be sure it has the newest values.
@@ -193,10 +138,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "CollectionSettingsDialog.BloomLibraryPage",
     );
     const advancedLabel = useL10n("Advanced", "Common.Advanced");
-    const experimentalLabel = useL10n(
-        "Experimental",
-        "CollectionSettingsDialog.ExperimentalPage",
-    );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
@@ -205,41 +146,39 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // A Team Collection member who is not an administrator gets this instead of any settings.
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
 
-    // C# names these pageKeys when it asks us to open on a particular page. A page with no
-    // content yet shows the placeholder.
-    const pages: {
-        pageKey: string;
-        label: string;
-        content?: React.ReactElement;
-    }[] = [
-        { pageKey: "languages", label: languagesLabel },
-        { pageKey: "frontBackMatter", label: frontBackMatterLabel },
-        { pageKey: "subscription", label: subscriptionLabel },
-        { pageKey: "teamCollection", label: teamCollectionLabel },
-        { pageKey: "bloomLibrary", label: bloomLibraryLabel },
-        { pageKey: "advanced", label: advancedLabel },
-        {
-            pageKey: "experimental",
-            label: experimentalLabel,
-            content: (
-                // No label: the page title already says "Experimental".
-                <ConfigrGroup>
-                    <TeamCollectionsExperimentalSetting
-                        tierAllowsTeamCollections={
-                            teamCollectionStatus?.enabled === true
-                        }
-                        // As in the WinForms dialog, someone in a Team Collection may not turn
-                        // the feature off.
-                        locked={
-                            loadedSettings?.isTeamCollection === true &&
-                            loadedSettings.values.experimental[
-                                kTeamCollectionsFeatureToken
-                            ]
-                        }
-                    />
+    // Each real page lives in its own file under settingsPages/, as a hook that returns the page's
+    // ConfigrPage, and each page still showing a placeholder gets one the same way when its tab
+    // card adds it. Config-R requires the pane's children to be ConfigrPages and a page's children
+    // to be ConfigrGroups (it throws, blanking the whole UI, otherwise), so a page cannot simply be
+    // a component of its own. The hooks run whenever the dialog renders, even for pages not
+    // showing. C# names these pageKeys when it asks us to open on a particular page.
+    const experimentalPage = useExperimentalPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+    });
+    const pages = [
+        ...[
+            { pageKey: "languages", label: languagesLabel },
+            { pageKey: "frontBackMatter", label: frontBackMatterLabel },
+            { pageKey: "subscription", label: subscriptionLabel },
+            { pageKey: "teamCollection", label: teamCollectionLabel },
+            { pageKey: "bloomLibrary", label: bloomLibraryLabel },
+            { pageKey: "advanced", label: advancedLabel },
+        ].map((page) => (
+            <ConfigrPage
+                key={page.pageKey}
+                label={page.label}
+                pageKey={page.pageKey}
+                topLevel={true}
+            >
+                <ConfigrGroup label={page.label}>
+                    <ConfigrStatic>
+                        <PagePlaceholder />
+                    </ConfigrStatic>
                 </ConfigrGroup>
-            ),
-        },
+            </ConfigrPage>
+        )),
+        experimentalPage,
     ];
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
@@ -375,22 +314,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }, 0);
                     }}
                 >
-                    {pages.map((page) => (
-                        <ConfigrPage
-                            key={page.pageKey}
-                            label={page.label}
-                            pageKey={page.pageKey}
-                            topLevel={true}
-                        >
-                            {page.content ?? (
-                                <ConfigrGroup label={page.label}>
-                                    <ConfigrStatic>
-                                        <PagePlaceholder />
-                                    </ConfigrStatic>
-                                </ConfigrGroup>
-                            )}
-                        </ConfigrPage>
-                    ))}
+                    {pages}
                 </ConfigrPane>
             )}
         </ConfigrDialogFrame>

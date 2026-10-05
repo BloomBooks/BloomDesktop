@@ -389,8 +389,12 @@ Alphabet and Sentence ending punctuation backed by the per-language reader-tool 
 **Step 7. BL-16738 Settings: Experimental.** *Done without the registry: the page has exactly
 what master's Advanced tab offers (Team Collections; the Experimental Book Sources toggle is
 never shown on master, so it is not here either), and the GET reply gained `isTeamCollection` for
-the lock. A feature branch that adds an experimental feature adds its row and its key in
-`GetCurrentValues`/`CopyIntoPendingSettings`.* Per Q9: registry-driven list, one row today. Each
+the lock. A feature branch that adds an experimental feature adds an `ExperimentalFeatureSetting`
+row in `collection/settingsPages/ExperimentalPage.tsx` and its key in
+`GetCurrentValues`/`CopyIntoPendingSettings`. That file also sets the pattern for every page: each
+tab card moves its page out of `CollectionSettingsDialog.tsx` into its own file under
+`collection/settingsPages/`, as a hook returning the page's `ConfigrPage` (Config-R rejects a
+page wrapped in a component of its own).* Per Q9: registry-driven list, one row today. Each
 row is `ConfigrBoolean` plus the subscription badge, disabled when the tier lacks the feature or
 (for Team Collections) when already in a TC, as `AdvancedSettingsPanel.tsx:205-227` does now.
 
