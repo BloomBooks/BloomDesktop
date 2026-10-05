@@ -393,7 +393,7 @@ export class EditableDivUtils {
     // liveRoot and cloneRoot must be a live element and a deep clone of it, so that the Nth
     // div.bloom-editable in each corresponds; we throw if they have drifted apart.
     // See doCkEditorCleanup for why we want getData() rather than the raw innerHTML (BL-12391),
-    // and removeCkEditorFillingChars for the stray filling char case (BL-16490).
+    // and why a stray filling char is not stripped here (BL-16490, BL-16843).
     public static copyCkEditorDataToClone(
         liveRoot: HTMLElement,
         cloneRoot: HTMLElement,
@@ -414,9 +414,7 @@ export class EditableDivUtils {
             if (!ckeditorOfThisBox) {
                 return; // no editor attached (e.g. an invisible language), so nothing to clean.
             }
-            const ckEditorData = EditableDivUtils.removeCkEditorFillingChars(
-                ckeditorOfThisBox.getData(),
-            );
+            const ckEditorData = ckeditorOfThisBox.getData();
             // Same test as doCkEditorCleanup: only bother when getData() actually differs from
             // what is in the DOM.
             if (ckEditorData !== liveDiv.innerHTML) {
