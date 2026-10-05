@@ -16,9 +16,9 @@ namespace Bloom.Edit
     /// an asynchronous gap.
     ///
     /// Gathering the page is now cheap (~0.7 ms) and, since BL-13502, has no effect on the live
-    /// page at all. So the browser can simply keep C# supplied: an idle task in the editing page
-    /// posts the current content whenever the page has settled after a change. C# then already has
-    /// what a save needs, and can take it synchronously.
+    /// page at all. So the browser can simply keep C# supplied: a MutationObserver in the editing
+    /// page notices every change, and the content is posted 25 ms after the last one (see
+    /// pageSnapshot.ts). C# then already has what a save needs, and can take it synchronously.
     ///
     /// Two properties matter and are the reason this is a class rather than two fields:
     ///

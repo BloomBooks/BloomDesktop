@@ -372,8 +372,8 @@ start a save from C# — but each converted caller shrinks the surface.
 # The page snapshot: removing the round trip altogether
 
 Branch `BL-13502-page-snapshot`, exploratory. The idea: instead of C# asking the browser for the
-page and waiting, the **browser volunteers** it. An idle task in the editing page posts the current
-content whenever the page has settled after a change (`pageSnapshot.ts`); C# stores the string
+page and waiting, the **browser volunteers** it. A MutationObserver in the editing page notices
+each change, and the current content is posted 25 ms after the last one (`pageSnapshot.ts`); C# stores the string
 (`PageSnapshot.cs`, one new API `editView/pageSnapshot`); and a save then takes it synchronously.
 
 ## It works
