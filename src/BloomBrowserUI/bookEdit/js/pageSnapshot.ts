@@ -96,8 +96,10 @@ let busy = false;
 // Settles when the gather-and-post under way finishes; see tellCSharpIdle, which has to let the
 // post go out before it says the page is idle.
 let runDone: Promise<void> = Promise.resolve();
-// What the delay register says the page is busy with, or undefined when it is empty. Kept so that
-// a refused busy notice is offered again only while it is still true.
+// What the delay register said the page was busy with when it last became busy, or undefined when
+// it is empty. Only a clue for C#'s log (see onDelayRegisterChanged): work added later in the same
+// busy spell is not in it. Kept so that a refused busy notice is offered again only while the page
+// is still busy.
 let busyWith: string | undefined;
 let unsubscribeFromDelayRegister: (() => void) | undefined;
 // Set when the work finished but the snapshot of the finished page could not be delivered, so

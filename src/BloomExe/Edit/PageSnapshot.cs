@@ -49,7 +49,9 @@ namespace Bloom.Edit
         // What the browser says is still changing the page, or null when nothing is. The browser
         // keeps a register of asynchronous work whose results belong in the saved page (sizing an
         // image, settling a paste; see pageContentDelays.ts) and tells us when that register goes
-        // from empty to busy and back, naming the work. While it is busy, the snapshot we hold
+        // from empty to busy and back, naming the work that was registered when it became busy
+        // (only a clue for the log: work added later in the same busy spell is not named, and
+        // what is named may already have finished). While it is busy, the snapshot we hold
         // predates that work, so a save from it would miss whatever the work is doing. Content the
         // browser sends WITH a request has already waited for the register, so only snapshot-based
         // saves need to care; see WaitUntilIdle.
@@ -91,8 +93,9 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// The browser says the page is busy with some asynchronous work (named by busyWith) whose
-        /// result belongs in the saved page. Ignored, and answered false so the browser offers it
+        /// The browser says the page is busy with some asynchronous work whose result belongs in
+        /// the saved page. busyWith names the work registered when it became busy; it is for the
+        /// log only and need not be complete or current. Ignored, and answered false so the browser offers it
         /// again, unless it is about the load we are showing -- the same rule as Set.
         /// </summary>
         public bool SetBusy(string loadId, long sequence, string busyWith)

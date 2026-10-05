@@ -1858,8 +1858,9 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Called by the editView/pageBusy API: the browser has begun asynchronous work, named by
-        /// busyWith, whose result belongs in the saved page. See PageSnapshot.SetBusy.
+        /// Called by the editView/pageBusy API: the browser has begun asynchronous work whose
+        /// result belongs in the saved page. busyWith names what was registered when it began, for
+        /// the log only. See PageSnapshot.SetBusy.
         /// </summary>
         public bool ReceivePageBusy(string loadId, long sequence, string busyWith)
         {
@@ -1903,7 +1904,7 @@ namespace Bloom.Edit
             if (!_pageSnapshot.WaitUntilIdle(maxWaitMs, out var busyWith))
             {
                 Logger.WriteEvent(
-                    "Saving page {0} from the last snapshot although the browser still reports it busy with '{1}' after waiting {2}ms. Whatever that work was doing to the page may be missing from the book.",
+                    "Saving page {0} from the last snapshot although the browser still reports it busy after waiting {2}ms; when it became busy it was with '{1}' (other work may have started since). Whatever that work was doing to the page may be missing from the book.",
                     pageId,
                     busyWith,
                     maxWaitMs

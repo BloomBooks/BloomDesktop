@@ -27,14 +27,20 @@ const activeDelays: string[] = [];
 // Callbacks waiting for activeDelays to empty; see whenNoActiveDelays().
 const delayWaiters: (() => void)[] = [];
 
-// Told when the register goes from empty to busy (with what it is busy with) and back to empty
+// Told when the register goes from empty to busy (with describeBusyRegister()) and back to empty
 // (with undefined). See onDelayRegisterChanged.
 const registerListeners: ((busyWith: string | undefined) => void)[] = [];
 
-// Be told when the register becomes busy -- with the id of the work, or the ids if several
-// started together -- and when it empties again. Only the transitions, not every add and remove.
-// The page snapshot uses this to tell C# that a snapshot-based save should wait, and what for.
+// Be told when the register becomes busy and when it empties again. Only those transitions, not
+// every add and remove, because what the listener needs to know is WHETHER the page is busy.
+// The page snapshot uses this to tell C# that a snapshot-based save should wait.
 // Returns a function that unsubscribes.
+//
+// The busy notice also says what the page is busy with (see describeBusyRegister), but only as a
+// clue for the log: it is the work registered at the moment the notice was given, so work added
+// later in the same busy spell is not in it, and what it names may have finished while other work
+// carries on. Keeping C# up to date on every add and remove would cost a request each, for a
+// message nobody acts on.
 //
 // If the register is already busy when the listener subscribes, it is told so at once: the page
 // snapshot subscribes after bootstrap(), by which time the load-time work (image sizing, CKEditor
@@ -44,7 +50,7 @@ export function onDelayRegisterChanged(
     listener: (busyWith: string | undefined) => void,
 ): () => void {
     registerListeners.push(listener);
-    if (activeDelays.length > 0) listener(activeDelays.join(", "));
+    if (activeDelays.length > 0) listener(describeBusyRegister());
     return () => {
         const index = registerListeners.indexOf(listener);
         if (index >= 0) registerListeners.splice(index, 1);
@@ -57,8 +63,15 @@ export function onDelayRegisterChanged(
 export function addRequestPageContentDelay(id: string): void {
     activeDelays.push(id);
     if (activeDelays.length === 1) {
-        registerListeners.forEach((listener) => listener(id));
+        const busyWith = describeBusyRegister();
+        registerListeners.forEach((listener) => listener(busyWith));
     }
+}
+
+// What the register holds right now, for a busy notice: the ids of the active delays, comma
+// separated. A snapshot, not a running record; see onDelayRegisterChanged.
+function describeBusyRegister(): string {
+    return activeDelays.join(", ");
 }
 
 // Deregister work, releasing anyone waiting if this was the last of it.
