@@ -270,12 +270,10 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.setupResizeObserver();
     }
 
-    // The audio highlight this tool's preview can leave behind. The start/end rectangles need
-    // nothing here: they are bloom-ui, so the save drops them like any other editor chrome, and
-    // their positions are kept in the bloom-canvas's data-initialrect/data-finalrect attributes.
-    public removeToolMarkup(pageOrClone: HTMLElement): void {
-        MotionTool.removeCurrentAudioMarkup(pageOrClone);
-    }
+    // No removeToolMarkup override: the only markup this tool adds to the page is the start/end
+    // rectangles, which are bloom-ui, so the save drops them like any other editor chrome (their
+    // positions are kept in the bloom-canvas's data-initialrect/data-finalrect attributes). The
+    // preview's narration highlight is drawn with the CSS Highlight API and is not in the DOM.
 
     public detachFromPage() {
         // This must come first: while a preview is playing, the rectangles have been moved into the
@@ -291,7 +289,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
         }
-        super.detachFromPage(); // removeToolMarkup: the audio highlight
+        super.detachFromPage();
 
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
@@ -305,13 +303,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (this.sizeObserver) {
             this.sizeObserver.disconnect();
         }
-    }
-
-    // Static, and taking the root to work in, so that removeToolMarkup() can use it on a clone.
-    private static removeCurrentAudioMarkup(pageOrClone: ParentNode): void {
-        pageOrClone
-            .querySelector(".ui-audioCurrent")
-            ?.classList.remove("ui-audioCurrent");
     }
 
     public id(): string {
@@ -902,7 +893,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (this.narrationPlayer) {
             this.narrationPlayer.stopListen();
         }
-        MotionTool.removeCurrentAudioMarkup(page);
         // stop background music
         this.getPlayer().pause();
     }
