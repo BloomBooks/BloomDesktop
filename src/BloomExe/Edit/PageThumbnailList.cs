@@ -274,13 +274,12 @@ namespace Bloom.Edit
             if (!IsContextMenuCommandEnabled(page, commandId))
                 return;
 
+            // "duplicatePageManyTimes" and "chooseDifferentLayout" never come here: the page list
+            // opens their dialogs itself (see PageListApi.HandleContextMenuItemClickedRequest).
             switch (commandId)
             {
                 case "duplicatePage":
                     Model.DuplicatePage(page, pageContent);
-                    break;
-                case "duplicatePageManyTimes":
-                    Model.DuplicateManyPages(page);
                     break;
                 case "copyPage":
                     Model.CopyPage(page, pageContent);
@@ -291,10 +290,6 @@ namespace Bloom.Edit
                 case "removePage":
                     // The browser side has already confirmed with the user (BL-16421).
                     Model.DeletePage(page, pageContent);
-                    break;
-                case "chooseDifferentLayout":
-                    Model.GetEditingBrowser().Focus();
-                    Model.ChangePageLayout(page);
                     break;
             }
         }
@@ -320,7 +315,7 @@ namespace Bloom.Edit
                 WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
                 return;
             }
-            Model.MergeCurrentPageThenSave(
+            var outcome = Model.MergeCurrentPageThenSave(
                 () =>
                 {
                     var relocatePageInfo = new RelocatePageInfo(movedPage, newPageIndex);
@@ -331,6 +326,10 @@ namespace Bloom.Edit
                 },
                 pageContent: pageContent
             );
+            // The drag has already rearranged the thumbnails. If the move did not happen -- it was
+            // declined because the editor was mid-navigation, or it failed -- put them back.
+            if (outcome != SaveOutcome.Saved)
+                WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
         }
 
         public void UpdateThumbnailAsync(IPage page)

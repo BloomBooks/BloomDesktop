@@ -98,8 +98,8 @@ the content in hand there is nothing left to navigate to. The others still navig
 are *going somewhere* (the new page, the next page, the moved page); what they lose is the round
 trip, and with it the `SavePending` window in which a second command was silently dropped.
 
-Requests from a separate dialog window (Add Page, Duplicate Many Times) cannot reach the page
-frame to collect its content; they send none, and the snapshot is used.
+Requests from a dialog (Add Page, Duplicate Many Times, Choose Different Layout) send no page
+content; the snapshot is used.
 
 Everything below is the inventory of what else could be converted, and what that would let us
 delete.
@@ -352,10 +352,15 @@ start a save from C# — but each converted caller shrinks the surface.
   `_runningSaveInPlaceAction` relaxes that guard for the duration of the action — safely, because
   by then the browser's content is already in the book DOM and there is nothing left to lose. Our
   own navigation afterwards supersedes the action's, or is ignored when it is to the same page.
-- **The context menu runs its command ~100ms after the click** (`HandleContextMenuItemClickedRequest`
-  defers it so the menu can close). The content we save is therefore gathered slightly *earlier*
-  than the old path gathered it — at click time rather than 100ms later. Nothing a user can type
-  into fits in that window, but it is a real difference.
+- **A context-menu command runs inside its request.** `HandleContextMenuItemClickedRequest` runs
+  the command and only then answers, so a page click or move made meanwhile waits in the page
+  list's request queue and cannot overtake it. This used to be deferred by 100 ms, because Duplicate
+  Many Times opened a modal C# dialog, and a modal dialog inside a handler holding the API lock
+  deadlocks; but the deferral answered the request before the command ran, which let a click
+  overtake it, and keeping the two in order took a chain of queued work in `PageListApi`. Now the
+  two commands that ask the user something open their dialogs in the browser (Choose Different
+  Layout's page chooser already was a browser dialog), the remaining commands need no dialog, and
+  the deferral and the chain are gone.
 - **Not blurring.** The old code blurred the active element before capturing. If any code relies on
   a blur handler to normalize text before it is saved, that normalization no longer happens on save.
   CKEditor's `getData()` gives us current text either way, so this is about side effects, not text.

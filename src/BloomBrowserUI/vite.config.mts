@@ -596,7 +596,6 @@ export default defineConfig(async ({ command }) => {
             "./teamCollection/JoinTeamCollectionDialog.tsx",
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
-        duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
         languageChooserBundle: "./collection/LanguageChooserDialog.tsx",

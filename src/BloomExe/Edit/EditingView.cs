@@ -1578,20 +1578,11 @@ namespace Bloom.Edit
 
         public void ShowAddPageDialog()
         {
-            PageTemplatesApi.ForPageLayout = false;
             //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
             // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
             _mainBrowser.RunJavascriptFireAndForget(
                 "workspaceBundle.showPageChooserDialog(false);"
             );
-        }
-
-        internal void ShowChangeLayoutDialog()
-        {
-            PageTemplatesApi.ForPageLayout = true;
-            //if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-            // Fire-and-forget: we just want the dialog to open; nothing here depends on it having finished.
-            _mainBrowser.RunJavascriptFireAndForget("workspaceBundle.showPageChooserDialog(true);");
         }
 
         public int Zoom => EditingView.ZoomSetting;

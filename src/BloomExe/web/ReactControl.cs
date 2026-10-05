@@ -300,7 +300,6 @@ namespace Bloom.web
                     "createTeamCollectionDialogBundle",
                     "/teamCollection/CreateTeamCollection.entry.tsx"
                 },
-                { "duplicateManyDlgBundle", "/bookEdit/duplicateManyDialog.entry.tsx" },
                 {
                     "joinTeamCollectionDialogBundle",
                     "/teamCollection/JoinTeamCollectionDialog.entry.tsx"

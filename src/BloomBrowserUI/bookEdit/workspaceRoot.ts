@@ -88,6 +88,8 @@ import { showLinkTargetChooserDialog } from "../react_components/LinkTargetChoos
 export { showLinkTargetChooserDialog };
 import { showBookGridSetupDialog } from "../react_components/BookGridSetup/BookGridSetupDialog";
 export { showBookGridSetupDialog };
+import { showDuplicateManyDialog } from "./duplicateManyDialog";
+export { showDuplicateManyDialog };
 
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookAndPageSettings/BookAndPageSettingsDialog";
@@ -491,6 +493,7 @@ interface WorkspaceBundleApi {
     showPageChooserDialog: typeof showPageChooserDialog;
     showLinkTargetChooserDialog: typeof showLinkTargetChooserDialog;
     showBookGridSetupDialog: typeof showBookGridSetupDialog;
+    showDuplicateManyDialog: typeof showDuplicateManyDialog;
     showBookSettingsDialog: typeof showBookSettingsDialog;
     showDecodableReaderSetupDialog: typeof showDecodableReaderSetupDialog;
     closeDecodableReaderSetupDialog: typeof closeDecodableReaderSetupDialog;
@@ -541,6 +544,7 @@ window.workspaceBundle = {
     showPageChooserDialog,
     showLinkTargetChooserDialog,
     showBookGridSetupDialog,
+    showDuplicateManyDialog,
     showBookSettingsDialog,
     showDecodableReaderSetupDialog,
     closeDecodableReaderSetupDialog,

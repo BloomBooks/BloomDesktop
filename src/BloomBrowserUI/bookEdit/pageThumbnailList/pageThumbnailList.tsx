@@ -7,6 +7,7 @@
 // so things it exports are accessible from outside the bundle using workspaceBundle.
 
 import $ from "jquery";
+import { getWorkspaceBundleExports } from "../js/workspaceFrames";
 import { css } from "@emotion/react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
@@ -815,13 +816,24 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
-        // Most of these commands (duplicate, copy, paste, remove) have to save the current page
-        // first, so send its content along. See collectCurrentPageContent(). Queued with the page
-        // clicks, so that a click made just after the command cannot overtake it while its content
-        // is being gathered and leave it acting on the newly selected page.
-        // (C# answers this request before it runs the command, so a click posted straight after
-        // could reach it first; C# itself queues such a click behind the command, see
-        // PageListApi.HandlePageClickedRequest.)
+        // The two commands that ask the user something open their dialog here, in the Edit tab,
+        // and talk to C# only when the user is done: Duplicate Many Times posts the count, and
+        // the page chooser applies the layout. A right-click command always acts on the current
+        // page (right-clicking selects it), which is what both of those work on.
+        if (commandId === "duplicatePageManyTimes") {
+            getWorkspaceBundleExports().showDuplicateManyDialog();
+            closeContextMenu();
+            return;
+        }
+        if (commandId === "chooseDifferentLayout") {
+            getWorkspaceBundleExports().showPageChooserDialog(true);
+            closeContextMenu();
+            return;
+        }
+        // The rest (duplicate, copy, paste, remove) have to save the current page first, so send
+        // its content along. See collectCurrentPageContent(). Queued with the page clicks: C#
+        // answers only once the command has run, so a click made just after it waits its turn
+        // rather than overtaking it and leaving it acting on the newly selected page.
         const postCommand = () =>
             queuePageListRequest(async () =>
                 postJson("pageList/contextMenuItemClicked", {

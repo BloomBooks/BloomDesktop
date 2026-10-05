@@ -61,7 +61,6 @@ namespace Bloom.Edit
         private IPage _previouslySelectedPage;
         private BloomServer _server;
         private readonly BloomWebSocketServer _webSocketServer;
-        internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
 
         // This event fires after the EditingModel has finished responding to a PageSelection change.
         internal event EventHandler PageSelectModelChangesComplete;
@@ -446,19 +445,6 @@ namespace Bloom.Edit
         internal void OnDuplicatePage(string pageContent = null)
         {
             DuplicatePage(_pageSelection.CurrentSelection, pageContent);
-        }
-
-        internal void DuplicateManyPages(IPage page)
-        {
-            using (var dlg = new ReactDialog("duplicateManyDlgBundle"))
-            {
-                dlg.SetScaledSize(400, 235);
-                // This dialog is neater without a task bar. We don't need to be able to
-                // drag it around. There's nothing left to give it one if we don't set a title
-                // and remove the control box.
-                dlg.ControlBox = false;
-                dlg.ShowDialog();
-            }
         }
 
         internal void DuplicatePage(IPage page, string pageContent = null)
@@ -2470,12 +2456,6 @@ namespace Bloom.Edit
             // Usually, relevant changes will have been saved when Change Layout was turned off.
             //SaveNow();
             _view.ShowAddPageDialog();
-        }
-
-        internal void ChangePageLayout(IPage page)
-        {
-            PageChangingLayout = page;
-            _view.ShowChangeLayoutDialog();
         }
 
         public void ChangeBookLicenseMetaData(Metadata metadata)
