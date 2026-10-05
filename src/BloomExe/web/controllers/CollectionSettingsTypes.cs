@@ -26,6 +26,11 @@ namespace Bloom.web.controllers
         public string[] RestartPaths;
 
         /// <summary>
+        /// Whether the open collection is a Team Collection (even if disconnected).
+        /// </summary>
+        public bool IsTeamCollection;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
