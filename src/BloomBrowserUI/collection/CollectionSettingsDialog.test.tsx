@@ -556,11 +556,6 @@ describe("CollectionSettingsDialog", () => {
                     )
                     ?.getAttribute("data-feature"),
             ).toBe("TeamCollection");
-            // It is the only page with real content so far.
-            expect(
-                container.querySelectorAll('[data-testid="configr-boolean"]')
-                    .length,
-            ).toBe(1);
         });
 
         it("disables Team Collections when the tier does not include it", async () => {

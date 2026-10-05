@@ -9,8 +9,8 @@ import {
     kEnterpriseSubscriptionCode,
     openCollectionSettings,
     restartFromCollectionSettings,
+    setCollectionSettingsCheckbox,
     showCollectionSettingsPage,
-    toggleCollectionSettingsCheckbox,
 } from "../helpers/collectionSettings";
 import { getSavedExperimentalFeatures } from "../helpers/userSettings";
 
@@ -44,7 +44,7 @@ test("turning on Team Collections on the Experimental page saves it and reopens 
         .toEqual({ checked: false, enabled: true });
     expect(await getCollectionSettingsOkLabel(page)).toBe("OK");
 
-    await toggleCollectionSettingsCheckbox(page, "Team Collections");
+    await setCollectionSettingsCheckbox(page, "Team Collections", true);
 
     // Turning the feature on or off needs a restart, so OK says so.
     await expect

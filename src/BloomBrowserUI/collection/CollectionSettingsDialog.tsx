@@ -32,8 +32,8 @@ import {
 } from "./collectionSettingsTypes";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
-// Temporary content for every page not built yet. Each tab card replaces its page's placeholder
-// with real controls, so this text is deliberately plain English and is never localized.
+// Temporary content for every page. Each of the seven tab cards replaces its page's group with
+// real controls, so this text is deliberately plain English and is never localized.
 const PagePlaceholder: React.FunctionComponent = () => (
     <div
         css={css`
@@ -146,40 +146,21 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     // A Team Collection member who is not an administrator gets this instead of any settings.
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
 
-    // Each real page lives in its own file under settingsPages/, as a hook that returns the page's
-    // ConfigrPage, and each page still showing a placeholder gets one the same way when its tab
-    // card adds it. Config-R requires the pane's children to be ConfigrPages and a page's children
-    // to be ConfigrGroups (it throws, blanking the whole UI, otherwise), so a page cannot simply be
-    // a component of its own. The hooks run whenever the dialog renders, even for pages not
-    // showing. C# names these pageKeys when it asks us to open on a particular page.
+    // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
+    // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
+    // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
+    const placeholderPages = [
+        { pageKey: "languages", label: languagesLabel },
+        { pageKey: "frontBackMatter", label: frontBackMatterLabel },
+        { pageKey: "subscription", label: subscriptionLabel },
+        { pageKey: "teamCollection", label: teamCollectionLabel },
+        { pageKey: "bloomLibrary", label: bloomLibraryLabel },
+        { pageKey: "advanced", label: advancedLabel },
+    ];
     const experimentalPage = useExperimentalPage({
         dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
     });
-    const pages = [
-        ...[
-            { pageKey: "languages", label: languagesLabel },
-            { pageKey: "frontBackMatter", label: frontBackMatterLabel },
-            { pageKey: "subscription", label: subscriptionLabel },
-            { pageKey: "teamCollection", label: teamCollectionLabel },
-            { pageKey: "bloomLibrary", label: bloomLibraryLabel },
-            { pageKey: "advanced", label: advancedLabel },
-        ].map((page) => (
-            <ConfigrPage
-                key={page.pageKey}
-                label={page.label}
-                pageKey={page.pageKey}
-                topLevel={true}
-            >
-                <ConfigrGroup label={page.label}>
-                    <ConfigrStatic>
-                        <PagePlaceholder />
-                    </ConfigrStatic>
-                </ConfigrGroup>
-            </ConfigrPage>
-        )),
-        experimentalPage,
-    ];
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
     // one place; every path ends at a plain value, so !== is enough.
@@ -314,7 +295,21 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }, 0);
                     }}
                 >
-                    {pages}
+                    {placeholderPages.map((page) => (
+                        <ConfigrPage
+                            key={page.pageKey}
+                            label={page.label}
+                            pageKey={page.pageKey}
+                            topLevel={true}
+                        >
+                            <ConfigrGroup label={page.label}>
+                                <ConfigrStatic>
+                                    <PagePlaceholder />
+                                </ConfigrStatic>
+                            </ConfigrGroup>
+                        </ConfigrPage>
+                    ))}
+                    {experimentalPage}
                 </ConfigrPane>
             )}
         </ConfigrDialogFrame>

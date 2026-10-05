@@ -18,9 +18,7 @@ namespace Bloom.web.controllers
         public string[] RestartPaths;
 
         /// <summary>
-        /// Whether the open collection is a Team Collection (even if disconnected). The
-        /// Experimental page uses it to stop the user turning the Team Collections feature off
-        /// while they are in one.
+        /// Whether the open collection is a Team Collection (even if disconnected).
         /// </summary>
         public bool IsTeamCollection;
 

@@ -245,17 +245,18 @@ export async function getCollectionSettingsCheckbox(
 }
 
 /**
- * Click the checkbox setting with this label on the showing page of the Collection Settings
- * dialog, and return once it shows the new state. Nothing is saved until OK.
+ * Tick or untick the checkbox setting with this label on the showing page of the Collection
+ * Settings dialog, by clicking it if it isn't that way already, and return once it shows that
+ * state. Nothing is saved until OK.
  */
-export async function toggleCollectionSettingsCheckbox(
+export async function setCollectionSettingsCheckbox(
     page: Page,
     label: string,
+    checked: boolean,
 ): Promise<void> {
-    const before = await getCollectionSettingsCheckbox(page, label);
     const checkbox = collectionSettingsCheckbox(page, label);
-    await realClick(checkbox);
-    await expect(checkbox).toBeChecked({ checked: !before.checked });
+    if ((await checkbox.isChecked()) !== checked) await realClick(checkbox);
+    await expect(checkbox).toBeChecked({ checked });
 }
 
 /**
