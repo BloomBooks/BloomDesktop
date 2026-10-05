@@ -595,7 +595,7 @@
         <source xml:lang="en">Collection Settings</source>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.ExperimentalPage" translate="no">
+      <trans-unit id="CollectionSettingsDialog.ExperimentalPage">
         <source xml:lang="en">Experimental</source>
         <note>ID: CollectionSettingsDialog.ExperimentalPage</note>
         <note>Name of one of the pages (tabs) of the Settings dialog, the one where the user can turn on features that are not finished yet.</note>
