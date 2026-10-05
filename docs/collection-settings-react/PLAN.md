@@ -366,7 +366,11 @@ inside a `ConfigrStatic`, with `tabMargins` removed. Its own endpoints write onl
 dialog today, so this card has to get its edits to the React POST (§3.2.3), and reset its
 preview on the React dialog's Cancel as well as on the WinForms `DialogCancelled`. Pro-in-TC refusal and
 bookshelf clearing on descriptor change stay in the updater. Verify the "fix invalid branding"
-startup path opens this page.
+startup path opens this page. Decide whether the other pages' subscription gating (Experimental's
+Team Collections box, the Bloom Library bookshelf) should follow a code typed here but not yet
+saved; `features/status` only knows the saved one. If so, replace the dialog's own
+`useGetFeatureStatus` call (added by BL-16738 so the answer arrives before the Experimental page
+mounts) with a small dialog-level subscription context that every page reads.
 
 **Step 5. BL-16735 Settings: Team Collection.** `TeamCollectionSettingsPanel` inside a
 `ConfigrStatic`, keeping its overlay wrapper and experimental warning. Administrators reach the
@@ -382,7 +386,15 @@ Alphabet and Sentence ending punctuation backed by the per-language reader-tool 
 `fontScriptSettingsControl`, `singleFontSection`, `bookMakingSettingsControl`. Could be split:
 6a language rows and fonts, 6b "More" once Q3 is decided.
 
-**Step 7. BL-16738 Settings: Experimental.** Per Q9: registry-driven list, one row today. Each
+**Step 7. BL-16738 Settings: Experimental.** *Done without the registry: the page has exactly
+what master's Advanced tab offers (Team Collections; the Experimental Book Sources toggle is
+never shown on master, so it is not here either), and the GET reply gained `isTeamCollection` for
+the lock. A feature branch that adds an experimental feature adds an `ExperimentalFeatureSetting`
+row in `collection/settingsPages/ExperimentalPage.tsx` and its key in
+`GetCurrentValues`/`CopyIntoPendingSettings`. That file also sets the pattern for every page: each
+tab card moves its page out of `CollectionSettingsDialog.tsx` into its own file under
+`collection/settingsPages/`, as a hook returning the page's `ConfigrPage` (Config-R rejects a
+page wrapped in a component of its own).* Per Q9: registry-driven list, one row today. Each
 row is `ConfigrBoolean` plus the subscription badge, disabled when the tier lacks the feature or
 (for Team Collections) when already in a TC, as `AdvancedSettingsPanel.tsx:205-227` does now.
 

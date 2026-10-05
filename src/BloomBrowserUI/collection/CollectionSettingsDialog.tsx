@@ -30,6 +30,7 @@ import {
     ICollectionSettingsSaveResult,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
 // real controls, so this text is deliberately plain English and is never localized.
@@ -137,28 +138,29 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "CollectionSettingsDialog.BloomLibraryPage",
     );
     const advancedLabel = useL10n("Advanced", "Common.Advanced");
-    const experimentalLabel = useL10n(
-        "Experimental",
-        "CollectionSettingsDialog.ExperimentalPage",
-    );
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // C# names these pageKeys when it asks us to open on a particular page.
-    const pages = [
+    // A Team Collection member who is not an administrator gets this instead of any settings.
+    const notAllowedMessage = loadedSettings?.notAllowedMessage;
+
+    // C# names these pageKeys when it asks us to open on a particular page. Each built page is a
+    // hook in its own file under settingsPages/ that returns its ConfigrPage (Config-R rejects a
+    // page wrapped in a component); each placeholder below moves to one when its tab card adds it.
+    const placeholderPages = [
         { pageKey: "languages", label: languagesLabel },
         { pageKey: "frontBackMatter", label: frontBackMatterLabel },
         { pageKey: "subscription", label: subscriptionLabel },
         { pageKey: "teamCollection", label: teamCollectionLabel },
         { pageKey: "bloomLibrary", label: bloomLibraryLabel },
         { pageKey: "advanced", label: advancedLabel },
-        { pageKey: "experimental", label: experimentalLabel },
     ];
-
-    // A Team Collection member who is not an administrator gets this instead of any settings.
-    const notAllowedMessage = loadedSettings?.notAllowedMessage;
+    const experimentalPage = useExperimentalPage({
+        dialogOpen: propsForBloomDialog.open,
+        settings: loadedSettings,
+    });
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
     // one place; every path ends at a plain value, so !== is enough.
@@ -293,7 +295,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                         }, 0);
                     }}
                 >
-                    {pages.map((page) => (
+                    {placeholderPages.map((page) => (
                         <ConfigrPage
                             key={page.pageKey}
                             label={page.label}
@@ -307,6 +309,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             </ConfigrGroup>
                         </ConfigrPage>
                     ))}
+                    {experimentalPage}
                 </ConfigrPane>
             )}
         </ConfigrDialogFrame>
