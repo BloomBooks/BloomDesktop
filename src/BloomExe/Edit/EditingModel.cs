@@ -539,6 +539,15 @@ namespace Bloom.Edit
             Debug.Assert(!_view.InvokeRequired);
             // There used to be a guard here against a save still being in progress (BL-431). A save
             // now finishes inside the call that asks for it, so there is no such window.
+            //
+            // We merge the open page's content before deleting, even though today that is always the
+            // page being deleted (a right-click command makes its page current first). It costs a
+            // few milliseconds against the full write the deletion causes anyway, and it is not
+            // wasted: if the deletion fails we stay on this page, which navigating rebuilds from the
+            // book, so without the merge the user's latest typing on it would vanish; and merging
+            // copies any field bound to book-wide data (data-book) into the data div, so an edit to
+            // such a field is not lost along with the page. It would also be needed if a command
+            // could ever delete a page other than the open one.
             MergeCurrentPageThenSave(
                 () =>
                 {
