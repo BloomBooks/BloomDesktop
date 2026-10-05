@@ -871,3 +871,22 @@ So read a green nightly as "Bloom run from source works", not "the installed app
 
 Idea: a periodic run of the suites against an installed Bloom.
 (Found 2026-09-25.)
+
+## A collection rename relaunches Bloom without its launch flags
+
+When a person renames the collection in Collection Settings, Bloom renames the folder by starting
+a new Bloom process (`Program.RestartBloom`, called from `Shell` as the collection closes) whose
+command line is only `--rename <from> <to>`. Everything the suite launched with is gone:
+`--e2e`, `--automation`, `--dont-disturb`, `--user-settings-folder`, `--vite-port`,
+`--experimental-features`. The new Bloom would take the developer's foreground, read and write
+the developer's own user settings (its MRU list included), and run under a process id the fixture
+does not know, so teardown would leave it running.
+
+The cost: no test can press Restart after a rename. `collection-settings-advanced.spec.ts` stops
+when OK turns into Restart, so the folder rename and the reopen on the new name go untested.
+`RestartBloom` with no arguments (e.g. after a UI language change) drops the same flags.
+
+Fix direction: have `RestartBloom` carry the current session's launch flags into the new
+process, and give the fixture a way to find a Bloom that relaunched itself (new process id,
+ports, and collection folder).
+(Found 2026-10-05, BL-16737.)

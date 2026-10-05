@@ -31,6 +31,12 @@ namespace Bloom.web.controllers
         public bool IsTeamCollection;
 
         /// <summary>
+        /// Whether Bloom can update itself on this platform; if not, the dialog hides the
+        /// "Automatically Update Bloom" option.
+        /// </summary>
+        public bool AutoUpdateSupported;
+
+        /// <summary>
         /// Set only when the user may not edit the collection settings (a Team Collection member
         /// who is not an administrator); the other fields are then null.
         /// </summary>
