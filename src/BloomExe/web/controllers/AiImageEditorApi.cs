@@ -368,13 +368,12 @@ namespace Bloom.web.controllers
 
             // Save before opening, because everything the editor is told about the book is read
             // from the saved DOM. Saving is synchronous now (see PageSnapshot), so the answer is
-            // available right here: it throws if the save went wrong (the user has then already
-            // been shown "Bloom had trouble saving a page..."), and returns false if it declined
-            // to save at all -- there is no page to save, or an external program has replaced the
-            // book on disk and its content must not be overwritten.
+            // available right here: it throws if merging the page went wrong (the user has then
+            // already been shown "Bloom had trouble saving a page..."), and returns false if the
+            // book could not be written to disk.
             //
             // Either way we must NOT open: the whole point of saving first is that the editor
-            // reads the book from disk, so opening after a save that did not happen would edit
+            // reads the book from disk, so opening after a failed save would edit
             // stale images and commit against them. Under the old flow this could not arise --
             // the open waited for a page load that a refused save never produced -- so it needs
             // saying now that the open follows immediately.

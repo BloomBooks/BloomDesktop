@@ -1937,10 +1937,16 @@ namespace Bloom.Edit
         /// saved before the navigation began -- but anything that navigation's write left behind
         /// (see SaveBookToDisk) is still written.
         ///
-        /// Returns false if there was no page to save, or if the write failed. The failure has been
-        /// reported to the user; the return value is for callers that must not carry on as though
-        /// the file now says what they think it says. The AI image editor opens the book FROM DISK,
-        /// so opening it after a save that did not happen would edit stale images.
+        /// Returns false only if the write failed: then the file does not say what Bloom is showing.
+        /// The failure has been reported to the user; the return value is for callers that must not
+        /// carry on as though the file said what they think it says. The AI image editor opens the
+        /// book FROM DISK, so opening it after a failed save would edit stale images.
+        ///
+        /// Having no page to save is not a failure. With no book being edited, or between books,
+        /// there is nothing of ours to write, and when another program has replaced the book on
+        /// disk we deliberately write nothing (see ReloadCurrentBookDiscardingEdits); in each case
+        /// what is on disk is right. With a book but no page loaded for editing, we still write
+        /// anything else waiting to be written. See DecideSaveScope.
         ///
         /// waitForInFlightPageWork is false only when Windows is shutting down; see
         /// TakeCurrentPageSnapshot.
@@ -1954,12 +1960,21 @@ namespace Bloom.Edit
             bool waitForInFlightPageWork = true
         )
         {
-            if (CannotSavePage() || !_havePageToSave)
-                return false;
-            if (_stateMachine.Editing)
-                pageContent = pageContent ?? TakeCurrentPageSnapshot(waitForInFlightPageWork);
-            else
-                pageContent = null;
+            var selectedBook = _bookSelection?.CurrentSelection;
+            var scope = DecideSaveScope(
+                haveSelectedBook: selectedBook != null,
+                selectedBookIsTheOneDisplayed: selectedBook != null
+                    && selectedBook == _currentlyDisplayedBook,
+                discardingForExternalChange: _reloadFromDiskOnLeavingEditTab,
+                havePageToSave: _havePageToSave && _pageSelection.CurrentSelection != null,
+                editing: _stateMachine.Editing
+            );
+            if (scope == SaveScope.Nothing)
+                return true;
+            pageContent =
+                scope == SaveScope.PageAndBook
+                    ? pageContent ?? TakeCurrentPageSnapshot(waitForInFlightPageWork)
+                    : null;
             UpdateBookDomFromBrowserPageContent(pageContent);
             // Set by that merge only when the page differs from what the book held. Read before
             // SaveBookToDisk, which clears it. The browser sends every page once as it loads, so a
@@ -1977,6 +1992,46 @@ namespace Bloom.Edit
                 _view?.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
             }
             return true;
+        }
+
+        /// <summary>What SaveCurrentPageAndBook should do. See DecideSaveScope.</summary>
+        internal enum SaveScope
+        {
+            /// <summary>Write nothing: there is nothing of ours to write, or we must not.</summary>
+            Nothing,
+
+            /// <summary>No page to merge, but write anything else waiting to be written.</summary>
+            BookOnly,
+
+            /// <summary>Merge the page being edited into the book, then write.</summary>
+            PageAndBook,
+        }
+
+        /// <summary>
+        /// Decide what SaveCurrentPageAndBook should do. Separate so that the rules can be tested
+        /// without a whole editing session.
+        ///
+        /// Nothing, when there is no selected book; when the selected book is not the one being
+        /// edited, which is the moment of switching books, when the pending-write flags still
+        /// belong to the book we are leaving and must not be applied to the new one; or when
+        /// another program has replaced the book on disk and we are about to reload it, when
+        /// writing would overwrite that program's work.
+        ///
+        /// Otherwise the page is merged only when there is one loaded for editing and the editor
+        /// is showing it (not mid-navigation); either way the book is then written if anything is
+        /// waiting.
+        /// </summary>
+        internal static SaveScope DecideSaveScope(
+            bool haveSelectedBook,
+            bool selectedBookIsTheOneDisplayed,
+            bool discardingForExternalChange,
+            bool havePageToSave,
+            bool editing
+        )
+        {
+            if (!haveSelectedBook || !selectedBookIsTheOneDisplayed || discardingForExternalChange)
+                return SaveScope.Nothing;
+            return havePageToSave && editing ? SaveScope.PageAndBook : SaveScope.BookOnly;
         }
 
         /// <summary>

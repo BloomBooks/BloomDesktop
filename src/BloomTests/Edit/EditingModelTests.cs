@@ -137,5 +137,71 @@ namespace BloomTests.Edit
                 Is.EqualTo("bob%27s%20cat.png")
             );
         }
+
+        // What a save does, case by case. See EditingModel.DecideSaveScope.
+        private static EditingModel.SaveScope Scope(
+            bool haveSelectedBook = true,
+            bool selectedBookIsTheOneDisplayed = true,
+            bool discardingForExternalChange = false,
+            bool havePageToSave = true,
+            bool editing = true
+        ) =>
+            EditingModel.DecideSaveScope(
+                haveSelectedBook,
+                selectedBookIsTheOneDisplayed,
+                discardingForExternalChange,
+                havePageToSave,
+                editing
+            );
+
+        [Test]
+        public void DecideSaveScope_PageBeingEdited_MergesThePageAndWrites()
+        {
+            Assert.That(Scope(), Is.EqualTo(EditingModel.SaveScope.PageAndBook));
+        }
+
+        [Test]
+        public void DecideSaveScope_NoPageLoaded_StillWritesTheBook()
+        {
+            // No page is not a reason to leave anything else that is waiting unwritten.
+            Assert.That(Scope(havePageToSave: false), Is.EqualTo(EditingModel.SaveScope.BookOnly));
+        }
+
+        [Test]
+        public void DecideSaveScope_MidNavigation_WritesTheBookWithoutMerging()
+        {
+            // The page we left was merged when the navigation began.
+            Assert.That(Scope(editing: false), Is.EqualTo(EditingModel.SaveScope.BookOnly));
+        }
+
+        [Test]
+        public void DecideSaveScope_NoBook_WritesNothing()
+        {
+            Assert.That(
+                Scope(haveSelectedBook: false, selectedBookIsTheOneDisplayed: false),
+                Is.EqualTo(EditingModel.SaveScope.Nothing)
+            );
+        }
+
+        [Test]
+        public void DecideSaveScope_BetweenBooks_WritesNothing()
+        {
+            // The pending-write flags still belong to the book we are leaving; applying them to
+            // the newly selected one would be wrong.
+            Assert.That(
+                Scope(selectedBookIsTheOneDisplayed: false),
+                Is.EqualTo(EditingModel.SaveScope.Nothing)
+            );
+        }
+
+        [Test]
+        public void DecideSaveScope_AnotherProgramReplacedTheBook_WritesNothing()
+        {
+            // Writing would overwrite what that program put on disk.
+            Assert.That(
+                Scope(discardingForExternalChange: true, havePageToSave: false),
+                Is.EqualTo(EditingModel.SaveScope.Nothing)
+            );
+        }
     }
 }
