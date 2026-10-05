@@ -99,6 +99,15 @@ export const ConfigrDialogFrame: React.FunctionComponent<{
                 .MuiSelect-select.MuiSelect-select {
                     padding-right: 32px !important;
                 }
+
+                // In a disabled config-r checkbox row, the label and checkbox colors are already
+                // faded; MUI also fades the whole row (opacity 0.38), so it was applied twice and
+                // the row was barely visible. Limited to checkbox rows because those are the ones
+                // known to fade their own contents. The extra class outranks MUI's own rule, which
+                // otherwise wins whenever its stylesheet happens to load after ours.
+                .MuiListItemButton-root.Mui-disabled:has(.MuiCheckbox-root) {
+                    opacity: 1;
+                }
             `}
         >
             {props.children}

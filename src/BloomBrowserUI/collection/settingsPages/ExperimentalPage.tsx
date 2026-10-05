@@ -21,17 +21,7 @@ const ExperimentalFeatureSetting: React.FunctionComponent<{
     disabled: boolean;
 }> = (props) => (
     // One element around both keeps Config-R from drawing a divider between them.
-    <div
-        css={css`
-            // The label and checkbox colors are already faded for disabled; without this MUI also
-            // fades the whole row (opacity 0.38), so it would be applied twice. Master's
-            // AdvancedSettingsPanel does the same. The extra class outranks MUI's own rule, which
-            // otherwise wins whenever its stylesheet happens to load after ours.
-            .MuiListItemButton-root.Mui-disabled {
-                opacity: 1;
-            }
-        `}
-    >
+    <div>
         <ConfigrBoolean
             label={props.label}
             path={`experimental.${props.featureToken}`}
