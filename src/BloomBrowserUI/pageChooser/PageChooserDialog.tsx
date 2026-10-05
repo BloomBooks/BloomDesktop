@@ -570,19 +570,36 @@ export const PageChooserDialog: React.FunctionComponent<
         dataToolId: string,
         requiredTool?: string,
     ): void => {
+        // If the new or changed page requires a certain Toolbox tool, make sure the Toolbox is
+        // open with that tool checked and active.
+        const activateRequiredTool = () => {
+            if (!requiredTool) return;
+            const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+            if (!toolbox) return; // Shouldn't happen; paranoia.
+            toolbox.activateToolFromId(requiredTool);
+        };
         if (forChangeLayout) {
             if (willLoseData && !convertAnywayChecked) {
                 return;
             }
-            postData("changeLayout", {
-                pageId: pageId,
-                pageToChangeId: props.pageToChangeId,
-                templateBookPath: templateBookPath,
-                convertWholeBook: convertWholeBookChecked,
-                numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
-                allowDataLoss: convertAnywayChecked,
-                dataToolId,
-            });
+            postData(
+                "changeLayout",
+                {
+                    pageId: pageId,
+                    pageToChangeId: props.pageToChangeId,
+                    templateBookPath: templateBookPath,
+                    convertWholeBook: convertWholeBookChecked,
+                    numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
+                    allowDataLoss: convertAnywayChecked,
+                    dataToolId,
+                },
+                // C# answers whether it changed the layout. It does not when the page the chooser
+                // was opened for is no longer current, and then the tool would be set up for a page
+                // that never got the layout.
+                (response) => {
+                    if (response.data === true) activateRequiredTool();
+                },
+            );
         } else {
             postData("addPage", {
                 templateBookPath: templateBookPath,
@@ -592,14 +609,7 @@ export const PageChooserDialog: React.FunctionComponent<
                 allowDataLoss: convertAnywayChecked, // meaningless here, but keeps C# happy
                 dataToolId,
             });
-        }
-        if (requiredTool) {
-            // If we added/changed a page that requires a certain Toolbox tool, we will need to
-            // make sure the Toolbox is open.
-            const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
-            if (!toolbox) return; // Shouldn't happen; paranoia.
-            // We make sure 'requiredTool' is checked and open.
-            toolbox.activateToolFromId(requiredTool);
+            activateRequiredTool();
         }
         closeDialog();
     };

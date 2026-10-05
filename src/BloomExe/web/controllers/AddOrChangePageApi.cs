@@ -94,7 +94,8 @@ namespace Bloom.web.controllers
                 && (string)requestData.pageToChangeId != pageId
             )
             {
-                request.PostSucceeded();
+                // False: nothing was changed, so the chooser must not set up the template's tool.
+                request.ReplyWithBoolean(false);
                 return;
             }
             _editingModel.MergeCurrentPageThenSave(() =>
@@ -116,7 +117,8 @@ namespace Bloom.web.controllers
 
                 return pageId;
             });
-            request.PostSucceeded();
+            // True: the layout was changed (the chooser then sets up any tool the template needs).
+            request.ReplyWithBoolean(true);
         }
 
         private static void ChangeSimilarPagesInEntireBook(
