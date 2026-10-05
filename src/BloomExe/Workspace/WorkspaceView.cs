@@ -1538,6 +1538,15 @@ window.showWorkspaceInitializationFailure = function(message) {
             }
         }
 
+        /// <summary>
+        /// Closes the collection and opens it again, as the Settings dialog does when a change
+        /// needs a restart.
+        /// </summary>
+        public void ReopenCollection()
+        {
+            Invoke(ReopenCurrentProject);
+        }
+
         public void CheckForInvalidBranding()
         {
             if (_collectionSettings.InvalidBranding == null || _collectionSettings.IgnoreExpiration)
