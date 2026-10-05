@@ -253,9 +253,9 @@ namespace Bloom.Edit
         /// <summary>
         /// Given the body of the editable page and the CSS for any user-defined styles (from the
         /// editable page browser), this method creates a new SafeXmlDocument that contains the same state.
-        /// It does some additional cleanup of things that get added to the page as UI controls
-        /// to support editing. (Most of that cleanup now also happens in the browser, on the clone
-        /// it gathers -- see editorChromeCleanup.ts -- but this remains the last line of defence.)
+        /// The editor's chrome has already been stripped, in the browser, from the clone it
+        /// gathered (see editorChromeCleanup.ts); the rest of the cleanup happens in
+        /// HtmlDom.ProcessPageAfterEditing.
         /// </summary>
         internal static SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
             string bodyHtml,

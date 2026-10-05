@@ -92,8 +92,9 @@ export interface ITool {
     // the tool is still running). Anything live-only — observers, React state, re-enabling image
     // editing, clearing caches — belongs in detachFromPage() instead.
     // Leave it as the inherited no-op if the markup this tool adds is all either marked bloom-ui or
-    // ui-resizable-handle, or is a cke_* class, or lives outside the .bloom-page div: the C# save
-    // pipeline already discards all of those (see HtmlDom.ProcessPageAfterEditing). But make that a
+    // ui-resizable-handle, or is a cke_* class, or lives outside the .bloom-page div: the save
+    // already discards all of those (removeEditorChromeFromClone in editorChromeCleanup.ts, and
+    // C# keeps only the .bloom-page div). But make that a
     // deliberate decision, not an omission.
     removeToolMarkup(pageOrClone: HTMLElement): void;
     // Called when a page is going away AND before hideTool. ToolboxToolReactAdaptor's

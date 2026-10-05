@@ -1356,10 +1356,9 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// Take out of the copy we are about to save the editing-only markup that the C# save pipeline
-// does NOT already strip for us. (It removes anything with class bloom-ui or ui-resizable-handle
-// and any cke_* classes: see HtmlDom.ProcessPageAfterEditing. It also keeps only the .bloom-page
-// div, so nothing outside that div matters either.)
+// Take out of the copy we are about to save the editing-only markup. This is the only place the
+// editor's chrome -- bloom-ui elements, resize handles, cke_* classes -- is removed: C# no longer
+// repeats it. (C# does keep only the .bloom-page div, so nothing outside that div matters.)
 //
 // This works entirely on 'cloneOfBody', a detached copy of the live body, so the live page is
 // untouched and remains editable.

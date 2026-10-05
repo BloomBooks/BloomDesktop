@@ -1,12 +1,13 @@
 // Strip, from a CLONE of the editing page, the chrome that only exists because the page is being
 // edited -- so that what we hand C# is the page, not the editor.
 //
-// Everything here is something HtmlDom.ProcessPageAfterEditing already removes on the C# side, and
-// still does; this is not a replacement for it. What it changes is what we SEND, and that matters
-// because of how the page snapshot decides to send anything at all: it posts whenever the gathered
-// string differs from the last one it sent (see pageSnapshot.ts). Chrome in that string therefore
-// made pages look edited when nobody had touched them -- C# would hold a snapshot, conclude there
-// were unsaved changes, and save on the way out.
+// This is the one place the editor's chrome is removed before saving: C# used to repeat the
+// bloom-ui, resize-handle and cke_ rules in HtmlDom.ProcessPageAfterEditing, and no longer does,
+// because every page it is given comes through here. Doing it here also changes what we SEND, and
+// that matters because of how the page snapshot decides to send anything at all: it posts whenever
+// the gathered string differs from the last one it sent (see pageSnapshot.ts). Chrome in that
+// string therefore made pages look edited when nobody had touched them -- C# would hold a
+// snapshot, conclude there were unsaved changes, and save on the way out.
 //
 // The offenders:
 //   * CKEditor’s toolbars and qTip’s bubbles, which those libraries append to the document body.
