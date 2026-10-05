@@ -403,9 +403,9 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
-    // Start volunteering the page's content to C# whenever it changes and settles, so a save never
-    // has to ask for it and wait. See pageSnapshot.ts. Deliberately after bootstrap(), so the
-    // load-time fix-ups it applies are not themselves reported as the user's changes.
+    // Start volunteering the page's content to C#: once now, with whatever the load-time fix-ups
+    // above changed, and then whenever it changes and settles, so a save never has to ask for it
+    // and wait. See pageSnapshot.ts.
     startWatchingPageForSnapshots(getPageContentForSaveWhenReady);
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.

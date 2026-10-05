@@ -228,9 +228,9 @@ namespace Bloom.Edit
         /// being edited with the CSS that defines the user-defined styles. It updates the current book DOM
         /// to match whatever the browser has.
         ///
-        /// Null means the page has not changed since it loaded (see PageSnapshot), so there is
-        /// nothing to merge. Whether a non-null page actually changes the book is decided by
-        /// Book.UpdateDomFromEditedPage, after our own processing of it.
+        /// Null means the browser has sent nothing for this load of the page yet (see PageSnapshot),
+        /// so there is nothing to merge. Whether a non-null page actually changes the book is decided
+        /// by Book.UpdateDomFromEditedPage, after our own processing of it.
         /// </summary>
         public void UpdateBookDomFromBrowserPageContent(string pageContent)
         {
@@ -1883,9 +1883,9 @@ namespace Bloom.Edit
         private const int kMaxWaitForBusyPageMs = 2000;
 
         /// <summary>
-        /// The current page's content as the browser last reported it, or null if the page has not
-        /// been changed since it loaded. Null genuinely means "nothing to save" rather than "ask the
-        /// browser"; see PageSnapshot.
+        /// The current page's content as the browser last reported it, or null if it has not yet
+        /// sent any for this load of the page (it sends the page as soon as it has loaded). Either
+        /// way there is no asking the browser; see PageSnapshot.
         ///
         /// If the browser has said the page is busy with asynchronous work whose result belongs in
         /// the saved page, this first waits (sleeping the UI thread, for at most
@@ -1921,8 +1921,9 @@ namespace Bloom.Edit
         ///
         /// pageContent is the current page's content when the caller's request brought it along;
         /// otherwise the snapshot the browser last volunteered is used. Either may be null, meaning
-        /// the page has not changed since it loaded; then nothing is merged, and the book is written
-        /// only if something else (a data-div change, a forced full save) is waiting to be written.
+        /// the browser has not sent this load of the page yet; then nothing is merged, and the book
+        /// is written only if something else (a data-div change, a forced full save) is waiting to
+        /// be written. A page that merges without changing anything writes nothing either.
         /// While a page is still loading there is likewise nothing to merge -- the page we left was
         /// saved before the navigation began -- but anything that navigation's write left behind
         /// (see SaveBookToDisk) is still written.
@@ -1951,9 +1952,13 @@ namespace Bloom.Edit
             else
                 pageContent = null;
             UpdateBookDomFromBrowserPageContent(pageContent);
+            // Set by that merge only when the page differs from what the book held. Read before
+            // SaveBookToDisk, which clears it. The browser sends every page once as it loads, so a
+            // non-null pageContent alone no longer means the page changed.
+            var pageChanged = _modifiedPageElement != null;
             if (!SaveBookToDisk())
                 return false;
-            if (pageContent != null)
+            if (pageChanged)
             {
                 // What we just saved is the new baseline for deciding whether the NEXT save has
                 // changed anything the rest of the book shares, and the page list's thumbnail of

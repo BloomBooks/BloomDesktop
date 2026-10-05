@@ -15,16 +15,17 @@ import { onDelayRegisterChanged } from "./pageContentDelays";
 // the browser can simply volunteer it: after any change that settles, post the current content.
 // C# stores the string (see PageSnapshot.cs) and a save then takes it synchronously.
 //
-// What makes this safe to rely on is that we post only when the page's SAVED FORM has actually
-// changed, so "no snapshot" on the C# side means "no unsaved changes" rather than "we have not
-// been told yet". Two things are needed for that, and neither is optional:
+// We post the page once as soon as it has loaded, whether or not anyone touches it, and then again
+// whenever its SAVED FORM changes. The first post is deliberate: loading can itself change the
+// page -- after a change of page size or appearance, image sizing and canvas-element layout
+// recompute, and those results belong in the book -- and some of that is done before we start
+// watching, where the observer cannot see it. Whether a snapshot actually changes the book is
+// decided by C# (Book.UpdateDomFromEditedPage), after its own processing, so a page the user only
+// looked at writes nothing to disk.
 //
-// * A baseline taken once the page has finished loading. Loading is not over when bootstrap()
-//   returns -- image sizing and canvas layout finish afterwards and mutate the page -- so without
-//   one, every page posts a snapshot seconds after opening even if nobody touches it.
-// * Comparing each gather against the last thing we sent. Tools constantly add and remove editing
-//   decorations, which the gather strips anyway, so without this they produce a stream of
-//   identical posts.
+// After that we post only when a gather differs from the last thing we sent. Tools constantly add
+// and remove editing decorations, which the gather strips anyway, so without the comparison they
+// would produce a stream of identical posts.
 
 const kApi = "editView/pageSnapshot";
 // Where we tell C# that asynchronous work belonging in the saved page has begun (the body names
@@ -87,9 +88,6 @@ let pageIdBeingWatched: string | undefined;
 // depend on bloomEditing (which depends on it, for the teardown) -- and so a test can drive it
 // without a real page.
 let gatherPageContent: (() => Promise<string>) | undefined;
-// Until the post-load baseline is in, we do not know which of the mutations we are seeing are the
-// page finishing loading and which are the user, so we hold off posting. See startWatching...
-let baselineTaken = false;
 // True while a gather-and-post is under way. See takeSnapshot: overlapping posts could arrive out
 // of order, which would let an older snapshot overwrite a newer one on the C# side.
 let busy = false;
@@ -105,11 +103,10 @@ let unsubscribeFromDelayRegister: (() => void) | undefined;
 // Set when the work finished but the snapshot of the finished page could not be delivered, so
 // the idle notice was withheld; the next delivered snapshot sends it. See tellCSharpIdle.
 let idleNoticeOwed = false;
-// What the last gather returned, delivered or not, and whether it returned at all. The idle
-// notice may go only when the last gather succeeded and what it returned is what C# holds
-// (lastPosted); otherwise C# would take "idle" as "you have the finished page" when it does not.
-let lastGathered: string | undefined;
-let lastGatherSucceeded = false;
+// Whether C# holds what the latest gather read: it was posted and taken, or it was already what we
+// had sent. False while a gather is under way and when it threw. The idle notice may go only when
+// this is true; otherwise C# would take "idle" as "you have the finished page" when it does not.
+let lastGatherDelivered = false;
 // Numbers the busy and idle notices, so that C# can ignore one that arrives after a later one.
 // The two are separate HTTP requests and HTTP does not promise to deliver them in order, so an
 // idle notice (or its retry) can land after the busy notice for work that began afterwards; taken
@@ -156,11 +153,6 @@ function currentPageId(): string | undefined {
 async function takeSnapshot(): Promise<void> {
     const pageId = pageIdBeingWatched;
     if (!pageId || !gatherPageContent) return;
-    if (!baselineTaken) {
-        // The page is still finishing loading. Come back once we know what "unchanged" looks like.
-        scheduleSnapshot();
-        return;
-    }
     // Only ever one gather-and-post at a time.
     //
     // Two would be a correctness bug, not just waste: HTTP does not promise that two outstanding
@@ -183,13 +175,11 @@ async function takeSnapshot(): Promise<void> {
         // Waits for any in-flight work that belongs in the page (see pageContentDelays), then
         // reads the page the same way a real save does, so a snapshot can never differ from what
         // a save would have produced at the same moment.
-        lastGatherSucceeded = false;
+        lastGatherDelivered = false;
         const content = await gatherPageContent();
 
         // The page may have been unloaded, or navigated, while we were waiting.
         if (pageIdBeingWatched !== pageId) return;
-        lastGathered = content;
-        lastGatherSucceeded = true;
 
         if (content !== lastPosted) {
             const reply = await postStringQuietly(
@@ -236,23 +226,27 @@ async function takeSnapshot(): Promise<void> {
             // mean content C# never received still counted as sent: we would never retry it, and
             // the next save would write what C# still held, losing everything typed since.
             lastPosted = content;
+            lastGatherDelivered = true;
             if (idleNoticeOwed) {
                 // The work finished earlier but this content could not be delivered then, so the
                 // idle notice waited for it. Now C# has the finished page.
                 idleNoticeOwed = false;
                 void postIdleNotice(pageId);
             }
-        } else if (idleNoticeOwed) {
-            // Nothing to post: the finished page turns out to be what C# already holds. That is
-            // still what the owed idle notice was waiting to be sure of.
-            idleNoticeOwed = false;
-            void postIdleNotice(pageId);
+        } else {
+            // Nothing to post: this is what C# already holds.
+            lastGatherDelivered = true;
+            if (idleNoticeOwed) {
+                // That is still what the owed idle notice was waiting to be sure of.
+                idleNoticeOwed = false;
+                void postIdleNotice(pageId);
+            }
         }
     } catch (error) {
         // Gathering the page can legitimately throw -- the BL-13120 origami guard, a missing
         // marginBox, the canvas-element count checks -- and so can the post. Either way this is
-        // the one failure the whole design cannot afford to be quiet about: C# concludes "no
-        // snapshot, so nothing to save", and the user's edits are dropped without a word. (The
+        // the one failure the whole design cannot afford to be quiet about: C# saves whatever it
+        // last received, or nothing at all, and the user's edits are dropped without a word. (The
         // global unhandledrejection handler is commented out in lib/errorHandler.ts, so nothing
         // else would report it.) Before BL-13502 the equivalent failure came back through the
         // state machine as "Bloom had trouble saving a page"; this keeps that promise.
@@ -349,7 +343,7 @@ function wasTaken(reply: unknown): boolean {
 async function tellCSharpIdle(pageId: string): Promise<void> {
     if (busy) await runDone;
     await takeSnapshot();
-    if (!lastGatherSucceeded || lastGathered !== lastPosted) {
+    if (!lastGatherDelivered) {
         // The finished page could not be read, or its snapshot was not delivered (the post
         // failed, or was refused), so C# does not have it yet. Saying idle now would let a save
         // go ahead on the content from before the work. The retry that takeSnapshot has
@@ -405,46 +399,6 @@ export function notePageContentMayHaveChanged(): void {
     noteChange();
 }
 
-// Read the page once, and treat that as already sent. See the long note in
-// startWatchingPageForSnapshots for why a baseline is needed at all.
-function takeBaseline(pageId: string): void {
-    void gatherPageContent!().then(
-        (baseline) => {
-            if (pageIdBeingWatched !== pageId) return; // moved on while we waited
-            baselineTaken = true;
-            if (changeCount > 0) {
-                // The page changed while we were reading it -- the gather waits for the delay
-                // register, and the user can type in that time -- so the baseline may already
-                // contain an edit. Treating it as "already sent" would swallow that edit: the
-                // follow-up snapshot would match it and post nothing, and quitting would write
-                // what C# holds. So the baseline counts for nothing and the follow-up posts
-                // whatever is there. That costs one redundant post on a page the user did not
-                // touch, which C# then finds unchanged.
-                lastPosted = undefined;
-                scheduleSnapshot();
-            } else {
-                lastPosted = baseline;
-                lastGathered = baseline;
-                lastGatherSucceeded = true;
-                if (idleNoticeOwed) {
-                    // Load-time work finished while the baseline was still being read, so the
-                    // idle notice waited; the baseline IS the page as it is after that work.
-                    idleNoticeOwed = false;
-                    void postIdleNotice(pageId);
-                }
-            }
-        },
-        () => {
-            if (pageIdBeingWatched !== pageId) return;
-            // We could not read the page. Fail towards reporting too much rather than too little:
-            // an extra snapshot costs a redundant save, a missing one costs the user's typing.
-            lastPosted = undefined;
-            baselineTaken = true;
-            scheduleSnapshot();
-        },
-    );
-}
-
 /**
  * Start watching the page that has just become editable. Safe to call again; it restarts on the
  * new page.
@@ -459,37 +413,20 @@ export function startWatchingPageForSnapshots(
     pageIdBeingWatched = pageId;
     lastPosted = undefined;
     changeCount = 0;
-    baselineTaken = false;
     pageWeReportedAFailureFor = undefined;
     consecutiveFailedPosts = 0;
     busyWith = undefined;
     idleNoticeOwed = false;
-    lastGathered = undefined;
-    lastGatherSucceeded = false;
+    lastGatherDelivered = false;
     unsubscribeFromDelayRegister = onDelayRegisterChanged(
         handleDelayRegisterChange,
     );
 
-    // Take a baseline of the page as it ends up once it has finished loading, and treat that as
-    // "already sent". Without it every page posts a snapshot within a second of being opened, even
-    // if the user never touches it -- because loading is not finished when bootstrap() returns.
-    // Image sizing and canvas-element layout complete asynchronously afterwards and mutate the
-    // page, and the observer cannot tell those from the user's own edits.
-    //
-    // That mattered: it broke the property C# depends on, that no snapshot means no unsaved
-    // changes.
-    //
-    // The gather waits for the delay register -- but that is NOT enough to make this the settled
-    // page: at the moment we run, the asynchronous fix-ups have not registered their delays yet,
-    // so the register is empty and the gather returns immediately. So an untouched page still
-    // posts one snapshot, byte-identical to the settled page.
-    //
-    // Deliberately NOT "fixed" by delaying the baseline until the page is quiet. That would make
-    // the baseline include any edit the user managed in the meantime, and since load-time
-    // settling is indistinguishable from typing, we would then have no way to tell we owed C# a
-    // snapshot of it -- trading a harmless duplicate for a lost edit. One post per page visit,
-    // carrying exactly what a save would have written, is the better end of that trade.
-    takeBaseline(pageId);
+    // Send the page as it has loaded, changed or not; see the top of this file for why. After the
+    // usual quiet time rather than at once, which gives the load-time work that finishes
+    // asynchronously (image sizing, mainly) the chance to register with the delay register first,
+    // so the gather waits for it and this one post usually carries the settled page.
+    scheduleSnapshot();
 
     // A MutationObserver rather than input/keyup handlers, because plenty of what changes a page
     // never goes through a keyboard event: a tool rewriting the markup, a canvas element being
@@ -517,12 +454,10 @@ export function stopWatchingPageForSnapshots(): void {
     pageIdBeingWatched = undefined;
     lastPosted = undefined;
     gatherPageContent = undefined;
-    baselineTaken = false;
     busy = false;
     busyWith = undefined;
     idleNoticeOwed = false;
-    lastGathered = undefined;
-    lastGatherSucceeded = false;
+    lastGatherDelivered = false;
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
 }

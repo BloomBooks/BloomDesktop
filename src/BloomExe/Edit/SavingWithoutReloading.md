@@ -380,17 +380,26 @@ every caller that used to go the long way gets the short one for free.
 
 ## Two things that are not what we hoped
 
-**1. A page nobody touched still posts snapshots — three of them, in the first ~6 seconds.**
+**1. A page nobody touched still posts snapshots.**
 
-The first version posted one for *every* page opened, which would have made "no snapshot" mean
-nothing at all. The cause is that loading is not finished when `bootstrap()` returns: image sizing
-and canvas-element layout complete asynchronously and mutate the page, and a `MutationObserver`
-cannot tell those from the user. Taking a **baseline** once the page has settled fixes most of it,
-and is why `startWatchingPageForSnapshots` gathers once before it starts posting.
+The first version posted three for every page opened, in its first six seconds or so. Loading is not finished when `bootstrap()`
+returns: image sizing and canvas-element layout complete asynchronously and mutate the page, and a
+`MutationObserver` cannot tell those from the user. For a while a **baseline** taken just after
+`bootstrap()` was treated as "already sent", so that an untouched page would post nothing and "no
+snapshot" could mean "nothing to save".
 
-Chased down, because the three turned out to be two different things.
+That was the wrong goal, and it was dropped. Loading can itself change the page in ways that belong
+in the book: after a change of page size or appearance, images and canvas elements are laid out
+afresh, and master relies on visiting a page to save that (BL-16893 says each page "gets the same
+changes in the editor when it is opened"). Whatever `bootstrap()` did synchronously was inside the
+baseline, so it was never sent, and leaving the page wrote what C# already had. So now the browser
+sends each page once as soon as it has loaded, after the usual quiet time, and C# decides:
+`Book.UpdateDomFromEditedPage` compares what arrives with the book after its own processing, and an
+untouched page writes nothing. The cost is one request and one comparison per page visit.
 
-**Two of them were a real bug, and not one this branch introduced.** Capturing the actual bodies
+Chasing the extra posts did turn up something else.
+
+**Two of those three were a real bug, and not one this branch introduced.** Capturing the actual bodies
 showed the first and third were byte-identical and the middle one 235 characters longer; the extra
 was `<div id="measureTextDiv">`, the hidden scratch element `utils/measureText.ts` appends to the
 body to measure text with. It is transient (a timer removes it) and it is not part of the page —
@@ -399,20 +408,6 @@ save landing while it exists writes it into the book.** That window is not exoti
 created while text is being fitted, i.e. while the user is typing, and a save right after typing is
 the commonest save there is. Now stripped in the clone cleanup. The snapshot only found it because
 it gathers far more often than a save does.
-
-**The third is benign, and deliberately left alone.** With that fixed, an untouched page posts
-exactly one snapshot, and it is byte-identical to the settled page. The cause is that the baseline
-is taken before the page has finished settling: at that moment the asynchronous fix-ups have not
-registered their delays yet, so `whenNoActiveDelays()` returns at once.
-
-Delaying the baseline until the page is quiet would remove it, and would be a bad trade. The
-baseline would then include any edit the user managed in the meantime, and because load-time
-settling is indistinguishable from typing, we would have no way to know we still owed C# a snapshot
-of it — swapping a harmless duplicate for a lost edit. One post per page visit, carrying exactly
-what a save would have written, is the better end of that trade.
-
-So the residual cost is one redundant store per page visit. Nothing extra reaches the disk: C#
-only writes when a save actually happens.
 
 ## The freshness window, measured
 
@@ -426,7 +421,7 @@ could lose. It started at 400 ms, which was picked without measuring. Measured o
 | MutationObserver batches produced by ONE keystroke | **~8.9** |
 | Keystroke → C# has the content, at 25 ms debounce | **~49 ms** |
 | Snapshot posts while typing, at 25 ms | one per keystroke |
-| Snapshot posts per visit to an untouched page, at 25 ms | 2 (was 1 at 400 ms) |
+| Snapshot posts per visit to an untouched page, at 25 ms | 2 (was 1 at 400 ms; measured while the baseline was in use) |
 
 The nine batches per keystroke are why a debounce is still wanted at all — CKEditor does a lot of
 DOM work per key, and without one we would gather nine times per character. 25 ms collapses them

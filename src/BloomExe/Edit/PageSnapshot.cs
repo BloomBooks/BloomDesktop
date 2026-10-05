@@ -24,9 +24,12 @@ namespace Bloom.Edit
     ///
     /// 1. A snapshot belongs to ONE page. Content for a page we are no longer on must never be
     ///    written; ask for it by page id and you cannot get someone else's.
-    /// 2. NO snapshot means NO unsaved changes, not "we do not know". The browser posts only after
-    ///    something has actually changed the page, so a page the user merely looked at never
-    ///    produces one — and there is then genuinely nothing to save. Navigation clears it, so a
+    /// 2. Whether a snapshot changes anything is decided when it is merged, not here. The browser
+    ///    sends each page once as soon as it has loaded, because loading can itself change the
+    ///    page (after a change of page size, images and canvas elements are laid out afresh, and
+    ///    those results belong in the book), and again after every change that settles.
+    ///    Book.UpdateDomFromEditedPage compares what arrives with what the book holds, so a page
+    ///    the user merely looked at still writes nothing. Navigation clears the snapshot, so a
     ///    page revisited later starts empty again rather than re-applying what it had last time.
     /// </summary>
     public class PageSnapshot
