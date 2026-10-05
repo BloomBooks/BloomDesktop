@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrValues,
+    ConfigrBoolean,
     ConfigrGroup,
     ConfigrPage,
     ConfigrPane,
@@ -24,6 +25,8 @@ import {
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WarningBox } from "../react_components/boxes";
 import { useL10n } from "../react_components/l10nHooks";
+import { useGetFeatureStatus } from "../react_components/featureStatus";
+import { BloomSubscriptionIndicatorIconAndText } from "../react_components/requiresSubscription";
 import { get, postJson } from "../utils/bloomApi";
 import {
     ICollectionSettingsResponse,
@@ -45,6 +48,53 @@ const PagePlaceholder: React.FunctionComponent = () => (
 );
 
 const kCollectionSettingsDialogId = "CollectionSettingsDialog";
+
+// ExperimentalFeatures.kTeamCollections in C#: the key of the feature in values.experimental.
+const kTeamCollectionsFeatureToken = "team-collections";
+
+// The Team Collections row of the Experimental page. Team Collections is the only experimental
+// feature today; it also needs a high enough subscription tier, so the row carries the badge.
+// (Config-R requires a page's children to be ConfigrGroups, so the group itself stays inline.)
+const TeamCollectionsExperimentalSetting: React.FunctionComponent<{
+    locked: boolean;
+}> = (props) => {
+    const teamCollectionsLabel = useL10n(
+        "Team Collections",
+        "TeamCollection.TeamCollections",
+    );
+    const teamCollectionStatus = useGetFeatureStatus("TeamCollection");
+    // Until the status arrives, treat the feature as available, as the old dialog does.
+    const tierAllowsTeamCollections =
+        teamCollectionStatus === undefined
+            ? true
+            : teamCollectionStatus.enabled;
+    return (
+        // One element around both keeps Config-R from drawing a divider between the checkbox
+        // and its subscription badge.
+        <div>
+            <ConfigrBoolean
+                label={teamCollectionsLabel}
+                path={`experimental.${kTeamCollectionsFeatureToken}`}
+                disabled={!tierAllowsTeamCollections || props.locked}
+            />
+            <div
+                css={css`
+                    display: flex;
+                    padding-bottom: 5px;
+                    font-size: 12px;
+                    font-weight: bold;
+                `}
+            >
+                <BloomSubscriptionIndicatorIconAndText
+                    feature="TeamCollection"
+                    css={css`
+                        margin-left: auto;
+                    `}
+                />
+            </div>
+        </div>
+    );
+};
 
 // Walks a dotted restart path such as "languages.language3.tag" into the values. A path through a
 // null branch (no third language) yields undefined, so adding or removing one shows as a change.
@@ -146,19 +196,42 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "CollectionSettingsDialog.RestartMessage",
     );
 
-    // C# names these pageKeys when it asks us to open on a particular page.
-    const pages = [
+    // A Team Collection member who is not an administrator gets this instead of any settings.
+    const notAllowedMessage = loadedSettings?.notAllowedMessage;
+
+    // C# names these pageKeys when it asks us to open on a particular page. A page with no
+    // content yet shows the placeholder.
+    const pages: {
+        pageKey: string;
+        label: string;
+        content?: React.ReactElement;
+    }[] = [
         { pageKey: "languages", label: languagesLabel },
         { pageKey: "frontBackMatter", label: frontBackMatterLabel },
         { pageKey: "subscription", label: subscriptionLabel },
         { pageKey: "teamCollection", label: teamCollectionLabel },
         { pageKey: "bloomLibrary", label: bloomLibraryLabel },
         { pageKey: "advanced", label: advancedLabel },
-        { pageKey: "experimental", label: experimentalLabel },
+        {
+            pageKey: "experimental",
+            label: experimentalLabel,
+            content: (
+                // No label: the page title already says "Experimental".
+                <ConfigrGroup>
+                    <TeamCollectionsExperimentalSetting
+                        // As in the WinForms dialog, someone in a Team Collection may not turn
+                        // the feature off.
+                        locked={
+                            loadedSettings?.isTeamCollection === true &&
+                            loadedSettings.values.experimental[
+                                kTeamCollectionsFeatureToken
+                            ]
+                        }
+                    />
+                </ConfigrGroup>
+            ),
+        },
     ];
-
-    // A Team Collection member who is not an administrator gets this instead of any settings.
-    const notAllowedMessage = loadedSettings?.notAllowedMessage;
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
     // one place; every path ends at a plain value, so !== is enough.
@@ -300,11 +373,13 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                             pageKey={page.pageKey}
                             topLevel={true}
                         >
-                            <ConfigrGroup label={page.label}>
-                                <ConfigrStatic>
-                                    <PagePlaceholder />
-                                </ConfigrStatic>
-                            </ConfigrGroup>
+                            {page.content ?? (
+                                <ConfigrGroup label={page.label}>
+                                    <ConfigrStatic>
+                                        <PagePlaceholder />
+                                    </ConfigrStatic>
+                                </ConfigrGroup>
+                            )}
                         </ConfigrPage>
                     ))}
                 </ConfigrPane>

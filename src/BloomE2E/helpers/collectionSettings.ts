@@ -7,13 +7,20 @@
 // rewrite the .bloomCollection while Bloom is stopped, or use an E2eTestingApi hook. None of this
 // is the behavior any test measures; a test that wanted to measure the Settings dialog itself could
 // not be written today.
+//
+// The exception is the NEW, React Collection Settings dialog (the "Settings" button beside "Old
+// Settings" while the two coexist), which lives in the shell document and so is reachable. The
+// helpers at the bottom of this file drive it; only the pages that have real content so far can
+// change anything.
 
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import type { Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import type { IBloomApp } from "../fixtures/bloomTest";
 import { makeCollectionXml } from "../fixtures/launchBloom";
 import { apiGetJson, apiPost } from "./api";
+import { waitForCollectionReady } from "./collection";
+import { realClick } from "./realClick";
 
 /** The collection settings a test can rewrite. Everything else keeps Bloom's defaults. */
 export interface ICollectionSettings {
@@ -159,4 +166,141 @@ export async function getFeatureStatus(
         page,
         `features/status?featureName=${encodeURIComponent(featureName)}&forPublishing=false`,
     );
+}
+
+/** The new (React) Collection Settings dialog, by the title it shows. */
+function collectionSettingsDialog(page: Page): Locator {
+    // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
+    // accessible name "Collection Settings".
+    return page.getByRole("dialog").filter({ hasText: "Collection Settings" });
+}
+
+/**
+ * Open the new Collection Settings dialog the way a person does: click "Settings" on the
+ * Collections tab's top bar (not "Old Settings", the WinForms dialog CDP cannot reach). Returns
+ * once the dialog shows its pages.
+ */
+export async function openCollectionSettings(page: Page): Promise<void> {
+    await realClick(
+        page.getByRole("button", { name: "Settings", exact: true }),
+    );
+    await expect(
+        collectionSettingsDialog(page).getByRole("tab").first(),
+        "the Collection Settings dialog never showed its pages",
+    ).toBeVisible({ timeout: 30000 });
+}
+
+/**
+ * Show one page of the open Collection Settings dialog by clicking its name in the list on the
+ * left, e.g. "Experimental". Fails naming the pages the dialog offers when there is no such page.
+ */
+export async function showCollectionSettingsPage(
+    page: Page,
+    pageName: string,
+): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    const tab = dialog.getByRole("tab", { name: pageName, exact: true });
+    if ((await tab.count()) !== 1) {
+        const offered = await dialog.getByRole("tab").allInnerTexts();
+        throw new Error(
+            `The Collection Settings dialog has no page "${pageName}"; it offers: ${offered.join(", ")}.`,
+        );
+    }
+    await realClick(tab);
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
+/** The checkbox of the setting with this label on the showing page of the dialog. */
+function collectionSettingsCheckbox(page: Page, label: string): Locator {
+    // Config-R puts the setting's label on the element that wraps its checkbox.
+    return collectionSettingsDialog(page).locator(
+        `span[label="${label}"] input[type="checkbox"]`,
+    );
+}
+
+/** What a checkbox setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsCheckboxState {
+    checked: boolean;
+    /** False when the user cannot change it, e.g. because the subscription tier lacks it. */
+    enabled: boolean;
+}
+
+/**
+ * Read the checkbox setting with this label, e.g. "Team Collections", on the page of the
+ * Collection Settings dialog that is showing.
+ */
+export async function getCollectionSettingsCheckbox(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsCheckboxState> {
+    const checkbox = collectionSettingsCheckbox(page, label);
+    await expect(
+        checkbox,
+        `the showing Collection Settings page has no checkbox labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        checked: await checkbox.isChecked(),
+        enabled: await checkbox.isEnabled(),
+    };
+}
+
+/**
+ * Click the checkbox setting with this label on the showing page of the Collection Settings
+ * dialog, and return once it shows the new state. Nothing is saved until OK.
+ */
+export async function toggleCollectionSettingsCheckbox(
+    page: Page,
+    label: string,
+): Promise<void> {
+    const before = await getCollectionSettingsCheckbox(page, label);
+    const checkbox = collectionSettingsCheckbox(page, label);
+    await realClick(checkbox);
+    await expect(checkbox).toBeChecked({ checked: !before.checked });
+}
+
+/**
+ * The label on the dialog's OK button: "OK", or "Restart" when a change the user has made needs
+ * Bloom to reopen the collection.
+ */
+export async function getCollectionSettingsOkLabel(
+    page: Page,
+): Promise<string> {
+    // textContent, not innerText: the button's CSS shows its text in capitals.
+    return (
+        (await collectionSettingsDialog(page)
+            .getByRole("button", { name: /^(OK|Restart)$/i })
+            .textContent()) ?? ""
+    ).trim();
+}
+
+/**
+ * Click OK when it says "Restart": Bloom saves the settings and reopens the whole collection,
+ * which destroys the shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from
+ * here on) and returns it once the collection is ready again.
+ */
+export async function restartFromCollectionSettings(
+    bloomApp: IBloomApp,
+): Promise<Page> {
+    const page = bloomApp.page;
+    const restart = collectionSettingsDialog(page).getByRole("button", {
+        name: "Restart",
+        exact: true,
+    });
+    await expect(
+        restart,
+        "OK does not say Restart, so pressing it would not reopen the collection",
+    ).toBeVisible();
+    const pageClosed = page.waitForEvent("close", { timeout: 60000 });
+    // Pre-handled so a click failing for another reason cannot surface later as an unhandled
+    // rejection charged to some other test.
+    pageClosed.catch(() => undefined);
+    // Bloom can tear the page down before Playwright finishes its click; a "closed" error means
+    // the click landed. (If it never landed, the pageClosed wait times out.)
+    await realClick(restart).catch((error) => {
+        if (!/closed/i.test(String(error))) throw error;
+    });
+    await pageClosed;
+    const newPage = await bloomApp.reattachToShell();
+    await waitForCollectionReady(newPage);
+    return newPage;
 }

@@ -42,24 +42,41 @@ const initialValues: ICollectionSettingsValues = {
         district: "",
     },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
-    experimental: {},
+    experimental: { "team-collections": false },
 };
 
 const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
+    isTeamCollection: false,
     notAllowedMessage: null,
 };
 
-const { mockGet, mockPostJson, mockCloseDialog, dialogState } = vi.hoisted(
-    () => ({
-        mockGet: vi.fn(),
-        mockPostJson: vi.fn(),
-        mockCloseDialog: vi.fn(),
-        // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
-        dialogState: { open: true },
-    }),
-);
+const {
+    mockGet,
+    mockPostJson,
+    mockCloseDialog,
+    dialogState,
+    teamCollectionFeature,
+} = vi.hoisted(() => ({
+    mockGet: vi.fn(),
+    mockPostJson: vi.fn(),
+    mockCloseDialog: vi.fn(),
+    // Lets a test close and re-open the dialog, which is what the real launch plumbing does.
+    dialogState: { open: true },
+    // Whether the collection's subscription tier includes Team Collections.
+    teamCollectionFeature: { enabled: true },
+}));
+
+vi.mock("../react_components/featureStatus", () => ({
+    useGetFeatureStatus: () => ({ enabled: teamCollectionFeature.enabled }),
+}));
+
+vi.mock("../react_components/requiresSubscription", () => ({
+    BloomSubscriptionIndicatorIconAndText: (props: { feature: string }) => (
+        <div data-testid="subscription-badge" data-feature={props.feature} />
+    ),
+}));
 
 vi.mock("../utils/bloomApi", () => ({
     get: mockGet,
@@ -125,6 +142,12 @@ vi.mock("../react_components/boxes", () => ({
     ),
 }));
 
+const { MockConfigrGroup } = vi.hoisted(() => ({
+    MockConfigrGroup: (props: React.PropsWithChildren<object>) => (
+        <div>{props.children}</div>
+    ),
+}));
+
 vi.mock("@sillsdev/config-r", () => ({
     ConfigrPane: (props: {
         children: React.ReactNode;
@@ -178,16 +201,35 @@ vi.mock("@sillsdev/config-r", () => ({
             {props.children}
         </div>
     ),
-    ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => (
-        <div data-testid="configr-page" data-page-key={props.pageKey}>
-            {props.children}
-        </div>
-    ),
-    ConfigrGroup: (props: React.PropsWithChildren<object>) => (
-        <div>{props.children}</div>
-    ),
+    ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
+        // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
+        React.Children.forEach(props.children, (child) => {
+            if (
+                !React.isValidElement(child) ||
+                child.type !== MockConfigrGroup
+            ) {
+                throw new Error(
+                    `ConfigrPage "${props.pageKey}" has a child that is not a ConfigrGroup`,
+                );
+            }
+        });
+        return (
+            <div data-testid="configr-page" data-page-key={props.pageKey}>
+                {props.children}
+            </div>
+        );
+    },
+    ConfigrGroup: MockConfigrGroup,
     ConfigrStatic: (props: React.PropsWithChildren<object>) => (
         <div>{props.children}</div>
+    ),
+    ConfigrBoolean: (props: { path: string; disabled?: boolean }) => (
+        <input
+            type="checkbox"
+            data-testid="configr-boolean"
+            data-path={props.path}
+            disabled={props.disabled}
+        />
     ),
 }));
 
@@ -233,6 +275,7 @@ describe("CollectionSettingsDialog", () => {
         container = document.createElement("div");
         document.body.appendChild(container);
         dialogState.open = true;
+        teamCollectionFeature.enabled = true;
         mockGet.mockReset();
         mockGet.mockImplementation(
             (_url: string, successCallback: (r: unknown) => void) => {
@@ -474,5 +517,77 @@ describe("CollectionSettingsDialog", () => {
         await flushDeferredChange();
 
         expect(okButtonLabel()).toBe("Restart");
+    });
+
+    describe("Experimental page", () => {
+        const teamCollectionsCheckbox = () => {
+            const checkbox = container.querySelector(
+                '[data-testid="configr-page"][data-page-key="experimental"] [data-path="experimental.team-collections"]',
+            ) as HTMLInputElement | null;
+            if (!checkbox) {
+                throw new Error(
+                    "The Experimental page has no Team Collections checkbox",
+                );
+            }
+            return checkbox;
+        };
+
+        const respondWith = (response: ICollectionSettingsResponse) => {
+            mockGet.mockImplementation(
+                (_url: string, successCallback: (r: unknown) => void) => {
+                    successCallback({ data: response });
+                },
+            );
+        };
+
+        it("offers Team Collections, with its subscription badge, when the tier allows it", async () => {
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+            expect(
+                container
+                    .querySelector(
+                        '[data-page-key="experimental"] [data-testid="subscription-badge"]',
+                    )
+                    ?.getAttribute("data-feature"),
+            ).toBe("TeamCollection");
+            // It is the only page with real content so far.
+            expect(
+                container.querySelectorAll('[data-testid="configr-boolean"]')
+                    .length,
+            ).toBe(1);
+        });
+
+        it("disables Team Collections when the tier does not include it", async () => {
+            teamCollectionFeature.enabled = false;
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("will not let someone in a Team Collection turn the feature off", async () => {
+            respondWith({
+                ...settingsResponse,
+                isTeamCollection: true,
+                values: {
+                    ...initialValues,
+                    experimental: { "team-collections": true },
+                },
+            });
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(true);
+        });
+
+        it("lets someone in a Team Collection turn the feature on if it is off", async () => {
+            respondWith({ ...settingsResponse, isTeamCollection: true });
+            expect(initialValues.experimental["team-collections"]).toBe(false);
+
+            await renderDialog();
+
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+        });
     });
 });

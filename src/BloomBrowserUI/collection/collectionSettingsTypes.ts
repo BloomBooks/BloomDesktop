@@ -58,6 +58,8 @@ export interface ICollectionSettingsResponse {
     values: ICollectionSettingsValues;
     // Dotted paths into `values`; a change to any of them means Bloom must restart.
     restartPaths: string[];
+    // Whether the open collection is a Team Collection, even if disconnected.
+    isTeamCollection: boolean;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;

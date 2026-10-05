@@ -382,7 +382,11 @@ Alphabet and Sentence ending punctuation backed by the per-language reader-tool 
 `fontScriptSettingsControl`, `singleFontSection`, `bookMakingSettingsControl`. Could be split:
 6a language rows and fonts, 6b "More" once Q3 is decided.
 
-**Step 7. BL-16738 Settings: Experimental.** Per Q9: registry-driven list, one row today. Each
+**Step 7. BL-16738 Settings: Experimental.** *Done without the registry: the page has exactly
+what master's Advanced tab offers (Team Collections; the Experimental Book Sources toggle is
+never shown on master, so it is not here either), and the GET reply gained `isTeamCollection` for
+the lock. A feature branch that adds an experimental feature adds its row and its key in
+`GetCurrentValues`/`CopyIntoPendingSettings`.* Per Q9: registry-driven list, one row today. Each
 row is `ConfigrBoolean` plus the subscription badge, disabled when the tier lacks the feature or
 (for Team Collections) when already in a TC, as `AdvancedSettingsPanel.tsx:205-227` does now.
 
