@@ -213,9 +213,14 @@ namespace Bloom.web.controllers
     {
         private readonly CollectionSettings _settings;
 
+        // The caption as the dialog was given it. The default caption is localized using the
+        // collection's languages, which may already have changed by the time QrcodeCaption is set.
+        private readonly string _qrcodeCaptionBeforeChanges;
+
         public FrontBackMatterValues(CollectionSettings settings)
         {
             _settings = settings;
+            _qrcodeCaptionBeforeChanges = settings.BadgeQrCodeLabelLocalized;
         }
 
         /// <summary>
@@ -256,7 +261,7 @@ namespace Bloom.web.controllers
             {
                 // The caption shown by default follows the current UI language, so store it only
                 // if the user actually changed it; otherwise it would be frozen in that language.
-                if (value != _settings.BadgeQrCodeLabelLocalized)
+                if (value != _qrcodeCaptionBeforeChanges)
                     _settings.BadgeQrCodeLabel = value;
             }
         }
