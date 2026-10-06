@@ -17,6 +17,11 @@
         <target xml:lang="es-ES" state="final">El archivo de imagen {0} está dañado y necesita ser reemplazado. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <target xml:lang="es-ES" state="needs-translation">Details</target>
+        <note>ID: ErrorReport.Details</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <target xml:lang="es-ES" state="final">Bloom no pudo acceder al servidor para obtener la lista de estanterías.</target>
