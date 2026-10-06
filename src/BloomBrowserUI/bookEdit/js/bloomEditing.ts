@@ -578,6 +578,7 @@ export function SetupElements(
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     initializeCanvasElementManager();
+    listenForImageUndoKey();
     initChoiceWidgetsForEditing();
 
     $(container)
@@ -1850,7 +1851,16 @@ export function isModalOpen(doc: Document): boolean {
 // way to undo replacing a picture was the Undo button in the top bar, and the keystroke did
 // nothing (BL-16868). We take the key only when there is an image change to undo and the
 // keystroke did not come from inside text, so ckeditor keeps every case that is its own.
-document.addEventListener("keydown", (e: KeyboardEvent) => {
+// Only the page frame may listen: the toolbox frame loads this module too, and it has no
+// image undo manager, so the handler would throw there.
+let listeningForImageUndoKey = false;
+function listenForImageUndoKey() {
+    if (listeningForImageUndoKey) return;
+    listeningForImageUndoKey = true;
+    document.addEventListener("keydown", handleImageUndoKey);
+}
+
+function handleImageUndoKey(e: KeyboardEvent) {
     if (!e.ctrlKey || e.altKey || e.shiftKey) return;
     if (e.key?.toLowerCase() !== "z" && e.code !== "KeyZ") return;
     const target = e.target as HTMLElement | null;
@@ -1874,7 +1884,7 @@ document.addEventListener("keydown", (e: KeyboardEvent) => {
     if (!imageOperationCanUndo()) return;
     e.preventDefault();
     imageOperationUndo();
-});
+}
 
 async function pasteImpl(imageAvailable: boolean) {
     const canvasElementManager = theOneCanvasElementManager;
