@@ -17,6 +17,11 @@
         <target xml:lang="pt-PT" state="final">O arquivo de imagem {0} está corrompido e precisa ser substituído. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <target xml:lang="pt-PT" state="needs-translation">Details</target>
+        <note>ID: ErrorReport.Details</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <target xml:lang="pt-PT" state="final">Bloom não pode acessar o servidor para obter a lista de estantes.</target>
