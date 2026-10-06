@@ -53,7 +53,7 @@ namespace Bloom.MiscUI
                     {
                         //maybe it's an exe in distfiles?
                         if (
-                            fileName.EndsWith(".exe")
+                            fileName.EndsWith(".exe", StringComparison.Ordinal)
                             && RobustFile.Exists(
                                 Path.Combine(
                                     FileLocationUtilities.DirectoryOfApplicationOrSolution,

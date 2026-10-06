@@ -109,7 +109,10 @@ namespace Bloom
                     var type = f.GetMethod()?.DeclaringType;
                     return type == null
                         || type == typeof(BloomAssertListener)
-                        || (type.Namespace ?? "").StartsWith("System.Diagnostics");
+                        || (type.Namespace ?? "").StartsWith(
+                            "System.Diagnostics",
+                            StringComparison.Ordinal
+                        );
                 })
                 .Take(15);
             var sb = new StringBuilder();

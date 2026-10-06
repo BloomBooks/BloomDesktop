@@ -1440,7 +1440,7 @@ export function requestPageContent() {
 // removeEditingDebris(), and getBodyContentForSavePage() all strip classes, blur elements, turn off
 // canvas-element editing, and do CKEditor cleanup) and does NOT restore it afterward. Both current
 // callers tolerate this: the live editor re-navigates the page after saving, and the off-screen path
-// uses a fresh disposable browser per page. Don't call this from a context where the page must stay
+// navigates to the next page afterwards. Don't call this from a context where the page must stay
 // live and editable afterward.
 function extractAndStripPageContentForSave(): string {
     // Record how much of the page each image slot covers, while the page is still laid out.

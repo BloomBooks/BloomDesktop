@@ -30,6 +30,8 @@ namespace BloomTests.Spreadsheet
         public async Task OneTimeSetUp()
         {
             _dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
+            // As if the book's pages had been brought up to date before the import.
+            _dom.UpdateMetaElement(BookProcessor.kPageLayoutUpdateLevelMeta, "1");
             AssertThatXmlIn
                 .Dom(_dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -152,6 +154,16 @@ namespace BloomTests.Spreadsheet
         /// a slightly different state (e.g., different import params).
         /// </summary>
         protected virtual void InitializeImporter(SpreadsheetImporter importer) { }
+
+        [Test]
+        public void ImportMarksThePagesAsNeedingAPageLayoutUpdate()
+        {
+            // The import makes and fills pages that were never laid out in the Edit tab.
+            Assert.That(
+                _dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo("0")
+            );
+        }
 
         [Test]
         public void TokPisinAdded()

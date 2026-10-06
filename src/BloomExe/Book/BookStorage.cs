@@ -195,16 +195,18 @@ namespace Bloom.Book
         ///   missing: set it to 0 if maintenanceLevel is 0 or missing, otherwise 1
         ///              0 = No media maintenance has been done
         ///   Bloom 6.0: 1 = maintenanceLevel at least 1 (so images are opaque and not too big)
-        /// History of kBrowserMaintenanceLevel (introduced in 6.5)
+        /// History of kPageLayoutUpdateLevel (introduced in 6.5)
         ///   The migrations above are all done by C# on the DOM. This one tracks the quite
-        ///   different set of fix-ups that only the editing JavaScript can do, because they need a
+        ///   different set of page changes that only the editing JavaScript can make, because they need a
         ///   real browser that has laid the page out: converting an old-style image to the
         ///   background canvas element, recording each image slot's share of its page, canvas
         ///   element geometry, and so on. They used to happen only when the user opened a page in
         ///   the Edit tab, so a book carried them on the pages someone had visited and nowhere
         ///   else. BookProcessor now applies them to every page off-screen when this level says
-        ///   the book is behind. See NeedsPerPageFixup.
-        ///              0 = missing: no page has reliably been through the editing JavaScript
+        ///   the book is behind. See NeedsPageLayoutUpdate. The book's value is also set back to 0
+        ///   whenever its pages' layout changes (BookProcessor.RecordPageLayoutChanged), because
+        ///   the recorded measurements are relative to the page.
+        ///              0 = missing, or the layout has changed since: the pages need the update
         ///   Bloom 6.5: 1 = every page has been through it (BL-16852)
         ///   BUMP THIS whenever a change to the editing JavaScript means existing books need to be
         ///   put through it again. Deliberately NOT tied to the Bloom version: version numbers are
@@ -213,7 +215,7 @@ namespace Bloom.Book
         /// </summary>
         public const int kMaintenanceLevel = 14;
         public const int kMediaMaintenanceLevel = 1;
-        public const int kBrowserMaintenanceLevel = 1;
+        public const int kPageLayoutUpdateLevel = 1;
 
         public const string PrefixForCorruptHtmFiles = "_broken_";
         private IChangeableFileLocator _fileLocator;
@@ -401,7 +403,10 @@ namespace Bloom.Book
             {
                 // Path.GetFileName will return empty string if the FolderPath ends with "/"
                 Debug.Assert(
-                    !FolderPath.EndsWith(Path.DirectorySeparatorChar.ToString()),
+                    !FolderPath.EndsWith(
+                        Path.DirectorySeparatorChar.ToString(),
+                        StringComparison.Ordinal
+                    ),
                     "FolderPath is expected not to include a trailing slash, otherwise the folder's name will be determined incorrectly."
                 );
 
@@ -661,17 +666,14 @@ namespace Bloom.Book
                 "Bloom " + ErrorReport.GetVersionForErrorReporting()
             );
             // We are about to write this book with our editing code, so it cannot honestly claim a
-            // browser maintenance level beyond what we know how to produce. See the method.
+            // page layout update level beyond what we know how to produce. See the method.
             // Remember what it said: the clamp has to happen before we serialize Dom, but if the
             // write never reaches disk we have to put it back, because the in-memory value is what
             // Book.SavePageToDisk consults to decide this book still needs the full save. Left
             // lowered after a failed write, it would let later single-page saves go out over a file
             // whose head still records the higher level, and that level would then stand for good.
-            var levelBeforeClamp = Dom.GetMetaValue(
-                BookProcessor.kBrowserMaintenanceLevelMeta,
-                null
-            );
-            BookProcessor.ClampBrowserMaintenanceLevelToOurs(Dom);
+            var levelBeforeClamp = Dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, null);
+            BookProcessor.ClampPageLayoutUpdateLevelToOurs(Dom);
             var formatVersion = GetBloomFormatVersionToWrite(BookInfo.FormatVersion);
             if (!Program.RunningUnitTests)
             {
@@ -700,7 +702,7 @@ namespace Bloom.Book
                 // The book on disk still says whatever it said; make the DOM agree again.
                 if (levelBeforeClamp != null)
                     Dom.UpdateMetaElement(
-                        BookProcessor.kBrowserMaintenanceLevelMeta,
+                        BookProcessor.kPageLayoutUpdateLevelMeta,
                         levelBeforeClamp
                     );
                 throw;
@@ -1842,7 +1844,7 @@ namespace Bloom.Book
             // base for the current title, so a genuine title change still renames the folder.)
             if (
                 (
-                    currentFolderName.StartsWith(idealFolderName)
+                    currentFolderName.StartsWith(idealFolderName, StringComparison.Ordinal)
                     || IsUniqueVariantOfIdealFolderName(currentFolderName, idealFolderName)
                 )
                 && currentFolderName == SanitizeNameForFileSystem(currentFolderName)
@@ -2074,7 +2076,7 @@ namespace Bloom.Book
             // is updated. (In particular we don't want to rename the real book for
             // remote users of a TeamCollection when we were just renaming the copy
             // we were publishing.)
-            if (FolderPath.StartsWith(_collectionSettings.FolderPath))
+            if (FolderPath.StartsWith(_collectionSettings.FolderPath, StringComparison.Ordinal))
             {
                 _bookRenamedEvent.Raise(fromToPair);
                 BookTitleChanged?.Invoke(this, EventArgs.Empty);
@@ -2146,7 +2148,12 @@ namespace Bloom.Book
 
                 // Branding images are handled in a special way in BrandingApi.cs.
                 // Without this, we get "Warning: Image /bloom/api/branding/image is missing from the folder xxx" (see BL-3975)
-                if (imageFileName.EndsWith(Bloom.Api.BrandingSettings.kBrandingImageUrlPart))
+                if (
+                    imageFileName.EndsWith(
+                        Bloom.Api.BrandingSettings.kBrandingImageUrlPart,
+                        StringComparison.Ordinal
+                    )
+                )
                     continue;
 
                 //trim off the end of "license.png?123243"
@@ -2285,7 +2292,9 @@ namespace Bloom.Book
             // (although Bloom doesn't run natively on MacOS).  See BL-11415.
             // Note that periods are stripped from the beginning and end of titles when creating file/folder
             // names in SanitizeNameForFileSystem()/RemoveDangerousCharacters().
-            candidates.RemoveAll((path) => Path.GetFileName(path).StartsWith("."));
+            candidates.RemoveAll(
+                (path) => Path.GetFileName(path).StartsWith(".", StringComparison.Ordinal)
+            );
             if (candidates.Count == 0)
                 return string.Empty;
 
@@ -2322,7 +2331,10 @@ namespace Bloom.Book
                     .GetFiles(folderPath)
                     // Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
                     // So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
-                    .Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
+                    .Where(name =>
+                        name.EndsWith(".htm", StringComparison.Ordinal)
+                        || name.EndsWith(".html", StringComparison.Ordinal)
+                    );
             }
             catch (UnauthorizedAccessException uaex)
             {
@@ -2347,7 +2359,9 @@ namespace Bloom.Book
             var allCandidates = GetAllHtmCandidates(folderPath).ToList();
             allCandidates.RemoveAll(f => okayFiles.Contains(f));
             return allCandidates.Where(f =>
-                !Path.GetFileName(f).ToLowerInvariant().StartsWith("readme-")
+                !Path.GetFileName(f)
+                    .ToLowerInvariant()
+                    .StartsWith("readme-", StringComparison.Ordinal)
             );
         }
 
@@ -2915,7 +2929,10 @@ namespace Bloom.Book
                     continue;
                 // clean up any unwanted Xmatter CSS files. The one we want is already skipped.
                 // Get rid of any versions of basePage.css that aren't in cssFilesToSkipInThisPhase
-                if (file.EndsWith("XMatter.css") || file.StartsWith("basePage"))
+                if (
+                    file.EndsWith("XMatter.css", StringComparison.Ordinal)
+                    || file.StartsWith("basePage", StringComparison.Ordinal)
+                )
                     RobustFile.Delete(path);
                 else
                     supportFilesToUpdate.Add(file);
@@ -3094,7 +3111,7 @@ namespace Bloom.Book
             {
                 var src = imgBranding.GetAttribute("src");
                 var name = Path.GetFileNameWithoutExtension(src);
-                if (!name.EndsWith("-text"))
+                if (!name.EndsWith("-text", StringComparison.Ordinal))
                 {
                     var extension = Path.GetExtension(src);
                     src = name + "-text" + extension;
@@ -3194,7 +3211,12 @@ namespace Bloom.Book
                             // Also make center square white to overlay Bloom logo and overlay the Bloom logo
                             TweakQrCodeBitmap(qrBitmap);
                             qrFileName = "lang-qr-code.png";
-                            qrBitmap.Save(Path.Combine(bookFolderPath, qrFileName));
+                            // Reports a failure to write the file as a NonFatalProblem rather than
+                            // throwing, so the book can still be selected (BL-16915).
+                            ImageUtils.SaveOrDeletePngImageToPath(
+                                qrBitmap,
+                                Path.Combine(bookFolderPath, qrFileName)
+                            );
                         }
                     }
                 }
@@ -3321,7 +3343,7 @@ namespace Bloom.Book
                     var destPath = Path.Combine(FolderPath, fileName);
                     Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
                     RobustFile.Copy(sourcePath, destPath, true);
-                    if (fileName.EndsWith(".css"))
+                    if (fileName.EndsWith(".css", StringComparison.Ordinal))
                     {
                         gotBrandingCss |= fileName == "branding.css";
                     }
@@ -3410,7 +3432,9 @@ namespace Bloom.Book
             {
                 if (
                     sourceFileName.ToLowerInvariant().Contains("xmatter")
-                    && !sourceFileName.ToLower().StartsWith("factory-xmatter")
+                    && !sourceFileName
+                        .ToLower()
+                        .StartsWith("factory-xmatter", StringComparison.Ordinal)
                 )
                 {
                     return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
@@ -3422,7 +3446,7 @@ namespace Bloom.Book
             if (Platform.IsMono)
             {
                 // do not attempt to copy files to the "/usr" directory
-                if (targetDirInfo.FullName.StartsWith("/usr"))
+                if (targetDirInfo.FullName.StartsWith("/usr", StringComparison.Ordinal))
                     return;
             }
             else
@@ -3839,7 +3863,7 @@ namespace Bloom.Book
             int i = 0;
             string suffix = "";
             string result;
-            if (!ext.StartsWith("."))
+            if (!ext.StartsWith(".", StringComparison.Ordinal))
                 ext = "." + ext;
             do
             {
@@ -4177,7 +4201,7 @@ namespace Bloom.Book
                 // is on the UI thread needs a progress that pumps messages, or Bloom will be frozen
                 // for the whole (potentially minutes-long) shrink. Today no UI-thread caller passes
                 // a real progress: "Update Book" (CollectionModel.BringBookUpToDateAsync) and the
-                // automatic per-page fix-up both run BookProcessor.ProcessBook on a worker thread
+                // automatic page layout update both run BookProcessor.ProcessBook on a worker thread
                 // behind the React progress dialog, and DoUpdatesOfAllBooks runs on
                 // ProgressDialogBackground's worker, so all of them arrive here with InvokeRequired
                 // true and simply use the progress they were given. A future UI-thread caller
@@ -4739,7 +4763,10 @@ namespace Bloom.Book
                 {
                     elt.SetAttribute("data-tool-id", "game");
                     // In case this runs on something that's already migrated, don't change an existing theme.
-                    if (!elt.GetClasses().Any(x => x.StartsWith("game-theme")))
+                    if (
+                        !elt.GetClasses()
+                            .Any(x => x.StartsWith("game-theme", StringComparison.Ordinal))
+                    )
                     {
                         // This is the theme (once called 'legacy') that looks most like the old version
                         // of these games...in fact we tried hard to make it identical.

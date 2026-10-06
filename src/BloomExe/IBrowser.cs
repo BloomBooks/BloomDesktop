@@ -230,7 +230,7 @@ namespace Bloom
             EnsureBrowserReadyToNavigate();
 
             //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
-            if (cleanupFileAfterNavigating && !url.EndsWith(".pdf"))
+            if (cleanupFileAfterNavigating && !url.EndsWith(".pdf", StringComparison.Ordinal))
             {
                 SetNewDependent(TempFile.TrackExisting(url));
             }
@@ -294,7 +294,7 @@ namespace Bloom
             // Convert from path to URL
             if (!String.IsNullOrEmpty(urlQueryParams))
             {
-                if (!urlQueryParams.StartsWith("?"))
+                if (!urlQueryParams.StartsWith("?", StringComparison.Ordinal))
                     urlQueryParams = '?' + urlQueryParams;
             }
 

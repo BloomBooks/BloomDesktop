@@ -8,6 +8,14 @@ import { Point, PointScaling } from "../point";
 // The size of the grid cells for snapping.
 const gridSize = 10;
 
+// Rotation snaps to every multiple of this many degrees: 0, 45, 90 and so on.
+const rotationSnapInterval = 45;
+
+// How close to one of those angles the pointer must be before the rotation snaps to it.
+// Wide enough that the common angles are easy to hit, narrow enough that a third of each
+// 45 degree span is still free.
+const rotationSnapTolerance = 14;
+
 // Type definition for functions that modify a position based on snapping rules.
 type SnapPositionFunction = (
     event: MouseEvent | KeyboardEvent | undefined,
@@ -212,6 +220,29 @@ export class CanvasSnapProvider {
             return { x: this.dragContext.startX!, y };
         }
         // Note: The logic guarantees axis is either "horizontal" or "vertical" here if shift is pressed.
+    }
+
+    /**
+     * Snaps a rotation angle to the nearest multiple of 45 degrees, if it is within
+     * rotationSnapTolerance of one. As with position snapping, holding CTRL turns the
+     * snapping off and gives the exact angle the pointer asks for.
+     * @param degrees The angle the pointer asks for.
+     * @param event The mouse or keyboard event, used to check for the CTRL key.
+     * @returns The angle to use, in degrees.
+     */
+    public getSnappedRotation(
+        degrees: number,
+        event: MouseEvent | KeyboardEvent | undefined,
+    ): number {
+        if (event && event.ctrlKey) {
+            return degrees;
+        }
+        const nearestSnapAngle =
+            Math.round(degrees / rotationSnapInterval) * rotationSnapInterval;
+        if (Math.abs(degrees - nearestSnapAngle) <= rotationSnapTolerance) {
+            return nearestSnapAngle;
+        }
+        return degrees;
     }
 
     /**
