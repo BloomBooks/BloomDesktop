@@ -343,7 +343,11 @@ namespace Bloom.WebLibraryIntegration
             // Note that Amazon S3 regards "/" as the directory delimiter for directory oriented
             // displays of object keys.
             string[] endsToAvoid = { "/thumbs.db", ".pdf", ".map" };
-            if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
+            if (
+                endsToAvoid.Any(end =>
+                    objectKey.ToLowerInvariant().EndsWith(end, StringComparison.Ordinal)
+                )
+            )
                 return true;
             // The harvester needs the collection settings file, but we don't want to download it
             // when users are downloading books.  (See BL-12583.)
@@ -461,11 +465,11 @@ namespace Bloom.WebLibraryIntegration
                     "The book we tried to download is no longer in the BloomLibrary"
                 );
 
-            if (!storageKeyOfBookFolderParent.EndsWith("/"))
+            if (!storageKeyOfBookFolderParent.EndsWith("/", StringComparison.Ordinal))
                 storageKeyOfBookFolderParent += '/';
 
             Debug.Assert(
-                matching[0].Key.StartsWith(storageKeyOfBookFolderParent),
+                matching[0].Key.StartsWith(storageKeyOfBookFolderParent, StringComparison.Ordinal),
                 "Matched object does not start with storageKey"
             );
 

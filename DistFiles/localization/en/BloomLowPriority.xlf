@@ -59,26 +59,6 @@
         <note>ID: LinkTargetChooser.Dialog.Title</note>
         <note>Title of the Link Target chooser dialog that lets users pick where a link should go.</note>
       </trans-unit>
-      <trans-unit id="LinkTargetChooser.BookList.Heading">
-        <source xml:lang="en">Books in this Collection</source>
-        <note>ID: LinkTargetChooser.BookList.Heading</note>
-        <note>Heading above the list of books in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.PageList.Heading">
-        <source xml:lang="en">Pages in the selected book</source>
-        <note>ID: LinkTargetChooser.PageList.Heading</note>
-        <note>Heading above the list of pages for the currently selected book in the Link Target chooser dialog.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.BookNotFound">
-        <source xml:lang="en">Book not found: {0}</source>
-        <note>ID: LinkTargetChooser.SelectionError.BookNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a book that is no longer available. {0} is the missing book ID.</note>
-      </trans-unit>
-      <trans-unit id="LinkTargetChooser.SelectionError.PageNotFound">
-        <source xml:lang="en">Page {0} not found in book "{1}"</source>
-        <note>ID: LinkTargetChooser.SelectionError.PageNotFound</note>
-        <note>Shown in the Link Target chooser when the stored link points to a page that no longer exists. {0} is the missing page ID and {1} is the book title.</note>
-      </trans-unit>
       <trans-unit id="LinkTargetChooser.PageList.SelectBookPrompt">
         <source xml:lang="en">Select a book to see its pages</source>
         <note>ID: LinkTargetChooser.PageList.SelectBookPrompt</note>
@@ -182,10 +162,6 @@
         <source xml:lang="en">How to video</source>
         <note>ID: PublishTab.Apps.UsbDebuggingDialog.HowToVideo</note>
         <note>Text of a link at the bottom of the USB debugging instructions dialog; it opens a short YouTube video showing the same steps.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckEmailFailed">
-        <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Bloom subscription.</source>
@@ -337,9 +313,6 @@
         <source xml:lang="en">Bloom cannot export because {0} pages contain drag-and-drop games.</source>
         <note>ID: Spreadsheet.CannotExportDragAndDropGamePages</note>
         <note>{0} is a placeholder for the number of pages</note>
-      </trans-unit>
-      <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
-        <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
       </trans-unit>
       <trans-unit id="Download.PleaseSendLogFile">
         <source xml:lang="en">Please also send us the latest log file found at {0}.</source>

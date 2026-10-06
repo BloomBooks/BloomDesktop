@@ -1722,7 +1722,9 @@ namespace Bloom.Edit
             {
                 try
                 {
-                    var expandedUrl = url.StartsWith("/") ? BloomServer.ServerUrl + url : url;
+                    var expandedUrl = url.StartsWith("/", StringComparison.Ordinal)
+                        ? BloomServer.ServerUrl + url
+                        : url;
                     var bytes = await client.GetByteArrayAsync(expandedUrl);
 
                     using (var memoryStream = new MemoryStream(bytes))

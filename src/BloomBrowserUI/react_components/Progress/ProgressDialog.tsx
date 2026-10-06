@@ -160,6 +160,21 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
         if (props.open) {
             everOpened.current = true;
             setPercent(0); // always want to start here
+            // And start clean on everything else too. The cleanup below only runs for a dialog
+            // that has been open before, but our listener is alive from the moment we mount and
+            // "progress" is a shared channel -- another dialog's run (e.g. Update Book, which has
+            // its own EmbeddedSimpleProgressDialog) can leave us holding its error state and its
+            // show-buttons before we have ever been shown.
+            setMessages([]);
+            setMessagesForErrorReporting("");
+            setSawAnError(false);
+            setSawAWarning(false);
+            setSawFatalError(false);
+            setDone(false);
+            // The spinner especially: it is switched off by "finished", which is broadcast to
+            // every dialog on the channel, so somebody else's run can leave us with no spinner
+            // for a job of ours that has no percentage to show instead.
+            setShowSpinner(props.determinate !== true);
         } else {
             // Once the dialog has been open, the only way this effect runs again is if it
             // it's open state changes. But we don't want this to happen on the initial
@@ -182,7 +197,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = (
                 post("progress/closed");
             }
         }
-    }, [props.open]);
+    }, [props.open, props.determinate]);
 
     const buttonForSendingErrorReportIsRelevant =
         props.showReportButton == "always" ||

@@ -147,7 +147,7 @@ namespace Bloom.Spreadsheet
                 // Widgets have a workaround in the importer to at least not lose pages.
                 var dataActivity = page.GetAttribute("data-activity") ?? "";
                 if ( // "drag-word-chooser-slider" "drag-image-to-target" "drag-sort-sentence" "drag-letter-to-target"
-                    dataActivity.StartsWith("drag-")
+                    dataActivity.StartsWith("drag-", StringComparison.Ordinal)
                 )
                 {
                     ++dragAndDropGamePageCount;
@@ -742,7 +742,12 @@ namespace Bloom.Spreadsheet
                 .ToList();
             //Bring the ones with the same data-book value together so we can easily make a single row for each data-book value
             dataBookNodeList.Sort(
-                (a, b) => a.GetAttribute("data-book").CompareTo(b.GetAttribute("data-book"))
+                (a, b) =>
+                    string.Compare(
+                        a.GetAttribute("data-book"),
+                        b.GetAttribute("data-book"),
+                        StringComparison.InvariantCulture
+                    )
             );
             string prevDataBookLabel = null;
             SpreadsheetRow row = null;
