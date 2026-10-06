@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
+import { getPageIframeBody } from "../../../utils/shared";
 import { Div, Span } from "../../../react_components/l10nComponents";
 import { get, postDataWithConfig } from "../../../utils/bloomApi";
 import "./impairmentVisualizer.less";
@@ -142,7 +143,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     // ones, which are done a pixel at a time, so if they are being updated  frequently (like
     // during a drag), this optimization really helps make things less jerky.
     public updateSimulations(img: HTMLImageElement | undefined) {
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const body = page.ownerDocument.body;
         if (this.simulatingCataracts) {
@@ -192,7 +193,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     // These classes are on the page iframe's body, which is never saved, so removing them is
     // live-only work for detachFromPage, not part of removeToolMarkup.
     public static removeSimulationClassesFromBody() {
-        const body = ToolboxToolReactAdaptor.getPage();
+        const body = getPageIframeBody();
         if (!body) return;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
@@ -239,7 +240,7 @@ export class ImpairmentVisualizerControls extends React.Component<
             // updates to correctly handle when it shows and hides.
             return;
         }
-        const page = ToolboxToolReactAdaptor.getPage();
+        const page = getPageIframeBody();
         if (!page || !page.ownerDocument) return;
         const canvas = page.ownerDocument.createElement("canvas");
         const imageContainer = img.parentElement;
@@ -348,6 +349,11 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
 
     public id(): string {
         return "impairmentVisualizer";
+    }
+
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/impairmentVisualizer/blind-eye-white.svg";
     }
 
     public showTool() {

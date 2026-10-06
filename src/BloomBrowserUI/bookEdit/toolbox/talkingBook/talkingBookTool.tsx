@@ -2,12 +2,16 @@ import { unwrapDescribedImages } from "../imageDescription/imageDescriptionUtils
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
-import { getTheOneToolbox } from "../toolbox";
-import { ToolBox } from "../toolbox";
+import { getTheOneToolbox, IToolboxSettings } from "../toolbox";
+import { getPageIframeBody } from "../../../utils/shared";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
+import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+// Gets these styles into the toolbox document. (The page frame links the compiled
+// audioRecording.css separately; see the styleSheets list in editablePage.ts.)
+import "./audioRecording.less";
 
 // This class renders the TalkingBookToolControls React component
 // in the toolbox, and passes into it an instance of the audioRecorder.
@@ -27,10 +31,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
             />,
         );
     }
-    public beginRestoreSettings(settings: string): JQueryPromise<void> {
+    /** This tool saves no state of its own; see ITool.beginRestoreSettings(). */
+    public async beginRestoreSettings(
+        _settings: IToolboxSettings,
+    ): Promise<void> {
         // Nothing to do except that we need the sentence ending punctuation settings
         // from the leveled reader tool.  (We share sentence parsing via libSynphony.)
-        return beginLoadSynphonySettings();
+        await beginLoadSynphonySettings();
     }
 
     public isAlwaysEnabled(): boolean {
@@ -155,7 +162,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         }
         // bloom-showImageDescriptions is on the body, outside the page div that removeToolMarkup()
         // gets. Comic editing must not resume until super has removed the wrappers.
-        ToolBox.getPage()?.classList.remove("bloom-showImageDescriptions");
+        getPageIframeBody()?.classList.remove("bloom-showImageDescriptions");
         super.detachFromPage();
         getCanvasElementManager()?.resumeComicEditing();
     }
@@ -174,13 +181,13 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     private isImageDescriptionToolActive(): boolean {
-        return getTheOneToolbox().isToolActive("imageDescriptionTool");
+        return getTheOneToolbox().isToolActive(kImageDescriptionToolId);
     }
 
     private showImageDescriptionsIfAny() {
         // If we have any image descriptions we need to show them so we can record them.
         // (BL-8515) Unless the image description tool is not currently active.
-        const page = ToolBox.getPage();
+        const page = getPageIframeBody();
         if (!page) {
             return;
         }
@@ -207,6 +214,11 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
     }
 
     public id() {
-        return "talkingBook";
+        return kTalkingBookToolId;
+    }
+
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/images/microphone-white.svg";
     }
 }

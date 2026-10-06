@@ -1,6 +1,95 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
+
+vi.mock("comicaljs", () => ({
+    Bubble: class {
+        public content: HTMLElement;
+        public constructor(content: HTMLElement) {
+            this.content = content;
+        }
+    },
+    Comical: {
+        update: vi.fn(),
+        findRelatives: () => [],
+        convertBubbleJsonToCanvas: vi.fn(),
+    },
+}));
+vi.mock("../../../utils/bloomApi", () => ({
+    postData: vi.fn(),
+    postJson: vi.fn(),
+}));
 
 import { cloneCanvasElementHtmlStructure } from "./canvasElementCloneCleanup";
+import {
+    CanvasElementDuplication,
+    ICanvasElementDuplicationHost,
+} from "./CanvasElementDuplication";
+import {
+    getCanvasElementRotation,
+    setCanvasElementRotation,
+} from "./canvasElementRotation";
+
+describe("CanvasElementDuplication keeps the angle of a rotated box (BL-16741)", () => {
+    test("the copy of a rotated picture box is rotated by the same angle", () => {
+        document.body.innerHTML = "";
+        const bloomCanvas = document.createElement("div");
+        bloomCanvas.className = "bloom-canvas";
+        document.body.appendChild(bloomCanvas);
+        const source = document.createElement("div");
+        source.className = "bloom-canvas-element";
+        source.innerHTML =
+            '<div class="bloom-imageContainer"><img src="a.png" style="transform: scale(-1, 1)" /></div>';
+        bloomCanvas.appendChild(source);
+        setCanvasElementRotation(source, 37);
+        // Sanity check: the source really is rotated.
+        expect(getCanvasElementRotation(source)).toBe(37);
+
+        let active: HTMLElement | undefined = source;
+        let rotationWhenMeasured: number | undefined;
+        const spec = { style: "none", tails: [], level: 1, version: "1" };
+        const host = {
+            getPatriarchBubbleOfActiveElement: () => ({ content: source }),
+            setActiveElement: (e: HTMLElement | undefined) => (active = e),
+            getSelectedItemBubbleSpec: () => spec,
+            updateSelectedItemBubbleSpec: vi.fn(),
+            refreshCanvasElementEditing: vi.fn(),
+            removeJQueryResizableWidget: vi.fn(),
+            initializeCanvasElementEditing: vi.fn(),
+            addCanvasElementFromOriginal: () => {
+                const copy = document.createElement("div");
+                copy.className = "bloom-canvas-element";
+                bloomCanvas.appendChild(copy);
+                return copy;
+            },
+            findBestLocationForNewCanvasElement: (parent: HTMLElement) => {
+                // The copy's place is measured from the source's upright box, not from the
+                // larger rectangle a rotated element covers.
+                rotationWhenMeasured = getCanvasElementRotation(parent);
+                return { getScaledX: () => 20, getScaledY: () => 20 };
+            },
+            reorderRectangleCanvasElement: vi.fn(),
+            addChildInternal: vi.fn(),
+            adjustRelativePointToBloomCanvas: vi.fn(),
+        } as unknown as ICanvasElementDuplicationHost;
+
+        const copy = new CanvasElementDuplication(
+            host,
+        ).duplicateCanvasElementBox(source);
+
+        expect(copy).toBeDefined();
+        expect(copy).not.toBe(source);
+        expect(active).toBe(copy);
+        expect(getCanvasElementRotation(copy!)).toBe(37);
+        expect(rotationWhenMeasured).toBe(0);
+        expect(
+            getCanvasElementRotation(source),
+            "The source must get its angle back after the measuring",
+        ).toBe(37);
+        // The picture's own mirror comes with the copied contents.
+        expect(copy!.querySelector("img")!.style.transform).toBe(
+            "scale(-1, 1)",
+        );
+    });
+});
 
 describe("CanvasElementDuplication clone cleanup", () => {
     test("removes data-book from duplicated images", () => {

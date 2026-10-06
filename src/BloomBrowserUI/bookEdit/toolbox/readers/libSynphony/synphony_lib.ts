@@ -1082,8 +1082,8 @@ export class LibSynphony {
         // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
         // \\u00A0: a real NO-BREAK SPACE. nbspReplacement above only stands in for the "&nbsp;"
         // *entity*, which is what we see when the input is HTML. Callers that pass us plain text
-        // (the reader tools' mapVisibleText, and removeAllHtmlMarkupFromString, which decodes
-        // entities) have the actual character instead, and without it here a French-style
+        // (the reader tools' mapVisibleText, and visibleTextOfHtmlString, which goes through it
+        // and so decodes entities) have the actual character instead, and without it here a French-style
         // "Bonjour ! " would break the sentence before its closing guillemet.
         // Using a non-capturing group here, because it's only to allow the space+trailing
         // sequence to repeat; we don't want to use it separately in the result.

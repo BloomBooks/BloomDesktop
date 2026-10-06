@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
 // has just opened can collapse under it, and the next click lands on another tool's header instead.
 // A person who clicks that fast simply clicks again; a test clicks at once, so it sometimes loses.
 // The old toolbox code leans on that late restore to correct other things, so the fix is left to
-// the rework. toolbox-sections.spec.ts has the same problem and a fuller account.
+// the rework. toolbox-tools.spec.ts has the same problem and a fuller account.
 
 test.fixme(
     "each book remembers its own decodable stage [Test Case ID 442]",
