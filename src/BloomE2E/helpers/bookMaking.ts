@@ -654,6 +654,38 @@ export async function clickInGroup(
 }
 
 /**
+ * Wait until Bloom has received the page being edited with `text` in it.
+ *
+ * Every save takes the page from the copy the browser sends Bloom a moment after typing settles
+ * (its "snapshot"), so this is the wait a test needs between typing and an action that saves --
+ * the moment a person takes before moving on. Acting within that moment saves the page as it was
+ * just before the last keystroke, which is a deliberate trade, not a bug (see "The freshness
+ * window" in src/BloomExe/Edit/SavingWithoutReloading.md). Reads Bloom's e2e/pageSnapshotIncludes
+ * hook rather than waiting a fixed time.
+ */
+export async function waitForBloomToHaveTyping(
+    page: Page,
+    text: string,
+    timeoutMs = 15000,
+): Promise<void> {
+    await expect
+        .poll(
+            async () =>
+                (
+                    await apiGet(
+                        page,
+                        `e2e/pageSnapshotIncludes?text=${encodeURIComponent(text)}`,
+                    )
+                ).body,
+            {
+                timeout: timeoutMs,
+                message: `Bloom never received the page being edited with "${text}" in it.`,
+            },
+        )
+        .toBe("true");
+}
+
+/**
  * Type text into one language's box of one translation group on the page being shown, the way a
  * person does. `groupSelector` picks the group, e.g. ".bookTitle" for the cover title; when the
  * page has several groups that match, `groupIndex` says which one, in document order.

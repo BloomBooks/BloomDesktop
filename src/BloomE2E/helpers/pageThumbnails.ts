@@ -28,6 +28,7 @@ export type PageMenuCommand =
     | "Copy Page"
     | "Paste Page"
     | "Duplicate Page"
+    | "Duplicate Page Many Times..."
     | "Choose Different Layout"
     | "Remove Page";
 
@@ -36,6 +37,7 @@ const COMMAND_ID: Record<PageMenuCommand, string> = {
     "Copy Page": "copyPage",
     "Paste Page": "pastePage",
     "Duplicate Page": "duplicatePage",
+    "Duplicate Page Many Times...": "duplicatePageManyTimes",
     "Choose Different Layout": "chooseDifferentLayout",
     "Remove Page": "removePage",
 };

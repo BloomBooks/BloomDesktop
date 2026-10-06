@@ -8,7 +8,14 @@
 // origami localizes those words.
 
 import { expect, type Locator, type Page } from "@playwright/test";
-import { editablePageFrame, waitForEditablePage } from "./bookMaking";
+import {
+    addPage,
+    editablePageFrame,
+    getContentPages,
+    goToPage,
+    waitForEditablePage,
+    type IBookPage,
+} from "./bookMaking";
 
 /** The types origami offers an empty section, by the i18n key each link carries. */
 const TYPE_KEY = {
@@ -191,4 +198,21 @@ export async function splitSection(
                 `${sectionIndex}.`,
         })
         .toBeGreaterThan(before);
+}
+
+/**
+ * Add a page made from Bloom's "Custom" template, show it, and make its one empty section a text
+ * box through Change Layout, the way a person sets up a custom page. Returns the new page.
+ */
+export async function addCustomTextPage(page: Page): Promise<IBookPage> {
+    const before = new Set((await getContentPages(page)).map((p) => p.id));
+    await addPage(page, "Custom");
+    const added = (await getContentPages(page)).find((p) => !before.has(p.id));
+    if (!added)
+        throw new Error("Adding a Custom page did not add a content page.");
+    await goToPage(page, added.id);
+    await setChangeLayoutMode(page, true);
+    await chooseSectionType(page, "text");
+    await setChangeLayoutMode(page, false);
+    return added;
 }

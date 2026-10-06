@@ -27,6 +27,11 @@ export interface IPageContents {
     /** The `src` of every video source on the page, `#t=` trim fragment included. */
     videoSources: string[];
     /**
+     * The text of every editable box on the page, in document order, joined with " | ". Enough
+     * to ask whether something typed reached the saved page.
+     */
+    text: string;
+    /**
      * The page's origami layout, as one string per split: the orientation and the two
      * component sizes. Comparing these says whether a custom layout survived the copy.
      */
@@ -63,6 +68,9 @@ export async function readBook(
             ...document.querySelectorAll("div.bloom-page.numberedPage"),
         ].map((pageDiv) => ({
             id: pageDiv.id,
+            text: [...pageDiv.querySelectorAll(".bloom-editable")]
+                .map((editable) => (editable.textContent ?? "").trim())
+                .join(" | "),
             lineage: pageDiv.getAttribute("data-pagelineage") ?? "",
             styleClasses: [
                 ...new Set(
@@ -183,5 +191,108 @@ export function xmatterPackInBookHtml(html: string): string {
 export function readXmatterPackOfBook(bookFolder: string): string {
     return xmatterPackInBookHtml(
         fs.readFileSync(bookHtmlPath(bookFolder), "utf8"),
+    );
+}
+
+/**
+ * The book's .htm, with what carries no meaning taken out, so that two reads can be compared to
+ * ask "did the book change?": each element's attributes in name order (HTML attribute order means
+ * nothing, and Bloom's comparison ignores it too; see HtmlDom.GetXmlIgnoringAttributeOrder) and
+ * the data div's entries in a fixed order. Anything else that differs is a real change.
+ */
+export async function readBookIgnoringOrder(
+    page: Page,
+    bookFolder: string,
+): Promise<string> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate((source) => {
+        const document = new DOMParser().parseFromString(source, "text/html");
+        for (const element of [...document.querySelectorAll("*")]) {
+            const attributes = [...element.attributes]
+                .map((a) => [a.name, a.value])
+                .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+            for (const [name] of attributes) element.removeAttribute(name);
+            for (const [name, value] of attributes)
+                element.setAttribute(name, value);
+        }
+        const dataDiv = document.getElementById("bloomDataDiv");
+        if (dataDiv) {
+            const entries = [...dataDiv.children].sort((a, b) => {
+                const key = (e: Element) => e.outerHTML;
+                return key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0;
+            });
+            for (const entry of entries) dataDiv.appendChild(entry);
+        }
+        return document.documentElement.outerHTML;
+    }, html);
+}
+
+/**
+ * Editing-only markup that has no business in a saved book, as Test Case ID 663 ("Clean Saved Book
+ * HTML") asks: any mention of ckeditor, and the editor's other leftovers. One line per finding,
+ * naming what was found and on what; an empty list means the book is clean.
+ *
+ * `allowedClasses` lets a test tolerate leftovers that are known and tracked elsewhere: the card
+ * says to ignore BL-9992, whose classes are ui-draggable, ui-resizable, hoverUp and
+ * ui-audioCurrent.
+ */
+export async function findEditorLeftovers(
+    page: Page,
+    bookFolder: string,
+    allowedClasses: string[] = [],
+): Promise<string[]> {
+    const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
+    return page.evaluate(
+        ({ source, allowed }) => {
+            const findings: string[] = [];
+            if (/ckeditor/i.test(source)) findings.push('the text "ckeditor"');
+            const document = new DOMParser().parseFromString(
+                source,
+                "text/html",
+            );
+            const describe = (e: Element) =>
+                `<${e.tagName.toLowerCase()}${e.id ? ` id="${e.id}"` : ""} class="${e.getAttribute("class") ?? ""}">`;
+            const leftoverClasses = [
+                "bloom-ui",
+                "ui-resizable-handle",
+                "cke",
+                "qtip",
+                "nicescroll-rails",
+                "nicescroll-cursors",
+                "bloom-focusedCanvasElement",
+                "ui-draggable",
+                "ui-resizable",
+                "hoverUp",
+                "ui-audioCurrent",
+            ].filter((c) => !allowed.includes(c));
+            for (const element of [...document.querySelectorAll("*")]) {
+                for (const c of element.classList) {
+                    if (leftoverClasses.includes(c) || c.startsWith("cke_"))
+                        findings.push(`class ${c} on ${describe(element)}`);
+                }
+                if (element.hasAttribute("data-hasqtip"))
+                    findings.push(`data-hasqtip on ${describe(element)}`);
+                if (
+                    element
+                        .getAttribute("aria-describedby")
+                        ?.startsWith("qtip-")
+                )
+                    findings.push(
+                        `a qTip aria-describedby on ${describe(element)}`,
+                    );
+            }
+            for (const id of ["measureTextDiv"]) {
+                if (document.getElementById(id))
+                    findings.push(`the #${id} element`);
+            }
+            for (const element of [
+                ...document.querySelectorAll("svg.comical-generated [id]"),
+            ])
+                findings.push(
+                    `a regenerated id on Comical's SVG: ${element.id}`,
+                );
+            return findings;
+        },
+        { source: html, allowed: allowedClasses },
     );
 }

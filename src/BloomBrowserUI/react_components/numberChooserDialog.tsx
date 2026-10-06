@@ -78,6 +78,8 @@ export const NumberChooserDialog: React.FunctionComponent<
                 <BloomButton
                     l10nKey="Common.OK"
                     hasText={true}
+                    // The same e2e hook as DialogOkButton's.
+                    data-testid="dialog-ok"
                     enabled={isNumberPickerValid}
                     variant={"contained"}
                     onClick={() => {

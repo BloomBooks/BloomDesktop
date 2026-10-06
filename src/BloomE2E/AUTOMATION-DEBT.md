@@ -59,6 +59,10 @@ one step of that manual test that uses it ("make 3 duplicates") is not automated
 only posts `editView/duplicatePageMany`, which `duplicateCurrentPage` already calls for setup,
 so the fix is the same as for every other WinForms dialog: host it in the web UI.
 
+fixed 2026-10-06 on `BL-13502-save-without-reload` (#8209): the dialog now opens inside the Edit
+tab (`duplicateManyDialog.tsx`), and `duplicate-page-many-times.spec.ts` drives it with
+`openDuplicatePageManyTimes` / `finishDuplicatePageManyTimes` (helpers/pageList.ts).
+
 seen again 2026-09-02 (Test Case ID 66, `xmatter-packs.spec.ts`): the case tries each
 front/back matter pack, and the pack is chosen only in the same dialog. `settings/xmatter`
 is not an API for it either: its POST only records a pending choice on the open dialog

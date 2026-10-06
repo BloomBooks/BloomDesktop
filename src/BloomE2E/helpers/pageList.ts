@@ -9,7 +9,7 @@
 // once they scroll into view, and reordering is a WinForms-side save that finishes after the
 // drag ends, so polling Bloom is the only way to know when the move has really happened.
 
-import { expect, type Frame, type Page } from "@playwright/test";
+import { expect, type Frame, type Locator, type Page } from "@playwright/test";
 import { apiPost } from "./api";
 import {
     getPages,
@@ -17,6 +17,7 @@ import {
     waitForEditablePage,
     type IBookPage,
 } from "./bookMaking";
+import { runPageMenuCommand, selectPage } from "./pageThumbnails";
 
 /** The Edit tab's frame holding the page thumbnails. Throws if the Edit tab is not showing. */
 export function pageListFrame(page: Page): Frame {
@@ -197,4 +198,51 @@ export async function duplicateCurrentPage(
         })
         .toBe(before + times);
     await waitForEditablePage(page);
+}
+
+/**
+ * Open "Duplicate Page Many Times..." on a page from its menu, the way a person does, and return
+ * the dialog. The dialog opens inside the Edit tab (duplicateManyDialog.tsx), in the shell
+ * document. Finish with finishDuplicatePageManyTimes or cancelDuplicatePageManyTimes.
+ */
+export async function openDuplicatePageManyTimes(
+    page: Page,
+    pageId: string,
+): Promise<Locator> {
+    await selectPage(page, pageId);
+    await runPageMenuCommand(page, pageId, "Duplicate Page Many Times...");
+    const dialog = page.getByRole("dialog");
+    await dialog.waitFor({ state: "visible", timeout: 30000 });
+    return dialog;
+}
+
+/**
+ * In the open Duplicate Page Many Times dialog, ask for `times` copies and press OK. Waits until
+ * Bloom lists that many more pages and the dialog has closed.
+ */
+export async function finishDuplicatePageManyTimes(
+    page: Page,
+    dialog: Locator,
+    times: number,
+): Promise<void> {
+    const before = (await getPages(page)).length;
+    // The number box is the dialog's one text input (SmallNumberPicker).
+    await dialog.locator("input").fill(String(times));
+    await dialog.getByTestId("dialog-ok").click();
+    await expect(dialog).toBeHidden({ timeout: 30000 });
+    await expect
+        .poll(async () => (await getPages(page)).length, {
+            timeout: 60000,
+            message: `Bloom never had ${times} more pages after Duplicate Page Many Times.`,
+        })
+        .toBe(before + times);
+    await waitForEditablePage(page);
+}
+
+/** Close the open Duplicate Page Many Times dialog with Cancel, and wait for it to go away. */
+export async function cancelDuplicatePageManyTimes(
+    dialog: Locator,
+): Promise<void> {
+    await dialog.getByTestId("dialog-cancel").click();
+    await expect(dialog).toBeHidden({ timeout: 30000 });
 }

@@ -51,6 +51,15 @@ namespace Bloom.Edit
         /// </summary>
         private readonly PageSnapshot _pageSnapshot = new PageSnapshot();
 
+        /// <summary>
+        /// What the browser last sent for the page being edited, or null if it has sent nothing for
+        /// this load of it. Only for the e2e suite's e2e/pageSnapshotIncludes hook.
+        /// </summary>
+        internal string GetCurrentPageSnapshotForTests()
+        {
+            return _pageSnapshot.GetFor(_pageSelection?.CurrentSelection?.Id);
+        }
+
         public bool Visible;
         private Book.Book _currentlyDisplayedBook;
         private Book.Book _bookForToolboxContent;

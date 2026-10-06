@@ -64,6 +64,14 @@ export interface ILaunchedBloom {
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
     ) => Promise<void>;
+    /**
+     * Quit Bloom the way a person does, by asking its main window to close, wait for it to exit,
+     * and start it again on the same collection folder. Unlike restart(), which kills Bloom, this
+     * lets Bloom run everything it does on the way out -- above all, saving the page being edited
+     * -- so a test can check what a person's quit leaves on disk. Throws if Bloom has not exited
+     * within `timeoutMs`. The ports change, as for restart().
+     */
+    quitAndRestart: (timeoutMs?: number) => Promise<void>;
 }
 
 /**
@@ -699,6 +707,48 @@ function killProcessTree(pids: number[]): void {
     }
 }
 
+/**
+ * Ask Bloom to quit, the way closing its window does, and wait until it has exited. taskkill
+ * without /F posts WM_CLOSE to the process's windows, which WinForms turns into closing the main
+ * window (Shell.OnFormClosing), so Bloom saves and shuts down exactly as for a person's click on the
+ * close box. Then kill whatever is left of the tree (WebView2 children can outlive Bloom briefly)
+ * and confirm the port went dark.
+ */
+async function quitAndWaitForExit(
+    running: IRunningBloom,
+    timeoutMs: number,
+): Promise<void> {
+    if (process.platform !== "win32")
+        throw new Error("quitAndRestart is implemented only on Windows.");
+    try {
+        execFileSync("taskkill", ["/pid", String(running.servingPid)], {
+            stdio: "ignore",
+        });
+    } catch {
+        throw new Error(
+            `Could not ask Bloom (pid ${running.servingPid}) to close: taskkill failed.`,
+        );
+    }
+    const isAlive = (pid: number) => {
+        try {
+            process.kill(pid, 0);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+    const deadline = Date.now() + timeoutMs;
+    while (isAlive(running.servingPid)) {
+        if (Date.now() > deadline)
+            throw new Error(
+                `Bloom (pid ${running.servingPid}) did not exit within ${timeoutMs}ms of being ` +
+                    "asked to close. It may be showing a dialog, or the exit save may have hung.",
+            );
+        await delay(250);
+    }
+    await killAndWaitForPortToGoDark(running);
+}
+
 /** One running Bloom process: the ports it opened and every pid worth killing. */
 interface IRunningBloom {
     httpPort: number;
@@ -958,6 +1008,21 @@ export async function launchBloom(
             // about to rewrite one of the files it had open.
             await delay(1000);
             if (betweenStopAndStart) await betweenStopAndStart();
+            running = await startBloomOn(
+                collectionDir,
+                userSettingsDir,
+                readyTimeoutMs,
+                options.experimentalFeatures,
+            );
+            launched.httpPort = running.httpPort;
+            launched.cdpPort = running.cdpPort;
+            launched.bloomPid = running.servingPid;
+        },
+
+        quitAndRestart: async (timeoutMs = 60000) => {
+            await quitAndWaitForExit(running!, timeoutMs);
+            // As for restart(): Bloom releases its file handles slightly after it exits.
+            await delay(1000);
             running = await startBloomOn(
                 collectionDir,
                 userSettingsDir,
