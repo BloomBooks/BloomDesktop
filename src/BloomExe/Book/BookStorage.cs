@@ -766,9 +766,9 @@ namespace Bloom.Book
         /// On a long book (e.g., BL-7253) using this makes page switching two seconds faster,
         /// as well as preventing heap fragmentation that eventually leads to running out of memory.
         ///
-        /// Returns FALSE if it did not write, which
-        /// today means the page looked empty and was refused; the caller must then not treat the
-        /// book as written, or the change is lost for good.
+        /// Returns FALSE if it did not write, which today means the page looked empty and was
+        /// refused. The caller must then not treat the book as written: the next per-page save will
+        /// name a different page, so the change would be lost for good.
         /// </summary>
         public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {

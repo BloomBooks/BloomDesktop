@@ -2357,23 +2357,15 @@ export class CanvasElementManager {
         );
     }
 
-    // The save-a-page-without-reloading counterpart of turnOffCanvasElementEditing(): put into
-    // 'cloneOfBody' -- a detached copy of the live document.body -- everything that turning canvas
-    // element editing off would have put into the page, and leave the live page still being edited.
-    //
-    // Only three of the things turnOffCanvasElementEditing() does affect what gets saved:
-    //  * Comical converts its editing <canvas> into the <svg> that draws the bubble tails without
-    //    Javascript. exportSvgToCopiesOfParents does that into the copy while leaving the live
-    //    paper projects alone (comicaljs 0.4.1; before that there was only the destructive
-    //    stopEditing()).
-    //  * The current canvas element positions are recorded as the alternate for the current
-    //    language. That is pure attribute manipulation -- it reads style and data-bubble and
-    //    writes data-bubble-alternate -- so it works on a detached clone, which has no layout.
-    //  * The bloom-focusedCanvasElement class comes off. Nothing else strips it: it is not a
-    //    bloom-ui element, so the C# save pipeline would keep it.
-    // The rest is live-only: the control frame is a bloom-ui element (so C# discards it anyway),
-    // EnableAllImageEditing only adds bloom-ui buttons back to the live page, and the listener
-    // removal has no bearing on the HTML.
+    // Put into 'cloneOfBody', a detached copy of the live document.body, what
+    // turnOffCanvasElementEditing() would put into the page, leaving the live page still editable.
+    // Only three of the things that method does affect what gets saved:
+    //  * Comical's editing <canvas> becomes the <svg> that draws the bubbles without Javascript.
+    //    exportSvgToCopiesOfParents writes it into the copy without disturbing the live editing.
+    //  * Canvas element positions are recorded as the current language's alternate. That only
+    //    reads and writes attributes, so it works on a clone, which has no layout.
+    //  * The bloom-focusedCanvasElement class comes off; it is not bloom-ui, so C# would keep it.
+    // The rest (control frame, image editing buttons, listeners) is bloom-ui or live-only.
     public prepareCloneOfBodyForSave(cloneOfBody: HTMLElement): void {
         const liveBloomCanvases = this.getAllBloomCanvasesOnPage();
         const clonedBloomCanvases = Array.from(

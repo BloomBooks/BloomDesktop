@@ -189,9 +189,8 @@ export class ImpairmentVisualizerControls extends React.Component<
         }
     }
 
-    // The classes that drive the cataract and colour-blindness filters live on the page iframe's
-    // body, which is outside the .bloom-page div and so is never saved. That makes this live-page
-    // work, unlike removeColorBlindnessMarkup: see ImpairmentVisualizerAdaptor.detachFromPage.
+    // These classes are on the page iframe's body, which is never saved, so removing them is
+    // live-only work for detachFromPage, not part of removeToolMarkup.
     public static removeSimulationClassesFromBody() {
         const body = ToolboxToolReactAdaptor.getPage();
         if (!body) return;
@@ -200,8 +199,7 @@ export class ImpairmentVisualizerControls extends React.Component<
     }
 
     // Caller is responsible for guarding against a null page parameter.
-    // Public because it is also the tool's ITool.removeToolMarkup implementation, which the save
-    // path runs on a clone of the page.
+    // Public because it is also the tool's removeToolMarkup, which may be given a clone.
     public static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
@@ -362,9 +360,7 @@ export class ImpairmentVisualizerAdaptor extends ToolboxToolReactAdaptor {
         this.controlsElement.updateSimulations(undefined);
     }
 
-    // The colour-blindness overlays are the only markup this tool puts inside the page div. (The
-    // simulateColorBlindness/simulateCataracts classes go on the body, which we never save, so
-    // removing those is left to removeImpairmentVisualizerMarkup, below.)
+    // The colour-blindness overlays are the only markup this tool puts inside the page div.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         ImpairmentVisualizerControls.removeColorBlindnessMarkup(pageOrClone);
     }

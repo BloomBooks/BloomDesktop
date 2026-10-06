@@ -93,11 +93,6 @@ namespace Bloom
         // How a subscriber hands the tab change back to us: it calls CompleteTheChange, either
         // before returning if it had nothing to do first, or once it has saved.
         //
-        // There used to be a second action, StartTheChangeOver, for a subscriber that could neither
-        // proceed nor finish because it was waiting on a save begun by something else -- an earlier
-        // click on a tab whose save was still out with the browser (BL-16766). Saving no longer
-        // waits for anything, so a subscriber is never in that position, and the case is gone.
-        //
         // This works partly because there is currently only one subscriber, so there is no ambiguity
         // about who should call it, or about how we know all the subscribers are done. If we ever
         // have more than one, we'll need something more sophisticated.
@@ -137,8 +132,8 @@ namespace Bloom
     /// the close is Windows itself shutting down, restarting or logging off, rather than the user
     /// closing Bloom: Windows then allows only a few seconds before it treats us as hung, and the
     /// browser is being shut down too, so a subscriber should do what it must and not wait for
-    /// anything. (The event used to carry a protocol for postponing the close until the page being
-    /// edited had been saved; see Shell.OnFormClosing for what that was and why it is gone.)
+    /// anything. Subscribers must finish their work before returning; the close goes ahead as soon
+    /// as they do.
     /// </summary>
     public class CollectionClosing : Event<bool>
     {

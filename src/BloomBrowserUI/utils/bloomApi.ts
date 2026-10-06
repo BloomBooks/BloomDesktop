@@ -585,13 +585,9 @@ export function postString(urlSuffix: string, value: string) {
 }
 
 /**
- * postString for a caller that reports failures itself.
- *
- * The difference is only in who tells the user. wrapAxios reports every rejection, which is right
- * for a post made once in response to something the user did. It is wrong for one that is retried
- * on a timer: the user would be shown the same error again on every attempt for as long as the
- * failure lasted. A caller that retries should use this and report once. See pageSnapshot.ts,
- * which is why it exists.
+ * postString for a caller that reports failures itself. wrapAxios reports every rejection, which
+ * is wrong for a post sent after every change: the user would see the same error on every
+ * keystroke. See pageSnapshot.ts, which reports once per page.
  */
 export function postStringQuietly(urlSuffix: string, value: string) {
     return postStringInternal(urlSuffix, value, false);

@@ -45,13 +45,10 @@ namespace Bloom.Edit
 
             var pageId = (page as Page).Id;
 
-            // The only necessary action after saving is to go to the desired page, which is what
-            // returning its ID from the first argument achieves.
             _model.MergeCurrentPageThenSave(
                 () => pageId,
-                // Clicking a thumbnail changes nothing in the book. This is the case the whole "do
-                // not write a page nobody edited" optimisation exists for, so it must not claim
-                // the book changed.
+                // Clicking a thumbnail changes nothing in the book, so that an unedited page is
+                // not written.
                 actionChangesTheBook: false
             );
         }

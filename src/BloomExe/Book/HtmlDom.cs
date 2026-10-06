@@ -2254,12 +2254,13 @@ namespace Bloom.Book
             SafeXmlElement edittedPageDiv
         )
         {
-            // The editor's own chrome is already gone: anything marked bloom-ui or ui-resizable-handle,
-            // CKEditor's cke_ classes, and Change Layout mode (origami-layout-mode). Every page we are
-            // given was gathered from a clone the browser cleaned first (removeEditorChromeFromClone
-            // and removeEditingDebrisFromClone), for the live editor and the off-screen page layout
-            // update alike. What remains here is what the browser does not know to remove: markup C#
-            // itself added (template mode) and the image-processing parameter.
+            // The editor's own chrome is already gone: anything marked bloom-ui or
+            // ui-resizable-handle, CKEditor's cke_ classes, and Change Layout mode
+            // (origami-layout-mode). Every page we are given was gathered from a clone the browser
+            // cleaned first (removeEditorChromeFromClone and removeEditingDebrisFromClone), for the
+            // live editor and the off-screen page layout update alike. What remains here is what
+            // the browser does not know to remove: markup C# itself added (template mode) and the
+            // image-processing parameter.
             RemoveTemplateEditingMarkup(edittedPageDiv);
             RemoveTransparencyParamFromImages(edittedPageDiv);
 

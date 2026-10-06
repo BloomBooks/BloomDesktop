@@ -43,10 +43,8 @@ export const DuplicateManyDialog: React.FunctionComponent<{
     );
 };
 
-// Shown in the Edit tab, from the page list's context menu. It used to be a C# ReactDialog: a modal
-// window opened while the page list's request held the API lock, which deadlocked unless the
-// command was deferred, and the deferral let a page click overtake the command. Nothing reaches C#
-// now until the user clicks OK.
+// Shown in the Edit tab, from the page list's context menu, so nothing reaches C# until the user
+// clicks OK. (A C# modal opened from the page list's request would hold the API lock.)
 export function showDuplicateManyDialog(pageId: string) {
     ShowEditViewDialog(
         <DuplicateManyDialog

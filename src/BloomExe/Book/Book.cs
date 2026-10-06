@@ -4301,13 +4301,10 @@ namespace Bloom.Book
         /// <param name="anythingChanged">False if what the browser sent turns out to say exactly
         /// what the book already says, so this page gives us nothing to write. It reports only on
         /// the data passed in; a caller that knows of a change elsewhere must account for that
-        /// itself. This is the definitive test for the data itself:
-        /// it is made AFTER our own processing of what we received (ProcessPageAfterEditing strips
-        /// the editing markup, SetImageAltAttrsFromDescriptions fills in alt text), so it asks the
-        /// only question that matters -- did the book actually change? -- rather than whether the
-        /// incoming string differed. The browser cannot answer that for us: it would have to
-        /// predict this processing, and a copy of these rules living over there is a copy that can
-        /// drift. See BL-13502.</param>
+        /// itself. The test is made AFTER our own processing of what we received
+        /// (ProcessPageAfterEditing, SetImageAltAttrsFromDescriptions), so it asks whether the book
+        /// actually changed rather than whether the incoming string differed. The browser cannot
+        /// answer that without duplicating these rules.</param>
         public bool UpdateDomFromEditedPage(
             HtmlDom editedPageDom,
             out SafeXmlElement pageToSaveToDisk,
@@ -4326,10 +4323,8 @@ namespace Bloom.Book
             string pageId = pageFromEditedDom.GetAttribute("id");
             pageToSaveToDisk = GetPageFromStorage(pageId);
 
-            // Remember the page as the book currently has it, so that once we have processed what
-            // the browser sent we can see whether it actually said anything new. OuterXml rather
-            // than InnerXml because ProcessPageAfterEditing writes the page div’s own class, lang
-            // and style attributes too.
+            // OuterXml rather than InnerXml because ProcessPageAfterEditing writes the page div’s
+            // own class, lang and style attributes too.
             var pageAsTheBookHadIt = pageToSaveToDisk.OuterXml;
 
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
@@ -4361,8 +4356,7 @@ namespace Bloom.Book
 
             // Deliberately NOT including needToDoFullSave: that says how WIDE a save has to be if
             // there is one (whether the change is confined to this page), not whether anything
-            // changed -- and it defaults to true. A caller that knows something outside this page
-            // wants saving has to say so itself; EditingModel does.
+            // changed.
             anythingChanged = pageChanged || stylesChanged;
 
             return needToDoFullSave || stylesChanged;
@@ -4402,10 +4396,10 @@ namespace Bloom.Book
         /// Finish a delayed save. pageToSaveToDisk should be the value from the out param of UpdateDomFromEditedPage().
         /// It is the one page that needs saving, if reallyNeedFullSave is false; if that is true, it is not used.
         ///
-        /// Returns FALSE if nothing reached
-        /// disk: the file could not be written, or the page was found to be empty and refused.
-        /// Both of those tell the user; the return value is for the caller, which otherwise clears
-        /// the flags that say the change still needs writing, and so never tries again.
+        /// Returns FALSE if nothing reached disk: the file could not be written, or the page was
+        /// found to be empty and refused. Both of those tell the user; the return value is for the
+        /// caller, which otherwise clears the flags that say the change still needs writing, and so
+        /// never tries again.
         /// </summary>
         public bool SavePageToDisk(SafeXmlElement pageToSaveToDisk, bool reallyNeedFullSave)
         {
@@ -5045,10 +5039,8 @@ namespace Bloom.Book
         ///
         /// Returns FALSE if it did not write: the book is not in a state where it can be saved, or
         /// the file could not be written. Both of those already tell the user; the return value is
-        /// for callers that must not carry on as though the file now says what they think it says.
-        /// The AI image editor is the case that forced this -- it opens the book FROM DISK, so
-        /// opening it after a save that silently did nothing shows the user an older book and
-        /// commits its edits over the newer one.
+        /// for callers that must not carry on as though the file now says what they think it says,
+        /// such as the AI image editor, which opens the book FROM DISK.
         /// </summary>
         public bool Save(bool forPublication = false)
         {
@@ -5127,10 +5119,8 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Write just the one page. Returns FALSE if nothing was written -- see
-        /// BookStorage.SaveForPageChanged, which refuses a page that looks empty. The caller must
-        /// not then treat the book as written: the per-page path names one page, and the next edit
-        /// will name a different one, so a change dropped here is dropped for good.
+        /// Write just the one page. Returns FALSE if nothing was written (see
+        /// BookStorage.SaveForPageChanged).
         /// </summary>
         public bool SaveForPageChanged(string pageId, SafeXmlElement modifiedPage)
         {

@@ -218,26 +218,16 @@ namespace Bloom
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            // Everything here is synchronous, which it did not used to be. Saving the page being
-            // edited meant asking the browser for it and waiting for the answer on another API
-            // call, and that could not be done from inside the closing handler: if we let the close
-            // proceed, the reply arrived to a disposed Shell. So this cancelled the close, kicked
-            // off the save, and called Close() again when it finished -- with two flags to swallow
-            // the clicks the user got in meanwhile, and a FailureAction to unstick things when the
-            // save failed and left Bloom unclosable.
-            //
-            // None of that is needed now: the browser volunteers the page as it is edited (see
-            // PageSnapshot), so EditingModel already has what it needs and the closing event
-            // returns with the book on disk.
+            // Everything here is synchronous: EditingModel already has the page being edited (see
+            // PageSnapshot), so the closing event returns with the book on disk.
             _closing = true;
             Logger.WriteMinorEvent("starting to shut Bloom down");
 
-            // This is OnFormClosing rather than OnClosing for the sake of the close reason. When
-            // Windows itself is shutting down, restarting or logging off, it gives us about five
-            // seconds to answer before treating us as hung, and the browser is being shut down
-            // alongside us -- so the save must not wait on the browser for anything (see
-            // EditingModel.SaveEverythingBeforeClosing), and we tell Windows what we are doing in
-            // case the write itself runs long. Windows-only API; Linux has nothing comparable.
+            // OnFormClosing rather than OnClosing, for the close reason. When Windows itself is
+            // shutting down, restarting or logging off, it gives us about five seconds before
+            // treating us as hung, and the browser is being shut down alongside us -- so the save
+            // must not wait on the browser (see EditingModel.SaveEverythingBeforeClosing), and we
+            // tell Windows what we are doing in case the write runs long. Windows-only API.
             var windowsIsShuttingDown = e.CloseReason == CloseReason.WindowsShutDown;
             var toldWindowsWhy =
                 windowsIsShuttingDown

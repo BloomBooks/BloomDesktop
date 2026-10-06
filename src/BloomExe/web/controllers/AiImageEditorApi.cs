@@ -313,18 +313,11 @@ namespace Bloom.web.controllers
         /// made the current page's commit results describe an image the live page no longer shows,
         /// and left <see cref="DeleteSupersededAiImageFiles"/> blind to a file the live page uses.
         ///
-        /// WHERE the overlay lives: in the top window, not in the page iframe — like the
-        /// image-gallery and copyright/license commands (see aiImageEditorOverlay.ts and the
-        /// comments on those commands in canvasControlRegistry.ts). Plenty of other operations
-        /// still replace the page iframe underneath it.
-        ///
-        /// WHEN we open it: immediately after the save returns. This used to queue itself for the
-        /// next page load via EditingModel.RunAfterNextPageLoad, because saving always ended in a
-        /// navigation which replaced the page iframe — and, when Bloom was short of memory,
-        /// reloaded the whole workspace root with it (EditingView.StartNavigationToEditPage), so
-        /// opening any earlier meant the page saved and the editor never appeared. Since BL-13502
-        /// a save does not navigate at all, so there is no page load to wait for: continuing to
-        /// wait for one is what made the editor never open.
+        /// The overlay lives in the top window, not in the page iframe — like the image-gallery and
+        /// copyright/license commands (see aiImageEditorOverlay.ts and the comments on those
+        /// commands in canvasControlRegistry.ts) — because plenty of operations replace the page
+        /// iframe underneath it. We open it as soon as the save returns: a save does not navigate,
+        /// so there is no page load to wait for.
         /// </summary>
         private void HandleSaveThenLaunch(ApiRequest request)
         {
@@ -366,17 +359,10 @@ namespace Bloom.web.controllers
                 return;
             }
 
-            // Save before opening, because everything the editor is told about the book is read
-            // from the saved DOM. Saving is synchronous now (see PageSnapshot), so the answer is
-            // available right here: it throws if merging the page went wrong (the user has then
-            // already been shown "Bloom had trouble saving a page..."), and returns false if the
-            // book could not be written to disk.
-            //
-            // Either way we must NOT open: the whole point of saving first is that the editor
-            // reads the book from disk, so opening after a failed save would edit
-            // stale images and commit against them. Under the old flow this could not arise --
-            // the open waited for a page load that a refused save never produced -- so it needs
-            // saying now that the open follows immediately.
+            // The save throws if merging the page went wrong (the user has then already been shown
+            // "Bloom had trouble saving a page..."), and returns false if the book could not be
+            // written. Either way we must NOT open: the editor reads the book from disk, so it
+            // would edit stale images and commit against them.
             if (!model.SaveCurrentPageAndBook())
             {
                 request.Failed(

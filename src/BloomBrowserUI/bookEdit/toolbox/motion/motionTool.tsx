@@ -270,10 +270,8 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.setupResizeObserver();
     }
 
-    // No removeToolMarkup override: the only markup this tool adds to the page is the start/end
-    // rectangles, which are bloom-ui, so the save drops them like any other editor chrome (their
-    // positions are kept in the bloom-canvas's data-initialrect/data-finalrect attributes). The
-    // preview's narration highlight is drawn with the CSS Highlight API and is not in the DOM.
+    // No removeToolMarkup override: the start/end rectangles are bloom-ui (their positions are kept
+    // in data-initialrect/data-finalrect), and the preview's narration highlight is not in the DOM.
 
     public detachFromPage() {
         // This must come first: while a preview is playing, the rectangles have been moved into the

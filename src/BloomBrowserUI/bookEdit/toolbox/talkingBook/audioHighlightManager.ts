@@ -18,11 +18,9 @@ const kLongGapRegex = /[ \u00a0\u200b]{3,}/g;
 const kAllWhitespaceRegex = /^[\s\u00a0\u200b]*$/;
 
 // Ranges covering the visible text under node, leaving out every long gap (see kLongGapRegex) and
-// any piece that is only whitespace. This is how the highlight avoids painting layout space
-// without touching the page: it used to be done by wrapping the words in temporary
-// ui-enableHighlight spans (AudioRecording.fixHighlighting), markup that then had to be kept out
-// of every save. A gap that runs across inline markup (<em>, <strong>, a coloured span) counts as
-// one gap, because we look at the text as the reader sees it, not node by node.
+// any piece that is only whitespace, so the highlight skips layout space without adding markup to
+// the page. A gap that runs across inline markup (<em>, <strong>, a coloured span) counts as one
+// gap, because we look at the text as the reader sees it, not node by node.
 export function makeRangesSkippingLongGaps(node: Node): Range[] {
     const map = mapVisibleText(node);
     const ranges: Range[] = [];

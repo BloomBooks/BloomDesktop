@@ -42,19 +42,13 @@ namespace Bloom.web.controllers
                 HandleSaveToolboxSetting,
                 true
             );
-            // The browser volunteering the current content of the page it is editing, so that a
-            // later save does not have to ask for it and wait. All this does is remember the
-            // string; see PageSnapshot for what it is for and why "no snapshot" means "nothing to
-            // save" rather than "go and ask".
-            //
-            // With busy=true, the body instead names asynchronous work which belongs in the saved
-            // page and has just begun; a save that has to use the snapshot waits, for a bounded
-            // time, for the snapshot that follows it. See PageSnapshot.WaitUntilIdle.
+            // The browser volunteering the current content of the page it is editing (see
+            // PageSnapshot). With busy=true, the body instead names asynchronous work which belongs
+            // in the saved page and has just begun (see PageSnapshot.WaitUntilIdle).
             //
             // Deliberately NOT on the UI thread and NOT synchronized: it only stores a string (the
-            // store does its own locking), and the browser reporting what the editor contains has
-            // no business queueing behind a save, or blocking one -- and it MUST NOT, because the
-            // UI thread may be asleep in that wait when the snapshot arrives. The browser sends one
+            // store does its own locking), and it MUST NOT queue behind a save, because the UI
+            // thread may be waiting in WaitUntilIdle for this very snapshot. The browser sends one
             // message at a time, so they are still processed in order.
             apiHandler.RegisterEndpointHandler(
                 "editView/pageSnapshot",

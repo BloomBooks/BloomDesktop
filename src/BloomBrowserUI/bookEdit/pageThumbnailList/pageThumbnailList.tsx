@@ -815,11 +815,10 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
         closeContextMenuOnBlurCleanupRef.current = undefined;
 
         const pageId = contextMenuPoint.pageId;
-        // The two commands that ask the user something open their dialog here, in the Edit tab,
-        // and talk to C# only when the user is done: Duplicate Many Times posts the count, and
-        // the page chooser applies the layout. Each tells C# which page it was opened for, and C#
-        // acts only if that is still the current page: a click the user made just before, still
-        // in the request queue, can change the page while the dialog is up.
+        // The two commands that ask the user something open their dialog here and talk to C# only
+        // when the user is done. Each tells C# which page it was opened for, and C# acts only if
+        // that is still the current page: a queued earlier click can change the page while the
+        // dialog is up.
         if (commandId === "duplicatePageManyTimes") {
             getWorkspaceBundleExports().showDuplicateManyDialog(pageId);
             closeContextMenu();
@@ -830,9 +829,8 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
             closeContextMenu();
             return;
         }
-        // The rest (duplicate, copy, paste, remove) save the current page first. C# does that
-        // from the snapshot the page has already sent it (see pageSnapshot.ts), so the command
-        // carries nothing but its name.
+        // The rest save the current page first, which C# does from the snapshot the page has
+        // already sent it (see pageSnapshot.ts).
         const postCommand = () =>
             postJson("pageList/contextMenuItemClicked", {
                 pageId,

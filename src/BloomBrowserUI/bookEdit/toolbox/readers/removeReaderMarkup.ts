@@ -1,21 +1,12 @@
-// Take the decodable/leveled reader tools' editing markup off a page — either the live one, when
-// the tool is being detached, or the clone we are about to save.
+// Take the decodable/leveled reader tools' editing markup off a page: the live one when the tool
+// is detached, or the clone we are about to save.
 //
-// There is exactly one thing to remove: the class the tools put on the .bloom-page div to mark a
-// page as having more text on it than the level allows. It is an editing aid and must not be
-// stored in the user's book.
+// The only such markup is the class marking a page as having more text than the level allows. The
+// word- and sentence-level highlighting uses the CSS Custom Highlight API, which does not touch the
+// DOM, and the hover tip is bloom-ui, which the save discards.
 //
-// Nothing has to be done inside the text itself. The tools' word- and sentence-level highlighting
-// is drawn with the CSS Custom Highlight API, which paints ranges without touching the DOM, and
-// the hover tip is `bloom-ui`, which the C# save pipeline discards. (Older versions of the markup
-// code did wrap each sentence/word/grapheme in a span, which is why removeSynphonyMarkup() still
-// unwraps those; the only place that still produces them is the Reader Setup dialog's own word
-// list, which is never part of a book.)
-//
-// removeSynphonyMarkup() cannot do this job in any case, because it reaches into the live page
-// frame by id rather than working on an element it is given, so it can only ever clean the page
-// the user is looking at. That was fine when saving destroyed the live page anyway; now that we
-// save from a clone (BL-13502), the cleanup has to be element-scoped, which is what this is.
+// removeSynphonyMarkup() is not usable here: it reaches into the live page frame by id, so it
+// cannot clean a clone. It still unwraps the per-sentence/word spans that older versions wrote.
 
 const kTooMuchStuffOnPageClass = "page-too-many-words-or-sentences";
 

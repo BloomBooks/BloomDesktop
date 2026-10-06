@@ -365,9 +365,8 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
         );
     }
 
-    // The only thing this tool adds inside the page that would otherwise be saved is the
-    // bloom-describedImage wrapper. (The bloom-showImageDescriptions class is on the body, which is
-    // outside the page div we save, so it belongs in detachFromPage below.)
+    // The only thing this tool adds inside the page div is the bloom-describedImage wrapper. The
+    // bloom-showImageDescriptions class is on the body, so detachFromPage removes it.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         unwrapDescribedImages(pageOrClone);
     }

@@ -70,7 +70,6 @@ import {
     post,
     postBoolean,
     postJson,
-    postString,
     postThatMightNavigate,
 } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
@@ -1355,17 +1354,7 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// Take out of the copy we are about to save the editing-only markup. This is the only place the
-// editor's chrome -- bloom-ui elements, resize handles, cke_* classes -- is removed: C# no longer
-// repeats it. (C# does keep only the .bloom-page div, so nothing outside that div matters.)
-//
-// This works entirely on 'cloneOfBody', a detached copy of the live body, so the live page is
-// untouched and remains editable.
-//
-// Note that there is deliberately nothing here corresponding to the old call to
-// resetAbovePageControls(): the above-page controls are a bloom-ui element that lives outside the
-// .bloom-page div, so they are never saved. Unmounting them belongs to leaving the page, and is
-// now done in pageUnloading().
+// Take the editing-only markup out of 'cloneOfBody', the detached copy we are about to save.
 function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
     // We are mirroring the Change Layout mode toggle behavior here, in case the user saves
     // while the Change Layout mode toggle is on.
@@ -1377,11 +1366,8 @@ function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
     )) {
         textLabel.remove();
     }
-    // The scratch element measureText.ts appends to the body to measure text with. It is hidden,
-    // it is transient (a timer removes it), and it is not part of the page -- but the gather
-    // clones the whole body, so a save that happens while it is there writes it into the book.
-    // The window is real: it is created while text is being fitted, which is exactly when the
-    // user is typing, and a save right after typing is the commonest save there is.
+    // The hidden scratch element measureText.ts appends to the body while fitting text (a timer
+    // removes it). It is often present just after typing, which is when snapshots are taken.
     cloneOfBody.querySelector("#measureTextDiv")?.remove();
     removeTransientVideoTimestampParams(cloneOfBody);
     removeEditorChromeFromClone(cloneOfBody);
@@ -1396,8 +1382,6 @@ function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
 // the off-screen path, which does its own waiting), so that nobody can gather the page while
 // asynchronous work that belongs in it is still running. It is also deliberately synchronous, so
 // that no other event handler can run part way through capturing the page.
-//
-// This leaves the live page fully editable: see getBodyContentForSavePage.
 function getPageContentForSave(): string {
     const content = getBodyContentForSavePage();
     const userStylesheet = userStylesheetContent();
@@ -1407,10 +1391,7 @@ function getPageContentForSave(): string {
 }
 
 // The way anything outside this file gets the current page's content: wait for any in-flight async
-// DOM work that belongs in the saved page, then gather. The page snapshot (pageSnapshot.ts) reads
-// the page through this.
-//
-// Note the gather happens in the continuation of the await, with nothing awaited in between, so no
+// DOM work that belongs in the saved page, then gather. Nothing is awaited between the two, so no
 // timer can start new work between our finding the register empty and our reading the page.
 export async function getPageContentForSaveWhenReady(): Promise<string> {
     await whenNoActiveDelays();
@@ -1418,14 +1399,13 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 }
 
 // Save the page and have C# rebuild it from the updated book DOM. Unlike an ordinary save, the
-// page IS reloaded, and for these callers that is the point: they have restructured the page in
-// ways that have never been through SetupElements (a new origami layout, an imported video, a
-// translation group replaced by a derived field), and the reload runs the page's setup over the
-// result.
+// page IS reloaded: these callers have restructured the page in ways that have never been through
+// SetupElements (a new origami layout, an imported video, a translation group replaced by a
+// derived field).
 //
 // The caller has only just changed the page, so we send the snapshot now rather than after the
-// usual quiet time, and post only once C# has it. If the page cannot be read, the user has been
-// told, and we leave the page as it is rather than reload it from a book without the change.
+// usual quiet time. If the page cannot be read, the user has been told, and we leave the page as
+// it is rather than reload it from a book without the change.
 //
 // The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
 export async function saveChangesAndRethinkPage(): Promise<void> {
@@ -1433,12 +1413,8 @@ export async function saveChangesAndRethinkPage(): Promise<void> {
     await postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
 }
 
-// Produce the HTML of the current page as it should be saved: a copy of the body with all the
-// editing-only markup taken out.
-//
-// NON-DESTRUCTIVE (BL-13502). We clone the body and do every bit of the cleanup on the CLONE, so
-// when we return, the live page has not been touched at all and is still editable. That is what
-// allows a Save that does not have to be followed by reloading the page.
+// Produce the HTML of the current page as it should be saved. All the cleanup is done on a CLONE
+// of the body, so the live page is untouched and stays editable without a reload (BL-13502).
 //
 // Caution: We don't want this to become an async method because we don't want any other event
 // handlers running between cleaning up the page and getting the content to save. (Or think hard
@@ -1450,11 +1426,9 @@ function getBodyContentForSavePage() {
         );
     }
 
-    // Note: unlike the older, destructive version of this code we deliberately do NOT blur the
-    // active element. Blurring was harmless when the page was about to be reloaded anyway, but now
-    // that we save without reloading, it would throw the user's cursor out of the box they are
-    // typing in on every save. We get the up-to-date text from CKEditor's getData() instead, which
-    // does not need the box to be blurred.
+    // Deliberately do NOT blur the active element: that would throw the user's cursor out of the
+    // box they are typing in on every snapshot. CKEditor's getData() gives the up-to-date text
+    // without a blur.
 
     const cloneOfBody = document.body.cloneNode(true) as HTMLElement;
     cleanCloneOfBodyForSave(cloneOfBody);
@@ -1485,29 +1459,19 @@ function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
     // CKEditor's cleaned-up text has to be read from the live editors, since the clone has no
     // editors attached to it (BL-12391, BL-16490).
     //
-    // This necessarily happens BEFORE the tool cleanup below, which is the opposite of the order
-    // the old destructive code used (it detached the tool from the live page and then asked
-    // CKEditor for the result). We can't do it that way any more: getData() can only report what
-    // the live editors hold, and the live page must keep its tool markup. So the tools clean the
-    // text CKEditor gave us, instead of CKEditor cleaning the text the tools left behind.
-    //
-    // That order matters to any tool whose cleanup reaches INSIDE an editable, because whatever it
-    // did there would be overwritten if the CKEditor copy came afterwards. Today that is only the
-    // Talking Book tool (the phrase-delimiter spans and the audio highlighting). The reader tools
-    // used to be in that category, but no longer are: their word and sentence highlighting is now
-    // painted with the CSS Custom Highlight API and puts nothing in the text, so all they clean is
-    // a class on the page div.
+    // This must come BEFORE the tool cleanup below: getData() reports what the live editors hold,
+    // tool markup included, so the tools must clean the text CKEditor gave us. Otherwise a tool
+    // whose cleanup reaches inside an editable (today, the Talking Book tool's phrase-delimiter
+    // spans and audio highlighting) would have its work overwritten.
     EditableDivUtils.copyCkEditorDataToClone(document.body, cloneOfBody);
 
     // The bubble tails Comical draws, and the canvas element state that goes with them. Like
     // CKEditor, Comical can only produce this from the live editing state, so this reads from the
     // live page and writes into the clone.
     //
-    // Only when canvas-element editing is actually on, which is the guard the old destructive code
-    // had: it reached this work through `if (canvasElementEditingOn) turnOffCanvasElementEditing()`.
-    // Doing it unconditionally would write balloon position and tail data on pages where editing is
-    // suspended (the Image Description and Motion tools, a game page in Play mode) -- pages whose
-    // balloon data a save used to leave exactly as it found it.
+    // Only when canvas-element editing is on: otherwise this would write balloon position and tail
+    // data on pages where editing is suspended (the Image Description and Motion tools, a game page
+    // in Play mode), whose balloon data a save must leave as it found it.
     if (theOneCanvasElementManager.isCanvasElementEditingOn) {
         theOneCanvasElementManager.prepareCloneOfBodyForSave(cloneOfBody);
     }
@@ -1521,8 +1485,7 @@ function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
         getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
     }
 
-    // The scroll bars an overflowing text box gets. Note that this takes the whole body: niceScroll
-    // puts its rails on the nearest positioned ancestor, which may or may not be inside the page.
+    // Takes the whole body, since niceScroll's rails may be outside the page div.
     removeNiceScrollArtifacts(cloneOfBody);
 
     removeEditingDebrisFromClone(cloneOfBody);
@@ -1579,15 +1542,13 @@ function resizeCanvasElementsToFitContent(): void {
 
 // Used by the off-screen "process whole book" path (C# BookProcessor, driven by the
 // external/process-book API). It gathers the same page content a save would (via the shared
-// getPageContentForSave()), but instead of posting it to an API that feeds the LIVE EditingModel
-// (which would corrupt the live editor's state), it stashes the combined result on
-// window.__bloomExternalPageContent for the C# caller to poll. Like every other gathering path it
-// goes through whenNoActiveDelays() first, so browser-based measurements (image sizing,
-// canvas-element layout, etc.) are complete before we capture the page. Unlike the live save, it is
-// a background job with nobody waiting at the keyboard, so it waits longer
-// (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured half-done,
-// the background image conversion, is still pending at the cap, it reports an ERROR instead of
-// capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page rather than
+// getPageContentForSave()), but instead of posting it to an API that feeds the LIVE EditingModel,
+// it stashes the result on window.__bloomExternalPageContent for the C# caller to poll. It first
+// waits on whenNoActiveDelays(), longer than the live editor since nobody is waiting at the
+// keyboard (kExternalCaptureMaxWaitMs), and if the one piece of work that must not be captured
+// half-done, the background image conversion, is still pending at the cap, it reports an ERROR
+// instead of capturing (see externalCaptureErrorForPendingWork); the C# caller then fails the page
+// rather than
 // saving a picture that can neither be cropped nor deleted (BL-16870). It also resizes text canvas
 // elements to fit their content (see resizeCanvasElementsToFitContent), since that auto-height
 // adjustment is otherwise deferred on a timer the wait loop does not track.
@@ -1595,11 +1556,8 @@ export function captureContentForExternalProcessing(
     fitImageTextSplits?: boolean,
 ): void {
     window.__bloomExternalPageContent = undefined;
-    // This page is a throwaway copy in an off-screen browser, but it is a full editing page, so
-    // it may have started volunteering snapshots and busy notices to the live EditingModel like
-    // any other. C# refuses them (they carry a page load it is not showing), so they do no harm,
-    // but they are wasted work. Stop that here; nothing this page has to say belongs to the live
-    // editor.
+    // This off-screen page is a full editing page, so it may have started sending snapshots. C#
+    // refuses them (wrong load id), but they are wasted work.
     stopWatchingPageForSnapshots();
 
     // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.
@@ -1649,9 +1607,7 @@ export function captureContentForExternalProcessing(
 }
 
 // The user-defined styles, which travel to C# as the second half of what
-// getPageContentForSave() returns. (This used to say it was called from C# by a RunJavaScript in
-// EditingView.CleanHtmlAndCopyToPageDom; that method is long gone, and nothing outside this file
-// calls this now.)
+// getPageContentForSave() returns.
 const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         (s) => s.title === "userModifiedStyles",
@@ -1662,42 +1618,28 @@ const userStylesheetContent = () => {
         .join("\n");
 };
 
-// Whether this page has already been torn down. A page document only ever goes away once, but
-// pageUnloading() can be ASKED for twice on the same one: leaving the Edit tab runs it (from
-// EditingView.OnHideEditTab, since nothing navigates the page frame then), and coming back
-// re-navigates that frame, which runs it again from switchContentPage() before the new page
-// replaces this document.
-//
-// The second run is not harmless. detachCurrentTool() does not forget the current tool after
-// detaching it, so it detaches again -- and the second detach usually does not reach
-// removeToolMarkup(), which makes detachToolFromPage() report the tool for "forgetting" to call
-// super.detachFromPage(). That accusation is false, and it points at a tool that is behaving
-// perfectly well.
+// pageUnloading() can be called twice on the same page: leaving the Edit tab runs it (from
+// EditingView.OnHideEditTab), and coming back runs it again from switchContentPage() before the
+// new page replaces this document. A second run detaches the current tool again, and
+// detachToolFromPage() then falsely reports the tool for not calling super.detachFromPage().
 let thisPageHasBeenUnloaded = false;
 
 export const pageUnloading = () => {
     if (thisPageHasBeenUnloaded) return;
     thisPageHasBeenUnloaded = true;
-    // Stop volunteering snapshots of a page that is going away. C# clears its copy when it starts
-    // navigating, so anything we sent after that would be for a page nobody is on. See
-    // pageSnapshot.ts.
     stopWatchingPageForSnapshots();
     // It's just possible that 'theOneCanvasElementManager' hasn't been initialized.
     // If not, just ignore this, since it's a no-op at this point anyway.
     if (theOneCanvasElementManager) {
         theOneCanvasElementManager.cleanUp();
     }
-    // Shut the open toolbox tool down. This releases whatever it was holding on the page we are
-    // leaving -- observers, listeners, and any UI it had opened such as a colour picker -- and it
-    // is the counterpart of the newPageReady() the tool gets for the page we are going to.
-    //
-    // Like resetAbovePageControls() below, this used to happen as a side effect of saving, because
-    // gathering the page content began by detaching the tool from the live page. A save no longer
-    // touches the live page, so without this nothing detaches the tool at all, and every page
-    // change leaks another page's worth of the tool's hooks.
+    // Shut the open toolbox tool down, releasing whatever it was holding on the page we are leaving
+    // (observers, listeners, any UI it opened such as a colour picker); the counterpart of the
+    // newPageReady() the tool gets for the next page. Saving never touches the live page, so
+    // nothing else detaches the tool, and without this every page change would leak its hooks.
     getToolboxBundleExports()?.removeToolboxMarkup();
     // Unmount the React root for the controls above the page and re-enable the toolbox (the
-    // Change Layout toggle disables it). Same story as above: it used to ride along with the save.
+    // Change Layout toggle disables it).
     resetAbovePageControls();
 };
 
@@ -2046,19 +1988,11 @@ export function attachToCkEditor(element) {
     $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
 
-    // Until this editor is ready, we cannot read the true saved text of the box it owns:
-    // copyCkEditorDataToClone gets the text from the live editors, and before instanceReady there
-    // is no editor to ask, so the gather reports whatever is in the DOM instead. That is not the
-    // same thing. SetupElements puts an empty <p></p> into an empty editable; CKEditor’s getData()
-    // reports the box as empty, which is what the book on disk says. So a gather taken in this
-    // window differs from one taken just after it, for every empty box on the page.
-    //
-    // That difference is what made a page nobody had touched decide it had unsaved changes: the
-    // page snapshot’s baseline is taken as soon as the delay register is clear, which used to be
-    // before any editor was ready. Registering here (and releasing at instanceReady) puts CKEditor
-    // attachment under the same gate as image sizing and the other load-time work that finishes
-    // asynchronously -- which is exactly what the register is for, and it means an early SAVE gets
-    // the real text too, instead of writing <p></p> into boxes the user left empty.
+    // Until this editor is ready, a gather reads the box from the DOM rather than from getData(),
+    // and they differ: SetupElements puts an empty <p></p> into an empty editable, which getData()
+    // reports as empty, as the book on disk does. So the delay register holds gathers until
+    // instanceReady; otherwise an untouched page would look changed and an early save would write
+    // <p></p> into boxes the user left empty.
     const ckEditorDelayId = "attachToCkEditor " + ckedit.id;
     addRequestPageContentDelay(ckEditorDelayId);
     let ckEditorDelayReleased = false;

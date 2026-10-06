@@ -35,16 +35,14 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // usually updateMarkup will do this, unless we are coming from showTool
         model.doMarkup();
     }
-    // Take our markup off the page we are about to save (a clone), or off the live page when we
-    // are being detached from it. See removeReaderMarkup.
+    // See removeReaderMarkup.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         removeReaderMarkup(pageOrClone);
     }
 
     public detachFromPage(): void {
-        super.detachFromPage(); // takes the markup off the live page
-        // ...and this stops it coming back: it also resets the model so that further typing is
-        // not marked up.
+        super.detachFromPage();
+        // Stop further typing from being marked up again.
         getTheOneReaderToolsModel().setMarkupType(0);
     }
     public updateMarkup() {

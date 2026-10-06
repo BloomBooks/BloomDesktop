@@ -94,14 +94,14 @@ namespace Bloom.web.controllers
                 && (string)requestData.pageToChangeId != pageId
             )
             {
-                // False: nothing was changed, so the chooser must not set up the template's tool.
                 request.ReplyWithBoolean(false);
                 return;
             }
-            // Set once the change has been applied. The save can decline without running it (the
-            // editor is mid-navigation), or the change can throw; either way the page keeps its old
-            // layout and the chooser must not set up the template's tool. A failed disk write after
-            // the change ran still leaves the page showing the new layout, so that counts.
+            // Tells the chooser whether to set up the template's tool. Set only once the change has
+            // been applied: the save can decline without running it (the editor is mid-navigation),
+            // or the change can throw, and either way the page keeps its old layout. A failed disk
+            // write after the change ran still leaves the page showing the new layout, so that
+            // counts.
             var layoutChanged = false;
             _editingModel.MergeCurrentPageThenSave(() =>
             {
@@ -123,7 +123,6 @@ namespace Bloom.web.controllers
                 layoutChanged = true;
                 return pageId;
             });
-            // Whether the layout was changed; the chooser sets up the template's tool only if it was.
             request.ReplyWithBoolean(layoutChanged);
         }
 

@@ -39,9 +39,8 @@ function getPageId(): string {
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
 //
-// The load id goes with it: from the moment C# answers until the next page reports ready, C#
-// accepts snapshots only from this load. See getPageLoadId(). The page snapshot waits for that
-// answer before it starts (see the ready handler below).
+// The load id goes with it: once C# answers, it accepts snapshots only from this load (see
+// getPageLoadId()), so the page snapshot waits for that answer before it starts.
 let pageDomLoadedAnswered: Promise<unknown> | undefined;
 function tellCSharpPageDomLoaded(): Promise<unknown> {
     if (!pageDomLoadedAnswered)
@@ -70,8 +69,7 @@ export interface IPageFrameExports {
     // disturbing the live page.
     getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
-    // Say that the saved form of the page may have changed in a way the page watcher cannot see --
-    // the user's style definitions, which are changed through the CSSOM and mutate no DOM node.
+    // See pageSnapshot.ts.
     notePageContentMayHaveChanged(): void;
     copySelection(): void;
     cutSelection(): void;
@@ -411,10 +409,9 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
-    // Start volunteering the page's content to C#: once now, with whatever the load-time fix-ups
-    // above changed, and then whenever it changes and settles, so a save never has to ask for it
-    // and wait. See pageSnapshot.ts. Not until C# has accepted this load, or it would refuse what
-    // we send. (Normally the notice went at DOMContentLoaded; asking again just returns that post.)
+    // Start sending the page's content to C# (see pageSnapshot.ts), but not until C# has accepted
+    // this load, or it would refuse what we send. (The notice normally went at DOMContentLoaded;
+    // asking again just returns that post.)
     void tellCSharpPageDomLoaded().then(() =>
         startWatchingPageForSnapshots(getPageContentForSaveWhenReady),
     );

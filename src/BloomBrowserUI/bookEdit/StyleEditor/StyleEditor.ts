@@ -589,19 +589,12 @@ export default class StyleEditor {
             return null;
         }
         if (create) {
-            // A caller asking us to create the rule means it is about to change it, and every
-            // change we make to these styles goes through the CSSOM -- setProperty, deleteRule,
-            // insertRule -- which mutates no DOM node. So the page watcher, which is a
-            // MutationObserver, cannot see it, and a formatting change that leaves the text alone
-            // would never be volunteered to C#: leaving the Edit tab or quitting would write the
-            // styles as they were. This is the one place every such change passes through.
-            //
-            // It is deliberately said BEFORE the change rather than after: the watcher waits a
-            // moment before reading the page, and the caller's edits are synchronous, so they are
-            // in by the time it looks. Saying so needlessly costs nothing -- an unchanged page
-            // produces no post.
-            // Through the page frame's exports rather than a direct import, because this class
-            // is used from the toolbox frame as well, and it is the PAGE frame that watches.
+            // A caller asking us to create the rule is about to change it through the CSSOM, which
+            // the page watcher cannot see (see notePageContentMayHaveChanged). Every such change
+            // passes through here. Saying so before the change is fine: the watcher reads the page
+            // after a delay, and the caller's edits are synchronous.
+            // Through the page frame's exports rather than a direct import, because this class is
+            // also used from the toolbox frame, and it is the PAGE frame that watches.
             getEditablePageBundleExports()?.notePageContentMayHaveChanged();
         }
 

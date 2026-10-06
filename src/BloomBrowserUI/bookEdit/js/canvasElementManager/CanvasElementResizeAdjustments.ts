@@ -11,15 +11,9 @@ import { pxToNumber } from "../../toolbox/canvas/canvasElementCssUtils";
 import { adjustCanvasElementAlternates } from "./CanvasElementAlternates";
 
 // Whether Comical draws anything for this canvas element, and so has something to redraw when it
-// moves or changes size. A bubble style draws an outline; any style can have tails. Style "none"
-// (a plain text box) draws neither, but Comical still makes a box shape for it, sized from the
-// text box, and paints it with the spec's background colour (transparent unless one was chosen in
-// the toolbox) and outer border colour. So a plain text box with neither, and no tails, is the
-// one case with nothing to redraw.
-//
-// (This once tested `bubbleSpec.spec !== "none"`. BubbleSpec has no `spec` member, so that was
-// always true; until comicaljs 0.4.x a broken import in its declarations typed BubbleSpec as
-// `any`, so the compiler never objected.)
+// moves or changes size. Style "none" (a plain text box) has no outline, but Comical still paints
+// a box sized from the text box with the spec's background and outer border colours. So only a
+// plain text box with no tails and neither colour has nothing to redraw.
 export function comicalDrawsSomethingFor(bubbleSpec: BubbleSpec): boolean {
     if (bubbleSpec.style !== "none") return true;
     if (bubbleSpec.tails?.length) return true;

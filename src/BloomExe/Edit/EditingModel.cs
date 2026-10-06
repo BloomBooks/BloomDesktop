@@ -47,9 +47,7 @@ namespace Bloom.Edit
         private bool _reloadFromDiskOnLeavingEditTab;
 
         /// <summary>
-        /// What the browser last told us the edited page contains, volunteered rather than asked
-        /// for. See PageSnapshot: this is what lets a save take the current page synchronously
-        /// instead of asking the browser and waiting.
+        /// What the browser last told us the edited page contains; see PageSnapshot.
         /// </summary>
         private readonly PageSnapshot _pageSnapshot = new PageSnapshot();
 
@@ -518,17 +516,12 @@ namespace Bloom.Edit
         {
             // This can only be called on the UI thread in response to a user button click.
             Debug.Assert(!_view.InvokeRequired);
-            // There used to be a guard here against a save still being in progress (BL-431). A save
-            // now finishes inside the call that asks for it, so there is no such window.
-            //
-            // We merge the open page's content before deleting, even though today that is always the
-            // page being deleted (a right-click command makes its page current first). It costs a
-            // few milliseconds against the full write the deletion causes anyway, and it is not
-            // wasted: if the deletion fails we stay on this page, which navigating rebuilds from the
-            // book, so without the merge the user's latest typing on it would vanish; and merging
-            // copies any field bound to book-wide data (data-book) into the data div, so an edit to
-            // such a field is not lost along with the page. It would also be needed if a command
-            // could ever delete a page other than the open one.
+            // We merge the open page before deleting, even though it is always the page being
+            // deleted (a right-click command makes its page current first). If the deletion fails
+            // we stay on this page, which navigating rebuilds from the book, so without the merge
+            // the user's latest typing would vanish; and merging copies any field bound to
+            // book-wide data (data-book) into the data div, so such an edit is not lost with the
+            // page.
             MergeCurrentPageThenSave(() =>
             {
                 try
@@ -1743,36 +1736,25 @@ namespace Bloom.Edit
         private bool _nextSaveMustBeFull; // review: store in state machine?
 
         /// <summary>
-        /// Fold the current page's edits into the book, let the caller change the book, then write
-        /// it once and go to the page the caller names. All synchronous.
+        /// Merge the current page's edits into the book DOM, run changeBookBeforeWriting, then write
+        /// the book once and go to the page it names. All synchronous.
         ///
-        /// The three steps happen in that order, and the order is the point:
-        ///
-        ///   1. the page the user was editing is merged into the book DOM, so that
-        ///   2. changeBookBeforeWriting sees those edits (duplicating a page has to copy what the
-        ///      user just typed, not what was on disk), and it returns the id of the page to show
-        ///      next -- or null to leave the editor blank;
-        ///   3. the book is written to disk ONCE, covering both the merge and the change, and we
-        ///      navigate to that page.
-        ///
-        /// That middle slot is why this takes an action rather than simply returning: the caller's
-        /// work belongs between the merge and the write, not after the save.
+        /// The action runs between the merge and the write so that it sees the user's latest edits
+        /// (duplicating a page has to copy what the user just typed) and one write covers both.
         /// </summary>
-        /// <param name="changeBookBeforeWriting">Runs between the merge and the write. Returns the
-        /// page to show next, or null for a blank editor.</param>
+        /// <param name="changeBookBeforeWriting">Returns the page to show next, or null for a
+        /// blank editor.</param>
         /// <param name="ifNotInAStateToSave">Called INSTEAD of everything above when we could not
-        /// start at all -- the user may have begun changing pages, or this may be a nested request
-        /// arriving from inside another one's changeBookBeforeWriting. Most callers have nothing
-        /// useful to do then and omit it. It is NOT called when the save started and then failed,
-        /// because the action may already have run, and running it again would duplicate or delete
-        /// a second page (see SaveOutcome).</param>
-        /// <param name="actionChangesTheBook">Whether changeBookBeforeWriting changes the book.
-        /// We cannot see inside it, so it has to say, and the default is the safe answer: a caller
-        /// that changes the book and does not say so has its change written nowhere, whereas one
-        /// that says so needlessly costs a write. Only callers whose action merely names the page
-        /// to go to next pass false.</param>
-        /// <returns>What happened, for the few callers that have work to do only after a save that
-        /// completed (see SaveOutcome). Most callers ignore it.</returns>
+        /// start at all: the user may have begun changing pages, or this may be a nested request
+        /// from inside another one's action. It is NOT called when the save started and then
+        /// failed, because the action may already have run, and running it again could duplicate
+        /// or delete a second page (see SaveOutcome).</param>
+        /// <param name="actionChangesTheBook">We cannot see inside the action, so it has to say.
+        /// The default is the safe answer: a change not declared is never written, whereas one
+        /// declared needlessly costs a write. Pass false only when the action merely names the
+        /// page to go to next.</param>
+        /// <returns>What happened, for callers with work to do only after a completed save (see
+        /// SaveOutcome).</returns>
         public SaveOutcome MergeCurrentPageThenSave(
             Func<string> changeBookBeforeWriting,
             Action ifNotInAStateToSave = null,
@@ -1790,13 +1772,9 @@ namespace Bloom.Edit
                 {
                     if (actionChangesTheBook)
                     {
-                        // Merging the page marks the book dirty only when the page's own content
-                        // differs from what the book already holds. So a command used on a page
-                        // the user never edited leaves the book looking clean at the very moment
-                        // its action is about to make it dirty, and SaveBookToDisk would then
-                        // write nothing: the screen would show the result and disk would not have
-                        // it. We cannot know which pages the action touches, so the write must be
-                        // a full one.
+                        // Merging marks the book dirty only when the page itself changed, so on an
+                        // untouched page the action's change would otherwise never be written. We
+                        // cannot know which pages the action touches, so the write must be full.
                         _bookDomHasUnwrittenChanges = true;
                         _nextSaveMustBeFull = true;
                     }
@@ -1811,7 +1789,7 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Called by the editView/pageSnapshot API when the browser volunteers the current content
-        /// of the page. All we do is remember it; see PageSnapshot for why.
+        /// of the page. See PageSnapshot.
         /// </summary>
         public bool ReceivePageSnapshot(string pageId, string loadId, string pageContent)
         {
@@ -1819,9 +1797,7 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Called by the editView/pageSnapshot API with busy=true: the browser has begun
-        /// asynchronous work whose result belongs in the saved page. busyWith names what was
-        /// registered when it began, for the log only. See PageSnapshot.SetBusy.
+        /// Called by the editView/pageSnapshot API with busy=true. See PageSnapshot.SetBusy.
         /// </summary>
         public bool ReceivePageBusy(string loadId, string busyWith)
         {
@@ -1836,18 +1812,14 @@ namespace Bloom.Edit
 
         /// <summary>
         /// The current page's content as the browser last reported it, or null if it has not yet
-        /// sent any for this load of the page (it sends the page as soon as it has loaded). Either
-        /// way there is no asking the browser; see PageSnapshot.
+        /// sent any for this load of the page; see PageSnapshot.
         ///
-        /// If the browser has said the page is busy with asynchronous work whose result belongs in
-        /// the saved page, this first waits (sleeping the UI thread, for at most
-        /// kMaxWaitForBusyPageMs) for it to say the work is done and the finished page has been
-        /// sent. Only saves that use the snapshot need this: content that came with a request has
-        /// already waited, in the browser. If we have to go ahead anyway, we log what the page was
-        /// busy with, so that a report of a save that lost something can be read against it.
+        /// If the browser has said the page is busy with work whose result belongs in the saved
+        /// page, this first waits (at most kMaxWaitForBusyPageMs) for the finished page. If we
+        /// have to go ahead anyway, we log what the page was busy with, so that a report of a save
+        /// that lost something can be read against it.
         ///
-        /// A caller that cannot afford to wait at all -- Windows is shutting down -- passes false,
-        /// and gets the snapshot as it stands, with the same log entry if the page was busy.
+        /// Pass false when we cannot afford to wait at all (Windows is shutting down).
         /// </summary>
         private string TakeCurrentPageSnapshot(bool waitForInFlightPageWork = true)
         {
@@ -1866,36 +1838,22 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Save the current page and the book, synchronously, and stay on the page. This is what
+        /// Save the current page and the book, synchronously, and stay on the page. Used when
         /// leaving the Edit tab, closing the collection, copying a page and opening the AI image
-        /// editor all do; only the last two leave the page on screen afterwards, but nothing here
-        /// depends on that.
+        /// editor.
         ///
-        /// The page's content is the snapshot the browser last volunteered. It may be null, meaning
-        /// the browser has not sent this load of the page yet; then nothing is merged, and the book
-        /// is written only if something else (a data-div change, a forced full save) is waiting to
-        /// be written. A page that merges without changing anything writes nothing either.
-        /// While a page is still loading there is likewise nothing to merge -- the page we left was
-        /// saved before the navigation began -- but anything that navigation's write left behind
-        /// (see SaveBookToDisk) is still written.
+        /// The page's content is the snapshot the browser last volunteered. If there is none yet,
+        /// or no page is being edited (see DecideSaveScope), nothing is merged, but anything else
+        /// waiting to be written (a data-div change, a forced full save) still is.
         ///
-        /// Returns false only if the write failed: then the file does not say what Bloom is showing.
+        /// Returns false only if the write failed, so the file does not say what Bloom is showing.
         /// The failure has been reported to the user; the return value is for callers that must not
-        /// carry on as though the file said what they think it says. The AI image editor opens the
-        /// book FROM DISK, so opening it after a failed save would edit stale images.
+        /// carry on regardless. The AI image editor opens the book FROM DISK, so opening it after a
+        /// failed save would edit stale images. Having nothing to save is not a failure.
         ///
-        /// Having no page to save is not a failure. With no book being edited, or between books,
-        /// there is nothing of ours to write, and when another program has replaced the book on
-        /// disk we deliberately write nothing (see ReloadCurrentBookDiscardingEdits); in each case
-        /// what is on disk is right. With a book but no page loaded for editing, we still write
-        /// anything else waiting to be written. See DecideSaveScope.
-        ///
-        /// waitForInFlightPageWork is false only when Windows is shutting down; see
-        /// TakeCurrentPageSnapshot.
-        ///
-        /// The one thing this cannot do is save a change made in the last few tens of
-        /// milliseconds, which the browser has not posted yet. See "The freshness window" in
-        /// SavingWithoutReloading.md for why that is the accepted trade.
+        /// This cannot save a change made in the last few tens of milliseconds, which the browser
+        /// has not posted yet. See "The freshness window" in SavingWithoutReloading.md for why
+        /// that is the accepted trade.
         /// </summary>
         public bool SaveCurrentPageAndBook(bool waitForInFlightPageWork = true)
         {
@@ -1915,9 +1873,9 @@ namespace Bloom.Edit
                     ? TakeCurrentPageSnapshot(waitForInFlightPageWork)
                     : null;
             UpdateBookDomFromBrowserPageContent(pageContent);
-            // Set by that merge only when the page differs from what the book held. Read before
-            // SaveBookToDisk, which clears it. The browser sends every page once as it loads, so a
-            // non-null snapshot alone no longer means the page changed.
+            // Set by that merge only when the page differs from what the book held (the browser
+            // sends every page once as it loads, so a snapshot alone does not mean a change). Read
+            // before SaveBookToDisk, which clears it.
             var pageChanged = _modifiedPageElement != null;
             if (!SaveBookToDisk())
                 return false;
@@ -2006,9 +1964,6 @@ namespace Bloom.Edit
             }
         }
 
-        /// <summary>
-        /// The message for a page that could not be saved.
-        /// </summary>
         private static string CouldNotSavePageMessage =>
             LocalizationManager.GetString(
                 "Errors.CouldNotSavePage",
@@ -2042,16 +1997,11 @@ namespace Bloom.Edit
             // element for the single-page fast path.
             if (!CurrentBook.SavePageToDisk(_modifiedPageElement, mustBeFull))
             {
-                // Nothing reached disk. The user has been told; what matters here is that the
-                // book still needs writing, so we must not clear the flags that say so. Clearing
-                // them would make the next save believe there was nothing to do, and the change
-                // would never be written at all.
-                //
-                // The next attempt also has to be a FULL save. _modifiedPageElement names one page,
-                // and the next edit will replace it with whichever page that edit was on -- so a
-                // per-page write would then save that page and quietly leave this one's change
-                // behind for good. Once a write has failed we can no longer say the book differs
-                // from disk in one page only, so we stop claiming it.
+                // Nothing reached disk (the user has been told), so keep the flags that say the
+                // book still needs writing. The next attempt must also be FULL:
+                // _modifiedPageElement names one page, and the next edit will replace it with
+                // whichever page that edit was on, so a per-page write would leave this page's
+                // change behind for good.
                 _nextSaveMustBeFull = true;
                 return false;
             }
@@ -2566,12 +2516,12 @@ namespace Bloom.Edit
         /// Arrange for <paramref name="action"/> to run the next time a page finishes loading in
         /// the browser, passing it that page's id.
         ///
-        /// A save no longer navigates, so almost nothing needs this any more. It exists for the
-        /// page layout update (RunPageLayoutUpdateThenReturnToPage), which empties the editor, rewrites
-        /// the book off-screen and navigates back -- and whose caller, the AI image editor, must
-        /// open only once that page is showing again, because EditingView.StartNavigationToEditPage
-        /// can reload the whole workspace root (when Bloom is short of memory), which would destroy
-        /// anything opened sooner. Only one action is held; queueing a second replaces the first.
+        /// Used by the page layout update (RunPageLayoutUpdateThenReturnToPage), which empties the
+        /// editor, rewrites the book off-screen and navigates back. Its caller, the AI image
+        /// editor, must open only once that page is showing again, because
+        /// EditingView.StartNavigationToEditPage can reload the whole workspace root (when Bloom is
+        /// short of memory), which would destroy anything opened sooner. Only one action is held;
+        /// queueing a second replaces the first.
         /// Leaving the Edit tab drops it (see OnTabAboutToChange), since no page would load to run
         /// it and the caller's page is no longer on screen.
         /// </summary>

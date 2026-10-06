@@ -53,20 +53,16 @@ export default abstract class ToolboxToolReactAdaptor
         return false;
     }
     public newPageReady() {}
-    // Most tools' editing markup is either marked bloom-ui (which the C# save pipeline strips) or
-    // lives outside the page div (which is never saved), so they have nothing to remove. See
-    // ITool.removeToolMarkup for what to do if yours does.
+    // Most tools' editing markup is bloom-ui or outside the page div, so neither is saved. See
+    // ITool.removeToolMarkup.
     public removeToolMarkup(_pageOrClone: HTMLElement): void {}
     public configureElements(_container: HTMLElement) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
 
     private removedToolMarkupWhileDetaching = false;
 
-    /// Take this tool's markup off the live page. A tool that has nothing live-only to clean up
-    /// needs only to implement removeToolMarkup(); it gets this for free, and the save path gets
-    /// the identical cleanup by calling the same method on a clone. If you do override this to add
-    /// live-only teardown, call super.detachFromPage() at the point where the markup should come
-    /// off — see ITool.detachFromPage.
+    /// Take this tool's markup off the live page. Overrides that add live-only teardown must call
+    /// super.detachFromPage(); see ITool.detachFromPage.
     public detachFromPage(): void {
         this.removedToolMarkupWhileDetaching = true;
         const bloomPage = ToolboxToolReactAdaptor.getBloomPage();
@@ -75,8 +71,8 @@ export default abstract class ToolboxToolReactAdaptor
         }
     }
 
-    // See ITool.didRemoveToolMarkupWhileDetaching. Reading it also resets it, so that each detach
-    // is judged on its own.
+    // See ITool.didRemoveToolMarkupWhileDetaching. Reading it resets it, so each detach is judged
+    // on its own.
     public didRemoveToolMarkupWhileDetaching(): boolean {
         const result = this.removedToolMarkupWhileDetaching;
         this.removedToolMarkupWhileDetaching = false;

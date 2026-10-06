@@ -147,12 +147,10 @@ namespace Bloom.web
             if (page != null)
             {
                 // The command runs right here, under the API lock, so a page click or move that
-                // arrives meanwhile waits for it rather than overtaking it. That is safe because no
-                // command opens a modal dialog any more: Duplicate Many Times and Choose
-                // Different Layout open theirs in the browser and never come here. One that did
-                // would deadlock, since this handler holds the API lock the dialog's own requests
-                // need; that is what the old 100 ms deferral worked around, and the deferral is
-                // what let a click overtake a command.
+                // arrives meanwhile waits for it rather than overtaking it. No command here may open
+                // a modal dialog: it would deadlock, since this handler holds the API lock the
+                // dialog's own requests need. That is why Duplicate Many Times and Choose Different
+                // Layout open their dialogs in the browser and never come here.
                 try
                 {
                     PageList.ExecuteContextMenuCommand(page, commandId);

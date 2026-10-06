@@ -1,26 +1,15 @@
 // Strip, from a CLONE of the editing page, the chrome that only exists because the page is being
 // edited -- so that what we hand C# is the page, not the editor.
 //
-// This is the one place the editor's chrome is removed before saving: C# used to repeat the
-// bloom-ui, resize-handle and cke_ rules in HtmlDom.ProcessPageAfterEditing, and no longer does,
-// because every page it is given comes through here. Doing it here also changes what we SEND, and
-// that matters because of how the page snapshot decides to send anything at all: it posts whenever
-// the gathered string differs from the last one it sent (see pageSnapshot.ts). Chrome in that
-// string therefore made pages look edited when nobody had touched them -- C# would hold a
-// snapshot, conclude there were unsaved changes, and save on the way out.
+// This is the one place the editor's chrome is removed before saving; C#
+// (HtmlDom.ProcessPageAfterEditing) relies on it. Doing it here also keeps chrome out of what the
+// page snapshot compares and sends (see pageSnapshot.ts), where it would make untouched pages look
+// edited and cause a save on the way out.
 //
-// The offenders:
-//   * CKEditor’s toolbars and qTip’s bubbles, which those libraries append to the document body.
-//     Big (they were 20 KB of a 26 KB page) and restless: a bubble fades in and slides into place,
-//     so its inline style changes several times a second while it appears.
-//   * bloom-ui elements inside the page -- the image buttons, the format cog.
-//   * the cke_ classes CKEditor puts on each editable as it attaches.
-//   * qTip’s bookkeeping attributes. These are the ones that churn between RUNS rather than
-//     within one: the number in "qtip-0" is handed out in the order the bubbles happen to be
-//     created, so it rarely matches the number the box was saved with. BloomHintBubbles has long
-//     noted the wart -- "we unfortunately save in the file the qtip attributes that get added like
-//     aria-describedby=qtip-0 and has-qtip=true" -- and BookData._attributesNotToCopy already
-//     refuses to copy them into the data div, calling them "junk that gets left behind by UI".
+// Besides the chrome itself (CKEditor's toolbars and qTip's bubbles, which are big and whose inline
+// styles change while they animate; bloom-ui elements; cke_ classes), qTip's bookkeeping attributes
+// churn between runs: the number in "qtip-0" depends on the order bubbles happen to be created.
+// Books saved in the past may still contain them.
 //
 // Nothing here may touch the live page; the caller passes a detached deep copy of document.body.
 export function removeEditorChromeFromClone(cloneOfBody: HTMLElement) {
@@ -57,16 +46,10 @@ export function removeEditorChromeFromClone(cloneOfBody: HTMLElement) {
         element.removeAttribute("data-hasqtip");
     }
 
-    // The ids paper.js leaves on the SVG Comical draws for the speech bubbles. Unlike everything
-    // else here this markup IS saved -- the SVG is what draws the bubbles in the reader, which has
-    // no Comical to redraw them -- but the ids are regenerated with a fresh GUID every time the
-    // SVG is, so an otherwise identical redraw produced a different page and any page with a
-    // bubble looked edited on every visit, forever. On one test book that was five or six
-    // snapshots per page visit, all of them this.
-    //
-    // Safe to drop rather than stabilise: nothing inside the SVG references them (no url(#...),
-    // no href="#..."), the GUID appears nowhere else in the page, and they are not even unique --
-    // "...outlineShape 1 1" occurs twice in one SVG. They are debris, not identifiers.
+    // The ids paper.js leaves on the SVG Comical draws for speech bubbles. The SVG itself IS saved
+    // (the reader has no Comical to redraw bubbles), but these ids get a fresh GUID on every
+    // redraw, so any page with a bubble would look edited on every visit. Safe to drop: nothing
+    // references them (no url(#...) or href="#..."), and they are not even unique.
     for (const element of Array.from(
         cloneOfBody.querySelectorAll("svg.comical-generated [id]"),
     )) {

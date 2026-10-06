@@ -404,18 +404,14 @@ namespace Bloom.Edit
         {
             // Run the page frame's leaving-the-page teardown. Changing pages gets this via
             // switchContentPage in workspaceRoot.ts, but leaving the tab does not unload or
-            // re-navigate the page frame, so nothing there fires and the page we are leaving keeps
-            // everything the editor had hung on it: the open toolbox tool with its observers and
-            // any window it had opened, the controls above the page, and the canvas-element
-            // machinery. Symptoms are a pop-up left on screen behind the new tab, and the toolbox
-            // staying switched off if the user left with Change Layout on.
+            // re-navigate the page frame, so without this the page keeps everything the editor had
+            // hung on it: the open toolbox tool with its observers and any window it had opened,
+            // the controls above the page, and the canvas-element machinery. Symptoms are a pop-up
+            // left on screen behind the new tab, and the toolbox staying switched off if the user
+            // left with Change Layout on.
             //
-            // This used to happen for free: leaving the tab performs a save, and a save used to
-            // begin by stripping the live page. That coupling is what BL-13502 removed.
-            //
-            // Note we are called from the state machine's transition to NoPage, i.e. AFTER the page
-            // content has been captured and saved. That matters, because this changes the live
-            // page, and doing it earlier would put the teardown back into the save path.
+            // We are called from the state machine's transition to NoPage, i.e. AFTER the page has
+            // been saved. That matters, because this changes the live page.
             _mainBrowser?.RunJavascriptFireAndForget(
                 "workspaceBundle.getEditablePageBundleExports()?.pageUnloading();"
             );

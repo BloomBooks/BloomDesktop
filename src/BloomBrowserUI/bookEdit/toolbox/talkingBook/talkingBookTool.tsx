@@ -137,11 +137,9 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    // The markup this tool adds that would otherwise reach the saved HTML: the
-    // bloom-describedImage wrappers and the visible "|" phrase-delimiter spans. Everything else
-    // removeRecordingSetup() deals with is either bloom-ui (the playback-order controls, the
-    // recording icon), not in the DOM at all (the ::highlight registry), or purely tool state, so
-    // it lives in detachFromPage below.
+    // The bloom-describedImage wrappers and the visible "|" phrase-delimiter spans. Everything else
+    // this tool adds is bloom-ui, not in the DOM (the ::highlight registry), or tool state, which
+    // detachFromPage deals with.
     public removeToolMarkup(pageOrClone: HTMLElement): void {
         unwrapDescribedImages(pageOrClone);
         TalkingBookTool.enshroudPhraseDelimiters(pageOrClone);
@@ -155,9 +153,8 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
             // Live-only: takes down the playback-order UI and resets the tool's own state.
             audioRecorder.removeRecordingSetup();
         }
-        // The rest is what hideImageDescriptions() used to do for us here: the
-        // bloom-showImageDescriptions class is on the body, which is outside the page div that
-        // removeToolMarkup() gets, and comic editing must not resume until the wrappers are gone.
+        // bloom-showImageDescriptions is on the body, outside the page div that removeToolMarkup()
+        // gets. Comic editing must not resume until super has removed the wrappers.
         ToolBox.getPage()?.classList.remove("bloom-showImageDescriptions");
         super.detachFromPage();
         getCanvasElementManager()?.resumeComicEditing();

@@ -1,24 +1,16 @@
 // The register of asynchronous work that must finish before the page can be saved, and the gate
 // every page-content-gathering path waits on.
 //
-// The problem it solves: saving means reading the page's DOM, and quite a lot of the editor changes
-// that DOM asynchronously -- sizing an image, fitting a canvas element's background, pasting from
-// the clipboard, building a custom xmatter page. Read the page while one of those is half done and
-// that is what gets written into the user's book.
-//
-// So any code doing such work registers here for its duration (preferably via
-// wrapWithRequestPageContentDelay, which cannot forget to deregister), and every route that gathers
-// page content goes through whenNoActiveDelays() first:
-//   - getPageContentForSaveWhenReady in bloomEditing.ts, which is how the page snapshot
-//     (pageSnapshot.ts) reads the page after every change. Javascript could in principle await
-//     its own work instead, but it cannot know about work someone else started, so it waits here.
-//     C#, which saves from the snapshot, is told when the register is busy, and waits for the
-//     snapshot that follows (see PageSnapshot.WaitUntilIdle).
-//   - the off-screen book processor (captureContentForExternalProcessing).
+// Much of the editor changes the DOM asynchronously (sizing an image, fitting a canvas element's
+// background, pasting, building a custom xmatter page); a page read while one of those is half done
+// is what gets written into the book. So such work registers here for its duration (preferably via
+// wrapWithRequestPageContentDelay), and every route that gathers page content waits on
+// whenNoActiveDelays() first: getPageContentForSaveWhenReady in bloomEditing.ts (used by the page
+// snapshot) and the off-screen book processor (captureContentForExternalProcessing). C#, which
+// saves from the snapshot, is told when the register is busy (see onDelayRegisterChanged).
 
 // Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work to finish before
-// gathering anyway. The wait ends as soon as the register empties, so simple pages are unaffected
-// by this value; it only gives slower computers with complex pages more headroom before we give up.
+// gathering anyway; generous to give slow computers with complex pages headroom.
 export const kMaxWaitTimeMs = 4000;
 
 const activeDelays: string[] = [];
@@ -30,21 +22,15 @@ const delayWaiters: (() => void)[] = [];
 // (with undefined). See onDelayRegisterChanged.
 const registerListeners: ((busyWith: string | undefined) => void)[] = [];
 
-// Be told when the register becomes busy and when it empties again. Only those transitions, not
-// every add and remove, because what the listener needs to know is WHETHER the page is busy.
-// The page snapshot uses this to tell C# that a snapshot-based save should wait.
-// Returns a function that unsubscribes.
+// Be told when the register becomes busy and when it empties again (only those transitions; the
+// listener needs to know WHETHER the page is busy). Returns a function that unsubscribes.
 //
-// The busy notice also says what the page is busy with (see describeBusyRegister), but only as a
-// clue for the log: it is the work registered at the moment the notice was given, so work added
-// later in the same busy spell is not in it, and what it names may have finished while other work
-// carries on. Keeping C# up to date on every add and remove would cost a request each, for a
-// message nobody acts on.
+// What the busy notice says the page is busy with is only a clue for the log: it is the work
+// registered at that moment, not a running record, which would cost a request per add and remove.
 //
-// If the register is already busy when the listener subscribes, it is told so at once: the page
-// snapshot subscribes after bootstrap(), by which time the load-time work (image sizing, CKEditor
-// attaching) has usually registered, and a listener that only heard about transitions would miss
-// all of it.
+// If the register is already busy, the listener is told at once: the page snapshot subscribes
+// after bootstrap(), by which time load-time work (image sizing, CKEditor attaching) has usually
+// registered.
 export function onDelayRegisterChanged(
     listener: (busyWith: string | undefined) => void,
 ): () => void {
@@ -67,8 +53,6 @@ export function addRequestPageContentDelay(id: string): void {
     }
 }
 
-// What the register holds right now, for a busy notice: the ids of the active delays, comma
-// separated. A snapshot, not a running record; see onDelayRegisterChanged.
 function describeBusyRegister(): string {
     return activeDelays.join(", ");
 }
@@ -110,11 +94,9 @@ export async function wrapWithRequestPageContentDelay<T>(
 }
 
 // Resolves once no registered work is outstanding: immediately if there is none, otherwise as soon
-// as the last of it finishes, and after maxWaitMs regardless -- saving a slightly stale page beats
-// not saving at all, so we warn and go on rather than block the user forever. The live editor uses
-// the default cap; the off-screen capture, which has nobody waiting at the keyboard, passes a
-// longer one and then looks at getActiveDelayIds() to decide whether what is still pending is
-// something it can afford to capture half-done.
+// as the last of it finishes, and after maxWaitMs regardless (saving a slightly stale page beats
+// blocking the user forever). The off-screen capture, with nobody waiting at the keyboard, passes a
+// longer cap and then checks getActiveDelayIds() to decide whether it can capture what is pending.
 export function whenNoActiveDelays(
     maxWaitMs: number = kMaxWaitTimeMs,
 ): Promise<void> {

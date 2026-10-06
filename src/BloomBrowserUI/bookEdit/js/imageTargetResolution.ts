@@ -324,10 +324,9 @@ export function getElementThatDeterminesImageSlotSize(
 // not re-measured any more eagerly than that.
 //
 // The measurements come from pageRoot, which must be laid out. The attribute is written to the
-// corresponding slot under writeTo, which defaults to pageRoot itself; the live editor's save passes
-// the detached clone it is about to hand to C#, so that measuring the live page for a save does not
-// also change it. writeTo must then be an untouched copy of pageRoot, so that the Nth slot in each
-// is the same slot.
+// corresponding slot under writeTo (default pageRoot); the live editor's save passes its detached
+// clone so the live page is not changed. writeTo must then be an untouched copy of pageRoot, so
+// that the Nth slot in each is the same slot.
 export function recordFractionOfPageOnImageSlots(
     pageRoot: Element,
     writeTo: Element = pageRoot,
