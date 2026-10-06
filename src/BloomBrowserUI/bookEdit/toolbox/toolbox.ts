@@ -541,16 +541,21 @@ function showOrHideTool(
 export function restoreToolboxSettings() {
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
+        const stateWhenFetched = captureToolboxStateForRestore();
         const pageFrame = getPageIFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
             // We can't finish restoring settings until the main document is loaded, so arrange to call the next stage when it is.
             $(contentWin.document).ready((_e) =>
-                restoreToolboxSettingsWhenPageReady(result.data),
+                restoreToolboxSettingsWhenPageReady(
+                    result.data,
+                    stateWhenFetched,
+                ),
             );
             return;
         }
-        restoreToolboxSettingsWhenPageReady(result.data); // not loading, we can proceed immediately.
+        // not loading, we can proceed immediately.
+        restoreToolboxSettingsWhenPageReady(result.data, stateWhenFetched);
     });
 }
 
@@ -575,7 +580,10 @@ export function applyToolboxStateToUpdatedPage() {
             currentFromBook !== currentInToolbox ||
             shouldBeVisible !== isVisible
         ) {
-            restoreToolboxSettingsWhenPageReady(savedSettings);
+            restoreToolboxSettingsWhenPageReady(
+                savedSettings,
+                captureToolboxStateForRestore(),
+            );
             return;
         }
 
@@ -701,7 +709,40 @@ function doWhenCkEditorReadyCore(
     }
 }
 
-function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
+// What the toolbox looked like when we fetched the settings we are about to apply. See
+// restoreToolboxSettingsWhenPageReady().
+interface IToolboxStateWhenFetched {
+    openToolId: string | undefined;
+    toolboxVisible: boolean;
+}
+
+function captureToolboxStateForRestore(): IToolboxStateWhenFetched {
+    return {
+        openToolId: getToolboxUiState().activeToolId,
+        toolboxVisible: toolbox.toolboxIsShowing(),
+    };
+}
+
+/**
+ * Once the page is ready, makes the toolbox's visibility and open tool match the book's
+ * saved settings -- except where the user got there first.
+ *
+ * We have to wait for the page (CKEditor), and the settings we are applying were read
+ * before that wait. Meanwhile the user can open the toolbox or pick a tool, and the page
+ * itself can require one. Simply applying what we read would undo them: a toolbox just
+ * opened was shut again, and a tool just opened closed back to the tool saved in the book.
+ * A person who clicks that fast simply clicks again, but it lost the e2e tests for Test
+ * Case IDs 830, 441, 442 and 460 often enough that they had to be skipped.
+ *
+ * So each saved fact is imposed only if that fact has not changed since we read it.
+ * Comparing against what we saw at fetch time, rather than re-reading the settings, is
+ * deliberate: every change is saved with a fire-and-forget post, so a later read is not
+ * guaranteed to see one that has just happened.
+ */
+function restoreToolboxSettingsWhenPageReady(
+    settings: IToolboxSettings,
+    stateWhenFetched: IToolboxStateWhenFetched,
+) {
     doWhenPageReady(() => {
         // OK, CKEditor is done (or page doesn't use it), we can finally do the real initialization.
         const opts = settings;
@@ -711,7 +752,10 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         const currentTool = opts["current"] || kTalkingBookToolId;
         const shouldBeVisible = !!opts["visibility"];
 
-        if (toolbox.toolboxIsShowing() !== shouldBeVisible) {
+        const isVisibleNow = toolbox.toolboxIsShowing();
+        const somebodyChangedVisibility =
+            isVisibleNow !== stateWhenFetched.toolboxVisible;
+        if (!somebodyChangedVisibility && isVisibleNow !== shouldBeVisible) {
             toolbox.toggleToolbox();
         }
         syncToolboxVisibilityFromDom();
@@ -721,11 +765,15 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         // tool's lifecycle, however many of these facts actually changed.
         notePageReady();
 
-        // Before we set stage/level, as it initializes them to 1.
-        // Forget what we last persisted first, so that this book records its own current
-        // tool even if the book before it was using the same one.
-        lastPersistedToolId = undefined;
-        setCurrentTool(currentTool);
+        const somebodyChoseATool =
+            getToolboxUiState().activeToolId !== stateWhenFetched.openToolId;
+        if (!somebodyChoseATool) {
+            // Before we set stage/level, as it initializes them to 1.
+            // Forget what we last persisted first, so that this book records its own current
+            // tool even if the book before it was using the same one.
+            lastPersistedToolId = undefined;
+            setCurrentTool(currentTool);
+        }
 
         // Note: the bulk of restoring the settings (everything but which if any tool is active)
         // is done when a tool becomes current.
