@@ -47,17 +47,14 @@ export function useAdvancedPage(props: {
 
     return (
         <ConfigrPage label={label} pageKey="advanced" topLevel={true}>
-            {/* Automatic updating is a setting of Bloom on this computer, not of the collection,
-                and only some platforms support it. */}
-            {props.settings?.autoUpdateSupported && (
-                <ConfigrGroup label={programLabel}>
-                    <ConfigrBoolean
-                        label={autoUpdateLabel}
-                        description={autoUpdateDescription}
-                        path="advanced.autoUpdate"
-                    />
-                </ConfigrGroup>
-            )}
+            {/* Automatic updating is a setting of Bloom on this computer, not of the collection. */}
+            <ConfigrGroup label={programLabel}>
+                <ConfigrBoolean
+                    label={autoUpdateLabel}
+                    description={autoUpdateDescription}
+                    path="advanced.autoUpdate"
+                />
+            </ConfigrGroup>
             <ConfigrGroup label={collectionLabel}>
                 {/* A Team Collection may not be renamed. */}
                 <div

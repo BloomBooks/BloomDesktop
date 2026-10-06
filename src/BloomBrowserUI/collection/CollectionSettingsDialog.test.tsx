@@ -49,7 +49,6 @@ const settingsResponse: ICollectionSettingsResponse = {
     values: initialValues,
     restartPaths: ["frontBackMatter.xmatter", "languages.language3.tag"],
     isTeamCollection: false,
-    autoUpdateSupported: true,
     notAllowedMessage: null,
 };
 
@@ -214,8 +213,7 @@ vi.mock("@sillsdev/config-r", () => ({
     ),
     ConfigrPage: (props: React.PropsWithChildren<{ pageKey: string }>) => {
         // The real ConfigrPage throws (and blanks the whole UI) unless every child is a group.
-        // Like it, look only at what toArray keeps, so a group left out with `&&` is fine.
-        React.Children.toArray(props.children).forEach((child) => {
+        React.Children.forEach(props.children, (child) => {
             if (
                 !React.isValidElement(child) ||
                 child.type !== MockConfigrGroup
@@ -627,26 +625,12 @@ describe("CollectionSettingsDialog", () => {
             return box;
         };
 
-        it("offers automatic updating where Bloom supports it", async () => {
-            expect(settingsResponse.autoUpdateSupported).toBe(true);
-
+        it("offers automatic updating", async () => {
             await renderDialog();
 
             expect(
                 advancedPageElement('[data-path="advanced.autoUpdate"]'),
             ).not.toBeNull();
-        });
-
-        it("leaves out automatic updating where Bloom does not support it", async () => {
-            respondWith({ ...settingsResponse, autoUpdateSupported: false });
-
-            await renderDialog();
-
-            expect(
-                advancedPageElement('[data-path="advanced.autoUpdate"]'),
-            ).toBeNull();
-            // The rest of the page is still there.
-            expect(collectionNameBox().disabled).toBe(false);
         });
 
         it("lets the user rename a collection that is not a Team Collection", async () => {

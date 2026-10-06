@@ -60,8 +60,6 @@ export interface ICollectionSettingsResponse {
     restartPaths: string[];
     // Whether the open collection is a Team Collection, even if disconnected.
     isTeamCollection: boolean;
-    // Whether Bloom can update itself on this platform; if not, Advanced hides that option.
-    autoUpdateSupported: boolean;
     // Non-null when the user may not edit the settings (a Team Collection member who is not an
     // administrator). Then the other fields are null.
     notAllowedMessage: string | null;
