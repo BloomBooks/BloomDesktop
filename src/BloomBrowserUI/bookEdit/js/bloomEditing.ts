@@ -53,6 +53,7 @@ import {
     doWhenWorkspaceBundleLoaded,
     getToolboxBundleExports,
 } from "./workspaceFrames";
+import { handleUndo } from "../undo/pageUndo";
 import { showInvisibles, hideInvisibles } from "./showInvisibles";
 
 //promise may be needed to run tests with phantomjs
@@ -79,7 +80,6 @@ import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
 import { initChoiceWidgetsForEditing } from "./simpleComprehensionQuiz";
-import { handleUndo } from "../workspaceRoot";
 import { setupPageLayoutMenu } from "../toolbox/canvas/customXmatterPage";
 import { setupTextContextMenu } from "../textContextMenu/TextContextMenu";
 import { resetAbovePageControls } from "./AbovePageControls";
@@ -1693,6 +1693,7 @@ export function topBarButtonClick(button: { command: string }) {
             cutSelection();
             break;
         case "undo":
+            // The one undo stack lives in this, the page frame (undo/pageUndo.ts).
             handleUndo();
             break;
         // We don't handle paste this way. We need code on the C# side to decide if we have
