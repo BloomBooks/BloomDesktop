@@ -581,6 +581,36 @@ describe("CollectionSettingsDialog", () => {
         });
     });
 
+    it("lets the user remove a leading space the collection name already has", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        // Any edit of the name; the posted name is then trimmed.
+        click("pad-collection-name");
+        await flushDeferredChange();
+        expect(okButtonLabel()).toBe("Restart");
+        click("dialog-ok");
+
+        expect(
+            mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+        ).toBe("Spaced Books");
+        expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
     describe("Advanced page", () => {
         const advancedPageElement = (selector: string) =>
             container.querySelector(
