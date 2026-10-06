@@ -91,14 +91,15 @@ describe("getTextContextMenuContent", () => {
         // which has nothing to act on, is not offered.
         expect(content!.paragraph).toBeUndefined();
         // The standard image menu (same registry as the canvas element menu, filtered by
-        // the normal availability rules), then a divider and Delete.
+        // the normal availability rules), with Rotate and Flip left out, then a divider and Delete.
         expect(l10nIdsOf(content)).toEqual([
             "EditTab.Image.EditMetadataOverlay",
             "EditTab.Image.ChooseImage",
             "EditTab.Image.CopyImage",
             "EditTab.Image.PasteImage",
-            "EditTab.Image.Reset",
+            "-",
             "EditTab.Image.Transparency",
+            "EditTab.Image.Reset",
             "-",
             "Common.Delete",
         ]);
