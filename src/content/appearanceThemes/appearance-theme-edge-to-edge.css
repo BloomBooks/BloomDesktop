@@ -2,8 +2,14 @@
 Front and back matter keep a small margin for readability.
 Page-number visibility comes from appearance.json, not from this theme file. */
 
+/* The Ebook/Device selectors match the specificity of the default theme's
+   .bloom-page[class*="Ebook"] margin rule, which would otherwise win on those sizes. */
 .bloom-frontMatter,
-.bloom-backMatter {
+.bloom-backMatter,
+[class*="Ebook"].bloom-frontMatter,
+[class*="Ebook"].bloom-backMatter,
+[class*="Device"].bloom-frontMatter,
+[class*="Device"].bloom-backMatter {
     --page-margin: 3mm;
 }
 
@@ -115,6 +121,22 @@ Landscape layouts have additional overrides below for picture-side placement. */
 .numberedPage:not(.bloom-interactive-page) {
     /* Keep the format button clear of the page-number badge in lower-left text layouts. */
     --formatButton-pageNumber-dodge: 20px;
+}
+
+.Ebook2x3Portrait.numberedPage:not(.bloom-interactive-page),
+.Device16x9Portrait.numberedPage:not(.bloom-interactive-page) {
+    /* Portrait Ebook/Device pages leave the page number centered (the default for these
+       page sizes) and reserve 12mm below the text box for it (--pageNumber-extra-height
+       above), so the number sits below the text box wherever it is placed horizontally
+       and the button need not move (BL-14901) */
+    --formatButton-pageNumber-dodge: 0px;
+}
+.Ebook7x5Landscape.numberedPage:not(.bloom-interactive-page),
+.Device16x9Landscape.numberedPage:not(.bloom-interactive-page) {
+    /* how far the format button moves to clear this theme's page number when the user's
+       Page Numbers setting forces the number to the bottom left; editMode.less applies
+       it in that situation whatever the rules below decide (BL-14901) */
+    --formatButton-pageNumber-dodge-when-forced-left: 20px;
 }
 .Ebook7x5Landscape.numberedPage.pictureOnRight.pictureOnRight,
 .Device16x9Landscape.numberedPage.pictureOnRight.pictureOnRight {

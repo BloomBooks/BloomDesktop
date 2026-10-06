@@ -145,10 +145,10 @@ namespace BloomTests.Book
         }
 
         [Test]
-        public void ToCss_ZeroMarginTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
+        public void ToCss_EdgeToEdgeTheme_LeavesPageNumberOutlineDefaultOnPageNotPseudo()
         {
             var appearance = new AppearanceSettings();
-            appearance.CssThemeName = "zero-margin-ebook";
+            appearance.CssThemeName = AppearanceSettings.kEdgeToEdgeThemeName;
 
             var css = appearance.ToCss();
 
