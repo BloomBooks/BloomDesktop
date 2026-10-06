@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { removeEditorChromeFromClone } from "./editorChromeCleanup";
 
-// A clone of the body as it looks once the editor has finished waking up on an xmatter page: the
-// page itself, plus everything CKEditor and qTip added around and inside it. Compare the same page
-// as it sits on disk, which is just the .bloom-page div.
+// A clone of an xmatter page as it looks once the editor has finished waking up on it, with what
+// CKEditor and qTip added inside it. (Their toolbars and bubbles go in the body, outside the page,
+// so they are never in the clone.) Wrapped in a div so the tests can find the page in it.
 function makeClonedBodyWithChrome(): HTMLElement {
-    const body = document.createElement("div"); // stands in for the cloned document.body
+    const body = document.createElement("div");
     body.innerHTML = `
-        <div class="above-page-control-container bloom-ui">Change Layout</div>
         <div class="bloom-page cover" id="p1">
             <div class="marginBox">
                 <div class="bloom-canvas">
@@ -25,12 +24,6 @@ function makeClonedBodyWithChrome(): HTMLElement {
                 </div>
                 <div id="formatButton" class="bloom-ui"></div>
             </div>
-        </div>
-        <div id="cke_editor1" class="cke cke_1 cke_float" style="top: 429px; left: 12px;">
-            <span class="cke_button">Bold</span>
-        </div>
-        <div id="qtip-0" class="qtip qtip-default" style="opacity: 1; top: 51.8438px;">
-            <div class="qtip-content">Book title in Temein</div>
         </div>`;
     return body;
 }
@@ -41,16 +34,12 @@ describe("removeEditorChromeFromClone", () => {
 
         // Sanity check the fixture really is in the "editor is running" state, so that a test
         // which passes because the chrome was never there cannot masquerade as a passing test.
-        expect(body.querySelectorAll(".bloom-ui").length).toBe(3);
-        expect(body.querySelector("#cke_editor1")).not.toBeNull();
-        expect(body.querySelector("div.qtip")).not.toBeNull();
+        expect(body.querySelectorAll(".bloom-ui").length).toBe(2);
         expect(body.querySelector(".ui-resizable-handle")).not.toBeNull();
 
         removeEditorChromeFromClone(body);
 
         expect(body.querySelectorAll(".bloom-ui").length).toBe(0);
-        expect(body.querySelector("#cke_editor1")).toBeNull();
-        expect(body.querySelector("div.qtip")).toBeNull();
         expect(body.querySelector(".ui-resizable-handle")).toBeNull();
         expect(body.querySelector(".cke_widget_wrapper")).toBeNull();
 

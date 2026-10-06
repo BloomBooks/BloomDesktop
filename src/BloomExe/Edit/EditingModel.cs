@@ -236,10 +236,10 @@ namespace Bloom.Edit
                 var endHtml = pageContent.IndexOf("<SPLIT-DATA>", StringComparison.Ordinal);
                 if (endHtml > 0)
                 {
-                    var bodyHtml = pageContent.Substring(0, endHtml);
+                    var pageHtml = pageContent.Substring(0, endHtml);
                     var userCssContent = pageContent.Substring(endHtml + "<SPLIT-DATA>".Length);
-                    var docFromBrowser = GetCleanCurrentPageFromBodyAndCss(
-                        bodyHtml,
+                    var docFromBrowser = GetCleanCurrentPageFromPageAndCss(
+                        pageHtml,
                         userCssContent
                     );
                     UpdateBookDomFromBrowserPageContent(docFromBrowser);
@@ -248,14 +248,15 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Given the body of the editable page and the CSS for any user-defined styles (from the
+        /// Given the .bloom-page element of the editable page (the browser sends nothing else; we wrap
+        /// it in a trivial body to make a document) and the CSS for any user-defined styles (from the
         /// editable page browser), this method creates a new SafeXmlDocument that contains the same state.
         /// The editor's chrome has already been stripped, in the browser, from the clone it
         /// gathered (see editorChromeCleanup.ts); the rest of the cleanup happens in
         /// HtmlDom.ProcessPageAfterEditing.
         /// </summary>
-        internal static SafeXmlDocument GetCleanCurrentPageFromBodyAndCss(
-            string bodyHtml,
+        internal static SafeXmlDocument GetCleanCurrentPageFromPageAndCss(
+            string pageHtml,
             string userCssContent
         )
         {
@@ -263,12 +264,12 @@ namespace Bloom.Edit
             // The process of saving the page content to the DOM should either succeed or throw, so that
             // we don't get stuck in an invalid state that locks up the UI.
 
-            if (string.IsNullOrEmpty(bodyHtml))
-                throw new ApplicationException("Got an empty body while trying to save page");
+            if (string.IsNullOrEmpty(pageHtml))
+                throw new ApplicationException("Got an empty page while trying to save page");
 
             SafeXmlDocument dom;
 
-            var htmlDoc = XmlHtmlConverter.CreateHtmlString(bodyHtml);
+            var htmlDoc = XmlHtmlConverter.CreateHtmlString(pageHtml);
             dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlDoc, false);
             var bodyDom = dom.SelectSingleNode("//body");
 
@@ -296,8 +297,8 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Given the combined "body &lt;SPLIT-DATA&gt; userCss" string that the editable-page bundle
-        /// produces (see captureContentForExternalProcessing / requestPageContent in bloomEditing.ts),
+        /// Given the combined "page &lt;SPLIT-DATA&gt; userCss" string that the editable-page bundle
+        /// produces (see captureContentForExternalProcessing / getPageContentForSaveWhenReady in bloomEditing.ts),
         /// build the edited-page HtmlDom ready to hand to Book.SavePage / Book.UpdateDomFromEditedPage.
         /// This is the same parsing the live editor does in UpdateBookDomFromBrowserPageContent(string),
         /// factored out so the off-screen book processor (external/process-book) can reuse it without
@@ -312,9 +313,9 @@ namespace Bloom.Edit
                 throw new ApplicationException(
                     "page content was missing the <SPLIT-DATA> delimiter"
                 );
-            var bodyHtml = pageContent.Substring(0, endHtml);
+            var pageHtml = pageContent.Substring(0, endHtml);
             var userCssContent = pageContent.Substring(endHtml + "<SPLIT-DATA>".Length);
-            return new HtmlDom(GetCleanCurrentPageFromBodyAndCss(bodyHtml, userCssContent));
+            return new HtmlDom(GetCleanCurrentPageFromPageAndCss(pageHtml, userCssContent));
         }
 
         private static void SaveCustomizedCssRules(SafeXmlDocument dom, string userCssContent)

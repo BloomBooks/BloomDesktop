@@ -2517,7 +2517,7 @@ export class CanvasElementManager {
         );
     }
 
-    // Put into 'cloneOfBody', a detached copy of the live document.body, what
+    // Put into 'clonedPage', a detached copy of the live .bloom-page, what
     // turnOffCanvasElementEditing() would put into the page, leaving the live page still editable.
     // Only three of the things that method does affect what gets saved:
     //  * Comical's editing <canvas> becomes the <svg> that draws the bubbles without Javascript.
@@ -2526,14 +2526,14 @@ export class CanvasElementManager {
     //    reads and writes attributes, so it works on a clone, which has no layout.
     //  * The bloom-focusedCanvasElement class comes off; it is not bloom-ui, so C# would keep it.
     // The rest (control frame, image editing buttons, listeners) is bloom-ui or live-only.
-    public prepareCloneOfBodyForSave(cloneOfBody: HTMLElement): void {
+    public prepareCloneOfPageForSave(clonedPage: HTMLElement): void {
         const liveBloomCanvases = this.getAllBloomCanvasesOnPage();
         const clonedBloomCanvases = Array.from(
-            cloneOfBody.getElementsByClassName(kBloomCanvasClass),
+            clonedPage.getElementsByClassName(kBloomCanvasClass),
         ) as HTMLElement[];
         if (liveBloomCanvases.length !== clonedBloomCanvases.length) {
             throw new Error(
-                `prepareCloneOfBodyForSave(): the clone has ${clonedBloomCanvases.length} bloom-canvases but the live page has ${liveBloomCanvases.length}. The clone must be an untouched copy of the live page.`,
+                `prepareCloneOfPageForSave(): the clone has ${clonedBloomCanvases.length} bloom-canvases but the live page has ${liveBloomCanvases.length}. The clone must be an untouched copy of the live page.`,
             );
         }
 
@@ -2551,7 +2551,7 @@ export class CanvasElementManager {
         );
 
         Array.from(
-            cloneOfBody.getElementsByClassName("bloom-focusedCanvasElement"),
+            clonedPage.getElementsByClassName("bloom-focusedCanvasElement"),
         ).forEach((element) =>
             element.classList.remove("bloom-focusedCanvasElement"),
         );

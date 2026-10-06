@@ -1,37 +1,27 @@
-// Strip, from a CLONE of the editing page, the chrome that only exists because the page is being
-// edited -- so that what we hand C# is the page, not the editor.
+// Strip, from a CLONE of the .bloom-page element, the chrome that only exists because the page is
+// being edited -- so that what we hand C# is the page, not the editor.
 //
 // This is the one place the editor's chrome is removed before saving; C#
 // (HtmlDom.ProcessPageAfterEditing) relies on it. Doing it here also keeps chrome out of what the
 // page snapshot compares and sends (see pageSnapshot.ts), where it would make untouched pages look
 // edited and cause a save on the way out.
 //
-// Besides the chrome itself (CKEditor's toolbars and qTip's bubbles, which are big and whose inline
-// styles change while they animate; bloom-ui elements; cke_ classes), qTip's bookkeeping attributes
-// churn between runs: the number in "qtip-0" depends on the order bubbles happen to be created.
-// Books saved in the past may still contain them.
+// CKEditor's toolbars and qTip's bubbles are appended to the body, outside the page, so they never
+// reach the clone. What is inside it: bloom-ui elements, resize handles, cke_ classes, and qTip's
+// bookkeeping attributes, which churn between runs (the number in "qtip-0" depends on the order
+// bubbles happen to be created). Books saved in the past may still contain those attributes.
 //
-// Nothing here may touch the live page; the caller passes a detached deep copy of document.body.
-export function removeEditorChromeFromClone(cloneOfBody: HTMLElement) {
+// Nothing here may touch the live page; the caller passes a detached deep copy of it.
+export function removeEditorChromeFromClone(clonedPage: HTMLElement) {
     for (const element of Array.from(
-        cloneOfBody.querySelectorAll(".bloom-ui, .ui-resizable-handle"),
-    )) {
-        element.remove();
-    }
-
-    // CKEditor’s floating toolbars and qTip’s bubbles. Matching CKEditor by the "cke" class
-    // rather than the id, because ids beginning "cke_" are also used for bookmark spans INSIDE the
-    // text, which must not be removed here. bloomQtipUtils.cleanupBubbles() removes the same
-    // div.qtip elements from the live page.
-    for (const element of Array.from(
-        cloneOfBody.querySelectorAll(".cke, div.qtip"),
+        clonedPage.querySelectorAll(".bloom-ui, .ui-resizable-handle"),
     )) {
         element.remove();
     }
 
     // Only qtip-* values, so that an aria-describedby someone put there on purpose survives.
     for (const element of Array.from(
-        cloneOfBody.querySelectorAll(
+        clonedPage.querySelectorAll(
             "[aria-describedby], [data-hasqtip], [ariasecondary-describedby]",
         ),
     )) {
@@ -51,14 +41,14 @@ export function removeEditorChromeFromClone(cloneOfBody: HTMLElement) {
     // redraw, so any page with a bubble would look edited on every visit. Safe to drop: nothing
     // references them (no url(#...) or href="#..."), and they are not even unique.
     for (const element of Array.from(
-        cloneOfBody.querySelectorAll("svg.comical-generated [id]"),
+        clonedPage.querySelectorAll("svg.comical-generated [id]"),
     )) {
         element.removeAttribute("id");
     }
 
     // The classes CKEditor adds to each editable it attaches to (cke_editable, cke_focus, ...).
     for (const element of Array.from(
-        cloneOfBody.querySelectorAll("[class*='cke_']"),
+        clonedPage.querySelectorAll("[class*='cke_']"),
     )) {
         const kept = Array.from(element.classList).filter(
             (c) => !c.startsWith("cke_"),

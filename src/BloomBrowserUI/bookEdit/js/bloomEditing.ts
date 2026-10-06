@@ -1354,26 +1354,23 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// Take the editing-only markup out of 'cloneOfBody', the detached copy we are about to save.
-function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
+// Take the editing-only markup out of 'clonedPage', the detached copy we are about to save.
+function removeEditingDebrisFromClone(clonedPage: HTMLElement) {
     // We are mirroring the Change Layout mode toggle behavior here, in case the user saves
     // while the Change Layout mode toggle is on.
     // The DOM here is for just one page, so there's only ever one marginBox.
-    const marginBox = cloneOfBody.getElementsByClassName("marginBox")[0];
+    const marginBox = clonedPage.getElementsByClassName("marginBox")[0];
     marginBox.classList.remove("origami-layout-mode");
     for (const textLabel of Array.from(
         marginBox.getElementsByClassName("textBox-identifier"),
     )) {
         textLabel.remove();
     }
-    // The hidden scratch element measureText.ts appends to the body while fitting text (a timer
-    // removes it). It is often present just after typing, which is when snapshots are taken.
-    cloneOfBody.querySelector("#measureTextDiv")?.remove();
-    removeTransientVideoTimestampParams(cloneOfBody);
-    removeEditorChromeFromClone(cloneOfBody);
+    removeTransientVideoTimestampParams(clonedPage);
+    removeEditorChromeFromClone(clonedPage);
 }
 
-// Return the page body + user stylesheet combined with the <SPLIT-DATA> delimiter that C# splits
+// Return the page element + user stylesheet combined with the <SPLIT-DATA> delimiter that C# splits
 // on. Shared by the live editor's gathers (getPageContentForSaveWhenReady) and the off-screen
 // capture path (captureContentForExternalProcessing), so the cleanup steps and the delimiter can't
 // drift between them.
@@ -1383,7 +1380,7 @@ function removeEditingDebrisFromClone(cloneOfBody: HTMLElement) {
 // asynchronous work that belongs in it is still running. It is also deliberately synchronous, so
 // that no other event handler can run part way through capturing the page.
 function getPageContentForSave(): string {
-    const content = getBodyContentForSavePage();
+    const content = getPageHtmlForSave();
     const userStylesheet = userStylesheetContent();
     // (We tossed up whether to use a JSON object instead of a delimiter, but combining two strings is
     // simpler: HTML needs escaping to live in JSON, which we'd then have to undo in C#.)
@@ -1413,16 +1410,22 @@ export async function saveChangesAndRethinkPage(): Promise<void> {
     await postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
 }
 
-// Produce the HTML of the current page as it should be saved. All the cleanup is done on a CLONE
-// of the body, so the live page is untouched and stays editable without a reload (BL-13502).
+// Produce the HTML of the .bloom-page element as it should be saved. All the cleanup is done on a
+// CLONE, so the live page is untouched and stays editable without a reload (BL-13502).
 //
 // Caution: We don't want this to become an async method because we don't want any other event
 // handlers running between cleaning up the page and getting the content to save. (Or think hard
 // before changing that.)
-function getBodyContentForSavePage() {
-    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(document.body)) {
+function getPageHtmlForSave() {
+    const livePage = document.querySelector<HTMLElement>(".bloom-page");
+    if (!livePage) {
         throw new Error(
-            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120",
+            "getPageHtmlForSave(): there is no .bloom-page to save.",
+        );
+    }
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(livePage)) {
+        throw new Error(
+            "getPageHtmlForSave(): The page had origami when it loaded, but it doesn't now (check before cleanup). BL-13120",
         );
     }
 
@@ -1430,28 +1433,34 @@ function getBodyContentForSavePage() {
     // box they are typing in on every snapshot. CKEditor's getData() gives the up-to-date text
     // without a blur.
 
-    const cloneOfBody = document.body.cloneNode(true) as HTMLElement;
-    cleanCloneOfBodyForSave(cloneOfBody);
+    // Only the page element is saved (C# keeps nothing else), so only it is copied and cleaned.
+    // Everything the editor puts outside it -- CKEditor's toolbars, qTip's bubbles, menus, scratch
+    // elements -- never reaches C# at all.
+    const clonedPage = livePage.cloneNode(true) as HTMLElement;
+    cleanCloneOfPageForSave(livePage, clonedPage);
 
-    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(cloneOfBody)) {
+    if (hadOrigamiWhenWeLoadedThePage && !hasOrigami(clonedPage)) {
         throw new Error(
-            "getBodyContentForSavePage(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120",
+            "getPageHtmlForSave(): The page had origami when it loaded, but it doesn't now (check after cleanup). BL-13120",
         );
     }
 
-    return cloneOfBody.innerHTML;
+    return clonedPage.outerHTML;
 }
 
-// Do all the "strip the editing markup" work on 'cloneOfBody', a detached deep copy of the live
-// document.body. Nothing here may touch the live page.
-function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
+// Do all the "strip the editing markup" work on 'clonedPage', a detached deep copy of 'livePage'.
+// Nothing here may touch the live page.
+function cleanCloneOfPageForSave(
+    livePage: HTMLElement,
+    clonedPage: HTMLElement,
+) {
     // Record how much of the page each image slot covers, measured on the live page (the clone
     // has no layout) and written into the clone. That is the only record of it: the saved HTML
     // otherwise says nothing about how big anything ends up on screen, so without this the AI
     // image editor could not tell what size an image on any page but the open one ought to be.
     // Never throws out: a missing size hint must not cost the user their page.
     try {
-        recordFractionOfPageOnImageSlots(document.body, cloneOfBody);
+        recordFractionOfPageOnImageSlots(livePage, clonedPage);
     } catch (e) {
         console.error("recordFractionOfPageOnImageSlots failed: ", e);
     }
@@ -1463,7 +1472,7 @@ function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
     // tool markup included, so the tools must clean the text CKEditor gave us. Otherwise a tool
     // whose cleanup reaches inside an editable (today, the Talking Book tool's phrase-delimiter
     // spans and audio highlighting) would have its work overwritten.
-    EditableDivUtils.copyCkEditorDataToClone(document.body, cloneOfBody);
+    EditableDivUtils.copyCkEditorDataToClone(livePage, clonedPage);
 
     // The bubble tails Comical draws, and the canvas element state that goes with them. Like
     // CKEditor, Comical can only produce this from the live editing state, so this reads from the
@@ -1473,22 +1482,16 @@ function cleanCloneOfBodyForSave(cloneOfBody: HTMLElement) {
     // data on pages where editing is suspended (the Image Description and Motion tools, a game page
     // in Play mode), whose balloon data a save must leave as it found it.
     if (theOneCanvasElementManager.isCanvasElementEditingOn) {
-        theOneCanvasElementManager.prepareCloneOfBodyForSave(cloneOfBody);
+        theOneCanvasElementManager.prepareCloneOfPageForSave(clonedPage);
     }
 
     // The toolbox is in a separate iframe, hence the call to getToolboxBundleExports(). (Off-screen,
     // e.g. process-book, there is no toolbox iframe, so this is a no-op there.)
-    const clonedPage = cloneOfBody.getElementsByClassName(
-        "bloom-page",
-    )[0] as HTMLElement;
-    if (clonedPage) {
-        getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
-    }
+    getToolboxBundleExports()?.removeToolMarkupFromPageClone(clonedPage);
 
-    // Takes the whole body, since niceScroll's rails may be outside the page div.
-    removeNiceScrollArtifacts(cloneOfBody);
+    removeNiceScrollArtifacts(clonedPage);
 
-    removeEditingDebrisFromClone(cloneOfBody);
+    removeEditingDebrisFromClone(clonedPage);
 }
 
 // Resize each text canvas element (bloom-canvas-element) to fit its content -- growing or shrinking

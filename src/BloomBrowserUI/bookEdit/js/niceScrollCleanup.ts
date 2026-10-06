@@ -22,8 +22,8 @@ const kVerticalAlignClassesRemovedForNiceScroll = [
  * There are three kinds of leftovers:
  *
  * 1. The .nicescroll-rails divs (each containing a .nicescroll-cursors div). niceScroll appends
- *    them to the nearest positioned or scrollable ancestor (e.g. an origami split-pane component),
- *    falling back to the body; we are given the whole body, so we catch them either way.
+ *    them to the nearest positioned or scrollable ancestor, which can be inside the page (e.g. an
+ *    origami split-pane component). Rails appended to the body are outside the page, so never saved.
  *
  * 2. Classes addScrollbarsToPage() changed, because niceScroll does not work with the display:flex
  *    of vertical alignment: bloom-vertical-align-center/-bottom moved aside to a "-removed" marker
