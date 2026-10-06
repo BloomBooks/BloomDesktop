@@ -553,6 +553,34 @@ describe("CollectionSettingsDialog", () => {
         });
     });
 
+    it("does not rename a collection whose name already has a leading space when it saves", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+        expect(okButtonLabel()).toBe("OK");
+
+        click("dialog-ok");
+
+        // The name goes back exactly as it was, so C# sees no rename.
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: spacedValues,
+            restartRequired: false,
+        });
+    });
+
     describe("Advanced page", () => {
         const advancedPageElement = (selector: string) =>
             container.querySelector(
