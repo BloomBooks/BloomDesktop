@@ -10,7 +10,7 @@ import $ from "jquery";
 import { DirectoryWatcher } from "./directoryWatcher";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 import "./libSynphony/jquery.text-markup";
-import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
+import { visibleTextOfHtmlString } from "./libSynphony/jquery.text-markup";
 import "./jquery.div-columns";
 import { ReaderStage, ReaderLevel } from "./ReaderSettings";
 import * as _ from "underscore";
@@ -33,11 +33,15 @@ import {
     postString,
 } from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
-import { theOneReaderHighlightManager } from "./readerHighlights";
+import {
+    mapReaderText,
+    theOneReaderHighlightManager,
+} from "./readerHighlights";
 import {
     allPromiseSettled,
     setTimeoutPromise,
 } from "../../../utils/asyncUtils";
+import { isToolboxUiReady } from "../toolboxReactAdapter";
 
 const SortType = {
     alphabetic: "alphabetic",
@@ -970,13 +974,15 @@ export class ReaderToolsModel {
         this.bookStatistics = {};
         this.bookStatsReady = false;
         const pageStrings = _.values(this.pageIDToText).map((x) =>
-            removeAllHtmlMarkupFromString(x),
+            visibleTextOfHtmlString(x),
         );
 
         const pageElementsToCheck = this.getElementsToCheck();
         const pageText = pageElementsToCheck
             .toArray()
-            .map((x) => x.innerText) // this has newlines between paragraph content, text has none
+            // The same snapshot the on-page marking and the other statistics use, so every
+            // number the tool reports is derived from one idea of what the text is.
+            .map((x) => mapReaderText(x).text)
             .join(" ");
 
         const sentences = theOneLibSynphony
@@ -1563,14 +1569,14 @@ export class ReaderToolsModel {
         return dataWords;
     }
 
+    /**
+     * Persists the decodable-reader stage/sort and the leveled-reader level in the book.
+     * Does nothing until the toolbox UI exists: before that (and in unit tests, where it
+     * never does) there is no user-chosen state worth saving, and saving would overwrite
+     * the book's real settings with defaults.
+     */
     public saveState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
-
-        // this is also needed for unit testing
-        const active = toolbox.accordion("option", "active");
-        if (isNaN(active)) return;
+        if (!isToolboxUiReady()) return;
 
         postString(
             "editView/saveToolboxSetting",
@@ -1586,10 +1592,12 @@ export class ReaderToolsModel {
         );
     }
 
+    /**
+     * Restores the stage/level the book was last using. Like saveState(), does nothing
+     * until the toolbox UI exists (in particular, in unit tests).
+     */
     public restoreState(): void {
-        // this is needed for unit testing
-        const toolbox = $("#toolbox");
-        if (typeof toolbox.accordion !== "function") return;
+        if (!isToolboxUiReady()) return;
 
         const state = new DRTState();
 
