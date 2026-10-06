@@ -35,18 +35,13 @@ function makeCroppedPicture(): {
     };
 }
 
-// The state an undo hands back: what both boxes were before the picture was replaced.
+// The img's box before the picture was replaced, which an undo hands back. (The undo manager
+// puts the canvas element's box back itself, before it calls updateCanvasElementForChangedImage.)
 const cropInfoOfCroppedPicture = {
     width: "150px",
     height: "120px",
     left: "-25px",
     top: "-30px",
-    canvasElement: {
-        width: "100px",
-        height: "80px",
-        left: "10px",
-        top: "20px",
-    },
 };
 
 describe("updateCanvasElementForChangedImage", () => {
@@ -54,19 +49,13 @@ describe("updateCanvasElementForChangedImage", () => {
     // manager, which refuses to be initialized twice.
     const manager = new CanvasElementManager();
 
-    test("an undo puts both the image's box and the canvas element's back", () => {
+    test("an undo puts the image's box back and keeps the canvas element's", () => {
         const { canvasElement, img } = makeCroppedPicture();
-        // Replacing the picture reshaped both boxes to suit the new one. Sanity check that
-        // they really do differ from what we are about to restore.
-        canvasElement.style.width = "200px";
-        canvasElement.style.height = "50px";
-        canvasElement.style.left = "0px";
-        canvasElement.style.top = "35px";
+        // Replacing the picture dropped the img's cropping. Sanity check that it really
+        // differs from what we are about to restore.
         img.style.width = "";
         img.style.left = "";
-        expect(canvasElement.style.width).not.toBe(
-            cropInfoOfCroppedPicture.canvasElement.width,
-        );
+        expect(img.style.width).not.toBe(cropInfoOfCroppedPicture.width);
 
         manager.updateCanvasElementForChangedImage(
             img,
@@ -84,14 +73,13 @@ describe("updateCanvasElementForChangedImage", () => {
     });
 
     // The case the AI Image Editor produces: the picture on a page is normally the
-    // background image of its bloom-canvas, and that path used to be the only one that put
-    // any cropping back at all. Even it put back only the img's box (BL-16868).
-    test("an undo of a background image puts both boxes back too", () => {
+    // background image of its bloom-canvas.
+    test("an undo of a background image keeps its cropping too", () => {
         const { canvasElement, img } = makeCroppedPicture();
         canvasElement.classList.add("bloom-backgroundImage");
-        canvasElement.style.width = "200px";
-        canvasElement.style.height = "50px";
         img.style.width = "";
+        img.style.left = "";
+        expect(img.style.width).toBe(""); // sanity check before the undo
 
         manager.updateCanvasElementForChangedImage(
             img,
@@ -108,7 +96,7 @@ describe("updateCanvasElementForChangedImage", () => {
     // told "this is not a new image" — that would also switch off the wait for the restored
     // src to load, leaving the sizing code reading the outgoing picture's dimensions.
     test("an undo of an uncropped picture puts no cropping back", () => {
-        const { canvasElement, img } = makeCroppedPicture();
+        const { img } = makeCroppedPicture();
         // The replacement cropped it; the undo takes it back to a picture that was not cropped.
         img.style.width = "300px";
         img.style.left = "-60px";
@@ -119,17 +107,10 @@ describe("updateCanvasElementForChangedImage", () => {
             height: "",
             left: "",
             top: "",
-            canvasElement: {
-                width: "100px",
-                height: "80px",
-                left: "10px",
-                top: "20px",
-            },
         });
 
         expect(img.style.width).toBe("");
         expect(img.style.left).toBe("");
-        expect(canvasElement.style.width).toBe("100px");
     });
 
     test("replacing the picture drops the cropping", () => {
