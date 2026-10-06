@@ -446,6 +446,11 @@
       <!-- <source xml:lang="en">Bloom Library Bookshelf</source> -->
       <!-- <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note> -->
       <!-- </trans-unit> -->
+      <trans-unit id="CollectionSettingsDialog.BloomLibraryPage" translate="no">
+        <source xml:lang="en">Bloom Library</source>
+        <target xml:lang="fuc" state="needs-translation">Bloom Library</target>
+        <note>ID: CollectionSettingsDialog.BloomLibraryPage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <target xml:lang="fuc" state="needs-translation">Book Making</target>
@@ -675,6 +680,16 @@
         <target xml:lang="fuc" state="needs-translation">Collection Settings</target>
         <note>ID: CollectionSettingsDialog.Title</note>
       </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.ExperimentalPage" translate="no">
+        <source xml:lang="en">Experimental</source>
+        <target xml:lang="fuc" state="needs-translation">Experimental</target>
+        <note>ID: CollectionSettingsDialog.ExperimentalPage</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.FrontBackMatterPage" translate="no">
+        <source xml:lang="en">Front &amp; Back Matter</source>
+        <target xml:lang="fuc" state="needs-translation">Front &amp; Back Matter</target>
+        <note>ID: CollectionSettingsDialog.FrontBackMatterPage</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.LanguageTab.ChangeLanguageLink">
         <source xml:lang="en">Change...</source>
         <target xml:lang="fuc" state="needs-translation">Change...</target>
@@ -754,6 +769,11 @@
         <source xml:lang="en">Bloom will close and re-open this project with the new settings.</source>
         <target xml:lang="fuc" state="needs-translation">Bloom will close and re-open this project with the new settings.</target>
         <note>ID: CollectionSettingsDialog.RestartMessage</note>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.SubscriptionPage" translate="no">
+        <source xml:lang="en">Subscription</source>
+        <target xml:lang="fuc" state="needs-translation">Subscription</target>
+        <note>ID: CollectionSettingsDialog.SubscriptionPage</note>
       </trans-unit>
       <trans-unit id="CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem">
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
