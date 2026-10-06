@@ -57,10 +57,10 @@ vi.mock("axios", () => {
 // Imported after the mocks above are registered.
 const { ToolboxRoot } = await import("./ToolboxRoot");
 const {
+    getCurrentToolId,
     offerTool,
     resetToolboxUiStateForTests,
     setActiveTool,
-    subscribeToActiveToolChanges,
     withdrawTool,
 } = await import("./toolboxState");
 
@@ -201,19 +201,16 @@ describe("ToolboxRoot", () => {
         ).toBe(talkingBookPanelBefore);
     });
 
-    // Clicking a header is the other way a tool becomes active, and toolbox.ts has to hear
-    // about it (again, BL-16602: it is what makes the tool the current one, which is what
-    // gets it shown).
-    it("reports the tool whose header the user clicks", async () => {
+    // Clicking a header is the other way a tool becomes the open one, and that is what
+    // makes it the running one too (again BL-16602: being current is what gets it shown).
+    it("makes the tool whose header the user clicks the running one", async () => {
         if (!container) {
             throw new Error("render container not initialized");
         }
         await renderWithBaseTools(container);
 
-        const reportedToolIds: string[] = [];
-        const unsubscribe = subscribeToActiveToolChanges((toolId) =>
-            reportedToolIds.push(toolId),
-        );
+        // sanity check: the tool we are about to click is not already the running one
+        expect(getCurrentToolId()).not.toBe("settings");
 
         const settingsHeader = Array.from(
             container.querySelectorAll(".MuiAccordionSummary-root"),
@@ -228,9 +225,7 @@ describe("ToolboxRoot", () => {
             settingsHeader.click();
         });
 
-        expect(reportedToolIds).toEqual(["settings"]);
+        expect(getCurrentToolId()).toBe("settings");
         expect(getExpandedToolId(container)).toBe("settings");
-
-        unsubscribe();
     });
 });

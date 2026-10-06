@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-    clearActiveTool,
     getCurrentToolId,
     getFirstOfferedToolId,
     getPageGeneration,
@@ -13,31 +12,21 @@ import {
     offerTool,
     resetToolboxUiStateForTests,
     setActiveTool,
-    setCurrentToolId,
     setEnabledTools,
     setToolEnabled,
     setToolboxUiMounted,
     setToolboxVisible,
-    subscribeToActiveToolChanges,
     subscribeToToolboxUiState,
     withdrawTool,
 } from "./toolboxState";
 
 // The toolbox's state, tested without React. The behaviour that matters most here is
-// what happens when the active tool is withdrawn (BL-16602); see that describe block.
+// what happens when the open tool is withdrawn (BL-16602); see that describe block.
 
 describe("toolboxState", () => {
     beforeEach(() => {
         resetToolboxUiStateForTests();
     });
-
-    // Records every tool id reported to the active-tool listeners, which is how toolbox.ts
-    // learns which tool it must record as the current (running) one.
-    const recordActiveToolReports = (): string[] => {
-        const reportedToolIds: string[] = [];
-        subscribeToActiveToolChanges((toolId) => reportedToolIds.push(toolId));
-        return reportedToolIds;
-    };
 
     describe("the tools being offered", () => {
         it("keeps them alphabetical by label, with More... last", () => {
@@ -99,39 +88,25 @@ describe("toolboxState", () => {
         });
     });
 
-    describe("which tool is active", () => {
-        it("reports every tool made active, so toolbox.ts can make it current", () => {
-            const reportedToolIds = recordActiveToolReports();
+    describe("which tool is open", () => {
+        it("makes the open tool the running one", () => {
             offerTool("motion");
 
             setActiveTool("motion");
 
             expect(getToolboxUiState().activeToolId).toBe("motion");
-            expect(reportedToolIds).toEqual(["motion"]);
-        });
-
-        it("clears the active tool without reporting it", () => {
-            const reportedToolIds = recordActiveToolReports();
-            offerTool("motion");
-            setActiveTool("motion");
-
-            clearActiveTool();
-
-            expect(getToolboxUiState().activeToolId).toBeUndefined();
-            // Nothing is reported: these listeners are about a tool *becoming* current.
-            expect(reportedToolIds).toEqual(["motion"]);
-        });
-
-        it("leaves the current tool running when it is closed", () => {
-            offerTool("motion");
-            setActiveTool("motion");
-            setCurrentToolId("motion");
-
-            clearActiveTool();
-
-            // Closing a tool is only how the toolbox looks. The tool goes on
-            // running, as it always has.
             expect(getCurrentToolId()).toBe("motion");
+        });
+
+        it("runs no tool that the toolbox is not offering", () => {
+            // A tool the toolbox isn't offering has nowhere to display itself, so it
+            // cannot be the running one however it came to be the open one. Recording
+            // that as "no current tool" is what lets returning from "More..." to the same
+            // tool activate it again (BL-6720).
+            setActiveTool("motion");
+
+            expect(getToolboxUiState().activeToolId).toBe("motion");
+            expect(getCurrentToolId()).toBeUndefined();
         });
     });
 
@@ -143,11 +118,12 @@ describe("toolboxState", () => {
             expect(getPageGeneration()).toBe(0);
         });
 
-        it("records the current tool, and that there is none", () => {
-            setCurrentToolId("motion");
+        it("has a current tool once one is open, and none again once it goes", () => {
+            offerTool("motion");
+            setActiveTool("motion");
             expect(getCurrentToolId()).toBe("motion");
 
-            setCurrentToolId(undefined);
+            withdrawTool("motion");
             expect(getCurrentToolId()).toBeUndefined();
         });
 
@@ -169,19 +145,20 @@ describe("toolboxState", () => {
         });
     });
 
-    // BL-16602: visiting a game page offers the Game tool and makes it active; leaving the
-    // page withdraws it again. Which tool runs follows from the current tool, and toolbox.ts
-    // learns about activation changes only from the active-tool listeners, so if withdrawing
-    // the active tool doesn't report the replacement, the toolbox goes on believing the
-    // withdrawn tool is current and the tool that replaced it is never shown. That killed
-    // Talking Book's highlighting and audio on leaving a game page.
+    // BL-16602: visiting a game page offers the Game tool and makes it open; leaving the
+    // page withdraws it again. Which tool runs is derived from which one is open and which
+    // are offered, so withdrawing the open tool moves the running tool on its own. When
+    // that had to be reported to toolbox.ts by hand and wasn't, the toolbox went on
+    // believing the withdrawn tool was current and the tool that replaced it was never
+    // shown, which killed Talking Book's highlighting and audio on leaving a game page.
     describe("withdrawing a tool", () => {
-        it("reports the replacement when the withdrawn tool was the active one", () => {
+        it("hands running to the replacement when the withdrawn tool was the open one", () => {
             offerTool("talkingBook");
             offerTool("settings");
             offerTool("game");
             setActiveTool("game");
-            const reportedToolIds = recordActiveToolReports();
+            // sanity check: the Game tool really is the one running before we withdraw it
+            expect(getCurrentToolId()).toBe("game");
 
             withdrawTool("game");
 
@@ -190,15 +167,14 @@ describe("toolboxState", () => {
                 "settings",
             ]);
             expect(getToolboxUiState().activeToolId).toBe("talkingBook");
-            expect(reportedToolIds).toEqual(["talkingBook"]);
+            expect(getCurrentToolId()).toBe("talkingBook");
         });
 
-        it("leaves the active tool alone when some other tool is withdrawn", () => {
+        it("leaves the open tool alone when some other tool is withdrawn", () => {
             offerTool("talkingBook");
             offerTool("settings");
             offerTool("game");
             setActiveTool("talkingBook");
-            const reportedToolIds = recordActiveToolReports();
 
             withdrawTool("game");
 
@@ -207,33 +183,29 @@ describe("toolboxState", () => {
                 "settings",
             ]);
             expect(getToolboxUiState().activeToolId).toBe("talkingBook");
-            expect(reportedToolIds).toEqual([]);
+            expect(getCurrentToolId()).toBe("talkingBook");
         });
 
-        it("clears the active tool, without reporting, when nothing is left", () => {
+        it("leaves nothing open, and nothing running, when nothing is left", () => {
             offerTool("game");
             setActiveTool("game");
-            const reportedToolIds = recordActiveToolReports();
+            expect(getCurrentToolId()).toBe("game");
 
             withdrawTool("game");
 
             expect(getToolboxUiState().offeredToolIds).toEqual([]);
             expect(getToolboxUiState().activeToolId).toBeUndefined();
-            // Deliberately silent: these listeners are about a tool *becoming* current,
-            // and opening a tool later will tell them then.
-            expect(reportedToolIds).toEqual([]);
+            expect(getCurrentToolId()).toBeUndefined();
         });
 
         it("does nothing at all when the tool isn't being offered", () => {
             offerTool("talkingBook");
             setActiveTool("talkingBook");
-            const reportedToolIds = recordActiveToolReports();
             const before = getToolboxUiState();
 
             withdrawTool("game");
 
             expect(getToolboxUiState()).toBe(before);
-            expect(reportedToolIds).toEqual([]);
         });
     });
 
