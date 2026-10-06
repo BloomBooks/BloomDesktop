@@ -631,7 +631,7 @@ const inlineImageControlConfiguration: ICanvasElementControlConfiguration = {
     // Not really a canvas element, but "image" is the truth about what the commands act on,
     // and nothing in menu resolution consults the type.
     type: "image",
-    menuSections: ["image"],
+    menuSections: ["image", "imageArrangement"],
     // The same toolbar an image on a canvas gets (imageCanvasElementControls), so that a
     // picture offers the same buttons wherever the user meets one. "expandToFillSpace" needs
     // no exclusion here: its own rule already limits it to background images.
@@ -653,6 +653,11 @@ const inlineImageControlConfiguration: ICanvasElementControlConfiguration = {
         // Duplicating means duplicating a canvas element, which this is not. Adding a second
         // picture to the block is Add Image on the text's own menu.
         duplicate: "exclude",
+        // Rotate and flip act on the canvas element manager's active element, and an inline
+        // image is not one. (Reset Image acts there too, but it is enabled only for a cropped,
+        // rotated or flipped picture, which an inline image never is.)
+        rotateRight: "exclude",
+        flipImage: "exclude",
     },
 };
 
