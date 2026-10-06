@@ -65,7 +65,7 @@ namespace BloomTests.Book
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Bloom",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -75,7 +75,7 @@ namespace BloomTests.Book
                 "Palaso",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/Palaso",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -4429,6 +4429,21 @@ namespace BloomTests.Book
                     "//div[contains(@class,'bloom-page') and @data-custom-layout-id='customOutsideFrontCover' and @data-xmatter-page='frontCover' and @data-someattribute='someValue']",
                     1
                 );
+        }
+
+        [Test]
+        public void TrimEnd_EmptyValue_ReturnsSourceInsteadOfLooping()
+        {
+            // The separator TrimEnd is called with is translated, so a translator can supply an
+            // empty one. Every string ends with the empty string, so the loop would never end.
+            var trim = System.Threading.Tasks.Task.Run(() => BookData.TrimEnd("Accra, Ghana", ""));
+
+            Assert.That(
+                trim.Wait(5000),
+                Is.True,
+                "TrimEnd did not return; it is looping on an empty separator"
+            );
+            Assert.That(trim.Result, Is.EqualTo("Accra, Ghana"));
         }
 
         public static CollectionSettings CreateCollection(

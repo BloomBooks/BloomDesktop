@@ -318,7 +318,7 @@ namespace Bloom.WebLibraryIntegration
             const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
             _progressDialog = new ConsoleProgress();
-            if (!url.StartsWith(BloomS3UrlPrefix))
+            if (!url.StartsWith(BloomS3UrlPrefix, StringComparison.Ordinal))
             {
                 Console.WriteLine($"Url unexpectedly does not start with {BloomS3UrlPrefix}");
                 return "";
@@ -386,7 +386,9 @@ namespace Bloom.WebLibraryIntegration
 
         private static bool IsUrlOrder(string argument)
         {
-            return argument.ToLowerInvariant().StartsWith(BloomLinkArgs.kBloomUrlPrefix);
+            return argument
+                .ToLowerInvariant()
+                .StartsWith(BloomLinkArgs.kBloomUrlPrefix, StringComparison.Ordinal);
         }
 
         public string PathToCollectionCreatedForLastDownload { get; private set; }
