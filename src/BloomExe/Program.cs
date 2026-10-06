@@ -2727,9 +2727,6 @@ namespace Bloom
                 {
                     LocalizationManager.FallbackLanguageIds = new[] { "es", "en" };
                 }
-
-                // It's now safe to read the localized strings.  See BL-13245.
-                HtmlErrorReporter.Instance.LocalizeDefaultReportLabel();
             }
             catch (Exception error)
             {
