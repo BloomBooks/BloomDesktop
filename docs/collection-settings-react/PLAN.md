@@ -125,8 +125,7 @@ branding-forced pack), QR Codes (show, caption, and a new live badge preview: C#
 today, so the preview needs an endpoint), Places (Country, Province, District, trimmed in the
 client), Page Numbering Style (Q5). Values for xmatter, QR and places already exist in the model.
 
-**BL-16737 Advanced.** Automatically update Bloom (a user-level setting, shown only where
-supported), Collection Name (disabled in a Team Collection; the model already queues the rename;
+**BL-16737 Advanced.** Automatically update Bloom (a user-level setting), Collection Name (disabled in a Team Collection; the model already queues the rename;
 trim in the client). Its e2e test stops at Restart after a rename, because a rename relaunches
 Bloom without the suite's launch flags (`AUTOMATION-DEBT.md`).
 
