@@ -66,21 +66,31 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
   that forces the late-styles order are written but uncommitted, on branch
   `link-chooser-wait-for-styles` in the `nightly-investigation` worktree. There is no PR yet.
 
-## Toolbox: the late settings restore races the user (and the tests)
+## Toolbox: the late settings restore raced the user (and the tests)
 
 - **Failed:** several nightlies in September in the toolbox and reader-tool specs.
-- **Cause:** `restoreToolboxSettingsWhenPageReady` applies settings it fetched before the page
-  was ready, so it can undo a change made in the meantime. It also re-selects the saved tool.
-- **Status:** seven tests are `test.fixme` (`toolbox-tools.spec.ts`,
-  `reader-tool-stage-and-level.spec.ts`). They must be re-enabled before the BL-16608 rework
-  finishes.
-  - Settings half: [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409), a draft
-    left open while we investigate.
-  - Tool half: left to the toolbox rework,
-    [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)
-    ([PR #8109](https://github.com/BloomBooks/BloomDesktop/pull/8109),
-    [PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427), merged 2026-10-06).
-  - The card has a note about the skipped tests.
+- **Cause:** two late restores, each applying settings read before the page was ready and so
+  undoing whatever had happened since.
+  - `restoreToolboxSettingsWhenPageReady` re-applied the saved toolbox visibility and the
+    saved tool, so a toolbox just opened was shut again and a tool just opened closed back.
+  - `readerToolsModel.restoreState()` seeded the default stage and level over the top of a
+    choice already made. Despite the name it restores nothing: its `DRTState` is all
+    defaults, and the book's real stage comes from the tool's `beginRestoreSettings`. It
+    also passes `skipSave`, so it left nothing recorded -- the stage sprang back to 1 and
+    Bloom never learned the user had chosen 2. This is why the two stage tests were the
+    flakiest of the four.
+- **Status:** fixed, and all seven tests are back on (`toolbox-tools.spec.ts`,
+  `reader-tool-stage-and-level.spec.ts`; Test Case IDs 830, 441, 442, 460). Each restore now
+  leaves alone what was decided after it read its settings.
+  - Landed with the toolbox rework,
+    [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608).
+  - Measured locally against the Vite dev server, five runs of every test in each spec file:
+    3 of 15 failed before the fix, 0 of 40 after. The dev server makes these tests fail more
+    often than CI does, so **watch the first nightlies** rather than treating this as proved.
+  - [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409) (a draft that re-read the
+    settings after the wait) is superseded: re-reading is not reliable, because every change
+    is saved with a fire-and-forget post, so a later read may not see one that has just
+    happened. Measured, it was worse than no fix at all. Close it.
 
 ## Component tests: lost connection to the dev server
 
@@ -98,5 +108,3 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 ## Open questions
 
 - The canvas e2e config has `retries: 1`, which conflicts with the no-flaky-tests rule. Keep it?
-- Notion test-case status for the skipped toolbox tests (830, 441, 442, 460): should they be
-  marked Skipped?
