@@ -96,6 +96,10 @@ export function isValidSampleTextFileType(path: string): boolean {
 export class ReaderToolsModel {
     public stageNumber: number = 1;
     public levelNumber: number = 1;
+    // Has anything told this model which stage or level to show? False only while it is
+    // still sitting on the defaults above. restoreState() uses it to tell a model that
+    // nobody has told anything from one that is already showing a real choice; see there.
+    private hasBeenGivenAPhase = false;
     public synphony: ReadersSynphonyWrapper | undefined; // to ensure detection of async issues, don't init until we load its settings
     public sort: string = SortType.alphabetic;
     public currentMarkupType: number = MarkupType.None;
@@ -202,6 +206,7 @@ export class ReaderToolsModel {
         }
 
         this.stageNumber = stage;
+        this.hasBeenGivenAPhase = true;
         this.updateStageNumberIfNeeded(); // May change the stage number
 
         return setTimeoutPromise(async () => {
@@ -272,6 +277,7 @@ export class ReaderToolsModel {
             return;
         }
         this.levelNumber = val;
+        this.hasBeenGivenAPhase = true;
         this.updateLevelNumberIfNeeded(); // May change the level number
         if (!skipSave) {
             this.saveState();
@@ -1604,6 +1610,18 @@ export class ReaderToolsModel {
         const state = new DRTState();
 
         if (!this.currentMarkupType) this.currentMarkupType = state.markupType;
+
+        if (this.hasBeenGivenAPhase) {
+            // Something has already said which stage and level to show -- the user working
+            // the stepper, or the tool restoring the book's saved state. We run late (the
+            // synphony settings arriving are what bring us here), so seeding the defaults
+            // now would undo that choice, and because we skip saving it would leave nothing
+            // recorded either: the stage sprang back to 1 and Bloom never learned the user
+            // had chosen 2. That is what kept the reader-tool e2e tests (Test Case IDs 441,
+            // 442, 460) failing intermittently.
+            return;
+        }
+
         // when restoring state we do NOT want to save the results; things are presumably unchanged,
         // and saving the state of a new book from a template can override system defaults we have
         // not yet applied to the book.
