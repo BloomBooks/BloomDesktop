@@ -20,16 +20,16 @@ import {
 import {
     getCurrentToolId,
     getFirstOfferedToolId,
+    getToolboxUiState,
     isToolEnabled,
     isToolOffered,
     notePageReady,
     offerTool,
     setActiveTool,
-    setCurrentToolId,
     setEnabledTools,
     setToolEnabled,
     setToolboxVisible,
-    subscribeToActiveToolChanges,
+    subscribeToToolboxUiState,
     withdrawTool,
 } from "./toolboxState";
 import {
@@ -173,8 +173,6 @@ export class ToolBox {
         ) {
             requiredToolId = null;
         }
-        newToolId = requiredToolId || undefined;
-
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
@@ -224,7 +222,7 @@ export class ToolBox {
     public detachCurrentTool(): void {
         this.runTasksForClosingTool();
         const currentTool = getCurrentTool();
-        if (currentTool && isToolInitialized(currentTool)) {
+        if (currentTool && isToolOffered(currentTool.id())) {
             currentTool.detachFromPage();
         }
     }
@@ -266,10 +264,13 @@ export class ToolBox {
 
     // Called from document.ready, initializes the whole toolbox.
     public initialize(): void {
-        // From here on, whenever the user (or we ourselves) make a different tool the
-        // active one, record it as the current tool. This is the only place we subscribe.
-        subscribeToActiveToolChanges((newlyActiveToolId: string) => {
-            switchTool(newlyActiveToolId);
+        // From here on, whenever a different tool becomes the open one, have Bloom
+        // remember it. That is all we do: which tool is *running* follows from the store
+        // itself (see IToolboxUiState.currentToolId), and running it -- restoring its
+        // settings, showing it, telling it the page is ready, detaching and hiding
+        // whatever it replaced -- follows from that; see useToolLifecycle.ts.
+        subscribeToToolboxUiState(() => {
+            persistOpenToolIfItChanged();
         });
 
         // It seems (see BL-5330) that the toolbox code is loaded into the edit document as well as the
@@ -341,14 +342,6 @@ export class ToolBox {
         );
     }
 
-    /**
-     * Is the toolbox currently offering this tool (canonical id)? (Despite the
-     * name, this does not mean the tool is the *current* tool; it never did.)
-     */
-    public isToolActive(toolId: string): boolean {
-        return isToolOffered(toolId);
-    }
-
     // Enables a tool (canonical id) from an in-page action, ensuring the toolbox is visible.
     public enableToolFromPage(toolId: string): void {
         if (!this.toolboxIsShowing()) {
@@ -380,7 +373,7 @@ export class ToolBox {
 
         // The tool may be present without being enabled if it is a
         // required-for-this-page tool (see adjustToolListForPage).
-        if (isToolEnabled(toolId) || this.isToolActive(toolId)) {
+        if (isToolEnabled(toolId) || isToolOffered(toolId)) {
             setCurrentTool(toolId);
         } else {
             // Genuinely disabled: enable it, which persists the state and records it in
@@ -414,9 +407,9 @@ const masterToolList: ITool[] = [];
 
 /**
  * The tool that is currently running, or undefined if none is. This is not a variable of
- * our own: the toolbox state store holds it (see IToolboxUiState.currentToolId), because
- * that is what ToolboxRoot renders from and what runs each tool's lifecycle. switchTool()
- * below is the only thing that sets it.
+ * our own, and nothing sets it: the toolbox state store works it out from which tool is
+ * open and which tools are offered (see IToolboxUiState.currentToolId), because that is
+ * what ToolboxRoot renders from and what runs each tool's lifecycle.
  */
 function getCurrentTool(): ITool | undefined {
     const currentToolId = getCurrentToolId();
@@ -446,7 +439,7 @@ function detachCurrentTool() {
     const currentTool = getCurrentTool();
     if (toolbox) {
         toolbox.detachCurrentTool();
-    } else if (currentTool && isToolInitialized(currentTool)) {
+    } else if (currentTool && isToolOffered(currentTool.id())) {
         // If the toolbox is not available, we still may be able to detach the current tool.
         // This is what we used to do before we had some extra behavior in the toolbox.
         currentTool.detachFromPage();
@@ -462,9 +455,8 @@ function syncToolboxVisibilityFromDom(): void {
     setToolboxVisible(toolbox.toolboxIsShowing());
 }
 
-let newToolId: string | undefined = undefined;
 export function getActiveToolId(): string | undefined {
-    return newToolId ? newToolId : getCurrentTool()?.id();
+    return getCurrentTool()?.id();
 }
 
 // How long, after a tool is turned on in the "More..." tool, we wait
@@ -730,6 +722,9 @@ function restoreToolboxSettingsWhenPageReady(settings: IToolboxSettings) {
         notePageReady();
 
         // Before we set stage/level, as it initializes them to 1.
+        // Forget what we last persisted first, so that this book records its own current
+        // tool even if the book before it was using the same one.
+        lastPersistedToolId = undefined;
         setCurrentTool(currentTool);
 
         // Note: the bulk of restoring the settings (everything but which if any tool is active)
@@ -743,44 +738,32 @@ export function removeToolboxMarkup() {
     detachCurrentTool();
 }
 
+// The tool we last told Bloom to remember. Only a cache, to keep us from re-posting the
+// same setting on every state change; the store remains the one place that says which tool
+// is open. Cleared when a page's saved settings are restored, so that each book writes its
+// setting once even when two books in a row use the same tool.
+let lastPersistedToolId: string | undefined = undefined;
+
 /**
- * Called when the toolbox state reports that a different tool is now the active one.
- * requestedToolId is a canonical tool id (the store only ever holds tools the toolbox is
- * offering, and they were put there by their canonical ids).
+ * Has Bloom remember which tool is open, when that has changed. The book's meta.json has
+ * always stored this with the historical "Tool" suffix.
  *
- * All this does is persist the choice and record which tool is now the running one.
- * Running it -- restoring its settings, showing it, telling it the page is ready, and
- * detaching and hiding whatever it replaced -- follows from that state; see
- * useToolLifecycle.ts.
- *
- * Note: do not name this parameter newToolId; that is the module-level variable this
- * function clears at the end, and shadowing it silently breaks getActiveToolId().
+ * Nothing is persisted for "no tool open": the setting has no way to say that, and opening
+ * a tool later writes it then.
  */
-function switchTool(requestedToolId: string): void {
-    // Have Bloom remember which tool is active. (Might be none.) The book's meta.json
-    // has always stored this with the historical "Tool" suffix. This happens once per
-    // activation because the store only reports a tool *becoming* the active one.
+function persistOpenToolIfItChanged(): void {
+    const openToolId = getToolboxUiState().activeToolId;
+    if (openToolId === lastPersistedToolId) {
+        return;
+    }
+    lastPersistedToolId = openToolId;
+    if (!openToolId) {
+        return;
+    }
     postString(
         "editView/saveToolboxSetting",
-        "current\t" + toPersistedToolName(requestedToolId),
+        "current	" + toPersistedToolName(openToolId),
     );
-    const newTool = requestedToolId
-        ? masterToolList.find((tool) => tool.id() === requestedToolId)
-        : undefined;
-    // A tool the toolbox isn't offering has nowhere to display itself, so it cannot be the
-    // running tool. Recording that as "no current tool", rather than leaving the previous
-    // tool current, is what lets returning from More... to the same tool activate it again.
-    // See https://issues.bloomlibrary.org/youtrack/issue/BL-6720.
-    setCurrentToolId(
-        newTool && isToolInitialized(newTool) ? newTool.id() : undefined,
-    );
-    newToolId = undefined;
-}
-
-// Is the toolbox offering this tool? Only then does it have somewhere to
-// display itself and does it make sense to run its lifecycle methods.
-function isToolInitialized(tool: ITool): boolean {
-    return toolbox.isToolActive(tool.id());
 }
 
 /**
@@ -804,7 +787,7 @@ function setCurrentTool(toolId: string) {
         const tool = masterToolList.find(
             (possibleTool) => possibleTool.id() === toolId,
         );
-        if (tool && !isToolInitialized(tool)) {
+        if (tool && !isToolOffered(tool.id())) {
             // The tool we were asked for isn't in the toolbox (e.g., it was disabled
             // since we saved the setting), so fall back to whatever is first.
             toolId = getFirstOfferedToolId() ?? "";

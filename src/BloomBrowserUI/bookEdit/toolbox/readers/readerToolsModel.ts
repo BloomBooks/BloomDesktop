@@ -1571,9 +1571,11 @@ export class ReaderToolsModel {
 
     /**
      * Persists the decodable-reader stage/sort and the leveled-reader level in the book.
-     * Does nothing until the toolbox UI exists: before that (and in unit tests, where it
-     * never does) there is no user-chosen state worth saving, and saving would overwrite
-     * the book's real settings with defaults.
+     *
+     * Does nothing while there is no toolbox on screen. We are called from wherever the
+     * user changes a stage, level or sort, and those paths also run before the toolbox has
+     * been built, when the values are still defaults rather than anything the user chose;
+     * saving then would overwrite the book's real settings with those defaults.
      */
     public saveState(): void {
         if (!isToolboxUiMounted()) return;
@@ -1594,7 +1596,7 @@ export class ReaderToolsModel {
 
     /**
      * Restores the stage/level the book was last using. Like saveState(), does nothing
-     * until the toolbox UI exists (in particular, in unit tests).
+     * while there is no toolbox on screen.
      */
     public restoreState(): void {
         if (!isToolboxUiMounted()) return;

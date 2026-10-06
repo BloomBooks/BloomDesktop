@@ -1,13 +1,14 @@
 import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
-import { getTheOneToolbox, IToolboxSettings } from "../toolbox";
+import { IToolboxSettings } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
 import { getAudioRecorder, getOrCreateAudioRecorder } from "./audioRecording";
 import * as AudioRecorder from "./audioRecording";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { TalkingBookToolControls } from "./TalkingBookToolControls";
 import { kImageDescriptionToolId, kTalkingBookToolId } from "../toolIds";
+import { isToolOffered } from "../toolboxState";
 // Gets these styles into the toolbox document. (The page frame links the compiled
 // audioRecording.css separately; see the styleSheets list in editablePage.ts.)
 import "./audioRecording.less";
@@ -173,8 +174,8 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         return true;
     }
 
-    private isImageDescriptionToolActive(): boolean {
-        return getTheOneToolbox().isToolActive(kImageDescriptionToolId);
+    private isImageDescriptionToolOffered(): boolean {
+        return isToolOffered(kImageDescriptionToolId);
     }
 
     private showImageDescriptionsIfAny() {
@@ -184,7 +185,7 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         if (!page) {
             return;
         }
-        if (!this.isImageDescriptionToolActive()) {
+        if (!this.isImageDescriptionToolOffered()) {
             getAudioRecorder()?.setShowingImageDescriptions(false);
             return;
         }

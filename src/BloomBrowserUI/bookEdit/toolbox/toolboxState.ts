@@ -1,6 +1,7 @@
-// The state of the toolbox: which tools it is offering, which of them is expanded, which
-// one is current, which tools the book has enabled, whether the toolbox is showing, and
-// which page it is looking at.
+// The state of the toolbox: which tools it is offering, which of them is open, which tools
+// the book has enabled, whether the toolbox is showing, and which page it is looking at.
+// Which tool is *running* is not a fact of its own here: it follows from which one is open
+// and which are offered (see IToolboxUiState.currentToolId).
 //
 // Every tool is a React component, and the toolbox UI is a React component
 // (ToolboxRoot.tsx). The code that decides what goes in here — asking the server which
@@ -44,11 +45,17 @@ export interface IToolboxUiState {
     // The tool that is running: the one that has been told to show itself, that is told
     // when the page changes, and whose updateMarkup() runs as the user types.
     //
-    // Normally this is the open tool, but the two are NOT the same thing. Closing
-    // the open tool (clearActiveTool) leaves its tool current — it stays shown and keeps
-    // marking up the page — which is what the toolbox has always done. Nor does the tool
-    // stop being current when the toolbox is hidden; it just stops running (see
-    // toolboxVisible).
+    // DERIVED, not set: it is the open tool, unless the toolbox has stopped offering that
+    // tool, in which case nothing is running. A tool the toolbox isn't offering has nowhere
+    // to display itself, so it cannot be the running one; recording that as "no current
+    // tool" rather than leaving the previous tool current is what lets returning from
+    // "More..." to the same tool activate it again (BL-6720).
+    //
+    // Keeping this in step with activeToolId by hand is what went wrong in BL-16602, so it
+    // is no longer a field anyone can set: see deriveCurrentToolId().
+    //
+    // Note that the tool does not stop being current when the toolbox is hidden; it just
+    // stops running (see toolboxVisible).
     readonly currentToolId: string | undefined;
     // Is the toolbox sidebar showing? The current tool only runs while it is: hiding the
     // toolbox detaches and hides the tool, and showing it again restores and shows it.
@@ -61,9 +68,15 @@ export interface IToolboxUiState {
     // Note that this is not the same as the tools being offered: tools that are always
     // enabled, and tools a page requires, are offered without being in here.
     readonly enabledToolIds: ReadonlySet<string>;
-    // Has ToolboxRoot mounted? Code that persists or restores toolbox state uses this to
-    // tell "we are running in the real toolbox" from "we are running in a unit test (or
-    // too early in startup) where there is no toolbox UI and nothing should be saved".
+    // Has ToolboxRoot mounted, i.e. is there a toolbox on screen at all? False before it
+    // mounts and after it unmounts.
+    //
+    // It is read by code that persists or restores a tool's settings, which must not run
+    // while there is no toolbox: a tool whose panel has never been shown has no
+    // user-chosen state to save, and saving then would overwrite the book's real settings
+    // with defaults. The reader tools save from wherever the user changes a stage, level
+    // or sort (readerToolsModel.ts), rather than from one point in their lifecycle, so
+    // they ask this rather than being driven by it.
     readonly uiMounted: boolean;
 }
 
@@ -81,13 +94,25 @@ let theState: IToolboxUiState = emptyState;
 
 const stateListeners = new Set<() => void>();
 
-// Told whenever a tool becomes the active one. toolbox.ts subscribes here so that it can
-// record the new current tool and persist it; see the comment on setActiveTool().
-const activeToolListeners = new Set<(toolId: string) => void>();
+// The tool that is running, worked out from the rest of the state rather than stored. See
+// IToolboxUiState.currentToolId.
+//
+// "Offered" is the only test needed: a tool is only ever offered after toolbox.ts has found
+// it in the master list, so every offered tool is a registered one.
+function deriveCurrentToolId(state: IToolboxUiState): string | undefined {
+    if (
+        state.activeToolId &&
+        state.offeredToolIds.includes(state.activeToolId)
+    ) {
+        return state.activeToolId;
+    }
+    return undefined;
+}
 
 // Replaces the snapshot and tells the subscribers. Never mutates the old snapshot.
 function updateState(changes: Partial<IToolboxUiState>): void {
-    theState = { ...theState, ...changes };
+    const updated = { ...theState, ...changes };
+    theState = { ...updated, currentToolId: deriveCurrentToolId(updated) };
     stateListeners.forEach((listener) => listener());
 }
 
@@ -153,9 +178,13 @@ export function offerTool(toolId: string): void {
 }
 
 /**
- * Stops offering this tool, if it is offered. If it was the active one, the
- * first remaining tool becomes active (and that is reported to the active-tool
- * listeners, i.e. to toolbox.ts).
+ * Stops offering this tool, if it is offered. If it was the open one, the first remaining
+ * tool takes over; if none remains, no tool is open and so none is running.
+ *
+ * Nothing has to be told that the running tool changed: currentToolId is derived from what
+ * is open and what is offered, so withdrawing a tool moves it on its own. Leaving a game
+ * page withdraws the Game tool this way, and the toolbox going on believing Game was still
+ * current was BL-16602.
  */
 export function withdrawTool(toolId: string): void {
     const remainingToolIds = theState.offeredToolIds.filter(
@@ -165,92 +194,31 @@ export function withdrawTool(toolId: string): void {
         return;
     }
     if (theState.activeToolId !== toolId) {
-        // We withdrew a tool the user wasn't looking at, so which tool is open
-        // doesn't change.
+        // We withdrew a tool the user wasn't looking at, so which tool is open doesn't
+        // change -- and nor, therefore, does which one is running.
         updateState({ offeredToolIds: remainingToolIds });
-        // But it may still have been the tool that was RUNNING: closing a tool
-        // leaves it current (see clearActiveTool), so activeToolId and
-        // currentToolId can name different tools. If the running tool just stopped
-        // being offered, toolbox.ts must switch to a survivor, or it goes on driving markup
-        // for a tool whose panel React has unmounted.
-        if (theState.currentToolId === toolId) {
-            const replacementToolId = remainingToolIds.find(
-                (id) => id !== kSettingsToolId,
-            );
-            if (replacementToolId) {
-                notifyActiveToolListeners(replacementToolId);
-            }
-        }
         return;
     }
-    const replacementToolId = remainingToolIds[0];
-    if (!replacementToolId) {
-        // Nothing left to open. Don't notify toolbox.ts: it has no way to represent
-        // "no current tool", and opening a tool later will tell it then.
-        updateState({
-            offeredToolIds: remainingToolIds,
-            activeToolId: undefined,
-        });
-        return;
-    }
-    // Notify, so toolbox.ts records the replacement as the current tool (which is what
-    // gets its lifecycle run). Leaving a game page withdraws the Game tool this way, and
-    // when this didn't notify, the toolbox went on believing Game was current and the tool
-    // that replaced it was never shown, which killed Talking Book's highlighting and audio
-    // (BL-16602).
+    // remainingToolIds[0] is undefined when nothing is left, which leaves no tool open.
     updateState({
         offeredToolIds: remainingToolIds,
-        activeToolId: replacementToolId,
+        activeToolId: remainingToolIds[0],
     });
-    notifyActiveToolListeners(replacementToolId);
 }
 
 // ---------------------------------------------------------------------------
-// Which tool is active (expanded)
+// Which tool is open
 // ---------------------------------------------------------------------------
 
 /**
- * Runs the callback whenever a tool becomes the active one. Returns a function that
- * unsubscribes.
- */
-export function subscribeToActiveToolChanges(
-    callback: (toolId: string) => void,
-): () => void {
-    activeToolListeners.add(callback);
-    return () => {
-        activeToolListeners.delete(callback);
-    };
-}
-
-function notifyActiveToolListeners(toolId: string): void {
-    activeToolListeners.forEach((listener) => listener(toolId));
-}
-
-/**
- * Opens this tool and tells the active-tool listeners about it. toolbox.ts
- * listens, and turns that into the current tool (setCurrentToolId), which is what actually
- * runs the tool. So every path that makes a real tool the active one has to come through
- * here; one that quietly changed only what the UI shows left the two out of sync and the
- * tool the user could see was never activated (BL-16602).
+ * Opens this tool, which also makes it the running one (see
+ * IToolboxUiState.currentToolId). Every path that opens a tool comes through here, so
+ * there is no way for what the user can see to drift from what is actually running; one
+ * that quietly changed only what the UI shows left the two out of sync and the tool the
+ * user could see was never activated (BL-16602).
  */
 export function setActiveTool(toolId: string): void {
     updateState({ activeToolId: toolId });
-    notifyActiveToolListeners(toolId);
-}
-
-/**
- * Closes whatever tool is open, so none is. Deliberately leaves the
- * current tool alone: a tool that is closed goes on running, as it always
- * has. Also deliberately does not notify the active-tool listeners, which are about a tool
- * *becoming* current; opening a tool later will tell them then.
- *
- * The UI deliberately offers no gesture that calls this (clicking the open header does
- * nothing, as in 6.5 and earlier — see OfferedToolAccordion's onChange). It stays because
- * the withdraw paths put the store in the same no-open-tool state, and the specs pin that
- * state's semantics here.
- */
-export function clearActiveTool(): void {
-    updateState({ activeToolId: undefined });
 }
 
 // ---------------------------------------------------------------------------
@@ -262,15 +230,6 @@ export function clearActiveTool(): void {
 /** See IToolboxUiState.currentToolId. */
 export function getCurrentToolId(): string | undefined {
     return theState.currentToolId;
-}
-
-/**
- * Records which tool is now the running one, or undefined for none. Only toolbox.ts calls
- * this, from its active-tool listener: it is the one that knows whether the tool the user
- * asked for is a real tool the toolbox is offering.
- */
-export function setCurrentToolId(toolId: string | undefined): void {
-    updateState({ currentToolId: toolId });
 }
 
 /** See IToolboxUiState.toolboxVisible. */
@@ -355,5 +314,4 @@ export function setToolboxUiMounted(mounted: boolean): void {
 export function resetToolboxUiStateForTests(): void {
     theState = emptyState;
     stateListeners.clear();
-    activeToolListeners.clear();
 }
