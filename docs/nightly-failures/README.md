@@ -48,25 +48,39 @@ use the `nightly-triage` skill.
   that forces the late-styles order are written but uncommitted, on branch
   `link-chooser-wait-for-styles` in the `nightly-investigation` worktree. There is no PR yet.
 
-## Toolbox: the late settings restore races the user (and the tests)
+## Toolbox: the late settings restore raced the user (and the tests)
 
 - **Failed:** several nightlies in September in the toolbox and reader-tool specs.
-- **Probably seen again (first look):** 2026-10-06, in the evening dispatched run (with #8427),
+- **Probably seen again:** 2026-10-06, in the evening dispatched run (with #8427),
   `decodable-reader-cancel.spec.ts` "Cancel leaves the saved settings untouched": "Set Up
   Stages" went out of view and then invisible, and the screenshot shows the whole toolbox shut.
-  That fits the restore hiding the toolbox again; not confirmed. It passed on 2026-10-07.
-- **Cause:** `restoreToolboxSettingsWhenPageReady` applies settings it fetched before the page
-  was ready, so it can undo a change made in the meantime. It also re-selects the saved tool.
-- **Status:** on master, seven tests are still `test.fixme` (`toolbox-tools.spec.ts`,
-  `reader-tool-stage-and-level.spec.ts`).
-  - The fix is in the last part of the toolbox rework,
-    [PR #8447](https://github.com/BloomBooks/BloomDesktop/pull/8447) (draft,
-    [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)). Each late restore
-    (the toolbox's own and `readerToolsModel.restoreState()`) now applies a saved setting only
-    if it has not changed since it was read. That branch re-enables the seven tests.
+  That fits the restore hiding the toolbox again. It passed on 2026-10-07. Never confirmed, but
+  it is the same symptom in a third spec file, so it is worth re-checking if it recurs after the
+  fix below lands.
+- **Cause:** two late restores, each applying settings read before the page was ready and so
+  undoing whatever had happened since.
+  - `restoreToolboxSettingsWhenPageReady` re-applied the saved toolbox visibility and the
+    saved tool, so a toolbox just opened was shut again and a tool just opened closed back.
+  - `readerToolsModel.restoreState()` seeded the default stage and level over the top of a
+    choice already made. Despite the name it restores nothing: its `DRTState` is all
+    defaults, and the book's real stage comes from the tool's `beginRestoreSettings`. It
+    also passes `skipSave`, so it left nothing recorded -- the stage sprang back to 1 and
+    Bloom never learned the user had chosen 2. This is why the two stage tests were the
+    flakiest of the four.
+- **Status:** fixed, and all seven tests are back on (`toolbox-tools.spec.ts`,
+  `reader-tool-stage-and-level.spec.ts`; Test Case IDs 830, 441, 442, 460). Each late restore
+  now applies a saved setting only if it has not changed since it was read.
+  - Landed with the last part of the toolbox rework,
+    [PR #8447](https://github.com/BloomBooks/BloomDesktop/pull/8447),
+    [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608).
+  - Measured locally against the Vite dev server, five runs of every test in each spec file:
+    3 of 15 failed before the fix, 0 of 40 after, and both files pass at the nightly window
+    size. The dev server makes these tests fail more often than CI does, so **watch the first
+    nightlies** rather than treating this as proved -- including `decodable-reader-cancel`.
   - [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409) was closed unmerged: it
-    measured worse than no fix.
-  - The card has a note about the skipped tests.
+    re-read the settings after the wait, which is not reliable because every change is saved
+    with a fire-and-forget post, so a later read may not see one that has just happened.
+    Measured, it was worse than no fix at all.
 
 ## Component tests: lost connection to the dev server
 
@@ -85,5 +99,3 @@ use the `nightly-triage` skill.
 ## Open questions
 
 - The canvas e2e config has `retries: 1`, which conflicts with the no-flaky-tests rule. Keep it?
-- Notion test-case status for the skipped toolbox tests (830, 441, 442, 460): should they be
-  marked Skipped?
