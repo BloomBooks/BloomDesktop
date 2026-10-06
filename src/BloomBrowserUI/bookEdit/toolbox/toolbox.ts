@@ -173,6 +173,7 @@ export class ToolBox {
         ) {
             requiredToolId = null;
         }
+        toolThePageRequires = requiredToolId || undefined;
         // This function is the main task of adjustToolListForPage. It may have to be postponed
         // until we've finished otherwise setting up the toolbox.
         // It's possible there will be a tiny bit of flicker if the book opens on a page that
@@ -455,8 +456,24 @@ function syncToolboxVisibilityFromDom(): void {
     setToolboxVisible(toolbox.toolboxIsShowing());
 }
 
+// The tool a page that is still loading says it requires, until the toolbox has caught up
+// and made it the current one. Not a second opinion about what is running -- the store owns
+// that -- but an answer to "which tool is this page for?", which can be known before the
+// toolbox has been told to offer it.
+//
+// It is what keeps the Talking Book tool from laying its highlight and sound over a page
+// that is arriving for some other tool: the page's own tool is announced here first, so
+// getActiveToolId() stops naming the outgoing tool before the switch completes. Without it
+// the asynchronous calls during page loading race and the wrong tool gets newPageReady.
+// See BL-14434, and doesCurrentToolPlayAudio() in audioRecording.ts.
+let toolThePageRequires: string | undefined = undefined;
+
+/**
+ * The id of the tool that should be treated as active: the one a loading page requires if
+ * it has said so, otherwise the one that is actually running.
+ */
 export function getActiveToolId(): string | undefined {
-    return getCurrentTool()?.id();
+    return toolThePageRequires ?? getCurrentTool()?.id();
 }
 
 // How long, after a tool is turned on in the "More..." tool, we wait
@@ -805,12 +822,14 @@ function persistOpenToolIfItChanged(): void {
         return;
     }
     lastPersistedToolId = openToolId;
+    // The toolbox has now acted on whatever the page asked for, so stop answering with it.
+    toolThePageRequires = undefined;
     if (!openToolId) {
         return;
     }
     postString(
         "editView/saveToolboxSetting",
-        "current	" + toPersistedToolName(openToolId),
+        "current\t" + toPersistedToolName(openToolId),
     );
 }
 

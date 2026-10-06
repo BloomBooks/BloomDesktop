@@ -105,7 +105,11 @@ const OfferedToolAccordion: React.FunctionComponent<{
     isRunning: boolean;
     pageGeneration: number;
 }> = (props) => {
-    useToolLifecycle(props.offeredTool.tool, props.isRunning, props.pageGeneration);
+    useToolLifecycle(
+        props.offeredTool.tool,
+        props.isRunning,
+        props.pageGeneration,
+    );
 
     return (
         <Accordion
@@ -361,7 +365,8 @@ export const ToolboxRoot: React.FunctionComponent = () => {
                             offeredTool={offeredTool}
                             isOpen={openToolId === offeredTool.id}
                             isRunning={
-                                toolboxUiState.currentToolId === offeredTool.id &&
+                                toolboxUiState.currentToolId ===
+                                    offeredTool.id &&
                                 toolboxUiState.toolboxVisible
                             }
                             pageGeneration={toolboxUiState.pageGeneration}
