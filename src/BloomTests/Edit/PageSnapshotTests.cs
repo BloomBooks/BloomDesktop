@@ -175,6 +175,25 @@ namespace BloomTests.Edit
         }
 
         [Test]
+        public void Set_WithStillBusyWith_KeepsTheSaveWaiting()
+        {
+            // The browser read the page while work was still under way (it gave up waiting, or
+            // the work began just after the read). The content is kept, but it is not the
+            // finished page, so a save must still wait.
+            ArriveAtPage("load-1");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
+
+            Assert.That(
+                _snapshot.Set("page-1", "load-1", "read while busy", "sizing an image"),
+                Is.True
+            );
+
+            Assert.That(_snapshot.GetFor("page-1"), Is.EqualTo("read while busy"));
+            Assert.That(_snapshot.WaitUntilIdle(60, out var busyWith), Is.False);
+            Assert.That(busyWith, Is.EqualTo("sizing an image"));
+        }
+
+        [Test]
         public void WaitUntilIdle_WhenNothingIsBusy_ReturnsAtOnce()
         {
             ArriveAtPage("load-1");

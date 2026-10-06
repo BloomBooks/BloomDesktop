@@ -153,12 +153,14 @@ async function takeSnapshot(): Promise<boolean> {
     if (content === lastPosted && !snapshotOwed) return true;
     lastPosted = content;
     snapshotOwed = false;
-    lastSnapshotTaken = postInOrder(pageId, snapshotUrl(pageId), content);
-    // The page is busy even so: the gather gave up waiting for the work (see kMaxWaitTimeMs), or
-    // the work began just after the gather read the page. C# takes a snapshot to mean idle, so say
-    // busy again; the snapshot that ends the busy spell will carry the work's result.
+    let url = snapshotUrl(pageId);
+    // The page can be busy even so: the gather gave up waiting for the work (see kMaxWaitTimeMs),
+    // or the work began just after the gather read the page. C# takes a snapshot to mean idle
+    // unless it says otherwise, so say so in the same message; a separate busy notice afterwards
+    // would leave a moment in which a save took this for the finished page.
     if (busyWith !== undefined)
-        void postInOrder(pageId, snapshotUrl(pageId) + "&busy=true", busyWith);
+        url += "&stillBusyWith=" + encodeURIComponent(busyWith);
+    lastSnapshotTaken = postInOrder(pageId, url, content);
     return true;
 }
 

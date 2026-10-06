@@ -64,7 +64,12 @@ namespace Bloom.web.controllers
                     }
                     var pageContent = request.RequiredPostString(unescape: false);
                     request.ReplyWithBoolean(
-                        View.Model.ReceivePageSnapshot(pageId, loadId, pageContent)
+                        View.Model.ReceivePageSnapshot(
+                            pageId,
+                            loadId,
+                            pageContent,
+                            request.GetParamOrNull("stillBusyWith")
+                        )
                     );
                 },
                 false,

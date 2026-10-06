@@ -1791,9 +1791,14 @@ namespace Bloom.Edit
         /// Called by the editView/pageSnapshot API when the browser volunteers the current content
         /// of the page. See PageSnapshot.
         /// </summary>
-        public bool ReceivePageSnapshot(string pageId, string loadId, string pageContent)
+        public bool ReceivePageSnapshot(
+            string pageId,
+            string loadId,
+            string pageContent,
+            string stillBusyWith
+        )
         {
-            return _pageSnapshot.Set(pageId, loadId, pageContent);
+            return _pageSnapshot.Set(pageId, loadId, pageContent, stillBusyWith);
         }
 
         /// <summary>

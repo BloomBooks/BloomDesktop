@@ -368,10 +368,10 @@ describe("pageSnapshot", () => {
         await letTheLoadedPageBeSent();
     });
 
-    it("says busy again after sending a page read just before work began", async () => {
+    it("marks a page read just before work began as still busy", async () => {
         // The gather has read the page, and before we get to post it, work begins and we tell C#
-        // the page is busy. C# takes a snapshot to mean idle, so the snapshot must be followed by
-        // another busy notice, or a save would go ahead without the work.
+        // the page is busy. C# takes a snapshot to mean idle unless it says otherwise, so this one
+        // must say so itself, or a save could go ahead without the work.
         let release: (value: string) => void = () => {};
         const heldGather = () =>
             new Promise<string>((resolve) => {
@@ -385,17 +385,19 @@ describe("pageSnapshot", () => {
         addRequestPageContentDelay("sizing an image");
         release("typed, read before the work");
         await letEverythingSettle();
-        expect(kinds()).toEqual(["busy", "snapshot", "busy"]);
+        expect(kinds()).toEqual(["busy", "snapshot"]);
         expect(posted[1].body).toBe("typed, read before the work");
+        expect(posted[1].url).toContain("stillBusyWith=sizing%20an%20image");
 
         removeRequestPageContentDelay("sizing an image");
         release("after the work");
         await letEverythingSettle();
-        expect(kinds()).toEqual(["busy", "snapshot", "busy", "snapshot"]);
-        expect(posted[3].body).toBe("after the work");
+        expect(kinds()).toEqual(["busy", "snapshot", "snapshot"]);
+        expect(posted[2].body).toBe("after the work");
+        expect(posted[2].url).not.toContain("stillBusyWith");
     });
 
-    it("still sends the page when work outlasts the gather's wait, and says busy after it", async () => {
+    it("still sends the page when work outlasts the gather's wait, marked as still busy", async () => {
         // Work that never deregisters (a bug elsewhere) must not stop the page from being sent:
         // the gather gives up waiting (kMaxWaitTimeMs) and reads the page anyway.
         contentToReport = "first";
@@ -409,8 +411,9 @@ describe("pageSnapshot", () => {
         await letTheSnapshotHappen();
         vi.advanceTimersByTime(4000); // the register's cap
         await letEverythingSettle();
-        expect(kinds()).toEqual(["busy", "snapshot", "busy"]);
+        expect(kinds()).toEqual(["busy", "snapshot"]);
         expect(posted[1].body).toBe("typed");
+        expect(posted[1].url).toContain("stillBusyWith=");
         removeRequestPageContentDelay("work that never finishes");
         await letEverythingSettle();
     });

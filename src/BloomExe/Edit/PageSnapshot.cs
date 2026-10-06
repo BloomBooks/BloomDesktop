@@ -39,18 +39,22 @@ namespace Bloom.Edit
         // image, settling a paste; see pageContentDelays.ts) and tells us when it goes from empty
         // to busy. The name is only a clue for the log: later work in the same busy spell is not
         // named, and what is named may already have finished. While busy, the snapshot we hold
-        // predates that work; see WaitUntilIdle. A snapshot says the work is done: the browser
-        // follows any snapshot it takes while still busy with another busy notice. Busy notices
-        // and snapshots are sent one at a time, so they arrive in order.
+        // predates that work; see WaitUntilIdle. A snapshot says the work is done, unless it says
+        // the page is still busy (the browser gave up waiting for the work, or it began just after
+        // the page was read). Busy notices and snapshots are sent one at a time, so they arrive in
+        // order.
         private string _busyWith;
 
         /// <summary>
-        /// Record what the browser says the page currently contains, which also means it is no
-        /// longer busy. The API handler deliberately does not take the server's sync lock: this
-        /// only stores a string, and the editor must not wait on a save to report its content.
+        /// Record what the browser says the page currently contains. stillBusyWith is null when the
+        /// page is idle, which is the usual case; otherwise it names work still under way, as for
+        /// SetBusy. Coming in the same message as the content, it leaves no moment in which a save
+        /// would take this snapshot for the finished page. The API handler deliberately does not
+        /// take the server's sync lock: this only stores a string, and the editor must not wait on
+        /// a save to report its content.
         /// </summary>
         /// <returns>False if the snapshot is from a load we are not showing, which we ignore.</returns>
-        public bool Set(string pageId, string loadId, string content)
+        public bool Set(string pageId, string loadId, string content, string stillBusyWith = null)
         {
             if (string.IsNullOrEmpty(pageId))
                 throw new ArgumentException(
@@ -63,7 +67,7 @@ namespace Bloom.Edit
                     return false;
                 _pageId = pageId;
                 _content = content;
-                _busyWith = null;
+                _busyWith = stillBusyWith;
                 return true;
             }
         }
