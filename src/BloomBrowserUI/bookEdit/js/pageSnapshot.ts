@@ -64,6 +64,8 @@ let unsubscribeFromDelayRegister: (() => void) | undefined;
 let pageWeReportedAFailureFor: string | undefined;
 // The tail of the queue of posts; see postInOrder.
 let postQueue: Promise<void> = Promise.resolve();
+// Whether C# took the latest snapshot we queued; see sendSnapshotNow.
+let lastSnapshotTaken: Promise<boolean> = Promise.resolve(true);
 
 // Tell the user, at most once for this page; this is why snapshot posts use postStringQuietly.
 // There is no retry: posting to localhost should never fail, and if it does, something is badly
@@ -89,8 +91,14 @@ function currentPageId(): string | undefined {
 //
 // C# answers false for a load it is no longer showing (we start only once it has accepted this
 // load; see startWatchingPageForSnapshots), so nobody wants the message and we drop it.
-function postInOrder(pageId: string, url: string, body: string): void {
-    postQueue = postQueue.then(async () => {
+//
+// Resolves to whether C# took the message.
+function postInOrder(
+    pageId: string,
+    url: string,
+    body: string,
+): Promise<boolean> {
+    const taken = postQueue.then(async () => {
         let reply: unknown;
         try {
             reply = await postStringQuietly(url, body);
@@ -108,8 +116,12 @@ function postInOrder(pageId: string, url: string, body: string): void {
             // C# does not hold this content, so the next gather must not skip it as already sent
             // (unless something newer has been queued since).
             if (lastPosted === body) lastPosted = undefined;
+            return false;
         }
+        return (reply as { data?: unknown }).data !== false;
     });
+    postQueue = taken.then(() => undefined);
+    return taken;
 }
 
 // Resolves to false only if the page could not be read (which has been reported).
@@ -138,26 +150,27 @@ async function takeSnapshot(): Promise<boolean> {
 
     // The page may have been unloaded, or navigated, while we were waiting.
     if (pageIdBeingWatched !== pageId) return true;
-    // Work began between the gather's read and our getting here, and we have already told C# the
-    // page is busy. What we read predates the work; the snapshot that ends the busy spell will
-    // carry it, and sending this one would tell C# the page is idle when it is not.
-    if (busyWith !== undefined) return true;
     if (content === lastPosted && !snapshotOwed) return true;
     lastPosted = content;
     snapshotOwed = false;
-    postInOrder(pageId, snapshotUrl(pageId), content);
+    lastSnapshotTaken = postInOrder(pageId, snapshotUrl(pageId), content);
+    // The page is busy even so: the gather gave up waiting for the work (see kMaxWaitTimeMs), or
+    // the work began just after the gather read the page. C# takes a snapshot to mean idle, so say
+    // busy again; the snapshot that ends the busy spell will carry the work's result.
+    if (busyWith !== undefined)
+        void postInOrder(pageId, snapshotUrl(pageId) + "&busy=true", busyWith);
     return true;
 }
 
 /**
  * Send C# the page as it is now, without waiting for the page to be quiet, and resolve once C#
  * has answered. For a request that makes C# save a page the caller has only just changed. Resolves
- * to false if the page could not be read; that has already been reported to the user.
+ * to false if C# does not have the page as it is now: it could not be read, or the post failed
+ * (both reported to the user), or C# has moved on from this page.
  */
 export async function sendSnapshotNow(): Promise<boolean> {
-    const ok = await takeSnapshot();
-    await postQueue;
-    return ok;
+    if (!(await takeSnapshot())) return false;
+    return lastSnapshotTaken;
 }
 
 // The delay register has gone busy or idle. A save C# makes from the snapshot cannot wait for the
@@ -168,7 +181,11 @@ function handleDelayRegisterChange(nowBusyWith: string | undefined): void {
     if (!pageId) return;
     busyWith = nowBusyWith;
     if (nowBusyWith !== undefined) {
-        postInOrder(pageId, snapshotUrl(pageId) + "&busy=true", nowBusyWith);
+        void postInOrder(
+            pageId,
+            snapshotUrl(pageId) + "&busy=true",
+            nowBusyWith,
+        );
     } else {
         snapshotOwed = true;
         void takeSnapshot();
@@ -254,6 +271,7 @@ export function stopWatchingPageForSnapshots(): void {
     gatherPageContent = undefined;
     busyWith = undefined;
     snapshotOwed = false;
+    lastSnapshotTaken = Promise.resolve(true);
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
 }

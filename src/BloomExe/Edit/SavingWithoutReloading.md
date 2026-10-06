@@ -499,8 +499,9 @@ it, but it is a trade rather than an oversight.
 
 Asynchronous work is the longer version of the same window, and it is handled. Work whose result
 belongs in the saved page (sizing an image, settling a paste) registers in the delay register
-(`pageContentDelays.ts`), and every gather in the browser waits for the register to empty -- so
-every snapshot is of an idle page. But a save made while the work is under way would use the
+(`pageContentDelays.ts`), and every gather in the browser waits for the register to empty (up to a
+cap; a snapshot taken while the page is still busy is followed by another busy notice). But a save
+made while the work is under way would use the
 snapshot from before it. So the browser tells C# when the register goes busy, naming the work (a
 `busy=true` message on the same `editView/pageSnapshot` endpoint), and as soon as the register
 empties it posts the page again, even if its saved form did not change: a snapshot is what says the

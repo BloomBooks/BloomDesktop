@@ -39,9 +39,9 @@ namespace Bloom.Edit
         // image, settling a paste; see pageContentDelays.ts) and tells us when it goes from empty
         // to busy. The name is only a clue for the log: later work in the same busy spell is not
         // named, and what is named may already have finished. While busy, the snapshot we hold
-        // predates that work; see WaitUntilIdle. The browser only gathers an idle page, so the
-        // next snapshot also says the work is done. Busy notices and snapshots are sent one at a
-        // time, so they arrive in order.
+        // predates that work; see WaitUntilIdle. A snapshot says the work is done: the browser
+        // follows any snapshot it takes while still busy with another busy notice. Busy notices
+        // and snapshots are sent one at a time, so they arrive in order.
         private string _busyWith;
 
         /// <summary>

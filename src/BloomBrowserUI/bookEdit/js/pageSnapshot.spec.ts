@@ -368,10 +368,10 @@ describe("pageSnapshot", () => {
         await letTheLoadedPageBeSent();
     });
 
-    it("does not send a page read just before work began, which would tell C# the page is idle", async () => {
+    it("says busy again after sending a page read just before work began", async () => {
         // The gather has read the page, and before we get to post it, work begins and we tell C#
-        // the page is busy. Posting what we read would end the busy spell with a page from before
-        // the work.
+        // the page is busy. C# takes a snapshot to mean idle, so the snapshot must be followed by
+        // another busy notice, or a save would go ahead without the work.
         let release: (value: string) => void = () => {};
         const heldGather = () =>
             new Promise<string>((resolve) => {
@@ -385,13 +385,34 @@ describe("pageSnapshot", () => {
         addRequestPageContentDelay("sizing an image");
         release("typed, read before the work");
         await letEverythingSettle();
-        expect(kinds()).toEqual(["busy"]);
+        expect(kinds()).toEqual(["busy", "snapshot", "busy"]);
+        expect(posted[1].body).toBe("typed, read before the work");
 
         removeRequestPageContentDelay("sizing an image");
         release("after the work");
         await letEverythingSettle();
-        expect(kinds()).toEqual(["busy", "snapshot"]);
-        expect(posted[1].body).toBe("after the work");
+        expect(kinds()).toEqual(["busy", "snapshot", "busy", "snapshot"]);
+        expect(posted[3].body).toBe("after the work");
+    });
+
+    it("still sends the page when work outlasts the gather's wait, and says busy after it", async () => {
+        // Work that never deregisters (a bug elsewhere) must not stop the page from being sent:
+        // the gather gives up waiting (kMaxWaitTimeMs) and reads the page anyway.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gatherWhenIdle);
+        await letTheLoadedPageBeSent();
+
+        addRequestPageContentDelay("work that never finishes");
+        await letEverythingSettle();
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        vi.advanceTimersByTime(4000); // the register's cap
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["busy", "snapshot", "busy"]);
+        expect(posted[1].body).toBe("typed");
+        removeRequestPageContentDelay("work that never finishes");
+        await letEverythingSettle();
     });
 
     it("sends busy notices and snapshots one at a time, in the order they arose", async () => {
@@ -493,6 +514,19 @@ describe("pageSnapshot", () => {
         releasePost();
         await sending;
         expect(done).toBe(true);
+    });
+
+    it("says so when asked to send the page at once and the post fails", async () => {
+        // The caller is about to have C# save and reload the page; if C# did not get it, the
+        // reload would rebuild the page without the change that prompted it.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheLoadedPageBeSent();
+
+        postReply = undefined; // no response: the post failed
+        contentToReport = "a new origami layout";
+        expect(await sendSnapshotNow()).toBe(false);
+        expect(reported.length).toBe(1);
     });
 
     it("says so when asked to send the page at once and it cannot be read", async () => {
