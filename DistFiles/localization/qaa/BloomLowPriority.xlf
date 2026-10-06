@@ -17,6 +17,11 @@
         <target xml:lang="qaa-x-test" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <target xml:lang="qaa-x-test" state="needs-translation">Details</target>
+        <note>ID: ErrorReport.Details</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <target xml:lang="qaa-x-test" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
