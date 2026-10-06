@@ -3406,10 +3406,6 @@
         <source xml:lang="en">What would you like to call this collection?</source>
         <note>ID: NewCollectionWizard.CollectionNamePage.NameCollectionLabel</note>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.CollectionNameProblem">
-        <source xml:lang="en">Collection Name Problem</source>
-        <note>ID: NewCollectionWizard.CollectionNameProblem</note>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.CollectionWillBeCreatedAt">
         <source xml:lang="en">Collection will be created at: {0}</source>
         <note>ID: NewCollectionWizard.CollectionWillBeCreatedAt</note>

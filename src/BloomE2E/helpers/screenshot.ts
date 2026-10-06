@@ -20,9 +20,9 @@
 // Tests do not open CDP sessions of their own. If you need a capture this file does not do, add it
 // here.
 
+import type { CDPSession, Locator, Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
-import type { CDPSession, Locator, Page } from "@playwright/test";
 import { editablePageFrame, waitForEditablePage } from "./bookMaking";
 
 /** An element's image, and the size of that image in pixels. */
@@ -189,17 +189,17 @@ export async function captureElement(
 
 /**
  * When the run was asked for pictures, save these elements together, cropped to the smallest
- * rectangle holding all of them, as `<name>.png` in the folder `BLOOM_E2E_SCREENSHOT_DIR` names.
- * Otherwise do nothing, and cost nothing.
+ * rectangle holding all of them plus a 4-pixel margin, as `<name>.png` in the folder
+ * `BLOOM_E2E_SCREENSHOT_DIR` names. Otherwise do nothing, and cost nothing.
  *
  * This is for the screenshots of a manual test card in Notion (the write-manual-test skill), which
- * show what a pass looks like at each verification. Taking them during the e2e run of the same
- * steps keeps the pictures and the steps from drifting apart, and saves a second run.
+ * have to show exactly what a pass looks like at each verification. Taking them during the e2e run
+ * of the same steps keeps the pictures and the steps from drifting apart, and saves a second run.
  *
  * Unlike captureElement this never resizes the window, because resizing re-lays out the page and
- * closes hint bubbles and other hover-revealed things, which are often what is being pictured. So
- * the elements must be in view, and the picture is clipped to the window. It is taken at twice the
- * page's scale, so a small control stays readable in Notion.
+ * shuts menus, hint bubbles and hover-revealed buttons, which are often the very thing being
+ * pictured. So the elements must be in view, and the picture is clipped to the window. It is taken
+ * at twice the page's scale, so a small control stays readable in Notion.
  */
 export async function saveScreenshotIfAsked(
     locators: Locator[],
