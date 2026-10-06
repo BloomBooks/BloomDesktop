@@ -63,21 +63,22 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
 
 // The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
 // what we post, so a name typed with a trailing space would otherwise count as a rename (and
-// Windows will not make a folder whose name ends in a space). A name that differs from the
-// collection's only by spaces is no change, so it goes back exactly as it was: a collection whose
-// folder name already starts with a space must not be renamed by saving some other setting.
+// Windows will not make a folder whose name ends in a space). Only an edited name is trimmed: an
+// untouched one goes back exactly as it was, so a collection whose folder name already starts with
+// a space is not renamed by saving some other setting, yet a user can still delete that space.
 function valuesToSave(
     values: ICollectionSettingsValues,
     loadedValues: ICollectionSettingsValues,
 ): ICollectionSettingsValues {
-    const typedName = values.advanced.collectionName.trim();
-    const loadedName = loadedValues.advanced.collectionName;
+    const name = values.advanced.collectionName;
     return {
         ...values,
         advanced: {
             ...values.advanced,
             collectionName:
-                typedName === loadedName.trim() ? loadedName : typedName,
+                name === loadedValues.advanced.collectionName
+                    ? name
+                    : name.trim(),
         },
     };
 }
