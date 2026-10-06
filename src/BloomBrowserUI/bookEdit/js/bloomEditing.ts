@@ -19,7 +19,7 @@ import {
     SetupVideoEditing,
 } from "./bloomVideo";
 import { SetupWidgetEditing } from "./bloomWidgets";
-import { setupOrigami, cleanupOrigami, origamiCanUndo } from "./origami";
+import { setupOrigami, cleanupOrigami } from "./origami";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -1869,9 +1869,12 @@ function handleImageUndoKey(e: KeyboardEvent) {
     // Origami and the toolbox both get first refusal, in the same order the Undo button's
     // handleUndo gives them: while layout mode is on Ctrl+Z belongs to the layout undo, and a
     // tool that has something to undo (the reader tools do) owns it over an image change.
-    // Origami's handler is bound to this frame's html element, so without that check one
-    // keystroke would run both undos.
-    if (origamiCanUndo()) return;
+    // Origami's handler is bound to this frame's html element, which the keystroke reaches
+    // before it reaches this document, so by now origami has already done its undo. Asking
+    // origamiCanUndo() here would be asking too late: after the last layout step is undone it
+    // says false, and one keystroke would run two undos. So while layout mode is on, the key is
+    // origami's whatever its undo stack holds.
+    if (document.querySelector(".marginBox.origami-layout-mode")) return;
     const toolbox = getToolboxBundleExports();
     if (toolbox?.canUndo()) {
         // Do the tool's undo here rather than just standing aside: no tool listens for the
