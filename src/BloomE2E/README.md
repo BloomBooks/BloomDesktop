@@ -278,6 +278,22 @@ is pointless. A setting that names a monitor is left alone, because that window 
 The variable applies only to a Bloom started with `--automation`, which every e2e run passes, and
 so does `./go.sh`. A Bloom you start any other way is unaffected, however the variable is set.
 
+### Running at the nightly's window size
+
+On a developer's monitor Bloom is big. On the nightly CI runner its page area is about 1008x681,
+so the lower part of an A5 page is below the fold and a long menu scrolls. A spec can pass every
+time locally and fail every night. `BLOOM_E2E_VIEWPORT` makes a run see what the nightly sees:
+
+```bash
+BLOOM_E2E_VIEWPORT=nightly pnpm exec playwright test tests/my-feature.spec.ts
+BLOOM_E2E_VIEWPORT=1024x586 pnpm test           # any other size, at least 400x300
+```
+
+The fixture emulates the size with a CDP device-metrics override (`fixtures/viewport.ts`), so the
+page lays out as it would in a window of that size. A value it cannot read fails the run. Preflight
+runs every spec a branch adds or changes this way once; see "Preflight checks" in the root
+`AGENTS.md`.
+
 ### Whether the Bloom window takes the keyboard: `BLOOM_E2E_DONT_DISTURB`
 
 Where a window goes and whether it takes the foreground are separate. On a developer's machine

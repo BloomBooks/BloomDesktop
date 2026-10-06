@@ -57,6 +57,19 @@ see `src/BloomTests/AGENTS.md`.
   Details, including what to do if the vitest suite seems to hang, are in
   `src/BloomBrowserUI/AGENTS.md`.
 
+# Preflight checks
+
+Checks the `preflight` skill runs on this repo, in addition to its own.
+
+- **E2E specs at the nightly's window size.**
+  - **Applies when** the diff against the base adds or changes any `src/BloomE2E/tests/*.spec.ts`.
+  - **Run** each of those spec files once, headless, at the nightly CI runner's window size:
+    `BLOOM_E2E_VIEWPORT=nightly BLOOM_AUTOMATION_MONITOR=headless pnpm exec playwright test <spec files>`
+    from `src/BloomE2E`. The run needs a current build (see "Testing a front-end change" in
+    `src/BloomE2E/README.md`).
+  - **Passes when** every test in those files passes. A failure here that does not show at your
+    own window size is still a failure: the nightly will hit it.
+
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
 
