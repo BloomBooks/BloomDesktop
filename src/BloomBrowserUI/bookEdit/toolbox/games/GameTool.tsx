@@ -1821,11 +1821,12 @@ export class GameTool extends ToolboxToolReactAdaptor {
         }
     }
 
-    public detachFromPage() {
-        const page = getBloomPageElement();
-        if (page) {
-            undoPrepareActivity(page);
-        }
+    // On the Play tab, prepareActivity() has put the page into play mode, which must not be saved.
+    // undoPrepareActivity changes only the element it is given, so a saved clone gets the
+    // draggables where the author put them while the live page goes on being played (bloom-player's
+    // tests cover that guarantee).
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        undoPrepareActivity(pageOrClone);
     }
 }
 export function playSound(

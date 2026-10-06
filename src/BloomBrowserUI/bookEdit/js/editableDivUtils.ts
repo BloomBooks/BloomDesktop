@@ -385,6 +385,43 @@ export class EditableDivUtils {
         return bookmarksForEachEditable;
     }
 
+    // The non-destructive counterpart of doCkEditorCleanup(): reads CKEditor's data from the live
+    // editors and writes it into the corresponding divs of a detached CLONE, because writing it
+    // back into the live divs disturbs the running editors.
+    // liveRoot and cloneRoot must be a live element and a deep clone of it, so that the Nth
+    // div.bloom-editable in each corresponds; we throw if they have drifted apart.
+    // See doCkEditorCleanup for why we want getData() rather than the raw innerHTML (BL-12391),
+    // and why it is used exactly as it comes (BL-16843).
+    public static copyCkEditorDataToClone(
+        liveRoot: HTMLElement,
+        cloneRoot: HTMLElement,
+    ): void {
+        const liveDivs = Array.from(
+            liveRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        const cloneDivs = Array.from(
+            cloneRoot.querySelectorAll<HTMLDivElement>("div.bloom-editable"),
+        );
+        if (liveDivs.length !== cloneDivs.length) {
+            throw new Error(
+                `copyCkEditorDataToClone(): the clone has ${cloneDivs.length} bloom-editables but the live page has ${liveDivs.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+        liveDivs.forEach((liveDiv, index) => {
+            const ckeditorOfThisBox = (<any>liveDiv).bloomCkEditor;
+            if (!ckeditorOfThisBox) {
+                return; // no editor attached (e.g. an invisible language), so nothing to clean.
+            }
+            const ckEditorData = ckeditorOfThisBox.getData();
+            if (ckEditorData !== liveDiv.innerHTML) {
+                this.safelyReplaceContentWithCkEditorData(
+                    cloneDivs[index],
+                    ckEditorData,
+                );
+            }
+        });
+    }
+
     // public for unit testing
     public static safelyReplaceContentWithCkEditorData(
         div: HTMLDivElement,

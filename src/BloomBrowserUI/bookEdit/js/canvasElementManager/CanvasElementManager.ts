@@ -21,11 +21,13 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../../utils/colorUtils
 import {
     IImageInfo,
     SetupElements,
-    addRequestPageContentDelay,
     attachToCkEditor,
     notifyToolOfChangedImage,
-    removeRequestPageContentDelay,
 } from "../bloomEditing";
+import {
+    addRequestPageContentDelay,
+    removeRequestPageContentDelay,
+} from "../pageContentDelays";
 import {
     EnableAllImageEditing,
     getImageFromCanvasElement,
@@ -2512,6 +2514,46 @@ export class CanvasElementManager {
         document.removeEventListener(
             "click",
             CanvasElementManager.onDocClickClearActiveElement,
+        );
+    }
+
+    // Put into 'clonedPage', a detached copy of the live .bloom-page, what
+    // turnOffCanvasElementEditing() would put into the page, leaving the live page still editable.
+    // Only three of the things that method does affect what gets saved:
+    //  * Comical's editing <canvas> becomes the <svg> that draws the bubbles without Javascript.
+    //    exportSvgToCopiesOfParents writes it into the copy without disturbing the live editing.
+    //  * Canvas element positions are recorded as the current language's alternate. That only
+    //    reads and writes attributes, so it works on a clone, which has no layout.
+    //  * The bloom-focusedCanvasElement class comes off; it is not bloom-ui, so C# would keep it.
+    // The rest (control frame, image editing buttons, listeners) is bloom-ui or live-only.
+    public prepareCloneOfPageForSave(clonedPage: HTMLElement): void {
+        const liveBloomCanvases = this.getAllBloomCanvasesOnPage();
+        const clonedBloomCanvases = Array.from(
+            clonedPage.getElementsByClassName(kBloomCanvasClass),
+        ) as HTMLElement[];
+        if (liveBloomCanvases.length !== clonedBloomCanvases.length) {
+            throw new Error(
+                `prepareCloneOfPageForSave(): the clone has ${clonedBloomCanvases.length} bloom-canvases but the live page has ${liveBloomCanvases.length}. The clone must be an untouched copy of the live page.`,
+            );
+        }
+
+        Comical.exportSvgToCopiesOfParents(
+            liveBloomCanvases.map((liveBloomCanvas, index) => [
+                liveBloomCanvas,
+                clonedBloomCanvases[index],
+            ]),
+        );
+
+        clonedBloomCanvases.forEach((clonedBloomCanvas) =>
+            this.saveCurrentCanvasElementStateAsCurrentLangAlternate(
+                clonedBloomCanvas,
+            ),
+        );
+
+        Array.from(
+            clonedPage.getElementsByClassName("bloom-focusedCanvasElement"),
+        ).forEach((element) =>
+            element.classList.remove("bloom-focusedCanvasElement"),
         );
     }
 

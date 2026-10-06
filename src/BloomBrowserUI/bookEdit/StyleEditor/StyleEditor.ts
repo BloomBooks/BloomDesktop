@@ -44,6 +44,7 @@ import { RenderCanvasElementRoot } from "./CanvasElementFormatPage";
 import { CanvasElementManager } from "../js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "../toolbox/canvas/canvasElementConstants";
 import { getPageIFrame } from "../../utils/shared";
+import { getEditablePageBundleExports } from "../js/workspaceFrames";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -586,6 +587,15 @@ export default class StyleEditor {
             : this.FindExistingUserModifiedStyleSheet(documentToUse);
         if (styleSheet == null) {
             return null;
+        }
+        if (create) {
+            // A caller asking us to create the rule is about to change it through the CSSOM, which
+            // the page watcher cannot see (see notePageContentMayHaveChanged). Every such change
+            // passes through here. Saying so before the change is fine: the watcher reads the page
+            // after a delay, and the caller's edits are synchronous.
+            // Through the page frame's exports rather than a direct import, because this class is
+            // also used from the toolbox frame, and it is the PAGE frame that watches.
+            getEditablePageBundleExports()?.notePageContentMayHaveChanged();
         }
 
         let ruleList: CSSRuleList = styleSheet.cssRules;

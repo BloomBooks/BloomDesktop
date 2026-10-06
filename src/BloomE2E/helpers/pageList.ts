@@ -11,7 +11,12 @@
 
 import { expect, type Frame, type Page } from "@playwright/test";
 import { apiPost } from "./api";
-import { getPages, waitForEditablePage, type IBookPage } from "./bookMaking";
+import {
+    getPages,
+    getShownPageId,
+    waitForEditablePage,
+    type IBookPage,
+} from "./bookMaking";
 
 /** The Edit tab's frame holding the page thumbnails. Throws if the Edit tab is not showing. */
 export function pageListFrame(page: Page): Frame {
@@ -173,10 +178,16 @@ export async function duplicateCurrentPage(
     times = 1,
 ): Promise<void> {
     const before = (await getPages(page)).length;
+    // Bloom duplicates only the page the request names, and only if it is still the current page.
+    const pageId = await getShownPageId(page);
+    if (!pageId)
+        throw new Error(
+            "duplicateCurrentPage: the Edit tab is not showing a page.",
+        );
     await apiPost(
         page,
         "editView/duplicatePageMany",
-        JSON.stringify({ numberOfTimes: times }),
+        JSON.stringify({ numberOfTimes: times, pageId }),
         "application/json",
     );
     await expect

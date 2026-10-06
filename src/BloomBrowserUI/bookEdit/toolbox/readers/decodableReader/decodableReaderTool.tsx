@@ -2,6 +2,7 @@ import ToolboxToolReactAdaptor from "../../toolboxToolReactAdaptor";
 import { DecodableReaderToolControls } from "./DecodableReaderToolControls";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { getTheOneReaderToolsModel, MarkupType } from "../readerToolsModel";
+import { removeReaderMarkup } from "../removeReaderMarkup";
 import { get } from "../../../../utils/bloomApi";
 import { isReaderToolEnabledOnCurrentPage } from "../readerToolPageState";
 import { renderRoot } from "../../../../utils/reactRender";
@@ -38,7 +39,14 @@ export class DecodableReaderTool extends ToolboxToolReactAdaptor {
         // usually updateMarkup will do this, unless we are coming from showTool
         model.doMarkup();
     }
+    // See removeReaderMarkup.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        removeReaderMarkup(pageOrClone);
+    }
+
     public detachFromPage(): void {
+        super.detachFromPage();
+        // Stop further typing from being marked up again.
         getTheOneReaderToolsModel().setMarkupType(0);
     }
     public updateMarkup() {

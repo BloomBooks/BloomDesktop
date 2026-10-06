@@ -63,9 +63,31 @@ export default abstract class ToolboxToolReactAdaptor implements ITool {
         return false;
     }
     public newPageReady() {}
-    public detachFromPage() {}
+    // Most tools' editing markup is bloom-ui or outside the page div, so neither is saved. See
+    // ITool.removeToolMarkup.
+    public removeToolMarkup(_pageOrClone: HTMLElement): void {}
     public configureElements(_container: HTMLElement) {}
     /* eslint-enable @typescript-eslint/no-empty-function */
+
+    private removedToolMarkupWhileDetaching = false;
+
+    /// Take this tool's markup off the live page. Overrides that add live-only teardown must call
+    /// super.detachFromPage(); see ITool.detachFromPage.
+    public detachFromPage(): void {
+        this.removedToolMarkupWhileDetaching = true;
+        const bloomPage = getBloomPageElement();
+        if (bloomPage) {
+            this.removeToolMarkup(bloomPage);
+        }
+    }
+
+    // See ITool.didRemoveToolMarkupWhileDetaching. Reading it resets it, so each detach is judged
+    // on its own.
+    public didRemoveToolMarkupWhileDetaching(): boolean {
+        const result = this.removedToolMarkupWhileDetaching;
+        this.removedToolMarkupWhileDetaching = false;
+        return result;
+    }
 
     // Note: the general helpers for getting at the page being edited (the page iframe, its
     // body, the .bloom-page element, and whether the page is xmatter) live in

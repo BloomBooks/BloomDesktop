@@ -1,5 +1,6 @@
-import { hideImageDescriptions } from "../imageDescription/imageDescriptionUtils";
+import { unwrapDescribedImages } from "../imageDescription/imageDescriptionUtils";
 import { kBloomCanvasClass } from "../canvas/canvasElementConstants";
+import { getCanvasElementManager } from "../canvas/canvasElementPageBridge";
 import { beginLoadSynphonySettings } from "../readers/readerTools";
 import { getTheOneToolbox, IToolboxSettings } from "../toolbox";
 import { getPageIframeBody } from "../../../utils/shared";
@@ -143,18 +144,27 @@ export default class TalkingBookTool extends ToolboxToolReactAdaptor {
         }
     }
 
+    // The bloom-describedImage wrappers and the visible "|" phrase-delimiter spans. Everything else
+    // this tool adds is bloom-ui, not in the DOM (the ::highlight registry), or tool state, which
+    // detachFromPage deals with.
+    public removeToolMarkup(pageOrClone: HTMLElement): void {
+        unwrapDescribedImages(pageOrClone);
+        TalkingBookTool.enshroudPhraseDelimiters(pageOrClone);
+    }
+
     public detachFromPage() {
         const audioRecorder = getAudioRecorder();
         // not quite sure how this can be called when never initialized, but if
         // we don't have the object we certainly can't use it.
         if (audioRecorder) {
+            // Live-only: takes down the playback-order UI and resets the tool's own state.
             audioRecorder.removeRecordingSetup();
         }
-        const page = getPageIframeBody();
-        if (page) {
-            hideImageDescriptions(page);
-            TalkingBookTool.enshroudPhraseDelimiters(page);
-        }
+        // bloom-showImageDescriptions is on the body, outside the page div that removeToolMarkup()
+        // gets. Comic editing must not resume until super has removed the wrappers.
+        getPageIframeBody()?.classList.remove("bloom-showImageDescriptions");
+        super.detachFromPage();
+        getCanvasElementManager()?.resumeComicEditing();
     }
 
     // Called whenever the user edits text.

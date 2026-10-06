@@ -17,6 +17,11 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
+import {
+    getPageLoadId,
+    notePageContentMayHaveChanged,
+    startWatchingPageForSnapshots,
+} from "./js/pageSnapshot";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -33,8 +38,20 @@ function getPageId(): string {
 // This notification lets the C# know that this partciular page is ready to edit.
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
+//
+// The load id goes with it: once C# answers, it accepts snapshots only from this load (see
+// getPageLoadId()), so the page snapshot waits for that answer before it starts.
+let pageDomLoadedAnswered: Promise<unknown> | undefined;
+function tellCSharpPageDomLoaded(): Promise<unknown> {
+    if (!pageDomLoadedAnswered)
+        pageDomLoadedAnswered = postJson("editView/pageDomLoaded", {
+            pageId: getPageId(),
+            loadId: getPageLoadId(),
+        });
+    return pageDomLoadedAnswered;
+}
 document.addEventListener("DOMContentLoaded", () => {
-    postString("editView/pageDomLoaded", getPageId());
+    void tellCSharpPageDomLoaded();
 });
 
 // This allows strong typing to be done for exported functions.
@@ -48,8 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
 // but I think it is unwise. It is so easy for an extra file to get imported into another bundle,
 // and then it will bring this along, with disastrous results.
 export interface IPageFrameExports {
-    requestPageContent(): void;
+    // The combined "body <SPLIT-DATA> userCss" string that a save needs, gathered without
+    // disturbing the live page.
+    getPageContentForSaveWhenReady(): Promise<string>;
     pageUnloading(): void;
+    // See pageSnapshot.ts.
+    notePageContentMayHaveChanged(): void;
     copySelection(): void;
     cutSelection(): void;
     pasteClipboard(): void;
@@ -111,12 +132,10 @@ export interface IPageFrameExports {
 }
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, workspaceBundle.getEditablePageBundleExports().requestPageContent() can be called.
+// For example, workspaceBundle.getEditablePageBundleExports().pageUnloading() can be called.
 import {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
     topBarButtonClick,
     copySelection,
@@ -130,9 +149,11 @@ import {
     changeImageByElement,
     imageOperationCanUndo,
     imageOperationUndo,
+} from "./js/bloomEditing";
+import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
-} from "./js/bloomEditing";
+} from "./js/pageContentDelays";
 import { showGamePromptDialog } from "./toolbox/games/GameTool";
 // Called from the AI Image Editor overlay in the top window, which owns the session but
 // cannot touch this page itself; see aiImageEditorPageCommands.ts and aiImageEditorOverlay.ts.
@@ -146,11 +167,10 @@ import type {
 } from "./aiImageEditor/aiImageEditorShared";
 import type { IPageMetrics } from "./js/imageTargetResolution";
 export {
-    getBodyContentForSavePage,
-    requestPageContent,
+    getPageContentForSaveWhenReady,
     captureContentForExternalProcessing,
-    userStylesheetContent,
     pageUnloading,
+    notePageContentMayHaveChanged,
     topBarButtonClick,
     copySelection,
     cutSelection,
@@ -172,7 +192,7 @@ export {
     getAiImageEditorPageMetrics,
 };
 import { origamiCanUndo, origamiUndo } from "./js/origami";
-import { postString } from "../utils/bloomApi";
+import { postJson } from "../utils/bloomApi";
 export { origamiCanUndo, origamiUndo };
 
 const styleSheets = [
@@ -389,6 +409,13 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
+    // Start sending the page's content to C# (see pageSnapshot.ts), but not until C# has accepted
+    // this load, or it would refuse what we send. (The notice normally went at DOMContentLoaded;
+    // asking again just returns that post.)
+    void tellCSharpPageDomLoaded().then(() =>
+        startWatchingPageForSnapshots(getPageContentForSaveWhenReady),
+    );
+
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
     // back to c#-land. We have a similar listener in the pageThumbnailList itself.
@@ -406,11 +433,10 @@ export function SayHello() {
 // Legacy global exposure: mimic old webpack window["editablePageBundle"] contract used by other iframes / C#
 // NOTE: Keep this as a minimal curated surface: only expose functions intentionally callable cross-frame.
 interface EditablePageBundleApi {
-    requestPageContent: typeof requestPageContent;
     captureContentForExternalProcessing: typeof captureContentForExternalProcessing;
-    getBodyContentForSavePage: typeof getBodyContentForSavePage;
-    userStylesheetContent: typeof userStylesheetContent;
+    getPageContentForSaveWhenReady: typeof getPageContentForSaveWhenReady;
     pageUnloading: typeof pageUnloading;
+    notePageContentMayHaveChanged: typeof notePageContentMayHaveChanged;
     copySelection: typeof copySelection;
     cutSelection: typeof cutSelection;
     pasteClipboard: typeof pasteClipboard;
@@ -467,8 +493,8 @@ declare global {
         //      the finished page onto window.__bloomExternalPageContent.
         //   3. C# polls window.__bloomExternalPageContent until it is non-empty and reads it back.
         //
-        // Why globals + polling, rather than posting to the editView/pageContent API the way the live
-        // editor's requestPageContent() does:
+        // Why globals + polling, rather than posting to the editView/pageSnapshot API the way the
+        // live editor does:
         //   - That API feeds the live EditingModel; reusing it off-screen would corrupt the real
         //     editor's state. We want the same page-cleanup output, delivered out-of-band.
         //   - C#'s JS runner on this path (RunJavascriptWithStringResult_Sync_Dangerous) is
@@ -487,11 +513,10 @@ declare global {
 }
 
 window.editablePageBundle = {
-    requestPageContent,
     captureContentForExternalProcessing,
-    getBodyContentForSavePage,
-    userStylesheetContent,
+    getPageContentForSaveWhenReady,
     pageUnloading,
+    notePageContentMayHaveChanged,
     copySelection,
     cutSelection,
     pasteClipboard,

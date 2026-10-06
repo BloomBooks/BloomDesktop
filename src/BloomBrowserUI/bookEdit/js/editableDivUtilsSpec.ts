@@ -216,6 +216,52 @@ describe("EditableDivUtils Tests", () => {
         expect(div.innerHTML).toEqual(ckEditorData);
     });
 
+    // copyCkEditorDataToClone runs on every save gather of a page with a text box. These give the
+    // live box a stand-in editor; without one the function returns early and none of it runs.
+    const pageWithEditor = (liveHtml: string, editorData: string) => {
+        const live = document.createElement("div");
+        live.innerHTML = `<div class="bloom-editable">${liveHtml}</div>`;
+        const liveBox = live.querySelector("div.bloom-editable")!;
+        (liveBox as HTMLElement & { bloomCkEditor?: object }).bloomCkEditor = {
+            getData: () => editorData,
+        };
+        const clone = live.cloneNode(true) as HTMLElement;
+        return { live, liveBox, clone };
+    };
+
+    it("copyCkEditorDataToClone writes the editor's data into the clone and leaves the live page alone", () => {
+        const { live, liveBox, clone } = pageWithEditor(
+            "<p>typed<span>debris</span></p>",
+            "<p>typed</p>",
+        );
+        const liveBefore = live.innerHTML;
+
+        EditableDivUtils.copyCkEditorDataToClone(live, clone);
+
+        expect(clone.querySelector("div.bloom-editable")!.innerHTML).toBe(
+            "<p>typed</p>",
+        );
+        expect(live.innerHTML, "the live page must not change").toBe(
+            liveBefore,
+        );
+        expect(liveBox.innerHTML).toBe("<p>typed<span>debris</span></p>");
+    });
+
+    it("copyCkEditorDataToClone keeps U+200B word breaks that ckeditor's getData() reports", () => {
+        const zwsp = String.fromCharCode(0x200b);
+        const wordsWithBreak = `<p>a${zwsp}b</p>`;
+        const { live, clone } = pageWithEditor(
+            `<p>a${zwsp}b${zwsp}</p>`,
+            wordsWithBreak,
+        );
+
+        EditableDivUtils.copyCkEditorDataToClone(live, clone);
+
+        expect(clone.querySelector("div.bloom-editable")!.innerHTML).toBe(
+            wordsWithBreak,
+        );
+    });
+
     it("doCkEditorCleanup keeps U+200B word breaks that ckeditor's getData() reports", () => {
         const zwsp = String.fromCharCode(0x200b);
         const wordsWithBreak = `<p>a${zwsp}b</p>`;

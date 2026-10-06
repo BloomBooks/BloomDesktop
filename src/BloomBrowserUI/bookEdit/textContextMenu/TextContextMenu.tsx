@@ -84,10 +84,9 @@ function renderTextContextMenu(
     if (!root) {
         root = pageDocument.createElement("div");
         root.setAttribute("id", kTextContextMenuRootId);
-        // We don't have to worry about removing this before saving. Saving posts the whole
-        // body (getBodyContentForSavePage), but the C# side keeps only the div.bloom-page out
-        // of it, and this sits outside that -- as does the menu markup itself, which MUI
-        // portals into the body while it is open.
+        // We don't have to worry about removing this before saving: saving copies only the
+        // div.bloom-page (getPageHtmlForSave), and this sits outside it -- as does the menu
+        // markup itself, which MUI portals into the body while it is open.
         pageDocument.body.appendChild(root);
     }
     renderRoot(

@@ -270,7 +270,12 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         this.setupResizeObserver();
     }
 
+    // No removeToolMarkup override: the start/end rectangles are bloom-ui (their positions are kept
+    // in data-initialrect/data-finalrect), and the preview's narration highlight is not in the DOM.
+
     public detachFromPage() {
+        // This must come first: while a preview is playing, the rectangles have been moved into the
+        // animation canvas, and cleanupAnimation() is what puts the page back together.
         if (this.rootControl.state.playing) {
             this.rootControl.setState({ playing: false });
             window.clearTimeout(this.stopPreviewTimeout);
@@ -282,27 +287,19 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             this.removeElt(page.getElementById("animationStart"));
             this.removeElt(page.getElementById("animationEnd"));
         }
+        super.detachFromPage();
+
         // enhance: if more than one image...do what??
         const bloomCanvasToAnimate = this.getBloomCanvasToAnimate();
         if (!bloomCanvasToAnimate) {
             return;
         }
         EnableImageEditing(bloomCanvasToAnimate);
-        this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
         }
         if (this.sizeObserver) {
             this.sizeObserver.disconnect();
-        }
-    }
-
-    private removeCurrentAudioMarkup(): void {
-        const page = this.getPage();
-        if (!page) return;
-        const currentAudioElts = page.getElementsByClassName("ui-audioCurrent");
-        if (currentAudioElts.length) {
-            currentAudioElts[0].classList.remove("ui-audioCurrent");
         }
     }
 
@@ -899,7 +896,6 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (this.narrationPlayer) {
             this.narrationPlayer.stopListen();
         }
-        this.removeCurrentAudioMarkup();
         // stop background music
         this.getPlayer().pause();
     }

@@ -31,6 +31,12 @@ namespace Bloom.Edit
     ///			- create one instance and publish it to get the tool known to the toolbox and include its
     ///				code in the toolbox bundle: in toolboxBootstrap.ts, add a line like
     ///				ToolBox.registerTool(new MyWonderfulTool());
+    ///			- if the tool adds markup to the page for editing that should not be saved into the book,
+    ///				implement removeToolMarkup(pageOrClone). That one method is used BOTH to clean the copy
+    ///				we save (on every save, while the user keeps editing) and to clean the live page when
+    ///				it goes away, so it must be pure DOM surgery inside the element it is handed. Put
+    ///				live-only teardown in detachFromPage(), which must then call super.detachFromPage().
+    ///				See the comments on ITool in toolbox.ts.
     ///		- Make a new xlf entry with ID EditTab.Toolbox.{UCToolId}Tool, where UCToolId is the
     ///			capitalized version of your tool Id, e.g., "Music", giving the key
     ///			"EditTab.Toolbox.MusicTool". We currently assume the default English value of this
