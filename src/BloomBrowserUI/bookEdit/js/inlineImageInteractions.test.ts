@@ -758,14 +758,15 @@ describe("inlineImageInteractions", () => {
             // "Expand image to fill space" is for background images only, and Become
             // Background / Use for book thumbnail are excluded for an image inside a text
             // block. "Edit with AI" is behind a feature flag that is off here. Then a
-            // divider and Delete.
+            // divider, the arrangement section without Rotate and Flip, a divider and Delete.
             expect(items.map((i) => i.l10nId)).toEqual([
                 "EditTab.Image.EditMetadataOverlay",
                 "EditTab.Image.ChooseImage",
                 "EditTab.Image.CopyImage",
                 "EditTab.Image.PasteImage",
-                "EditTab.Image.Reset",
+                "-",
                 "EditTab.Image.Transparency",
+                "EditTab.Image.Reset",
                 "-",
                 "Common.Delete",
             ]);
