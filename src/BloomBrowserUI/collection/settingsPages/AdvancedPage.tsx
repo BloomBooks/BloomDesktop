@@ -1,4 +1,3 @@
-import { css } from "@emotion/react";
 import * as React from "react";
 import {
     ConfigrBoolean,
@@ -57,27 +56,16 @@ export function useAdvancedPage(props: {
             </ConfigrGroup>
             <ConfigrGroup label={collectionLabel}>
                 {/* A Team Collection may not be renamed. */}
-                <div
-                    css={css`
-                        // Config-R draws a disabled row's description as faintly as the rest of
-                        // the row, but here it is the explanation the user needs to read, so it
-                        // gets MUI's ordinary secondary text color.
-                        .MuiTypography-caption {
-                            color: rgba(0, 0, 0, 0.6);
-                        }
-                    `}
-                >
-                    <ConfigrInput
-                        label={collectionNameLabel}
-                        path="advanced.collectionName"
-                        disabled={isTeamCollection}
-                        description={
-                            isTeamCollection
-                                ? noRenameTeamCollectionMessage
-                                : undefined
-                        }
-                    />
-                </div>
+                <ConfigrInput
+                    label={collectionNameLabel}
+                    path="advanced.collectionName"
+                    disabled={isTeamCollection}
+                    description={
+                        isTeamCollection
+                            ? noRenameTeamCollectionMessage
+                            : undefined
+                    }
+                />
             </ConfigrGroup>
         </ConfigrPage>
     );
