@@ -10,6 +10,8 @@ import {
 } from "../../../utils/bloomApi";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { CollectionChooserDialog } from "../../../collection/CollectionChooserDialog";
+import { ShareDialog } from "../../../sharing/ShareDialog";
+import ShareIcon from "@mui/icons-material/Share";
 const bloomApiPrefix = getBloomApiPrefix(false);
 
 const kOpenCreateCollectionIcon = `${bloomApiPrefix}images/OpenCreateCollection24x24.png`;
@@ -40,6 +42,8 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
     const handleOpenOrCreateClick = React.useCallback(() => {
         setCollectionChooserOpen(true);
     }, []);
+
+    const [shareDialogOpen, setShareDialogOpen] = React.useState(false);
 
     return (
         <>
@@ -96,11 +100,23 @@ export const CollectionTopBarControls: React.FunctionComponent = () => {
                         backgroundColor={mainButtonBackground}
                         textColor={mainButtonTextColor}
                     />
+                    <TopBarButton
+                        icon={<ShareIcon />}
+                        labelL10nKey="CollectionTab.ShareButton"
+                        labelEnglish="Share"
+                        onClick={() => setShareDialogOpen(true)}
+                        backgroundColor={mainButtonBackground}
+                        textColor={mainButtonTextColor}
+                    />
                 </div>
             </div>
             <CollectionChooserDialog
                 open={collectionChooserOpen}
                 onClose={() => setCollectionChooserOpen(false)}
+            />
+            <ShareDialog
+                open={shareDialogOpen}
+                onClose={() => setShareDialogOpen(false)}
             />
         </>
     );

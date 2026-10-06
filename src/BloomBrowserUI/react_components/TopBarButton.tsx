@@ -5,7 +5,9 @@ import { BloomTooltip } from "./BloomToolTip";
 import { kUiFontStack } from "../bloomMaterialUITheme";
 
 export interface ITopBarButtonProps {
-    iconPath: string;
+    // Give either an image file (iconPath) or an element such as an MUI icon (icon).
+    iconPath?: string;
+    icon?: React.ReactNode;
     disabledIconPath?: string;
     labelL10nKey: string;
     labelEnglish: string;
@@ -42,6 +44,7 @@ export const TopBarButton: React.FunctionComponent<ITopBarButtonProps> = (
                 props.onClick ? undefined : props.clickApiEndpoint
             }
             enabledImageFile={props.iconPath}
+            imageElement={props.icon}
             disabledImageFile={
                 props.disabledIconPath ? props.disabledIconPath : props.iconPath
             }

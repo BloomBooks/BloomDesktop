@@ -244,6 +244,7 @@ namespace Bloom
                                 typeof(PublishApi),
                                 typeof(LibraryPublishApi),
                                 typeof(AccountApi),
+                                typeof(SharingApi),
                                 typeof(AvatarApi),
                                 typeof(WorkspaceApi),
                                 typeof(BookCollectionHolder),
@@ -529,6 +530,7 @@ namespace Bloom
             var accountApi = _scope.Resolve<AccountApi>();
             accountApi.RegisterWithApiHandler(server.ApiHandler);
             accountApi.RestoreSavedLoginIfAny();
+            _scope.Resolve<SharingApi>().RegisterWithApiHandler(server.ApiHandler);
             // Register the avatar endpoint. (The persisted known-photo map that gives a previously
             // logged-in user their nicer avatar source across restarts is loaded lazily by AvatarCache
             // on its first use -- serving the first avatar request -- not eagerly here.)
