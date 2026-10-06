@@ -4323,14 +4323,16 @@ namespace Bloom.Book
             string pageId = pageFromEditedDom.GetAttribute("id");
             pageToSaveToDisk = GetPageFromStorage(pageId);
 
-            // OuterXml rather than InnerXml because ProcessPageAfterEditing writes the page div’s
-            // own class, lang and style attributes too.
-            var pageAsTheBookHadIt = pageToSaveToDisk.OuterXml;
+            // The page div itself, not just its content, because ProcessPageAfterEditing writes the
+            // div’s own class, lang and style attributes too. Attribute order is ignored, because
+            // the browser does not preserve it (see HtmlDom.GetXmlIgnoringAttributeOrder).
+            var pageAsTheBookHadIt = HtmlDom.GetXmlIgnoringAttributeOrder(pageToSaveToDisk);
 
             HtmlDom.ProcessPageAfterEditing(pageToSaveToDisk, pageFromEditedDom);
             HtmlDom.SetImageAltAttrsFromDescriptions(pageToSaveToDisk, Language1Tag);
 
-            var pageChanged = pageToSaveToDisk.OuterXml != pageAsTheBookHadIt;
+            var pageChanged =
+                HtmlDom.GetXmlIgnoringAttributeOrder(pageToSaveToDisk) != pageAsTheBookHadIt;
 
             // The main condition for being able to just write the page is that no shareable data on the
             // page changed during editing. If that's so we can skip this step.

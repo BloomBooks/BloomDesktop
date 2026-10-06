@@ -1018,6 +1018,74 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void UpdateDomFromEditedPage_OnlyAttributeOrderDiffers_ReportsUnchanged()
+        {
+            // The editing page adds data-languagetipcontent to text boxes, and the browser can hand
+            // it back in a different place among the element's attributes from where the book had
+            // it. That says nothing new, so it must not make the page look edited: if it did, every
+            // visit to such a page would rewrite the book.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            // An element INSIDE the page: the page's content is replaced wholesale by what the
+            // browser sent, so inner attribute order reaches the book as the browser had it. (The
+            // page div's own attributes are copied onto the existing div, which keeps its order.)
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.SetAttribute("data-languagetipcontent", "English");
+            textarea.SetAttribute("data-other", "x");
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out _);
+            // That stored the textarea with data-languagetipcontent before data-other. Now hand it
+            // back with the same attributes the other way round, as the browser can.
+            dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            textarea.RemoveAttribute("data-languagetipcontent");
+            textarea.SetAttribute("data-languagetipcontent", "English");
+            Assert.That(
+                textarea.AttributePairs.Last().Name,
+                Is.EqualTo("data-languagetipcontent"),
+                "test setup: the attribute should now come last"
+            );
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.False);
+        }
+
+        [Test]
+        public void UpdateDomFromEditedPage_AttributeValueChanged_ReportsChanged()
+        {
+            // Guards the test above: ignoring attribute order must not mean ignoring attributes.
+            var book = CreateBook();
+            var page = book.GetPages().First();
+            book.UpdateDomFromEditedPage(
+                book.GetEditableHtmlDomForPage(page),
+                out _,
+                needToDoFullSave: false,
+                out _
+            );
+
+            var dom = book.GetEditableHtmlDomForPage(book.GetPages().First());
+            var textarea =
+                dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']") as SafeXmlElement;
+            Assert.That(textarea, Is.Not.Null, "test setup: expected the first page's textarea");
+            textarea.SetAttribute("data-test-marker", "something new");
+
+            book.UpdateDomFromEditedPage(dom, out _, needToDoFullSave: false, out var changed);
+
+            Assert.That(changed, Is.True);
+        }
+
+        [Test]
         public void SavePage_ChangeMadeToSrcOfImg_StorageUpdated()
         {
             var book = CreateBook();

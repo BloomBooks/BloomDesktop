@@ -11,6 +11,54 @@ namespace BloomTests.Book
     [TestFixture]
     public sealed class HtmlDomTests
     {
+        private static SafeXmlElement ParseElement(string xml)
+        {
+            var doc = SafeXmlDocument.Create();
+            doc.LoadXml(xml);
+            return doc.DocumentElement;
+        }
+
+        [Test]
+        public void GetXmlIgnoringAttributeOrder_SameAttributesInAnotherOrder_Equal()
+        {
+            var a = ParseElement(
+                "<div class='x' lang='en'><p data-a='1' data-b='2'>text &amp; more</p></div>"
+            );
+            var b = ParseElement(
+                "<div lang='en' class='x'><p data-b='2' data-a='1'>text &amp; more</p></div>"
+            );
+            Assert.That(a.OuterXml, Is.Not.EqualTo(b.OuterXml), "test setup: order differs");
+
+            Assert.That(
+                HtmlDom.GetXmlIgnoringAttributeOrder(a),
+                Is.EqualTo(HtmlDom.GetXmlIgnoringAttributeOrder(b))
+            );
+        }
+
+        [Test]
+        public void GetXmlIgnoringAttributeOrder_DifferentValueTextOrAttribute_NotEqual()
+        {
+            var original = HtmlDom.GetXmlIgnoringAttributeOrder(
+                ParseElement("<div class='x'><p lang='en'>text</p></div>")
+            );
+            foreach (
+                var changed in new[]
+                {
+                    "<div class='y'><p lang='en'>text</p></div>", // a value
+                    "<div class='x'><p lang='en'>other</p></div>", // the text
+                    "<div class='x'><p lang='en' dir='rtl'>text</p></div>", // an extra attribute
+                    "<div class='x'><p lang='en'>text</p><p/></div>", // an extra element
+                }
+            )
+            {
+                Assert.That(
+                    HtmlDom.GetXmlIgnoringAttributeOrder(ParseElement(changed)),
+                    Is.Not.EqualTo(original),
+                    changed
+                );
+            }
+        }
+
         [Test]
         public void Title_EmptyDom_RoundTrips()
         {

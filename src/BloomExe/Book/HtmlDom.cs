@@ -2249,6 +2249,49 @@ namespace Bloom.Book
             element.SetAttribute("style", string.Join("; ", filteredSegments) + ";");
         }
 
+        /// <summary>
+        /// The XML of 'node' with every element's attributes in name order, for deciding whether
+        /// two versions of a page say the same thing. Attribute order means nothing in HTML, and it
+        /// does not survive editing: the editing page sets data-languagetipcontent on text boxes,
+        /// and the browser can hand an attribute back in a different place from where the book had
+        /// it. Comparing OuterXml would then report a change on every visit to such a page and
+        /// rewrite the book each time.
+        /// </summary>
+        public static string GetXmlIgnoringAttributeOrder(SafeXmlNode node)
+        {
+            var builder = new StringBuilder();
+            AppendXmlIgnoringAttributeOrder(node, builder);
+            return builder.ToString();
+        }
+
+        private static void AppendXmlIgnoringAttributeOrder(SafeXmlNode node, StringBuilder builder)
+        {
+            if (node.NodeType != XmlNodeType.Element)
+            {
+                builder.Append(node.OuterXml);
+                return;
+            }
+            builder.Append('<').Append(node.Name);
+            foreach (
+                var attr in (node.AttributePairs ?? new NameValue[0]).OrderBy(
+                    a => a.Name,
+                    StringComparer.Ordinal
+                )
+            )
+            {
+                builder
+                    .Append(' ')
+                    .Append(attr.Name)
+                    .Append("=\"")
+                    .Append(System.Security.SecurityElement.Escape(attr.Value))
+                    .Append('"');
+            }
+            builder.Append('>');
+            foreach (var child in node.ChildNodes)
+                AppendXmlIgnoringAttributeOrder(child, builder);
+            builder.Append("</").Append(node.Name).Append('>');
+        }
+
         public static void ProcessPageAfterEditing(
             SafeXmlElement destinationPageDiv,
             SafeXmlElement edittedPageDiv
