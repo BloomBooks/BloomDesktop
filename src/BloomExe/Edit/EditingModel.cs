@@ -1689,18 +1689,12 @@ namespace Bloom.Edit
         /// <summary>
         /// Save all the changes to the current page, then reload it.
         ///
-        /// The reload used to be needed just to restore the UI markup the Save stripped out. That
-        /// is no longer true (BL-13502), but it is still doing a second job for these callers, and
-        /// that is why it stays: the page has to be rebuilt from the book DOM either because C#
-        /// just changed it (a new topic in the data div, new book settings) or because the browser
-        /// created elements that have never been through SetupElements (a new origami layout, an
-        /// imported video, a translation group replaced by a derived field).
-        ///
-        /// pageContent is the current page's content when the browser sent it with the request (see
-        /// SavePageAndReloadIt(ApiRequest)); the PageRefreshEvent handlers have no request to carry
-        /// it, and leave it null, and the snapshot the browser last volunteered is used instead.
+        /// The page has to be rebuilt from the book DOM, either because C# just changed it (a new
+        /// topic in the data div, new book settings) or because the browser created elements that
+        /// have never been through SetupElements (a new origami layout, an imported video, a
+        /// translation group replaced by a derived field).
         /// </summary>
-        internal void SavePageAndReloadIt(bool forceFullSave = false, string pageContent = null)
+        internal void SavePageAndReloadIt(bool forceFullSave = false)
         {
             if (CannotSavePage())
                 return;
@@ -1709,8 +1703,7 @@ namespace Bloom.Edit
                 () => _pageSelection.CurrentSelection.Id,
                 // Whatever our caller changed has already said so, via forceFullSave or
                 // _pageHasUnsavedDataDerivedChange.
-                actionChangesTheBook: false,
-                pageContent: pageContent
+                actionChangesTheBook: false
             );
         }
 
@@ -1726,11 +1719,9 @@ namespace Bloom.Edit
 
         internal void SavePageAndReloadIt(ApiRequest request)
         {
-            // The browser sends the current page's content with this request; see
-            // saveChangesAndRethinkPage() in bloomEditing.ts. This is the one request that still
-            // carries the page, because the browser makes it straight after restructuring the
-            // page, before any snapshot of the result could have been posted.
-            SavePageAndReloadIt(pageContent: request.GetPageContentOrNull());
+            // The browser has made sure we have its snapshot of the restructured page before it
+            // asks; see saveChangesAndRethinkPage() in bloomEditing.ts.
+            SavePageAndReloadIt();
             request.PostSucceeded();
         }
 
@@ -1780,17 +1771,12 @@ namespace Bloom.Edit
         /// that changes the book and does not say so has its change written nowhere, whereas one
         /// that says so needlessly costs a write. Only callers whose action merely names the page
         /// to go to next pass false.</param>
-        /// <param name="pageContent">The current page's content, when the request that got us here
-        /// brought it along (only SavePageAndReloadIt does). Otherwise we use whatever the browser
-        /// last volunteered; a null snapshot means the page has not changed
-        /// since it loaded, not "we do not know".</param>
         /// <returns>What happened, for the few callers that have work to do only after a save that
         /// completed (see SaveOutcome). Most callers ignore it.</returns>
         public SaveOutcome MergeCurrentPageThenSave(
             Func<string> changeBookBeforeWriting,
             Action ifNotInAStateToSave = null,
-            bool actionChangesTheBook = true,
-            string pageContent = null
+            bool actionChangesTheBook = true
         )
         {
             if (CannotSavePage() || !_havePageToSave)
@@ -1799,7 +1785,7 @@ namespace Bloom.Edit
                 return SaveOutcome.Declined;
             }
             var outcome = _stateMachine.SaveThenNavigate(
-                pageContent ?? TakeCurrentPageSnapshot(),
+                TakeCurrentPageSnapshot(),
                 () =>
                 {
                     if (actionChangesTheBook)

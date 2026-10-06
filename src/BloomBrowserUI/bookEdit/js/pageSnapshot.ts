@@ -151,10 +151,11 @@ function postInOrder(pageId: string, url: string, body: string): void {
     });
 }
 
-async function takeSnapshot(): Promise<void> {
+// Resolves to false only if the page could not be read (which has been reported).
+async function takeSnapshot(): Promise<boolean> {
     const pageId = pageIdBeingWatched;
     const gather = gatherPageContent;
-    if (!pageId || !gather) return;
+    if (!pageId || !gather) return true;
     let content: string;
     try {
         // Waits for any in-flight work that belongs in the page (see pageContentDelays), then
@@ -177,19 +178,31 @@ async function takeSnapshot(): Promise<void> {
                 (error instanceof Error ? error.message : String(error)),
             error instanceof Error ? error.stack : undefined,
         );
-        return;
+        return false;
     }
 
     // The page may have been unloaded, or navigated, while we were waiting.
-    if (pageIdBeingWatched !== pageId) return;
+    if (pageIdBeingWatched !== pageId) return true;
     // Work began between the gather's read and our getting here, and we have already told C# the
     // page is busy. What we read predates the work; the snapshot that ends the busy spell will
     // carry it, and sending this one would tell C# the page is idle when it is not.
-    if (busyWith !== undefined) return;
-    if (content === lastPosted && !snapshotOwed) return;
+    if (busyWith !== undefined) return true;
+    if (content === lastPosted && !snapshotOwed) return true;
     lastPosted = content;
     snapshotOwed = false;
     postInOrder(pageId, snapshotUrl(pageId), content);
+    return true;
+}
+
+/**
+ * Send C# the page as it is now, without waiting for the page to be quiet, and resolve once C#
+ * has answered. For a request that makes C# save a page the caller has only just changed. Resolves
+ * to false if the page could not be read; that has already been reported to the user.
+ */
+export async function sendSnapshotNow(): Promise<boolean> {
+    const ok = await takeSnapshot();
+    await postQueue;
+    return ok;
 }
 
 // The delay register (pageContentDelays.ts) has gone busy or idle. C# needs to know, because a

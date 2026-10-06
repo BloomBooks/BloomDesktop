@@ -4,6 +4,7 @@ import {
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
+    sendSnapshotNow,
     getPageLoadId,
 } from "./pageSnapshot";
 import {
@@ -466,6 +467,41 @@ describe("pageSnapshot", () => {
         await letEverythingSettle();
         expect(posted.length, "a later change is still sent").toBe(3);
         expect(reported.length, "and the user is told only once").toBe(1);
+    });
+
+    it("sends the page at once when asked, and resolves only after C# has answered", async () => {
+        // saveChangesAndRethinkPage restructures the page and then asks C# to save and reload it
+        // straight away, before the usual quiet time is up.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheLoadedPageBeSent();
+
+        let releasePost: () => void = () => {};
+        postHook = () =>
+            new Promise<unknown>((resolve) => {
+                releasePost = () => resolve({ data: true });
+            });
+        contentToReport = "a new origami layout";
+        let done = false;
+        const sending = sendSnapshotNow().then((ok) => {
+            done = ok;
+        });
+        await letEverythingSettle();
+        expect(posted.map((p) => p.body)).toEqual(["a new origami layout"]);
+        expect(done, "not until C# has answered").toBe(false);
+
+        releasePost();
+        await sending;
+        expect(done).toBe(true);
+    });
+
+    it("says so when asked to send the page at once and it cannot be read", async () => {
+        startWatchingPageForSnapshots(() =>
+            Promise.reject(new Error("no marginBox")),
+        );
+        expect(await sendSnapshotNow()).toBe(false);
+        expect(reported.length).toBe(1);
+        expect(posted.length).toBe(0);
     });
 
     it("drops a message C# refuses, without reporting it or offering it again", async () => {

@@ -25,7 +25,6 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import BloomField from "../bloomField/BloomField";
 import BloomNotices from "./bloomNotices";
-import { reportError } from "../../lib/errorHandler";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import {
@@ -91,7 +90,7 @@ import { setupDragActivityTabControl } from "../toolbox/games/GameTool";
 import { addScrollbarsToPage, cleanupNiceScroll } from "bloom-player";
 import { removeNiceScrollArtifacts } from "./niceScrollCleanup";
 import { removeEditorChromeFromClone } from "./editorChromeCleanup";
-import { stopWatchingPageForSnapshots } from "./pageSnapshot";
+import { sendSnapshotNow, stopWatchingPageForSnapshots } from "./pageSnapshot";
 import { setupBookLinkGrids } from "./linkGrid";
 import { fitImageOverTextSplits } from "./autoFitImageOverTextSplits";
 import PlaceholderProvider from "./PlaceholderProvider";
@@ -1409,7 +1408,7 @@ function getPageContentForSave(): string {
 
 // The way anything outside this file gets the current page's content: wait for any in-flight async
 // DOM work that belongs in the saved page, then gather. The page snapshot (pageSnapshot.ts) reads
-// the page through this, and so does saveChangesAndRethinkPage(), below.
+// the page through this.
 //
 // Note the gather happens in the continuation of the await, with nothing awaited in between, so no
 // timer can start new work between our finding the register empty and our reading the page.
@@ -1419,39 +1418,19 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 }
 
 // Save the page and have C# rebuild it from the updated book DOM. Unlike an ordinary save, the
-// page IS reloaded, and for these callers that is the point rather than a cost: they have
-// restructured the page in ways that have never been through SetupElements (a new origami layout,
-// an imported video, a translation group replaced by a derived field), and the reload is what runs
-// the page's setup over the result.
+// page IS reloaded, and for these callers that is the point: they have restructured the page in
+// ways that have never been through SetupElements (a new origami layout, an imported video, a
+// translation group replaced by a derived field), and the reload runs the page's setup over the
+// result.
 //
-// This is the one request that sends the page's content along, rather than leaving C# to use the
-// snapshot: the caller has only just restructured the page, so no snapshot of the result can have
-// been posted yet. See EditingModel.SavePageAndReloadIt.
+// The caller has only just changed the page, so we send the snapshot now rather than after the
+// usual quiet time, and post only once C# has it. If the page cannot be read, the user has been
+// told, and we leave the page as it is rather than reload it from a book without the change.
 //
 // The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
-//
-// Every caller does `void saveChangesAndRethinkPage()`, so nothing here may reject. The post
-// cannot (wrapAxios swallows the rejection), but the gather can -- and a rejection nobody catches
-// is silent, because the global unhandledrejection handler is commented out in lib/errorHandler.ts.
-// The user would be left looking at a restructured page -- a new origami layout, a video they just
-// imported -- that was never saved and never rebuilt, with no hint that anything went wrong. So we
-// say so, the same way pageSnapshot.ts does for the failure it cannot afford to be quiet about.
 export async function saveChangesAndRethinkPage(): Promise<void> {
-    let content: string;
-    try {
-        content = await getPageContentForSaveWhenReady();
-    } catch (error) {
-        reportError(
-            "Bloom could not save your changes to this page: " +
-                (error instanceof Error ? error.message : String(error)),
-            error instanceof Error ? error.stack : undefined,
-        );
-        return;
-    }
-    await postThatMightNavigate(
-        "common/saveChangesAndRethinkPageEvent",
-        content,
-    );
+    if (!(await sendSnapshotNow())) return;
+    await postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
 }
 
 // Produce the HTML of the current page as it should be saved: a copy of the body with all the

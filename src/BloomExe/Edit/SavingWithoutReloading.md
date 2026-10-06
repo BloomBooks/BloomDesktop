@@ -60,10 +60,9 @@ On top of that:
   browser's content is in the book DOM and before the book is written, and returns the page to go
   to), write the book, navigate. The whole `SavePending -> SavedAndStripped -> Navigating` sequence
   collapses into one `Editing -> Navigating` step.
-- **`EditingModel.MergeCurrentPageThenSave(changeBookBeforeWriting, ..., pageContent)`** -- the way
-  in for everything that changes pages. It uses the snapshot the browser last volunteered (see "The
-  page snapshot" below), and a null snapshot means the page has not changed. Only
-  `SavePageAndReloadIt` passes content of its own (see below).
+- **`EditingModel.MergeCurrentPageThenSave(changeBookBeforeWriting, ...)`** -- the way in for
+  everything that changes pages. It uses the snapshot the browser last volunteered (see "The page
+  snapshot" below), and a null snapshot means the page has not changed.
 - `EditingModel.SaveCurrentPageAndBook()` -- save and stay put: leaving the Edit tab,
   closing the collection, Copy Page, opening the AI image editor. Both routes go through the same
   `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so every save makes the same
@@ -91,12 +90,12 @@ keep the page list's requests in order.)
 | Delete Page (button and context menu) | ditto | ditto |
 | Paste Page (context menu) | ditto | ditto |
 | dragging a page to a new position | ditto | ditto |
-| Change Layout, import a video, convert a field to a derived one | round trip, then reload the page | save from the content sent with the request, then reload -- the reload is doing a second job for them (section 1) |
+| Change Layout, import a video, convert a field to a derived one | round trip, then reload the page | send the snapshot at once, then save from it and reload -- the reload is doing a second job for them (section 1) |
 | **Copy Page** (context menu) | round trip **and a reload of the page being copied** | `SaveCurrentPageAndBook` -- no navigation at all |
 
-The last row is the one request that still carries the page (`saveChangesAndRethinkPage()` in
-`bloomEditing.ts`): the browser makes it straight after restructuring the page, before any snapshot
-of the result could have been posted.
+For the last row the browser has only just restructured the page, so `saveChangesAndRethinkPage()`
+(`bloomEditing.ts`) sends the snapshot at once (`sendSnapshotNow()`) and posts the command only after
+C# has answered. No request carries the page itself.
 
 Copy Page loses its reload entirely: copying doesn't change the page you are looking at, so with
 the snapshot in hand there is nothing left to navigate to. The others still navigate, because they

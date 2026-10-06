@@ -670,18 +670,11 @@ export function post(
 // If we one day need to do this with a callback, we will need to think very
 // hard about possible exceptions during the callback (and the possibility
 // that the callback is somehow messed up by the page reloading).
-// The optional value is sent as the body, as text/plain, exactly as postString() does. It is
-// there for saveChangesAndRethinkPage() in bloomEditing.ts, which sends the current page's
-// content along so C# can save it without waiting for a snapshot.
-export function postThatMightNavigate(urlSuffix: string, value?: string) {
-    const config =
-        value === undefined
-            ? undefined
-            : { headers: { "Content-Type": "text/plain" } };
+export function postThatMightNavigate(urlSuffix: string) {
     // The internal catch should suppress any errors. In case that fails (which it has), passing
     // false to wrapAxios further suppresses any error reporting.
     return wrapAxios(
-        axios.post(getBloomApiPrefix() + urlSuffix, value, config).catch(),
+        axios.post(getBloomApiPrefix() + urlSuffix).catch(),
         false,
     );
 }
