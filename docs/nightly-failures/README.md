@@ -1,6 +1,6 @@
 # Nightly failures: open issues
 
-**Last updated:** 2026-10-02 (nightlies through the 2026-10-02 run have been triaged)
+**Last updated:** 2026-10-06 (nightlies through the 2026-10-06 run have been triaged)
 
 Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
 and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
@@ -21,7 +21,39 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 - **Status:** not fixed separately. The toolbox rework removes the jQuery accordion entirely
   ([PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427),
   [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)), which should fix it.
-  Confirm the test stays green once that lands.
+  #8427 merged on 2026-10-06, after that night's run. Remove this entry once the nightlies have
+  stayed green on it for a while.
+
+## BookGridSetup component tests: the component fails to load
+
+- **Failed:** 2026-10-06. All 21 BookGridSetup component tests (`bookgridsetup-basic` and
+  `-extended.uitest.ts`); every other component passed.
+- **What the trace shows (first look):** the harness could not load the component: "Failed to
+  load module ../BookGridSetup/BookGridSetup: styled_default is not a function", from one of
+  Vite's pre-bundled dependency chunks. BookGridSetup has not changed since September, and the
+  only commit since the green 10-05 run (#8227, rotate images) does not touch it. Vite's
+  "Failed to resolve dependency: @mui/styled-engine, present in optimizeDeps.include" warning
+  shows in the green 10-05 run too, so it does not explain this on its own.
+- **Local run (2026-10-06, current master, cold Vite cache as on CI):** all 21 fail with the
+  same error, so this is a real break, not CI's environment. No package, lockfile or Vite config
+  changed since the green run. The suspect is #8227's new `@mui/icons-material/Flip` and
+  `RotateRight` imports, which change what Vite pre-bundles. That is unconfirmed.
+- **Status:** no card or PR.
+
+## Rotate and flip pictures: dragging the speech bubble onto the canvas adds nothing
+
+- **Failed:** 2026-10-06, its first nightly. `BloomE2E/tests/rotate-and-flip-images.spec.ts`
+  "builds a book with a background picture page and a page of overlay items": after the speech
+  palette item is dragged onto the canvas, the element count stays at 3 (30 s). The file runs in
+  serial mode, so its other 16 tests were skipped.
+- **What the trace shows (first look):** the overlay picture and the text box had already been
+  added, and the text box was still selected when the speech bubble was dropped. Whether the
+  drop missed, or Bloom ignored it, is not known.
+- **Local runs (2026-10-06, current master):** the failing test passed 3 times out of 3, and
+  every other test that ran passed too, so it does not reproduce here. It may be a race that
+  only CI's slower machine hits.
+- **Status:** the test came in with [PR #8227](https://github.com/BloomBooks/BloomDesktop/pull/8227)
+  (BL-16741). No card or PR for the failure.
 
 ## Link chooser: the preselected page is not scrolled into view
 
@@ -47,7 +79,7 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
   - Tool half: left to the toolbox rework,
     [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)
     ([PR #8109](https://github.com/BloomBooks/BloomDesktop/pull/8109),
-    [PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427)).
+    [PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427), merged 2026-10-06).
   - The card has a note about the skipped tests.
 
 ## Component tests: lost connection to the dev server
