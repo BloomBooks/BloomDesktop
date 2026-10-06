@@ -19,35 +19,25 @@ export type UndoEntryKind = "pageSnapshot" | "subtreeSnapshot" | "custom";
 /**
  * One undoable step.
  *
- * ## The rule that shapes this interface: an entry must not close over page-frame objects
+ * The stack lives in the page frame and dies with it, so an entry only ever has to work on the
+ * page as it is currently loaded, and it may hold references to that page's elements. Two rules
+ * for writing one (PLAN.md 4.1):
  *
- * The page iframe's JS context dies not only when the user changes page but on same-page
- * *reloads* — leaving origami layout mode posts `saveChangesAndRethinkPageEvent`, importing a
- * video and changing the topic rebuild the page under its own id, and several tools navigate. (An
- * earlier draft cited ctrl+wheel zoom too; that is now a CSS transform, `workspaceRoot.setZoom`,
- * and reloads nothing.) A function object created in that frame dies with it, so an entry built by
- * page-frame code becomes a live grenade: `undo()` would mutate a detached document, or simply
- * throw.
- *
- * So entries are **built in the workspace frame** (which survives), out of **pure data** — HTML
- * strings, indices, ids. Anything an entry needs from the page frame it must re-acquire *inside*
- * `undo()` via `getEditablePageBundleExports()`. Page-frame code that wants to record an undo
- * therefore sends a *description* of what happened across the frame boundary and lets the
- * workspace frame build the entry; it never sends a closure. See PLAN.md 4.1 and 4.2.
+ * - **Check before undoing.** Before reversing its change, an entry should check that what it
+ *   changed is still the way it left it, for instance that an element's HTML still matches what
+ *   the change produced. Something the stack never recorded may have changed it since. If it has
+ *   changed, the entry should throw rather than apply: the stack then discards itself, so the
+ *   user loses undo rather than having the page damaged.
+ * - **Prefer data that would survive a reload.** Where it costs little, capture state as data
+ *   (HTML strings, structural positions) and find the target again inside `undo()`, rather than
+ *   holding elements, ranges or closures over page objects. Then letting undo survive a same-page
+ *   reload later would not mean rewriting the entry. This is a preference, not a rule: where
+ *   holding a reference is clearly simpler, do so, and say so in a comment where the entry is
+ *   built, so the cost of changing course stays visible.
  */
 export interface IUndoEntry {
     /** Human-readable, e.g. "Delete canvas element". For tooltips and logging, not identity. */
     label: string;
-
-    /**
-     * The page this entry belongs to, or `undefined` if it survives a page change.
-     *
-     * `undefined` is for workspace-owned operations — deleting a page being the main one, where
-     * the whole point is that the page is gone. Everything else is page-scoped and is discarded
-     * when the user moves to another page, because its captured state would no longer mean
-     * anything.
-     */
-    pageId: string | undefined;
 
     /** Which restore strategy this entry represents. See {@link UndoEntryKind}. */
     kind: UndoEntryKind;

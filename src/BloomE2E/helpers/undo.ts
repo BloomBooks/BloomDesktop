@@ -3,7 +3,7 @@
 //
 // Bloom has several undo mechanisms: Change Layout mode's, the reader tools' per-box text undo, the
 // picture undo, and CKEditor's per-box undo. The Undo button picks between them through Bloom's one
-// undo stack (bookEdit/undo/ in BloomBrowserUI), in that order. That a text box's text changed back
+// undo stack (bookEdit/undo/ in BloomBrowserUI), which lives in the page frame, in that order. That a text box's text changed back
 // says nothing about which of them ran, so watchUndoMechanisms counts the calls each one receives,
 // by wrapping the functions the stack reaches it through. (The calls are counted in the page, so
 // they are lost when the page reloads; watch again after leaving a page or Change Layout mode.)
@@ -109,11 +109,9 @@ export async function watchUndoMechanisms(page: Page): Promise<void> {
             "updateMarkupAfterUndoOrRedo",
             "readerMarkupRepaint",
         );
-        count(
-            workspace as unknown as Record<string, unknown>,
-            "handleRedo",
-            "stackRedo",
-        );
+        // The one undo stack lives in the page frame, and its Ctrl+Y binding redoes through the
+        // page bundle's handleRedo.
+        count(pageExports, "handleRedo", "stackRedo");
     });
     await editablePageFrame(page).evaluate(() => {
         interface ICkEditor {

@@ -11,7 +11,6 @@ import { IUndoEntry } from "./undoTypes";
 function makeEntry(label: string, log: string[]): IUndoEntry {
     return {
         label,
-        pageId: "page1",
         kind: "custom",
         undo: () => {
             log.push(`undo ${label}`);

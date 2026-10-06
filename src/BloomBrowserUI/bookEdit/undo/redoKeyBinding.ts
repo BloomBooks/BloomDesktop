@@ -1,10 +1,8 @@
 // Ctrl+Y in the page frame reaches the one undo stack's Redo (BL-6681).
 //
-// Why the binding is in the PAGE frame although the stack lives in the workspace frame: keyboard
-// events inside the page iframe are delivered to that iframe's document and never reach the parent,
-// so a workspace-frame handler would fire only when focus is outside the page -- which is the
-// opposite of when Redo is wanted. This is also why both pre-existing Ctrl+Y handlers are in the
-// page frame: origami's on `html` (origami.ts) and the reader tools' on each editable
+// The binding, like the stack, is in the page frame: keyboard events inside the page iframe are
+// delivered to that iframe's document and never reach the parent. Both pre-existing Ctrl+Y handlers
+// are there too: origami's on `html` (origami.ts) and the reader tools' on each editable
 // (decodableReaderTool.tsx).
 //
 // Why it is the LAST resort and not the first: those two handlers claim the keystroke where they
@@ -23,7 +21,7 @@
 //
 // There is no Redo button and no C# involvement: Redo is JS-only by decision (PLAN.md 10).
 
-/** The part of the workspace bundle this binding needs. Kept small so a test can fake it. */
+/** The part of the page bundle this binding needs. Kept small so a test can fake it. */
 export interface IRedoTarget {
     canRedo(): boolean;
     handleRedo(): void;
@@ -46,11 +44,10 @@ export function isInChangeLayoutMode(doc: Document): boolean {
 }
 
 /**
- * Listen for Ctrl+Y on `doc` and redo through the workspace bundle when it has something to redo.
+ * Listen for Ctrl+Y on `doc` and redo through the page bundle when the stack has something to redo.
  *
- * `getTarget` is called per keystroke rather than once, because the workspace bundle is reached
- * across frames and may legitimately be absent (the off-screen page-processing context loads a
- * page with no workspace root). A null target means "do nothing", not an error.
+ * `getTarget` is called per keystroke rather than once, because the page bundle is set up after
+ * this binding may be installed. A null target means "do nothing", not an error.
  */
 export function installRedoKeyBinding(
     doc: Document,

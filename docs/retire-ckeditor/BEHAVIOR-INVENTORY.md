@@ -200,7 +200,7 @@ DOM, so **G1 should get strictly better**.
 |---|---|---|
 | H10 | One ordered stack: operations undo in the order performed, across text, images, layout and structure | §4.1, Stage 1 |
 | H11 | **Deleting a canvas element is undoable** | Stage 2b |
-| H12 | **Deleting a page is undoable**, restoring it at its original index with correct page numbering | Stage 2a |
+| H12 | ~~Deleting a page is undoable~~: dropped, because undo covers only the page as currently loaded | PLAN.md §10 decision 7 |
 | H13 | Ctrl+Z / Ctrl+Y work anywhere in the page, not only in layout mode | Stage 4 |
 | H14 | Redo works for everything undoable that has a `redo` (entries without one act as a redo floor) | §4.1, §10 q1 |
 | H15 | The browser's own undo can never diverge from Bloom's stack | §4.4 `beforeinput` fence |

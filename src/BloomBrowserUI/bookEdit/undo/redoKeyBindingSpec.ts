@@ -111,7 +111,7 @@ describe("redoKeyBinding", () => {
             expect(redoCalls).toBe(0);
         });
 
-        it("does nothing when there is no workspace bundle to reach", () => {
+        it("does nothing when there is no page bundle to reach", () => {
             const bare = document.implementation.createHTMLDocument("bare");
             installRedoKeyBinding(bare, () => null);
             const e = keydown({ key: "y", ctrlKey: true });

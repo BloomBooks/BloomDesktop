@@ -8,16 +8,17 @@ folded in (§11). Live state in [PROGRESS.md](PROGRESS.md).
 1. **Remove CKEditor 4** (a 2015-era, hand-patched, 1.5 MB vendored copy) from Bloom's edit
    mode, replacing it with our own code. No replacement library.
 2. **Give Bloom one consistent Undo stack.** Today there are five poorly-coordinated undo
-   mechanisms. We want a single, ordered stack covering changes to the current page, plus
-   "undo delete page" as the one deliberate cross-page exception. Priority is on operations
-   that are *hard to reverse by hand* (delete a canvas element, delete a page) over ones that
-   are easy (add a canvas element — just delete it).
+   mechanisms. We want a single, ordered stack covering changes to the current page, **as it is
+   currently loaded**: a page change or a same-page reload starts it empty (§4.2, §10 decision 7).
+   Priority is on operations that are *hard to reverse by hand* (delete a canvas element) over
+   ones that are easy (add a canvas element — just delete it).
 3. **Simplify page loading and toolbox init**, most of whose complexity exists only to work
    around CKEditor mutating the DOM asynchronously during startup.
 4. Do it in a way that survives **many rebases** over a long calendar period.
 
 Non-goals (out of scope, but the design must not obstruct them): widening undo beyond the current
-page; undo across a Bloom restart; a rich-text editor usable outside Bloom's edit mode; the C#
+page, including undoing a page deletion; undo that survives a reload of the same page (§4.2 says
+what it would take); undo across a Bloom restart; a rich-text editor usable outside Bloom's edit mode; the C#
 multi-format clipboard write that would close BL-16459 (§10 q3). **Redo is in scope** — Ctrl+Y only,
 no toolbar button (§10 q1).
 
@@ -155,42 +156,41 @@ toolbox operations — i.e. precisely the hard-to-reverse things.
 
 ## 4. Design decisions
 
-### 4.1 Undo entries are data, interpreted at undo time
+### 4.1 Undo entries: snapshots by default, checked before they undo
 
 Two architectures were considered: a command/inverse-op stack (precise, memory-light, but every
 operation must be taught to undo itself) and a snapshot stack (uniform, covers operations
 nobody enumerated). **Use snapshots as the default entry type, with inverse-op entries where a
 snapshot is too blunt.**
 
-The critical constraint, which shapes the contract: the page iframe's JS context dies not only
-on page *change* but on same-page **reloads** — origami exit posts `saveChangesAndRethinkPageEvent`
-(`origami.ts:193`), importing a video and changing the topic rebuild the page under its own id, and
-several tools navigate. (An earlier draft also cited ctrl+wheel zoom; **that is stale** — zoom is a
-CSS transform now, `EditingView.SetZoom` → `workspaceBundle.setZoom`, and reloads nothing. Corrected
-2026-09-07.) An entry that closes over page-frame DOM or functions therefore becomes a live grenade:
-`undo()` would mutate a detached document or throw.
-
-**Every one of those reloads goes through `workspaceRoot.switchContentPage`** — it is the only route
-C# uses to navigate the page frame (`EditingView.cs`, three call sites). So one hook there covers
-same-page reloads and page changes alike; see `bookEdit/undo/pageFrameUndoHooks.ts`.
-
-So **snapshot entries must be pure data**, interpreted at undo time by a restore function that
-re-acquires the current page frame via `getEditablePageBundleExports()`:
-
 ```ts
 export interface IUndoEntry {
     label: string;                  // "Delete canvas element" — tooltips, logging
-    pageId: string | undefined;     // undefined = survives page change (delete-page)
     kind: "pageSnapshot" | "subtreeSnapshot" | "custom";
-    undo(): void | Promise<void>;   // for "custom" only; snapshot kinds carry data instead
+    undo(): void | Promise<void>;
     redo?(): void | Promise<void>;
+    prepareRedo?(): void;           // capture the "after" state just before undo (below)
 }
 ```
 
-Closure-bearing (`custom`) entries are permitted only for **workspace-owned** operations —
-delete-page being the main one — never for page-frame DOM. In addition to clearing page-scoped
-entries when the page id changes, **re-validate or clear on page-frame unload/load**;
-`switchContentPage` (`workspaceRoot.ts:135-186`) already has the hook points.
+Two rules for writing an entry (also in `undoTypes.ts`, where entries are defined):
+
+- **Check before undoing.** Many changes to a page will stay unrecorded for a long time: moving
+  and resizing canvas elements, Format dialog changes, Talking Book's sentence splitting, game
+  tool settings, and until Stage 3 all typing. Any of them can leave the page in a state an older
+  entry does not expect. So before reversing its change, an entry checks that what it changed is
+  still the way it left it, for instance by comparing the affected element's HTML with what the
+  change produced. On a mismatch it throws rather than applies; the stack then discards itself
+  (§4.13), so the user loses undo rather than having the page damaged. Keep entries narrow (one
+  text box, one canvas element) so that unrecorded changes elsewhere cannot invalidate them, and
+  so the check only has to cover that spot.
+- **Prefer data that would survive a reload, but do not insist.** The stack dies with the page
+  frame (§4.2), so an entry may hold references to the page's elements, ranges, or closures over
+  page objects. But where it costs little, capture state as data (HTML strings, structural
+  positions) and find the target again inside `undo()`. Then letting undo survive a same-page
+  reload later (§4.2) would not mean rewriting the entry. Where holding a reference is clearly
+  simpler, hold it, and say so in a comment where the entry is built, so the cost of changing
+  course stays visible.
 
 Bound the stack by **entry count** (~50). Skip byte accounting until something proves it
 necessary; 50 page-HTML strings is single-digit MB worst case.
@@ -206,25 +206,41 @@ behaviour). Two things keep the cost genuinely small:
   falls only where the user actually undoes. Not a new idea: `origamiUndo` already does exactly
   this (`origami.ts:288-292` stashes a fresh clone before decrementing).
 - **`redo?()` stays optional, so Redo can arrive per entry kind.** An entry without it acts as a
-  floor — `canRedo()` is false when the next entry can't redo. That lets delete-page redo (the one
-  case needing real C# work: deleting the page again) be deferred without blocking the rest.
+  floor — `canRedo()` is false when the next entry can't redo.
 
 `canUndo()` must stay **synchronous and cheap** — C# polls it on a timer
 (`WebView2Browser.cs:963-996`, with a reentrancy guard that returns `true` on overlap). A
 `canUndo` that walks entries or touches layout will make the Undo button flicker.
 
-### 4.2 The stack lives in the workspace frame
+### 4.2 The stack lives in the page frame, and dies with it
 
-The page iframe is destroyed on page change; the workspace frame is not. So `theOneUndoStack`
-lives in the **workspace** bundle alongside `handleUndo`, and delete-page entries
-(`pageId: undefined`) survive naturally rather than being bolted on. Page-frame code pushes via
-the established cross-frame pattern (`getWorkspaceBundleExports().pushUndoEntry(...)` — note
-the real export name, see `origami.ts:204`).
+`theOneUndoStack` lives in the **page** frame and is set up when each page loads
+(`bookEdit/undo/pageUndo.ts`, called from `editablePage.ts`). So undo covers the page **as it is
+currently loaded**: changing page, or anything that reloads the same page, starts with an empty
+stack. The page frame is also where the Undo button lands (C# calls `topBarButtonClick("undo")`
+there), where Ctrl+Z and Ctrl+Y arrive, and where every mechanism the stack arbitrates lives. The
+workspace frame's `canUndo()`, which C# polls, and `handleUndo()` just ask the page frame.
 
-Corollary for delete-page: the entry **must not** be constructed in the page frame, which is
-being torn down at that moment. C# initiates the delete, so C# (or the workspace frame on C#'s
-behalf) pushes the entry.
+This is what the old Undo already did: every pre-existing mechanism dies with the page frame. It
+rules out undoing a page deletion, which would have to outlive the page (§10 decision 7).
 
+**Things that reload the current page**, and so empty the stack, without changing page (traced
+2026-10-06; BL-13502 may remove some of the save-only ones): leaving Change Layout mode; choosing
+a different layout for the page, or switching it to or from a custom layout; importing a video;
+turning a canvas text box into a read-only data field; the image copyright and credits dialog,
+including "copy to all images"; the book's copyright and license dialog; opening the AI Image
+Editor; the topic chooser; Book Settings; changing the content languages; page size or
+orientation; moving a page in the page list; the book's files changing outside Bloom; Report a
+Problem. Changing the UI language, and some theme changes, reload the whole Edit tab. None of
+these is undoable, and each discards the undo history of the page before it, as it always has.
+
+**What undo across a same-page reload would take**, if it is ever wanted (most likely first for
+leaving Change Layout mode): the history must survive the reload (the stack back in the workspace
+frame, or its entries saved and restored); its entries must find their targets on the rebuilt
+page (the data preference in §4.1); and the history must stay continuous, so every reload that
+changes the page must itself become an entry, backed by C# keeping the page's HTML from before the
+change, whose undo restores that HTML and reloads. That last part is the hard one, and costs the
+same wherever the stack lives.
 ### 4.3 Selection anchors, not DOM bookmarks
 
 Avoiding CKEditor-style bookmark spans is realistic, but be honest about what exists: Bloom has
@@ -543,7 +559,7 @@ Migrating ~90 attachment sites is not a prerequisite we want to put in front of 
   div, which survives an `innerHTML` replacement. Typing undo is unaffected by any of this.
 - **Tier 2 narrow-subtree restore** needs only the contributors touching that subtree — a handful.
 - **Tier 3 turns out to be empty** (§4.11): origami keeps its own working in-place clone restore,
-  delete-page is a C# mechanism, style undo is deferred. So no generic full-page restore gets
+  delete-page undo is out of scope, style undo is deferred. So no generic full-page restore gets
   built, and **`pageScope` is not a prerequisite for undo at all.**
 
 That is the happy outcome: `pageScope` is worth doing for its own reasons — the accumulation bug,
@@ -625,8 +641,7 @@ Enumerate what would actually land there:
   adapted as a custom `IUndoEntry` so it joins the shared stack's ordering. Note that migrating
   origami to `addEventListener` would silently break its undo, since `clone(true)` does not copy
   raw listeners.
-- **Delete page** — C#-side, and navigation happens regardless because the page list changes. A
-  different mechanism entirely (Stage 2a), not a page snapshot.
+- **Delete page** — out of scope: the stack dies with the page (§4.2, §10 decision 7).
 - **Style changes** — deferred (§6 Stage 2c).
 
 That leaves nothing requiring a *generic* full-page restore. So: **do not build one.** If something
@@ -744,16 +759,12 @@ up front (`UndoStack.endUndoableScope`, `compoundUndoEntry.ts`):
 - **Undo reverses every part, last first; redo replays them in the original order.** The entry is
   redoable only if every part is. Each part captures its redo state just before its own undo. A
   single push is recorded as it is.
-- **The parts stand or fall together.** The entry is page-scoped if any part is, so a page change
-  discards it whole. If the page frame is replaced while the scope is still open and any part is
-  page-scoped, nothing is recorded: keeping only the page-independent parts would leave half a
-  gesture to undo. So a gesture that changes the page itself (deleting a page) must consist only of
-  page-independent parts, or it loses its undo.
 - **A failed undo or redo discards the whole stack**, compound or not, and the error still
   propagates to Bloom's error reporting. A retry would rarely help (a failure is almost always a
   bug, which fails the same way again), and the failure leaves the document in a state no entry
   recorded, so the older entries could no longer be trusted to undo correctly. The legacy
-  mechanisms are unaffected.
+  mechanisms are unaffected. An entry whose check before undoing (§4.1) finds the page changed
+  fails the same way. A gesture still being recorded when the stack is cleared records nothing.
 
 ### 4.14 What CKEditor does without being asked
 
@@ -1066,16 +1077,16 @@ Exit criteria: inventory reviewed; `pnpm test` green; prep commit demonstrably b
 
 ### Stage 1 — One entry point, no conversions
 
-*New:* `bookEdit/undo/UndoStack.ts`, `undoTypes.ts`, `runUndoable.ts`, plus specs.
+*New:* `bookEdit/undo/UndoStack.ts`, `undoTypes.ts`, `runUndoable.ts`, `compoundUndoEntry.ts`,
+`pageUndo.ts`, `legacyUndoProviders.ts`, `redoKeyBinding.ts`, plus specs.
 
-- `UndoStack` in the workspace bundle: push / undo / **redo** / canUndo / **canRedo** /
-  clearForPage / clearOnPageFrameReload. Index-based with truncate-on-push (§4.1), count-bounded,
+- `UndoStack` in the page frame, set up on each page load (§4.2): push / undo / **redo** /
+  canUndo / **canRedo** / clear. Index-based with truncate-on-push (§4.1), count-bounded,
   `canUndo` and `canRedo` both O(1).
-- `workspaceRoot.canUndo`/`handleUndo` become thin delegations (two small edits, one file). Redo
-  needs no C# counterpart — it is reached only by Ctrl+Y (§10 q1), so it stays entirely in JS. **But
-  it cannot be a workspace-frame keydown handler:** keyboard events inside the page iframe never
-  reach the parent document, and typing is exactly when the user wants Redo. It has to be registered
-  in the page frame (as both existing Ctrl+Y handlers are) and call across. See DEFERRED-EDITS.md 1e.
+- The Undo button's page-frame handler (`topBarButtonClick`) calls the stack directly;
+  `workspaceRoot.canUndo`/`handleUndo` become thin delegations to the page frame. Redo needs no C#
+  counterpart — it is reached only by Ctrl+Y (§10 q1) — so it is a page-frame keydown binding
+  (as both existing Ctrl+Y handlers are), acting only when nothing earlier claimed the key.
 - **Wrap all four existing mechanisms as legacy providers in their current priority order.**
   No conversions, no behaviour change. **Note precisely what that order governs**, which §3's
   correction spells out: `handleUndo` is reached only from the top-bar Undo button, so wrapping it
@@ -1100,20 +1111,8 @@ Exit criteria: one entry point; `pnpm test` green; no user-visible change.
 
 ### Stage 2 — The undos the user actually wants
 
-**2a — Undo delete page.** The highest value-per-risk item in the plan; independent of
-CKEditor, of the page frame, and of snapshot restore. Can ship even before Stage 1 settles.
-- *New C# file* `src/BloomExe/Edit/DeletedPageUndoManager.cs`: a session-only stack of
-  `{ pageXml, index, pageId }`, plus an `edit/undoDeletePage` endpoint.
-- Capture **inside the `SaveThen` callback, after the save completes** — `EditingModel.DeletePage`
-  wraps the delete in `SaveThen(..., forceFullSave: true)` (`EditingModel.cs:590-624`), so
-  capturing earlier would snapshot a page missing the user's last edits.
-- Restore must mirror what `Book.DeletePage` (`Book.cs:4110-4132`) tears down: re-insert at the
-  saved index (clamped to the current page count), then `UpdatePageNumberAndSideClassOfPages`,
-  `_pageListChangedEvent.Raise`, `InvokeContentsChanged`, and navigate to the restored page.
-- The matching front-end entry (`pageId: undefined`, `kind: "custom"`) is pushed **by C# into
-  the workspace bundle**, not by the page frame — which is being torn down at that moment.
-- Depth: keep every deletion in the session (capped ~10). The shared stack already provides
-  ordering, so depth costs nothing extra.
+**2a — Undo delete page: dropped** (2026-10-06, §10 decision 7). Undo is scoped to the page as
+it is currently loaded (§4.2), and a page deletion would have to outlive its page.
 
 **2b — Undo delete canvas element.** Do *not* use a whole-page snapshot. Preferred: an
 inverse-op / narrow-subtree entry that re-inserts the element's `outerHTML` into its
@@ -1133,14 +1132,27 @@ proves messy, fall back to a **`.bloom-canvas`-subtree snapshot** restored throu
 Also honour §4.13: the background-image branch already records an image undo, so the wrapper
 must not double-record.
 
+**Where to put it back.** Order among a .bloom-canvas's children is the stacking order (no
+z-index), and Comical's bubble levels must agree with it (djustCanvasElementOrdering). New
+elements go last; rectangles and background images go first; draggables are kept at the end. So the
+entry records the deleted element's **neighbours**, not its index: put it back just below the
+element that was directly above it, or failing that just above the one below it. An intervening
+create (not undoable) then does no harm, which an index would not survive if anything reordered
+the siblings. Holding the neighbours as element references is the simple way, and acceptable
+under §4.1's preference rule: canvas elements carry no ids to find them by; say so in a comment.
+Comical.deleteBubbleFromFamily rewrites the *other* family members' bubble data, so the entry
+saves and restores theirs too. Per §4.1 it checks before undoing that the canvas still holds what
+the deletion left. That matters most for the subtree-snapshot fallback, which would otherwise
+silently delete any element created since.
+
 **Ctrl+Shift+Z.** Stage 2 is the first time the stack holds entries, so `redoKeyBinding.ts`'s
 `isRedoKeystroke` must accept Ctrl+Shift+Z as well as Ctrl+Y here (§4.14 item 23), with a test.
 
 **2c** *(deferred, documented not built)*: undo for style changes — a snapshot of
 `userModifiedStyles` would cover it, and the entry contract already allows it.
 
-Exit criteria: deleting a page and deleting a canvas element are both undoable; page
-renumbering and navigation are correct after undo; exactly one entry per gesture.
+Exit criteria: deleting a canvas element is undoable, restored at its old place in the stacking
+order and with its comic family intact; exactly one entry per gesture.
 
 ### Stage 3 — The new text editor, behind a flag, off by default
 
@@ -1277,8 +1289,7 @@ CKEditor's doing. Measure before touching it.
   editing behaviour and does not emit `beforeinput` or support `getTargetRanges()`. These can
   only be verified against a live WebView2 — budget for the CDP harness rather than for faking
   `InputEvent`s.
-- **C# tests** through `build/agent-dotnet.sh` for `DeletedPageUndoManager` and
-  `LegacyCkEditorCleanup`.
+- **C# tests** through `build/agent-dotnet.sh` for `LegacyCkEditorCleanup`.
 - **Live-Bloom verification** via the `run-bloom` / `bloom-automation` skills: attach over CDP,
   exercise a page, read the DOM back. The dev server pushes `.ts`/`.tsx` edits into a running
   Bloom, so most iteration needs no build.
@@ -1307,8 +1318,7 @@ CKEditor's doing. Measure before touching it.
    recover. Land `reinitializePageAfterRestore()` in Stage 3 where no CKEditor instances need
    resurrecting. **Mostly dissolved by tiering (§4.11)**: typing and formatting undo restore one
    editable's `innerHTML` and reinit nothing; canvas-element undo restores one subtree through the
-   existing `refreshCanvasElementEditing`; origami keeps its own working clone restore; delete-page
-   is a separate C# mechanism. Nothing left needs a generic full-page reinit, so **don't build
+   existing `refreshCanvasElementEditing`; origami keeps its own working clone restore. Nothing left needs a generic full-page reinit, so **don't build
    one.** Navigation-based restore was considered and rejected — it would require the book DOM to
    already hold the undone state, whose only route in is the save's merge phase (§4.11).
 3. **Silently losing paste/drop sanitizing.** Ranked this high not because it is hard but
@@ -1321,7 +1331,7 @@ CKEditor's doing. Measure before touching it.
    `historyUndo`/`historyRedo` fence (§4.4); listed here because forgetting it is silent and
    corrupting rather than obvious.
 5. **Save interleaving.** Snapshot → save → undo → save must end with the restored HTML on
-   disk. Page-scoped clearing and page-frame-reload invalidation must be exactly right. The
+   disk. The
    sharpest case: an undo arriving while the state machine is in `SavePending` must not let the
    in-flight save merge content we are discarding — `DiscardInFlightSave()`
    (`EditingStateMachine.cs:367`) exists for this shape of problem; decide discard-vs-defer
@@ -1339,8 +1349,12 @@ CKEditor's doing. Measure before touching it.
    So within an edit session, files referenced by restored spans still exist. The remaining
    exposure is the talking-book tool's *explicit* delete / re-record actions; scope the
    investigation to that path only.
-9. **Cross-frame lifetime.** Settled in §4.1–4.2 (data-not-closure entries, invalidate on
-   page-frame reload, C# pushes the delete-page entry). Keep it settled.
+9. **Cross-frame lifetime.** Settled in §4.2: the stack lives in the page frame and dies with it,
+   so no entry can outlive the page it describes. Keep it settled.
+10. **Unrecorded changes.** Much that changes a page will stay unrecorded for a long time (§4.1),
+    and any of it can leave the page in a state an older entry does not expect. Mitigated by the
+    check-before-undo rule (§4.1) and by keeping entries narrow; tests should interleave recorded
+    and unrecorded changes.
 
 ## 9. Follow-ups this design makes cheap
 
@@ -1349,7 +1363,7 @@ CKEditor's doing. Measure before touching it.
   `RedoCommand`, no `SetEditingCommands` parameter, nothing in the `updateEditButtons` websocket
   payload, no icon, no XLF entry. All of that is separable and can be added later without touching
   the stack.
-- **Undo labels in the UI** — "Undo Delete Page" as the button tooltip.
+- **Undo labels in the UI** — "Undo Delete canvas element" as the button tooltip.
 - **Wider undo scope** — style changes, book-level operations, multi-page undo all plug in as new
   entry types without touching the stack.
 
@@ -1366,8 +1380,8 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    affordance exactly and needing **zero C# plumbing** — which matters, because Bloom has no Redo
    plumbing whatsoever today (no `RedoCommand`, no `updateEditButtons` field, no icon, no XLF
    entry). A visible button is deferred to §9 and can arrive later without touching the stack.
-   `redo?()` stays optional, so delete-page redo — the one case needing real C# work — can also come
-   later, acting as a redo floor until it does.
+   `redo?()` stays optional, so an entry kind whose redo is hard can come later, acting as a redo
+   floor until it does.
 2. **Hyperlink UI: keep the current `showLinkTargetChooserDialog` flow exactly.** The new
    `FormatToolbar.tsx` hosts the same button invoking the same dialog. No behaviour change.
 3. **Clipboard (BL-16459): seam only.** `clipboard.ts` produces rich **and** plain payloads and
@@ -1375,7 +1389,8 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    impossible and BL-16459 stays open — much cheaper to close later, because the seam is the part
    that is expensive to retrofit (§4.9). Explicitly **not** doing the C# multi-format write or the
    "HTML Format" byte-offset header in this project.
-4. **Delete-page undo keeps every deletion in the session**, capped at ~10 (§6 Stage 2a).
+4. ~~Delete-page undo keeps every deletion in the session~~: superseded by decision 7, which drops
+   delete-page undo.
 5. **The flag** is an `ExperimentalFeatures` checkbox in Collection Settings → Advanced plus a
    `BLOOM_NEW_TEXT_EDITOR` env-var override, latched into the page by a body class (§4.12). Its XLF
    entry is `translate="no"`, so removal is free — **but must happen before that release goes beta**,
@@ -1385,11 +1400,19 @@ Everything here is settled. Recorded with the reasoning so a later session doesn
    decided 2026-10-02 in John's review of Stage 1. Undo reverses all the parts, last first; redo
    replays them in order, and only if every part can. Keeping just one of the pushes would work only
    if the outer operation's entry happened to capture the whole gesture, and would oblige every inner
-   layer to wrap itself in a scope of its own. The parts stand or fall together: if a page change
-   invalidates any of them, the whole gesture goes, because recording the rest would undo half of
-   it. And a failed undo or redo, of any entry, discards the whole stack rather than offering a
+   layer to wrap itself in a scope of its own. And a failed undo or redo, of any entry, discards the whole stack rather than offering a
    retry, because what it leaves is a state no remaining entry can be trusted against.
 
+7. **Undo is scoped to the page as it is currently loaded; undoing a page deletion is dropped**,
+   decided 2026-10-06 after Hatton's review of Stage 1 (raised in standup, then on PR #8387). The
+   stack lives in the page frame and dies with it (§4.2). Undoing a page deletion was the only
+   reason it had lived in the workspace frame, and keeping it there cost page ids on entries,
+   generation counts guarding `runUndoable` scopes against reloads, cross-frame calls for the
+   button and Ctrl+Y, and a rule that entries be pure data. Nothing users had depended on it: every
+   pre-existing undo already died with the page frame, and the workspace stack cleared its page
+   entries on every reload too. Two rules came with the decision (§4.1): entries check before they
+   undo, and they *prefer* state that would survive a reload, without insisting, noting exceptions
+   in comments, so that undo surviving a same-page reload stays affordable to add later.
 ### What the first review changed (2026-08-04)
 
 The first draft of this plan was reviewed by Fable (Claude) against the real source, and every
@@ -1398,7 +1421,7 @@ sections they concern; this list records *that* they came from review, and why, 
 does not reopen them. If you think one of these is wrong, say so explicitly rather than quietly
 changing course.
 
-- **Undo entries are data, not closures** (§4.1). The page iframe's JS context dies on same-page
+- **Undo entries are data, not closures** (§4.1; relaxed to a preference by decision 7). The page iframe's JS context dies on same-page
   reloads too (ctrl+wheel zoom, origami exit), so page-id-scoped clearing alone would leave entries
   closing over a dead document. `canUndo()` stays synchronous and O(1) for the same section's
   reason: C# polls it on a timer.
@@ -1416,7 +1439,7 @@ changing course.
 - **Delete canvas element is an inverse operation on a narrow subtree, not a page snapshot**
   (Stage 2b), reusing `refreshCanvasElementEditing`. Comical bubble-family re-linking and restoring
   a drag-activity target are the two things to verify first.
-- **Delete-page capture happens inside the `SaveThen` callback**, and restore re-raises the
+- **Delete-page capture happens inside the `SaveThen` callback** (moot: decision 7 drops delete-page undo), and restore re-raises the
   page-list events and navigates rather than just renumbering (Stage 2a).
 - **`runUndoable` nests from day one** (§4.13; its rule is decision 6 above).
 - **Selection anchors locate the editable structurally, not by `id`** (§4.3): ordinary

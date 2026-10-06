@@ -19,6 +19,10 @@
 //
 // Each function here disappears when its mechanism is converted (Stages 3 and 4), and the last one
 // out takes this file with it.
+//
+// The stack and these providers live in the page frame. The providers still reach the page frame's
+// functions through getEditablePageBundleExports(), which finds the page frame's own exports from
+// inside it too; going through the bundle object keeps them the functions the e2e tests watch.
 
 import {
     getEditablePageBundleExports,
@@ -117,7 +121,7 @@ export const ckeditorUndoProvider: ILegacyUndoProvider = {
 /**
  * Register all four, in the order `workspaceRoot.handleUndo()` used.
  *
- * Call once, as the workspace frame sets up. Registering twice would double-consult each
+ * Call once, as the page frame sets up (pageUndo.ts). Registering twice would double-consult each
  * mechanism, which is harmless for `canUndo` but would be confusing, so callers should not.
  *
  * @param stack defaults to the one real stack; a parameter only so tests need not use a singleton.

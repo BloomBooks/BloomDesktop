@@ -17,8 +17,13 @@ import {
 } from "./js/canvasElementManager/CanvasElementManager";
 import { kCanvasElementSelector } from "./toolbox/canvas/canvasElementConstants";
 import { renderDragActivityTabControl } from "./js/AbovePageControls";
-import { installRedoKeyBinding } from "./undo/redoKeyBinding";
-import { tryGetWorkspaceBundleExports } from "./js/workspaceFrames";
+import {
+    canRedo,
+    canUndo,
+    handleRedo,
+    handleUndo,
+    setUpPageUndo,
+} from "./undo/pageUndo";
 
 function getPageId(): string {
     const page = document.querySelector(".bloom-page");
@@ -73,6 +78,12 @@ export interface IPageFrameExports {
     ckeditorUndo(): void;
     imageOperationCanUndo(): boolean;
     imageOperationUndo(): boolean;
+
+    // The one undo stack, which lives in this frame (undo/pageUndo.ts).
+    handleUndo(): void;
+    canUndo(): boolean;
+    handleRedo(): void;
+    canRedo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -391,9 +402,9 @@ $(document).ready(() => {
     // in the live editor, which never reads this flag.
     window.__bloomEditablePageReady = true;
 
-    // Ctrl+Y reaches the one undo stack's Redo from here, as the last resort behind the handlers
-    // that already claim it (see undo/redoKeyBinding.ts). Null in the off-screen context.
-    installRedoKeyBinding(document, tryGetWorkspaceBundleExports);
+    // The one undo stack lives in this frame and starts empty with each page load (see
+    // undo/pageUndo.ts). This registers the pre-existing undo mechanisms with it and binds Ctrl+Y.
+    setUpPageUndo();
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message
@@ -434,6 +445,10 @@ interface EditablePageBundleApi {
     getTheOneCanvasElementManager: typeof getTheOneCanvasElementManager;
     ckeditorCanUndo: typeof ckeditorCanUndo;
     ckeditorUndo: typeof ckeditorUndo;
+    handleUndo: typeof handleUndo;
+    canUndo: typeof canUndo;
+    handleRedo: typeof handleRedo;
+    canRedo: typeof canRedo;
     addRequestPageContentDelay: typeof addRequestPageContentDelay;
     removeRequestPageContentDelay: typeof removeRequestPageContentDelay;
     e2eSetActiveCanvasElementByIndex: typeof e2eSetActiveCanvasElementByIndex;
@@ -515,6 +530,10 @@ window.editablePageBundle = {
     getTheOneCanvasElementManager,
     ckeditorCanUndo,
     ckeditorUndo,
+    handleUndo,
+    canUndo,
+    handleRedo,
+    canRedo,
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
     e2eSetActiveCanvasElementByIndex,

@@ -15,10 +15,6 @@ import { IUndoEntry } from "./undoTypes";
  *   `undo`, so that each part captures the state it will need to redo when that state is current.
  * - **Redo** runs the parts first to last. The compound can redo only if every part can; otherwise
  *   it has no `redo`, which makes it a redo floor like any other entry that cannot redo.
- * - **Page scope.** The compound belongs to a page if any part does, so a page change discards the
- *   whole gesture rather than leaving the parts that survive it, which would undo half a gesture.
- *   (Within one scope that did not straddle a page change, every page-scoped part was recorded
- *   against the same page; see UndoStack.endUndoableScope.)
  * - **A part that fails** stops the run and propagates the failure, and the stack then discards
  *   everything (UndoStack.apply), so nothing here tries to resume or roll back.
  *
@@ -31,7 +27,6 @@ export function makeCompoundUndoEntry(
 ): IUndoEntry {
     const entry: IUndoEntry = {
         label,
-        pageId: parts.find((part) => part.pageId !== undefined)?.pageId,
         kind: "custom",
         undo: () =>
             runInSequence(

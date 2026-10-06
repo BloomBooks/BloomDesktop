@@ -11,26 +11,6 @@ import { postJson } from "../utils/bloomApi";
 import { Link } from "../react_components/BookGridSetup/BookLinkTypes";
 import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 import $ from "jquery";
-import { theOneUndoStack } from "./undo/UndoStack";
-import { registerLegacyUndoProviders } from "./undo/legacyUndoProviders";
-import {
-    pageFrameLoaded,
-    pageFrameNavigating,
-} from "./undo/pageFrameUndoHooks";
-
-// The one undo stack (BL-6681) arbitrates between Bloom's pre-existing undo mechanisms until
-// they are converted. Registering them is all it takes, and the providers only reach across
-// frames when consulted.
-//
-// Only in the top (workspace) frame, though. Vite puts this module in a chunk shared with other
-// code, so its top level also runs inside the page and toolbox iframes, each of which would
-// otherwise get a live copy of "the one" stack with its own providers. Nothing in those frames may
-// use that copy -- the Undo button's page-frame entry point (topBarButtonClick) reaches the real
-// stack through getWorkspaceBundleExports() for exactly this reason -- and leaving it unregistered
-// makes sure of it: an accidental use would find an empty stack with no providers.
-if (window.parent === window) {
-    registerLegacyUndoProviders();
-}
 
 export interface IWorkspaceExports {
     showDialog(
@@ -84,9 +64,6 @@ export interface IWorkspaceExports {
     closeDecodableReaderSetupDialog(): void;
     showImageGalleryDialog(img: HTMLElement, searchLang: string): void;
     openAiImageEditor(target: IAiImageEditorTarget): void;
-    // Redo has no button and no C# side; the page frame's Ctrl+Y binding reaches it here.
-    canRedo(): boolean;
-    handleRedo(): void;
 }
 
 export function SayHello() {
@@ -146,22 +123,12 @@ export { showAdjustTimingsDialog as showAdjustTimingsDialogFromWorkspaceRoot };
 // Local alias so we have an in-scope identifier for legacy global exposure typing.
 const showAdjustTimingsDialogFromWorkspaceRoot = showAdjustTimingsDialog;
 
-// The top bar's Undo button (via topBarButtonClick in the page frame) ends up here. Everything
-// about WHICH mechanism gets to undo -- origami, the reader tools, image operations, CKEditor,
-// in that order and for the reasons recorded there -- lives in undo/legacyUndoProviders.ts, and
-// the stack's own entries come after them. See docs/retire-ckeditor/PLAN.md 3 and 6 (Stage 1).
+// The top bar's Undo button reaches the page frame's stack directly (topBarButtonClick), so this
+// is for callers in this frame, such as the e2e tests. The one undo stack lives in the page frame
+// and starts empty with each page load; which mechanism undoes what is decided there
+// (undo/legacyUndoProviders.ts). See docs/retire-ckeditor/PLAN.md 4.2.
 export function handleUndo(): void {
-    void theOneUndoStack.undo();
-}
-
-// Ctrl+Y, from the page frame's binding (undo/redoKeyBinding.ts). There is no Redo button.
-export function handleRedo(): void {
-    void theOneUndoStack.redo();
-}
-
-// Whether Ctrl+Y would do anything. O(1): the page frame asks on every Ctrl+Y keydown.
-export function canRedo(): boolean {
-    return theOneUndoStack.canRedo();
+    getEditablePageBundleExports()?.handleUndo();
 }
 
 // We need this update to maintain relative paths to images for the thumbnails. (BL-15906)
@@ -172,9 +139,6 @@ export function switchThumbnailPage(newSource: string) {
 }
 
 export function switchContentPage(newSource: string) {
-    // Whatever undo entries were scoped to the page being shown are about to describe elements
-    // that no longer exist. This runs before the try below on purpose: it touches no frame.
-    pageFrameNavigating();
     try {
         const editablePageBundle = getEditablePageBundleExports();
         if (editablePageBundle?.pageUnloading) {
@@ -206,18 +170,12 @@ export function switchContentPage(newSource: string) {
     const handler = () => {
         handlerCalled = true;
         iframe.removeEventListener("load", handler);
-        pageFrameLoaded();
         doWhenToolboxLoaded((toolboxFrameExports: IToolboxFrameExports) => {
             toolboxFrameExports.applyToolboxStateToPage();
         });
     };
     iframe.removeEventListener("load", handler);
     iframe.addEventListener("load", handler);
-    // Separately from the handler above, which the 1500 ms fallback below can run early (against
-    // the page that is still there) and then unregister: the undo stack must learn the id of the
-    // page that ACTUALLY loads, so it listens for the real load on its own. Idempotent, so running
-    // twice when the load does fire in time is harmless.
-    iframe.addEventListener("load", () => pageFrameLoaded(), { once: true });
     iframe.src = newSource;
     updateWorkspaceUrlParam("pageSrc", newSource);
     // When we don't already have a video (either a new page, or it has been deleted),
@@ -294,9 +252,10 @@ export function doWhenToolboxLoaded(
 }
 
 //Called by c# using workspaceBundle.canUndo(), polled on a timer to set the Undo button's
-// enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it.
+// enabled state (WebView2Browser.CanUndoAsync). "yes"/"fail" is that contract; keep it. The
+// answer comes from the one undo stack, in the page frame; no page frame means nothing to undo.
 export function canUndo(): string {
-    return theOneUndoStack.canUndo() ? "yes" : "fail";
+    return getEditablePageBundleExports()?.canUndo() ? "yes" : "fail";
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -458,8 +417,6 @@ export function setZoom(zoom: number): void {
 interface WorkspaceBundleApi {
     SayHello: typeof SayHello;
     handleUndo: typeof handleUndo;
-    handleRedo: typeof handleRedo;
-    canRedo: typeof canRedo;
     switchThumbnailPage: typeof switchThumbnailPage;
     switchContentPage: typeof switchContentPage;
     showDialog: typeof showDialog;
@@ -508,8 +465,6 @@ window.workspaceBundle = {
     // simple exports
     SayHello,
     handleUndo,
-    handleRedo,
-    canRedo,
     switchThumbnailPage,
     switchContentPage,
     showDialog,

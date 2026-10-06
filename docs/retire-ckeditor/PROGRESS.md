@@ -1026,10 +1026,7 @@ and the other live-check scripts are kept, unchanged, on branch `BL-6681-bug-rep
 
 ### Decisions John needs to make
 
-- **The plain-text paste bug found 2026-10-02** (PLAN.md §4.14, "Found while reading"): BL-9961's
-  `reconstituteParagraphsOnPlainTextPaste` inserts unescaped text, so a multi-line paste containing
-  `<` is mangled and could run script. Independent of this project: file it, fix it now, or leave
-  it for Stage 3 (where `pasteHandler.ts` replaces it).
+- ~~The plain-text paste bug found 2026-10-02~~: filed as BL-16982 and fixed in PR #8441 (2026-10-02).
 
 - ~~The merge window~~ — **decided 2026-09-16: the project targets `master`**; done 2026-09-21
   (Stage 0 merged; Stage 1 on `BL-16900-undo-stack` off `master`; §5 rewritten; integration branch
@@ -1080,9 +1077,10 @@ Active, tested (52 tests) and live-verified. What remains:
 
 ### Stage 2 — after the Stage 1 PR
 
-- **2b (undo delete canvas element) first**, not 2a: it is pure front-end, and 2a's C# citations are
-  about to be invalidated by BL-13502. Design 1f (the data-not-closure cross-frame push) with it.
-- **2a (undo delete page) after BL-13502 merges**, re-derived from `MergeCurrentPageThenSave`.
+- **2b (undo delete canvas element)**: record neighbours rather than an index, restore the comic
+  family's bubble data, and check before undoing (PLAN.md Stage 2b, §4.1). Also add Ctrl+Shift+Z to
+  `redoKeyBinding.ts` (§4.14 item 23).
+- ~~2a (undo delete page)~~: dropped 2026-10-06 (PLAN.md §10 decision 7).
 - Rename our planned `PageSnapshot` entry kind before Stage 3 (BL-13502 owns that name).
 
 **Standing chores while a stage branch is open** (§5.3, §5.5): merge `origin/master` in if it lives
@@ -1213,3 +1211,22 @@ Later, not Stage 0:
 - **Decision:** Ctrl+Shift+Z stays a Redo key alongside Ctrl+Y. Stage 2 adds it to
   `redoKeyBinding.ts` when the stack first holds entries.
 - Found a pre-existing bug in the BL-9961 plain-text paste; see "Decisions John needs to make".
+
+### 2026-10-06 — Hatton's review: the stack moves into the page frame; delete-page undo dropped
+
+- Hatton's comment on PR #8387 (after standup agreed undo should not cross page loads): the stack
+  lived in the workspace frame only so that undoing a page deletion could outlive its page. John
+  decided to drop that, and to make the simplifications it allows (PLAN.md §10 decision 7).
+- Done on the branch: `theOneUndoStack` now lives in the page frame, set up per page load by the new
+  `undo/pageUndo.ts` (registers the legacy providers, binds Ctrl+Y). The Undo button calls it
+  directly; `workspaceRoot.canUndo`/`handleUndo` delegate to the page bundle. Removed: `pageId` on
+  entries, `setCurrentPageId`, `clearPageScopedEntries`, `keepOnly`, the page-generation count,
+  `pageFrameUndoHooks.ts` and its hooks in `switchContentPage`, and the cross-frame calls. The
+  reset-generation count stays: it stops a gesture in flight when an undo fails from recording.
+- Two rules added to the plan (§4.1) and to `undoTypes.ts`: entries **check before undoing** that
+  what they changed is still as they left it (a mismatch counts as a failure, which discards the
+  stack), and entries **prefer** state that would survive a reload, without insisting; exceptions
+  are noted in comments, so undo surviving a same-page reload stays affordable later. §4.2 lists
+  every same-page reload traced in C# and what surviving one would take.
+- Discussed and recorded in PLAN Stage 2b: the canvas-element undo records its neighbours, not an
+  index, so an intervening (unrecorded) create does no harm.
