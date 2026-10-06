@@ -20,6 +20,7 @@ import {
 import {
     launchBloom,
     launchBloomIntoChooser,
+    LAUNCH_DEADLINE_MS,
     type ILaunchedBloom,
     type ILaunchedChooserBloom,
     type ICollectionSpec,
@@ -492,7 +493,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                 await launched?.stop();
             }
         },
-        { scope: "worker" },
+        // Longer than the launch's own deadline, so a launch that gives up says why rather than
+        // being cut off by Playwright's timeout; the extra minute covers attaching over CDP.
+        { scope: "worker", timeout: LAUNCH_DEADLINE_MS + 60000 },
     ],
 
     // The typed views of _launchedApp. Using the one that does not match the launch mode fails

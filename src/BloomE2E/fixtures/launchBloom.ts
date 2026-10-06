@@ -108,7 +108,7 @@ export interface ILaunchBloomOptions {
      * --e2e). See ExperimentalFeatures.TokensFromE2eCommandLine.
      */
     experimentalFeatures?: string[];
-    /** How long to wait for Bloom to start serving the collection. Default 120 seconds. */
+    /** How long to wait for Bloom to start serving the collection. Default LAUNCH_DEADLINE_MS. */
     readyTimeoutMs?: number;
 }
 
@@ -384,6 +384,22 @@ function samePath(a: string, b: string): boolean {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * How long a launch waits for Bloom to serve its collection (or reach the chooser) before failing
+ * with a description of what it saw. Bloom usually gets there in seconds, but on a machine busy
+ * with a build, or scanning freshly built files, startup has taken well over a minute, so this is
+ * generous: a slow Bloom is not what these tests are about. The launching fixture's own timeout
+ * (bloomTest.ts) is longer, so a launch that does give up reports why.
+ */
+export const LAUNCH_DEADLINE_MS = 300000;
+
+/**
+ * How long one probe of a port's instanceInfo may take. A probe that times out is simply sent
+ * again on the next pass, so this never fails a launch by itself; it only keeps one unanswered
+ * request from holding up the whole wait.
+ */
+const PROBE_TIMEOUT_MS = 30000;
+
+/**
  * The environment the Bloom we launch runs in. One variable decides where its windows go,
  * BLOOM_AUTOMATION_MONITOR, and Bloom reads it itself (see AutomationWindowPlacement.cs):
  * "headless" puts every window off every monitor, a monitor number puts them on that monitor, and
@@ -455,11 +471,11 @@ async function readInstanceInfo(
 ): Promise<IInstanceInfo | undefined> {
     try {
         // A request that reaches a Bloom still starting its server can go unanswered for good, and
-        // without a timeout that one request would hold up discovery until its deadline; a fresh
-        // request a moment later is answered at once.
+        // without a timeout that one request would hold up discovery until the launch deadline; a
+        // fresh request a moment later is answered at once.
         const response = await fetch(
             `http://localhost:${port}/bloom/api/common/instanceInfo`,
-            { signal: AbortSignal.timeout(5000) },
+            { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) },
         );
         if (!response.ok) return undefined;
         return (await response.json()) as IInstanceInfo;
@@ -866,7 +882,7 @@ export async function launchBloom(
         throw error;
     }
 
-    const readyTimeoutMs = options.readyTimeoutMs ?? 120000;
+    const readyTimeoutMs = options.readyTimeoutMs ?? LAUNCH_DEADLINE_MS;
 
     // The Bloom running right now. restart() replaces it, so everything that kills or reports on
     // Bloom reads this variable rather than capturing the first launch.
@@ -994,7 +1010,11 @@ export async function launchBloomIntoChooser(
     process.once("exit", cleanUpOnExit);
 
     try {
-        running = await startBloomOn(undefined, userSettingsDir, 120000);
+        running = await startBloomOn(
+            undefined,
+            userSettingsDir,
+            LAUNCH_DEADLINE_MS,
+        );
     } catch (error) {
         process.removeListener("exit", cleanUpOnExit);
         fs.rmSync(tempRoot, { recursive: true, force: true });
