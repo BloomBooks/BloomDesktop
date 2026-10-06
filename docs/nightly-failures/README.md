@@ -39,7 +39,7 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 - **Failed:** several nightlies in September in the toolbox and reader-tool specs.
 - **Cause:** `restoreToolboxSettingsWhenPageReady` applies settings it fetched before the page
   was ready, so it can undo a change made in the meantime. It also re-selects the saved tool.
-- **Status:** seven tests are `test.fixme` (`toolbox-sections.spec.ts`,
+- **Status:** seven tests are `test.fixme` (`toolbox-tools.spec.ts`,
   `reader-tool-stage-and-level.spec.ts`). They must be re-enabled before the BL-16608 rework
   finishes.
   - Settings half: [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409), a draft
