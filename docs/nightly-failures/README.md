@@ -37,8 +37,10 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 - **Local run (2026-10-06, current master, cold Vite cache as on CI):** all 21 fail with the
   same error, so this is a real break, not CI's environment. No package, lockfile or Vite config
   changed since the green run. The suspect is #8227's new `@mui/icons-material/Flip` and
-  `RotateRight` imports, which change what Vite pre-bundles. That is unconfirmed.
-- **Status:** no card or PR.
+  `RotateRight` imports, which change what Vite pre-bundles. Confirmed: those CommonJS icon
+  files make esbuild initialize `styled` lazily, and Popper's chunk calls it first.
+- **Status:** fix in [PR #8445](https://github.com/BloomBooks/BloomDesktop/pull/8445): the
+  tester loads icons from MUI's ESM build.
 
 ## Rotate and flip pictures: dragging the speech bubble onto the canvas adds nothing
 
@@ -52,8 +54,11 @@ accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date,
 - **Local runs (2026-10-06, current master):** the failing test passed 3 times out of 3, and
   every other test that ran passed too, so it does not reproduce here. It may be a race that
   only CI's slower machine hits.
+- **Cause:** CI's window is about 1008x681, so the drop point (75% down an A5 page) was off
+  screen, where `elementsFromPoint` finds nothing. A developer's monitor shows the whole page.
 - **Status:** the test came in with [PR #8227](https://github.com/BloomBooks/BloomDesktop/pull/8227)
-  (BL-16741). No card or PR for the failure.
+  (BL-16741). Fix in [PR #8445](https://github.com/BloomBooks/BloomDesktop/pull/8445), which also
+  fixes two later tests in the spec that fail at CI's window size.
 
 ## Link chooser: the preselected page is not scrolled into view
 

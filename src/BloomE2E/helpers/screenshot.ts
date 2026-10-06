@@ -23,6 +23,7 @@
 import type { CDPSession, Locator, Page } from "@playwright/test";
 import * as fs from "node:fs";
 import * as Path from "node:path";
+import { restoreRequestedViewport } from "../fixtures/viewport";
 import { editablePageFrame, waitForEditablePage } from "./bookMaking";
 
 /** An element's image, and the size of that image in pixels. */
@@ -168,6 +169,8 @@ export async function captureElement(
             clearError = error;
         });
         await session.detach().catch(() => undefined);
+        // Clearing removes a BLOOM_E2E_VIEWPORT size too, so put it back for the tests that follow.
+        await restoreRequestedViewport();
 
         if (clearError !== undefined) {
             // The window is still the size we made it, and the rest of this worker's tests would

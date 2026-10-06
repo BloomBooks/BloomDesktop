@@ -207,9 +207,25 @@ async function dispatchPaletteDrag(
             // The drop point, in the page frame's own coordinates, which is what the product's
             // handlers work in (CanvasElementFactories.addCanvasElement calls
             // document.elementsFromPoint with them).
-            const targetRect = target.getBoundingClientRect();
+            // The drop point must be on screen: elementsFromPoint finds nothing at a point outside
+            // the viewport, so a drop there adds nothing and raises no error. On a short window
+            // (CI's is about 680 pixels) the lower part of a portrait page is below the fold, so
+            // scroll the page frame to bring the point into view, as a person would.
+            const pageWindow = pageDocument.defaultView;
+            if (!pageWindow) return "The page has no window.";
+            let targetRect = target.getBoundingClientRect();
+            const wantedY = targetRect.top + targetRect.height * what.yFraction;
+            if (wantedY < 0 || wantedY >= pageWindow.innerHeight) {
+                pageWindow.scrollBy(0, wantedY - pageWindow.innerHeight / 2);
+                targetRect = target.getBoundingClientRect();
+            }
             const x = targetRect.left + targetRect.width * what.xFraction;
             const y = targetRect.top + targetRect.height * what.yFraction;
+            if (y < 0 || y >= pageWindow.innerHeight)
+                return (
+                    `The drop point is off screen (y ${Math.round(y)} in a window ` +
+                    `${pageWindow.innerHeight} high) even after scrolling the page.`
+                );
             fire(target, "dragover", x, y);
             fire(target, "drop", x, y);
             fire(source, "dragend", x, y);
@@ -427,7 +443,14 @@ export async function clickCanvasElementMenuItem(
                 `have; clicking it would open the Settings dialog. Launch the collection with ` +
                 `kEnterpriseSubscriptionCode if the test needs it.`,
         );
-    await item.click();
+    // Dispatch the click rather than press the mouse on the row. A row with a submenu (Flip, Choose
+    // Sound) opens it on hover and also on keyboard focus, which the menu can give it as it opens,
+    // and a submenu opened by focus stays open wherever the pointer goes. When the menu is taller
+    // than the window, such a submenu covers the rows below its parent, and a real click on one of
+    // them lands on the submenu instead, every time. The rows act on React's onClick, which a
+    // dispatched click reaches just as a real one does.
+    await item.scrollIntoViewIfNeeded();
+    await item.dispatchEvent("click");
     await frame
         .locator(MENU)
         .first()
@@ -460,12 +483,17 @@ export async function openCanvasElementSubmenu(
     }
     await parent.hover();
     // The submenu is a second menu list, drawn beside the first, and it exists only while open.
+    // Wait for exactly two: when the menu is taller than the window it scrolls to bring the row
+    // under the pointer, and the pointer can rest on a neighbouring row on the way, such as
+    // Transparency. That row's submenu stays in the document while it fades out.
     await expect
         .poll(async () => frame.locator(MENU).count(), {
             timeout: 15000,
-            message: `Resting the pointer on "${parentL10nId}" did not open its submenu.`,
+            message:
+                `Resting the pointer on "${parentL10nId}" did not leave the menu showing with ` +
+                `that one submenu beside it.`,
         })
-        .toBeGreaterThan(1);
+        .toBe(2);
 }
 
 /**
