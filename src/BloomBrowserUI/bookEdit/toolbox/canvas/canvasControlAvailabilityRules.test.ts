@@ -193,3 +193,23 @@ describe("imageAvailabilityRules.editWithAi", () => {
         });
     });
 });
+
+describe("imageAvailabilityRules.rotateRight", () => {
+    const rule = imageAvailabilityRules.rotateRight as Exclude<
+        typeof imageAvailabilityRules.rotateRight,
+        "exclude" | undefined
+    >;
+
+    test("shown for a picture", () => {
+        expect(evaluate(rule.visible, makeCtx({ hasImage: true }))).toBe(true);
+    });
+
+    test("not shown on a navigation button, which is never rotated", () => {
+        expect(
+            evaluate(
+                rule.visible,
+                makeCtx({ hasImage: true, isNavigationButton: true }),
+            ),
+        ).toBe(false);
+    });
+});

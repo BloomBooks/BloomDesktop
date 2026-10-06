@@ -20,9 +20,11 @@ static class ServerHandlerForBloomPlayer
         // as for example "/book/12345". We need to redirect that to something like "c:/bloom/books/crow/crow.htm"
         // That part is easy. But the browser will ask for resources like css and images, and we want them to come as
         // "/book/12345/whatever.css". I've found that the way to get that behavior is using url rewriting.
-        if (request.LocalPathWithoutQuery.StartsWith("/book/"))
+        if (request.LocalPathWithoutQuery.StartsWith("/book/", StringComparison.Ordinal))
         {
-            if (request.LocalPathWithoutQuery.IndexOf(".distribution") > 0)
+            if (
+                request.LocalPathWithoutQuery.IndexOf(".distribution", StringComparison.Ordinal) > 0
+            )
             {
                 // we normally don't have this file, and even if we do it's not useful in the preview
                 // so avoid any errors by just returning an empty response

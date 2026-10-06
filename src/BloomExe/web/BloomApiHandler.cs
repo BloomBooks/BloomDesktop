@@ -440,7 +440,7 @@ namespace Bloom.Api
                     syncOn = ThumbnailsAndPreviewsSyncObj;
                     syncName = "the thumbnail/preview lock";
                 }
-                else if (localPathLc.StartsWith("api/i18n/"))
+                else if (localPathLc.StartsWith("api/i18n/", StringComparison.Ordinal))
                 {
                     syncOn = I18NLock;
                     syncName = "the i18n lock";

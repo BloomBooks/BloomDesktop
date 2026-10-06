@@ -132,7 +132,7 @@ namespace BloomTests.WebLibraryIntegration
                         Assert.That(
                             () =>
                                 s3.GetObjectAsync(
-                                        new GetObjectRequest { BucketName = "b", Key = "k" },
+                                        new GetObjectRequest { BucketName = "bucket", Key = "k" },
                                         cts.Token
                                     )
                                     .GetAwaiter()
@@ -187,7 +187,7 @@ namespace BloomTests.WebLibraryIntegration
                     Assert.That(
                         () =>
                             s3.GetObjectAsync(
-                                    new GetObjectRequest { BucketName = "b", Key = "k" },
+                                    new GetObjectRequest { BucketName = "bucket", Key = "k" },
                                     cts.Token
                                 )
                                 .GetAwaiter()
