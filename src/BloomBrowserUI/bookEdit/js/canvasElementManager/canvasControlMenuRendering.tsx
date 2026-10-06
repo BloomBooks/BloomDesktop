@@ -204,9 +204,10 @@ export function joinMenuSectionsWithSingleDividers(
 }
 
 // Renders converted rows as the children of an MUI Menu: dividers, nested submenus, and
-// shortcut-column alignment included.
+// shortcut-column alignment included. menuOpen is whether the Menu holding these rows is open.
 export function renderContextMenuItems(
     menuOptions: IMenuItemWithSubmenu[],
+    menuOpen: boolean,
 ): React.ReactNode[] {
     const menuHasShortcuts = menuOptions.some((o) => !!o.shortcutDisplay);
     return menuOptions.map((option, index) => {
@@ -222,6 +223,9 @@ export function renderContextMenuItems(
                     {...option}
                     key={option.l10nId}
                     truncateMainLabel={true}
+                    // The menu is keepMounted, so the row must hear
+                    // that the menu shut, or its submenu stays drawn.
+                    parentMenuOpen={menuOpen}
                 >
                     {option.subMenu.map((subOption, subIndex) => {
                         if (subOption.l10nId === "-") {

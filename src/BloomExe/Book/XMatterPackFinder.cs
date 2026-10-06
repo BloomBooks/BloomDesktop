@@ -128,6 +128,11 @@ namespace Bloom.Book
                     AddXMatterDir(directory, factory);
                 }
 
+                // Note that, unlike the search above, we do not require the shortcut's target to be
+                // named "*-XMatter". A shortcut to some other folder therefore makes XMatterInfo.Key
+                // throw, because it cannot find "-xmatter" to cut the name at. Reviewed for BL-16932
+                // and deliberately left alone: it takes a hand-made shortcut in the xMatter folder to
+                // get here, and failing loudly is what we want when someone has done that.
                 foreach (
                     var shortcut in Directory.GetFiles(path, "*.lnk", SearchOption.TopDirectoryOnly)
                 )

@@ -3,7 +3,6 @@ import { renderRoot } from "../../../utils/reactRender";
 import { kCanvasToolId } from "../toolIds";
 import { EnableAllImageEditing } from "../../js/bloomImages";
 import { getCanvasElementManager } from "./canvasElementPageBridge";
-import $ from "jquery";
 import type { CanvasElementManager } from "../../js/canvasElementManager/CanvasElementManager";
 import CanvasToolControls from "./CanvasToolControls";
 
@@ -31,18 +30,12 @@ export class CanvasTool extends ToolboxToolReactAdaptor {
         return kCanvasToolId;
     }
 
+    /** The icon for this tool's header in the toolbox. */
+    public iconPath(): string {
+        return "/bloom/bookEdit/toolbox/canvas/Canvas%20Icon.svg";
+    }
+
     public featureName? = kCanvasToolId;
-
-    public isExperimental(): boolean {
-        return false;
-    }
-
-    public beginRestoreSettings(_settings: string): JQueryPromise<void> {
-        // Nothing to do, so return an already-resolved promise.
-        const result = $.Deferred<void>();
-        result.resolve();
-        return result;
-    }
 
     public newPageReady() {
         const canvasElementManager = getCanvasElementManager();
