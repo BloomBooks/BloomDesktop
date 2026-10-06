@@ -526,8 +526,8 @@ namespace Bloom.Api
         /// <summary>
         /// The current page's content, for a request whose whole body is that content because the
         /// browser sent it along for the save the request will cause (see
-        /// getPageContentForSaveWhenReady() in bloomEditing.ts). Null if it was not sent; the
-        /// handler then passes null on, and the snapshot the browser last volunteered is used.
+        /// saveChangesAndRethinkPage() in bloomEditing.ts). Null if it was not sent; the handler
+        /// then passes null on, and the snapshot the browser last volunteered is used.
         ///
         /// Deliberately not unescaped: this is page HTML, and unescaping it would corrupt it.
         /// </summary>

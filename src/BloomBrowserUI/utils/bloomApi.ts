@@ -671,8 +671,8 @@ export function post(
 // hard about possible exceptions during the callback (and the possibility
 // that the callback is somehow messed up by the page reloading).
 // The optional value is sent as the body, as text/plain, exactly as postString() does. It is
-// there for commands that send the current page's content along so C# can save it without a
-// round trip (see collectCurrentPageContent in pageThumbnailList/currentPageContent.ts).
+// there for saveChangesAndRethinkPage() in bloomEditing.ts, which sends the current page's
+// content along so C# can save it without waiting for a snapshot.
 export function postThatMightNavigate(urlSuffix: string, value?: string) {
     const config =
         value === undefined

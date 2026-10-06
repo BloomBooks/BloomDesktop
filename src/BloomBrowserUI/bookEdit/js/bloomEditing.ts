@@ -1409,9 +1409,7 @@ function getPageContentForSave(): string {
 
 // The way anything outside this file gets the current page's content: wait for any in-flight async
 // DOM work that belongs in the saved page, then gather. The page snapshot (pageSnapshot.ts) reads
-// the page through this, and so do the page list's commands (see collectCurrentPageContent in
-// pageThumbnailList/currentPageContent.ts) to send the content along with a request that will make
-// C# save it.
+// the page through this, and so does saveChangesAndRethinkPage(), below.
 //
 // Note the gather happens in the continuation of the await, with nothing awaited in between, so no
 // timer can start new work between our finding the register empty and our reading the page.
@@ -1426,8 +1424,9 @@ export async function getPageContentForSaveWhenReady(): Promise<string> {
 // an imported video, a translation group replaced by a derived field), and the reload is what runs
 // the page's setup over the result.
 //
-// Sending the content with the request means C# does not have to ask us for it and wait for the
-// answer on a separate API before it can do anything. See EditingModel.SavePageAndReloadIt.
+// This is the one request that sends the page's content along, rather than leaving C# to use the
+// snapshot: the caller has only just restructured the page, so no snapshot of the result can have
+// been posted yet. See EditingModel.SavePageAndReloadIt.
 //
 // The post itself might navigate this very frame out from under us, hence postThatMightNavigate.
 //
@@ -1618,10 +1617,10 @@ export function captureContentForExternalProcessing(
 ): void {
     window.__bloomExternalPageContent = undefined;
     // This page is a throwaway copy in an off-screen browser, but it is a full editing page, so
-    // it has started volunteering snapshots and busy/idle notices to the live EditingModel like
-    // any other. C# refuses them (they carry a page load it is not showing), and refused notices
-    // are offered again every second for as long as the page lives. Stop that here; nothing this
-    // page has to say belongs to the live editor.
+    // it may have started volunteering snapshots and busy notices to the live EditingModel like
+    // any other. C# refuses them (they carry a page load it is not showing), so they do no harm,
+    // but they are wasted work. Stop that here; nothing this page has to say belongs to the live
+    // editor.
     stopWatchingPageForSnapshots();
 
     // Optionally auto-fit image/text origami pages so the fitted split persists into the saved HTML.

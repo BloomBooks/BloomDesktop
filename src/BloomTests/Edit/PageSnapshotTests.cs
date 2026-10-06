@@ -44,9 +44,9 @@ namespace BloomTests.Edit
         [Test]
         public void Set_BeforeThePageReportsReady_IsRefusedRatherThanKept()
         {
-            // The browser can genuinely be first: its two calls are not ordered against each other.
-            // Refusing tells it to offer the content again; keeping it would file content under a
-            // load we know nothing about.
+            // The browser waits for us to accept its load before it sends anything, so a snapshot
+            // for a load we have not accepted is one we have moved on from (or have not reached);
+            // keeping it would file content under a load we know nothing about.
             _snapshot.Clear();
 
             Assert.That(_snapshot.Set("page-A", "load-1", "typed"), Is.False);
@@ -92,8 +92,7 @@ namespace BloomTests.Edit
         {
             // This is the ordering that mattered most, and the one that was wrong: a "page is
             // ready" notification from a page we had already left arriving after the current page's
-            // own. If we adopt its id, every snapshot the user's actual page sends is refused --
-            // and since a refusal makes the browser retry rather than give up, it stays refused. We
+            // own. If we adopt its id, every snapshot the user's actual page sends is refused. We
             // would hold nothing, and quitting would write nothing: not the last keystroke lost,
             // but everything since the page loaded.
             //
@@ -137,14 +136,15 @@ namespace BloomTests.Edit
         }
 
         // The browser tells us when asynchronous work whose result belongs in the saved page has
-        // begun and ended (see pageContentDelays.ts). A save that uses the snapshot waits for the
-        // end, for a bounded time, because the snapshot it holds predates the work.
+        // begun (see pageContentDelays.ts), and its next snapshot says the work has ended. A save
+        // that uses the snapshot waits for that, for a bounded time, because the snapshot it holds
+        // predates the work.
 
         [Test]
         public void WaitUntilIdle_WhileBusy_GivesUpAfterTheLimitAndNamesTheWork()
         {
             ArriveAtPage("load-1");
-            Assert.That(_snapshot.SetBusy("load-1", 1, "sizing an image"), Is.True, "test setup");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
 
             var idle = _snapshot.WaitUntilIdle(60, out var busyWith);
 
@@ -157,15 +157,15 @@ namespace BloomTests.Edit
         }
 
         [Test]
-        public void WaitUntilIdle_WhenTheBrowserSaysIdle_Returns()
+        public void WaitUntilIdle_WhenTheNextSnapshotArrives_Returns()
         {
             ArriveAtPage("load-1");
-            Assert.That(_snapshot.SetBusy("load-1", 1, "sizing an image"), Is.True, "test setup");
-            // The idle notice arrives on a server thread while the UI thread is asleep in the wait.
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
+            // The snapshot arrives on a server thread while the UI thread is asleep in the wait.
             Task.Run(() =>
             {
                 Thread.Sleep(40);
-                _snapshot.SetIdle("load-1", 2);
+                _snapshot.Set("page-1", "load-1", "the page after the work");
             });
 
             var idle = _snapshot.WaitUntilIdle(5000, out var busyWith);
@@ -188,7 +188,7 @@ namespace BloomTests.Edit
         {
             ArriveAtPage("load-1");
 
-            Assert.That(_snapshot.SetBusy("load-0", 1, "sizing an image"), Is.False);
+            Assert.That(_snapshot.SetBusy("load-0", "sizing an image"), Is.False);
             Assert.That(
                 _snapshot.WaitUntilIdle(5000, out _),
                 Is.True,
@@ -202,51 +202,11 @@ namespace BloomTests.Edit
             // Navigating away: whatever the page we left was busy with is no longer our concern,
             // and must not delay the next save on the page we are going to.
             ArriveAtPage("load-1");
-            Assert.That(_snapshot.SetBusy("load-1", 1, "sizing an image"), Is.True, "test setup");
+            Assert.That(_snapshot.SetBusy("load-1", "sizing an image"), Is.True, "test setup");
 
             _snapshot.Clear();
 
             Assert.That(_snapshot.WaitUntilIdle(5000, out _), Is.True);
-        }
-
-        [Test]
-        public void SetIdle_FromBeforeTheBusyNoticeWeHold_IsIgnored()
-        {
-            // The two notices are separate requests and can be processed out of order. An idle
-            // notice for work that finished BEFORE the work we now know about began must not clear
-            // the busy state, or a save would go ahead in the middle of that work.
-            ArriveAtPage("load-1");
-            Assert.That(_snapshot.SetBusy("load-1", 3, "settling a paste"), Is.True, "test setup");
-
-            Assert.That(
-                _snapshot.SetIdle("load-1", 2),
-                Is.True,
-                "answered as taken, so the browser does not offer it again"
-            );
-
-            Assert.That(
-                _snapshot.WaitUntilIdle(60, out var busyWith),
-                Is.False,
-                "still waiting on the newer work"
-            );
-            Assert.That(busyWith, Is.EqualTo("settling a paste"));
-        }
-
-        [Test]
-        public void SetBusy_FromBeforeTheIdleNoticeWeHold_IsIgnored()
-        {
-            ArriveAtPage("load-1");
-            Assert.That(_snapshot.SetBusy("load-1", 1, "sizing an image"), Is.True, "test setup");
-            Assert.That(_snapshot.SetIdle("load-1", 2), Is.True, "test setup");
-
-            // The busy notice from before the idle arrives late.
-            Assert.That(_snapshot.SetBusy("load-1", 1, "sizing an image"), Is.True);
-
-            Assert.That(
-                _snapshot.WaitUntilIdle(5000, out _),
-                Is.True,
-                "the late notice changes nothing"
-            );
         }
     }
 }

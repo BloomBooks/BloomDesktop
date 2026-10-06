@@ -4,12 +4,12 @@ import {
     startWatchingPageForSnapshots,
     stopWatchingPageForSnapshots,
     quietMsForTests,
-    retryMsForTests,
     getPageLoadId,
 } from "./pageSnapshot";
 import {
     addRequestPageContentDelay,
     removeRequestPageContentDelay,
+    whenNoActiveDelays,
 } from "./pageContentDelays";
 
 const posted: Array<{ url: string; body: string }> = [];
@@ -20,8 +20,8 @@ let postHook: (() => Promise<unknown>) | undefined;
 // What C# answers. A real post resolves to the axios response, and this endpoint answers with a
 // boolean, so `{ data: true }` is an ordinary success. `{ data: false }` is a refusal: the snapshot
 // was for a page load it is not showing. And `undefined` -- no response at all -- is what a FAILED
-// post looks like, because postStringQuietly goes through wrapAxios, which turns a rejected request into a
-// resolved promise carrying nothing.
+// post looks like, because postStringQuietly goes through wrapAxios, which turns a rejected request
+// into a resolved promise carrying nothing.
 let postReply: unknown = { data: true };
 
 const reported: string[] = [];
@@ -60,14 +60,6 @@ async function letTheLoadedPageBeSent(releaseGather?: () => void) {
     await Promise.resolve(); // the post's await
     await Promise.resolve();
     posted.length = 0;
-}
-
-// Walks the slower timer used to offer content again when C# did not take it.
-async function letTheRetryHappen() {
-    vi.advanceTimersByTime(retryMsForTests);
-    await vi.runAllTicks();
-    await Promise.resolve(); // the gather's await
-    await Promise.resolve(); // the post's await
 }
 
 // A MutationObserver delivers its callback in a microtask, and the module then waits kQuietMs.
@@ -302,286 +294,187 @@ describe("pageSnapshot", () => {
             "the change that landed mid-gather must trigger another snapshot, not be dropped",
         ).toBe(3);
     });
-    it("says idle only after the page as it is AFTER the work has been posted, even if a post was already in flight", async () => {
-        // The gather may have read the page before the work began and be sitting in its post when
-        // the work finishes; what it sends predates the work. Idle must still wait for a snapshot
-        // taken afterwards, or C# saves the old page.
-        let release: (value: string) => void = () => {};
-        const slowGather = () =>
-            new Promise<string>((resolve) => {
-                release = resolve;
-            });
-        startWatchingPageForSnapshots(slowGather);
-        await letTheLoadedPageBeSent(() => release("the loaded page"));
-        posted.length = 0;
 
-        // The user types; a snapshot run starts and is now reading the page.
-        changeThePage("before the work");
-        await Promise.resolve();
-        vi.advanceTimersByTime(quietMsForTests);
+    // A gather that behaves like the real one in the respect these tests are about: it waits for
+    // the delay register to empty before it reads the page.
+    const gatherWhenIdle = async () => {
+        await whenNoActiveDelays();
+        return contentToReport;
+    };
+
+    // Lets queued posts and the gathers behind them run to completion.
+    async function letEverythingSettle() {
         await vi.runAllTicks();
+        for (let i = 0; i < 8; i++) await Promise.resolve();
+    }
 
-        // Meanwhile some work registers, changes the page, and finishes -- all while that run is
-        // still out.
+    const kinds = () =>
+        posted.map((p) => (p.url.includes("busy=true") ? "busy" : "snapshot"));
+
+    it("tells C# when work begins, and sends the page once the work is done", async () => {
+        // A save C# makes from the snapshot meanwhile would miss the work, so it waits for the
+        // snapshot that follows; that snapshot is also what tells it the page is idle.
+        contentToReport = "before the work";
+        startWatchingPageForSnapshots(gatherWhenIdle);
+        await letTheLoadedPageBeSent();
+
         addRequestPageContentDelay("sizing an image");
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["busy"]);
+        expect(posted[0].url).toContain("editView/pageSnapshot");
+        expect(posted[0].body).toBe("sizing an image");
+
+        // The work changes the page; the snapshot for that waits for the work to finish.
+        contentToReport = "after the work";
         changeThePage("after the work");
-        await Promise.resolve();
+        await letTheSnapshotHappen();
+        expect(kinds(), "no snapshot while the page is busy").toEqual(["busy"]);
+
         removeRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["busy", "snapshot"]);
+        expect(posted[1].body).toBe("after the work");
+    });
 
-        // The run comes back with what it read before the work.
-        release("before the work");
-        await vi.runAllTicks();
-        for (let i = 0; i < 4; i++) await Promise.resolve();
-        // The gather taken because of the idle notice reports the finished page.
-        release("after the work");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
+    it("sends the page after work finishes even if the work changed nothing, because that is what says idle", async () => {
+        contentToReport = "unchanged";
+        startWatchingPageForSnapshots(gatherWhenIdle);
+        await letTheLoadedPageBeSent();
 
-        const urls = posted.map((p) => p.url.split("?")[0]);
-        expect(urls).toEqual([
-            "editView/pageBusy",
-            "editView/pageSnapshot",
-            "editView/pageSnapshot",
-            "editView/pageIdle",
-        ]);
-        expect(posted[1].body).toBe("before the work");
-        expect(
-            posted[2].body,
-            "the page as it is after the work must have been sent before idle",
-        ).toBe("after the work");
+        addRequestPageContentDelay("settling a paste");
+        await letEverythingSettle();
+        removeRequestPageContentDelay("settling a paste");
+        await letEverythingSettle();
+
+        expect(kinds()).toEqual(["busy", "snapshot"]);
+        expect(posted[1].body).toBe("unchanged");
+
+        // Having said so once, an unchanged page is not sent again.
+        changeThePage("a mutation that does not change the saved form");
+        await letTheSnapshotHappen();
+        expect(posted.length).toBe(2);
     });
 
     it("reports work that was already registered when watching began", async () => {
         addRequestPageContentDelay("sizing an image");
-        startWatchingPageForSnapshots(gather);
-        await Promise.resolve();
+        startWatchingPageForSnapshots(gatherWhenIdle);
+        await letEverythingSettle();
 
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageBusy",
-        ]);
+        expect(kinds()).toEqual(["busy"]);
         expect(posted[0].body).toBe("sizing an image");
 
-        postReply = { data: true };
         removeRequestPageContentDelay("sizing an image");
         await letTheLoadedPageBeSent();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
     });
 
-    it("offers the busy notice again when the post fails outright", async () => {
-        // A failed post looks like a successful one apart from the missing reply (wrapAxios
-        // swallows the rejection). C# has not heard, so a save it makes meanwhile would not wait.
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-        postReply = undefined;
+    it("does not send a page read just before work began, which would tell C# the page is idle", async () => {
+        // The gather has read the page, and before we get to post it, work begins and we tell C#
+        // the page is busy. Posting what we read would end the busy spell with a page from before
+        // the work.
+        let release: (value: string) => void = () => {};
+        const heldGather = () =>
+            new Promise<string>((resolve) => {
+                release = resolve;
+            });
+        startWatchingPageForSnapshots(heldGather);
+        await letTheLoadedPageBeSent(() => release("the loaded page"));
 
-        addRequestPageContentDelay("settling a paste");
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(posted.length, "sanity: the first notice went out").toBe(1);
-
-        vi.advanceTimersByTime(retryMsForTests);
-        await Promise.resolve();
-        expect(posted.length, "not taken, so offered again").toBe(2);
-
-        postReply = { data: true };
-        removeRequestPageContentDelay("settling a paste");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-    });
-
-    it("offers the idle notice again when it is not taken, so C# is not left believing the page busy", async () => {
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
+        changeThePage("typed");
+        await letTheSnapshotHappen();
         addRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
-        posted.length = 0;
+        release("typed, read before the work");
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["busy"]);
 
-        postReply = undefined; // the server drops the idle post
         removeRequestPageContentDelay("sizing an image");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
+        release("after the work");
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["busy", "snapshot"]);
+        expect(posted[1].body).toBe("after the work");
+    });
+
+    it("sends busy notices and snapshots one at a time, in the order they arose", async () => {
+        // They share one unsynchronised endpoint. Two in flight could be processed in either
+        // order, and a busy notice cleared by a snapshot from before the work would let a save go
+        // ahead in the middle of it.
+        startWatchingPageForSnapshots(gather);
+        await letTheLoadedPageBeSent();
+
+        let releasePost: () => void = () => {};
+        postHook = () =>
+            new Promise<unknown>((resolve) => {
+                releasePost = () => resolve({ data: true });
+            });
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        expect(kinds(), "sanity: the snapshot is in flight").toEqual([
+            "snapshot",
+        ]);
+
+        addRequestPageContentDelay("sizing an image");
+        await letEverythingSettle();
         expect(
-            posted.map((p) => p.url.split("?")[0]),
-            "sanity: the idle notice went out once",
-        ).toEqual(["editView/pageIdle"]);
+            kinds(),
+            "the busy notice waits for the snapshot to be answered",
+        ).toEqual(["snapshot"]);
 
-        postReply = { data: true };
-        vi.advanceTimersByTime(retryMsForTests);
-        for (let i = 0; i < 4; i++) await Promise.resolve();
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageIdle",
-            "editView/pageIdle",
-        ]);
-    });
+        releasePost();
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["snapshot", "busy"]);
 
-    it("numbers the busy and idle notices in the order they are sent", async () => {
-        // They travel as separate requests, and C# uses the numbers to ignore one that arrives
-        // after a later one -- an idle notice landing after the busy notice for newer work.
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-
-        addRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
+        releasePost();
         removeRequestPageContentDelay("sizing an image");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-
-        const notices = posted.filter(
-            (p) => !p.url.startsWith("editView/pageSnapshot"),
-        );
-        expect(notices.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageBusy",
-            "editView/pageIdle",
-        ]);
-        const seqOf = (url: string) => Number(/[?&]seq=(\d+)/.exec(url)![1]);
-        expect(seqOf(notices[1].url)).toBeGreaterThan(seqOf(notices[0].url));
+        await letEverythingSettle();
+        releasePost();
+        await letEverythingSettle();
+        expect(kinds()).toEqual(["snapshot", "busy", "snapshot"]);
     });
 
-    it("withholds the idle notice until the finished page has actually been delivered", async () => {
-        // Idle means "and you already have the page as it is now". If the snapshot of the finished
-        // page fails to post, saying idle anyway would let C# save the page from before the work.
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-        addRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
-        await Promise.resolve();
-        posted.length = 0;
-
-        contentToReport = "with the image sized";
-        changeThePage("with the image sized");
-        await Promise.resolve();
-        postReply = undefined; // the snapshot post fails
-        removeRequestPageContentDelay("sizing an image");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageSnapshot",
-        ]);
-
-        // The retry delivers it; only then does idle go out.
-        postReply = { data: true };
-        vi.advanceTimersByTime(retryMsForTests);
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageSnapshot",
-            "editView/pageSnapshot",
-            "editView/pageIdle",
-        ]);
-        expect(posted[1].body).toBe("with the image sized");
-    });
-
-    it("withholds the idle notice when the finished page could not even be read", async () => {
-        // The sibling of the case above: the gather after the work throws, so nothing was posted
-        // and the last successful gather is from before the work. Idle must wait for the retry.
-        let gatherShouldThrow = false;
-        const flakyGather = () =>
-            gatherShouldThrow
-                ? Promise.reject(new Error("the page could not be read"))
-                : Promise.resolve(contentToReport);
-        startWatchingPageForSnapshots(flakyGather);
-        await letTheLoadedPageBeSent();
-        addRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
-        await Promise.resolve();
-        posted.length = 0;
-
-        gatherShouldThrow = true;
-        removeRequestPageContentDelay("sizing an image");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(
-            posted,
-            "nothing could be posted, so nothing may say idle",
-        ).toEqual([]);
-        expect(reported.length, "the failure was reported").toBe(1);
-
-        gatherShouldThrow = false;
-        contentToReport = "with the image sized";
-        vi.advanceTimersByTime(retryMsForTests);
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageSnapshot",
-            "editView/pageIdle",
-        ]);
-        expect(posted[0].body).toBe("with the image sized");
-    });
-
-    it("sends the owed idle notice even when the retry finds nothing new to post", async () => {
-        // The gather after the work threw, so idle was withheld; the retry reads the page and finds
-        // it identical to what C# already holds. There is no snapshot to post, but C# is still owed
-        // the idle notice, or every later save would sit out the whole wait.
-        let gatherShouldThrow = false;
-        const flakyGather = () =>
-            gatherShouldThrow
-                ? Promise.reject(new Error("the page could not be read"))
-                : Promise.resolve(contentToReport);
-        startWatchingPageForSnapshots(flakyGather);
-        await letTheLoadedPageBeSent();
-        addRequestPageContentDelay("sizing an image");
-        await Promise.resolve();
-        await Promise.resolve();
-        posted.length = 0;
-
-        gatherShouldThrow = true;
-        removeRequestPageContentDelay("sizing an image");
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(posted).toEqual([]);
-
-        gatherShouldThrow = false; // and contentToReport is unchanged from the loaded page
-        vi.advanceTimersByTime(retryMsForTests);
-        await vi.runAllTicks();
-        for (let i = 0; i < 6; i++) await Promise.resolve();
-        expect(posted.map((p) => p.url.split("?")[0])).toEqual([
-            "editView/pageIdle",
-        ]);
-    });
-
-    it("offers the busy notice again when C# refuses it, while the work is still going", async () => {
-        // C# refuses notices about a load it is not yet showing, exactly as it refuses snapshots,
-        // and this page may simply not have reported itself ready yet.
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-        postReply = { data: false };
-
-        addRequestPageContentDelay("settling a paste");
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(posted.length, "sanity: the first notice went out").toBe(1);
-
-        vi.advanceTimersByTime(retryMsForTests);
-        await Promise.resolve();
-        expect(posted.length, "refused, so offered again").toBe(2);
-        expect(posted[1].url.split("?")[0]).toBe("editView/pageBusy");
-
-        postReply = { data: true };
-        removeRequestPageContentDelay("settling a paste");
-        await vi.runAllTicks();
-        for (let i = 0; i < 4; i++) await Promise.resolve();
-    });
-
-    it("does not treat a failed post as sent, so the content is offered again", async () => {
-        // Recording it as sent before the post resolved would mean C# never got this content and
-        // we never tried again -- the next save would then write what C# still held, losing
-        // everything typed since.
+    it("reports a post that fails, once per page, and does not retry it", async () => {
+        // Posting a string to localhost should never fail. If it does, the user needs to know
+        // their changes may not be saved; offering it again on a timer would only hide that.
         contentToReport = "first";
         startWatchingPageForSnapshots(gather);
         await letTheLoadedPageBeSent();
 
-        postHook = () => Promise.reject(new Error("network gone"));
-        contentToReport = "second";
-        changeThePage("second");
+        postReply = undefined; // no response at all: wrapAxios swallowed a failed request
+        contentToReport = "typed";
+        changeThePage("typed");
         await letTheSnapshotHappen();
-        expect(posted.map((p) => p.body)).toEqual(["second"]);
+        await letEverythingSettle();
+        expect(posted.length).toBe(1);
+        expect(reported.length).toBe(1);
+        expect(reported[0]).toContain("could not keep track of your changes");
 
-        // The post failed, so the same content must still be offered on the next attempt.
-        postHook = undefined;
-        changeThePage("second again");
+        vi.advanceTimersByTime(60000);
+        await letEverythingSettle();
+        expect(posted.length, "no retry").toBe(1);
+
+        contentToReport = "typed more";
+        changeThePage("typed more");
         await letTheSnapshotHappen();
-        expect(posted.map((p) => p.body)).toEqual(["second", "second"]);
+        await letEverythingSettle();
+        expect(posted.length, "a later change is still sent").toBe(2);
+        expect(reported.length, "and the user is told only once").toBe(1);
+    });
+
+    it("drops a message C# refuses, without reporting it or offering it again", async () => {
+        // C# accepts our load before we send anything, so a refusal means it has moved on from
+        // this page, and nobody wants the message any more.
+        contentToReport = "first";
+        startWatchingPageForSnapshots(gather);
+        await letTheLoadedPageBeSent();
+
+        postReply = { data: false };
+        contentToReport = "typed";
+        changeThePage("typed");
+        await letTheSnapshotHappen();
+        vi.advanceTimersByTime(60000);
+        await letEverythingSettle();
+
+        expect(posted.length).toBe(1);
+        expect(reported.length).toBe(0);
     });
 
     it("reports a gather that throws, once per page, instead of losing the edits silently", async () => {
@@ -660,137 +553,5 @@ describe("pageSnapshot", () => {
         await Promise.resolve();
 
         expect(posted.length).toBe(0);
-    });
-
-    it("offers the content again when C# refuses the snapshot", async () => {
-        // C# refuses anything from a page load it is not showing. Because the snapshot endpoint is
-        // not ordered against the "page is ready" one, a snapshot can genuinely arrive first and be
-        // refused; counting it as delivered would leave C# with nothing to save.
-        contentToReport = "first";
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-
-        postReply = { data: false }; // refused
-        contentToReport = "typed";
-        changeThePage("typed");
-        await letTheSnapshotHappen();
-        expect(posted.map((p) => p.body)).toEqual(["typed"]);
-
-        // Refused, so the very same content must be offered again rather than treated as sent.
-        // Nothing the user did caused the refusal, so the retry is on the slower timer.
-        postReply = { data: true };
-        await letTheRetryHappen();
-        expect(posted.map((p) => p.body)).toEqual(["typed", "typed"]);
-    });
-
-    it("does not treat a post that failed outright as sent", async () => {
-        // The realistic shape of a failed post, and the one that nearly slipped through: the post
-        // goes through wrapAxios, which swallows the rejection and resolves with NOTHING. So a
-        // failed post is indistinguishable from a successful one except that no response comes
-        // back -- and reading only `.data` took that for an acceptance. The content was then
-        // recorded as sent and never offered again, and the next save wrote what C# still held.
-        contentToReport = "first";
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-
-        postReply = undefined; // the post failed; wrapAxios gives us nothing
-        contentToReport = "typed";
-        changeThePage("typed");
-        await letTheSnapshotHappen();
-        expect(posted.map((p) => p.body)).toEqual(["typed"]);
-
-        postReply = { data: true };
-        await letTheRetryHappen();
-        expect(
-            posted.map((p) => p.body),
-            "content C# never received must be offered again, not counted as sent",
-        ).toEqual(["typed", "typed"]);
-    });
-
-    it("offers a change made while a post was failing straight away, not after the backoff", async () => {
-        // The backoff exists to spare a server that is not answering; it must not hold back
-        // content the user has changed since. A save in that window would otherwise use the
-        // older snapshot, and the newer edit would be missing from it.
-        contentToReport = "first";
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-
-        let release: (value: unknown) => void = () => {};
-        postHook = () =>
-            new Promise((resolve) => {
-                release = resolve;
-            });
-        contentToReport = "typed";
-        changeThePage("typed");
-        await letTheSnapshotHappen();
-        expect(posted.length, "sanity: a post is in flight").toBe(1);
-
-        // While it is in flight the user types again, and then the post fails.
-        contentToReport = "typed more";
-        changeThePage("typed more");
-        await Promise.resolve();
-        postHook = undefined;
-        postReply = { data: true }; // the server is back for the next attempt
-        release(undefined); // no response: the post failed
-        await vi.runAllTicks();
-        await Promise.resolve();
-        await Promise.resolve();
-
-        // The next attempt must come after the ordinary quiet time, not the retry time.
-        vi.advanceTimersByTime(quietMsForTests);
-        await vi.runAllTicks();
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(posted.length, "the newer content is offered at once").toBe(2);
-        expect(posted[1].body).toBe("typed more");
-    });
-
-    it("keeps offering a failing post, backing off, and tells the user only once", async () => {
-        // Two things have to be true at the same time here, and they pull against each other.
-        //
-        // We must not stop retrying: while C# has not got this content, quitting writes what it
-        // still holds, so a server that comes back must be given the content even if the user
-        // never types again. But we must also not report the failure on every attempt, or an
-        // outage puts an error in front of the user again and again. Hence a quiet post and one
-        // report per page.
-        contentToReport = "first";
-        startWatchingPageForSnapshots(gather);
-        await letTheLoadedPageBeSent();
-
-        postReply = undefined; // every post fails
-        contentToReport = "typed";
-        changeThePage("typed");
-        await letTheSnapshotHappen();
-        expect(posted.length, "sanity: the first attempt happened").toBe(1);
-
-        // A minute of outage, walked in 10s steps.
-        for (let i = 0; i < 6; i++) {
-            vi.advanceTimersByTime(10000);
-            await vi.runAllTicks();
-            await Promise.resolve();
-            await Promise.resolve();
-        }
-        expect(
-            posted.length,
-            "it must keep offering rather than give up",
-        ).toBeGreaterThan(1);
-        expect(
-            posted.length,
-            "backing off: a minute of outage must not mean a minute of attempts",
-        ).toBeLessThan(12);
-        expect(
-            reported.length,
-            "the user must be told once, not once per attempt",
-        ).toBe(1);
-
-        // When the server comes back, the content gets there with no further typing.
-        postReply = { data: true };
-        const attemptsWhileDown = posted.length;
-        vi.advanceTimersByTime(60000);
-        await vi.runAllTicks();
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(posted.length).toBe(attemptsWhileDown + 1);
-        expect(posted[posted.length - 1].body).toBe("typed");
     });
 });

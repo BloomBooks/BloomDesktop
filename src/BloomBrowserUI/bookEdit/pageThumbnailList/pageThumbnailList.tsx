@@ -29,7 +29,6 @@ import {
     postString,
     useApiData,
 } from "../../utils/bloomApi";
-import { collectCurrentPageContent } from "./currentPageContent";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -831,20 +830,14 @@ const PageList: React.FunctionComponent<{ initialPageLayout: string }> = (
             closeContextMenu();
             return;
         }
-        // The rest (duplicate, copy, paste, remove) have to save the current page first, so send
-        // its content along. See collectCurrentPageContent(). Queued with the page clicks: C#
-        // answers only once the command has run, so a click made just after it waits its turn
-        // rather than overtaking it and leaving it acting on the newly selected page.
+        // The rest (duplicate, copy, paste, remove) save the current page first. C# does that
+        // from the snapshot the page has already sent it (see pageSnapshot.ts), so the command
+        // carries nothing but its name.
         const postCommand = () =>
-            queuePageListRequest(async () =>
-                postJson("pageList/contextMenuItemClicked", {
-                    pageId,
-                    commandId,
-                    pageContent: await collectCurrentPageContent(
-                        `the ${commandId} command`,
-                    ),
-                }),
-            );
+            postJson("pageList/contextMenuItemClicked", {
+                pageId,
+                commandId,
+            });
         if (commandId === "removePage") {
             confirmRemovePage(postCommand);
         } else {
@@ -1086,57 +1079,17 @@ function onDragStop(
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    // Moving a page saves the current one first; see collectCurrentPageContent().
-    void queuePageListRequest(async () =>
-        postJson("pageList/pageMoved", {
-            movedPageId,
-            newIndex,
-            pageContent: await collectCurrentPageContent("the page move"),
-        }),
-    );
+    postJson("pageList/pageMoved", { movedPageId, newIndex });
 }
 
-// One page-list request at a time -- a click, a context-menu command, a move -- so that they reach
-// C# in the order the user made them.
-//
-// This used to be free: each request posted immediately, so two arrived in the order they were
-// made. Gathering the outgoing page's content first put an await in front of the post, and two
-// requests in quick succession would then be two overlapping gathers whose posts could arrive in
-// either order -- so C#, which takes the first and declines the second while it navigates, could
-// act on the earlier one rather than the later one, or a command could land after a click had
-// already changed the selection it was about. Queueing costs the second request the first's
-// gather, which is well under a millisecond.
-//
-// The work is awaited, not just issued: C# has not seen a request until its post comes back, and
-// releasing the queue when the request was merely sent would let the next one overtake it.
-let pageListRequests: Promise<void> = Promise.resolve();
-
-function queuePageListRequest(work: () => Promise<unknown>): Promise<void> {
-    pageListRequests = pageListRequests
-        .then(work)
-        .then(() => undefined)
-        // One request that somehow failed must not stop every later one from being sent.
-        .catch((error) => {
-            console.warn("could not send a page-list request to Bloom", error);
-        });
-    return pageListRequests;
-}
-
-// Tell C# the user picked a page, sending the CURRENT page's content along with the click so it
-// can save the page we are leaving in the same step. See collectCurrentPageContent().
+// Tell C# the user picked a page. C# saves the page we are leaving from the snapshot it already
+// holds (see pageSnapshot.ts).
 function postPageClicked(
     pageId: string,
     detail: string,
     onSuccess?: () => void,
-): Promise<void> {
-    return queuePageListRequest(async () => {
-        const pageContent = await collectCurrentPageContent("the page change");
-        await postJson(
-            "pageList/pageClicked",
-            { pageId, detail, pageContent },
-            onSuccess,
-        );
-    });
+): void {
+    postJson("pageList/pageClicked", { pageId, detail }, onSuccess);
 }
 
 function ContinueAutomatedPageClicking(

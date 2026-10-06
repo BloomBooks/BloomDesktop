@@ -61,10 +61,10 @@ On top of that:
   to), write the book, navigate. The whole `SavePending -> SavedAndStripped -> Navigating` sequence
   collapses into one `Editing -> Navigating` step.
 - **`EditingModel.MergeCurrentPageThenSave(changeBookBeforeWriting, ..., pageContent)`** -- the way
-  in for everything that changes pages. Given the content it uses it; otherwise it uses the snapshot
-  the browser last volunteered (see "The page snapshot" below), and a null snapshot means the page
-  has not changed.
-- `EditingModel.SaveCurrentPageAndBook(pageContent)` -- save and stay put: leaving the Edit tab,
+  in for everything that changes pages. It uses the snapshot the browser last volunteered (see "The
+  page snapshot" below), and a null snapshot means the page has not changed. Only
+  `SavePageAndReloadIt` passes content of its own (see below).
+- `EditingModel.SaveCurrentPageAndBook()` -- save and stay put: leaving the Edit tab,
   closing the collection, Copy Page, opening the AI image editor. Both routes go through the same
   `UpdateBookDomFromBrowserPageContent()` and `SaveBookToDisk()`, so every save makes the same
   "nothing / just this page / whole book" decision and clears the same flags.
@@ -78,23 +78,28 @@ that one purpose. Nothing else waits on a page load any more.
 
 ### What the page list sends
 
-Everything the **page list frame** initiates sends the current page's content along with its
-request. `collectCurrentPageContent()` (`pageThumbnailList/currentPageContent.ts`) gathers it -- it
-can, because `getEditablePageBundleExports()` reaches across frames -- so the save uses the freshest
-possible copy rather than a snapshot up to a debounce interval old:
+Nothing but the command. Everything the **page list frame** initiates saves the current page from
+the snapshot C# already holds. (An earlier version sent the page's content along with each request,
+to save a debounce interval of freshness; but nobody clicks a thumbnail within 25 ms of a keystroke,
+and carrying the content meant awaiting a gather before every post, which in turn needed a queue to
+keep the page list's requests in order.)
 
 | Command | Was | Is now |
 | --- | --- | --- |
-| clicking a page thumbnail | round trip, then navigate | save from the content sent, then navigate, in one step |
+| clicking a page thumbnail | round trip, then navigate | save from the snapshot, then navigate, in one step |
 | Duplicate Page (button and context menu) | round trip, then duplicate, then navigate | ditto |
 | Delete Page (button and context menu) | ditto | ditto |
 | Paste Page (context menu) | ditto | ditto |
 | dragging a page to a new position | ditto | ditto |
-| Change Layout, import a video, convert a field to a derived one | round trip, then reload the page | ditto -- and they keep the reload, which is doing a second job for them (section 1) |
+| Change Layout, import a video, convert a field to a derived one | round trip, then reload the page | save from the content sent with the request, then reload -- the reload is doing a second job for them (section 1) |
 | **Copy Page** (context menu) | round trip **and a reload of the page being copied** | `SaveCurrentPageAndBook` -- no navigation at all |
 
+The last row is the one request that still carries the page (`saveChangesAndRethinkPage()` in
+`bloomEditing.ts`): the browser makes it straight after restructuring the page, before any snapshot
+of the result could have been posted.
+
 Copy Page loses its reload entirely: copying doesn't change the page you are looking at, so with
-the content in hand there is nothing left to navigate to. The others still navigate, because they
+the snapshot in hand there is nothing left to navigate to. The others still navigate, because they
 are *going somewhere* (the new page, the next page, the moved page); what they lose is the round
 trip, and with it the `SavePending` window in which a second command was silently dropped.
 
@@ -223,13 +228,12 @@ So the register moved out of `bloomEditing.ts` into its own module,
 | Route | Used by |
 | --- | --- |
 | `requestPageContent()` | the C#-initiated save; the reason the register exists |
-| `getPageContentForSaveWhenReady()` | `savePageWithoutReloading()`, and the page list's commands via `collectCurrentPageContent()` |
+| `getPageContentForSaveWhenReady()` | the page snapshot, and `saveChangesAndRethinkPage()` |
 | `captureContentForExternalProcessing()` | the off-screen book processor |
 
 The synchronous `getPageContentForSave()` is no longer exported from the module or across frames,
-so there is no longer a way to gather the page without passing the gate. And because the page
-list's commands await it, the *command* does not start either: C# is not asked to duplicate,
-delete or reorder anything until the page has settled. `pageContentDelays.spec.ts` covers the
+so there is no longer a way to gather the page without passing the gate. (The page list's commands
+no longer gather at all; C# waits for a busy page instead -- see "The page snapshot".) `pageContentDelays.spec.ts` covers the
 waiting, the release, the cap, and that a failed operation cannot leave the gate stuck shut.
 
 The gate also stopped polling. It used to be two mechanisms — a timeout that `requestPageContent`
@@ -260,12 +264,14 @@ has to be chopped up around an asynchronous wait. The shape the converted ones u
 
 ```
 // TS
-postThatMightNavigate("edit/pageControls/duplicatePage",
-                      await collectCurrentPageContent("the duplicate command"));
+postThatMightNavigate("common/saveChangesAndRethinkPageEvent",
+                      await getPageContentForSaveWhenReady());
 // C#
-_editingModel.OnDuplicatePage(request.GetPageContentFromBrowserOrNull());
-// ...which ends up at SaveThen(..., pageContentFromBrowser: content)
+SavePageAndReloadIt(pageContent: request.GetPageContentOrNull());
 ```
+
+(In the end only that one request kept its content; the rest save from the snapshot, which removes
+the asynchronous wait just as well.)
 
 For a handler that has no reason to navigate at all, `SavePageInPlace` is even plainer — save,
 do the thing, reply — which is what removes the `doIfNotInRightStateToSave` callback (the handler
@@ -353,8 +359,8 @@ start a save from C# — but each converted caller shrinks the surface.
   by then the browser's content is already in the book DOM and there is nothing left to lose. Our
   own navigation afterwards supersedes the action's, or is ignored when it is to the same page.
 - **A context-menu command runs inside its request.** `HandleContextMenuItemClickedRequest` runs
-  the command and only then answers, so a page click or move made meanwhile waits in the page
-  list's request queue and cannot overtake it. This used to be deferred by 100 ms, because Duplicate
+  the command and only then answers, holding the API lock, so a page click or move that arrives
+  meanwhile waits for it and cannot overtake it. This used to be deferred by 100 ms, because Duplicate
   Many Times opened a modal C# dialog, and a modal dialog inside a handler holding the API lock
   deadlocks; but the deferral answered the request before the command ran, which let a click
   overtake it, and keeping the two in order took a chain of queued work in `PageListApi`. Now the
@@ -494,17 +500,18 @@ it, but it is a trade rather than an oversight.
 
 Asynchronous work is the longer version of the same window, and it is handled. Work whose result
 belongs in the saved page (sizing an image, settling a paste) registers in the delay register
-(`pageContentDelays.ts`), and every gather in the browser waits for the register to empty -- so a
-page click, which carries the content with it, cannot save a half-changed page. A save that uses the
-snapshot could, because the snapshot it holds predates the work. So the browser tells C# when the
-register goes busy, naming the work (`editView/pageBusy`), and when it is idle again
-(`editView/pageIdle`) -- and it says idle only *after* it has posted the finished page. A
-snapshot-based save waits for that, sleeping the UI thread for at most 2 s
+(`pageContentDelays.ts`), and every gather in the browser waits for the register to empty -- so
+every snapshot is of an idle page. But a save made while the work is under way would use the
+snapshot from before it. So the browser tells C# when the register goes busy, naming the work (a
+`busy=true` message on the same `editView/pageSnapshot` endpoint), and as soon as the register
+empties it posts the page again, even if its saved form did not change: a snapshot is what says the
+page is idle. A save waits for it, sleeping the UI thread for at most 2 s
 (`PageSnapshot.WaitUntilIdle`); it is a plain sleep rather than another asynchronous protocol, and
-the two notices, like the snapshot itself, arrive on server threads, so the sleep does not stop
-them. The notices are numbered, because two unsynchronised requests can be processed out of order
-and an idle notice landing after the busy notice for newer work must not clear it; and a notice C#
-does not take (a refused or failed post) is offered again while it is still true. If the wait runs
+the snapshot arrives on a server thread, so the sleep does not stop it. The browser sends its
+messages one at a time, each after the last was answered, so a busy notice and a snapshot cannot be
+processed out of order; and it starts sending only once C# has answered the page's "loaded" notice,
+so C# refuses a message only after it has moved on from the page, and the browser just drops it.
+Nothing is retried: a post to localhost that fails is reported to the user. If the wait runs
 out, the save goes ahead and the log records what the page was still busy with, so a report of a
 lost change can be read against it.
 
@@ -517,7 +524,7 @@ log says which work it was, which is how we will learn whether any of them matte
 
 One exit does not wait at all: Windows shutting down, restarting or logging off. Windows gives an
 application about five seconds to answer `WM_QUERYENDSESSION` before treating it as hung, the
-browser is being shut down alongside us so its idle notice may never come, and the snapshot is at
+browser is being shut down alongside us so the snapshot that ends a busy spell may never come, and the snapshot is at
 most the usual tens of milliseconds behind for typing. `Shell.OnFormClosing` sees the close reason
 (which is why it is `OnFormClosing` rather than `OnClosing`), passes it through the
 collection-closing event, and the save takes the snapshot as it stands, logging if the page was

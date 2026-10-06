@@ -36,7 +36,7 @@ namespace Bloom.Edit
             _thumbNailList.Model = model;
         }
 
-        private void OnPageSelectedChanged(object page, PageSelectedChangedEventArgs e)
+        private void OnPageSelectedChanged(object page, EventArgs e)
         {
             if (page == null)
                 return;
@@ -47,17 +47,12 @@ namespace Bloom.Edit
 
             // The only necessary action after saving is to go to the desired page, which is what
             // returning its ID from the first argument achieves.
-            //
-            // The click usually brings the outgoing page's content with it, which is the freshest
-            // copy there is; when it does not, MergeCurrentPageThenSave uses the snapshot the
-            // browser last volunteered.
             _model.MergeCurrentPageThenSave(
                 () => pageId,
                 // Clicking a thumbnail changes nothing in the book. This is the case the whole "do
                 // not write a page nobody edited" optimisation exists for, so it must not claim
                 // the book changed.
-                actionChangesTheBook: false,
-                pageContent: e.PageContent
+                actionChangesTheBook: false
             );
         }
 

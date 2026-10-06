@@ -38,13 +38,21 @@ function getPageId(): string {
 // This notification lets the C# know that this partciular page is ready to edit.
 // It is important that this does not get pulled into any other compiled bundle,
 // since it will generate errors when loaded into any page that does not have a .bloom-page.
+//
+// The load id goes with it: from the moment C# answers until the next page reports ready, C#
+// accepts snapshots only from this load. See getPageLoadId(). The page snapshot waits for that
+// answer before it starts (see the ready handler below).
+let pageDomLoadedAnswered: Promise<unknown> | undefined;
+function tellCSharpPageDomLoaded(): Promise<unknown> {
+    if (!pageDomLoadedAnswered)
+        pageDomLoadedAnswered = postJson("editView/pageDomLoaded", {
+            pageId: getPageId(),
+            loadId: getPageLoadId(),
+        });
+    return pageDomLoadedAnswered;
+}
 document.addEventListener("DOMContentLoaded", () => {
-    // The load id goes with it: from here until the next page reports ready, C# accepts snapshots
-    // only from this load. See getPageLoadId().
-    postJson("editView/pageDomLoaded", {
-        pageId: getPageId(),
-        loadId: getPageLoadId(),
-    });
+    void tellCSharpPageDomLoaded();
 });
 
 // This allows strong typing to be done for exported functions.
@@ -405,8 +413,11 @@ $(document).ready(() => {
 
     // Start volunteering the page's content to C#: once now, with whatever the load-time fix-ups
     // above changed, and then whenever it changes and settles, so a save never has to ask for it
-    // and wait. See pageSnapshot.ts.
-    startWatchingPageForSnapshots(getPageContentForSaveWhenReady);
+    // and wait. See pageSnapshot.ts. Not until C# has accepted this load, or it would refuse what
+    // we send. (Normally the notice went at DOMContentLoaded; asking again just returns that post.)
+    void tellCSharpPageDomLoaded().then(() =>
+        startWatchingPageForSnapshots(getPageContentForSaveWhenReady),
+    );
 
     // If the user clicks outside of the page thumbnail context menu, we want to close it.
     // Since it is currently a winforms menu, we do that by sending a message

@@ -47,52 +47,31 @@ namespace Bloom.web.controllers
             // string; see PageSnapshot for what it is for and why "no snapshot" means "nothing to
             // save" rather than "go and ask".
             //
+            // With busy=true, the body instead names asynchronous work which belongs in the saved
+            // page and has just begun; a save that has to use the snapshot waits, for a bounded
+            // time, for the snapshot that follows it. See PageSnapshot.WaitUntilIdle.
+            //
             // Deliberately NOT on the UI thread and NOT synchronized: it only stores a string (the
-            // store does its own locking), and an idle task reporting what the editor contains has
-            // no business queueing behind a save, or blocking one. Making it wait would reintroduce
-            // in one place exactly the coupling this removes everywhere else.
+            // store does its own locking), and the browser reporting what the editor contains has
+            // no business queueing behind a save, or blocking one -- and it MUST NOT, because the
+            // UI thread may be asleep in that wait when the snapshot arrives. The browser sends one
+            // message at a time, so they are still processed in order.
             apiHandler.RegisterEndpointHandler(
                 "editView/pageSnapshot",
                 request =>
                 {
                     var pageId = request.RequiredParam("pageId");
                     var loadId = request.GetParamOrNull("loadId");
+                    if (request.GetParamOrNull("busy") == "true")
+                    {
+                        var busyWith = request.RequiredPostString();
+                        request.ReplyWithBoolean(View.Model.ReceivePageBusy(loadId, busyWith));
+                        return;
+                    }
                     var pageContent = request.RequiredPostString(unescape: false);
                     request.ReplyWithBoolean(
                         View.Model.ReceivePageSnapshot(pageId, loadId, pageContent)
                     );
-                },
-                false,
-                false
-            );
-            // The browser saying that asynchronous work which belongs in the saved page has begun
-            // (the body names it) or has finished. A save that has to use the snapshot waits, for
-            // a bounded time, for the idle notice; see PageSnapshot.WaitUntilIdle. Like the
-            // snapshot endpoint these are off the UI thread and unsynchronised -- they MUST be,
-            // because the UI thread may be asleep in that wait when the idle notice arrives. Being
-            // unsynchronised, they can be processed out of order, which is what the sequence number
-            // is for.
-            apiHandler.RegisterEndpointHandler(
-                "editView/pageBusy",
-                request =>
-                {
-                    var loadId = request.GetParamOrNull("loadId");
-                    var sequence = long.Parse(request.RequiredParam("seq"));
-                    var busyWith = request.RequiredPostString();
-                    request.ReplyWithBoolean(
-                        View.Model.ReceivePageBusy(loadId, sequence, busyWith)
-                    );
-                },
-                false,
-                false
-            );
-            apiHandler.RegisterEndpointHandler(
-                "editView/pageIdle",
-                request =>
-                {
-                    var loadId = request.GetParamOrNull("loadId");
-                    var sequence = long.Parse(request.RequiredParam("seq"));
-                    request.ReplyWithBoolean(View.Model.ReceivePageIdle(loadId, sequence));
                 },
                 false,
                 false

@@ -4,7 +4,6 @@ import { renderRoot } from "../../../utils/reactRender";
 import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { confirmRemovePage } from "../confirmRemovePage";
-import { collectCurrentPageContent } from "../currentPageContent";
 import "./pageControls.less";
 import "errorHandler";
 
@@ -21,12 +20,10 @@ import "errorHandler";
 
 const kPageControlsContext = "pageThumbnailList-pageControls";
 
-// Duplicating or deleting a page makes C# save the current page first, so send its content along
-// and save it the round trip of asking us for it. Note this waits for any in-flight change to the
-// page to settle before it posts, so the command does not start mid-change either. See
-// collectCurrentPageContent().
-async function postPageControlCommand(endpoint: string) {
-    postThatMightNavigate(endpoint, await collectCurrentPageContent(endpoint));
+// Duplicating or deleting a page makes C# save the current page first, which it does from the
+// snapshot the page has already sent it (see pageSnapshot.ts).
+function postPageControlCommand(endpoint: string) {
+    postThatMightNavigate(endpoint);
 }
 
 interface IPageControlsState {

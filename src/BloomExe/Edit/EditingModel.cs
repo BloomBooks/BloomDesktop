@@ -442,14 +442,14 @@ namespace Bloom.Edit
             }
         }
 
-        internal void OnDuplicatePage(string pageContent = null)
+        internal void OnDuplicatePage()
         {
-            DuplicatePage(_pageSelection.CurrentSelection, pageContent);
+            DuplicatePage(_pageSelection.CurrentSelection);
         }
 
-        internal void DuplicatePage(IPage page, string pageContent = null)
+        internal void DuplicatePage(IPage page)
         {
-            DuplicatePageInternal(page, 1, pageContent);
+            DuplicatePageInternal(page, 1);
         }
 
         /// <summary>
@@ -473,59 +473,48 @@ namespace Bloom.Edit
             DuplicatePageInternal(_pageSelection.CurrentSelection, numberOfTimes);
         }
 
-        private void DuplicatePageInternal(
-            IPage page,
-            int numberOfTimesToDuplicate = 1,
-            string pageContent = null
-        )
+        private void DuplicatePageInternal(IPage page, int numberOfTimesToDuplicate = 1)
         {
             // NB: though there is an api call to do this, it isn't currently used, so we have to measure here.
             var countString = numberOfTimesToDuplicate.ToString();
             var newPageId = page.Id; // error fallback
-            MergeCurrentPageThenSave(
-                () =>
+            MergeCurrentPageThenSave(() =>
+            {
+                using (PerformanceMeasurement.Global.Measure("Duplicate page"))
                 {
-                    using (PerformanceMeasurement.Global.Measure("Duplicate page"))
+                    try
                     {
-                        try
-                        {
-                            newPageId = _currentlyDisplayedBook.DuplicatePage(
-                                page,
-                                numberOfTimesToDuplicate
-                            );
-                            // Book.DuplicatePage() updates the page list so we don't need to do it here.
-                            // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
-                            //_view.UpdatePageList(false);
-                            Logger.WriteEvent(
-                                "Duplicate Page"
-                                    + (
-                                        numberOfTimesToDuplicate > 0
-                                            ? " " + countString + " times"
-                                            : ""
-                                    )
-                            );
-                            BloomAnalytics.Track("Duplicate Page");
-                        }
-                        catch (Exception error)
-                        {
-                            ErrorReport.NotifyUserOfProblem(
-                                error,
-                                "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us."
-                            );
-                        }
+                        newPageId = _currentlyDisplayedBook.DuplicatePage(
+                            page,
+                            numberOfTimesToDuplicate
+                        );
+                        // Book.DuplicatePage() updates the page list so we don't need to do it here.
+                        // (See http://issues.bloomlibrary.org/youtrack/issue/BL-3715.)
+                        //_view.UpdatePageList(false);
+                        Logger.WriteEvent(
+                            "Duplicate Page"
+                                + (numberOfTimesToDuplicate > 0 ? " " + countString + " times" : "")
+                        );
+                        BloomAnalytics.Track("Duplicate Page");
                     }
-                    return newPageId;
-                },
-                pageContent: pageContent
-            );
+                    catch (Exception error)
+                    {
+                        ErrorReport.NotifyUserOfProblem(
+                            error,
+                            "Could not duplicate that page. Try quiting Bloom, run it again, and then attempt to duplicate the page again. And please click 'details' below and report this to us."
+                        );
+                    }
+                }
+                return newPageId;
+            });
         }
 
-        internal void OnDeletePage(string pageContent = null)
+        internal void OnDeletePage()
         {
-            DeletePage(_pageSelection.CurrentSelection, pageContent);
+            DeletePage(_pageSelection.CurrentSelection);
         }
 
-        internal void DeletePage(IPage page, string pageContent = null)
+        internal void DeletePage(IPage page)
         {
             // This can only be called on the UI thread in response to a user button click.
             Debug.Assert(!_view.InvokeRequired);
@@ -540,29 +529,26 @@ namespace Bloom.Edit
             // copies any field bound to book-wide data (data-book) into the data div, so an edit to
             // such a field is not lost along with the page. It would also be needed if a command
             // could ever delete a page other than the open one.
-            MergeCurrentPageThenSave(
-                () =>
+            MergeCurrentPageThenSave(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        var pageToShowNext = GetPageToShowAfterDeletion(page);
-                        _currentlyDisplayedBook.DeletePage(page);
-                        //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
-                        Logger.WriteEvent("Delete Page");
-                        BloomAnalytics.Track("Delete Page");
-                        return pageToShowNext.Id;
-                    }
-                    catch (Exception error)
-                    {
-                        ErrorReport.NotifyUserOfProblem(
-                            error,
-                            "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
-                        );
-                        return page.Id; // stay on this page.
-                    }
-                },
-                pageContent: pageContent
-            );
+                    var pageToShowNext = GetPageToShowAfterDeletion(page);
+                    _currentlyDisplayedBook.DeletePage(page);
+                    //_view.UpdatePageList(false);  DeletePage calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
+                    Logger.WriteEvent("Delete Page");
+                    BloomAnalytics.Track("Delete Page");
+                    return pageToShowNext.Id;
+                }
+                catch (Exception error)
+                {
+                    ErrorReport.NotifyUserOfProblem(
+                        error,
+                        "Could not delete that page. Try quiting Bloom, run it again, and then attempt to delete the page again. And please click 'details' below and report this to us."
+                    );
+                    return page.Id; // stay on this page.
+                }
+            });
         }
 
         private IPage GetPageToShowAfterDeletion(IPage page)
@@ -603,70 +589,57 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// The event handler form of InsertPage, for the AddPageDialog's InsertPage event. The
-        /// dialog is a separate window, so it has no way to hand us the current page's content;
-        /// "paste page" calls InsertPage directly and can.
+        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
         /// </summary>
         private void OnInsertPage(object page, PageInsertEventArgs e)
         {
-            InsertPage(page, e, null);
-        }
-
-        /// <summary>
-        /// This is used both to insert pages from the AddPageDialog, and also "paste page"
-        /// </summary>
-        private void InsertPage(object page, PageInsertEventArgs e, string pageContent)
-        {
-            MergeCurrentPageThenSave(
-                () =>
-                { // there might be unsaved changes in the current page from before we clicked Add Page
-                    var newPageId = CurrentBook.InsertPageAfter(
-                        DeterminePageWhichWouldPrecedeNextInsertion(),
-                        page as Page,
-                        e.NumberToAdd
-                    );
-                    // We deliberately do NOT force the page-list iframe to reload here.
-                    // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
-                    // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
-                    // websocket (a cheap, incremental update in the React page list) or, if the
-                    // new page brought new stylesheets, regenerates the page-list document and
-                    // navigates the iframe to it. We used to also do a hard location.reload of
-                    // the iframe here, but that repainted the entire thumbnail list on every
-                    // insert and raced with those deferred notifications: a websocket message
-                    // arriving while the iframe was mid-reload was silently dropped, leaving the
-                    // list permanently stale.
-                    //
-                    // The stylesheet-change path still navigates the iframe, which does repaint
-                    // the whole list and does have a brief window during load where websocket
-                    // messages are ignored. The difference is that this navigation is no longer a
-                    // blind reload racing a separate notification: it is triggered by the deferred
-                    // event itself and loads a freshly regenerated document that already contains
-                    // the new page (and its stylesheet), so it is correct on its own. And when the
-                    // reloaded iframe's socket opens, the React code re-fetches the page list (see
-                    // the websocket/open handler in pageThumbnailList.tsx), recovering anything
-                    // missed during the load. So no stale-list race remains.
-                    //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
-                    //_pageSelection.SelectPage(newPage);
-                    if (e.FromTemplate)
+            MergeCurrentPageThenSave(() =>
+            { // there might be unsaved changes in the current page from before we clicked Add Page
+                var newPageId = CurrentBook.InsertPageAfter(
+                    DeterminePageWhichWouldPrecedeNextInsertion(),
+                    page as Page,
+                    e.NumberToAdd
+                );
+                // We deliberately do NOT force the page-list iframe to reload here.
+                // InsertPageAfter raises pageListChangedEvent (deferred until idle), which
+                // leads to UpdatePageList(); that either sends pageListNeedsRefresh over the
+                // websocket (a cheap, incremental update in the React page list) or, if the
+                // new page brought new stylesheets, regenerates the page-list document and
+                // navigates the iframe to it. We used to also do a hard location.reload of
+                // the iframe here, but that repainted the entire thumbnail list on every
+                // insert and raced with those deferred notifications: a websocket message
+                // arriving while the iframe was mid-reload was silently dropped, leaving the
+                // list permanently stale.
+                //
+                // The stylesheet-change path still navigates the iframe, which does repaint
+                // the whole list and does have a brief window during load where websocket
+                // messages are ignored. The difference is that this navigation is no longer a
+                // blind reload racing a separate notification: it is triggered by the deferred
+                // event itself and loads a freshly regenerated document that already contains
+                // the new page (and its stylesheet), so it is correct on its own. And when the
+                // reloaded iframe's socket opens, the React code re-fetches the page list (see
+                // the websocket/open handler in pageThumbnailList.tsx), recovering anything
+                // missed during the load. So no stale-list race remains.
+                //_view.UpdatePageList(false);  InsertPageAfter calls this via pageListChangedEvent.  See BL-3632 for trouble this causes.
+                //_pageSelection.SelectPage(newPage);
+                if (e.FromTemplate)
+                {
+                    try
                     {
-                        try
-                        {
-                            BloomAnalytics.Track(
-                                "Insert Template Page",
-                                new Dictionary<string, string>
-                                {
-                                    { "template-source", (page as IPage).Book.Title },
-                                    { "page", (page as IPage).Caption },
-                                }
-                            );
-                        }
-                        catch (Exception) { }
+                        BloomAnalytics.Track(
+                            "Insert Template Page",
+                            new Dictionary<string, string>
+                            {
+                                { "template-source", (page as IPage).Book.Title },
+                                { "page", (page as IPage).Caption },
+                            }
+                        );
                     }
-                    Logger.WriteEvent("InsertTemplatePage");
-                    return newPageId;
-                },
-                pageContent: pageContent
-            );
+                    catch (Exception) { }
+                }
+                Logger.WriteEvent("InsertTemplatePage");
+                return newPageId;
+            });
         }
 
         public bool HaveCurrentEditableBook
@@ -1723,9 +1696,9 @@ namespace Bloom.Edit
         /// created elements that have never been through SetupElements (a new origami layout, an
         /// imported video, a translation group replaced by a derived field).
         ///
-        /// pageContent is the current page's content when the request that got us here brought it
-        /// along; callers with no request to carry it (the PageRefreshEvent handlers) leave it
-        /// null, and the snapshot the browser last volunteered is used instead.
+        /// pageContent is the current page's content when the browser sent it with the request (see
+        /// SavePageAndReloadIt(ApiRequest)); the PageRefreshEvent handlers have no request to carry
+        /// it, and leave it null, and the snapshot the browser last volunteered is used instead.
         /// </summary>
         internal void SavePageAndReloadIt(bool forceFullSave = false, string pageContent = null)
         {
@@ -1753,8 +1726,10 @@ namespace Bloom.Edit
 
         internal void SavePageAndReloadIt(ApiRequest request)
         {
-            // The browser sends the current page's content with this request when it can; see
-            // saveChangesAndRethinkPage() in bloomEditing.ts.
+            // The browser sends the current page's content with this request; see
+            // saveChangesAndRethinkPage() in bloomEditing.ts. This is the one request that still
+            // carries the page, because the browser makes it straight after restructuring the
+            // page, before any snapshot of the result could have been posted.
             SavePageAndReloadIt(pageContent: request.GetPageContentOrNull());
             request.PostSucceeded();
         }
@@ -1806,8 +1781,8 @@ namespace Bloom.Edit
         /// that says so needlessly costs a write. Only callers whose action merely names the page
         /// to go to next pass false.</param>
         /// <param name="pageContent">The current page's content, when the request that got us here
-        /// brought it along (see getPageContentForSaveWhenReady() in the browser). Otherwise we use
-        /// whatever the browser last volunteered; a null snapshot means the page has not changed
+        /// brought it along (only SavePageAndReloadIt does). Otherwise we use whatever the browser
+        /// last volunteered; a null snapshot means the page has not changed
         /// since it loaded, not "we do not know".</param>
         /// <returns>What happened, for the few callers that have work to do only after a save that
         /// completed (see SaveOutcome). Most callers ignore it.</returns>
@@ -1850,8 +1825,7 @@ namespace Bloom.Edit
 
         /// <summary>
         /// Called by the editView/pageSnapshot API when the browser volunteers the current content
-        /// of the page. All we do is remember it; see PageSnapshot for why, and for why the answer
-        /// (whether we took it) matters to the browser.
+        /// of the page. All we do is remember it; see PageSnapshot for why.
         /// </summary>
         public bool ReceivePageSnapshot(string pageId, string loadId, string pageContent)
         {
@@ -1859,22 +1833,13 @@ namespace Bloom.Edit
         }
 
         /// <summary>
-        /// Called by the editView/pageBusy API: the browser has begun asynchronous work whose
-        /// result belongs in the saved page. busyWith names what was registered when it began, for
-        /// the log only. See PageSnapshot.SetBusy.
+        /// Called by the editView/pageSnapshot API with busy=true: the browser has begun
+        /// asynchronous work whose result belongs in the saved page. busyWith names what was
+        /// registered when it began, for the log only. See PageSnapshot.SetBusy.
         /// </summary>
-        public bool ReceivePageBusy(string loadId, long sequence, string busyWith)
+        public bool ReceivePageBusy(string loadId, string busyWith)
         {
-            return _pageSnapshot.SetBusy(loadId, sequence, busyWith);
-        }
-
-        /// <summary>
-        /// Called by the editView/pageIdle API: that work has finished and the page as it is after
-        /// it has been sent. See PageSnapshot.SetIdle.
-        /// </summary>
-        public bool ReceivePageIdle(string loadId, long sequence)
-        {
-            return _pageSnapshot.SetIdle(loadId, sequence);
+            return _pageSnapshot.SetBusy(loadId, busyWith);
         }
 
         // How long a snapshot-based save will wait for the browser to finish work that belongs in
@@ -1920,8 +1885,7 @@ namespace Bloom.Edit
         /// editor all do; only the last two leave the page on screen afterwards, but nothing here
         /// depends on that.
         ///
-        /// pageContent is the current page's content when the caller's request brought it along;
-        /// otherwise the snapshot the browser last volunteered is used. Either may be null, meaning
+        /// The page's content is the snapshot the browser last volunteered. It may be null, meaning
         /// the browser has not sent this load of the page yet; then nothing is merged, and the book
         /// is written only if something else (a data-div change, a forced full save) is waiting to
         /// be written. A page that merges without changing anything writes nothing either.
@@ -1947,10 +1911,7 @@ namespace Bloom.Edit
         /// milliseconds, which the browser has not posted yet. See "The freshness window" in
         /// SavingWithoutReloading.md for why that is the accepted trade.
         /// </summary>
-        public bool SaveCurrentPageAndBook(
-            string pageContent = null,
-            bool waitForInFlightPageWork = true
-        )
+        public bool SaveCurrentPageAndBook(bool waitForInFlightPageWork = true)
         {
             var selectedBook = _bookSelection?.CurrentSelection;
             var scope = DecideSaveScope(
@@ -1963,14 +1924,14 @@ namespace Bloom.Edit
             );
             if (scope == SaveScope.Nothing)
                 return true;
-            pageContent =
+            var pageContent =
                 scope == SaveScope.PageAndBook
-                    ? pageContent ?? TakeCurrentPageSnapshot(waitForInFlightPageWork)
+                    ? TakeCurrentPageSnapshot(waitForInFlightPageWork)
                     : null;
             UpdateBookDomFromBrowserPageContent(pageContent);
             // Set by that merge only when the page differs from what the book held. Read before
             // SaveBookToDisk, which clears it. The browser sends every page once as it loads, so a
-            // non-null pageContent alone no longer means the page changed.
+            // non-null snapshot alone no longer means the page changed.
             var pageChanged = _modifiedPageElement != null;
             if (!SaveBookToDisk())
                 return false;
@@ -2521,13 +2482,13 @@ namespace Bloom.Edit
             return _pageDivFromCopyPage != null;
         }
 
-        public void CopyPage(IPage page, string pageContent = null)
+        public void CopyPage(IPage page)
         {
             // Save first, or the copy would miss any typing they have done but not yet saved
             // (BL-4512). The page being copied is always the selected one: the page list only opens
             // its context menu on the selected page, and Paste relies on that, since it inserts
             // after the current selection (see DeterminePageWhichWouldPrecedeNextInsertion).
-            if (!SaveCurrentPageAndBook(pageContent))
+            if (!SaveCurrentPageAndBook())
                 return;
             // Clone, so that if the user changes the page after doing the copy, when they paste
             // they get the page as it was, not as it is now.
@@ -2539,7 +2500,7 @@ namespace Bloom.Edit
         /// Paste the previously saved _pageDivFromCopyPage as a new page.
         /// </summary>
         /// <param name="pageToPasteAfter">This is NOT the page we are to paste!</param>
-        public void PastePage(IPage pageToPasteAfter, string pageContent = null)
+        public void PastePage(IPage pageToPasteAfter)
         {
             var templateBook = pageToPasteAfter.Book; // default is to assume it's from the same book
             bool fromAnotherBook = templateBook.GetPathHtmlFile() != _bookPathFromCopyPage;
@@ -2563,7 +2524,7 @@ namespace Bloom.Edit
                 x => _pageDivFromCopyPage
             );
             // false => don't need analytics on use of template pages
-            InsertPage(pageForPasting, new PageInsertEventArgs(false), pageContent);
+            OnInsertPage(pageForPasting, new PageInsertEventArgs(false));
         }
 
         public void AdjustPageZoom(int delta)

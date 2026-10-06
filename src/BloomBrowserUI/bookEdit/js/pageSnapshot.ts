@@ -26,12 +26,18 @@ import { onDelayRegisterChanged } from "./pageContentDelays";
 // After that we post only when a gather differs from the last thing we sent. Tools constantly add
 // and remove editing decorations, which the gather strips anyway, so without the comparison they
 // would produce a stream of identical posts.
+//
+// The same endpoint carries one other message: that the page has become BUSY with asynchronous work
+// whose results belong in the saved page (see pageContentDelays.ts). A save C# makes from the
+// snapshot meanwhile would miss that work, so C# waits, for a bounded time, for the next snapshot,
+// which we send as soon as the work is done -- even if the page's saved form did not change, since
+// that snapshot is also what tells C# the page is idle again. A gather always waits for the
+// register to empty, so every snapshot is of an idle page.
+//
+// Everything we post goes out one at a time, in order (see postInOrder), so C# needs no sequence
+// numbers to tell an old message from a new one.
 
 const kApi = "editView/pageSnapshot";
-// Where we tell C# that asynchronous work belonging in the saved page has begun (the body names
-// it) and that it has finished. See tellCSharpBusy / tellCSharpIdle.
-const kBusyApi = "editView/pageBusy";
-const kIdleApi = "editView/pageIdle";
 
 // Identifies THIS load of THIS page, so C# can tell our snapshots from those of a load it has
 // already moved on from. A module-level constant is exactly the right scope: the page frame gets a
@@ -67,62 +73,35 @@ export function getPageLoadId(): string {
 // stores the string, replacing the last one. Measurements are in Edit/SavingWithoutReloading.md.
 const kQuietMs = 25;
 
-// How long to wait before offering the content again when C# did not take it. Longer than the
-// debounce on purpose: nothing the user did causes these, so there is nothing to be responsive to,
-// and a 25ms retry against a server that is not answering would be a busy loop. A real change
-// reschedules at kQuietMs and so overtakes this.
-const kRetryAfterRefusalMs = 1000;
-
-// A run of failures backs off from kRetryAfterRefusalMs up to this. We never give up: the browser
-// holding content C# has not got is exactly the state that loses the user's work at exit, so it
-// has to keep offering until something takes it. What made giving up look attractive was the
-// noise, and that is dealt with separately -- the post is made quietly and we report once per
-// page, rather than once per attempt.
-const kMaxRetryMs = 30000;
-
 let observer: MutationObserver | undefined;
 let timer: number | undefined;
+// What we last handed to postInOrder: the content C# will hold once the queue has drained.
 let lastPosted: string | undefined;
 let pageIdBeingWatched: string | undefined;
 // How we read the page. Passed in by the caller rather than imported, so this module does not
 // depend on bloomEditing (which depends on it, for the teardown) -- and so a test can drive it
 // without a real page.
 let gatherPageContent: (() => Promise<string>) | undefined;
-// True while a gather-and-post is under way. See takeSnapshot: overlapping posts could arrive out
-// of order, which would let an older snapshot overwrite a newer one on the C# side.
-let busy = false;
-// Settles when the gather-and-post under way finishes; see tellCSharpIdle, which has to let the
-// post go out before it says the page is idle.
-let runDone: Promise<void> = Promise.resolve();
 // What the delay register said the page was busy with when it last became busy, or undefined when
 // it is empty. Only a clue for C#'s log (see onDelayRegisterChanged): work added later in the same
-// busy spell is not in it. Kept so that a refused busy notice is offered again only while the page
-// is still busy.
+// busy spell is not in it.
 let busyWith: string | undefined;
+// Set when a busy spell ends: C# is waiting for a snapshot to tell it the page is idle, so the next
+// one must be sent even if the page's saved form did not change.
+let snapshotOwed = false;
 let unsubscribeFromDelayRegister: (() => void) | undefined;
-// Set when the work finished but the snapshot of the finished page could not be delivered, so
-// the idle notice was withheld; the next delivered snapshot sends it. See tellCSharpIdle.
-let idleNoticeOwed = false;
-// Whether C# holds what the latest gather read: it was posted and taken, or it was already what we
-// had sent. False while a gather is under way and when it threw. The idle notice may go only when
-// this is true; otherwise C# would take "idle" as "you have the finished page" when it does not.
-let lastGatherDelivered = false;
-// Numbers the busy and idle notices, so that C# can ignore one that arrives after a later one.
-// The two are separate HTTP requests and HTTP does not promise to deliver them in order, so an
-// idle notice (or its retry) can land after the busy notice for work that began afterwards; taken
-// at face value, that would let a save go ahead in the middle of the work.
-let noticeSequence = 0;
-// Bumped every time a change arrives. The async gather checks it afterwards, so a change that
-// lands while we were gathering schedules another pass instead of being lost.
-let changeCount = 0;
 // The page we have already complained about, so that a page which fails every time reports once
 // rather than on every keystroke.
 let pageWeReportedAFailureFor: string | undefined;
-// How many posts in a row have failed outright. Governs the backoff.
-let consecutiveFailedPosts = 0;
+// The tail of the queue of posts; see postInOrder.
+let postQueue: Promise<void> = Promise.resolve();
+
 // Tell the user, at most once for this page. Reporting is the whole reason a snapshot post is
 // made quietly (see postStringQuietly): so that WE decide when to speak, rather than the request
 // layer speaking on every attempt.
+//
+// There is no retry. Posting a string to localhost should never fail, and if it does, something is
+// badly wrong and the user needs to know that their work may not be saved.
 function reportFailureOncePerPage(
     pageId: string,
     message: string,
@@ -133,251 +112,110 @@ function reportFailureOncePerPage(
     reportError(message, stack);
 }
 
-// Offer the content again after a failure, backing off 1s, 2s, 4s... to kMaxRetryMs and then
-// staying there. Never gives up: while C# has not got this content, quitting writes what it still
-// holds. A change the user makes reschedules at kQuietMs and overtakes this.
-function retryAfterFailure(): void {
-    consecutiveFailedPosts++;
-    scheduleSnapshot(
-        Math.min(
-            kRetryAfterRefusalMs * Math.pow(2, consecutiveFailedPosts - 1),
-            kMaxRetryMs,
-        ),
-    );
-}
-
 function currentPageId(): string | undefined {
     return document.querySelector(".bloom-page")?.id || undefined;
 }
 
+// Send one message to C#, after every message sent before it has been answered.
+//
+// HTTP does not promise that two outstanding POSTs arrive in the order they were sent, and the
+// endpoint is unsynchronised, so two in flight could be processed in either order: an OLDER
+// snapshot could overwrite a newer one, or a busy notice could be cleared by a snapshot taken
+// before the work began. One at a time rules both out. On a slow machine, messages simply queue;
+// each is tiny for C# to handle.
+//
+// C# answers false for a load it is not showing. That only happens once it has moved on from this
+// page (we do not start posting until it has accepted this load; see startWatchingPageForSnapshots),
+// so there is nobody left who wants the message, and we drop it.
+function postInOrder(pageId: string, url: string, body: string): void {
+    postQueue = postQueue.then(async () => {
+        let reply: unknown;
+        try {
+            reply = await postStringQuietly(url, body);
+        } catch {
+            reply = undefined;
+        }
+        // A failed post goes through wrapAxios, which turns a rejected request into a resolved
+        // promise carrying nothing -- so no response at all is what failure looks like.
+        if (!reply)
+            reportFailureOncePerPage(
+                pageId,
+                "Bloom could not keep track of your changes to this page: the request to save them did not get through.",
+                undefined,
+            );
+    });
+}
+
 async function takeSnapshot(): Promise<void> {
     const pageId = pageIdBeingWatched;
-    if (!pageId || !gatherPageContent) return;
-    // Only ever one gather-and-post at a time.
-    //
-    // Two would be a correctness bug, not just waste: HTTP does not promise that two outstanding
-    // POSTs arrive in the order they were sent, so an OLDER snapshot could land after a newer one
-    // and C# would keep the older content -- silently dropping the newest edits. It takes a slow
-    // enough machine, or a big enough page, for a post to still be in flight when the next
-    // keystroke's snapshot comes round, which is exactly the case this has to survive.
-    //
-    // Returning here loses nothing: the run that is already going re-schedules if anything changed
-    // while it worked, and it reads changeCount after it finishes, so it sees those changes. The
-    // effect on a slow machine is that snapshots coalesce by themselves rather than piling up.
-    if (busy) return;
-    busy = true;
-    let markRunDone: () => void = () => {};
-    runDone = new Promise<void>((resolve) => {
-        markRunDone = resolve;
-    });
-    const countWhenStarted = changeCount;
+    const gather = gatherPageContent;
+    if (!pageId || !gather) return;
+    let content: string;
     try {
         // Waits for any in-flight work that belongs in the page (see pageContentDelays), then
         // reads the page the same way a real save does, so a snapshot can never differ from what
         // a save would have produced at the same moment.
-        lastGatherDelivered = false;
-        const content = await gatherPageContent();
-
-        // The page may have been unloaded, or navigated, while we were waiting.
-        if (pageIdBeingWatched !== pageId) return;
-
-        if (content !== lastPosted) {
-            const reply = await postStringQuietly(
-                snapshotUrl(kApi, pageId),
-                content,
-            );
-            // Two different things can mean C# does not have this content, and both must count as
-            // NOT sent:
-            //
-            // * C# refused it, answering false. It refuses a snapshot from a load it is not
-            //   showing, including in the moment before this page has reported itself ready, since
-            //   the two APIs are not ordered with respect to each other. A refusal is not a
-            //   failure; it just means try again.
-            // * The POST failed and we got no answer at all. The post goes through wrapAxios,
-            //   which turns a rejected request into a resolved promise carrying nothing -- so a
-            //   failed post looks exactly like a successful one apart from the missing response.
-            //   Reading only `.data` would therefore take a failure for an acceptance, record the
-            //   content as sent, and never offer it again; the next save would write what C# still
-            //   held, losing everything typed since the snapshot before.
-            //
-            // They are retried differently. A refusal costs nothing and ends by itself the moment
-            // the page reports ready, so we simply keep offering. A failure means the server is
-            // not answering, so that one backs off (and is reported once, see
-            // reportFailureOncePerPage, rather than on every attempt).
-            const response = reply as { data?: boolean | string } | void;
-            const refused = !!response && response.data === false;
-            const failed = !response;
-            if (refused) {
-                consecutiveFailedPosts = 0;
-                scheduleSnapshot(kRetryAfterRefusalMs);
-                return;
-            }
-            if (failed) {
-                reportFailureOncePerPage(
-                    pageId,
-                    "Bloom could not keep track of your changes to this page: the request to save them did not get through.",
-                    undefined,
-                );
-                retryAfterFailure();
-                return;
-            }
-            consecutiveFailedPosts = 0;
-            // Only once the post has actually resolved AND been taken. Recording it earlier would
-            // mean content C# never received still counted as sent: we would never retry it, and
-            // the next save would write what C# still held, losing everything typed since.
-            lastPosted = content;
-            lastGatherDelivered = true;
-            if (idleNoticeOwed) {
-                // The work finished earlier but this content could not be delivered then, so the
-                // idle notice waited for it. Now C# has the finished page.
-                idleNoticeOwed = false;
-                void postIdleNotice(pageId);
-            }
-        } else {
-            // Nothing to post: this is what C# already holds.
-            lastGatherDelivered = true;
-            if (idleNoticeOwed) {
-                // That is still what the owed idle notice was waiting to be sure of.
-                idleNoticeOwed = false;
-                void postIdleNotice(pageId);
-            }
-        }
+        content = await gather();
     } catch (error) {
         // Gathering the page can legitimately throw -- the BL-13120 origami guard, a missing
-        // marginBox, the canvas-element count checks -- and so can the post. Either way this is
-        // the one failure the whole design cannot afford to be quiet about: C# saves whatever it
-        // last received, or nothing at all, and the user's edits are dropped without a word. (The
-        // global unhandledrejection handler is commented out in lib/errorHandler.ts, so nothing
-        // else would report it.) Before BL-13502 the equivalent failure came back through the
-        // state machine as "Bloom had trouble saving a page"; this keeps that promise.
+        // marginBox, the canvas-element count checks. This is the one failure the whole design
+        // cannot afford to be quiet about: C# saves whatever it last received, or nothing at all,
+        // and the user's edits are dropped without a word. (The global unhandledrejection handler
+        // is commented out in lib/errorHandler.ts, so nothing else would report it.) Before
+        // BL-13502 the equivalent failure came back through the state machine as "Bloom had
+        // trouble saving a page"; this keeps that promise.
         //
-        // Once per page: a page that fails will fail again on the very next keystroke, and we
-        // also retry on a timer, so without this the same error would be put in front of the user
-        // over and over.
+        // Once per page: a page that fails will fail again on the very next keystroke.
         reportFailureOncePerPage(
             pageId,
             "Bloom could not keep track of your changes to this page: " +
                 (error instanceof Error ? error.message : String(error)),
             error instanceof Error ? error.stack : undefined,
         );
-        // Keep offering, on the same backoff as a failed post. A gather is deterministic, so this
-        // will usually fail the same way -- but it costs no further reports now, and if the
-        // failure did depend on something transient in the page, this is what recovers from it.
-        retryAfterFailure();
-    } finally {
-        // Only release the lock if we are still the run that took it. If the page was unloaded
-        // and another started while we were awaiting, this run belongs to the old page, and
-        // clearing the flag here would unlock the NEW page's in-flight post -- allowing two at
-        // once, which is the one thing the flag exists to prevent. Not reachable today, because
-        // each page load is a fresh document with its own module state, but the module claims to
-        // be safe to restart and this is what makes that true.
-        if (pageIdBeingWatched === pageId) busy = false;
-        markRunDone();
-        // Something changed while we were gathering or posting: that change is not in what we
-        // just sent (or failed to send), so go round again -- soon. This is in the finally so
-        // that it runs on EVERY way out, refusal and failure included: those branches have just
-        // scheduled a slower retry, and this replaces it with the quick one, because a change the
-        // user made must not wait out a backoff that was only meant to spare a server that is not
-        // answering. The change's own timer cannot do this for us: it fired while we were busy and
-        // was turned away at the top of this function.
-        if (pageIdBeingWatched === pageId && changeCount !== countWhenStarted)
-            scheduleSnapshot();
+        return;
     }
+
+    // The page may have been unloaded, or navigated, while we were waiting.
+    if (pageIdBeingWatched !== pageId) return;
+    // Work began between the gather's read and our getting here, and we have already told C# the
+    // page is busy. What we read predates the work; the snapshot that ends the busy spell will
+    // carry it, and sending this one would tell C# the page is idle when it is not.
+    if (busyWith !== undefined) return;
+    if (content === lastPosted && !snapshotOwed) return;
+    lastPosted = content;
+    snapshotOwed = false;
+    postInOrder(pageId, snapshotUrl(pageId), content);
 }
 
 // The delay register (pageContentDelays.ts) has gone busy or idle. C# needs to know, because a
-// save it makes from the snapshot -- leaving the Edit tab, quitting, a command from a separate
-// dialog -- cannot wait for the register the way a gather here does: the snapshot it holds simply
-// predates the work. So we tell it what the page is busy with, and it waits a bounded time for us
-// to say the page is idle again (PageSnapshot.WaitUntilIdle), logging the culprit if we do not.
+// save it makes from the snapshot -- leaving the Edit tab, quitting, a page-list command -- cannot
+// wait for the register the way a gather here does: the snapshot it holds simply predates the
+// work. So we tell it what the page is busy with, and it waits a bounded time for the snapshot
+// that follows (PageSnapshot.WaitUntilIdle), logging the culprit if it does not come.
 function handleDelayRegisterChange(nowBusyWith: string | undefined): void {
     const pageId = pageIdBeingWatched;
     if (!pageId) return;
     busyWith = nowBusyWith;
-    if (nowBusyWith !== undefined) void tellCSharpBusy(pageId, nowBusyWith);
-    else void tellCSharpIdle(pageId);
+    if (nowBusyWith !== undefined) {
+        postInOrder(pageId, snapshotUrl(pageId) + "&busy=true", nowBusyWith);
+    } else {
+        snapshotOwed = true;
+        void takeSnapshot();
+    }
 }
 
-function snapshotUrl(api: string, pageId: string): string {
-    return `${api}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
+function snapshotUrl(pageId: string): string {
+    return `${kApi}?pageId=${encodeURIComponent(pageId)}&loadId=${encodeURIComponent(
         pageLoadId,
     )}`;
 }
 
-// The url for a busy or idle notice: a snapshot url plus this notice's place in the sequence.
-function noticeUrl(api: string, pageId: string): string {
-    return `${snapshotUrl(api, pageId)}&seq=${++noticeSequence}`;
-}
-
-// C# refuses a notice about a load it is not showing, exactly as it refuses such a snapshot, and
-// for the same reason the refusal must not be the end of it: this page may simply not have
-// reported itself ready yet. A post that fails outright (no reply at all; see takeSnapshot for
-// why that looks the way it does) has not reached C# either. In both cases, offer it again while
-// the work is still going -- a save made meanwhile would otherwise not know to wait.
-async function tellCSharpBusy(pageId: string, what: string): Promise<void> {
-    const reply = await postStringQuietly(noticeUrl(kBusyApi, pageId), what);
-    if (wasTaken(reply)) return;
-    if (busyWith === what && pageIdBeingWatched === pageId) {
-        window.setTimeout(() => {
-            if (busyWith === what && pageIdBeingWatched === pageId)
-                void tellCSharpBusy(pageId, what);
-        }, kRetryAfterRefusalMs);
-    }
-}
-
-// Whether C# took a notice: it answered, and did not answer false.
-function wasTaken(reply: unknown): boolean {
-    const response = reply as { data?: boolean | string } | void;
-    return !!response && response.data !== false;
-}
-
-// Idle means "and you already have the page as it is now", so the snapshot goes first, and only
-// then do we say idle -- and only if the page has not gone busy again meanwhile; the next idle
-// will speak for that.
-//
-// A run already under way is not enough on its own. It may have been parked behind the register
-// (see takeSnapshot), in which case it will post the finished page; but it may equally have read
-// the page BEFORE the work began and be sitting in its post, in which case what it sends predates
-// the work. So once it is done we gather again regardless: that posts only if the page differs
-// from what was last sent, so in the first case it costs one gather and no post.
-async function tellCSharpIdle(pageId: string): Promise<void> {
-    if (busy) await runDone;
-    await takeSnapshot();
-    if (!lastGatherDelivered) {
-        // The finished page could not be read, or its snapshot was not delivered (the post
-        // failed, or was refused), so C# does not have it yet. Saying idle now would let a save
-        // go ahead on the content from before the work. The retry that takeSnapshot has
-        // scheduled sends the notice once the content lands.
-        idleNoticeOwed = true;
-        return;
-    }
-    await postIdleNotice(pageId);
-}
-
-// The idle notice itself. If C# does not take it -- the post failed, or C# refused it because it
-// had not yet accepted this load -- it is offered again while the page is still idle. A lost idle
-// would leave C# believing the page busy until the next navigation, and every snapshot-based save
-// in between would sit out the whole wait.
-async function postIdleNotice(pageId: string): Promise<void> {
-    if (pageIdBeingWatched !== pageId || busyWith !== undefined) return;
-    const reply = await postStringQuietly(noticeUrl(kIdleApi, pageId), "");
-    if (wasTaken(reply)) return;
-    window.setTimeout(() => {
-        void postIdleNotice(pageId);
-    }, kRetryAfterRefusalMs);
-}
-
-function scheduleSnapshot(delayMs: number = kQuietMs): void {
+function scheduleSnapshot(): void {
     if (timer !== undefined) window.clearTimeout(timer);
     timer = window.setTimeout(() => {
         timer = undefined;
         void takeSnapshot();
-    }, delayMs);
-}
-
-function noteChange(): void {
-    changeCount++;
-    scheduleSnapshot();
+    }, kQuietMs);
 }
 
 /**
@@ -392,16 +230,20 @@ function noteChange(): void {
  * the styles as they were.
  *
  * Calling this more often than necessary costs nothing: a snapshot is compared against the last
- * one delivered and is not posted if the saved form has not actually changed. So callers should
- * err towards calling it.
+ * one sent and is not posted if the saved form has not actually changed. So callers should err
+ * towards calling it.
  */
 export function notePageContentMayHaveChanged(): void {
-    noteChange();
+    scheduleSnapshot();
 }
 
 /**
  * Start watching the page that has just become editable. Safe to call again; it restarts on the
  * new page.
+ *
+ * Call it only once C# has answered the "page is ready" notification (editView/pageDomLoaded).
+ * Until then C# refuses messages from this load, and since we never offer one twice, an early
+ * snapshot would simply be lost.
  */
 export function startWatchingPageForSnapshots(
     gather: () => Promise<string>,
@@ -411,13 +253,8 @@ export function startWatchingPageForSnapshots(
     if (!pageId) return; // no page to watch (e.g. the off-screen capture path)
     gatherPageContent = gather;
     pageIdBeingWatched = pageId;
-    lastPosted = undefined;
-    changeCount = 0;
     pageWeReportedAFailureFor = undefined;
-    consecutiveFailedPosts = 0;
-    busyWith = undefined;
-    idleNoticeOwed = false;
-    lastGatherDelivered = false;
+    // Tells us at once if the register is already busy (see onDelayRegisterChanged).
     unsubscribeFromDelayRegister = onDelayRegisterChanged(
         handleDelayRegisterChange,
     );
@@ -432,7 +269,7 @@ export function startWatchingPageForSnapshots(
     // never goes through a keyboard event: a tool rewriting the markup, a canvas element being
     // dragged, an image being replaced, a paste. Anything that changes the DOM is a change we owe
     // C# a snapshot of.
-    observer = new MutationObserver(noteChange);
+    observer = new MutationObserver(scheduleSnapshot);
     observer.observe(document.body, {
         subtree: true,
         childList: true,
@@ -442,7 +279,8 @@ export function startWatchingPageForSnapshots(
 }
 
 /**
- * Stop watching, and forget what we last sent. Called from pageUnloading().
+ * Stop watching, and forget what we last sent. Called from pageUnloading(). Messages already
+ * queued still go out; C# refuses them if it has moved on.
  */
 export function stopWatchingPageForSnapshots(): void {
     observer?.disconnect();
@@ -454,10 +292,8 @@ export function stopWatchingPageForSnapshots(): void {
     pageIdBeingWatched = undefined;
     lastPosted = undefined;
     gatherPageContent = undefined;
-    busy = false;
     busyWith = undefined;
-    idleNoticeOwed = false;
-    lastGatherDelivered = false;
+    snapshotOwed = false;
     unsubscribeFromDelayRegister?.();
     unsubscribeFromDelayRegister = undefined;
 }
@@ -466,4 +302,3 @@ export function stopWatchingPageForSnapshots(): void {
  * Exported for tests: the interval the page must be quiet before a snapshot is taken.
  */
 export const quietMsForTests = kQuietMs;
-export const retryMsForTests = kRetryAfterRefusalMs;

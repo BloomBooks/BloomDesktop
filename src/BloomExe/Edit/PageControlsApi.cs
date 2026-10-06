@@ -70,7 +70,7 @@ namespace Bloom.Edit
                     kApiUrlPart + "duplicatePage",
                     request =>
                     {
-                        _editingModel.OnDuplicatePage(request.GetPageContentOrNull());
+                        _editingModel.OnDuplicatePage();
                         request.PostSucceeded();
                     },
                     true
@@ -83,7 +83,7 @@ namespace Bloom.Edit
                     request =>
                     {
                         // The browser side has already confirmed with the user (BL-16421).
-                        _editingModel.OnDeletePage(request.GetPageContentOrNull());
+                        _editingModel.OnDeletePage();
                         request.PostSucceeded();
                     },
                     true

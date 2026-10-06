@@ -10,11 +10,10 @@
 // wrapWithRequestPageContentDelay, which cannot forget to deregister), and every route that gathers
 // page content goes through whenNoActiveDelays() first:
 //   - getPageContentForSaveWhenReady in bloomEditing.ts, which is how the page snapshot
-//     (pageSnapshot.ts) reads the page after every change, and how the page list's commands
-//     collect it to send along (collectCurrentPageContent). Javascript could in principle await
+//     (pageSnapshot.ts) reads the page after every change. Javascript could in principle await
 //     its own work instead, but it cannot know about work someone else started, so it waits here.
-//     That also means the *command* does not begin -- C# is not asked to duplicate or delete a
-//     page until the page has settled.
+//     C#, which saves from the snapshot, is told when the register is busy, and waits for the
+//     snapshot that follows (see PageSnapshot.WaitUntilIdle).
 //   - the off-screen book processor (captureContentForExternalProcessing).
 
 // Upper bound (not a fixed wait) on how long we wait for in-flight async DOM work to finish before

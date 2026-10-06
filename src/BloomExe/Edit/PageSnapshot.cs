@@ -52,32 +52,26 @@ namespace Bloom.Edit
         // What the browser says is still changing the page, or null when nothing is. The browser
         // keeps a register of asynchronous work whose results belong in the saved page (sizing an
         // image, settling a paste; see pageContentDelays.ts) and tells us when that register goes
-        // from empty to busy and back, naming the work that was registered when it became busy
-        // (only a clue for the log: work added later in the same busy spell is not named, and
-        // what is named may already have finished). While it is busy, the snapshot we hold
-        // predates that work, so a save from it would miss whatever the work is doing. Content the
-        // browser sends WITH a request has already waited for the register, so only snapshot-based
-        // saves need to care; see WaitUntilIdle.
+        // from empty to busy, naming the work that was registered when it became busy (only a
+        // clue for the log: work added later in the same busy spell is not named, and what is
+        // named may already have finished). While it is busy, the snapshot we hold predates that
+        // work, so a save from it would miss whatever the work is doing; see WaitUntilIdle. The
+        // browser only ever gathers an idle page, so the next snapshot is also what says the
+        // work is done.
+        //
+        // The browser sends its busy notices and snapshots one at a time, each after the last was
+        // answered, so they arrive in the order they were sent.
         private string _busyWith;
 
-        // The sequence number of the latest busy or idle notice we have acted on. The browser
-        // numbers them because they are separate requests and can arrive out of order; an idle
-        // notice from before the busy notice we hold must not clear it, or a save would go ahead
-        // in the middle of the work. Reset with the load, since the browser's numbering restarts
-        // with each page load.
-        private long _latestNoticeSequence = -1;
-
         /// <summary>
-        /// Record what the browser says the page currently contains. Called from the API handler,
-        /// which deliberately does not take the server's sync lock — this only stores a string, and
-        /// making the editor wait on a save in order to report its own content would defeat the
-        /// point.
+        /// Record what the browser says the page currently contains, which also means it is no
+        /// longer busy. Called from the API handler, which deliberately does not take the server's
+        /// sync lock — this only stores a string, and making the editor wait on a save in order to
+        /// report its own content would defeat the point.
         /// </summary>
-        /// <returns>False if the snapshot is from a load we are not showing, so the browser knows
-        /// not to count it as delivered and offers it again. Silently dropping it would leave us
-        /// with nothing to save while the browser believed it had told us -- and the browser can
-        /// legitimately be early, because the snapshot API is not ordered against the notification
-        /// that a page has loaded.</returns>
+        /// <returns>False if the snapshot is from a load we are not showing, which we ignore. The
+        /// browser starts sending only once we have accepted its load, so this means we have moved
+        /// on from it.</returns>
         public bool Set(string pageId, string loadId, string content)
         {
             if (string.IsNullOrEmpty(pageId))
@@ -91,56 +85,38 @@ namespace Bloom.Edit
                     return false;
                 _pageId = pageId;
                 _content = content;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// The browser says the page is busy with some asynchronous work whose result belongs in
-        /// the saved page. busyWith names the work registered when it became busy; it is for the
-        /// log only and need not be complete or current. Ignored, and answered false so the browser offers it
-        /// again, unless it is about the load we are showing -- the same rule as Set.
-        /// </summary>
-        public bool SetBusy(string loadId, long sequence, string busyWith)
-        {
-            lock (_lock)
-            {
-                if (_loadWeAccept == null || loadId != _loadWeAccept)
-                    return false;
-                if (sequence <= _latestNoticeSequence)
-                    return true; // a later notice has already superseded this one
-                _latestNoticeSequence = sequence;
-                _busyWith = busyWith;
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// The browser says that work has finished and, having already sent us the page as it is
-        /// after it, that we are free to save.
-        /// </summary>
-        public bool SetIdle(string loadId, long sequence)
-        {
-            lock (_lock)
-            {
-                if (_loadWeAccept == null || loadId != _loadWeAccept)
-                    return false;
-                if (sequence <= _latestNoticeSequence)
-                    return true; // a later notice has already superseded this one
-                _latestNoticeSequence = sequence;
                 _busyWith = null;
                 return true;
             }
         }
 
         /// <summary>
-        /// Block the calling thread until the browser says the page is idle, or maxMs has passed.
+        /// The browser says the page is busy with some asynchronous work whose result belongs in
+        /// the saved page; its next snapshot will say the work is done. busyWith names the work
+        /// registered when it became busy; it is for the log only and need not be complete or
+        /// current. Ignored, and answered false, unless it is about the load we are showing -- the
+        /// same rule as Set.
+        /// </summary>
+        public bool SetBusy(string loadId, string busyWith)
+        {
+            lock (_lock)
+            {
+                if (_loadWeAccept == null || loadId != _loadWeAccept)
+                    return false;
+                _busyWith = busyWith;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Block the calling thread until the browser sends the snapshot that ends a busy spell,
+        /// or maxMs has passed.
         /// Returns false, naming what the page was busy with, if we gave up waiting; the caller
         /// should then log that it is saving a page the browser still considers half-changed.
         ///
         /// Sleeping the UI thread is deliberate: the alternative is another asynchronous protocol
-        /// for the callers that used to have one and were glad to lose it. The notices that end
-        /// the wait arrive on server threads, so the sleep does not stop them.
+        /// for the callers that used to have one and were glad to lose it. The snapshot that ends
+        /// the wait arrives on a server thread, so the sleep does not stop it.
         ///
         /// What the sleep CAN stop is the work itself, when that work needs C#. Work that runs
         /// entirely in the browser (fitting a canvas element, waiting for an image to load)
@@ -181,9 +157,8 @@ namespace Bloom.Edit
         /// Only ever called for a "page is ready" notification we ACCEPTED, i.e. one for the page
         /// we are now editing. Those notifications arrive asynchronously, so one from a page we
         /// have already left can turn up late; adopting its id would make us refuse every snapshot
-        /// the page the user is actually on sends, and because a refused snapshot is offered again
-        /// rather than dropped, it would go on refusing. We would then hold nothing for that page,
-        /// and leaving the tab or quitting would write nothing -- losing not the last keystroke but
+        /// the page the user is actually on sends. We would then hold nothing for that page, and
+        /// leaving the tab or quitting would write nothing -- losing not the last keystroke but
         /// everything since the page loaded.
         /// </summary>
         public void AcceptSnapshotsFromLoad(string loadId)
@@ -192,7 +167,6 @@ namespace Bloom.Edit
             {
                 _loadWeAccept = loadId;
                 _busyWith = null;
-                _latestNoticeSequence = -1;
             }
         }
 
@@ -224,7 +198,6 @@ namespace Bloom.Edit
                 _pageId = null;
                 _content = null;
                 _busyWith = null;
-                _latestNoticeSequence = -1;
                 // Forgetting which load we believe is what makes the clearing stick: until the
                 // incoming page reports itself ready, every snapshot that arrives belongs to the
                 // load we are leaving, and is refused rather than quietly refilling what we just

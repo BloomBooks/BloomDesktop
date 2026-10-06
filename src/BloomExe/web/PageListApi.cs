@@ -104,18 +104,12 @@ namespace Bloom.web
         {
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
-            // The page list sends the current page's content with the click when it can. It is
-            // absent when there is no page to collect from, or collecting threw; then the snapshot
-            // the browser last volunteered is used (see PageListController.OnPageSelectedChanged).
-            string pageContent = requestData.IsDefined("pageContent")
-                ? requestData.pageContent
-                : null;
 
             var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
             var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
 
-            // Note this only measures getting the change under way; with the content in hand that
-            // is now most of the work, but the new page still has to be built and displayed.
+            // Note this only measures getting the change under way; the new page still has to be
+            // built and displayed.
             using (
                 PerformanceMeasurement.Global?.Measure(
                     label,
@@ -126,7 +120,7 @@ namespace Bloom.web
                 IPage page = PageFromId(pageId);
 
                 if (page != null)
-                    PageList.PageClicked(page, pageContent);
+                    PageList.PageClicked(page);
             }
 
             request.PostSucceeded();
@@ -148,25 +142,20 @@ namespace Bloom.web
             var requestData = DynamicJson.Parse(request.RequiredPostJson());
             string pageId = requestData.pageId;
             string commandId = requestData.commandId;
-            // See HandlePageClickedRequest.
-            string pageContent = requestData.IsDefined("pageContent")
-                ? requestData.pageContent
-                : null;
             IPage page = PageFromId(pageId);
 
             if (page != null)
             {
-                // The command runs right here, and the browser gets its answer only once it has
-                // finished, so a page click or move the user makes meanwhile waits in the page
-                // list's request queue (queuePageListRequest) and cannot overtake it. That is safe
-                // because no command opens a modal dialog any more: Duplicate Many Times and Choose
+                // The command runs right here, under the API lock, so a page click or move that
+                // arrives meanwhile waits for it rather than overtaking it. That is safe because no
+                // command opens a modal dialog any more: Duplicate Many Times and Choose
                 // Different Layout open theirs in the browser and never come here. One that did
                 // would deadlock, since this handler holds the API lock the dialog's own requests
                 // need; that is what the old 100 ms deferral worked around, and the deferral is
                 // what let a click overtake a command.
                 try
                 {
-                    PageList.ExecuteContextMenuCommand(page, commandId, pageContent);
+                    PageList.ExecuteContextMenuCommand(page, commandId);
                 }
                 catch (Exception ex)
                 {
@@ -187,11 +176,7 @@ namespace Bloom.web
             string newPageId = requestData.movedPageId;
             IPage movedPage = PageFromId(newPageId);
             int newIndex = Convert.ToInt32(requestData.newIndex); // Should come as int, but automatic JSON parsing doesn't know this
-            // See HandlePageClickedRequest.
-            string pageContent = requestData.IsDefined("pageContent")
-                ? requestData.pageContent
-                : null;
-            PageList.PageMoved(movedPage, newIndex, pageContent);
+            PageList.PageMoved(movedPage, newIndex);
             request.PostSucceeded();
         }
 
