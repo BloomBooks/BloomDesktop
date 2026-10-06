@@ -61,6 +61,21 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
         );
 }
 
+// The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
+// what we post, so a name typed with a trailing space would otherwise count as a rename (and
+// Windows will not make a folder whose name ends in a space).
+function trimmedValues(
+    values: ICollectionSettingsValues,
+): ICollectionSettingsValues {
+    return {
+        ...values,
+        advanced: {
+            ...values.advanced,
+            collectionName: values.advanced.collectionName.trim(),
+        },
+    };
+}
+
 /**
  * Opens the Collection Settings dialog, on the page named by initialPageKey if one is given.
  * App renders the dialog on every workspace tab, so this works from any of them, with no trip
@@ -171,7 +186,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             loadedSettings.restartPaths.some(
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
-                    valueAtPath(values, path),
+                    valueAtPath(trimmedValues(values), path),
             )
         );
     }
@@ -184,11 +199,13 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // Always post, even if nothing changed: saving the same values again is harmless, and it
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
+        // OK is enabled only once the values have loaded.
+        const values = latestValuesRef.current!;
         postJson(
             "collection/settings",
             {
-                values: latestValuesRef.current,
-                restartRequired: restartNeededFor(latestValuesRef.current),
+                values: trimmedValues(values),
+                restartRequired: restartNeededFor(values),
             },
             () => {
                 // C# performs the restart itself if one is needed.
