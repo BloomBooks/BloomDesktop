@@ -63,15 +63,21 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
 
 // The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
 // what we post, so a name typed with a trailing space would otherwise count as a rename (and
-// Windows will not make a folder whose name ends in a space).
-function trimmedValues(
+// Windows will not make a folder whose name ends in a space). A name that differs from the
+// collection's only by spaces is no change, so it goes back exactly as it was: a collection whose
+// folder name already starts with a space must not be renamed by saving some other setting.
+function valuesToSave(
     values: ICollectionSettingsValues,
+    loadedValues: ICollectionSettingsValues,
 ): ICollectionSettingsValues {
+    const typedName = values.advanced.collectionName.trim();
+    const loadedName = loadedValues.advanced.collectionName;
     return {
         ...values,
         advanced: {
             ...values.advanced,
-            collectionName: values.advanced.collectionName.trim(),
+            collectionName:
+                typedName === loadedName.trim() ? loadedName : typedName,
         },
     };
 }
@@ -186,7 +192,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             loadedSettings.restartPaths.some(
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
-                    valueAtPath(trimmedValues(values), path),
+                    valueAtPath(
+                        valuesToSave(values, loadedSettings.values),
+                        path,
+                    ),
             )
         );
     }
@@ -204,7 +213,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         postJson(
             "collection/settings",
             {
-                values: trimmedValues(values),
+                values: valuesToSave(values, loadedSettings!.values),
                 restartRequired: restartNeededFor(values),
             },
             () => {
