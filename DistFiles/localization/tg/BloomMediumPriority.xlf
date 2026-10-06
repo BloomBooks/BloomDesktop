@@ -45,6 +45,31 @@
         <target xml:lang="tg" state="needs-translation">Edit Images with AI</target>
         <note>ID: Feature.AiImageEditing</note>
       </trans-unit>
+      <trans-unit id="EditTab.Image.RotateRight" translate="no">
+        <source xml:lang="en">Rotate right</source>
+        <target xml:lang="tg" state="needs-translation">Rotate right</target>
+        <note>ID: EditTab.Image.RotateRight</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.Flip" translate="no">
+        <source xml:lang="en">Flip</source>
+        <target xml:lang="tg" state="needs-translation">Flip</target>
+        <note>ID: EditTab.Image.Flip</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipHorizontal" translate="no">
+        <source xml:lang="en">Flip horizontal</source>
+        <target xml:lang="tg" state="needs-translation">Flip horizontal</target>
+        <note>ID: EditTab.Image.FlipHorizontal</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Image.FlipVertical" translate="no">
+        <source xml:lang="en">Flip vertical</source>
+        <target xml:lang="tg" state="needs-translation">Flip vertical</target>
+        <note>ID: EditTab.Image.FlipVertical</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.ComicTool.Handle.Rotate" translate="no">
+        <source xml:lang="en">Rotate</source>
+        <target xml:lang="tg" state="needs-translation">Rotate</target>
+        <note>ID: EditTab.Toolbox.ComicTool.Handle.Rotate</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.EditWithAI">
         <source xml:lang="en">Edit with AI...</source>
         <target xml:lang="tg" state="needs-translation">Edit with AI...</target>
