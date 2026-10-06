@@ -10,9 +10,8 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { ICollectionSettingsResponse } from "../collectionSettingsTypes";
 
 /**
- * The Advanced page of the Collection Settings dialog (BL-16737): whether Bloom updates itself,
- * and the collection's name. It offers what the old dialog did, on its Advanced and Project
- * Information tabs.
+ * The Advanced page of the Collection Settings dialog: whether Bloom updates itself, and the
+ * collection's name.
  */
 export function useAdvancedPage(props: {
     // Undefined until the dialog's GET collection/settings has answered.
@@ -60,7 +59,7 @@ export function useAdvancedPage(props: {
                 </ConfigrGroup>
             )}
             <ConfigrGroup label={collectionLabel}>
-                {/* As in the WinForms dialog, a Team Collection may not be renamed. */}
+                {/* A Team Collection may not be renamed. */}
                 <div
                     css={css`
                         // Config-R draws a disabled row's description as faintly as the rest of
