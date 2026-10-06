@@ -1549,6 +1549,11 @@
         <target xml:lang="az" state="needs-translation">Run Prepare before using this step.</target>
         <note>ID: PublishTab.Apps.PrepareRequiredTooltip</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Apps.RabUpdateNeeded" translate="no">
+        <source xml:lang="en">This version of Bloom needs Reading App Builder %0. Click Prepare to update.</source>
+        <target xml:lang="az" state="needs-translation">This version of Bloom needs Reading App Builder %0. Click Prepare to update.</target>
+        <note>ID: PublishTab.Apps.RabUpdateNeeded</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Apps.Prepare.DoneTooltip">
         <source xml:lang="en">The Reading App Builder project is already prepared for this collection.</source>
         <target xml:lang="az" state="needs-translation">The Reading App Builder project is already prepared for this collection.</target>
