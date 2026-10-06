@@ -197,6 +197,18 @@ vi.mock("@sillsdev/config-r", () => ({
                     })
                 }
             />
+            <button
+                data-testid="pad-collection-name"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        advanced: {
+                            ...props.initialValues.advanced,
+                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                        },
+                    })
+                }
+            />
             {props.children}
         </div>
     ),
@@ -516,6 +528,29 @@ describe("CollectionSettingsDialog", () => {
         await flushDeferredChange();
 
         expect(okButtonLabel()).toBe("Restart");
+    });
+
+    it("ignores spaces around the collection name, both for Restart and in what it saves", async () => {
+        respondWith({
+            ...settingsResponse,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        click("pad-collection-name");
+        await flushDeferredChange();
+        // A name that differs only by spaces is no rename, so OK stays OK.
+        expect(okButtonLabel()).toBe("OK");
+        click("dialog-ok");
+
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: initialValues,
+            restartRequired: false,
+        });
     });
 
     describe("Advanced page", () => {
