@@ -137,12 +137,17 @@ function postInOrder(pageId: string, url: string, body: string): void {
         }
         // A failed post goes through wrapAxios, which turns a rejected request into a resolved
         // promise carrying nothing -- so no response at all is what failure looks like.
-        if (!reply)
+        if (!reply) {
             reportFailureOncePerPage(
                 pageId,
                 "Bloom could not keep track of your changes to this page: the request to save them did not get through.",
                 undefined,
             );
+            // C# does not hold this content, so do not let the next gather skip it as already
+            // sent: the user's next change sends the whole page again. (Unless something newer
+            // has been queued since, which will carry it anyway.)
+            if (lastPosted === body) lastPosted = undefined;
+        }
     });
 }
 

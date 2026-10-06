@@ -451,11 +451,20 @@ describe("pageSnapshot", () => {
         await letEverythingSettle();
         expect(posted.length, "no retry").toBe(1);
 
+        // A mutation that leaves the saved form as it was: C# never got that form, so it is
+        // still sent, rather than skipped as already delivered.
+        postReply = { data: true };
+        changeThePage("a mutation that does not change the saved form");
+        await letTheSnapshotHappen();
+        await letEverythingSettle();
+        expect(posted.map((p) => p.body)).toEqual(["typed", "typed"]);
+
+        postReply = undefined;
         contentToReport = "typed more";
         changeThePage("typed more");
         await letTheSnapshotHappen();
         await letEverythingSettle();
-        expect(posted.length, "a later change is still sent").toBe(2);
+        expect(posted.length, "a later change is still sent").toBe(3);
         expect(reported.length, "and the user is told only once").toBe(1);
     });
 
