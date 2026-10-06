@@ -62,7 +62,7 @@ namespace Bloom.Book
 
             // Debug.WriteLine(string.Format("Comparing {0}({1}) and {2}({3})", x,xValue,y,yValue));
             if (xValue == yValue)
-                return String.Compare(x, y);
+                return String.Compare(x, y, StringComparison.InvariantCulture);
 
             if (xValue < yValue)
                 return -1;
@@ -75,9 +75,9 @@ namespace Bloom.Book
             {
                 var key = pair.Key.ToLowerInvariant();
                 if (
-                    s.StartsWith(key) //no path in there
-                    || (s.EndsWith("/" + key))
-                    || (s.EndsWith("\\" + key))
+                    s.StartsWith(key, StringComparison.Ordinal) //no path in there
+                    || (s.EndsWith("/" + key, StringComparison.Ordinal))
+                    || (s.EndsWith("\\" + key, StringComparison.Ordinal))
                 )
                     return pair.Value;
             }
@@ -85,7 +85,7 @@ namespace Bloom.Book
             // "SHRP Labels.css" is used by the SIL LEAD SHRP project to inject vernacular labels for sections of the book
             // we just need it to always come after the other stylesheet(s) of the book, which may supply default
             // labels
-            if (s.EndsWith("labels.css"))
+            if (s.EndsWith("labels.css", StringComparison.Ordinal))
                 return kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1;
 
             return kDefaultValueForStyleSheetsThatShouldListInTheMiddle;

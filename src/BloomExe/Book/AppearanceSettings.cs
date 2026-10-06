@@ -471,7 +471,7 @@ public class AppearanceSettings
                     OffendingCssRule = offendingCssRule;
                     FirstPossiblyOffendingCssFile = css.Item1;
                 }
-                if (!cssFileName.StartsWith("custom"))
+                if (!cssFileName.StartsWith("custom", StringComparison.Ordinal))
                 {
                     var msg =
                         "Unexpectedly found a branding or xmatter CSS not compatible with appearance system: "
@@ -832,7 +832,7 @@ public class AppearanceSettings
 
         var theme = CssThemeName;
 
-        if (!theme.StartsWith("legacy"))
+        if (!theme.StartsWith("legacy", StringComparison.Ordinal))
         {
             // Add in the var declarations of the default, so that the display doesn't collapse just because a theme is missing
             // some var that basepage.css relies on.

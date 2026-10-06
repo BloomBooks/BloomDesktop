@@ -12,10 +12,10 @@ export function tryProcessHyperlink(
     }
     // Is this probably a valid URL?
     const allowedPrefixes = ["http://", "https://", "mailto:", "#", "/book/"];
+    // toLowerCase, not toLocaleLowerCase: in a Turkish locale "MAILTO:" would lower-case to
+    // "maılto:" (dotless ı) and fail to match. See BL-16754.
     if (
-        !allowedPrefixes.some((prefix) =>
-            text.toLocaleLowerCase().startsWith(prefix),
-        )
+        !allowedPrefixes.some((prefix) => text.toLowerCase().startsWith(prefix))
     ) {
         return "";
     }
