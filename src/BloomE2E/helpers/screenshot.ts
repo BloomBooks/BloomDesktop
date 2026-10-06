@@ -188,18 +188,18 @@ export async function captureElement(
 }
 
 /**
- * When the run was asked for pictures, save one of these elements together, cropped to the smallest
- * rectangle holding all of them, as `<name>.png` in the folder `BLOOM_E2E_SCREENSHOT_DIR` names.
- * Otherwise do nothing, and cost nothing.
+ * When the run was asked for pictures, save these elements together, cropped to the smallest
+ * rectangle holding all of them plus a 4-pixel margin, as `<name>.png` in the folder
+ * `BLOOM_E2E_SCREENSHOT_DIR` names. Otherwise do nothing, and cost nothing.
  *
  * This is for the screenshots of a manual test card in Notion (the write-manual-test skill), which
  * have to show exactly what a pass looks like at each verification. Taking them during the e2e run
  * of the same steps keeps the pictures and the steps from drifting apart, and saves a second run.
  *
  * Unlike captureElement this never resizes the window, because resizing re-lays out the page and
- * shuts menus and hover-revealed buttons, which are often the very thing being pictured. So the
- * elements must be in view, and the picture is clipped to the window. It is taken at twice the
- * page's scale, so a small control stays readable in Notion.
+ * shuts menus, hint bubbles and hover-revealed buttons, which are often the very thing being
+ * pictured. So the elements must be in view, and the picture is clipped to the window. It is taken
+ * at twice the page's scale, so a small control stays readable in Notion.
  */
 export async function saveScreenshotIfAsked(
     locators: Locator[],
@@ -218,15 +218,16 @@ export async function saveScreenshotIfAsked(
             width: innerWidth,
             height: innerHeight,
         })));
-    const left = Math.max(0, Math.min(...boxes.map((b) => b.x)));
-    const top = Math.max(0, Math.min(...boxes.map((b) => b.y)));
+    const margin = 4;
+    const left = Math.max(0, Math.min(...boxes.map((b) => b.x)) - margin);
+    const top = Math.max(0, Math.min(...boxes.map((b) => b.y)) - margin);
     const right = Math.min(
         viewport.width,
-        Math.max(...boxes.map((b) => b.x + b.width)),
+        Math.max(...boxes.map((b) => b.x + b.width)) + margin,
     );
     const bottom = Math.min(
         viewport.height,
-        Math.max(...boxes.map((b) => b.y + b.height)),
+        Math.max(...boxes.map((b) => b.y + b.height)) + margin,
     );
     if (right - left < 1 || bottom - top < 1)
         throw new Error(

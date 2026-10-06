@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-10-02 — Merging master reformats master's own files, and the PR then carries the churn
+- **Cut:** The pre-commit hook's `pretty-quick --staged` formats every staged file, and a merge stages everything master changed. A merge of origin/master reformatted two `src/BloomE2E/tests/*.spec.ts` that master committed without prettier's formatting; keeping master's versions takes `git commit --no-verify`, because the hook reformats them again.
+- **Idea:** Format master's e2e specs once so a merge stops rewriting them.
+- **Context:** BL-16859 merge commit f44dafe8fe, 2026-10-02.
+
 ## 2026-09-25 — An install left a package folder empty, and `pnpm install` would not repair it
 - **Cut:** eslint (so `pnpm lint` and the pre-commit hook, which blocks every commit) died with `Cannot find module 'object-keys'`. The lockfile was fine: `node_modules/.pnpm/object-keys@1.1.1/node_modules/object-keys` existed but was empty, and `pnpm install --frozen-lockfile` answered "Already up to date" even after that folder was deleted. Copying the folder from another worktree fixed it.
 - **Idea:** Document the repair (delete the package's `.pnpm` folder and run `pnpm install --force`, or copy it from a healthy worktree), or have `init.sh` check for empty package folders after installing.
@@ -90,6 +95,11 @@ House rules:
   first URL match, and when the requested tab is absent say which tabs *are* present (and that a
   book may need selecting) instead of the generic not-found message.
 - **Context:** BloomDesktop PR #8283 preflight; worked around by driving Playwright directly.
+
+## 2026-09-10 — `vitest run` finishes every test and then never exits
+- **Cut:** In a fresh worktree (vitest 4.0.8), `pnpm exec vitest run` prints every ✓ line, then hangs with no summary and no exit code; `--no-file-parallelism` and `--pool=forks` hang the same way. It looks like a hung test, but every directory run alone passes and then hangs too: something keeps the event loop alive after teardown.
+- **Idea:** Find what keeps the process alive after teardown. Until then, document the workaround: run one directory at a time under `timeout` (e.g. `timeout 200 pnpm --dir src/BloomBrowserUI exec vitest run bookEdit/toolbox`) and read the ✓ lines; `timeout` does not kill the pnpm child, so a loop over directories must be watched.
+- **Context:** preflight on BL-16859; the whole front-end suite (~350 tests) was green this way but took an hour to establish.
 
 ## 2026-09-04 — Launcher times out waiting for BLOOM_AUTOMATION_READY while a direct dotnet watch works
 - **Cut:** `go.mjs` / `launcherControl.mjs --ensure-running` built Bloom in ~6s, printed `dotnet watch ⌚ Loaded 2 project(s)`, then never saw the ready marker and tore the whole stack down after the 120s `launchTimeoutMs` in `scripts/watchBloomExe.mjs` — three times in a row. Running `dotnet watch run --project src/BloomExe/BloomExe.csproj --non-interactive -- --automation` by hand from the same shell started Bloom and printed `BLOOM_AUTOMATION_READY` within seconds (alongside a running BetaInternal, so it was not the single-instance token).
