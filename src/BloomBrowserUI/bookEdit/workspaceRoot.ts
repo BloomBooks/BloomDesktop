@@ -30,6 +30,12 @@ export interface IWorkspaceExports {
         onImported: (importedPath?: string) => void,
     ): void;
     showConfirmDialog(props: IConfirmDialogProps): void;
+    // Opened from the page list's right-click menu; see pageThumbnailList.tsx.
+    showDuplicateManyDialog(pageId: string): void;
+    showPageChooserDialog(
+        forChooseLayout: boolean,
+        pageToChangeId?: string,
+    ): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     hideColorPickerDialog(): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
