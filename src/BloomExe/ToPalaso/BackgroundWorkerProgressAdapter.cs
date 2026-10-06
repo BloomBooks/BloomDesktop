@@ -73,7 +73,10 @@ namespace Bloom.ToPalaso
             string msg = message;
             if (args != null && args.Length > 0)
                 msg = string.Format(message, args);
-            if (_filters.Count == 0 || _filters.Any(x => message.StartsWith(x)))
+            if (
+                _filters.Count == 0
+                || _filters.Any(x => message.StartsWith(x, StringComparison.Ordinal))
+            )
             {
                 _worker.ReportProgress(ProgressIndicator.PercentCompleted, msg);
             }

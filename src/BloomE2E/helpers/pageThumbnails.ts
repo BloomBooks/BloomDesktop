@@ -67,18 +67,44 @@ export async function getPageIds(
     );
 }
 
-/** Wait until the thumbnail pane shows exactly `count` pages. */
+/**
+ * Wait until the thumbnail pane shows exactly `count` pages.
+ *
+ * Bloom reloads the pane when the book's pages change (after Paste Page, for instance), and a
+ * reload that lands while getPageIds is reading throws "Execution context was destroyed". That
+ * is not an answer yet, so it counts as "not there yet" and the poll asks again once the new
+ * pane is up. It has to be caught here: expect.poll retries a failed assertion, but a callback
+ * that throws fails the test at once.
+ */
 export async function waitForPageCount(
     page: Page,
     count: number,
     timeoutMs = 60000,
 ): Promise<void> {
     await expect
-        .poll(async () => (await getPageIds(page, timeoutMs)).length, {
-            timeout: timeoutMs,
-            message: `The page thumbnail list never showed ${count} pages.`,
-        })
+        .poll(
+            async () => {
+                try {
+                    return (await getPageIds(page, timeoutMs)).length;
+                } catch (error) {
+                    if (isPaneReloadError(error)) return undefined;
+                    throw error;
+                }
+            },
+            {
+                timeout: timeoutMs,
+                message: `The page thumbnail list never showed ${count} pages.`,
+            },
+        )
         .toBe(count);
+}
+
+/** True when an error came from the thumbnail pane's document being replaced mid-read. */
+function isPaneReloadError(error: unknown): boolean {
+    return (
+        error instanceof Error &&
+        /Execution context was destroyed|Frame was detached/.test(error.message)
+    );
 }
 
 /**

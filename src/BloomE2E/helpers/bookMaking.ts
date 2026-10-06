@@ -47,6 +47,11 @@ export async function makeBookFromTemplate(
     page: Page,
     templateTitle: string,
 ): Promise<string> {
+    // A person makes a book from the Collections tab, and so does this. Selecting the template
+    // while the Edit tab is showing a book has been seen to leave the Edit tab showing the
+    // template, which has no page to edit, once the new book is made (every time the book being
+    // left had a reader tool turned on), so a test making its second book would hang here.
+    await switchTab(page, "collection");
     await waitForCollectionReady(page);
     const { collectionId, template } = await findFactoryTemplate(
         page,
@@ -142,7 +147,18 @@ async function makeBookFromSelectedBook(
     sourceName: string,
 ): Promise<string> {
     const before = await listEditableBooks(page);
-    await apiPost(page, "app/makeFromSelectedBook");
+    // Bloom answers this and then reloads the shell document into the Edit tab, and under load
+    // that reload can abort our fetch before the reply arrives. The request itself got through
+    // - the poll below is what confirms the book really appeared - and a retry would make a
+    // second book, so tolerate exactly the two lost-reply errors a reload produces.
+    await apiPost(page, "app/makeFromSelectedBook").catch((error) => {
+        if (
+            !/Failed to fetch|Execution context was destroyed/i.test(
+                String(error),
+            )
+        )
+            throw error;
+    });
 
     // Bloom makes the book, selects it, and switches to the Edit tab. Wait for the book to exist
     // rather than for the tab, so the folder we return is real.
@@ -808,4 +824,17 @@ export async function visitXmatterPages(
         });
     }
     return shown;
+}
+
+/**
+ * Show a book in the Edit tab, the way a person does by selecting it in the collection and going
+ * back to Edit, and wait until its page is ready to edit. Leaving the book that was being edited
+ * this way is also what makes Bloom save it, so this is how a test leaves one book for another and
+ * comes back to see what the first one remembered.
+ */
+export async function editBook(page: Page, bookFolder: string): Promise<void> {
+    await switchTab(page, "collection");
+    await selectBook(page, bookFolder);
+    await switchTab(page, "edit");
+    await waitForEditablePage(page);
 }

@@ -887,7 +887,7 @@ namespace Bloom.Edit
             {
                 // RequiredParam() decodes the url parameters, so we don't need to do any UrlPathString decoding here.
                 var idWithPrefix = request.RequiredParam("id");
-                var bloomIndex = idWithPrefix.IndexOf(Api_Prefix);
+                var bloomIndex = idWithPrefix.IndexOf(Api_Prefix, StringComparison.Ordinal);
                 var id = idWithPrefix.Substring(bloomIndex + Api_Prefix.Length);
                 var segmentId = Path.GetFileNameWithoutExtension(id);
 

@@ -1,0 +1,102 @@
+# Nightly failures: open issues
+
+**Last updated:** 2026-10-06 (nightlies through the 2026-10-06 run have been triaged)
+
+Known flakes and other unfixed nightly failures: a high-level record of what has been looked at
+and where each stands. In-depth findings belong on a card or a branch, not here. Remove an entry
+once its fix lands and the nightly has stayed green on it. The rule they are all held to: never
+accept a known-flaky test (root `AGENTS.md`, Testing). To bring this up to date, use the
+`nightly-triage` skill.
+
+## Reader setup: the Levels dialog sometimes never opens
+
+- **Failed:** 2026-10-02. `BloomE2E/tests/reader-setup-dialogs-coexist.spec.ts`. After
+  "Set Up Levels" is clicked, `#settings_frame` never appears (30 s timeout).
+- **Cause:** a real Bloom bug (the button does nothing for users too), reproduced locally in
+  about 40% of runs. The legacy jQuery accordion still runs on the hidden `#toolbox`. When it
+  refreshes while a tool body is still sitting there, it takes that body for a header and binds
+  its header click handler, which calls `preventDefault`. The body then moves into the React
+  toolbox with the handler still attached, so the "Set Up Levels" `javascript:` link never runs.
+  This is a second cause of the BL-16732 symptom, and is about as old as the React toolbox.
+- **Status:** not fixed separately. The toolbox rework removes the jQuery accordion entirely
+  ([PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427),
+  [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)), which should fix it.
+  #8427 merged on 2026-10-06, after that night's run. Remove this entry once the nightlies have
+  stayed green on it for a while.
+
+## BookGridSetup component tests: the component fails to load
+
+- **Failed:** 2026-10-06. All 21 BookGridSetup component tests (`bookgridsetup-basic` and
+  `-extended.uitest.ts`); every other component passed.
+- **What the trace shows (first look):** the harness could not load the component: "Failed to
+  load module ../BookGridSetup/BookGridSetup: styled_default is not a function", from one of
+  Vite's pre-bundled dependency chunks. BookGridSetup has not changed since September, and the
+  only commit since the green 10-05 run (#8227, rotate images) does not touch it. Vite's
+  "Failed to resolve dependency: @mui/styled-engine, present in optimizeDeps.include" warning
+  shows in the green 10-05 run too, so it does not explain this on its own.
+- **Local run (2026-10-06, current master, cold Vite cache as on CI):** all 21 fail with the
+  same error, so this is a real break, not CI's environment. No package, lockfile or Vite config
+  changed since the green run. The suspect is #8227's new `@mui/icons-material/Flip` and
+  `RotateRight` imports, which change what Vite pre-bundles. That is unconfirmed.
+- **Status:** no card or PR.
+
+## Rotate and flip pictures: dragging the speech bubble onto the canvas adds nothing
+
+- **Failed:** 2026-10-06, its first nightly. `BloomE2E/tests/rotate-and-flip-images.spec.ts`
+  "builds a book with a background picture page and a page of overlay items": after the speech
+  palette item is dragged onto the canvas, the element count stays at 3 (30 s). The file runs in
+  serial mode, so its other 16 tests were skipped.
+- **What the trace shows (first look):** the overlay picture and the text box had already been
+  added, and the text box was still selected when the speech bubble was dropped. Whether the
+  drop missed, or Bloom ignored it, is not known.
+- **Local runs (2026-10-06, current master):** the failing test passed 3 times out of 3, and
+  every other test that ran passed too, so it does not reproduce here. It may be a race that
+  only CI's slower machine hits.
+- **Status:** the test came in with [PR #8227](https://github.com/BloomBooks/BloomDesktop/pull/8227)
+  (BL-16741). No card or PR for the failure.
+
+## Link chooser: the preselected page is not scrolled into view
+
+- **Failed:** 2026-09-23, 2026-09-30. Component test `url-sync-preselection.uitest.ts`
+  "Scrolls preselected page into view".
+- **Cause:** the thumbnail stylesheets arrive after the grid is laid out. They resize the
+  thumbnails and push the selected page back out of view, so this is a real (cosmetic) Bloom
+  bug.
+- **Status:** the fix (`PageChooser` waits for the styles before drawing the grid) and a test
+  that forces the late-styles order are written but uncommitted, on branch
+  `link-chooser-wait-for-styles` in the `nightly-investigation` worktree. There is no PR yet.
+
+## Toolbox: the late settings restore races the user (and the tests)
+
+- **Failed:** several nightlies in September in the toolbox and reader-tool specs.
+- **Cause:** `restoreToolboxSettingsWhenPageReady` applies settings it fetched before the page
+  was ready, so it can undo a change made in the meantime. It also re-selects the saved tool.
+- **Status:** seven tests are `test.fixme` (`toolbox-tools.spec.ts`,
+  `reader-tool-stage-and-level.spec.ts`). They must be re-enabled before the BL-16608 rework
+  finishes.
+  - Settings half: [PR #8409](https://github.com/BloomBooks/BloomDesktop/pull/8409), a draft
+    left open while we investigate.
+  - Tool half: left to the toolbox rework,
+    [BL-16608](https://issues.bloomlibrary.org/youtrack/issue/BL-16608)
+    ([PR #8109](https://github.com/BloomBooks/BloomDesktop/pull/8109),
+    [PR #8427](https://github.com/BloomBooks/BloomDesktop/pull/8427), merged 2026-10-06).
+  - The card has a note about the skipped tests.
+
+## Component tests: lost connection to the dev server
+
+- **Failed:** once in September. The cause is unknown.
+- **Status:** the run is now instrumented so the next occurrence says more. See "A component
+  test lost its connection to the dev server" in `src/BloomE2E/AUTOMATION-DEBT.md`.
+
+## C# upload integration tests: the live service was slow
+
+- **Failed:** 2026-09-28. `BookUploadAndDownloadTests` failed while the live upload service was
+  slow, for a few minutes around 10:40 UTC.
+- **Status:** the tests now report the uploader's error instead of a bare failure (`d8c050a2ef`).
+  Nothing more is planned unless it recurs.
+
+## Open questions
+
+- The canvas e2e config has `retries: 1`, which conflicts with the no-flaky-tests rule. Keep it?
+- Notion test-case status for the skipped toolbox tests (830, 441, 442, 460): should they be
+  marked Skipped?

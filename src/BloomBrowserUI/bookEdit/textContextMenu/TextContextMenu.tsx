@@ -84,7 +84,10 @@ const TextContextMenu: React.FunctionComponent<{
                     built with (see setupTextContextMenu) -- the standard image commands
                     decide for themselves when, because a dialog-launching command must
                     close with dialog-aware focus handling before its dialog arrives. */}
-                {renderContextMenuItems(props.content.inlineImageItems)}
+                {renderContextMenuItems(
+                    props.content.inlineImageItems,
+                    props.open,
+                )}
             </Menu>
         </ThemeProvider>
     );

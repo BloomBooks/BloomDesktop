@@ -194,7 +194,12 @@ namespace Bloom.Spreadsheet
             {
                 if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
                 {
-                    return (Browser)
+                    // Invoke returns whatever the delegate returned, and this delegate is async, so what
+                    // comes back is the Task it returned at its first await -- not a Browser. Casting it
+                    // straight to Browser was an InvalidCastException waiting to happen, and would also
+                    // have handed back a browser that did not exist yet. Await the Task instead, the way
+                    // GetMd5Async does below. (BL-16773)
+                    return await (Task<Browser>)
                         ControlForInvoke.Invoke(new GetBrowserDelegate(GetBrowserAsync));
                 }
                 // Todo Linux: I'm choosing not to do BrowserMaker.MakeBrowser here, because
@@ -204,6 +209,15 @@ namespace Bloom.Spreadsheet
                 // about to drop. So if we want this on Linux, we'll have to test carefully there,
                 // and possibly make a new overload of NavigateAndWaitUntilDone if the wait code here
                 // is not good enough.
+                //
+                // This browser is created on whatever thread we are on, and is then used across the
+                // awaits below, so that thread has to be an STA thread with a message loop or WebView2
+                // cannot initialize at all. Two arrangements provide that, and there is no third caller:
+                // in the app, ControlForInvoke is set and the block above put us on the UI thread; in the
+                // console `spreadsheetImport` verb, ControlForInvoke is null but the command runs on the
+                // STA main thread inside Program.RunConsoleCommandLoop's message loop, and its awaits
+                // resume there. Before that loop existed, console import was exposed to exactly the
+                // failure bulk upload hit in BL-16767. See ConsoleCommandLoopTests. (BL-16773)
 #if __MonoCS__
                 _browser = new GeckoFxBrowser();
 #else
@@ -245,7 +259,11 @@ namespace Bloom.Spreadsheet
                 return false;
             }
             var inputRows = sheet.ContentRows.ToList();
-            if (!inputRows.Any(r => r.GetCell(rowTypeColumn).Content.StartsWith("[")))
+            if (
+                !inputRows.Any(r =>
+                    r.GetCell(rowTypeColumn).Content.StartsWith("[", StringComparison.Ordinal)
+                )
+            )
             {
                 progress.MessageWithoutLocalizing(
                     "This spreadsheet has no data that Bloom knows how to import. Did you follow the standard format for Bloom spreadsheets?",
@@ -415,7 +433,10 @@ namespace Bloom.Spreadsheet
                         $"Row {CurrentRowIndexForMessages} is an {InternalSpreadsheet.InlineImageRowLabel} row that does not directly follow its text row, so Bloom could not use it."
                     );
                 }
-                else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
+                else if (
+                    rowTypeLabel.StartsWith("[", StringComparison.Ordinal)
+                    && rowTypeLabel.EndsWith("]", StringComparison.Ordinal)
+                ) //This row is xmatter
                 {
                     var dataBookLabel = InternalSpreadsheet.MapRowLabelToDataBookLabel(
                         rowTypeLabel
@@ -430,6 +451,9 @@ namespace Bloom.Spreadsheet
             CleanupLeftOverPages();
 
             CleanupDataDiv();
+            // The import makes pages and puts pictures on them without ever showing them in the Edit
+            // tab, so they lack what the editing code records when it lays a page out.
+            BookProcessor.RecordPageLayoutChanged(_destinationDom);
             // This section is necessary to make sure changes to the dom are recorded.
             // If we run SS Importer from the CLI (without CollectionSettings), BringBookUpToDate()
             // will happen when we eventually open the book, but the user gets an updated thumbail and preview
@@ -778,7 +802,12 @@ namespace Bloom.Spreadsheet
             // Then how do we know how many levels up to copy?
             // It's possible index.html is nested more than one level in activityFolder!
             // For now, require the path to start with activities.
-            if (!source.ToLowerInvariant().Replace("\\", "/").StartsWith("activities/"))
+            if (
+                !source
+                    .ToLowerInvariant()
+                    .Replace("\\", "/")
+                    .StartsWith("activities/", StringComparison.Ordinal)
+            )
             {
                 Warn(
                     $"Could not import the widget on row {CurrentRowIndexForMessages}. Widgets must be in the Spreadsheet folder's activities subfolder, but was '{source}'."
@@ -2185,7 +2214,7 @@ namespace Bloom.Spreadsheet
             if (!string.IsNullOrEmpty(attributeData))
             {
                 var target = group;
-                if (attributeData.StartsWith("../"))
+                if (attributeData.StartsWith("../", StringComparison.Ordinal))
                 {
                     attributeData = attributeData.Substring(3);
                     target = (SafeXmlElement)group.ParentNode;
@@ -2426,7 +2455,7 @@ namespace Bloom.Spreadsheet
                 }
 
                 paraFragments.Add(Tuple.Create(para, fragments));
-                sentenceCount += fragments.Count(x => x.StartsWith("s"));
+                sentenceCount += fragments.Count(x => x.StartsWith("s", StringComparison.Ordinal));
             }
 
             if (alignments.Length > 0)
@@ -2517,7 +2546,7 @@ namespace Bloom.Spreadsheet
                         foreach (var taggedFragment in fragments)
                         {
                             var fragment = taggedFragment.Substring(1);
-                            if (taggedFragment.StartsWith("s"))
+                            if (taggedFragment.StartsWith("s", StringComparison.Ordinal))
                             {
                                 var span = para.OwnerDocument.CreateElement("span");
                                 HtmlDom.SetNewHtmlIdValue(span); // need it to have one, don't care what
@@ -2593,7 +2622,7 @@ namespace Bloom.Spreadsheet
                     foreach (var taggedFragment in fragments)
                     {
                         var fragment = taggedFragment.Substring(1);
-                        if (taggedFragment.StartsWith("s"))
+                        if (taggedFragment.StartsWith("s", StringComparison.Ordinal))
                         {
                             var span = para.OwnerDocument.CreateElement("span");
                             var audioFile = audioFiles[audioFileIndex++];
@@ -2657,7 +2686,7 @@ namespace Bloom.Spreadsheet
             if (_pathToSpreadsheetFolder == null)
                 return "0"; // unit tests, we can't try to copy file.
             string src = audioFile;
-            if (audioFile.StartsWith("./"))
+            if (audioFile.StartsWith("./", StringComparison.Ordinal))
                 src = Path.Combine(_pathToSpreadsheetFolder, audioFile.Substring(2));
             if (RobustFile.Exists(src))
             {

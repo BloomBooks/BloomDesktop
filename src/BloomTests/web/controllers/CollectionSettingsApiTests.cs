@@ -1,6 +1,10 @@
+using Bloom;
+using Bloom.Collection;
 using Bloom.web.controllers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SIL.TestUtilities;
 
 namespace BloomTests.web.controllers
 {
@@ -62,6 +66,46 @@ namespace BloomTests.web.controllers
             dynamic result = JsonConvert.DeserializeObject(json);
             Assert.That((string)result.languageName, Is.EqualTo("Kaqchikel"));
             Assert.That((string)result.languageCode, Is.EqualTo("cak"));
+        }
+
+        /// <summary>
+        /// The dialog looks each restart path up in the values it got, so a path that named
+        /// nothing would silently stop that setting ever being noticed as needing a restart.
+        /// </summary>
+        [Test]
+        public void EveryRestartPath_ResolvesInFullyPopulatedValues()
+        {
+            using var folder = new TemporaryFolder("EveryRestartPath_Resolves");
+            var settings = new CollectionSettings(
+                CollectionSettings.GetPathForNewSettings(folder.Path, "RestartPaths")
+            );
+            // A new collection has no third or sign language, and those are null in the values.
+            settings.Language3.ChangeTag("fr");
+            settings.SignLanguage.ChangeTag("ase");
+            var json = JObject.Parse(
+                JsonConvert.SerializeObject(
+                    new CollectionSettingsValues(settings),
+                    CollectionSettingsApi.kCamelCaseSettings
+                )
+            );
+            var restartPaths = CollectionSettingsValues.GetRestartPaths();
+            Assert.That(
+                restartPaths,
+                Has.Member("frontBackMatter.xmatter")
+                    .And.Member("languages.language3.fontName")
+                    .And.Member("languages.signLanguage.tag")
+                    .And.Member("experimental." + ExperimentalFeatures.kTeamCollections),
+                "Sanity check: the paths should cover every group"
+            );
+
+            foreach (var path in restartPaths)
+            {
+                Assert.That(
+                    json.SelectToken(path),
+                    Is.Not.Null,
+                    $"restart path '{path}' names nothing in the settings values"
+                );
+            }
         }
     }
 }
