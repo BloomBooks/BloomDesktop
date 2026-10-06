@@ -13,6 +13,7 @@ using Bloom.MiscUI;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.BloomPub;
 using Bloom.SubscriptionAndFeatures;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using DesktopAnalytics;
@@ -388,7 +389,7 @@ namespace Bloom.Collection
             try
             {
                 // Note: the inLanguage parameter is often ignored by IetfLanguageTag.GetLocalizedLanguageName().
-                return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
+                return IetfLanguageTagExtra.GetLocalizedLanguageName(tag, inLanguage);
             }
             catch (Exception)
             {
@@ -771,7 +772,7 @@ namespace Bloom.Collection
                     .Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                 var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
                 var defaultBookshelfTag = defaultTags
-                    .Where(t => t.StartsWith("bookshelf:"))
+                    .Where(t => t.StartsWith("bookshelf:", StringComparison.Ordinal))
                     .FirstOrDefault();
                 DefaultBookshelf =
                     (
@@ -1467,14 +1468,14 @@ namespace Bloom.Collection
                 // Exactly these tags: variants like zh-CN-x-foo must stay distinguishable from each
                 // other, so they go through GetLanguageNameWithScriptVariants below instead.
                 if (langTag == "zh-CN" || langTag == "zh-TW" || langTag == "prs")
-                    return IetfLanguageTag.GetLocalizedLanguageName(langTag, "en");
-                if (IetfLanguageTag.GetBestLanguageName(langTag, out var bestName))
+                    return IetfLanguageTagExtra.GetLocalizedLanguageName(langTag, "en");
+                if (IetfLanguageTagExtra.GetBestLanguageName(langTag, out var bestName))
                 {
                     // For an unlisted language the lookup has already built the whole label, tag
                     // included ("Language Not Listed (qaa-x-foo)"); wrapping it in script variants
                     // would nest it inside itself.
                     if (
-                        IetfLanguageTag.GetGeneralCode(langTag.ToLowerInvariant())
+                        IetfLanguageTagExtra.GetGeneralCode(langTag.ToLowerInvariant())
                         == WellKnownSubtags.UnlistedLanguage
                     )
                         return bestName;

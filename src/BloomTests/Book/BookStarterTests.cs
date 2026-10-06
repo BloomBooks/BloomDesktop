@@ -512,6 +512,60 @@ namespace BloomTests.Book
         }
 
         [Test]
+        public void CreateBookOnDiskFromTemplate_FromFactoryTemplate_NeedsNoPageLayoutUpdate()
+        {
+            var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book");
+            // The built template is "Basic Book.html" (generated from pug), not ".htm".
+            var sourceDom = new HtmlDom(
+                XmlHtmlConverter.GetXmlDomFromHtmlFile(Path.Combine(source, "Basic Book.html"))
+            );
+            Assert.That(
+                sourceDom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.Empty,
+                "test setup: the template itself should not carry the record"
+            );
+
+            var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+            var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
+            Assert.That(
+                dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                Is.EqualTo(BookStorage.kPageLayoutUpdateLevel.ToString())
+            );
+            var book = CreateBookServer().GetBookFromBookInfo(new BookInfo(path, true));
+            Assert.That(BookProcessor.NeedsPageLayoutUpdate(book), Is.False);
+        }
+
+        [Test]
+        public void CreateBookOnDiskFromTemplate_FromTemplateOutsideFactory_IsNotRecordedAsUpdated()
+        {
+            // Stands in for a template the user made: its pages may really need the per-page pass.
+            using (var userTemplates = new TemporaryFolder("BookStarterTestsUserTemplate"))
+            {
+                var source = Path.Combine(userTemplates.Path, "Basic Book");
+                CopyFolderForTest(
+                    BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
+                    source
+                );
+
+                var path = _starter.CreateBookOnDiskFromTemplate(source, _projectFolder.Path);
+
+                var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(GetPathToHtml(path)));
+                Assert.That(
+                    dom.GetMetaValue(BookProcessor.kPageLayoutUpdateLevelMeta, ""),
+                    Is.Empty
+                );
+            }
+        }
+
+        private static void CopyFolderForTest(string from, string to)
+        {
+            Directory.CreateDirectory(to);
+            foreach (var file in Directory.GetFiles(from))
+                RobustFile.Copy(file, Path.Combine(to, Path.GetFileName(file)));
+        }
+
+        [Test]
         public void CreateBookOnDiskFromTemplateStarter_IsTemplate_ButNotTemplateFactory()
         {
             var source = BloomFileLocator.GetFactoryBookTemplateDirectory("Template Starter");

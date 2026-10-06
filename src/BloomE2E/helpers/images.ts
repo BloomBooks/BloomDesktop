@@ -178,6 +178,119 @@ export async function cropImage(
 }
 
 /**
+ * How a picture is rotated and mirrored on screen: the 2x2 part of a CSS transform, with the part
+ * that moves things left out. Upright and unmirrored is { a: 1, b: 0, c: 0, d: 1 }. A picture
+ * rotated 90 degrees clockwise is { a: 0, b: 1, c: -1, d: 0 }; one mirrored left to right is
+ * { a: -1, b: 0, c: 0, d: 1 }. Each number is rounded to three places.
+ */
+export interface IPictureRotation {
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+}
+
+/** The IPictureRotation of a picture that is neither rotated nor mirrored. */
+export const kUprightPicture: IPictureRotation = { a: 1, b: 0, c: 0, d: 1 };
+
+/**
+ * `rotation` as it looks after the picture is mirrored about one of its own axes: "horizontal" swaps
+ * the picture's own left and right, "vertical" its own top and bottom. This is what the Flip commands
+ * promise, however the picture was rotated before, so flipping and then rotating gives the same as
+ * rotating and then flipping.
+ */
+export function mirroredAboutOwnAxis(
+    rotation: IPictureRotation,
+    axis: "horizontal" | "vertical",
+): IPictureRotation {
+    // Mirroring before the rotation is the rotation times the mirror matrix, which negates one
+    // column: (a, b) is where the picture's own x axis goes, (c, d) its own y axis.
+    const clean = (x: number) => (x === 0 ? 0 : x);
+    if (axis === "horizontal")
+        return {
+            a: clean(-rotation.a),
+            b: clean(-rotation.b),
+            c: rotation.c,
+            d: rotation.d,
+        };
+    return {
+        a: rotation.a,
+        b: rotation.b,
+        c: clean(-rotation.c),
+        d: clean(-rotation.d),
+    };
+}
+
+/**
+ * How a picture on the page being shown is rotated and mirrored on screen, whatever did it: a rotation
+ * of its whole box (the rotation knob, or Rotate right on an overlay) and a rotation or mirror of the
+ * picture inside the box (Rotate right on the page's background picture, and Flip) combine here
+ * into the one answer a reader's eye gives.
+ */
+export async function getPictureRotation(
+    page: Page,
+    within?: Locator,
+): Promise<IPictureRotation> {
+    const img = imageIn(page, within);
+    await img.waitFor({ state: "attached", timeout: 30000 });
+    return img.evaluate((element) => {
+        const view = element.ownerDocument.defaultView!;
+        const matrixOf = (el: Element) => {
+            const transform = view.getComputedStyle(el).transform;
+            return new view.DOMMatrix(
+                transform && transform !== "none" ? transform : undefined,
+            );
+        };
+        const box = element.closest(".bloom-canvas-element")!;
+        const m = matrixOf(box).multiply(matrixOf(element));
+        const round = (x: number) => {
+            const r = Math.round(x * 1000) / 1000;
+            return r === 0 ? 0 : r;
+        };
+        return { a: round(m.a), b: round(m.b), c: round(m.c), d: round(m.d) };
+    });
+}
+
+/** The inline style values that lay out one element, exactly as the book saves them. */
+export interface IInlineLayout {
+    left: string;
+    top: string;
+    width: string;
+    height: string;
+    transform: string;
+}
+
+/**
+ * How a picture and the canvas element that holds it are laid out, as the values of their inline
+ * styles, exactly as they will be saved in the book. The crop, the rotation and mirror of the picture,
+ * and the size, place and rotation of its box all live here, so two equal answers mean the picture is
+ * laid out exactly the same. Values, not the style attribute's text: the order of the declarations
+ * in that text depends on the order code set them in, which says nothing about the layout.
+ */
+export async function getPictureInlineLayout(
+    page: Page,
+    within?: Locator,
+): Promise<{ picture: IInlineLayout; box: IInlineLayout }> {
+    const img = imageIn(page, within);
+    await img.waitFor({ state: "attached", timeout: 30000 });
+    return img.evaluate((element) => {
+        const layoutOf = (el: HTMLElement) => ({
+            left: el.style.left,
+            top: el.style.top,
+            width: el.style.width,
+            height: el.style.height,
+            transform: el.style.transform,
+        });
+        return {
+            picture: layoutOf(element as HTMLElement),
+            box: layoutOf(
+                element.closest(".bloom-canvas-element") as HTMLElement,
+            ),
+        };
+    });
+}
+
+/**
  * The picture to act on: the one inside `within` when a scope is given, otherwise the page's first
  * image slot.
  */

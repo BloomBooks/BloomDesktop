@@ -141,7 +141,7 @@ namespace Bloom.Publish
         {
             _browser =
                 _environment == null
-                    ? new WebView2Browser()
+                    ? WebView2Browser.CreateForOffScreenUse()
                     : WebView2Browser.CreateWithInjectedEnvironment(_environment);
             // Realize the HWND now; CoreWebView2 initialization can only complete once the control has a
             // window handle, and nothing else (no parent Form) will create it for us. Same trick as
@@ -151,6 +151,13 @@ namespace Bloom.Publish
             var timer = Stopwatch.StartNew();
             while (!_browser.IsReadyToNavigate)
             {
+                // Initialization failed outright, so it will never become ready. Fail now with the real
+                // cause instead of waiting out the timeout and then blaming the timeout (BL-16773).
+                if (_browser.InitializationError != null)
+                    throw new ApplicationException(
+                        "The off-screen WebView2 failed to initialize.",
+                        _browser.InitializationError
+                    );
                 if (timer.ElapsedMilliseconds > kInitTimeoutMs)
                     throw new ApplicationException(
                         "Timed out initializing the off-screen WebView2."

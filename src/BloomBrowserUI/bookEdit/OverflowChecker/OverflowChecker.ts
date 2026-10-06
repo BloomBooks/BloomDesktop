@@ -230,6 +230,10 @@ export default class OverflowChecker {
         //         " shortBoxFudgeFactor: " +
         //         shortBoxFudgeFactor
         // );
+        // As far as we can tell, horizontal overflow can't actually happen in a Bloom text box:
+        // basePage-sharedRules.less gives visible bloom-editables overflow-wrap: anywhere, so text
+        // wraps, even in the middle of a long word, rather than running out sideways (BL-12330,
+        // BL-14920). That is also why no test in OverflowChecker.browser.spec.ts covers it.
         const overflowX = element.scrollWidth - element.clientWidth;
 
         return [overflowX, overflowY];

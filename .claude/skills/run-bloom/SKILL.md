@@ -23,7 +23,9 @@ node .claude/skills/run-bloom/launcherControl.mjs --ensure-running --wait-ready 
 `--ensure-running` handles everything: stale discovery files, a launcher mid-startup (waits
 instead of double-launching), an uninitialized worktree (go.mjs runs `./init.sh` itself,
 `phase:"init"`), and starting the stack decoupled from your session (an Orca terminal tab when
-available, else detached to `output/bloom-launcher.log`). Never launch `./go.sh` tied to your own
+available, else detached to `output/bloom-launcher.log`). It starts Bloom with `--dont-disturb`, so
+none of Bloom's windows takes the foreground or the keyboard from the person at the machine (a
+Bloom already running keeps whatever it was started with). Never launch `./go.sh` tied to your own
 shell except when debugging the launcher itself, and never run an already-built `Bloom.exe`
 directly (it is stale).
 
@@ -79,7 +81,9 @@ node .claude/skills/run-bloom/launcherControl.mjs --shutdown     # everything do
   drives the dev-only restart toast Bloom shows itself.
 - **Port 8089 is first-come, not per-worktree.** Always take `httpPort`/`cdpPort` from the
   launcher status; a hard-coded 8089 may be another worktree's Bloom.
-- Human path: `./go.sh` in a terminal; Ctrl+C tears everything down.
+- Human path: `./go.sh` in a terminal; Ctrl+C tears everything down. That Bloom behaves normally,
+  taking the foreground as it would for a user. An agent that has to run `./go.sh` itself passes
+  `--dont-disturb` (`./go.sh --dont-disturb`), which is what `--ensure-running` does for you.
 
 ## No launcher? (Bloom started some other way)
 

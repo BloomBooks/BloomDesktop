@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
@@ -66,7 +67,11 @@ namespace BloomTests.Book
             Assert.That(progress.Statuses, Is.Not.Empty);
             // ...but not one per image.
             var perImageLines = progress
-                .Statuses.Where(s => kPerImageStatusPrefixes.Any(prefix => s.StartsWith(prefix)))
+                .Statuses.Where(s =>
+                    kPerImageStatusPrefixes.Any(prefix =>
+                        s.StartsWith(prefix, StringComparison.Ordinal)
+                    )
+                )
                 .ToList();
             Assert.That(
                 perImageLines,

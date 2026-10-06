@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml;
 using Bloom.Book;
@@ -41,7 +42,7 @@ namespace BloomTests.Book
                 "Bloom",
                 "1.0.0",
                 localizationDirectory,
-                "SIL/BloomTests",
+                TestTempDirectory.LocalizationSettingPath,
                 null,
                 new string[] { }
             );
@@ -1505,6 +1506,43 @@ namespace BloomTests.Book
                     "//div/div[contains(@class, 'bloom-editable') and @lang='zh-CN' and text()='Chinese Text']",
                     1
                 );
+        }
+
+        [Test]
+        public void PrepareElementsInPageOrDocument_HasGenerateTranslationsDiv_UnderThaiFormat_TagsTranslationsWithTheirLanguage()
+        {
+            // BL-16945: under th-TH, the generated translations got lang='' instead of their language.
+            var contents =
+                @"<html><body><div class='bloom-page'>
+						<div class='bloom-translationGroup'>
+							<div class='bloom-editable' lang='en' data-generate-translations='true' data-i18n='Test.L10N.ID'>English Text</div>
+						</div>
+					</div></body></html>";
+            var dom = new HtmlDom(contents);
+            var bookData = new BookData(dom, _collectionSettings, null);
+            var originalCulture = CultureInfo.CurrentCulture;
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("th-TH");
+
+                //SUT
+                TranslationGroupManager.PrepareElementsInPageOrDocument(
+                    (SafeXmlElement)dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]")[0],
+                    bookData
+                );
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
+
+            AssertThatXmlIn
+                .Dom(dom.RawDom)
+                .HasSpecifiedNumberOfMatchesForXpath(
+                    "//div/div[contains(@class, 'bloom-editable') and @lang='es' and text()='Spanish Text']",
+                    1
+                );
+            AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='']");
         }
 
         [Test]

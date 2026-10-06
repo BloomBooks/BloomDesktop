@@ -134,7 +134,7 @@ namespace Bloom.Utils
                                 dropboxRoot = dropboxRoot.ToLowerInvariant().Replace(@"\\", @"\");
                             }
 
-                            if (searchPath.StartsWith(dropboxRoot))
+                            if (searchPath.StartsWith(dropboxRoot, StringComparison.Ordinal))
                                 return true;
                         }
                     }
