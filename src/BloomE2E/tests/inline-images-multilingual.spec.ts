@@ -65,6 +65,7 @@ test.describe.configure({ mode: "serial" });
 const BLOCK = ".bloom-translationGroup";
 const FIRST_LANG = "en";
 const SECOND_LANG = "fr";
+const THIRD_LANG = "es";
 const PROTOTYPE_LANG = "z";
 
 const BOOK_TITLE = "Inline Images Multilingual";
@@ -78,6 +79,10 @@ const FRENCH_TEXT =
     "Le martin-pecheur attend sur la branche au-dessus du bassin, si tranquille que l'eau " +
     "oublie qu'il est la. Quand il plonge, il plonge droit, et le bassin se referme sur " +
     "l'endroit ou il est entre. Les enfants sur la rive ont appris a attendre aussi.";
+
+const SPANISH_TEXT =
+    "El martin pescador espera en la rama sobre el estanque, tan quieto que el agua olvida " +
+    "que esta alli. Cuando cae, cae recto, y el estanque se cierra sobre el lugar donde entro.";
 
 const fixtureImage = (name: string) =>
     Path.resolve(
@@ -140,7 +145,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         expect(prototype.contentEditable).toBe("false");
     });
 
-    test("a language added to the collection later inherits the picture from the prototype", async ({
+    test("languages added to the collection later inherit the picture from the prototype", async ({
         bloomApp,
     }) => {
         test.setTimeout(300000);
@@ -151,11 +156,12 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         );
         await goToPage(bloomApp.page, firstXmatter.id);
 
-        // THE ACTION UNDER TEST: a second collection language, which is what a person adds in the
-        // Settings dialog. Bloom restarts, and builds the book's French block out of the lang="z"
-        // prototype -- carrying whatever the prototype holds, the picture included.
+        // THE ACTION UNDER TEST: a second and a third collection language, which is what a person
+        // adds in the Settings dialog. Bloom restarts, and builds the book's French and Spanish
+        // blocks out of the lang="z" prototype -- carrying whatever the prototype holds, the
+        // picture included. The third language is there for the test that shows three at once.
         const restarted = await restartWithCollectionSettings(bloomApp, {
-            languages: [FIRST_LANG, SECOND_LANG],
+            languages: [FIRST_LANG, SECOND_LANG, THIRD_LANG],
         });
         await selectBook(restarted, bookFolder);
         await switchTab(restarted, "edit");
@@ -165,8 +171,8 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         const blocks = await getInlineImages(restarted, BLOCK);
         expect(
             blocks.map((block) => block.languageTag).sort(),
-            "Adding the language should have given the group a French block.",
-        ).toEqual([FIRST_LANG, SECOND_LANG, PROTOTYPE_LANG]);
+            "Adding the languages should have given the group a French and a Spanish block.",
+        ).toEqual([THIRD_LANG, FIRST_LANG, SECOND_LANG, PROTOTYPE_LANG].sort());
 
         const french = await getInlineImage(
             restarted,
@@ -216,6 +222,55 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         expect(french!.display).toBe("flow-root");
     });
 
+    test("with three languages showing, or only the second, the reader still sees one picture", async ({
+        page,
+    }) => {
+        await setContentLanguages(page, [FIRST_LANG, SECOND_LANG, THIRD_LANG]);
+        await typeInGroup(page, BLOCK, THIRD_LANG, SPANISH_TEXT);
+
+        // THE STATE UNDER TEST: a trilingual page.
+        const trilingual = await getInlineImages(page, BLOCK);
+        expect(
+            trilingual
+                .filter((block) => block.visible)
+                .map((block) => block.languageTag)
+                .sort(),
+            "All three languages should be showing, or this is not a trilingual page.",
+        ).toEqual([FIRST_LANG, SECOND_LANG, THIRD_LANG].sort());
+        expect(
+            trilingual
+                .flatMap((block) => block.images)
+                .filter((image) => image.shown)
+                .map((image) => image.languageTag),
+            "With three languages showing, only the first language's copy should be painted.",
+        ).toEqual([FIRST_LANG]);
+
+        // THE STATE UNDER TEST: the first language turned off, so no showing block is
+        // bloom-content1. The rule must still paint one copy, the second language's, rather
+        // than letting the picture vanish.
+        await setContentLanguages(page, [SECOND_LANG]);
+        const secondOnly = await getInlineImages(page, BLOCK);
+        expect(
+            secondOnly
+                .filter((block) => block.visible)
+                .map((block) => block.languageTag),
+            "Only French should be showing.",
+        ).toEqual([SECOND_LANG]);
+        expect(
+            secondOnly
+                .flatMap((block) => block.images)
+                .filter((image) => image.shown)
+                .map((image) => image.languageTag),
+            "With the first language hidden, the second language's copy should be the one painted.",
+        ).toEqual([SECOND_LANG]);
+
+        // Back to the two languages the tests after this one start from.
+        await setContentLanguages(page, [FIRST_LANG, SECOND_LANG]);
+        expect(
+            (await getInlineImage(page, BLOCK, FIRST_LANG, imageId)).shown,
+        ).toBe(true);
+    });
+
     test("dragging the one picture a reader can see moves the hidden copies too", async ({
         page,
     }) => {
@@ -235,9 +290,9 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         await dragInlineImageToDock(page, BLOCK, FIRST_LANG, imageId, "left");
 
         const after = await getInlineImageInEveryLanguage(page, BLOCK, imageId);
-        expect(after.length).toBe(3);
-        // The hidden French copy and the prototype copy follow the shown one. A copy left behind
-        // would show the wrong side as soon as the book's language choice changed.
+        expect(after.length).toBe(4);
+        // The hidden French and Spanish copies and the prototype copy follow the shown one. A copy
+        // left behind would show the wrong side as soon as the book's language choice changed.
         expect(after.map((copy) => copy.dock)).toEqual(after.map(() => "left"));
     });
 

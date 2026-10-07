@@ -13,6 +13,7 @@ import * as fs from "node:fs";
 import * as Path from "node:path";
 import { apiGet, apiGetJson, apiPost } from "./api";
 import { selectBook, waitForCollectionReady } from "./collection";
+import { markEditablePage, waitForEditablePageReload } from "./pageThumbnails";
 import { switchTab } from "./workspace";
 
 /** One book as collections/books reports it. Only the fields used here. */
@@ -286,10 +287,14 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
 
 /**
  * Set exactly which of the collection's languages the book shows, by the same route as the Edit
- * tab's One/Two/Three Languages dropdown. Language 1 is always shown and cannot be turned off.
+ * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
+ * included, as long as one other stays on.
  *
- * Each change is confirmed before the next is sent. Sending two in quick succession has been seen
- * to lose one, and a state wait is both the honest fix and faster than a fixed pause.
+ * Each change makes Bloom save the page and then reload it, but only when Bloom is editing the page:
+ * a change that arrives while the page is still loading, or while an earlier save is still running,
+ * gets no save and no reload (EditingModel.SaveThen). The book would record the new languages while
+ * the Edit tab kept showing the old ones. So each change waits for the page to be ready for editing,
+ * and the next change waits for that reload to finish.
  */
 export async function setContentLanguages(
     page: Page,
@@ -302,6 +307,15 @@ export async function setContentLanguages(
     for (const language of usage.languages) {
         const wanted = tags.includes(language.id);
         if (language.isUsedForContent === wanted) continue;
+        await waitForEditablePage(page);
+        const pageId = await editablePageFrame(page)
+            .locator(".bloom-page")
+            .getAttribute("id");
+        if (!pageId)
+            throw new Error(
+                "The page in the Edit tab has no id, so its reload cannot be awaited.",
+            );
+        await markEditablePage(page);
         await apiPost(
             page,
             "editView/topBar/contentLanguageUsageChange",
@@ -327,6 +341,7 @@ export async function setContentLanguages(
                 },
             )
             .toBe(wanted);
+        await waitForEditablePageReload(page, pageId);
     }
     await waitForEditablePage(page);
 }
