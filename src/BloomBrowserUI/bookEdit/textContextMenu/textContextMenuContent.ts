@@ -1,6 +1,5 @@
-// What the text context menu should offer for a given right-click. Kept out of the React
-// component, in the same spirit as noIndent.ts, so that the decision can be unit tested
-// against a plain DOM.
+// Works out what the text context menu offers for a given right-click. This is kept out of
+// the React component, as noIndent.ts is, so that it can be unit tested against a plain DOM.
 
 import { IMenuItemWithSubmenu } from "../js/canvasElementManager/canvasControlMenuRendering";
 import {
@@ -10,28 +9,28 @@ import {
 import { findParagraphForTextContextMenu } from "./noIndent";
 
 export interface ITextContextMenuContent {
-    // The paragraph the paragraph-level commands act on, or undefined when the right-click was
-    // not in a paragraph. An inline image is the case that arises: it sits among the
-    // paragraphs of the text box, never inside one.
+    // The paragraph that commands such as "No Indent" act on, or undefined when the
+    // right-click was not in a paragraph. That happens on an inline image, which sits between
+    // the paragraphs of the text box and is never inside one, and in the empty space of the box.
     paragraph?: HTMLElement;
-    // What inline images contribute for this click; empty when they have nothing to offer.
-    // For an existing image this is the standard image menu (dividers and submenus
-    // included), which is why the shape is richer than plain ILocalizableMenuItemProps.
+    // The inline image commands for this click, or an empty array when there are none. For a
+    // click on an existing image this is the standard image menu, with its dividers and
+    // submenus, which is why the type is IMenuItemWithSubmenu and not
+    // ILocalizableMenuItemProps.
     inlineImageItems: IMenuItemWithSubmenu[];
 }
 
 /**
- * Decides what a right-click should put on the text context menu, or returns undefined if the
- * menu should not open at all -- in which case the caller must leave the event alone, so that
- * whatever else would handle it (WebView2's own menu) still can.
+ * Decides what a right-click should put on the text context menu. Returns undefined if the
+ * menu should not open at all. In that case the caller must leave the event alone, so that
+ * WebView2's own menu can still handle it.
  *
- * Call this once per right-click, not once per render of the menu: working out the inline
- * image's commands also selects the image they will act on. See
+ * Call this once for each right-click, and not each time the menu renders, because working
+ * out the inline image commands also selects the image they will act on. See
  * getInlineImageMenuItemsForClick.
  *
- * closeMenu is what the inline-image commands call to dismiss the menu (the paragraph
- * commands close through the component instead); the no-op default is for tests that only
- * inspect the items.
+ * The inline image commands call closeMenu to close the menu. The paragraph commands close it
+ * through the component. The default does nothing, for tests that only look at the items.
  */
 export function getTextContextMenuContent(
     target: EventTarget | null,
