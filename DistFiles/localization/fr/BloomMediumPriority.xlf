@@ -995,6 +995,11 @@
         <target xml:lang="fr" state="translated">Activez la mise en page à fond perdu pour l'impression. Cela active les indicateurs [Impression à fond perdu](https://en.wikipedia.org/wiki/Bleed_%28printing%29) sur toutes les mises en page. Pour plus d'informations, consultez [Mise en page à fond perdu](https://docs.bloomlibrary.org/full-bleed).</target>
         <note>BookSettings.FullBleed.Description</note>
       </trans-unit>
+      <trans-unit id="BookSettings.FullBleed.Description.EdgeToEdge" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Enable full bleed layout for printing. Use with the "Edge to Edge" theme. This turns on the [Print Bleed](https://en.wikipedia.org/wiki/Bleed_%28printing%29) indicators on paper layouts. See [Full Bleed Layout](https://docs.bloomlibrary.org/full-bleed) for more information.</source>
+        <target xml:lang="fr" state="final">Activer la mise en page à fond perdu pour l'impression. Utiliser avec le thème "Edge to Edge". Ceci active les indicateurs [Fond perdu](https://en.wikipedia.org/wiki/Bleed_%28printing%29) sur la mise en page du papier. Voir [Mise en page à fond perdu] (https://docs.bloomlibrary.org/full-bleed) pour plus d'informations.</target>
+        <note>ID: BookSettings.FullBleed.Description.EdgeToEdge</note>
+      </trans-unit>
       <trans-unit id="BookSettings.ThemeAndLayoutGroupLabel" sil:dynamic="true">
         <source xml:lang="en">Theme &amp; Layout</source>
         <target xml:lang="fr" state="needs-translation">Theme &amp; Layout</target>
@@ -1247,6 +1252,11 @@
       <trans-unit id="AppearanceTheme.zero-margin-ebook" sil:dynamic="true">
         <source xml:lang="en">Zero Margin Ebook</source>
         <target xml:lang="fr" state="needs-translation">Zero Margin Ebook</target>
+        <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
+      </trans-unit>
+      <trans-unit id="AppearanceTheme.edge-to-edge" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Edge to Edge</source>
+        <target xml:lang="fr" state="final">Bord à Bord</target>
         <note>See https://docs.bloomlibrary.org/page-themes-catalog</note>
       </trans-unit>
       <trans-unit id="AppearanceTheme.narrow-margin-ebook" sil:dynamic="true">
