@@ -224,6 +224,42 @@ describe("CanvasElementClipboard paste refreshes the metadata button (BL-16605)"
     });
 });
 
+describe("CanvasElementClipboard paste into a turned or cropped picture (BL-16741)", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+    });
+
+    test("the pasted picture comes in upright and uncropped", () => {
+        const { bloomCanvas } = makeCanvasWithPlaceholder(true);
+        bloomCanvas
+            .getElementsByTagName("img")[0]
+            .setAttribute("src", "realBackground.png");
+        const overlay = document.createElement("div");
+        overlay.classList.add(kCanvasElementClass);
+        overlay.innerHTML =
+            '<div class="bloom-imageContainer"><img src="old.png" /></div>';
+        bloomCanvas.appendChild(overlay);
+        const overlayImg = overlay.getElementsByTagName("img")[0];
+        overlayImg.style.transform = "rotate(90deg) scaleX(-1)";
+        overlayImg.style.width = "150px";
+        overlayImg.style.left = "-25px";
+        overlayImg.style.top = "-30px";
+        const host = makeHost(bloomCanvas, overlay);
+
+        // Sanity check: the old picture is turned, mirrored and cropped.
+        expect(overlayImg.style.transform).toBe("rotate(90deg) scaleX(-1)");
+        expect(overlayImg.style.width).toBe("150px");
+
+        makeClipboard(host).finishPasteImageFromClipboard(pastedImageInfo);
+
+        expect(overlayImg.getAttribute("src")).toBe("pasted.png");
+        expect(overlayImg.style.transform).toBe("");
+        expect(overlayImg.style.width).toBe("");
+        expect(overlayImg.style.left).toBe("");
+        expect(overlayImg.style.top).toBe("");
+    });
+});
+
 describe("CanvasElementClipboard only claims a placeholder background (BL-16542)", () => {
     beforeEach(() => {
         document.body.innerHTML = "";

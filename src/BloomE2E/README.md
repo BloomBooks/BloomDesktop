@@ -159,7 +159,9 @@ real bug in the code under test; read the message and fix it rather than working
 - `helpers/screenshot.ts` — `captureCurrentBookPage`, `captureElement`, `readPngSize`. Captures an
   element taller than the window. `Page.captureScreenshot` with `captureBeyondViewport` hangs in
   WebView2, so this enlarges the window, clips, clears the override, and times out every CDP
-  request. Never open a CDP session in a test; add the capture here.
+  request. Never open a CDP session in a test; add the capture here. `saveScreenshotIfAsked` saves a
+  picture of some elements for a manual test card when `BLOOM_E2E_SCREENSHOT_DIR` names a folder,
+  and does nothing otherwise.
 - `helpers/collectionSettings.ts` — rewrite the collection's languages, xmatter pack or
   subscription code and restart Bloom on them; `setBranding`; `getFeatureStatus`, the same
   answer the front end asks for before it shows a tier-gated control; and
@@ -173,8 +175,18 @@ real bug in the code under test; read the message and fix it rather than working
   Language tool), which is the route a person takes.
 - `helpers/canvasElements.ts` — `openCanvasTool`, `dragPaletteItemOntoCanvas`,
   `selectCanvasElement`, the selected element's toolbar and "..." menu by localization id,
-  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`. The palette drag is
-  dispatched rather than pressed, for a reason the file and AUTOMATION-DEBT.md give.
+  `duplicateCanvasElement`, `deleteCanvasElement`, `dragCanvasElementCorner`; the menu's groups
+  and submenus (`getCanvasElementMenuGroups`, `canvasElementMenuPanels`,
+  `getOpenCanvasElementMenuCount`, `openCanvasElementSubmenu`, `clickCanvasElementSubmenuItem`);
+  the picture commands on the menu (`rotateSelectedImageRight90Degrees`,
+  `flipSelectedImage`, `resetSelectedImage`); and the rotation knob
+  and its results (`expectRotateHandleShown`, `dragRotateHandle`, `getCanvasElementRotation`,
+  `getCanvasElementPlacement`). The palette drag is dispatched rather than pressed, for a reason the
+  file and AUTOMATION-DEBT.md give.
+- `helpers/images.ts` — `chooseImageFile`, `cropImage`, `getImagePlacement`; `getPictureRotation`,
+  which says how a picture is rotated and mirrored on screen, box and picture together, with
+  `kUprightPicture` and `mirroredAboutOwnAxis` to build the expected answer; `getPictureInlineLayout`,
+  the inline styles that lay out a picture and its box.
 - `helpers/geometry.ts` — compare rectangles to one another (`expectInside`, `expectNoOverlap`,
   `expectSameRect`) so a test never asserts a pixel value the machine decided.
 - `helpers/videos.ts` — `chooseVideoFile` puts a video into a video box through the Sign Language
@@ -276,6 +288,22 @@ is pointless. A setting that names a monitor is left alone, because that window 
 
 The variable applies only to a Bloom started with `--automation`, which every e2e run passes, and
 so does `./go.sh`. A Bloom you start any other way is unaffected, however the variable is set.
+
+### Running at the nightly's window size
+
+On a developer's monitor Bloom is big. On the nightly CI runner its page area is about 1008x681,
+so the lower part of an A5 page is below the fold and a long menu scrolls. A spec can pass every
+time locally and fail every night. `BLOOM_E2E_VIEWPORT` makes a run see what the nightly sees:
+
+```bash
+BLOOM_E2E_VIEWPORT=nightly pnpm exec playwright test tests/my-feature.spec.ts
+BLOOM_E2E_VIEWPORT=1024x586 pnpm test           # any other size, at least 400x300
+```
+
+The fixture emulates the size with a CDP device-metrics override (`fixtures/viewport.ts`), so the
+page lays out as it would in a window of that size. A value it cannot read fails the run. Preflight
+runs every spec a branch adds or changes this way once; see "Preflight checks" in the root
+`AGENTS.md`.
 
 ### Whether the Bloom window takes the keyboard: `BLOOM_E2E_DONT_DISTURB`
 

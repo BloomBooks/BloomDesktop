@@ -1,5 +1,5 @@
-// The Edit tab's toolbox itself, rather than any one tool in it: which sections it offers, turning
-// tools on and off under "More...", which section is open, and the book remembering that.
+// The Edit tab's toolbox itself, rather than any one tool in it: which tools it offers, turning
+// tools on and off under "More...", which tool is open, and the book remembering that.
 //
 // These are characterization tests: they pin how the toolbox behaves today so that the toolbox
 // infrastructure rewrite (BL-16608) has to keep it. No manual test card covered this, so these tests
@@ -24,7 +24,7 @@ import {
 } from "../helpers/toolbox";
 
 test.use({
-    collectionSpec: { name: "toolbox-sections", languages: ["en"] },
+    collectionSpec: { name: "toolbox-tools", languages: ["en"] },
 });
 
 // SKIPPED: three of these tests are marked test.fixme because they fail on some runs and pass on
@@ -34,13 +34,13 @@ test.use({
 // Why they fail: once a page finishes loading, the toolbox restores the book's saved state (whether
 // the toolbox is open, and which tool is current) from settings it read before the page loaded.
 // That overwrites anything done to the toolbox in the meantime: a toolbox just opened is shut again,
-// and a section just opened (a tool, or "More...") collapses back to the saved tool. A person who
+// and a tool just opened (or "More...") closes again, back to the tool saved in the book. A person who
 // clicks that fast simply clicks again; a test clicks at once, so it sometimes loses. Draft PR #8409
 // fixes the shutting half. The tool half is not fixed, and the old toolbox code leans on that late
 // restore to correct other things, so it is left to the rework.
 
 test.fixme(
-    "turning a tool on under More... adds its section in order and opens it [Test Case ID 830]",
+    "turning a tool on under More... adds it in alphabetical order and opens it [Test Case ID 830]",
     async ({ page }) => {
         await makeBookFromTemplate(page, "Basic Book");
         await showToolbox(page);
@@ -59,7 +59,7 @@ test.fixme(
             "leveledReader",
             "Turning the Leveled Reader on did not open it.",
         );
-        // Sections are in alphabetical order of their labels, with "More..." always last.
+        // Tools are in alphabetical order of their labels, with "More..." always last.
         const shown = await getShownTools(page);
         expect(
             shown.indexOf("leveledReader"),
@@ -67,13 +67,13 @@ test.fixme(
         ).toBeLessThan(shown.indexOf("talkingBook"));
         expect(
             shown[shown.length - 1],
-            "More... should be the last section.",
+            "More... should be the last tool.",
         ).toBe("settings");
     },
 );
 
 test.fixme(
-    "turning a tool off under More... removes its section [Test Case ID 830]",
+    "turning a tool off under More... removes it [Test Case ID 830]",
     async ({ page }) => {
         const bookFolder = await makeBookFromTemplate(page, "Basic Book");
         await enableToolForBook(page, bookFolder, "leveledReader");
@@ -85,7 +85,7 @@ test.fixme(
         const shown = await getShownTools(page);
         expect(
             shown,
-            "Turning the Leveled Reader off should leave the other sections alone.",
+            "Turning the Leveled Reader off should leave the other tools alone.",
         ).toEqual(expect.arrayContaining(["talkingBook", "settings"]));
     },
 );

@@ -40,6 +40,7 @@ import {
     runStep,
     type StepFunction,
 } from "../helpers/caption";
+import { applyRequestedViewport } from "./viewport";
 
 /** What every launched Bloom gives a test, whichever mode it started in. */
 interface IBloomAppBase {
@@ -417,7 +418,9 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
             ): Promise<Page> => {
                 await browser?.close();
                 browser = await connectOverCdpWithRetry(cdpPort);
-                return find(browser);
+                const page = await find(browser);
+                await applyRequestedViewport(page);
+                return page;
             };
 
             if (startAtChooser) {

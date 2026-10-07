@@ -46,6 +46,8 @@ export type ControlId =
     | "missingMetadata"
     | "editWithAi"
     | "resetImage"
+    | "rotateRight"
+    | "flipImage"
     | "expandToFillSpace"
     | "imageFieldType"
     | "becomeBackground"
@@ -100,6 +102,8 @@ export type SectionId =
     | "gameDraggable"
     | "formatTarget"
     | "image"
+    | "imageArrangement"
+    | "imageSettings"
     | "imagePanel"
     | "video"
     | "audio"
@@ -128,6 +132,8 @@ export interface IControlContext {
     isRectangle: boolean;
     rectangleHasBackground: boolean;
     isCropped: boolean;
+    // The picture inside the box has been rotated or mirrored by Rotate right or Flip.
+    isImageContentTransformed: boolean;
     isNavigationButton: boolean;
     isButton: boolean;
     isBackgroundImage: boolean;
