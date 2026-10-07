@@ -40,8 +40,8 @@ export type InlineImageDock = "left" | "right" | "middle" | "bottom";
 /** The four corner handles of a selected inline image, by compass direction. */
 export type InlineImageCorner = "nw" | "ne" | "sw" | "se";
 
-/** The localization id of the "Add Image" command on a text block's right-click menu. */
-const kAddImageCommand = "EditTab.InlineImage.AddImage";
+/** The localization id of the "Insert Image" command on a text block's right-click menu. */
+const kInsertImageCommand = "EditTab.InlineImage.InsertImage";
 
 /** The localization id of the Delete command on an inline image's right-click menu. */
 const kDeleteCommand = "Common.Delete";
@@ -285,7 +285,7 @@ export async function getInlineImageInEveryLanguage(
 
 /**
  * Add an inline image to a text block the way a person does: right-click in its text and choose
- * Add Image. Returns the identity of the new image, which every language's copy of it shares.
+ * Insert Image. Returns the identity of the new image, which every language's copy of it shares.
  *
  * The command deliberately does not open the image chooser (a picture is chosen afterwards, from
  * the same menu), so what arrives is a placeholder, docked right at the default width. It arrives
@@ -301,7 +301,7 @@ export async function addInlineImage(
         before.flatMap((block) => block.images.map((image) => image.id)),
     );
     await openInlineImageMenuInText(page, groupSelector, languageTag);
-    await clickInlineImageMenuCommand(page, kAddImageCommand);
+    await clickInlineImageMenuCommand(page, kInsertImageCommand);
     const wanted = before.length;
     await expect
         .poll(
@@ -312,7 +312,7 @@ export async function addInlineImage(
             {
                 timeout: 30000,
                 message:
-                    `Add Image did not put a new inline image in all ${wanted} language blocks ` +
+                    `Insert Image did not put a new inline image in all ${wanted} language blocks ` +
                     `of "${groupSelector}".`,
             },
         )
@@ -440,7 +440,7 @@ export async function openInlineImageInformation(
 }
 
 /** True when the block's right-click menu offers to add an inline image at all. */
-export async function textBlockOffersAddImage(
+export async function textBlockOffersInsertImage(
     page: Page,
     groupSelector: string,
     languageTag: string,
@@ -449,7 +449,7 @@ export async function textBlockOffersAddImage(
     const offered =
         (await editablePageFrame(page)
             .locator(
-                `${kMenuSelector} >> li[data-testid="${kAddImageCommand}"]`,
+                `${kMenuSelector} >> li[data-testid="${kInsertImageCommand}"]`,
             )
             .count()) > 0;
     await closeInlineImageMenu(page);
@@ -1505,4 +1505,4 @@ function describeBlocks(blocks: IBlockInlineImages[]): string {
         .join("; ");
 }
 
-export { kAddImageCommand, kChooseImageCommand, kDeleteCommand };
+export { kInsertImageCommand, kChooseImageCommand, kDeleteCommand };

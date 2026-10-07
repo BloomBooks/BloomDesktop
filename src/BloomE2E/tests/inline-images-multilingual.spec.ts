@@ -322,7 +322,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
     test("a second image in the same block keeps its own identity in every language", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: a second real Add Image in a block that already has one.
+        // THE ACTION UNDER TEST: a second real Insert Image in a block that already has one.
         const secondId = await addInlineImage(page, BLOCK, FIRST_LANG);
         expect(
             secondId,

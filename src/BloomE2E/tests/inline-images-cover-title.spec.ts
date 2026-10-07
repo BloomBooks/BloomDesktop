@@ -1,4 +1,4 @@
-// "Add Image" is not offered in a field Bloom stores and rewrites for itself -- the book title
+// "Insert Image" is not offered in a field Bloom stores and rewrites for itself -- the book title
 // being the one every person meets first.
 //
 // WHAT THIS IS ABOUT. getInlineImageActionTarget decides where the command is offered, and what
@@ -35,7 +35,7 @@ import {
     typeInGroup,
 } from "../helpers/bookMaking";
 import { bookHtmlPath } from "../helpers/bookHtml";
-import { textBlockOffersAddImage } from "../helpers/inlineImages";
+import { textBlockOffersInsertImage } from "../helpers/inlineImages";
 
 test.use({
     collectionSpec: { name: "inline-images-cover-title", languages: ["en"] },
@@ -82,14 +82,14 @@ test("Bloom does not offer to put a picture in the book title or the credits [Te
 
     // THE THING UNDER TEST: the command the person would reach for on the block they are in.
     expect(
-        await textBlockOffersAddImage(page, TITLE_BLOCK, LANG),
+        await textBlockOffersInsertImage(page, TITLE_BLOCK, LANG),
         `Bloom offered to put a picture in the book title. That field is stored in the data div ` +
             `as markup and written back into every element with the same data-book key, so the ` +
             `picture ends up on the title page as well and the wrapper's markup becomes the ` +
             `book's stored title.`,
     ).toBe(false);
     expect(
-        await textBlockOffersAddImage(page, COVER_CREDITS_BLOCK, LANG),
+        await textBlockOffersInsertImage(page, COVER_CREDITS_BLOCK, LANG),
         `Bloom offered to put a picture in the cover credits, which is a data-book field on an ` +
             `xmatter page and so has the same problem as the title.`,
     ).toBe(false);

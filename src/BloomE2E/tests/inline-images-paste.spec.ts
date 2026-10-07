@@ -176,7 +176,7 @@ test("pasting a picture into a front-matter field does not put markup in the dat
     page,
 }) => {
     test.setTimeout(300000);
-    // The menu no longer offers "Add Image" in a data-book field, because that field is stored in
+    // The menu no longer offers "Insert Image" in a data-book field, because that field is stored in
     // the data div as markup and written back into every element with the same key -- which made
     // the wrapper's markup the book's title. Hiding the command closes one door. A paste is the
     // other, and it does not go through the menu at all, so it has to be asked separately.

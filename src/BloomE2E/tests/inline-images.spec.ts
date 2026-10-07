@@ -51,7 +51,7 @@ import {
     readSavedInlineImages,
     resizeInlineImage,
     selectInlineImage,
-    textBlockOffersAddImage,
+    textBlockOffersInsertImage,
     textWrapsBesideInlineImage,
 } from "../helpers/inlineImages";
 import { expectInside } from "../helpers/geometry";
@@ -118,13 +118,13 @@ test.describe("inline images in a text block [Test Case ID 815]", () => {
         ).toBeGreaterThan(1);
         expect(blocks.flatMap((block) => block.images)).toEqual([]);
 
-        expect(await textBlockOffersAddImage(page, BLOCK, LANG)).toBe(true);
+        expect(await textBlockOffersInsertImage(page, BLOCK, LANG)).toBe(true);
     });
 
-    test("Add Image puts a placeholder in every language, docked right", async ({
+    test("Insert Image puts a placeholder in every language, docked right", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: a real right-click in the text, and a real click on Add Image.
+        // THE ACTION UNDER TEST: a real right-click in the text, and a real click on Insert Image.
         imageId = await addInlineImage(page, BLOCK, LANG);
 
         const blocks = await getInlineImages(page, BLOCK);

@@ -139,7 +139,7 @@ test.describe("an inline image's credits [Test Case ID 815]", () => {
             ).toBe("");
 
         // Select the picture afresh, so that the toolbar is built for the picture as it is now
-        // rather than for the placeholder it was when Add Image selected it.
+        // rather than for the placeholder it was when Insert Image selected it.
         await clickInBlockText(page, BLOCK, LANG);
         await selectInlineImage(page, BLOCK, LANG, imageId);
         expect(
