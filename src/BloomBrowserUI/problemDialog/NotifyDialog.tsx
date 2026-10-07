@@ -20,7 +20,8 @@ import { kBloomBlue, kFormBackground } from "../utils/colorUtils";
 
 export interface INotifyDialogProps {
     message?: string | null; // The localized message to notify the user about.
-    reportLabel?: string | null; // The localized text that goes on the Report button. Omit or pass "" to disable Report button.
+    reportLabel?: string | null; // The text that goes on the Report button: English if reportL10nKey is given, else already localized. Omit or pass "" to disable Report button.
+    reportL10nKey?: string | null; // If present, the button localizes reportLabel with this key, so it follows the current UI language.
     secondaryLabel?: string | null; // The localized text that goes on the secondary action button. Omit or pass "" to disable the secondary action button.
     detailsBoxText?: string | null; // Localized text to go into a grey details box under the message. Omit or pass "" to not show a details box.
     titleOverride?: string | null; // If present, wil be used in place of the dialog title defined for this level in themes.ts
@@ -127,8 +128,8 @@ export const NotifyDialog: React.FC<INotifyDialogProps> = (props) => {
                         <BloomButton
                             id="errorReportButton"
                             enabled={true}
-                            l10nKey=""
-                            alreadyLocalized={true}
+                            l10nKey={props.reportL10nKey ?? ""}
+                            alreadyLocalized={!props.reportL10nKey}
                             hasText={true}
                             variant="text"
                             onClick={() => {
