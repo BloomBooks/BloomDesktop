@@ -174,6 +174,10 @@ ask is whether it reproduces: a crash that follows a particular file across runs
 right after that file gained an import, is a real problem in that file. One that lands on a
 different file each time, on files the branch never touched, is this entry.
 
+seen again 2026-10-06 (`collection-settings-advanced.spec.ts`, BL-16737): once in about twenty runs
+of that file, and this time *after* its first test had passed, so a worker can also die between
+tests, not only at startup. The next five runs of the same file were green.
+
 ## An api that captures CollectionSettings.Subscription cannot see a subscription change
 
 `FeatureStatusApi` used to snapshot `collectionSettings.Subscription` in its constructor, so

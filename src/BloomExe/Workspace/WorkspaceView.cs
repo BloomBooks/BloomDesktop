@@ -1153,12 +1153,11 @@ window.showWorkspaceInitializationFailure = function(message) {
             // until L10nSharp changes to allow dynamic response to setting change
             // Skip the restart at startup (no project loaded); CollectionChooserApi
             // handles that case by reopening the dialog to refresh the language list.
-            // Skip it in e2e test mode too: a self-restart would relaunch Bloom without the
-            // --e2e/--automation flags, the --user-settings-folder and the collection argument
-            // it was started with, giving the test an instance it cannot track (and, without
-            // --automation, one that collides with any Bloom the developer has open). The e2e fixture provides the
-            // restart instead (bloomApp.restart in src/BloomE2E), and the setting is already
-            // saved above, so the relaunched Bloom picks it up at startup.
+            // Skip it in e2e test mode too: a self-restart keeps the launch options
+            // (Program.StartupArgumentsToForward) but not the collection argument, and starts a
+            // new process the test is not following. The e2e fixture provides the restart
+            // instead (bloomApp.restart in src/BloomE2E), and the setting is already saved
+            // above, so the relaunched Bloom picks it up at startup.
             if (Current != null && !Program.RunningE2eTests)
                 Program.RestartBloom(false);
         }
