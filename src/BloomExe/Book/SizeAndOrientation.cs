@@ -173,9 +173,7 @@ namespace Bloom.Book
             var map = new Dictionary<string, (double width, double height)>(
                 StringComparer.OrdinalIgnoreCase
             );
-            var path = FileLocationUtilities.GetFileDistributedWithApplication(
-                "pageSizesLookup.json"
-            );
+            var path = BloomFileLocator.GetBrowserFile(false, "pageSizesLookup.json");
             var json = RobustFile.ReadAllText(path);
             var parsed = JsonConvert.DeserializeObject<PageSizeLookupFile>(json);
             if (parsed?.sizesInMillimeters == null)

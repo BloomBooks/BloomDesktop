@@ -382,31 +382,19 @@ namespace Bloom.Publish.PDF
             bool landscape
         )
         {
-            if (!TryGetTrimPageSizeInMillimeters(paperSizeName, landscape, out var trimSize))
+            if (
+                !SizeAndOrientation.TryGetPaperLayoutInMillimeters(
+                    paperSizeName,
+                    landscape,
+                    out var trimSize
+                )
+            )
                 return null;
 
             var width = trimSize.width + bleedExtra;
             var height = trimSize.height + bleedExtra;
 
             return (height, width);
-        }
-
-        private static bool TryGetTrimPageSizeInMillimeters(
-            string paperSizeName,
-            bool landscape,
-            out (double width, double height) trimSize
-        )
-        {
-            trimSize = default;
-
-            if (string.IsNullOrWhiteSpace(paperSizeName))
-                return false;
-
-            return SizeAndOrientation.TryGetPaperLayoutInMillimeters(
-                paperSizeName,
-                landscape,
-                out trimSize
-            );
         }
 
         private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)

@@ -12,7 +12,6 @@ templates/A4LandscapeBooklet/starter.pdf
 src/_ReSharper.Bloom/
 
 src/content/bookLayout/page-size-mixin.less
-DistFiles/pageSizesLookup.json
 src/content/pageSizes.js
 
 Bloom VS2010.suo

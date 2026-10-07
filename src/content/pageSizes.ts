@@ -1,7 +1,8 @@
-import { writeFileSync, readFileSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync } from "fs";
+import { dirname } from "path";
 
 // This file implements the package.json command build:pageSizes, which creates
-// bookLayout/page-size-mixin.less and DistFiles/pageSizesLookup.json from DistFiles/pageSizes.json.
+// bookLayout/page-size-mixin.less and output/browser/pageSizesLookup.json from DistFiles/pageSizes.json.
 interface PageSize {
     size: string;
     width: string;
@@ -23,7 +24,7 @@ interface PageSizeLookupFile {
 
 const sourcePath = "../../DistFiles/pageSizes.json";
 const lessOutputPath = "bookLayout/page-size-mixin.less";
-const lookupOutputPath = "../../DistFiles/pageSizesLookup.json";
+const lookupOutputPath = "../../output/browser/pageSizesLookup.json";
 const inchesToMillimeters = 25.4;
 
 /**
@@ -185,6 +186,7 @@ function main(): void {
 
     // Output 2: mm lookup used by C# runtime page-size code.
     const lookup = buildLookupFile(configuredSizes);
+    mkdirSync(dirname(lookupOutputPath), { recursive: true });
     writeFileSync(lookupOutputPath, JSON.stringify(lookup, null, 4) + "\n");
 }
 
