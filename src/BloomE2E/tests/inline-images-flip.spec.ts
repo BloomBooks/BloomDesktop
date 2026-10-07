@@ -1,11 +1,11 @@
-// Flip and Reset Image on an inline image.
+// Checks Flip and Reset Image on an inline image.
 //
-// WHAT THIS IS ABOUT. The image menu's Flip and Reset Image come from the canvas control registry,
-// where they act on the canvas element manager's active element. An inline image is never that
-// element, so the inline image menu points both commands at the image's own picture
-// (withInlineImageTransforms in inlineImageInteractions.ts). The mirror is saved as the img's CSS
-// transform, and it has to reach every copy of the picture: the hidden lang="z" prototype is
-// what a language added to the collection later is cloned from.
+// The image menu's Flip and Reset Image commands come from the canvas control registry, where they
+// act on the canvas element manager's active element. An inline image is never that element, so
+// the inline image menu makes both commands act on the inline image's own picture
+// (withInlineImageTransforms in inlineImageInteractions.ts). A flip is saved as the img's CSS
+// transform, and it has to reach every copy of the picture, because a language added to the
+// collection later is cloned from the copy in the hidden lang="z" editable.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -92,7 +92,7 @@ test("Flip mirrors every copy of an inline image, and Reset Image takes the mirr
         "Reset Image should be on offer but disabled while there is nothing to reset.",
     ).toBe(false);
 
-    // THE ACTION UNDER TEST: Flip horizontal, chosen from the real submenu.
+    // The action under test: choose Flip horizontal from the real submenu.
     await flipInlineImage(page, BLOCK, LANG, imageId, "horizontal");
     for (const copy of await getInlineImageInEveryLanguage(
         page,
@@ -104,7 +104,7 @@ test("Flip mirrors every copy of an inline image, and Reset Image takes the mirr
             `The "${copy.languageTag}" copy was not mirrored left to right.`,
         ).toBe("scale(-1, 1)");
 
-    // THE ACTION UNDER TEST: Flip vertical on top of it.
+    // The action under test: Flip vertical as well.
     await flipInlineImage(page, BLOCK, LANG, imageId, "vertical");
     for (const copy of await getInlineImageInEveryLanguage(
         page,
@@ -113,7 +113,7 @@ test("Flip mirrors every copy of an inline image, and Reset Image takes the mirr
     ))
         expect(copy.pictureTransform).toBe("scale(-1, -1)");
 
-    // THE ACTION UNDER TEST: Reset Image, which puts the picture back the way it arrived.
+    // The action under test: Reset Image, which puts the picture back the way it was when chosen.
     await resetInlineImage(page, BLOCK, LANG, imageId);
     for (const copy of await getInlineImageInEveryLanguage(
         page,

@@ -1,17 +1,15 @@
-// What Ctrl+Z does to an inline image, as opposed to what the top-bar Undo button does.
+// Checks what Ctrl+Z does to an inline image, as distinct from what the top-bar Undo button does.
 //
-// WHAT THIS IS ABOUT. The inline-image undo stack is reached from workspaceRoot.handleUndo, and
-// the only thing that calls handleUndo is the top-bar Undo button (editTopBarControls posts
-// editView/topBarButtonClick, EditingViewApi passes it back to bloomEditing.topBarButtonClick) --
-// plus origami's own Ctrl+Z handler, which is bound only while Change Layout mode is on. So the
-// existing undo test, which calls handleUndo, takes the path a person does not take.
+// Undoing a change to an inline image goes through workspaceRoot.handleUndo. The only callers of
+// handleUndo are the top-bar Undo button (editTopBarControls posts editView/topBarButtonClick, and
+// EditingViewApi passes it back to bloomEditing.topBarButtonClick) and origami's own Ctrl+Z
+// handler, which is bound only while Change Layout mode is on. So the other undo test, which calls
+// handleUndo directly, does not do what a person pressing Ctrl+Z does.
 //
-// Two claims in this harness say Ctrl+Z is a WinForms accelerator that never reaches the page
-// (helpers/keys.ts and helpers/workspace.ts). Nothing in src/BloomExe binds it: there is no
-// ProcessCmdKey case, no menu ShortcutKeys, and the UndoCommand's Implementer in
-// WebView2Browser.SetEditingCommands is an empty lambda. So this test asks the browser rather
-// than the comments, and it asks it twice: once about text, which says whether the key arrives at
-// all, and once about a picture, which is what the feature cares about.
+// Nothing in src/BloomExe binds Ctrl+Z: there is no ProcessCmdKey case, no menu ShortcutKeys, and
+// the UndoCommand's Implementer in WebView2Browser.SetEditingCommands is an empty lambda. So the
+// key reaches the page. This test checks that in two steps: first with text, to show that the key
+// reaches the page at all, and then with a picture, which is what this feature needs.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -72,8 +70,9 @@ test("Ctrl+Z reaches the page, and takes back the last change to a picture [Test
     await goToPage(page, contentPage.id);
     await typeInGroup(page, BLOCK, LANG, TEXT);
 
-    // FIRST QUESTION: does the key arrive in the page at all? Real key presses, because CKEditor's
-    // undo plugin only ever sees a keystroke, and typeInGroup inserts text without one.
+    // First, check whether the key reaches the page at all. This types with real key presses,
+    // because CKEditor's undo plugin only records keystrokes, and typeInGroup inserts text
+    // without any.
     const block = blockLocator(page);
     await block.click();
     await page.keyboard.press("Control+End");
@@ -84,8 +83,8 @@ test("Ctrl+Z reaches the page, and takes back the last change to a picture [Test
         "The typing did not land, so this test cannot say what undoing it would do.",
     ).toContain("nobody wanted");
     await pressKey(page, "Control+z");
-    // CKEditor's undo plugin restores a saved snapshot of the editable, which it does after the
-    // keystroke rather than during it, so this waits for the words to go rather than for a time.
+    // CKEditor's undo plugin restores a saved snapshot of the editable after the keystroke has
+    // been handled, so this waits until the words are gone instead of for a fixed time.
     await expect
         .poll(async () => (await block.textContent()) ?? "", {
             message:
@@ -95,8 +94,8 @@ test("Ctrl+Z reaches the page, and takes back the last change to a picture [Test
         })
         .not.toContain("nobody wanted");
 
-    // SECOND QUESTION: the one the feature cares about. Resize the picture, then press Ctrl+Z with
-    // the picture selected, which is the state a person is in right after changing it.
+    // Second, check undo for a picture. Resize the picture, then press Ctrl+Z with the picture
+    // selected, as it is right after a person changes it.
     const imageId = await addInlineImage(page, BLOCK, LANG);
     await changeInlineImagePicture(
         page,
@@ -141,11 +140,12 @@ test("Ctrl+Z reaches the page, and takes back the last change to a picture [Test
         )
         .toBe(before.widthPercent);
 
-    // And it has to be the whole undo, not one block's worth of it. CKEditor's undo restores one
-    // editable's saved HTML, so it cannot know about the wrapper's copies in the other editables
-    // of the group -- including the lang="z" prototype, which is what a language added to the
-    // collection later is built from. If those are left at the width the person just undid, the
-    // book is in a state no operation produced, and it is the prototype that carries it forward.
+    // The undo must also reach every copy of the picture. CKEditor's undo restores the saved HTML
+    // of one editable, so it knows nothing about the wrapper's copies in the group's other
+    // editables. Those include the lang="z" editable that a language added to the collection
+    // later is built from. If the other copies keep the width the person just undid, the book is
+    // in a state that no single operation could have produced, and the lang="z" copy passes that
+    // state on to any language added later.
     const blocks = await getInlineImages(page, BLOCK);
     const copies = blocks
         .flatMap((b) => b.images)

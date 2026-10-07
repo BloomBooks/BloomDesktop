@@ -62,15 +62,15 @@ export async function openAddPageDialog(page: Page): Promise<void> {
     await waitForAddPageThumbnails(page);
 }
 
-// The two things this one dialog (PageChooserDialog) calls itself: "Add Page..." when it is
-// adding a page and "Choose Different Layout..." when it is changing the layout of the page the
-// person is on. Everything else about it is the same, so both are recognized here.
+// PageChooserDialog shows one of two titles: "Add Page..." when it is adding a page, and
+// "Choose Different Layout..." when it is changing the layout of the current page. Otherwise
+// the dialog is the same, so the helpers here accept either title.
 const kPageChooserDialogTitles = /(Add Page|Choose Different Layout)/;
 
 /**
- * The open page chooser dialog, wherever Bloom mounted it, whether it was opened to add a page or
- * to choose a different layout. Throws, naming the frames it looked in, if no dialog appears
- * within the timeout.
+ * Find the open page chooser dialog in whichever frame Bloom mounted it, whether it was opened to
+ * add a page or to choose a different layout. Throws, naming the frames it looked in, if no
+ * dialog appears within the timeout.
  */
 async function findAddPageDialog(
     page: Page,
@@ -105,7 +105,7 @@ async function findAddPageDialog(
     return found!;
 }
 
-/** True while the page chooser dialog is open in any frame, in either of its two roles. */
+/** True while the page chooser dialog is open in any frame, under either of its titles. */
 async function isAddPageDialogOpen(page: Page): Promise<boolean> {
     for (const frame of page.frames()) {
         const count = await frame
@@ -304,9 +304,9 @@ export async function addPageFromDialog(
 /**
  * In the dialog opened by the page menu's "Choose Different Layout", select this layout and
  * click "Use This Layout", then wait for the page to be shown again. The book keeps the same
- * number of pages: Bloom imports the template page and moves the existing text into it
- * (HtmlDom.MigrateEditableData), so this is how a test exercises what that migration does to
- * content the person has already put on the page.
+ * number of pages. Bloom imports the template page and moves the existing text into it
+ * (HtmlDom.MigrateEditableData), so a test uses this to check what happens to content the person
+ * had already put on the page.
  */
 export async function chooseDifferentLayout(
     page: Page,
@@ -331,9 +331,9 @@ export async function chooseDifferentLayout(
 }
 
 /**
- * Select a template page in the open dialog and return the dialog, for a caller that will then
- * click whichever confirming button it wants. Shared by adding a page and choosing a different
- * layout, which differ only in that button and in what happens afterwards.
+ * Select a template page in the open dialog and return the dialog, so the caller can click the
+ * button that confirms the choice. addPageFromDialog and chooseDifferentLayout both use this;
+ * they differ only in which button they click and what they wait for afterwards.
  */
 async function selectTemplatePageInDialog(
     page: Page,
@@ -341,11 +341,11 @@ async function selectTemplatePageInDialog(
     templateBookFolderName?: string,
 ): Promise<Locator> {
     const dialog = await findAddPageDialog(page);
-    // The groups are read from thumbnails that arrive over a websocket, so a dialog asked what it
-    // offers too early answers "nothing" -- and the error below then reports an empty list of
-    // layouts rather than a dialog that was not ready. openAddPageDialog waits for these itself;
-    // this is for the caller that opened the dialog some other way (the page menu's Choose
-    // Different Layout), and waiting twice costs nothing.
+    // The groups are read from thumbnails that arrive over a websocket. If we read them too
+    // early we get none, and the error below would then report an empty list of layouts when the
+    // dialog had simply not finished loading. openAddPageDialog already waits for the
+    // thumbnails; this wait is for a caller that opened the dialog another way, such as the page
+    // menu's Choose Different Layout. Waiting a second time does no harm.
     await waitForAddPageThumbnails(page);
     const groups = await getAddPageDialogGroups(page);
     const group = groups.find(

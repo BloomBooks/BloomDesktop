@@ -1,25 +1,26 @@
-// Inline (Word-style) images: a picture that lives inside a text block so that the text of the
-// block wraps around it. bookEdit/js/inlineImages.ts describes the design and the
-// edit-time code these helpers drive.
+// Inline (Word-style) images are pictures placed inside a text block, with the text of the
+// block wrapping around them. The header of bookEdit/js/inlineImages.ts describes the design
+// and the editing code these helpers drive.
 //
-// The feature has no dialog. Everything a person does to an inline image they do with the mouse,
-// on the picture itself: the right-click menu of the text block adds one, a drag of the picture
-// decides which side it docks to and how far down the block it starts, and a drag of a corner
-// handle decides how wide it is. Selecting one also puts up the same toolbar an image has on a
-// canvas. So nearly every helper here is a real mouse gesture, and each one waits for the state
-// Bloom ends up in rather than for the gesture to finish.
+// The feature has no dialog. A person does everything to an inline image with the mouse, on the
+// picture itself. The text block's right-click menu adds one. Dragging the picture decides which
+// side it docks to and how far down the block it starts, and dragging a corner handle decides
+// how wide it is. Selecting a picture also shows the same toolbar an image on a canvas has. So
+// nearly every helper here makes a real mouse gesture and then waits until Bloom reaches the
+// state the gesture should produce.
 //
-// WHAT "THE STATE OF AN INLINE IMAGE" IS. One image is one wrapper div per language, all sharing
-// an identity attribute, and everything about its position and size is either a dock class or a
-// custom property in the wrapper's style attribute -- nothing else (the GEOMETRY MODEL comment in
-// content/bookLayout/inlineImages.less). getInlineImages reads exactly that, per language, so a
-// test can say "every language's copy is docked left at 40%" without naming a class or a property.
+// Each inline image has one wrapper div in each language's block, and all the copies share the
+// same value of data-bloom-inline-image-id. Everything about the picture's position and size is
+// stored in one of the dock classes and in custom properties in the wrapper's style attribute
+// (see the header of bookEdit/js/inlineImages.ts). getInlineImages reads those for each
+// language, so a test can check that every language's copy is docked left at 40% without
+// naming a class or a property.
 //
-// WHY THE READERS ALSO REPORT COMPUTED STYLE. The CSS is half the feature: the float and its wrap
-// shape are what make the text flow beside the picture, display:flow-root is what keeps the float
-// inside its block, and a rule hides the copies in every language but the first visible one. None
-// of that can be seen in the markup, and none of it is exercised by the vitest suite, which runs
-// in jsdom. So `shown`, `float` and `wrapShape` come from getComputedStyle.
+// getInlineImages also reports some computed style, because much of the feature is in the CSS.
+// The float and its shape-outside make the text flow beside the picture, display:flow-root
+// keeps the float inside its block, and a rule hides the copies in every language except the
+// first visible one. None of that shows in the markup, and the vitest suite cannot check it
+// because it runs in jsdom. So `shown`, `float` and `wrapShape` come from getComputedStyle.
 
 import { expect, type Locator, type Page } from "@playwright/test";
 import * as fs from "node:fs";
@@ -31,9 +32,9 @@ import type { IRect } from "./geometry";
 import { realClick, realClickAt } from "./realClick";
 
 /**
- * Where an inline image sits in its block, in the words the feature uses: docked against the left
- * or right edge with the text wrapping beside it, a full-width band with text above and below, or
- * below the text altogether.
+ * Where an inline image sits in its block. "left" and "right" dock it against that edge with the
+ * text wrapping beside it, "middle" makes it a full-width band with text above and below, and
+ * "bottom" puts it below all the text.
  */
 export type InlineImageDock = "left" | "right" | "middle" | "bottom";
 
@@ -62,10 +63,11 @@ const kFlipCommand = {
     vertical: "EditTab.Image.FlipVertical",
 };
 
-/** The localization id of Reset Image, which takes a flip away. */
+/** The localization id of Reset Image, which removes a flip. */
 const kResetImageCommand = "EditTab.Image.Reset";
 
-// The markup, all of it confined to this file. A test never names any of these.
+// The class names and attributes of the inline image markup. Only this file uses them; tests
+// do not name any of them.
 const kWrapperClass = "bloom-inlineImage";
 const kIdAttribute = "data-bloom-inline-image-id";
 const kSelectedClass = "bloom-inlineImage-selected";
@@ -85,7 +87,7 @@ const kAspectRatioProperty = "--inline-image-aspect-ratio";
 
 /** One language's copy of one inline image, as the page being edited shows it. */
 export interface IInlineImageState {
-    /** The identity every language's copy of this image shares. */
+    /** The data-bloom-inline-image-id that every language's copy of this image shares. */
     id: string;
     /** The language of the text block this copy is in. */
     languageTag: string;
@@ -98,8 +100,9 @@ export interface IInlineImageState {
     /** The picture's natural width/height, as the wrapper records it, e.g. "4 / 3". */
     aspectRatio: string;
     /**
-     * The picture's own CSS transform, which is where Flip records a mirror: "scale(-1, 1)" for
-     * Flip horizontal, "scale(1, -1)" for Flip vertical, "" for a picture as it arrived.
+     * The img element's CSS transform, which is where Flip records a mirror image. It is
+     * "scale(-1, 1)" after Flip horizontal, "scale(1, -1)" after Flip vertical, and "" for a
+     * picture that has not been flipped.
      */
     pictureTransform: string;
     /** The file name in the picture's src; "placeHolder.png" while no picture has been chosen. */
@@ -111,21 +114,21 @@ export interface IInlineImageState {
      */
     copyright: string;
     /**
-     * The wrapper's contenteditable attribute. It must stay "false" in the saved markup: that is
-     * the only thing stopping Bloom's language-stamping sweep from treating the wrapper as a text
-     * box (TranslationGroupManager.cs).
+     * The wrapper's contenteditable attribute. It must stay "false" in the saved markup. Without
+     * it, the code in TranslationGroupManager.cs that sets the lang attribute on the editable
+     * elements of a block would treat the wrapper as a text box.
      */
     contentEditable: string | null;
-    /** Which slot the wrapper holds among the block's children, and how many children there are. */
+    /** The wrapper's index among the block's children, and how many children there are. */
     slot: { index: number; childCount: number };
-    /** True when this copy is the selected object, so its corner handles are showing. */
+    /** True when this copy is selected, so its corner handles are showing. */
     selected: boolean;
     /** How many corner handles the copy has. Four when it is selected, none when it is not. */
     handleCount: number;
     /**
-     * True when a reader would see this copy of the picture. False when the CSS is hiding the copy
-     * itself, which it does in all but the first showing language, and false when the copy's whole
-     * block is hidden -- so the copy in the lang="z" prototype block is never shown.
+     * True when a reader would see this copy of the picture. It is false when the CSS hides the
+     * copy, which it does in every visible language except the first, and false when the whole
+     * block is hidden. So the copy in the lang="z" prototype block is never shown.
      */
     shown: boolean;
     /** The wrapper's computed float: "left", "right" or "none". */
@@ -143,8 +146,8 @@ export interface IBlockInlineImages {
     visible: boolean;
     /**
      * The block's computed display. An editable holding an inline image must be "flow-root", or
-     * the float escapes the bottom of the block (the FLOAT CONTAINMENT comment in
-     * inlineImages.less).
+     * the floated picture can extend below the bottom of the block (see the comment above
+     * `display: flow-root` in content/bookLayout/inlineImages.less).
      */
     display: string;
     images: IInlineImageState[];
@@ -155,8 +158,9 @@ export interface IBlockInlineImages {
  * block, in the order the blocks appear in the markup. `groupSelector` picks the group, e.g.
  * ".bloom-translationGroup" for the only one on a Just Text page.
  *
- * The lang="z" prototype block is included, because a copy in it is how a language added later
- * inherits the image with no C# involvement (insertInlineImage in inlineImages.ts).
+ * The lang="z" prototype block is included, because a language added later gets the image by
+ * copying that block, without any C# code having to add it (see insertInlineImage in
+ * inlineImages.ts).
  */
 export async function getInlineImages(
     page: Page,
@@ -207,9 +211,9 @@ export async function getInlineImages(
                         return {
                             id: wrapper.getAttribute(markup.idAttribute) ?? "",
                             languageTag: block.getAttribute("lang") ?? "",
-                            // The wrapper always carries exactly one dock class; a missing one
-                            // could only come from hand-edited markup, and saying so beats
-                            // reporting a dock the image is not in.
+                            // The wrapper always has exactly one dock class. A missing one could
+                            // only come from hand-edited markup, and reporting that is better
+                            // than reporting a dock the image is not in.
                             dock: dockEntry ? dockEntry[0] : "(no dock class)",
                             widthPercent: readNumber(markup.widthProperty),
                             offsetPx: readNumber(markup.offsetProperty),
@@ -217,11 +221,10 @@ export async function getInlineImages(
                                 .getPropertyValue(markup.aspectRatioProperty)
                                 .trim(),
                             pictureTransform: picture?.style.transform ?? "",
-                            // Without the query: Bloom appends "?transparent=yes" to an image
+                            // The query is dropped. Bloom appends "?transparent=yes" to an image
                             // on a page with a coloured background (getImageTransparencyMode),
-                            // so a picture chosen on the front cover has one and the same
-                            // picture on a content page does not. Which file it is is the
-                            // question here.
+                            // so a picture chosen on the front cover has it and the same picture
+                            // on a content page does not. This field only says which file it is.
                             fileName: decodeURIComponent(
                                 (source.split("?")[0].split("/").pop() ??
                                     source) as string,
@@ -240,8 +243,8 @@ export async function getInlineImages(
                             handleCount: wrapper.querySelectorAll(
                                 "." + markup.handleClass,
                             ).length,
-                            // checkVisibility(), not display alone: a copy in a hidden block
-                            // has no display of its own to give it away.
+                            // This uses checkVisibility() because the wrapper's own display
+                            // stays the same when its block is hidden.
                             shown: wrapper.checkVisibility(),
                             float: style.float,
                             wrapShape: style.shapeOutside,
@@ -265,9 +268,9 @@ export async function getInlineImages(
 }
 
 /**
- * One language's copy of one inline image. Throws, naming what the group does hold, when there is
- * no such copy -- which is the failure a test wants spelled out, since "the copy is missing" and
- * "the copy has the wrong geometry" are different bugs.
+ * One language's copy of one inline image. When there is no such copy, this throws an error that
+ * lists what the group does hold, because a missing copy is a different bug from a copy in the
+ * wrong position or size.
  */
 export async function getInlineImage(
     page: Page,
@@ -301,11 +304,13 @@ export async function getInlineImageInEveryLanguage(
 
 /**
  * Add an inline image to a text block the way a person does: right-click in its text and choose
- * Insert Image. Returns the identity of the new image, which every language's copy of it shares.
+ * Insert Image. Returns the new image's data-bloom-inline-image-id, which every language's copy
+ * of it shares.
  *
- * The command deliberately does not open the image chooser (a picture is chosen afterwards, from
- * the same menu), so what arrives is a placeholder, docked right at the default width. It arrives
- * in EVERY language's block at once, prototype included, and this returns once it has.
+ * The command does not open the image chooser on purpose (the person chooses a picture afterwards,
+ * from the same menu), so the new image is a placeholder, docked right at the default width. It
+ * appears in every language's block at once, including the prototype, and this waits until it
+ * has.
  */
 export async function addInlineImage(
     page: Page,
@@ -341,9 +346,9 @@ export async function addInlineImage(
 }
 
 /**
- * Delete an inline image the way a person does: right-click the picture and choose Delete. That
- * takes this image's copy out of every language, and leaves any other inline image in the block
- * alone. Returns once every copy has gone.
+ * Delete an inline image the way a person does, by right-clicking the picture and choosing Delete.
+ * That removes this image's copy from every language and leaves any other inline image in the
+ * block alone. Returns once every copy has gone.
  */
 export async function deleteInlineImage(
     page: Page,
@@ -367,9 +372,9 @@ export async function deleteInlineImage(
 }
 
 /**
- * Mirror an inline image the way a person does: right-click the picture, rest the pointer on Flip,
- * and choose Flip horizontal or Flip vertical. Returns once every language's copy of the picture
- * carries the same new transform as the one clicked.
+ * Flip an inline image the way a person does, by right-clicking the picture, resting the pointer
+ * on Flip, and choosing Flip horizontal or Flip vertical. Returns once every language's copy of
+ * the picture has the same new transform.
  */
 export async function flipInlineImage(
     page: Page,
@@ -407,8 +412,8 @@ export async function flipInlineImage(
 }
 
 /**
- * Take a flip away the way a person does: right-click the picture and choose Reset Image. Returns
- * once no copy of the picture carries a transform.
+ * Remove a flip the way a person does, by right-clicking the picture and choosing Reset Image.
+ * Returns once no copy of the picture has a transform.
  */
 export async function resetInlineImage(
     page: Page,
@@ -433,12 +438,12 @@ export async function resetInlineImage(
 }
 
 /**
- * The commands an inline image's right-click menu offers, by localization id, each paired with
- * whether it is enabled. Leaves the menu open; close it with closeInlineImageMenu.
+ * The commands an inline image's right-click menu offers, by localization id, each with whether it
+ * is enabled. Leaves the menu open; close it with closeInlineImageMenu.
  *
- * A command behind a subscription tier the collection does not have counts as not enabled: Bloom
- * keeps such an item clickable and marks it with data-subscription-gated instead of disabling it
- * (see helpers/canvasElements.ts, which makes the same distinction for the canvas element menu).
+ * A command that needs a subscription tier the collection does not have counts as not enabled.
+ * Bloom leaves such an item clickable and marks it with data-subscription-gated instead of
+ * disabling it (helpers/canvasElements.ts handles the canvas element menu the same way).
  */
 export async function getInlineImageMenuCommands(
     page: Page,
@@ -465,15 +470,14 @@ export async function getInlineImageMenuCommands(
 }
 
 /**
- * The buttons showing on the selected inline image's toolbar, by control id, each paired with
- * whether it is enabled. Empty when no toolbar is up, which is what "nothing is selected" looks
- * like.
+ * The buttons showing on the selected inline image's toolbar, by control id, each with whether it
+ * is enabled. The list is empty when no toolbar is showing, which means nothing is selected.
  *
- * The "..." button that opens the menu is not a control and is left out; read the menu itself
- * with getInlineImageMenuCommands. Which buttons appear depends on the picture: the one that
- * warns about missing copyright and license information, for instance, only appears while that
- * information is missing. So a test should ask for the buttons it cares about rather than for a
- * whole list.
+ * The "..." button that opens the menu is left out because it is not one of the controls; read
+ * the menu itself with getInlineImageMenuCommands. Which buttons appear depends on the picture.
+ * For instance, the button that warns about missing copyright and license information only
+ * appears while that information is missing. So a test should look for the buttons it cares
+ * about instead of comparing the whole list.
  */
 export async function getInlineImageToolbarButtons(
     page: Page,
@@ -494,9 +498,9 @@ export async function getInlineImageToolbarButtons(
 }
 
 /**
- * Where the inline image toolbar is on the screen, or undefined when no toolbar is up. Use it to
- * check that the bar belongs to the picture the person selected, which is the part a list of
- * button names cannot show.
+ * Where the inline image toolbar is on the screen, or undefined when no toolbar is showing. Use it
+ * to check that the toolbar is next to the picture the person selected, which a list of button
+ * names cannot show.
  */
 export async function getInlineImageToolbarRect(
     page: Page,
@@ -507,9 +511,9 @@ export async function getInlineImageToolbarRect(
 }
 
 /**
- * Open the Copyright and License dialog for an inline image's picture the way a person does:
- * right-click the picture and choose "Set Image Information...". The dialog opens in the shell,
- * not in the page, so drive it with helpers/copyrightAndLicense.ts.
+ * Open the Copyright and License dialog for an inline image's picture the way a person does, by
+ * right-clicking the picture and choosing "Set Image Information...". The dialog opens in the
+ * shell outside the page, so drive it with helpers/copyrightAndLicense.ts.
  */
 export async function openInlineImageInformation(
     page: Page,
@@ -542,11 +546,11 @@ export async function textBlockOffersInsertImage(
  * Dismiss the text block's right-click menu without choosing anything, the way clicking away from
  * it does.
  *
- * A bare Escape key press does not do it. The menu is opened with focus left alone, so that the
+ * Pressing Escape on the page does not close it. The menu opens without taking focus, so that the
  * caret stays in the text the person right-clicked on (disableAutoFocus in TextContextMenu), and
- * a key press therefore goes to the page rather than to the menu. So this clicks the invisible
- * backdrop the menu lays over the page, which is what a click away from the menu lands on, and
- * presses Escape on the menu itself only if there is no backdrop to click.
+ * so a key press goes to the page and the menu never sees it. This clicks the invisible backdrop
+ * the menu puts over the page, which is what a click away from the menu lands on. Only if there is
+ * no backdrop does it press Escape on the menu itself.
  */
 export async function closeInlineImageMenu(page: Page): Promise<void> {
     const frame = editablePageFrame(page);
@@ -560,8 +564,8 @@ export async function closeInlineImageMenu(page: Page): Promise<void> {
 
 /**
  * Select an inline image the way a person does, with a click on the picture, and wait until its
- * four corner handles are showing. Selecting is what a drag or a resize starts from, and both
- * gestures below do it for themselves; call this directly only when the selection IS the subject.
+ * four corner handles are showing. The drag and resize helpers below select the picture
+ * themselves, so call this directly only when the test is about selecting.
  */
 export async function selectInlineImage(
     page: Page,
@@ -570,10 +574,10 @@ export async function selectInlineImage(
     id: string,
 ): Promise<void> {
     const picture = inlineImagePicture(page, groupSelector, languageTag, id);
-    // A real press, not Playwright's own click: the picture sits inside a contenteditable that
-    // CKEditor manages, and the code that selects it listens for pointerdown in the capture phase
-    // (setupInlineImageInteractions), having cancelled the mousedown that would put the caret in
-    // the text instead.
+    // This uses a real mouse press because Playwright's own click does not work here. The picture
+    // is inside a contenteditable that CKEditor manages, and the code that selects it listens for
+    // pointerdown in the capture phase (setupInlineImageInteractions) and cancels the mousedown
+    // that would otherwise put the caret in the text.
     await realClick(picture);
     await expect
         .poll(
@@ -589,14 +593,13 @@ export async function selectInlineImage(
 }
 
 /**
- * Put the block's scroll back at the top, so that what is at the top of its text is where a
- * person would be looking at it.
+ * Scroll the block back to the top, so the start of its text is in view.
  *
- * Typing leaves the caret at the end of the text, and a block too small for its text is
- * scrolled to the caret, which puts the top of the block -- and any picture sitting there --
- * out of sight. A gesture aimed at a picture that is scrolled out of view lands on whatever
- * is showing instead, and reads as the picture refusing to move. This is setup, not a gesture
- * under test, so it sets scrollTop rather than driving the wheel.
+ * Typing leaves the caret at the end of the text, and a block too small for its text scrolls to
+ * the caret. That hides the top of the block and any picture there. A gesture aimed at a picture
+ * that is scrolled out of view lands on whatever is showing instead, and looks as if the picture
+ * would not move. Tests call this to set up a page, and scrolling is not what they test, so it
+ * sets scrollTop directly instead of using the mouse wheel.
  */
 export async function scrollBlockToTop(
     page: Page,
@@ -612,10 +615,10 @@ export async function scrollBlockToTop(
 }
 
 /**
- * Scroll the page so that one language's copy of an inline image is at the top of what the window
- * shows, leaving the most room below it for a drag downward. In a small window (the nightly
- * runner's), a zoomed page otherwise puts the picture, or the place a drag ends, out of sight,
- * and a real pointer can only press on what the window shows.
+ * Scroll the page so that one language's copy of an inline image is at the top of the window,
+ * which leaves the most room below it for a drag downward. In a small window, like the nightly
+ * runner's, a zoomed page can otherwise put the picture, or the place a drag ends, out of sight,
+ * and a real mouse can only press on what the window shows.
  */
 export async function scrollInlineImageToTop(
     page: Page,
@@ -629,11 +632,11 @@ export async function scrollInlineImageToTop(
 }
 
 /**
- * Drag an inline image UP the block, the way a person does, and return the offset it ends at.
+ * Drag an inline image up the block, the way a person does, and return the offset it ends at.
  *
- * Separate from dragInlineImageDown because the failure it reports is a different one: an image
- * that will not come back up is stuck, and a block too small for its text is exactly when that
- * used to happen. Fails with the offset the image is still at rather than timing out.
+ * This is separate from dragInlineImageDown because its failure means something different: an
+ * image that will not come back up is stuck. That is most likely in a block too small for its
+ * text. If the image does not move, the failure message gives the offset it is still at.
  */
 export async function dragInlineImageUp(
     page: Page,
@@ -667,9 +670,9 @@ export async function dragInlineImageUp(
 }
 
 /**
- * How much more room the block's text needs than the block has, in layout pixels. Zero when the
- * text fits. This is what Bloom's overflow warning is about, and a test that means to work on an
- * overflowing block should assert it before it starts.
+ * How much more height the block's text needs than the block has, in layout pixels. Zero when the
+ * text fits. This is the condition Bloom's overflow warning is about, so a test that needs an
+ * overflowing block should check this before it starts.
  */
 export async function getBlockScrollOverflowPx(
     page: Page,
@@ -683,11 +686,11 @@ export async function getBlockScrollOverflowPx(
 }
 
 /**
- * Whether Bloom has marked this block as holding more text than it can show -- the red marking
- * and the warning the person sees, as opposed to the arithmetic getBlockScrollOverflowPx does.
- * OverflowChecker puts the "overflow" class on, and checks every editable when the page loads
- * (AddOverflowHandlers ends by scheduling a check for each one), so this reports the state a
- * person arrives at a page to find.
+ * Whether Bloom has marked this block as holding more text than it can show, which is what gives
+ * the person the red marking and the warning. getBlockScrollOverflowPx measures the overflow;
+ * this reads Bloom's verdict. OverflowChecker adds the "overflow" class, and it checks every
+ * editable when the page loads (AddOverflowHandlers ends by scheduling a check for each one), so
+ * this reports what a person sees on arriving at the page.
  */
 export async function blockIsMarkedOverflowing(
     page: Page,
@@ -701,20 +704,21 @@ export async function blockIsMarkedOverflowing(
 }
 
 /**
- * Drag an inline image to a dock, the way a person does: press on the picture and move it into
- * the part of the block that dock belongs to, then let go. Returns once every language's copy is
- * in that dock.
+ * Drag an inline image to a dock, the way a person does, by pressing on the picture, moving it into
+ * the part of the block that means that dock, and letting go. Returns once every language's copy
+ * is in that dock.
  *
- * Which dock a drop means is decided from where the PICTURE ends up, not the cursor, and by
- * thirds of the block's width: the outer thirds are the side docks and the middle third is the
- * band. In the middle third the bottom dock takes over where the band can no longer fit the
- * picture inside the block's content, and anything below the block is the bottom dock whatever
- * the horizontal position (computeInlineImageDock). This aims at the middle of the region for
- * the dock asked for, so a caller states an intent rather than a coordinate.
+ * computeInlineImageDock decides the dock from where the picture ends up, and the position of
+ * the mouse pointer does not matter. It divides the block's width into thirds: the left and right
+ * thirds mean the left and right docks, and the middle third means the full-width band. Within
+ * the middle third, the bottom dock applies once the band no longer fits the picture inside the
+ * block's content, and anywhere below the block means the bottom dock whatever the horizontal
+ * position. This helper aims at the middle of the region for the dock asked for, so the caller
+ * only names the dock.
  *
- * Bloom refuses a move that would push the block into overflow, putting the image back where it
- * started. When that happens this fails with the dock the image is still in, rather than timing
- * out on a wait: the caller's block is too small for what it asked.
+ * Bloom puts the image back where it started if the move would make the block overflow. When that
+ * happens, the failure message gives the dock the image is still in. It means the caller's block
+ * is too small for the move it asked for.
  */
 export async function dragInlineImageToDock(
     page: Page,
@@ -725,9 +729,9 @@ export async function dragInlineImageToDock(
 ): Promise<void> {
     const block = await blockRect(page, groupSelector, languageTag);
     const picture = await pictureRect(page, groupSelector, languageTag, id);
-    // How many copies there are to check, counted before the drag: the point of this wait is
-    // that EVERY language ends up in the new dock, and a count taken afterwards could not tell
-    // "all of them" from "the one the drag happened in".
+    // Count the copies before the drag. The wait below checks that every language ends up in
+    // the new dock, and a count taken afterwards could not tell all the copies from only the one
+    // the drag happened in.
     const copyCount = (
         await getInlineImageInEveryLanguage(page, groupSelector, id)
     ).length;
@@ -735,11 +739,10 @@ export async function dragInlineImageToDock(
         copyCount,
         `inline image ${id} should exist in at least one language before the drag`,
     ).toBeGreaterThan(0);
-    // The middle of the region that means this dock, horizontally; the picture keeps the height it
-    // already had, because moving it sideways is the whole intent here and a drop lower down the
-    // block would also change how far down the picture starts. The bottom dock is the exception:
-    // it is claimed just below the block, which is unambiguous however tall the block is and
-    // whatever else is in it.
+    // Aim at the horizontal middle of the region that means this dock, and keep the picture at
+    // the height it already had, because a drop lower down the block would also change how far
+    // down the picture starts. The bottom dock is different: the drop goes just below the block,
+    // which means the bottom dock however tall the block is and whatever else is in it.
     const acrossFraction = {
         left: 1 / 6,
         middle: 0.5,
@@ -773,12 +776,12 @@ export async function dragInlineImageToDock(
 
 /**
  * Drag an inline image down its block by `pixels`, the way a person does, and return how far
- * below the top of the block it now starts. Dragging down within a side dock is how the picture
- * is moved past the first lines of text, and the distance is kept in one custom property.
+ * below the top of the block it now starts. Dragging down within a side dock moves the picture
+ * past the first lines of text, and the distance is stored in the --inline-image-offset custom
+ * property.
  *
- * Bloom clamps the distance so the whole picture stays inside the block, so what comes back may
- * be less than what was asked for; that is the answer, not a failure. The wait is for the
- * distance to change at all.
+ * Bloom limits the distance so the whole picture stays inside the block, so the result may be
+ * less than what was asked for, and that is fine. This only waits for the distance to change.
  */
 export async function dragInlineImageDown(
     page: Page,
@@ -812,13 +815,12 @@ export async function dragInlineImageDown(
 }
 
 /**
- * Drag an inline image down its block by `pixels` and report where that left it, without
- * insisting that it moved anywhere.
+ * Drag an inline image down its block by `pixels` and report where it ended up, without requiring
+ * that it moved.
  *
- * Separate from dragInlineImageDown, which fails when the picture does not move, because this is
- * for sweeping a picture down the block a step at a time to find out which positions the block
- * offers at all: a step that re-docks the picture, or that the picture refuses, is an answer here
- * rather than a failure.
+ * dragInlineImageDown fails when the picture does not move. This one is for moving a picture down
+ * the block a step at a time to find out which positions the block allows, so a step that changes
+ * the dock, or that Bloom refuses, is a result to report.
  */
 export async function nudgeInlineImageDown(
     page: Page,
@@ -846,12 +848,11 @@ export async function nudgeInlineImageDown(
 }
 
 /**
- * Press on the picture and hold, so a drag is under way and the button stays down. Pair it with
+ * Press on the picture and keep the button down, which starts a drag. Use it with
  * moveInlineImageDragTo and endInlineImageDrag.
  *
- * The other drag helpers do a whole gesture and hand back the result, which cannot answer a
- * question about what the page does WHILE the picture is being held -- whether the block scrolls
- * to follow it, for one.
+ * The other drag helpers make the whole gesture and return the result, so they cannot check what
+ * the page does while the picture is being held, such as whether the block scrolls to follow it.
  */
 export async function beginInlineImageDrag(
     page: Page,
@@ -881,9 +882,9 @@ export async function endInlineImageDrag(page: Page): Promise<void> {
 }
 
 /**
- * Whether the page still thinks a picture is being dragged. The drag puts a class on the page's
- * body and takes it off when the gesture ends, so this is how a test asks whether a gesture that
- * should have finished actually did.
+ * Whether the page still thinks a picture is being dragged. A drag puts the
+ * bloom-inlineImage-dragging class on the page's body and removes it when the drag ends, so a test
+ * can use this to check that a drag that should have ended did end.
  */
 export async function inlineImageDragIsInProgress(
     page: Page,
@@ -912,12 +913,13 @@ export async function getBlockScrollTopPx(
 
 /**
  * How much room is left between the bottom of the picture and the end of everything its block
- * holds, in the page's own pixels. That room is whatever text still follows the picture, so
- * "less than one line" means the picture has reached the end of the block's content -- which is
- * the question behind "can I put the picture as far down the block as I like".
+ * holds, in the page's own pixels. That room is taken up by the text that still follows the
+ * picture, so less than one line means the picture has reached the end of the block's content.
+ * Tests use this to check that a person can move the picture as far down the block as they want.
  *
- * Measured against the block's CONTENT and not its rectangle: a block too small for its text
- * scrolls, and the text below the window is still text the picture can be put after.
+ * This measures to the end of the block's content, which can be below the block's rectangle. A
+ * block too small for its text scrolls, and the picture can still be put after the text that is
+ * scrolled out of view.
  */
 export async function getRoomBelowInlineImagePx(
     page: Page,
@@ -955,8 +957,8 @@ export async function getBlockLineHeightPx(
         .first()
         .evaluate((block) => {
             const lineHeight = getComputedStyle(block).lineHeight;
-            // "normal" has no number in it; the ratio Chromium uses for it is close enough to
-            // 1.2 for a test that asks "is there a line's worth of room left".
+            // "normal" has no number in it. The ratio Chromium uses for it is close enough to
+            // 1.2 for a test that checks whether a line's worth of room is left.
             return lineHeight.endsWith("px")
                 ? parseFloat(lineHeight)
                 : parseFloat(getComputedStyle(block).fontSize) * 1.2;
@@ -966,8 +968,8 @@ export async function getBlockLineHeightPx(
 /**
  * Make an inline image wider or narrower by dragging one of its corner handles, the way a person
  * does, and return the width it reaches as a percentage of the block. Only the horizontal
- * movement counts: the picture keeps its aspect ratio, so pulling a corner sideways is the whole
- * gesture (computeInlineImageWidthPercent).
+ * movement matters, because the picture keeps its aspect ratio, so this pulls the corner sideways
+ * (see computeInlineImageWidthPercent).
  *
  * `pixels` is how far the corner moves outward, which grows the picture; pass a negative number
  * to shrink it. Bloom keeps the width between 10% and 95% of the block.
@@ -992,8 +994,8 @@ export async function resizeInlineImage(
             `The ${corner} handle of inline image ${id} has no box, so there is nowhere to ` +
                 `drag from.`,
         );
-    // Outward is away from the picture: rightward for the eastern corners, leftward for the
-    // western ones (getInlineImageHandleHorizontalSign).
+    // Outward is away from the picture, which is to the right for the eastern corners and to the
+    // left for the western ones (getInlineImageHandleHorizontalSign).
     const outward = corner === "ne" || corner === "se" ? 1 : -1;
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
@@ -1022,13 +1024,13 @@ export async function resizeInlineImage(
  * Put the picture at `filePath` into an inline image, and wait until every language's copy shows
  * it.
  *
- * This is SETUP, on the same footing as chooseImageFile in helpers/images.ts and for the same
- * reason: the production route ends in a native file picker, which hangs a run
- * (AUTOMATION-DEBT.md, "Native OS dialogs hang automation"). It takes the route the chooser takes
- * once a picture has been chosen -- Bloom's imageGallery/imageGalleryResult endpoint copies the
- * file into the book, and changeImageByElement applies it to the very img the chooser was opened
- * on -- so everything Bloom does after a picture is chosen still runs, including the copying of
- * the new picture onto the other languages' wrappers (handleInlineImageChanged).
+ * Like chooseImageFile in helpers/images.ts, this skips the user interface, because choosing a
+ * picture in Bloom ends in a native file picker, which hangs a test run (AUTOMATION-DEBT.md,
+ * "Native OS dialogs hang automation"). Instead it does what the chooser does after a picture has
+ * been chosen. Bloom's imageGallery/imageGalleryResult endpoint copies the file into the book,
+ * and changeImageByElement puts it in the img element the chooser was opened on. So everything
+ * Bloom does after a picture is chosen still runs, including copying the new picture to the other
+ * languages' wrappers (handleInlineImageChanged).
  */
 export async function changeInlineImagePicture(
     page: Page,
@@ -1046,8 +1048,8 @@ export async function changeInlineImagePicture(
     const info = JSON.parse(result.body) as { src: string };
     const picture = inlineImagePicture(page, groupSelector, languageTag, id);
     await picture.waitFor({ state: "attached", timeout: 30000 });
-    // As in dragInlineImageToDock: the number of copies to expect the new picture in, counted
-    // before the change, so that losing a copy cannot read as success.
+    // As in dragInlineImageToDock, count the copies before the change, so that losing a copy
+    // cannot pass as success.
     const copyCount = (
         await getInlineImageInEveryLanguage(page, groupSelector, id)
     ).length;
@@ -1094,13 +1096,13 @@ export async function changeInlineImagePicture(
 }
 
 /**
- * True when the text of a block flows beside the picture rather than starting below it: some line
- * of text has its top above the bottom of the picture, and lies to the side of it.
+ * True when the text of a block flows beside the picture instead of starting below it, meaning
+ * some line of text has its top above the bottom of the picture and lies to the side of it.
  *
- * This is the point of the whole feature, and it can only be seen in a real renderer -- the float
- * and its wrap shape do nothing in jsdom. It measures the client rectangles of the text itself
- * (one per line), not the paragraph box, which spans the full width of the block whether the text
- * wraps or not.
+ * Text wrapping is the purpose of the feature, and only a real browser can show it, because the
+ * float and its shape-outside do nothing in jsdom. This measures the client rectangles of the text
+ * itself, one per line. The paragraph's box would not do, because it spans the full width of the
+ * block whether the text wraps or not.
  */
 export async function textWrapsBesideInlineImage(
     page: Page,
@@ -1117,7 +1119,7 @@ export async function textWrapsBesideInlineImage(
             const picture = wrapper?.querySelector("img");
             if (!picture) return false;
             const pictureBox = picture.getBoundingClientRect();
-            // Every line box of the block's text, which is what a Range over a text node reports.
+            // A Range over a text node reports one rectangle for each line of it.
             const lines: DOMRect[] = [];
             const walker = document.createTreeWalker(
                 element,
@@ -1148,26 +1150,26 @@ export async function textWrapsBesideInlineImage(
 export interface ISavedInlineImage {
     id: string;
     languageTag: string;
-    /** The classes on the wrapper, which is where the dock lives. */
+    /** The classes on the wrapper, which include the dock class. */
     classes: string[];
-    /** The whole style attribute, which is where the geometry lives. */
+    /** The whole style attribute, which holds the picture's width, offset and aspect ratio. */
     style: string;
     /** The picture's src, relative to the book folder. */
     source: string;
-    /** The picture's data-copyright attribute, the image's credits; empty when it has none. */
+    /** The picture's data-copyright attribute, which holds its credits; empty when there are none. */
     copyright: string;
     contentEditable: string | null;
-    /** Which slot the wrapper holds among the block's children, and how many there are. */
+    /** The wrapper's index among the block's children, and how many children there are. */
     slot: { index: number; childCount: number };
 }
 
 /**
- * Every inline image in the saved book on disk, in markup order. This is the product's own record
- * of the page, and the only place to check what survives a save: the editing DOM carries
- * edit-time decoration that never reaches the file (the corner handles, the selection marker),
- * and Bloom writes a page only when the book leaves it -- so call goToPage first.
+ * Every inline image in the saved book on disk, in markup order. The saved file is the only place
+ * to check what survives a save, because the page being edited also has things that are never
+ * saved, such as the corner handles and the bloom-inlineImage-selected class. Bloom saves a page
+ * only when the person leaves it, so call goToPage first.
  *
- * `page` is borrowed as an HTML parser only, the way helpers/bookHtml.ts borrows it.
+ * `page` is used only to parse the HTML, as helpers/bookHtml.ts does.
  */
 export async function readSavedInlineImages(
     page: Page,
@@ -1214,8 +1216,8 @@ export async function readSavedInlineImages(
 
 /**
  * Where the text block and one inline image's picture are on screen, in the page's own
- * coordinates. A test uses these to say that the picture stays inside its block -- which is what
- * Bloom promises about a drag, and what only a real renderer can answer.
+ * coordinates. A test uses these to check that the picture stays inside its block, which Bloom
+ * should ensure after any drag, and which only a real browser can show.
  */
 export async function getInlineImageRects(
     page: Page,
@@ -1248,9 +1250,9 @@ export async function getBlockText(
 }
 
 /**
- * Click on the TEXT of a block, clear of every inline image in it, the way a person puts the
- * caret back in the text. That ends the picture's turn as the selected object, so its corner
- * handles go away. Returns once no inline image in the group is selected.
+ * Click on the text of a block, away from every inline image in it, the way a person puts the
+ * caret back in the text. That deselects the picture, so its corner handles go away. Returns once
+ * no inline image in the group is selected.
  */
 export async function clickInBlockText(
     page: Page,
@@ -1275,18 +1277,18 @@ export async function clickInBlockText(
         .toBe(0);
 }
 
-// --- the parts a test does not call -----------------------------------------
+// --- private helpers, which tests do not call ---------------------------------
 
-// The text context menu MUI puts into the page's own document (renderTextContextMenu), not into
-// the shell: it is anchored at the mouse position inside the page being edited.
-// The menu itself, and only the one that is actually showing. There is normally more than one
-// MUI menu in the page: the selected inline image's toolbar keeps its own "..." menu mounted
-// while closed (keepMounted in CanvasElementContextControls), and that one comes first in the
-// document, so a plain .first() would settle on a menu that can never become visible.
+// renderTextContextMenu puts the text block's MUI context menu into the document of the page
+// being edited, anchored at the mouse position, so it is not in the shell's document.
+// This selector matches only a menu that is showing. There is normally more than one MUI menu in
+// the page, because the selected inline image's toolbar keeps its own "..." menu in the document
+// while it is closed (keepMounted in CanvasElementContextControls). That one comes first in the
+// document, so a plain .first() would find a menu that never becomes visible.
 const kMenuSelector = '.MuiMenu-root [role="menu"] >> visible=true';
 
-// The invisible layer a MUI menu puts over everything behind it. A click on it is how the menu is
-// dismissed; it also stops that click from reaching the page.
+// The invisible layer a MUI menu puts over everything behind it. Clicking it closes the menu, and
+// the click does not reach the page.
 const kMenuBackdropSelector = ".MuiMenu-root .MuiBackdrop-root >> visible=true";
 
 /** The wrapper div of one language's copy of one inline image. */
@@ -1352,16 +1354,16 @@ async function pictureRect(
     await picture.waitFor({ state: "visible", timeout: 30000 });
     const box = await picture.boundingBox({ timeout: 30000 });
     if (!box) {
-        // What the page itself says about the element, so that the failure names the reason
-        // rather than only the symptom.
+        // Ask the page what it knows about the element, so the failure message can give the
+        // reason as well as the symptom.
         const asThePageSeesIt = await picture.evaluate((element) => {
             const style = getComputedStyle(element);
             const rect = element.getBoundingClientRect();
             return `display ${style.display}, visibility ${style.visibility}, rect ${Math.round(rect.width)}x${Math.round(rect.height)} at ${Math.round(rect.left)},${Math.round(rect.top)}, natural ${(element as HTMLImageElement).naturalWidth}x${(element as HTMLImageElement).naturalHeight}, src ${(element as HTMLImageElement).getAttribute("src")}`;
         });
-        // The frame's own box too. A box measured through a frame is nothing when the frame
-        // itself has none, which is what an element that the page says has a good rectangle
-        // means; waitForEditablePage waits for that, and this says so when it has not held.
+        // Get the frame's box too. Playwright reports no box for an element whose frame has no
+        // box, even when the page gives the element a good rectangle. waitForEditablePage waits
+        // for the frame to have a box, and this message says so when it no longer does.
         const frameBox = await page
             .locator("iframe#page")
             .boundingBox()
@@ -1379,9 +1381,9 @@ async function pictureRect(
 }
 
 /**
- * Press on the picture and move it to a point, then let go. The gesture has to begin with a real
- * press on the picture, because that is what selects the image and records the undo point a drop
- * commits; and it has to move in steps, because the dock and the offset are worked out from each
+ * Press on the picture, move it to a point, and let go. The gesture has to start with a real press
+ * on the picture, because that selects the image and records the state that undo returns to after
+ * the drop. It has to move in steps, because Bloom works out the dock and the offset on each
  * pointermove.
  */
 async function dragInlineImageTo(
@@ -1419,9 +1421,9 @@ async function openInlineImageMenu(
 }
 
 /**
- * Right-click in the TEXT of one language's block, clear of every inline image in it, and wait
- * for the menu. Finding a clear spot is the whole difficulty: a docked picture covers part of its
- * block, and a right-click that lands on it gets the picture's menu instead of the block's.
+ * Right-click in the text of one language's block, away from every inline image in it, and wait
+ * for the menu. clearTextPoint finds the spot, because a docked picture covers part of its block,
+ * and a right-click on the picture gets the picture's menu instead of the block's.
  */
 async function openInlineImageMenuInText(
     page: Page,
@@ -1437,9 +1439,9 @@ async function openInlineImageMenuInText(
 }
 
 /**
- * A point in one language's block that is on the text and clear of every inline image in it.
- * Finding one is the whole difficulty of pointing at the text: a docked picture covers part of
- * its block, and a click that lands on the picture means the picture, not the text.
+ * A point in one language's block that is on the text and away from every inline image in it. A
+ * docked picture covers part of its block, and a click that lands on the picture goes to the
+ * picture instead of the text.
  */
 async function clearTextPoint(
     page: Page,
@@ -1447,15 +1449,15 @@ async function clearTextPoint(
     languageTag: string,
 ): Promise<{ x: number; y: number }> {
     const block = inlineImageBlock(page, groupSelector, languageTag);
-    // elementFromPoint, below, finds nothing outside the window, and in a small window (the
-    // nightly runner's) the page can be scrolled so that the block is out of sight.
+    // elementFromPoint, below, finds nothing outside the window, and in a small window, like the
+    // nightly runner's, the page can be scrolled so that the block is out of sight.
     await block.scrollIntoViewIfNeeded();
     const onScreen = await blockRect(page, groupSelector, languageTag);
     const found = await block.evaluate(
         (element, markup) => {
-            // Every line the block's text occupies, which is what a Range over a text node
-            // reports. The paragraph box is no use here: it spans the block's full width whether
-            // the text wraps or not, so its middle can be over the picture.
+            // A Range over a text node reports one rectangle for each line of it. The paragraph's
+            // box would not do, because it spans the block's full width whether the text wraps or
+            // not, so its middle can be over the picture.
             const lines: DOMRect[] = [];
             const walker = document.createTreeWalker(
                 element,
@@ -1474,8 +1476,8 @@ async function clearTextPoint(
                 range.selectNodeContents(node);
                 lines.push(...Array.from(range.getClientRects()));
             }
-            // Along each line, from its middle outward. A line beside a docked picture is partly
-            // over it, so several points per line are worth trying.
+            // Try several points along each line, starting from its middle and moving outward,
+            // because a line beside a docked picture is partly over it.
             const candidates = lines
                 .filter((line) => line.width > 2 && line.height > 2)
                 .flatMap((line) =>
@@ -1485,10 +1487,10 @@ async function clearTextPoint(
                     })),
                 );
             const clear = candidates.find((point) => {
-                // The condition the production handler itself applies: what is under the pointer
-                // has to be part of this text block, and not the picture, and not a piece of
-                // editing furniture such as the format gear -- which sits at the bottom left
-                // corner of the focused block and would otherwise swallow the right-click.
+                // This is the same check Bloom's right-click handler makes. The element under the
+                // pointer has to be inside this text block, outside the picture, and outside the
+                // bloom-ui editing controls. The format gear, for instance, sits at the bottom
+                // left corner of the focused block and would otherwise get the right-click.
                 const under = document.elementFromPoint(
                     point.x,
                     point.y,
@@ -1514,9 +1516,9 @@ async function clearTextPoint(
                 `its inline images and of the editing furniture, over ${found.lineCount} lines of ` +
                 `text. A block with no text has nowhere to point at, so type something first.`,
         );
-    // The block's own document measures from the top left of the frame it is in; the mouse
-    // measures from the top left of Bloom's window. The two differ by where the frame sits, which
-    // is what comparing the same block in both coordinate systems gives.
+    // Coordinates inside the page are measured from the top left of its frame, and mouse
+    // coordinates from the top left of Bloom's window. The difference is where the frame sits,
+    // which comparing the block's position in both gives.
     return {
         x: onScreen.x + (found.point.x - found.blockLeft),
         y: onScreen.y + (found.point.y - found.blockTop),
@@ -1524,8 +1526,8 @@ async function clearTextPoint(
 }
 
 /**
- * A real right-click at a point in the page's own coordinates. Bloom's own menu replaces
- * WebView2's, and it is raised from the contextmenu event, so the press has to be a real one.
+ * A real right-click at a point in the page's own coordinates. Bloom shows its own menu in place
+ * of WebView2's when it gets the contextmenu event, so the click has to be a real one.
  */
 async function rightClickAt(page: Page, x: number, y: number): Promise<void> {
     await page.mouse.move(x, y);
@@ -1575,9 +1577,9 @@ async function clickInlineImageMenuCommand(
 
 /**
  * Choose one command from a submenu of the open menu, such as Flip, then Flip horizontal, and wait
- * until the menu closes. Both rows are named by localization id. A submenu opens only while the
- * pointer rests on its parent row, so this hovers the parent with the real pointer and goes
- * straight to the command; a path across other rows would close the submenu first.
+ * until the menu closes. Both rows are named by localization id. A submenu stays open only while
+ * the pointer rests on its parent row, so this hovers over the parent with the real mouse and then
+ * goes straight to the command, because a path across other rows would close the submenu.
  */
 async function clickInlineImageSubmenuCommand(
     page: Page,
@@ -1607,13 +1609,14 @@ async function clickInlineImageSubmenuCommand(
 }
 
 /**
- * The text of every sentence that the Talking Book tool has marked for recording INSIDE an inline
- * image wrapper, in the whole page. It must always be empty: the wrapper is
- * contenteditable="false" content of the text field, so a recordable sentence in it would give the
- * reader a picture to record and would put an audio-sentence span into saved picture markup.
+ * The text of every sentence on the page that the Talking Book tool has marked for recording
+ * inside an inline image wrapper. The list must always be empty. The wrapper is a
+ * contenteditable="false" element inside the text field, so a recordable sentence in it would ask
+ * the person to record a picture and would put an audio-sentence span into the saved picture
+ * markup.
  *
- * A caller must open the toolbox first (openToolboxWithTalkingBook), because the marking is that
- * tool's work, not the page's.
+ * A caller must open the toolbox first (openToolboxWithTalkingBook), because the Talking Book
+ * tool does the marking.
  */
 export async function getNarrationInsideInlineImages(
     page: Page,

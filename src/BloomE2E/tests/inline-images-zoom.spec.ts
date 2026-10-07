@@ -1,22 +1,19 @@
-// Dragging a picture while the edit view is zoomed.
+// Tests dragging a picture while the edit view is zoomed.
 //
-// WHAT THIS IS ABOUT. The drag arithmetic works in two units at once. getBoundingClientRect and
-// a pointer event's clientX/clientY are VIEWPORT pixels, while clientHeight, scrollTop and the
-// custom properties the picture's position is stored in are LAYOUT pixels. Bloom draws the zoom
-// by scaling a container around the page (SetupPageZoom / #page-scaling-container), so the two
-// differ by exactly the zoom, and computeViewportPxPerLayoutPx is where the drag reconciles them
-// -- measured once, at pointerdown.
+// The drag code works with two kinds of pixels. getBoundingClientRect and a pointer event's
+// clientX/clientY are in viewport pixels, while clientHeight, scrollTop and the custom properties
+// that store the picture's position are in layout pixels. Bloom zooms by scaling a container
+// around the page (SetupPageZoom, #page-scaling-container), so the two differ by the zoom factor.
+// The drag converts between them with computeViewportPxPerLayoutPx, measured once at pointerdown.
 //
-// A wrong ratio does not fail quietly: the picture slides away from the cursor, by more the
-// further it is dragged. The zoom is a control people reach for constantly, so this is the
-// arithmetic most likely to be exercised at a value nobody tested.
+// If that ratio is wrong, the picture moves away from the cursor, further the longer the drag.
+// People change the zoom often, so the drag is likely to be used at zoom levels nobody tested.
 //
-// WHAT IS CHECKED. The pointer's own travel against the distance the picture actually moved, at
-// each of three zooms. That comparison is the whole question: at 100% a correct implementation and
-// one that ignores the ratio entirely give the same answer, so the smaller and larger zooms are
-// what have anything to say. The tolerance is a line of text, because the picture's position is
-// quantized by nothing but the block's own layout, and a float's arrival point can differ by a
-// line's worth as the text rewraps around it.
+// At each of three zoom levels, the test compares how far the pointer moved with how far the
+// picture moved. At 100% the code would pass even if it ignored the ratio, so the smallest and
+// largest zooms are the ones that can catch a mistake. The test allows a difference of up to one
+// and a half lines of text, because the picture's position also depends on how the text wraps
+// around it, and the float can land a line higher or lower as the text rewraps.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,8 +49,7 @@ test.describe.configure({ mode: "serial" });
 const BLOCK = ".bloom-translationGroup";
 const LANG = "en";
 
-// Long enough that the block has lines all the way down it at every zoom, so a drag downward has
-// somewhere to go.
+// Long enough to reach the bottom of the block at every zoom, so a downward drag has room to move.
 const TEXT =
     "The kingfisher waits on the branch above the pool, still enough that the water forgets it " +
     "is there. It watches the shadows move under the surface. When it drops, it drops straight, " +
@@ -73,16 +69,16 @@ const fixtureImage = (name: string) =>
 let imageId: string;
 
 /**
- * Drag the picture down by `pointerTravelViewportPx` of real pointer movement, and report how far
- * the picture itself moved on the screen. Both are viewport pixels -- what the person's hand did
- * and what their eye saw -- so they are comparable whatever the zoom is.
+ * Drags the picture down by moving the pointer `pointerTravelViewportPx`, and returns how far
+ * the picture moved on the screen. Both distances are in viewport pixels, so they can be compared
+ * at any zoom.
  */
 const dragDownAndMeasure = async (
     page: Page,
     pointerTravelViewportPx: number,
 ): Promise<{ pictureMovedViewportPx: number; blockHeightPx: number }> => {
-    // So that both the press and the place the pointer travels to are on screen, however small
-    // the window and however large the zoom.
+    // Scroll so that both the place the drag starts and the place it ends are on screen, however
+    // small the window and however large the zoom.
     await scrollInlineImageToTop(page, BLOCK, LANG, imageId);
     const before = await getInlineImageRects(page, BLOCK, LANG, imageId);
     await beginInlineImageDrag(page, BLOCK, LANG, imageId);
@@ -122,32 +118,31 @@ test("a drag follows the pointer at every zoom [Test Case ID 815]", async ({
     );
 
     const { zoom: zoomAtStart, minZoom, maxZoom } = await getZoom(page);
-    // The extremes Bloom itself allows, plus the middle, so the test asks about the values a
-    // person can actually reach rather than ones invented here.
+    // The zoom Bloom starts at, and the smallest and largest zooms it allows, so the test uses
+    // values a person can choose.
     const zoomsToTry = [zoomAtStart, minZoom, maxZoom];
 
     try {
         for (const zoom of zoomsToTry) {
             await setZoom(page, zoom);
-            // Start each attempt from the same place: the full-width band at the top of the text.
+            // Start each drag with the picture docked in the middle at the top of the text.
             await scrollBlockToTop(page, BLOCK, LANG);
             await dragInlineImageToDock(page, BLOCK, LANG, imageId, "middle");
 
-            // getBlockLineHeightPx reads the block's CSS line-height, which is a LAYOUT pixel
-            // value and so is the same number at every zoom. On the screen a line is that
-            // multiplied by the zoom, and the pointer travels on the screen, so everything below
-            // is in the scaled units.
+            // getBlockLineHeightPx reads the block's CSS line-height, which is in layout pixels
+            // and so is the same at every zoom. On the screen a line is that times the zoom, and
+            // the pointer moves on the screen, so the distances below are in viewport pixels.
             const lineHeightLayoutPx = await getBlockLineHeightPx(
                 page,
                 BLOCK,
                 LANG,
             );
             const lineHeightViewportPx = (lineHeightLayoutPx * zoom) / 100;
-            // Three lines. Measured in lines rather than as a fraction of the block because the
-            // block is three times as tall on screen at 300% as at 100%, and a quarter of THAT
-            // puts the pointer below everything the person can see -- a drag to somewhere the
-            // block has no room for is refused outright by the fit-or-revert rule, which says
-            // nothing about the arithmetic this test is asking about.
+            // Drag three lines down. The distance is in lines instead of a fraction of the block
+            // because the block is three times as tall on screen at 300% as at 100%, and a
+            // quarter of that would put the pointer below the visible area. The drag puts back a
+            // move that would leave the block without room for its text
+            // (shouldRevertInlineImageMove), and that would tell us nothing about the zoom.
             const pointerTravelViewportPx = Math.round(
                 3 * lineHeightViewportPx,
             );
@@ -168,7 +163,7 @@ test("a drag follows the pointer at every zoom [Test Case ID 815]", async ({
             ).toBeLessThanOrEqual(lineHeightViewportPx * 1.5);
         }
     } finally {
-        // Bloom saves the zoom as a user setting, so leave it as it was found.
+        // Bloom saves the zoom as a user setting, so put it back the way it was.
         await setZoom(page, zoomAtStart);
     }
 });

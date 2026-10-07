@@ -56,14 +56,14 @@ export default class BloomButton extends LocalizableElement<
         const hidden = this.props.hidden ? "hidden" : "";
         const commonProps = {
             id: this.props.id,
-            // The l10n key is the only stable name a BloomButton has: its text is localized, and
-            // most callers give it neither an id nor a class. Tests find buttons by this, the same
-            // way they find menu items (localizableMenuItem.tsx does the same with its l10nId). A
-            // caller that passes its own data-testid still wins, because propsToPass is spread
-            // after this.
+            // Tests find a BloomButton by its l10n key, because the key is the one name that
+            // doesn't change: the button's text is localized, and most callers give it neither an
+            // id nor a class. localizableMenuItem.tsx does the same for menu items with its
+            // l10nId. A caller that passes its own data-testid overrides this one, because
+            // propsToPass is spread after it.
             // Several callers pass "" (ZoomControl, TopRightMenuButton, Toast, BloomMessageBox,
-            // NotifyDialog): an empty test id is not a name, and it would make every one of those
-            // buttons answer to the same one, so they get no attribute at all.
+            // NotifyDialog). Giving all of those buttons the same empty test id would make them
+            // impossible to tell apart, so they get no data-testid attribute at all.
             "data-testid": this.props.l10nKey || undefined,
             title: tip,
             onClick: () => this.onClick(),

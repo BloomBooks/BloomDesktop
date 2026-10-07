@@ -1,21 +1,18 @@
-// Copying text that contains a picture, and pasting it.
+// Tests copying text that contains a picture, and pasting it.
 //
-// WHAT THIS IS ABOUT. Bloom's own paste handler bails out whenever the focus is in a
-// bloom-editable (bloomEditing.ts), so a paste inside a text block is CKEditor's. CKEditor's
-// pasteFilter (lib/ckeditor/config.js) applies only to content from OUTSIDE the editor; an
-// internal paste falls back to allowedContent = true. So the wrapper markup pastes through
-// unfiltered, and what arrives is a second element carrying the FIRST one's
-// data-bloom-inline-image-id.
+// Bloom's own paste handler (bloomEditing.ts) does nothing when the focus is in a bloom-editable,
+// so CKEditor handles a paste inside a text block. CKEditor's pasteFilter (lib/ckeditor/config.js)
+// applies only to content copied from outside the editor; a paste of content from inside it uses
+// allowedContent = true. So the wrapper's markup is pasted unfiltered, and the result is a second
+// element with the same data-bloom-inline-image-id as the first.
 //
-// Identity is what the feature is built on. syncInlineImagesFromEditable matches the copies of a
-// picture across the group's editables by that id, and getInlineImageById returns the first match,
-// so a second element with the same id is a picture that can never be kept in step with its own
-// copies in the other languages: it diverges from the moment it exists, and nothing in the editor
-// will ever bring it back.
+// The feature depends on each picture having its own id. syncInlineImagesFromEditable matches a
+// picture's copies across the group's editables by that id, and getInlineImageById returns the
+// first match. A second element with the same id can therefore never be kept in step with its
+// copies in the other languages, and nothing in the editor will repair it.
 //
-// Two pastes are worth asking about and they have different answers available: into the same
-// block, and into a different block on the same page. Either "no second picture appears" or "the
-// second picture gets its own id" would be a sound outcome; two elements sharing one id is not.
+// It would be fine for the paste to produce no second picture, or a second picture with its own
+// id. It is not fine for two elements to share one id.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,7 +56,7 @@ const fixtureImage = (name: string) =>
         name,
     );
 
-/** Every inline image in the group, flattened, with the block it is in. */
+/** Returns every inline image in the group, from all of its blocks, in one list. */
 const allImages = async (page: import("@playwright/test").Page) =>
     (await getInlineImages(page, BLOCK)).flatMap((block) => block.images);
 
@@ -88,12 +85,12 @@ test("pasting text that contains a picture does not produce two pictures with on
         "The setup put no picture in the block, so there is nothing for the paste to copy.",
     ).toBeGreaterThan(0);
 
-    // THE ACTION UNDER TEST: a paste of the block's own markup, wrapper included, delivered as
-    // the paste event CKEditor listens for. Real Ctrl+C / Ctrl+V key presses do not do it here:
-    // the keys arrive, but nothing lands, because the OS clipboard is not filled by CDP key
-    // events. What matters for this question is not the clipboard but the paste PIPELINE --
-    // Bloom's handler, which stands aside for a bloom-editable, and then CKEditor's pasteFilter,
-    // which treats internal content as unfiltered -- and that is exactly what this reaches.
+    // THE ACTION UNDER TEST: paste the block's own markup, including the wrapper, by dispatching
+    // the paste event CKEditor listens for. Pressing Ctrl+C and Ctrl+V does not work here: the
+    // key presses arrive, but CDP key events do not fill the OS clipboard, so nothing is pasted.
+    // This test is about the code a paste goes through: Bloom's handler, which ignores a paste in
+    // a bloom-editable, and then CKEditor's pasteFilter, which lets content from inside the editor
+    // through unfiltered. Dispatching the event runs both of them.
     const block = page
         .frameLocator("#page")
         .locator(`${BLOCK} > .bloom-editable[lang="${LANG}"]`)
@@ -109,7 +106,7 @@ test("pasting text that contains a picture does not produce two pictures with on
         const transfer = new DataTransfer();
         transfer.setData("text/html", html);
         transfer.setData("text/plain", editable.textContent ?? "");
-        // At the end of the text, which is where a person pastes when they mean "again".
+        // Paste at the end of the text, where a person pastes to repeat what they copied.
         const selection = editable.ownerDocument.getSelection()!;
         const range = editable.ownerDocument.createRange();
         range.selectNodeContents(editable);
@@ -124,9 +121,8 @@ test("pasting text that contains a picture does not produce two pictures with on
             }),
         );
     }, pastedHtml);
-    // The paste is asynchronous in CKEditor, and so is anything the page does about it, so wait
-    // for the block's text to have grown: that is the paste having landed, and it is what the
-    // next assertion is about anyway.
+    // CKEditor handles the paste asynchronously, and so does anything the page does in response,
+    // so wait until the block's text is longer. That shows the paste has happened.
     await expect
         .poll(async () => ((await block.textContent()) ?? "").length, {
             timeout: 30000,
@@ -149,8 +145,8 @@ test("pasting text that contains a picture does not produce two pictures with on
     const byId = new Map<string, number>();
     for (const image of after)
         byId.set(image.id, (byId.get(image.id) ?? 0) + 1);
-    // One copy of the picture per editable of the group is the design: that is how a float can
-    // wrap the text of each language's block. So the count to watch is per editable.
+    // Each editable in the group is supposed to have one copy of the picture, because a float can
+    // only wrap the text of the block it is in. So the test counts copies within each editable.
     const duplicatedWithinAnEditable = (
         await getInlineImages(page, BLOCK)
     ).flatMap((editable) => {
@@ -176,10 +172,10 @@ test("pasting a picture into a front-matter field does not put markup in the dat
     page,
 }) => {
     test.setTimeout(300000);
-    // The menu no longer offers "Insert Image" in a data-book field, because that field is stored in
-    // the data div as markup and written back into every element with the same key -- which made
-    // the wrapper's markup the book's title. Hiding the command closes one door. A paste is the
-    // other, and it does not go through the menu at all, so it has to be asked separately.
+    // The menu does not offer "Insert Image" in a data-book field. Such a field is stored as
+    // markup in the data div and written back into every element with the same key, so a picture
+    // in the title field would put the wrapper's markup into the book's title. A paste can still
+    // put a picture there without using the menu, so this test checks the paste.
     const block = page
         .frameLocator("#page")
         .locator(`${BLOCK} > .bloom-editable[lang="${LANG}"]`)
@@ -194,9 +190,9 @@ test("pasting a picture into a front-matter field does not put markup in the dat
 
     const coverId = (await getPages(page)).find((p) => !p.isContentPage)!.id;
     await goToPage(page, coverId);
-    // The cover credits rather than the title: it is a data-book field on the same xmatter page,
-    // so it asks the same question, and pasting into it does not change the book's name, which
-    // the collection and the book's folder are both keyed on.
+    // The test pastes into the cover credits instead of the title. The credits are a data-book
+    // field on the same xmatter page, so they are stored the same way, and pasting into them
+    // does not change the book's name, which the collection and the book's folder depend on.
     const title = page
         .frameLocator("#page")
         .locator(
@@ -223,8 +219,8 @@ test("pasting a picture into a front-matter field does not put markup in the dat
             }),
         );
     }, markupWithAPicture);
-    // As above: wait for the paste to have landed rather than for a length of time. The credits
-    // field's markup changing is that, whatever the paste turned into.
+    // As in the first test, wait for the paste to happen instead of waiting a fixed time. Any
+    // change to the credits field's markup shows that the paste happened, whatever it produced.
     await expect
         .poll(async () => await title.evaluate((e) => e.innerHTML), {
             timeout: 30000,
@@ -234,7 +230,7 @@ test("pasting a picture into a front-matter field does not put markup in the dat
         })
         .not.toBe(creditsBefore);
 
-    // Leaving the page is what makes Bloom save it, and the collection learns the title then.
+    // Leaving the page makes Bloom save it.
     const [contentPage] = await getContentPages(page);
     await goToPage(page, contentPage.id);
     const html = fs.readFileSync(
@@ -250,8 +246,10 @@ test("pasting a picture into a front-matter field does not put markup in the dat
             `where that field is stored and from which it is written back into every element ` +
             `with the same data-book key. It reads: ${storedCredits.slice(0, 300)}`,
     ).not.toContain("bloom-inlineImage");
-    // And nowhere else in the saved book either: the data div is written back into every element
-    // carrying the same key, so one wrapper stored there becomes several on the pages.
+    // The wrapper must not be anywhere else in the saved book either. The data div is written
+    // back into every element with the same key, so one wrapper stored there would become
+    // several on the pages. The two ids expected are the original picture's copies in the
+    // content page's English and prototype blocks.
     expect(
         (html.match(/data-bloom-inline-image-id/g) ?? []).length,
         "Pasting into front matter left inline image wrappers on the xmatter pages.",

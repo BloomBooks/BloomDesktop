@@ -1,15 +1,17 @@
-// What cutting a text block in half in Change Layout mode does to a picture placed low in it.
+// Checks what cutting a text block in half in Change Layout mode does to a picture placed low in
+// the block.
 //
-// WHAT THIS IS ABOUT. Origami changes the shape of a block without any template or page size
-// being involved: splitting a section leaves the text in a fraction of the height it had. That is
-// the third route to the same stale offset as inline-images-page-size and the Choose Different
-// Layout test, and it is the one that needs no dialog at all.
+// Origami (the code behind Change Layout mode) changes the shape of a block without changing the
+// template or the page size: splitting a section leaves the text with part of the height it had.
+// The picture's offset down the block was measured for the taller block, which is the same
+// problem that inline-images-page-size.spec.ts and inline-images-change-layout.spec.ts test, and
+// this way of causing it needs no dialog at all.
 //
-// Nothing about the page is written while the person is arranging boxes. Leaving Change Layout
-// mode is what makes origami save the page and ask Bloom to rebuild it
-// (changeLayoutModeToggleClickHandler posts common/saveChangesAndRethinkPageEvent), so the
-// re-measure at page setup is what has to catch this, and there is no need for origami to call it
-// itself. This test is what says so.
+// Bloom saves nothing about the page while the person is arranging boxes. When they leave Change
+// Layout mode, origami saves the page and asks Bloom to rebuild it
+// (changeLayoutModeToggleClickHandler posts common/saveChangesAndRethinkPageEvent). So the code
+// that measures the picture again when the page is set up is what has to fix the offset, and
+// origami does not need to call it itself. This test checks that.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,11 +47,11 @@ test.describe.configure({ mode: "serial" });
 const BLOCK = ".bloom-translationGroup";
 const LANG = "en";
 
-// Short enough that the SHORTENED block can still hold it all. Any more and the layout change
-// overflows the block whatever the picture does -- half the height with the same text -- and
-// then the overflow this test asserts on says nothing about the picture's offset, which is what
-// it is here to watch. Plain text of that length overflows the same way, so that is Bloom's
-// answer for the menu item rather than a defect of inline images.
+// Short enough that the shorter block left by the split can still hold all of it. With more
+// text, the block overflows after the split whatever the picture does, because it has half the
+// height and the same text, and then the overflow this test checks says nothing about the
+// picture's offset. Plain text of that length overflows the same way, so that would be how Bloom
+// already handles a split and not a problem with inline images.
 const TEXT =
     "The kingfisher waits on the branch above the pool, still enough that the water forgets it " +
     "is there. It watches the shadows move under the surface.";
@@ -65,7 +67,7 @@ const fixtureImage = (name: string) =>
 
 let imageId: string;
 
-/** Everything about where the picture sits, in one reading, for comparing across layouts. */
+/** Reads where the picture sits, for comparing before and after the split. */
 const wherePictureSits = async (page: Page) => {
     const image = await getInlineImage(page, BLOCK, LANG, imageId);
     const rects = await getInlineImageRects(page, BLOCK, LANG, imageId);
@@ -88,8 +90,8 @@ const wherePictureSits = async (page: Page) => {
 };
 
 /**
- * A page with the picture in the full-width band as far down the text as the drag will take it,
- * which is the state a shorter block cannot hold. Returns the page's id.
+ * Makes a page with the picture in the full-width band, dragged as far down the text as it will
+ * go, so that a shorter block could not hold it at that offset. Returns the page's id.
  */
 const makePageWithAPictureLowInItsText = async (
     page: Page,
@@ -143,10 +145,10 @@ test("a picture survives having its block cut in half in Change Layout mode [Tes
         "The block already held more text than it could show before the layout was changed.",
     ).toBeLessThanOrEqual(0);
 
-    // THE ACTION UNDER TEST: split the text block's section in two, which leaves the text in the
-    // lower half of the height it had. Nothing about the page is written until the person leaves
-    // Change Layout mode -- that is when origami saves the page and asks Bloom to rebuild it --
-    // so the re-measure at page setup is what has to catch this.
+    // The action under test: split the text block's section in two, which leaves the text in the
+    // lower half of the height it had. Bloom saves nothing about the page until the person leaves
+    // Change Layout mode. Then origami saves the page and asks Bloom to rebuild it, so the code
+    // that measures the picture again when the page is set up has to fix the offset.
     await setChangeLayoutMode(page, true);
     await splitSection(page, "top");
     await setChangeLayoutMode(page, false);

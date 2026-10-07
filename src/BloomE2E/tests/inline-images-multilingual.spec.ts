@@ -1,25 +1,25 @@
-// Inline (Word-style) images in a book with more than one language. The feature is described in
-// bookEdit/js/inlineImages.ts; inline-images.spec.ts covers one language.
+// Tests inline (Word-style) images in a book with more than one language. bookEdit/js/
+// inlineImages.ts describes the feature; inline-images.spec.ts covers a book with one language.
 //
-// WHAT THIS FILE COVERS, AND WHY IT IS THE E2E PART. An inline image is not one element. A float
-// only wraps the text of the block it sits in, so the picture has to live inside each
-// bloom-editable of the translation group, and the copies are kept the same by edit-time
-// JavaScript. That design has three consequences that only a real Bloom can show:
+// A CSS float only wraps the text of the block it is in, so each bloom-editable in the
+// translation group has its own copy of the picture, and JavaScript keeps the copies the same
+// while editing. These tests check the parts of that design that only a running Bloom can show:
 //
-//  - the copies exist in every language block at once, but the reader must see one picture, so the
-//    CSS shows the first showing language's copy and hides the rest with display: none;
-//  - the copy in the lang="z" prototype block is what a language added to the collection later
-//    inherits, and only Bloom's own C# builds that new block out of the prototype;
-//  - Bloom's language-stamping sweep (TranslationGroupManager.UpdateContentLanguageClasses) walks
-//    every div inside a translation group, the picture wrapper included, so turning a language on
-//    or off runs that sweep over the wrapper.
+//  - Every language block has a copy, but the reader must see only one picture. The CSS shows the
+//    copy in the first visible language and hides the others with display: none.
+//  - A language added to the collection later gets its copy from the lang="z" prototype block,
+//    and only Bloom's C# builds the new block from the prototype.
+//  - TranslationGroupManager.UpdateContentLanguageClasses, which sets the language classes when
+//    a language is turned on or off, visits every div in a translation group, including the
+//    picture's wrapper.
 //
-// The last test covers a separate collision: the Talking Book tool marks the sentences of a text
-// field for recording, and the wrapper is content of that field.
+// The last test checks that the Talking Book tool, which marks the sentences of a text field for
+// recording, does not mark anything inside the wrapper, even though the wrapper is inside the
+// field.
 //
-// The tests are serial: each starts from the book the one before it left behind. The second test
-// restarts Bloom on a collection with a second language, so every test after it takes the page
-// from the `page` fixture again rather than holding on to an old one.
+// The tests run in order, and each starts from the book the previous one left. The second test
+// restarts Bloom on a collection with more languages, so every test after it gets the page from
+// the `page` fixture again instead of keeping the old one.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,16 +52,16 @@ import {
 } from "../helpers/talkingBook";
 import { switchTab } from "../helpers/workspace";
 
-// The collection starts with one language, so that the second one is genuinely added later: the
-// French block does not exist in the page's markup until Bloom builds it out of the prototype.
+// The collection starts with one language so that French is added later. The French block is not
+// in the page's markup until Bloom builds it from the prototype.
 test.use({
     collectionSpec: { name: "inline-images-multi", languages: ["en"] },
 });
 
 test.describe.configure({ mode: "serial" });
 
-// The only translation group of a Just Text page, the two languages, and the prototype block every
-// new language block is built from.
+// The only translation group on a Just Text page, the languages the tests use, and the language of
+// the prototype block that Bloom builds each new language block from.
 const BLOCK = ".bloom-translationGroup";
 const FIRST_LANG = "en";
 const SECOND_LANG = "fr";
@@ -70,7 +70,7 @@ const PROTOTYPE_LANG = "z";
 
 const BOOK_TITLE = "Inline Images Multilingual";
 
-// Enough text in each language that the block has several lines for the picture to displace.
+// Enough text in each language to give the block several lines for the picture to push aside.
 const ENGLISH_TEXT =
     "The kingfisher waits on the branch above the pool, still enough that the water forgets " +
     "it is there. When it drops, it drops straight, and the pool closes over the place where " +
@@ -119,8 +119,8 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
                 "or the test after this one proves nothing.",
         ).toEqual([FIRST_LANG, PROTOTYPE_LANG]);
 
-        // THE ACTION UNDER TEST: a real right-click in the English text, and a real click on Add
-        // Image, in a book with one language.
+        // THE ACTION UNDER TEST: a right-click in the English text, and a click on the menu
+        // command that adds an image, in a book with one language.
         imageId = await addInlineImage(page, BLOCK, FIRST_LANG);
         await changeInlineImagePicture(
             page,
@@ -138,10 +138,11 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         );
         expect(prototype.dock).toBe("right");
         expect(prototype.fileName).toBe("bird.png");
-        // The prototype block is never shown to anybody, so its copy is not painted either.
+        // The prototype block is never shown, so its copy is not drawn either.
         expect(prototype.shown).toBe(false);
-        // Load-bearing in the prototype above all: it is the only thing stopping Bloom's
-        // language-stamping sweep from treating the wrapper as a text box of the new language.
+        // The prototype copy needs this most of all. Without it, the Bloom code that sets the
+        // language on every editable element would treat the wrapper as a text box in the new
+        // language.
         expect(prototype.contentEditable).toBe("false");
     });
 
@@ -149,17 +150,17 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         bloomApp,
     }) => {
         test.setTimeout(300000);
-        // The restart kills Bloom, and Bloom writes a page only when the book leaves it, so the
-        // book has to leave the page first or the picture is never saved at all.
+        // The restart kills Bloom, and Bloom saves a page only when the person leaves it, so the
+        // test leaves the page first. Otherwise the picture would never be saved.
         const [firstXmatter] = (await getPages(bloomApp.page)).filter(
             (one) => !one.isContentPage,
         );
         await goToPage(bloomApp.page, firstXmatter.id);
 
-        // THE ACTION UNDER TEST: a second and a third collection language, which is what a person
-        // adds in the Settings dialog. Bloom restarts, and builds the book's French and Spanish
-        // blocks out of the lang="z" prototype -- carrying whatever the prototype holds, the
-        // picture included. The third language is there for the test that shows three at once.
+        // THE ACTION UNDER TEST: add a second and a third language to the collection, as a person
+        // would in the Settings dialog. Bloom restarts and builds the book's French and Spanish
+        // blocks from the lang="z" prototype, copying everything in the prototype, including the
+        // picture. The third language is for the later test that shows three languages at once.
         const restarted = await restartWithCollectionSettings(bloomApp, {
             languages: [FIRST_LANG, SECOND_LANG, THIRD_LANG],
         });
@@ -180,8 +181,8 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             SECOND_LANG,
             imageId,
         );
-        // The inherited copy is the same image, not a second one, and it comes with the geometry
-        // and the picture the prototype held.
+        // The French copy has the same image id, and the same dock, width and picture as the
+        // prototype copy.
         expect(french.dock).toBe("right");
         expect(french.widthPercent).toBe(40);
         expect(french.fileName).toBe("bird.png");
@@ -200,10 +201,10 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             "The book should be showing two languages at this point.",
         ).toBe(2);
 
-        // Every block holds its copy, so nothing was moved or deleted.
+        // Every block still has its copy; none was moved or deleted.
         for (const block of blocks) expect(block.images.length).toBe(1);
 
-        // Exactly one copy is painted, and it is the first showing language's.
+        // Exactly one copy is drawn, and it is the one in the first visible language.
         const shownCopies = blocks
             .flatMap((block) => block.images)
             .filter((image) => image.shown);
@@ -213,8 +214,8 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
                 "(inlineImages.less) should leave exactly one copy painted.",
         ).toEqual([showing[0].languageTag]);
 
-        // The hidden copy is hidden by that rule, not by its block being hidden: the French block
-        // is showing its text, and it contains the float like any other block holding a picture.
+        // The French copy is hidden by that CSS rule while its block is still visible. The French
+        // block shows its text, and it contains the float like any other block with a picture.
         const french = blocks.find(
             (block) => block.languageTag === SECOND_LANG,
         );
@@ -245,9 +246,9 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             "With three languages showing, only the first language's copy should be painted.",
         ).toEqual([FIRST_LANG]);
 
-        // THE STATE UNDER TEST: the first language turned off, so no showing block is
-        // bloom-content1. The rule must still paint one copy, the second language's, rather
-        // than letting the picture vanish.
+        // THE STATE UNDER TEST: the first language turned off, so no visible block has
+        // bloom-content1. The CSS still has to draw one copy, the second language's, so the
+        // picture does not disappear.
         await setContentLanguages(page, [SECOND_LANG]);
         const secondOnly = await getInlineImages(page, BLOCK);
         expect(
@@ -264,7 +265,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             "With the first language hidden, the second language's copy should be the one painted.",
         ).toEqual([SECOND_LANG]);
 
-        // Back to the two languages the tests after this one start from.
+        // Go back to the two languages the later tests expect.
         await setContentLanguages(page, [FIRST_LANG, SECOND_LANG]);
         expect(
             (await getInlineImage(page, BLOCK, FIRST_LANG, imageId)).shown,
@@ -285,21 +286,22 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
                 "starting state.",
         ).toEqual(before.map(() => "right"));
 
-        // THE ACTION UNDER TEST: a real drag of the copy the reader sees, to the left third of
+        // THE ACTION UNDER TEST: a mouse drag of the copy the reader sees, to the left third of
         // the block.
         await dragInlineImageToDock(page, BLOCK, FIRST_LANG, imageId, "left");
 
         const after = await getInlineImageInEveryLanguage(page, BLOCK, imageId);
         expect(after.length).toBe(4);
-        // The hidden French and Spanish copies and the prototype copy follow the shown one. A copy
-        // left behind would show the wrong side as soon as the book's language choice changed.
+        // The hidden French and Spanish copies and the prototype copy all move with the visible
+        // one. A copy that did not move would appear on the wrong side as soon as the person
+        // changed which languages the book shows.
         expect(after.map((copy) => copy.dock)).toEqual(after.map(() => "left"));
     });
 
     test("turning the second language off again leaves the picture where it was", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: back to One Language, which runs Bloom's language sweep over the
+        // THE ACTION UNDER TEST: go back to one language. Bloom sets the language classes on the
         // wrapper again and hides the French block.
         await setContentLanguages(page, [FIRST_LANG]);
 
@@ -313,7 +315,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             expect(copy.fileName).toBe("bird.png");
             expect(copy.contentEditable).toBe("false");
         }
-        // English is showing alone now, so its copy is the painted one.
+        // Only English is showing now, so its copy is the one drawn.
         expect(
             (await getInlineImage(page, BLOCK, FIRST_LANG, imageId)).shown,
         ).toBe(true);
@@ -322,7 +324,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
     test("a second image in the same block keeps its own identity in every language", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: a second real Insert Image in a block that already has one.
+        // THE ACTION UNDER TEST: Insert Image again, in a block that already has an image.
         const secondId = await addInlineImage(page, BLOCK, FIRST_LANG);
         expect(
             secondId,
@@ -337,8 +339,9 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             ).toEqual([imageId, secondId].sort());
         }
 
-        // A picture, because a drag has to grab something the reader can see: the placeholder an
-        // image starts with has no picture file in the book yet, so it has nothing to grab.
+        // Give it a picture, because the drag below has to grab something visible. A new image
+        // starts with a placeholder that has no picture file in the book yet, so there is
+        // nothing to grab.
         await changeInlineImagePicture(
             page,
             BLOCK,
@@ -347,7 +350,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
             fixtureImage("bird.png"),
         );
 
-        // Moving one leaves the other where it is, in every language.
+        // Moving one image leaves the other where it is, in every language.
         await dragInlineImageToDock(
             page,
             BLOCK,
@@ -368,8 +371,7 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
         ))
             expect(copy.dock).toBe("left");
 
-        // THE ACTION UNDER TEST: deleting one of the two. The other survives it, in every
-        // language.
+        // THE ACTION UNDER TEST: delete one of the two. The other stays, in every language.
         await deleteInlineImage(page, BLOCK, FIRST_LANG, secondId);
         for (const block of await getInlineImages(page, BLOCK)) {
             expect(block.images.map((image) => image.id)).toEqual([imageId]);
@@ -379,8 +381,8 @@ test.describe("inline images in a book with two languages [Test Case ID 815]", (
     test("the Talking Book tool marks no sentence inside the picture", async ({
         page,
     }) => {
-        // THE ACTION UNDER TEST: opening the toolbox, which puts the Talking Book tool to work on
-        // the page and makes it mark the recordable sentences of every text field.
+        // THE ACTION UNDER TEST: open the toolbox. That starts the Talking Book tool on the page,
+        // and it marks the sentences to record in every text field.
         await openToolboxWithTalkingBook(page);
 
         const sentences = await getNarrationSentences(page);

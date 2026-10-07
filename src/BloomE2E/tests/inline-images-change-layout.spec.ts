@@ -1,24 +1,24 @@
-// What "Choose Different Layout" does to a picture the person has placed in a text block.
+// Checks what "Choose Different Layout" does to a picture the person has placed in a text block.
 //
-// WHAT THIS IS ABOUT. Choosing a different layout for a page does not rewrite the text: Bloom
-// imports the template page and MOVES the existing bloom-editable nodes into it
-// (HtmlDom.MigrateEditableData -> MigrateChildren), so the inline image wrapper arrives intact,
-// geometry and all, in a box that may be a different shape. That is the same stale-offset
-// problem as a page-size change, reached by a different route, and it is why MigrateChildren
-// already carries data-imgsizebasedon across for bloom-canvas: "or we don't get the right
-// adjustments for the probably changed size". An inline image's own baseline attribute
-// (data-inline-image-offset-basedon) sits on the wrapper inside the editable, so it travels with
-// the nodes that are moved, and the re-measure at page setup does the rest.
+// Choosing a different layout for a page keeps the existing text. Bloom imports the template
+// page and moves the existing bloom-editable nodes into it (HtmlDom.MigrateEditableData calls
+// MigrateChildren), so the inline image wrapper arrives unchanged, with its stored size and
+// position, in a box that may be a different shape. A page-size change causes the same problem:
+// the offset down the block was measured for a block of a different size. That is why
+// MigrateChildren already carries data-imgsizebasedon across for bloom-canvas, "or we don't get
+// the right adjustments for the probably changed size". An inline image keeps the size it was
+// measured against in data-inline-image-offset-basedon on the wrapper inside the editable, so
+// the attribute moves with the nodes, and the code that measures again when the page is set up
+// adjusts the offset.
 //
 // The layouts here go from Just Text, whose one text block has the whole page, to Basic Text &
-// Image, whose text block gives half its height to a picture. That is the shape change a person
-// actually makes, and it shortens the block by more than the offset this test puts in it.
+// Image, whose text block gives half its height to a picture. People make this change, and it
+// shortens the block by more than the offset this test puts in it.
 //
-// NOT TESTED HERE, and not a defect of this feature: going to a layout with FEWER text blocks
-// discards the extra ones outright, picture and text alike (MigrateChildren stops at
-// Math.Min(template, old), and the single-page path passes allowDataLoss: true). Text is lost the
-// same way, so that is Bloom's existing answer for this menu item rather than anything to do with
-// inline images.
+// This file does not test going to a layout with fewer text blocks. That discards the extra
+// blocks, picture and text alike (MigrateChildren stops at Math.Min(template, old), and the
+// single-page path passes allowDataLoss: true). Plain text is lost the same way, so this is how
+// Bloom already handles that menu item and has nothing to do with inline images.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,11 +55,11 @@ test.describe.configure({ mode: "serial" });
 const BLOCK = ".bloom-translationGroup";
 const LANG = "en";
 
-// Short enough that the SHORTENED block can still hold it all. Any more and the layout change
-// overflows the block whatever the picture does -- half the height with the same text -- and
-// then the overflow this test asserts on says nothing about the picture's offset, which is what
-// it is here to watch. Plain text of that length overflows the same way, so that is Bloom's
-// answer for the menu item rather than a defect of inline images.
+// Short enough that the shorter block in the new layout can still hold all of it. With more
+// text, the block overflows after the layout change whatever the picture does, because it has
+// half the height and the same text, and then the overflow this test checks says nothing about
+// the picture's offset. Plain text of that length overflows the same way, so that would be how
+// Bloom already handles the menu item and not a problem with inline images.
 const TEXT =
     "The kingfisher waits on the branch above the pool, still enough that the water forgets it " +
     "is there. It watches the shadows move under the surface.";
@@ -75,7 +75,7 @@ const fixtureImage = (name: string) =>
 
 let imageId: string;
 
-/** Everything about where the picture sits, in one reading, for comparing across layouts. */
+/** Reads where the picture sits, for comparing before and after the layout change. */
 const wherePictureSits = async (page: Page) => {
     const image = await getInlineImage(page, BLOCK, LANG, imageId);
     const rects = await getInlineImageRects(page, BLOCK, LANG, imageId);
@@ -98,8 +98,8 @@ const wherePictureSits = async (page: Page) => {
 };
 
 /**
- * A page with the picture in the full-width band as far down the text as the drag will take it,
- * which is the state a shorter block cannot hold. Returns the page's id.
+ * Makes a page with the picture in the full-width band, dragged as far down the text as it will
+ * go, so that a shorter block could not hold it at that offset. Returns the page's id.
  */
 const makePageWithAPictureLowInItsText = async (
     page: Page,
@@ -164,14 +164,14 @@ test("a picture survives choosing a different layout for its page, and keeps the
         "The block already held more text than it could show before the layout change.",
     ).toBeLessThanOrEqual(0);
 
-    // THE ACTION UNDER TEST: the page menu's own command, and the dialog's own button.
+    // The action under test, done through the page menu's command and the dialog's button.
     await selectPage(page, contentPageId);
     await runPageMenuCommand(page, contentPageId, "Choose Different Layout");
     await chooseDifferentLayout(page, "Basic Text & Image", "Basic Book");
 
     const after = await wherePictureSits(page);
-    // First that it is there at all. The wrapper is moved with the text, so losing it would mean
-    // the migration dropped content the person had put on the page.
+    // Check first that the picture is still there. The wrapper is moved with the text, so losing
+    // it would mean the layout change dropped content the person had put on the page.
     expect(
         after.widthPercent,
         "The picture did not survive the layout change at all.",
@@ -180,7 +180,7 @@ test("a picture survives choosing a different layout for its page, and keeps the
         after.dock,
         "The layout change moved the picture to a different dock.",
     ).toBe(before.dock);
-    // And then the invariant a drag keeps: no text pushed off the end of the block.
+    // A drag never pushes text off the end of the block, so the layout change must not either.
     expect(
         after.overflowPx,
         `Choosing the "Basic Text & Image" layout pushed ${Math.round(after.overflowPx)}px of ` +
@@ -196,7 +196,7 @@ test("a picture survives choosing a different layout for its page, and keeps the
         `Choosing the "Basic Text & Image" layout left the picture ` +
             `${Math.round(-after.roomBelowPx)}px past the end of everything the block holds.`,
     ).toBeGreaterThan(-2);
-    // And the person can still see it without hunting for it.
+    // The top of the picture must still be inside the block, where the person can see it.
     expect(
         after.pictureTopInBlockPx,
         `Choosing the "Basic Text & Image" layout put the top of the picture ` +

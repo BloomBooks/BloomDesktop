@@ -1,12 +1,12 @@
 // Exporting a book to a spreadsheet, and importing a spreadsheet back into it.
 //
-// Both commands are on the book's context menu in the Collection tab, and both used to be
-// undrivable. Export finished by opening the .xlsx in whatever the machine uses for a
-// spreadsheet, which put an Excel window on the developer's screen that no test could close.
-// Import opens a native file chooser, which hangs a run.
+// Both commands are on the book's context menu in the Collection tab. Normally the export ends by
+// opening the .xlsx in the machine's spreadsheet program, which would put an Excel window on the
+// developer's screen that no test could close, and the import opens a native file chooser, which
+// would hang a test run.
 //
-// Bloom answers both under --e2e now. The export records the path it wrote instead of opening the
-// file, and reports it at e2e/lastExportedSpreadsheet; the import's chooser takes its answer from
+// Under --e2e Bloom avoids both. The export records the path it wrote instead of opening the file,
+// and reports it at e2e/lastExportedSpreadsheet. The import's file chooser takes its answer from
 // e2e/nextFileToChoose. See AUTOMATION-DEBT.md, "Exporting a spreadsheet launches Excel".
 //
 // Both features need a subscription tier of LocalCommunity or better (FeatureRegistry.cs), so a
@@ -29,14 +29,15 @@ interface IBookInCollection {
  * Export the selected book to a spreadsheet under `parentFolder`, and return the path of the
  * .xlsx file. Creates `parentFolder` if it is not there.
  *
- * SETUP, not a UI path, and the one step here that is: the Export dialog's Choose Folder and
- * Export buttons carry no test id, so a test cannot click them. What this does drive is the same
- * `spreadsheet/export` POST the dialog's Export button sends, so everything after the dialog --
- * the exporter, the progress dialog, the images, and the finished file -- is Bloom's own work.
+ * This is the one step in this file that does not go through the UI, so treat it as setup. The
+ * Export dialog's Choose Folder and Export buttons have no test id, so a test cannot click them.
+ * Instead this sends the same `spreadsheet/export` POST that the dialog's Export button sends, so
+ * everything after the dialog (the exporter, the progress dialog, the images and the finished
+ * file) is done by Bloom's own code.
  *
- * Waits for the export to finish. That wait is what the returned path is for: the export runs in
- * the background behind a progress dialog, and Bloom fills e2e/lastExportedSpreadsheet in only
- * when the file is written.
+ * Waits for the export to finish. The export runs in the background behind a progress dialog, and
+ * Bloom sets e2e/lastExportedSpreadsheet only once the file is written, so polling for the path
+ * is how this knows the export is done.
  */
 export async function exportBookToSpreadsheet(
     page: Page,
@@ -44,9 +45,9 @@ export async function exportBookToSpreadsheet(
 ): Promise<string> {
     fs.mkdirSync(parentFolder, { recursive: true });
     // The Collection tab has to be showing. The export reports its progress into a dialog embedded
-    // in that tab's document, and it waits for that dialog to say it is ready to receive messages
-    // before it does any work (BrowserProgressDialog). Started from another tab, the export simply
-    // never begins, with nothing on screen to say so.
+    // in that tab's document, and it does no work until that dialog says it is ready to receive
+    // messages (BrowserProgressDialog). If started from another tab, the export never begins, and
+    // nothing on screen says so.
     await switchTab(page, "collection");
     await waitForCollectionReady(page);
     await apiPost(
@@ -81,15 +82,15 @@ export async function exportBookToSpreadsheet(
  * in the Collection tab, and choose "Import Content from Spreadsheet...". The native file chooser
  * that command opens is pre-answered with `xlsxPath`, so no dialog appears.
  *
- * The import always leaves its progress dialog up for the reader (SpreadsheetImporter), so this
- * closes it, which is also what makes Bloom re-read the book. Waits until the book on disk has
- * been rewritten and the dialog is gone. The caller is left in the Collection tab with the book
- * selected.
+ * The import always leaves its progress dialog open for the person to read (SpreadsheetImporter).
+ * This closes it, and closing it is also what makes Bloom re-read the book. Waits until the book
+ * on disk has been rewritten and the dialog is gone. Leaves the Collection tab showing, with the
+ * book selected.
  *
- * Returns the book's folder, which is not always the one passed in: a spreadsheet that changes the
- * title renames the folder and the .htm inside it (BringBookUpToDate ends in
- * UpdateBookFileAndFolderName). So the book is followed by its id here rather than by its path,
- * and a caller that goes back to the files afterwards should use what this returns.
+ * Returns the book's folder, which may differ from the one passed in. A spreadsheet that changes
+ * the title makes Bloom rename the folder and the .htm inside it (BringBookUpToDate ends by calling
+ * UpdateBookFileAndFolderName). So this tracks the book by its id instead of its path, and a
+ * caller that looks at the files afterwards should use the folder this returns.
  */
 export async function importSpreadsheetIntoBook(
     page: Page,
@@ -100,7 +101,8 @@ export async function importSpreadsheetIntoBook(
     const bookId = readBookInstanceId(bookFolder);
     const before = fs.statSync(bookHtmlPath(bookFolder)).mtimeMs;
 
-    // Arm the chooser before the command opens it; see the note at the top of this file.
+    // Tell Bloom which file to choose before the command opens the chooser; see the note at the
+    // top of this file.
     await apiPost(page, "e2e/nextFileToChoose", xlsxPath, "text/plain");
 
     await switchTab(page, "collection");
@@ -111,10 +113,10 @@ export async function importSpreadsheetIntoBook(
         .click({ button: "right" });
 
     // Both spreadsheet commands are on the menu's "More" submenu, which has to be opened first.
-    // Matching it by its English label is the weak point of this helper: a nested menu item is
-    // rendered by a third-party NestedMenuItem that carries no test id, unlike every other item
-    // in this menu (see AUTOMATION-DEBT.md, "The Edit tab's page thumbnail menu has no stable
-    // test ids").
+    // This finds "More" by its English label, so it breaks if that label changes. The submenu is
+    // rendered by a third-party NestedMenuItem, which has no test id, unlike every other item in
+    // this menu (see AUTOMATION-DEBT.md, "The Edit tab's page thumbnail menu has no stable test
+    // ids").
     const more = page
         .locator('[role="menu"] li')
         .filter({ hasText: /^More$/ })
@@ -128,11 +130,11 @@ export async function importSpreadsheetIntoBook(
     await command.waitFor({ state: "visible", timeout: 30000 });
     await command.click();
 
-    // Poll for the book's .htm having been rewritten, resolving the folder each time round: a
-    // spreadsheet that changes the title makes Bloom rename the folder and the file, and the
-    // rename is not atomic from out here, so a moment when neither name resolves is normal. Such
-    // a moment reports the mtime we started with, which reads as "nothing yet" and keeps the wait
-    // going; reporting anything else (or throwing) would end it, in the wrong direction.
+    // Poll until the book's .htm has been rewritten, finding the folder again on each poll. A
+    // spreadsheet that changes the title makes Bloom rename the folder and the file, and from
+    // outside Bloom the rename is not atomic, so there can be a moment when neither name exists.
+    // At such a moment this returns the starting mtime, which the poll treats as "not rewritten
+    // yet", so it keeps waiting. Returning anything else, or throwing, would end the wait early.
     const currentHtmlMtime = (): number => {
         try {
             return fs.statSync(
@@ -152,10 +154,9 @@ export async function importSpreadsheetIntoBook(
         })
         .not.toBe(before);
 
-    // The import deliberately keeps its progress dialog up until the reader closes it, and Bloom
-    // re-reads the book only then (the doWhenProgressCloses callback). So a test that skipped this
-    // would go on to look at the book Bloom had before the import, and its click on anything else
-    // would land on the dialog's backdrop.
+    // The import keeps its progress dialog open until the person closes it, and Bloom re-reads the
+    // book only then (the doWhenProgressCloses callback). If a test skipped this, it would see the
+    // book as it was before the import, and its next click would land on the dialog's backdrop.
     const close = page.getByTestId("Common.Close");
     await close.waitFor({ state: "visible", timeout: 120000 });
     await close.click();
@@ -163,7 +164,7 @@ export async function importSpreadsheetIntoBook(
     return findBookFolderById(collectionFolder, bookId);
 }
 
-/** The book's id, from its meta.json: the one thing about it a rename cannot change. */
+/** Read the book's id from its meta.json. Renaming the book does not change its id. */
 function readBookInstanceId(bookFolder: string): string {
     const metaPath = Path.join(bookFolder, "meta.json");
     const id = JSON.parse(fs.readFileSync(metaPath, "utf8")).bookInstanceId;
@@ -172,8 +173,9 @@ function readBookInstanceId(bookFolder: string): string {
 }
 
 /**
- * The folder the book with this id is in now. Every book folder of a collection holds a meta.json
- * carrying its id, so this finds it wherever an import has renamed it to.
+ * Find the folder that currently holds the book with this id. Every book folder in a collection has
+ * a meta.json with the book's id, so this finds the book even after an import has renamed its
+ * folder.
  */
 function findBookFolderById(collectionFolder: string, bookId: string): string {
     const folders = fs
@@ -192,7 +194,7 @@ function findBookFolderById(collectionFolder: string, bookId: string): string {
     return found[0];
 }
 
-/** The book's .htm file. Throws when the folder holds none, naming what it does hold. */
+/** The path of the book's .htm file. Throws, listing what it found, unless there is exactly one. */
 function bookHtmlPath(bookFolder: string): string {
     const names = fs
         .readdirSync(bookFolder)
@@ -205,7 +207,7 @@ function bookHtmlPath(bookFolder: string): string {
     return Path.join(bookFolder, names[0]);
 }
 
-/** The book of the editable collection whose folder is `bookFolder`, as Bloom reports it. */
+/** Ask Bloom for the book in the editable collection whose folder is `bookFolder`. */
 async function findBookInCollection(
     page: Page,
     bookFolder: string,

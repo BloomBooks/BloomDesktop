@@ -1,21 +1,19 @@
-// Every copy of a picture has to know the picture's shape.
+// Checks that every copy of a picture records the picture's shape.
 //
-// WHAT THIS IS ABOUT. --inline-image-aspect-ratio is what gives the wrapper the shape of the
-// picture inside it, and it is written from the img's naturalWidth/naturalHeight once the file has
-// loaded (setAspectRatioFromNaturalSize, called from wireUpImage and again from the img's load
-// event). The copies of one picture live one per editable of the translation group, each with its
-// own img, and the comment on that load handler says each copy therefore records its own ratio
-// and there is nothing to sync.
+// --inline-image-aspect-ratio gives the wrapper the shape of the picture inside it. It is set from
+// the img's naturalWidth and naturalHeight once the file has loaded (setAspectRatioFromNaturalSize,
+// called from wireUpImage and again from the img's load event). Each editable of the translation
+// group has its own copy of the picture with its own img, and the comment on that load handler
+// says each copy therefore records its own ratio and nothing needs to be synced.
 //
-// That leaves the copy whose load did not happen -- or happened before the src changed -- with no
-// ratio at all, and a wrapper with no ratio falls back to kDefaultInlineImageAspectRatio, 4 / 3.
-// The lang="z" prototype is the copy that matters most here: it is hidden, so nothing about it is
-// visible to the person, and it is what TranslationGroupManager clones when a language is added to
-// the collection later. A prototype with the wrong shape hands the wrong shape to every language
-// added from then on.
+// But a copy whose img never loaded, or loaded before its src changed, then has no ratio at all,
+// and a wrapper with no ratio uses kDefaultInlineImageAspectRatio, 4 / 3. The copy in the
+// lang="z" editable matters most. It is hidden, so the person never sees that it is wrong, and
+// TranslationGroupManager clones it when a language is added to the collection later. If it has
+// the wrong shape, every language added from then on gets the wrong shape.
 //
-// Measured while probing paste: right after choosing bird.png (274 x 300), the "en" copy read
-// "274 / 300" and the "z" copy read "".
+// When only the load event set the ratio, choosing bird.png (274 x 300) left the "en" copy with
+// "274 / 300" and the "z" copy with "".
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,8 +67,8 @@ test("every copy of a picture records the picture's shape, the hidden prototype 
 
     const imageId = await addInlineImage(page, BLOCK, LANG);
 
-    // THE ACTION UNDER TEST: choosing a real picture, which is what gives the wrapper a shape to
-    // record. Before this it holds a placeholder, which never loads and so keeps the default.
+    // The action under test: choose a real picture, which gives the wrapper a shape to record.
+    // Until then it holds a placeholder, which never loads and so keeps the default ratio.
     await changeInlineImagePicture(
         page,
         BLOCK,

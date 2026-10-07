@@ -290,11 +290,11 @@ async function listEditableBooks(page: Page): Promise<IBookInfo[]> {
  * tab's Monolingual/Bilingual/Trilingual dropdown. Any language can be turned off, Language 1
  * included, as long as one other stays on.
  *
- * Each change makes Bloom save the page and then reload it, but only when Bloom is editing the page:
- * a change that arrives while the page is still loading, or while an earlier save is still running,
- * gets no save and no reload (EditingModel.SaveThen). The book would record the new languages while
- * the Edit tab kept showing the old ones. So each change waits for the page to be ready for editing,
- * and the next change waits for that reload to finish.
+ * Each change makes Bloom save the page and then reload it, but only if Bloom is editing the page
+ * at that moment. If the change arrives while the page is still loading, or while an earlier save
+ * is still running, Bloom neither saves nor reloads (EditingModel.SaveThen), and the book records
+ * the new languages while the Edit tab goes on showing the old ones. So before each change this
+ * waits for the page to be ready for editing, and after it this waits for the reload to finish.
  */
 export async function setContentLanguages(
     page: Page,
@@ -370,18 +370,17 @@ export function editablePageFrame(page: Page): Frame {
  * can look ready in the DOM a moment before Bloom is, so this asks Bloom as well, through the e2e
  * hook that reports its editing state.
  *
- * And the third: the frame's own element in Bloom's window. Every other check here asks the
- * document INSIDE the frame, and that document can be fully laid out while the frame it sits in
- * has no box yet -- switching back to the Edit tab rebuilds the view around it. Measuring an
- * element through a frame with no box gets nothing back, however well laid out the element is
- * inside it, so a helper measuring an inline image fails in a test whose subject is somewhere
- * else entirely, reporting an element that the page itself says has a perfectly good rectangle.
+ * It also waits for the iframe element itself to have a size in Bloom's window. The other checks
+ * look at the document inside the frame, and that document can be fully laid out while the iframe
+ * has no box yet, because switching back to the Edit tab rebuilds the view around it. Playwright
+ * cannot measure an element inside an iframe that has no box, even when the page's own script
+ * reports a perfectly good rectangle for it. Without this wait, a helper that measures an inline
+ * image would fail in a test that is about something else.
  *
- * And the fourth: Bloom reports itself as editing before the page's own script has decided which
- * language boxes to show. Until it has, every box on the page is hidden, so anything in one --
- * an inline image, say -- is in the DOM with no box on the screen at all, and a helper that
- * measures it fails in a test whose subject is somewhere else entirely. So where the page has
- * text boxes, wait for one of them to be showing.
+ * Finally, Bloom reports that it is editing before the page's own script has decided which
+ * language boxes to show. Until it has, every box on the page is hidden, so an inline image inside
+ * one is in the DOM but has no box on the screen, and measuring it fails in the same misleading
+ * way. So when the page has text boxes, this waits until one of them is showing.
  */
 export async function waitForEditablePage(
     page: Page,
@@ -427,8 +426,8 @@ export async function waitForEditablePage(
             },
         )
         .toBeGreaterThan(0);
-    // bloom-visibility-code-on is what the page's own script puts on the boxes it has decided to
-    // show (updateLanguageVisibility); the CSS hides every box without it.
+    // The page's script (updateLanguageVisibility) adds bloom-visibility-code-on to each box it
+    // decides to show, and the CSS hides every box that lacks it.
     const groupCount = await editablePageFrame(page)
         .locator(".bloom-page .bloom-translationGroup")
         .count()

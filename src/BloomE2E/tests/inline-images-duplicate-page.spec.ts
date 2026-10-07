@@ -1,20 +1,19 @@
-// Duplicating a page that has a picture in its text.
+// Checks duplicating a page that has a picture in its text.
 //
-// WHAT THIS IS ABOUT. Duplicate Page goes through Book.InsertPageAfter, whose BookStarter.
-// UniqueifyIds renews only .//img[@id] -- so every copy of the page keeps the SAME
-// data-bloom-inline-image-id as the page it came from. That is deliberate and harmless, because
-// every lookup this feature does is scoped to a translation group: syncInlineImagesFromEditable,
-// getInlineImageById and normalizeInlineImages are all handed a group or an editable and never
-// search the page, let alone the book. But it is load-bearing and invisible, which is exactly the
-// kind of thing that gets broken by a later change that looks harmless -- a document-wide
-// querySelector would do it -- so this pins it down: changing one page's picture must leave the
-// other page's alone.
+// Duplicate Page goes through Book.InsertPageAfter, which calls BookStarter.UniqueifyIds. That
+// gives new ids only to .//img[@id], so the copy of the page keeps the same
+// data-bloom-inline-image-id as the page it came from. This is intended and does no harm, because
+// this feature only ever looks up an inline image within one translation group:
+// syncInlineImagesFromEditable, getInlineImageById and normalizeInlineImages are all given a group
+// or an editable, and none of them searches the whole page or book. Nothing in the code shows that
+// it depends on this, so a later change could easily break it, for example by using a
+// document-wide querySelector. This test checks that changing one page's picture leaves the other
+// page's picture alone.
 //
-// The image FILE is copied by InsertPageAfter, but only `if (!RobustFile.Exists(path))`, so a
-// page pasted into a book that already has a different file of the same name silently takes the
-// other book's picture. That is how every picture in Bloom is copied, canvas elements included,
-// so it is not this feature's to fix; it is noted here so the next person reading this file knows
-// it was looked at.
+// InsertPageAfter also copies the image file, but only `if (!RobustFile.Exists(path))`. So a page
+// pasted into a book that already has a different file with the same name shows that book's
+// picture, with no warning. Bloom copies every picture this way, including those in canvas
+// elements, so this feature does not fix it; this comment records that it was looked at.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -83,7 +82,7 @@ test("a duplicated page's picture is independent of the original's [Test Case ID
         (block) => block.images,
     )[0].widthPercent;
 
-    // THE ACTION UNDER TEST.
+    // The action under test.
     await duplicatePageWithContextMenu(page, firstPage.id);
     const contentPages = await getContentPages(page);
     expect(
@@ -92,7 +91,7 @@ test("a duplicated page's picture is independent of the original's [Test Case ID
     ).toBe(2);
     const copyId = contentPages.find((p) => p.id !== firstPage.id)!.id;
 
-    // The copy has the picture, and it has the same identity, which is what this pins down.
+    // The copied page has the picture, with the same data-bloom-inline-image-id as the original.
     await goToPage(page, copyId);
     const onTheCopy = (await getInlineImages(page, BLOCK)).flatMap(
         (block) => block.images,
@@ -113,9 +112,9 @@ test("a duplicated page's picture is independent of the original's [Test Case ID
             `NOT renew this attribute, so a change here means those need rereading.`,
     ).toBe(true);
 
-    // THE THING THAT MATTERS: changing the copy's picture leaves the original's alone. The two
-    // share an id, so anything that looked one up across the page, or across the book, would hit
-    // the wrong one.
+    // The main check: changing the picture on the copied page must leave the original's alone.
+    // The two have the same id, so code that looked the picture up across the whole page or book
+    // could find the wrong one.
     const widened = await resizeInlineImage(
         page,
         BLOCK,

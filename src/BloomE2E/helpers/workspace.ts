@@ -159,16 +159,16 @@ export async function canUndo(page: Page): Promise<boolean> {
  * changes lands asynchronously, so wait for the state you expect (a text, a count, a class)
  * rather than reading the page straight after this.
  *
- * This is the top-bar Undo BUTTON's path, and only that. The button posts
- * editView/topBarButtonClick, which EditingViewApi hands back to bloomEditing.topBarButtonClick,
- * which calls `workspaceBundle.handleUndo()` -- exactly what this calls. handleUndo is the code
- * that chooses between CKEditor's undo, the canvas element manager's, the toolbox's and the
- * inline-image stack's, so this covers all of them.
+ * This does what the top-bar Undo button does. The button posts editView/topBarButtonClick, which
+ * EditingViewApi hands back to bloomEditing.topBarButtonClick, which calls
+ * `workspaceBundle.handleUndo()`, and that is what this calls. handleUndo chooses between
+ * CKEditor's undo, the canvas element manager's, the toolbox's, and the undo for inline images,
+ * so this covers all of them.
  *
- * It is NOT what Ctrl+Z does. Nothing in the shell claims that key, so it arrives in the page and
- * ckeditor's undo plugin runs it (measured in tests/inline-images-undo-keyboard.spec.ts). A
- * feature with its own undo stack has to be asked both questions: press the key with
- * pressKey(page, "Control+z") for one, call this for the other.
+ * Pressing Ctrl+Z takes a different path. Nothing in the shell claims that key, so it arrives in
+ * the page and ckeditor's undo plugin handles it (tests/inline-images-undo-keyboard.spec.ts checks
+ * this). To test a feature that has its own undo stack, test both: press the key with
+ * pressKey(page, "Control+z"), and call this.
  */
 export async function undo(page: Page): Promise<void> {
     if (!(await canUndo(page)))

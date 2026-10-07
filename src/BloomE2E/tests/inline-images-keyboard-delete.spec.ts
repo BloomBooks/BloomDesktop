@@ -1,22 +1,25 @@
-// Deleting a picture with the keyboard rather than from its menu.
+// Checks what happens when the person tries to delete a picture with the keyboard instead of
+// from its menu.
 //
-// WHAT THIS IS ABOUT. Two mechanisms meet here, and each is fine on its own.
+// Two pieces of code are involved, and each works correctly by itself.
 //
-// BloomField's PreventRemovalOfSomeElements is the guard: the wrapper carries
-// bloom-preventRemoval, and a keystroke that leaves the field with fewer of those than it had
-// before the keystroke gets document.execCommand("undo"). Ctrl+A DEL is what it exists for.
+// BloomField's PreventRemovalOfSomeElements keeps the picture from being deleted. The wrapper has
+// the bloom-preventRemoval class, and if a keystroke leaves the field with fewer elements that
+// have that class than it had before, the code calls document.execCommand("undo"). It is there to
+// handle Ctrl+A DEL.
 //
-// The other is normalizeInlineImages at page setup, which stamps the canonical editable's images
-// over the group's other editables. getCanonicalInlineImageEditable only ever considers an
-// editable that HAS images, so an editable the person emptied is never the authority: the picture
-// comes back from whichever language still holds one. And nothing calls
-// syncInlineImagesFromEditable after ordinary typing or cutting -- its callers are all
-// inline-image operations -- so a keyboard deletion is never carried to the other languages in
-// the first place.
+// The other is normalizeInlineImages, which runs when the page is set up and copies the images
+// in the editable chosen by getCanonicalInlineImageEditable over the group's other editables.
+// getCanonicalInlineImageEditable only chooses an editable that has images, so an editable the
+// person emptied is never the one copied from, and the picture comes back from whichever language
+// still has it. Also, nothing calls syncInlineImagesFromEditable after ordinary typing or cutting
+// (only the inline image operations call it), so a deletion made with the keyboard never reaches
+// the other languages.
 //
-// So if the guard ever fails to restore, the person gets "I deleted the picture, saved, came back,
-// and it is here again", with no way to tell why. This test asks the browser which it is: does
-// Ctrl+A DEL leave the picture in place, and does it survive a save and a reload either way.
+// So if PreventRemovalOfSomeElements ever fails to put the picture back, the person deletes the
+// picture, saves, comes back, and finds it there again, with no way to tell why. This test checks
+// in the browser whether Ctrl+A DEL leaves the picture in place, and whether a deletion from the
+// menu lasts through a save and a reload.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -95,9 +98,9 @@ test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]",
         imageId,
         fixtureImage("bird.png"),
     );
-    // One copy per language's block, counted before the keystroke: what has to be true afterwards
-    // is that every one of them still has its copy, and a count taken afterwards could not tell
-    // that from a block having gone missing altogether.
+    // Count the copies in each language's block before the keystroke. Afterwards every block must
+    // still have its copy, and a count taken only afterwards could not tell that apart from a
+    // whole block having gone missing.
     const copiesBefore = (await getInlineImages(page, BLOCK)).map(
         (editable) => editable.images.length,
     );
@@ -106,7 +109,8 @@ test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]",
         "The group holds fewer than two copies of the picture, so this test is measuring nothing.",
     ).toBeGreaterThan(1);
 
-    // THE ACTION UNDER TEST: the gesture bloom-preventRemoval exists for, with real keys.
+    // The action under test: press Ctrl+A and then Delete with real keys, which is what
+    // bloom-preventRemoval is there to handle.
     const block = page
         .frameLocator("#page")
         .locator(`${BLOCK} > .bloom-editable[lang="${LANG}"]`)
@@ -115,12 +119,11 @@ test("Ctrl+A DEL does not take the picture out of the block [Test Case ID 815]",
     await page.keyboard.press("Control+a");
     await page.keyboard.press("Delete");
 
-    // What we are waiting for is the protection having run: BloomField takes the deletion back
-    // when it sees the wrapper count has dropped (PreventRemovalOfSomeElements, on keyup), and
-    // CKEditor's own work around a paste or a deletion is asynchronous. So the wait is for the
-    // picture to be there in every language -- the state under test -- rather than for a length
-    // of time. A protection that never runs polls to the timeout and fails with the message
-    // below.
+    // Wait until PreventRemovalOfSomeElements has run. It undoes the deletion on keyup when it
+    // sees there are fewer wrappers, and CKEditor's handling of a paste or a deletion is
+    // asynchronous. So this waits for the picture to be back in every language, which is the
+    // state under test, and not for a fixed time. If the undo never runs, the poll times out and
+    // fails with the message below.
     await expect
         .poll(
             async () =>
@@ -157,8 +160,8 @@ test("a picture deleted from its own menu stays deleted through a save and a rel
     page,
 }) => {
     test.setTimeout(300000);
-    // The menu is the way to delete a picture, so this is the other half: the deletion has to
-    // reach every language, or normalizeInlineImages brings it back from the one it missed.
+    // The picture's menu is how a person deletes it. That deletion has to reach every language,
+    // or normalizeInlineImages brings the picture back from a language that still has it.
     await goToPage(page, contentPageId);
     await deleteInlineImage(page, BLOCK, LANG, imageId);
     expect(
@@ -166,7 +169,7 @@ test("a picture deleted from its own menu stays deleted through a save and a rel
         "The menu's Delete left copies of the picture in the group.",
     ).toBe(0);
 
-    // Leave the page and come back, which is a save and a fresh page setup.
+    // Leave the page and come back, so that Bloom saves it and sets it up again.
     await goToPage(page, coverId);
     await goToPage(page, contentPageId);
 

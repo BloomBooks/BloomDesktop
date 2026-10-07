@@ -1,26 +1,26 @@
-// What happens when the person lets go of the mouse somewhere other than the page.
+// Checks what happens when the person lets go of the mouse somewhere other than the page.
 //
-// WHAT THIS IS ABOUT. A drag of an inline image listens for pointermove and pointerup on the
-// PAGE IFRAME's document (addPointerListeners), and nothing in Bloom calls setPointerCapture. A
-// person dragging a picture upward runs out of page long before they run out of gesture: above
-// the page is Bloom's own toolbar, which is the top-level document, not the page's.
+// A drag of an inline image listens for pointermove and pointerup on the page iframe's document
+// (addPointerListeners), and nothing in Bloom calls setPointerCapture. A person dragging a
+// picture upward can easily move the pointer past the top of the page, onto Bloom's own
+// toolbar, which belongs to the top-level document.
 //
-// WHAT THIS TEST MEASURED. The gesture survives it. Dragged to (8, 8) in the top-level document,
-// the drag is still under way -- so the pointermoves reached the page's document even though the
-// pointer was over a different one -- and the release there ends it, commits, and syncs the
-// copies. That is Chromium's mouse capture: while a button is down, the events go to the frame
-// where the press happened, whatever they are over. So the page iframe boundary, which is the one
-// boundary a person can cross with the button held inside Bloom's window, needs no
+// The drag keeps working when that happens. With the pointer moved to (8, 8) in the top-level
+// document, the drag is still under way, so the pointermove events still reached the page's
+// document. Letting go there ends the drag, saves the change, and syncs the copies in the other
+// languages. This works because, while a mouse button is down, Chromium sends the events to the
+// frame where the press happened, whatever the pointer is over. So crossing the edge of the page
+// iframe, the one edge a person can cross while staying inside Bloom's window, needs no
 // setPointerCapture.
 //
-// WHAT IT DOES NOT COVER, and cannot: a release outside the WebView2 window altogether. Playwright
-// drives the mouse through the browser, so there is no "outside the window" for it to release in
-// (AUTOMATION-DEBT.md: "WinForms surfaces cannot be driven"). What would be left behind there is
-// worth knowing: dragState still set, the body still carrying the dragging class, and the 50ms
-// edge-scroll interval still re-applying the move from a pointer position nothing updates.
+// This test cannot cover letting go outside the WebView2 window altogether. Playwright drives the
+// mouse through the browser, so it has nowhere outside the window to let go (AUTOMATION-DEBT.md:
+// "WinForms surfaces cannot be driven"). If that happened, dragState would stay set, the body
+// would keep the dragging class, and the 50ms interval that scrolls at the edge would keep
+// applying the move from a pointer position that nothing updates.
 //
-// So this test is here as the guard on the boundary that IS reachable. If a later change moves
-// these listeners to the wrapper, or to the top-level document, this is what says so.
+// So this test checks the edge a person can reach. If a later change moves these listeners to the
+// wrapper or to the top-level document, this test fails.
 
 import * as Path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -97,10 +97,10 @@ test("letting go of the mouse outside the page still ends the drag [Test Case ID
     await scrollBlockToTop(page, BLOCK, LANG);
     await dragInlineImageToDock(page, BLOCK, LANG, imageId, "middle");
 
-    // THE ACTION UNDER TEST. Take hold of the picture, drag it clear of the page iframe -- (8, 8)
-    // in the top-level document is Bloom's own chrome, well above where the page starts -- and let
-    // go there. The assertion in between is the interesting one: it says the moves are still
-    // arriving at the page's document while the pointer is over a different one.
+    // The action under test. Press on the picture, drag the pointer out of the page iframe to
+    // (8, 8) in the top-level document, which is Bloom's own toolbar well above the page, and let
+    // go there. The check in between confirms that the moves still reach the page's document
+    // while the pointer is over a different one.
     await beginInlineImageDrag(page, BLOCK, LANG, imageId);
     await moveInlineImageDragTo(page, { x: 8, y: 8 });
     expect(
@@ -124,9 +124,9 @@ test("letting go of the mouse outside the page still ends the drag [Test Case ID
         })
         .toBe(false);
 
-    // And the gesture has to have finished properly, not just stopped: the change is committed to
-    // every copy of the picture. The copies are only ever synced at the end of a gesture, so if
-    // they agree, the end ran.
+    // The drag must also have finished properly, with the change saved to every copy of the
+    // picture. The copies are synced only when a drag ends, so if they agree, the code that ends
+    // the drag ran.
     const settled = await getInlineImage(page, BLOCK, LANG, imageId);
     const copies = (await getInlineImages(page, BLOCK))
         .flatMap((block) => block.images)
@@ -139,8 +139,8 @@ test("letting go of the mouse outside the page still ends the drag [Test Case ID
                 `disagreeing copies mean the end never ran.`,
         ).toBe(settled.offsetPx);
 
-    // And the picture stayed in the block, wherever the pointer went. A pointer above the page is
-    // asking for the top of the text, not for somewhere off it.
+    // The picture must stay in the block wherever the pointer went. A pointer above the page means
+    // the person wants the picture at the top of the text.
     expect(
         settled.offsetPx,
         `The picture ended up at ${settled.offsetPx}px, which is above the start of its block.`,

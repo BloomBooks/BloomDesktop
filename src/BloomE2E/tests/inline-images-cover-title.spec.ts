@@ -1,27 +1,26 @@
-// "Insert Image" is not offered in a field Bloom stores and rewrites for itself -- the book title
-// being the one every person meets first.
+// Checks that "Insert Image" is not offered in a data-book field, which Bloom stores in the data
+// div and writes back into the page itself. The book title is the first such field anyone meets.
 //
-// WHAT THIS IS ABOUT. getInlineImageActionTarget decides where the command is offered, and what
-// it used to exclude was an editable inside a canvas element and an editable that is not a direct
-// child of a translation group. A data-book field is neither of those, so the command was offered
-// on the cover title, the credits page, and everywhere else in front and back matter. Nobody
-// decided that; it was what the two exclusions left behind.
+// getInlineImageActionTarget decides where the command is offered. Besides leaving out an
+// editable inside a canvas element and an editable that is not a direct child of a translation
+// group, it leaves out data-book fields, which are on the cover, the credits page, and
+// throughout front and back matter.
 //
-// Front and back matter is not stored where it is shown. BringXmatterHtmlUpToDate deletes and
-// re-injects every xmatter page whenever the book is brought up to date, so cover content survives
-// only through the data div: GatherDataItemsFromXElement stores the field's InnerXml, and
-// SetNodeXml writes it back into EVERY element carrying the same data-book key. bookTitle is on
-// both the cover and the title page, so a picture put on one became markup stored in the data div
-// and written into both -- and the stored title is what names the book in the collection, the
-// title bar, and AllTitles.
+// Bloom does not keep front and back matter where it is shown. BringXmatterHtmlUpToDate deletes
+// every xmatter page and inserts it again whenever the book is brought up to date, so cover
+// content survives only through the data div: GatherDataItemsFromXElement stores the field's
+// InnerXml, and SetNodeXml writes it back into every element that has the same data-book key.
+// bookTitle is on both the cover and the title page, so a picture put in one would be stored as
+// markup in the data div and written into both. The stored title is also what names the book in
+// the collection, the title bar, and AllTitles.
 //
-// Measured, before the exclusion was added: one picture added to the cover title produced four
+// When the command was offered on the cover title, adding one picture there produced four
 // wrappers in the saved book, and the stored title read
 // `<div data-bloom-inline-image-id="..." class="bloom-inlineImage bloom-inlineImageRight ...">`
 // instead of the words the person typed.
 //
-// Bloom's own way to put a picture on a cover is a canvas element, which the person reaches from
-// the same page, so nothing is taken away by not offering this one.
+// To put a picture on a cover, a person uses a canvas element, which they can add from the same
+// page, so leaving out this command does not take anything away.
 
 import * as fs from "node:fs";
 import { expect, test } from "../fixtures/bloomTest";
@@ -49,14 +48,14 @@ const COVER_CREDITS_BLOCK = ".creditsRow .bloom-translationGroup";
 const LANG = "en";
 const BOOK_TITLE = "Inline Images Cover Title";
 
-/** What the saved book holds: any inline image wrapper at all, and the stored title. */
+/** Reads from the saved book how many inline image wrappers it has, and its stored title. */
 const readFromDisk = (bookFolder: string) => {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
     return {
         wrappersInTheWholeFile: (
             html.match(/data-bloom-inline-image-id/g) ?? []
         ).length,
-        // The stored title, as the data div holds it: markup and all.
+        // The stored title exactly as the data div holds it, including any markup.
         storedTitle: (html.match(
             /<div[^>]*data-book="bookTitle"[^>]*lang="en"[^>]*>([\s\S]*?)<\/div>/,
         ) ?? [, ""])[1]
@@ -71,16 +70,16 @@ test("Bloom does not offer to put a picture in the book title or the credits [Te
     test.setTimeout(300000);
     await makeBookFromTemplate(page, "Basic Book");
     await typeInGroup(page, TITLE_BLOCK, LANG, BOOK_TITLE);
-    // Somewhere to go afterwards: leaving the cover is what makes Bloom save it, and a book made
-    // from the Basic Book template starts with no content page to leave to.
+    // Add a content page to go to later. Bloom saves the cover when the person leaves it, and a
+    // book made from the Basic Book template starts with no content page.
     await addPage(page, "Just Text");
     const pagesAtStart = await getPages(page);
     const coverId = pagesAtStart.find((p) => !p.isContentPage)!.id;
     await goToPage(page, coverId);
-    // The cover credits start empty, and the menu is opened by pointing at a spot on the text.
+    // The cover credits start empty, and the menu is opened by clicking on the text, so type some.
     await typeInGroup(page, COVER_CREDITS_BLOCK, LANG, "Written by someone");
 
-    // THE THING UNDER TEST: the command the person would reach for on the block they are in.
+    // The thing under test: whether each block's menu offers the command.
     expect(
         await textBlockOffersInsertImage(page, TITLE_BLOCK, LANG),
         `Bloom offered to put a picture in the book title. That field is stored in the data div ` +
@@ -94,9 +93,9 @@ test("Bloom does not offer to put a picture in the book title or the credits [Te
             `xmatter page and so has the same problem as the title.`,
     ).toBe(false);
 
-    // And nothing about the front matter left inline image markup in the saved book. Leaving the
-    // page is what makes Bloom save it; the collection learns the title at the same moment, which
-    // is why findBookFolder comes after the navigation.
+    // The saved book must have no inline image markup in its front matter. Bloom saves the page
+    // when the person leaves it, and the collection learns the title at the same moment, so
+    // findBookFolder has to come after going to the other page.
     const [contentPage] = await getContentPages(page);
     await goToPage(page, contentPage.id);
     const onDisk = readFromDisk(await findBookFolder(page, BOOK_TITLE));
