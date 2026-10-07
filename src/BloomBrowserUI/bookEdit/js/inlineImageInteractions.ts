@@ -53,6 +53,11 @@ import {
 } from "./canvasElementManager/CanvasElementContextControls";
 import { renderRoot } from "../../utils/reactRender";
 import {
+    clearImageContentTransform,
+    FlipAxis,
+    flipImageContent,
+} from "./imageContentTransform";
+import {
     commitPendingInlineImageUndo,
     getEditables,
     getFirstVisibleEditable,
@@ -653,11 +658,10 @@ const inlineImageControlConfiguration: ICanvasElementControlConfiguration = {
         // Duplicating means duplicating a canvas element, which this is not. Adding a second
         // picture to the block is Insert Image on the text's own menu.
         duplicate: "exclude",
-        // Rotate and flip act on the canvas element manager's active element, and an inline
-        // image is not one. (Reset Image acts there too, but it is enabled only for a cropped,
-        // rotated or flipped picture, which an inline image never is.)
+        // A quarter turn swaps the picture's width and height, which the wrap geometry of an
+        // inline image is not built to follow. Flip and Reset Image are offered, and
+        // withInlineImageTransforms points them at this image's own picture.
         rotateRight: "exclude",
-        flipImage: "exclude",
     },
 };
 
@@ -707,7 +711,15 @@ export function buildInlineImageMenuItems(
             convertControlMenuRows(
                 withInlineImageSync(
                     section
-                        .map((item) => item.menuRow)
+                        .map(
+                            (item) =>
+                                item.menuRow &&
+                                withInlineImageTransforms(
+                                    item.menuRow,
+                                    item.control.id,
+                                    target.wrapper,
+                                ),
+                        )
                         .filter((row): row is IControlMenuRow => !!row),
                     target,
                 ),
@@ -735,6 +747,52 @@ export function buildInlineImageMenuItems(
         ]);
     }
     return [];
+}
+
+// The registry's Flip and Reset Image act on the canvas element manager's active element, which
+// an inline image never is. This points them at the wrapper's own picture instead, using the
+// same functions the canvas element manager calls. Like the other commands, they then go through
+// withInlineImageSync for the undo point and the copy to the other languages. Every other row is
+// returned unchanged.
+function withInlineImageTransforms(
+    row: IControlMenuRow,
+    controlId: string,
+    wrapper: HTMLElement,
+): IControlMenuRow {
+    // Looked up when the command runs, because choosing a new picture may replace the img.
+    const picture = () => wrapper.querySelector("img") as HTMLImageElement;
+    switch (controlId) {
+        case "flipImage":
+            return {
+                ...row,
+                subMenuItems: row.subMenuItems!.map((subRow) => ({
+                    ...subRow,
+                    onSelect: () =>
+                        flipImageContent(picture(), flipAxisOf(subRow)),
+                })),
+            };
+        case "resetImage":
+            return {
+                ...row,
+                onSelect: () => clearImageContentTransform(picture()),
+            };
+        default:
+            return row;
+    }
+}
+
+// Which way one of the Flip submenu's rows mirrors the picture.
+function flipAxisOf(row: IControlMenuRow): FlipAxis {
+    switch (row.l10nId) {
+        case "EditTab.Image.FlipHorizontal":
+            return "horizontal";
+        case "EditTab.Image.FlipVertical":
+            return "vertical";
+        default:
+            throw new Error(
+                `Unexpected row in the Flip submenu: ${row.l10nId}`,
+            );
+    }
 }
 
 // The registry's commands were written for canvas element images, so they mutate only the
