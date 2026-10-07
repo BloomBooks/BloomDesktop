@@ -908,11 +908,22 @@ async function waitForRelaunchedBloom(
         }
         await delay(1000);
     }
+    // A copy that came up on something else (another folder, the chooser) is still ours if it
+    // keeps its settings in our folder. Nothing else tracks it, so kill it here, or it would
+    // outlive the test and hold the temp folder open.
     const seen: string[] = [];
     for (const port of CANDIDATE_PORTS) {
         const info = await readInstanceInfo(port);
-        if (info?.editableCollectionFolder)
-            seen.push(`${port} -> ${info.editableCollectionFolder}`);
+        if (!info) continue;
+        seen.push(
+            `${port} -> ${info.editableCollectionFolder ?? "no collection"}`,
+        );
+        if (
+            info.processId &&
+            info.userSettingsFolder &&
+            samePath(info.userSettingsFolder, userSettingsDir)
+        )
+            killProcessTree([info.processId]);
     }
     throw new Error(
         `No Bloom started serving ${collectionDir} within ${readyTimeoutMs / 1000}s after it ` +
