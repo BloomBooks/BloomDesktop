@@ -31,10 +31,7 @@ import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
-import {
-    advancedValuesToSave,
-    useAdvancedPage,
-} from "./settingsPages/AdvancedPage";
+import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -62,6 +59,26 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
                 (current as Record<string, unknown> | null | undefined)?.[key],
             values,
         );
+}
+
+// The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
+// what we post, so every piece of text the user changed is trimmed here: a collection name typed
+// with a trailing space would otherwise count as a rename, and Windows will not make a folder whose
+// name ends in a space. Text the user did not touch goes back exactly as it was, so saving one
+// setting never alters another value that already has surrounding spaces.
+function withEditedTextTrimmed<T>(value: T, loadedValue: unknown): T {
+    if (typeof value === "string")
+        return (value === loadedValue ? value : value.trim()) as T;
+    if (value === null || typeof value !== "object") return value;
+    // A branch that did not exist when the dialog opened (a third language just added) has nothing
+    // to compare with, so all its text counts as edited.
+    const loaded = (loadedValue ?? {}) as Record<string, unknown>;
+    return Object.fromEntries(
+        Object.entries(value).map(([key, child]) => [
+            key,
+            withEditedTextTrimmed(child, loaded[key]),
+        ]),
+    ) as T;
 }
 
 /**
@@ -175,7 +192,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
                     valueAtPath(
-                        advancedValuesToSave(values, loadedSettings.values),
+                        withEditedTextTrimmed(values, loadedSettings.values),
                         path,
                     ),
             )
@@ -195,7 +212,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         postJson(
             "collection/settings",
             {
-                values: advancedValuesToSave(values, loadedSettings!.values),
+                values: withEditedTextTrimmed(values, loadedSettings!.values),
                 restartRequired: restartNeededFor(values),
             },
             () => {

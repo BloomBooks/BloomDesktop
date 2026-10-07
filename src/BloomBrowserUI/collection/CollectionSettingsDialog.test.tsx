@@ -197,6 +197,18 @@ vi.mock("@sillsdev/config-r", () => ({
                 }
             />
             <button
+                data-testid="pad-country"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        frontBackMatter: {
+                            ...props.initialValues.frontBackMatter,
+                            country: "  Kenya ",
+                        },
+                    })
+                }
+            />
+            <button
                 data-testid="pad-collection-name"
                 onClick={() =>
                     props.onChange({
@@ -548,6 +560,23 @@ describe("CollectionSettingsDialog", () => {
         expect(mockPostJson.mock.calls[0][1]).toEqual({
             values: initialValues,
             restartRequired: false,
+        });
+    });
+
+    it("trims any text the user edited, on any page, when it saves", async () => {
+        expect(initialValues.frontBackMatter.country).toBe("");
+        await renderDialog();
+
+        click("pad-country");
+        await flushDeferredChange();
+        click("dialog-ok");
+
+        expect(mockPostJson.mock.calls[0][1].values).toEqual({
+            ...initialValues,
+            frontBackMatter: {
+                ...initialValues.frontBackMatter,
+                country: "Kenya",
+            },
         });
     });
 
