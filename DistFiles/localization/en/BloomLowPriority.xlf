@@ -17,6 +17,11 @@
         <note>ID: Errors.CorruptImageFile</note>
         <note>The placeholder {0} represents the name of the corrupt file. The placeholder {1} represents a message describing the problem with the file.</note>
       </trans-unit>
+      <trans-unit id="ErrorReport.Details">
+        <source xml:lang="en">Details</source>
+        <note>ID: ErrorReport.Details</note>
+        <note>Button on a small notification that tells the user something went wrong. Clicking it opens a message with more information about the problem.</note>
+      </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
