@@ -64,6 +64,14 @@ export interface ILaunchedBloom {
     restart: (
         betweenStopAndStart?: () => void | Promise<void>,
     ) => Promise<void>;
+    /**
+     * Follow a Bloom that started a new copy of itself on `newCollectionDir`, as Bloom does to
+     * finish renaming a collection: wait for the new process to serve that folder, then take it
+     * over, so its ports, pid and collectionDir replace the old ones here and stop() kills it.
+     * The new copy is not a child of the process we spawned, so without this it would outlive the
+     * test.
+     */
+    followRelaunch: (newCollectionDir: string) => Promise<void>;
 }
 
 /**
@@ -865,6 +873,54 @@ async function startBloomOn(
 }
 
 /**
+ * Wait for a Bloom that relaunched itself (see ILaunchedBloom.followRelaunch) to serve
+ * `collectionDir`, keeping its settings in `userSettingsDir`, and return it. Throws, naming the
+ * instances it could see, when none does within `readyTimeoutMs`.
+ */
+async function waitForRelaunchedBloom(
+    collectionDir: string,
+    userSettingsDir: string,
+    readyTimeoutMs: number,
+): Promise<IRunningBloom> {
+    const deadline = Date.now() + readyTimeoutMs;
+    while (Date.now() < deadline) {
+        const found = await findBloomServingCollection(collectionDir);
+        if (found?.info.processId && found.info.cdpPort) {
+            // The relaunched copy must have been given our launch options again; one that was not
+            // would be sharing the developer's own user settings.
+            if (
+                !found.info.userSettingsFolder ||
+                !samePath(found.info.userSettingsFolder, userSettingsDir)
+            ) {
+                killProcessTree([found.info.processId]);
+                throw new Error(
+                    `The relaunched Bloom serving ${collectionDir} keeps its user settings in ` +
+                        `${found.info.userSettingsFolder ?? "no folder it reports"}, not ` +
+                        `${userSettingsDir}: it was started without the e2e launch options.`,
+                );
+            }
+            return {
+                httpPort: found.httpPort,
+                cdpPort: found.info.cdpPort,
+                servingPid: found.info.processId,
+                pids: [found.info.processId],
+            };
+        }
+        await delay(1000);
+    }
+    const seen: string[] = [];
+    for (const port of CANDIDATE_PORTS) {
+        const info = await readInstanceInfo(port);
+        if (info?.editableCollectionFolder)
+            seen.push(`${port} -> ${info.editableCollectionFolder}`);
+    }
+    throw new Error(
+        `No Bloom started serving ${collectionDir} within ${readyTimeoutMs / 1000}s after it ` +
+            `relaunched itself.\n  Bloom instances seen: ${seen.length ? seen.join("; ") : "none"}`,
+    );
+}
+
+/**
  * Kill a running Bloom and wait until its HTTP port really goes dark. Shared by stop() and
  * restart(): a survivor holds file handles on the collection, which breaks both the delete and
  * the rewrite-then-relaunch.
@@ -964,6 +1020,19 @@ export async function launchBloom(
                 readyTimeoutMs,
                 options.experimentalFeatures,
             );
+            launched.httpPort = running.httpPort;
+            launched.cdpPort = running.cdpPort;
+            launched.bloomPid = running.servingPid;
+        },
+
+        followRelaunch: async (newCollectionDir) => {
+            running = await waitForRelaunchedBloom(
+                newCollectionDir,
+                userSettingsDir,
+                readyTimeoutMs,
+            );
+            collectionDir = newCollectionDir;
+            launched.collectionDir = newCollectionDir;
             launched.httpPort = running.httpPort;
             launched.cdpPort = running.cdpPort;
             launched.bloomPid = running.servingPid;

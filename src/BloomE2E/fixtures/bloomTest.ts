@@ -48,8 +48,8 @@ interface IBloomAppBase {
 
 /**
  * A Bloom launched on a collection (the normal case). Every field except collectionDir is
- * replaced by restart(), so read them from this object each time rather than copying them into
- * a local.
+ * replaced by restart(), and followRelaunch() replaces collectionDir too, so read them from this
+ * object each time rather than copying them into a local.
  */
 export interface IBloomApp extends IBloomAppBase {
     mode: "collection";
@@ -83,6 +83,13 @@ export interface IBloomApp extends IBloomAppBase {
      * or this can find the outgoing page.
      */
     reattachToShell: () => Promise<Page>;
+    /**
+     * Follow Bloom to the new copy of itself that it starts on `newCollectionDir`, as it does to
+     * finish renaming a collection, and return that copy's shell page. Updates every field here,
+     * collectionDir included, and teardown then stops the new copy. The caller makes sure the old
+     * Bloom is on its way out first (wait for the old page's "close" event).
+     */
+    followRelaunch: (newCollectionDir: string) => Promise<Page>;
 }
 
 /**
@@ -481,6 +488,21 @@ export const test = base.extend<IBloomTestFixtures, IBloomWorkerFixtures>({
                             launched!.cdpPort,
                             (b) => findShellPage(b, launched!.httpPort),
                         );
+                        return app.page;
+                    },
+                    followRelaunch: async (newCollectionDir) => {
+                        // The old connection points into a process that is exiting.
+                        await browser?.close();
+                        browser = undefined;
+                        await launched!.followRelaunch(newCollectionDir);
+                        app.page = await reconnectAndFind(
+                            launched!.cdpPort,
+                            (b) => findShellPage(b, launched!.httpPort),
+                        );
+                        app.httpPort = launched!.httpPort;
+                        app.cdpPort = launched!.cdpPort;
+                        app.bloomPid = launched!.bloomPid;
+                        app.collectionDir = launched!.collectionDir;
                         return app.page;
                     },
                 };

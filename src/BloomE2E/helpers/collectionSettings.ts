@@ -168,6 +168,23 @@ export async function getFeatureStatus(
     );
 }
 
+/**
+ * What is on disk at a collection folder: its name and the settings files (.bloomCollection) in
+ * it, or undefined when there is no such folder. A rename should leave one settings file, named
+ * after the folder.
+ */
+export function describeCollectionFolder(
+    collectionDir: string,
+): { name: string; settingsFiles: string[] } | undefined {
+    if (!fs.existsSync(collectionDir)) return undefined;
+    return {
+        name: Path.basename(collectionDir),
+        settingsFiles: fs
+            .readdirSync(collectionDir)
+            .filter((file) => file.endsWith(".bloomCollection")),
+    };
+}
+
 /** The new (React) Collection Settings dialog, by the title it shows. */
 function collectionSettingsDialog(page: Page): Locator {
     // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
@@ -351,9 +368,14 @@ export async function getCollectionSettingsOkLabel(
  * Click OK when it says "Restart": Bloom saves the settings and reopens the whole collection,
  * which destroys the shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from
  * here on) and returns it once the collection is ready again.
+ *
+ * When the change was a new collection name, pass the folder name Bloom will give the collection
+ * as `renamedTo`: Bloom renames the folder by starting a new copy of itself on it, and this then
+ * follows that copy (bloomApp.collectionDir becomes the renamed folder).
  */
 export async function restartFromCollectionSettings(
     bloomApp: IBloomApp,
+    renamedTo?: string,
 ): Promise<Page> {
     const page = bloomApp.page;
     const restart = collectionSettingsDialog(page).getByRole("button", {
@@ -374,7 +396,11 @@ export async function restartFromCollectionSettings(
         if (!/closed/i.test(String(error))) throw error;
     });
     await pageClosed;
-    const newPage = await bloomApp.reattachToShell();
+    const newPage = renamedTo
+        ? await bloomApp.followRelaunch(
+              Path.join(Path.dirname(bloomApp.collectionDir), renamedTo),
+          )
+        : await bloomApp.reattachToShell();
     await waitForCollectionReady(newPage);
     return newPage;
 }

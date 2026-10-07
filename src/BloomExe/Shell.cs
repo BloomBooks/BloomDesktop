@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -263,12 +264,16 @@ namespace Bloom
                                     _nameToChangeCollectionUponClosing
                                 );
 
+                                // Our process id goes last, so the new copy can wait for us to
+                                // exit before it moves the folder.
                                 Program.RestartBloom(
                                     true,
                                     string.Format(
-                                        "--rename \"{0}\" \"{1}\" ",
+                                        CultureInfo.InvariantCulture,
+                                        "--rename \"{0}\" \"{1}\" {2}",
                                         existingDirectoryPath,
-                                        newDirectoryPath
+                                        newDirectoryPath,
+                                        Environment.ProcessId
                                     )
                                 );
                             }

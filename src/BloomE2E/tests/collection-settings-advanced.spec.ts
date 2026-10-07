@@ -1,18 +1,19 @@
 // Journey tests for the Advanced page of the new (React) Collection Settings dialog: a person turns
 // off automatic updating and presses OK, and Bloom saves the choice; a person types a new name for
-// the collection and OK turns into Restart.
+// the collection and presses Restart, and Bloom renames the collection's folder and reopens it.
 //
-// The rename stops short of pressing Restart: Bloom carries out a rename by starting a new Bloom
-// process with only "--rename <from> <to>" on its command line, which drops this suite's launch
-// flags (see AUTOMATION-DEBT.md, "A collection rename relaunches Bloom without its launch flags").
+// The rename runs last: Bloom carries it out in a new copy of itself, which the fixture follows,
+// so the collection folder is a different one afterwards.
 
 import { expect, test } from "../fixtures/bloomTest";
 import {
     cancelCollectionSettings,
+    describeCollectionFolder,
     getCollectionSettingsCheckbox,
     getCollectionSettingsOkLabel,
     getCollectionSettingsText,
     openCollectionSettings,
+    restartFromCollectionSettings,
     saveCollectionSettings,
     setCollectionSettingsCheckbox,
     setCollectionSettingsText,
@@ -21,6 +22,7 @@ import {
 import { readSavedUserSetting } from "../helpers/userSettings";
 
 const kCollectionName = "advanced-settings";
+const kNewCollectionName = "Renamed Books";
 
 test.use({
     collectionSpec: { name: kCollectionName, languages: ["en"] },
@@ -59,9 +61,11 @@ test("turning off Automatically Update Bloom on the Advanced page saves it [Test
         .toBe("False");
 });
 
-test("renaming the collection on the Advanced page asks for a restart [Test Case ID 838]", async ({
+test("renaming the collection on the Advanced page renames its folder and reopens it [Test Case ID 838]", async ({
     page,
+    bloomApp,
 }) => {
+    const oldDir = bloomApp.collectionDir;
     await openCollectionSettings(page);
     await showCollectionSettingsPage(page, "Advanced");
     expect(await getCollectionSettingsText(page, "Collection Name")).toEqual({
@@ -70,13 +74,32 @@ test("renaming the collection on the Advanced page asks for a restart [Test Case
     });
     expect(await getCollectionSettingsOkLabel(page)).toBe("OK");
 
-    await setCollectionSettingsText(page, "Collection Name", "Renamed Books");
-
+    // Spaces typed around a name are not part of it.
+    await setCollectionSettingsText(
+        page,
+        "Collection Name",
+        `  ${kNewCollectionName}  `,
+    );
     await expect
         .poll(() => getCollectionSettingsOkLabel(page), {
             message: "OK should become Restart once the name changes",
         })
         .toBe("Restart");
 
-    await cancelCollectionSettings(page);
+    const reopened = await restartFromCollectionSettings(
+        bloomApp,
+        kNewCollectionName,
+    );
+
+    expect(describeCollectionFolder(bloomApp.collectionDir)).toEqual({
+        name: kNewCollectionName,
+        settingsFiles: [`${kNewCollectionName}.bloomCollection`],
+    });
+    expect(describeCollectionFolder(oldDir)).toBeUndefined();
+    await openCollectionSettings(reopened);
+    await showCollectionSettingsPage(reopened, "Advanced");
+    expect(
+        (await getCollectionSettingsText(reopened, "Collection Name")).value,
+    ).toBe(kNewCollectionName);
+    await cancelCollectionSettings(reopened);
 });
