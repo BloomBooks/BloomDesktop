@@ -1569,35 +1569,41 @@ namespace Bloom
 
         /// <summary>
         /// The command-line options this Bloom was started with that a copy it starts of itself
-        /// (RestartBloom) must be given again, or "" when there are none. Only an e2e run has
-        /// any: without them, the copy that finishes a collection rename would take the
-        /// developer's foreground, use the developer's own user settings, and collide with the
-        /// developer's own Bloom. A developer's Bloom from ./go.sh, which has --automation but not
-        /// --e2e, restarts as it always has: its launcher stops the Vite server when it exits, so
-        /// a copy given --vite-port would load nothing. --launcher-port is left out for the same
-        /// reason: the dev launcher does not own a Bloom that started itself.
+        /// (RestartBloom) must be given again, or "" when there are none. An ordinary Bloom has
+        /// none. An automation run (an agent's or a test's Bloom) keeps what makes its session its
+        /// own: without these, the copy that finishes a collection rename would use the shared user
+        /// settings, take the developer's foreground, and collide with the developer's own Bloom.
+        /// Only an e2e run also keeps --vite-port and its e2e options: a Bloom from ./go.sh, which
+        /// has --automation but not --e2e, has a launcher that stops its Vite server when it exits,
+        /// so a copy given --vite-port would load nothing. --launcher-port is never forwarded, for
+        /// the same reason: the dev launcher does not own a Bloom that started itself.
         /// </summary>
         internal static string StartupArgumentsToForward()
         {
-            if (!RunningE2eTests)
+            if (!StartupAutomation && !RunningE2eTests)
                 return "";
-            var forwarded = new List<string> { "--e2e" };
+            var forwarded = new List<string>();
             if (StartupAutomation)
                 forwarded.Add("--automation");
             if (StartupDontDisturb)
                 forwarded.Add("--dont-disturb");
-            if (StartupVitePort != null)
-                forwarded.Add(
-                    "--vite-port " + StartupVitePort.Value.ToString(CultureInfo.InvariantCulture)
-                );
             if (StartupLabel != null)
                 forwarded.Add("--label " + QuoteArgument(StartupLabel));
             if (StartupUserSettingsFolder != null)
                 forwarded.Add("--user-settings-folder " + QuoteArgument(StartupUserSettingsFolder));
-            if (StartupExperimentalFeatures != null)
-                forwarded.Add(
-                    "--experimental-features " + QuoteArgument(StartupExperimentalFeatures)
-                );
+            if (RunningE2eTests)
+            {
+                forwarded.Add("--e2e");
+                if (StartupVitePort != null)
+                    forwarded.Add(
+                        "--vite-port "
+                            + StartupVitePort.Value.ToString(CultureInfo.InvariantCulture)
+                    );
+                if (StartupExperimentalFeatures != null)
+                    forwarded.Add(
+                        "--experimental-features " + QuoteArgument(StartupExperimentalFeatures)
+                    );
+            }
             return string.Join(" ", forwarded);
         }
 

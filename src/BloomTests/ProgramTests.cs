@@ -157,19 +157,60 @@ namespace BloomTests
         }
 
         /// <summary>
-        /// Any Bloom but an e2e run restarts exactly as it always has, including a developer's
-        /// Bloom from ./go.sh, which has --automation: its Vite server stops when it exits, so a
-        /// copy given --vite-port would load nothing.
+        /// A developer's or an agent's Bloom from ./go.sh has --automation but not --e2e. A rename
+        /// keeps its session its own (settings folder, quiet window, label) but not --vite-port:
+        /// its launcher stops the Vite server when it exits, so the copy would load nothing.
         /// </summary>
         [Test]
-        public void StartupArgumentsToForward_IsEmptyOutsideE2e()
+        public void StartupArgumentsToForward_AutomationWithoutE2eKeepsItsSessionButNotVite()
+        {
+            var settingsFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "Agent settings"
+            );
+            Program.ParseStartupPortArguments(
+                new[]
+                {
+                    "--automation",
+                    "--dont-disturb",
+                    "--vite-port",
+                    "15173",
+                    "--label",
+                    "dev",
+                    "--user-settings-folder",
+                    settingsFolder,
+                },
+                out var firstError
+            );
+            Assert.That(firstError, Is.Null, "Sanity check: the original options parse");
+            Assert.That(Program.RunningE2eTests, Is.False);
+
+            Program.ParseStartupPortArguments(
+                SplitCommandLineAsWindowsDoes(Program.StartupArgumentsToForward()),
+                out var secondError
+            );
+
+            Assert.That(secondError, Is.Null);
+            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupDontDisturb, Is.True);
+            Assert.That(Program.StartupLabel, Is.EqualTo("dev"));
+            Assert.That(Program.StartupUserSettingsFolder, Is.EqualTo(settingsFolder));
+            Assert.That(Program.StartupVitePort, Is.Null);
+            Assert.That(Program.RunningE2eTests, Is.False);
+        }
+
+        /// <summary>
+        /// An ordinary Bloom (no --automation, no --e2e) restarts exactly as it always has.
+        /// </summary>
+        [Test]
+        public void StartupArgumentsToForward_IsEmptyForAnOrdinaryBloom()
         {
             Program.ParseStartupPortArguments(
-                new[] { "--automation", "--vite-port", "15173", "--label", "dev" },
+                new[] { "--vite-port", "15173", "--label", "dev" },
                 out var errorMessage
             );
             Assert.That(errorMessage, Is.Null);
-            Assert.That(Program.StartupAutomation, Is.True);
+            Assert.That(Program.StartupAutomation, Is.False);
             Assert.That(Program.RunningE2eTests, Is.False);
 
             Assert.That(Program.StartupArgumentsToForward(), Is.EqualTo(""));
