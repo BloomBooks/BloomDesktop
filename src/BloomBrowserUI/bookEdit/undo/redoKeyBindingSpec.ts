@@ -1,4 +1,4 @@
-// Tests for the page-frame Ctrl+Y binding (BL-6681). See redoKeyBinding.ts for why it exists and
+// Tests for the page-frame Redo binding, Ctrl+Y and Ctrl+Shift+Z (BL-6681). See redoKeyBinding.ts for why it exists and
 // why it must be the last resort rather than the first.
 
 import { describe, it, expect, beforeEach } from "vitest";
@@ -24,6 +24,35 @@ describe("redoKeyBinding", () => {
             );
             expect(isRedoKeystroke(keydown({ key: "Y", ctrlKey: true }))).toBe(
                 true,
+            );
+        });
+
+        it("is Ctrl+Shift+Z, either case", () => {
+            expect(
+                isRedoKeystroke(
+                    keydown({ key: "Z", ctrlKey: true, shiftKey: true }),
+                ),
+            ).toBe(true);
+            expect(
+                isRedoKeystroke(
+                    keydown({ key: "z", ctrlKey: true, shiftKey: true }),
+                ),
+            ).toBe(true);
+        });
+
+        it("is not Ctrl+Shift+Z with another modifier", () => {
+            expect(
+                isRedoKeystroke(
+                    keydown({
+                        key: "Z",
+                        ctrlKey: true,
+                        shiftKey: true,
+                        altKey: true,
+                    }),
+                ),
+            ).toBe(false);
+            expect(isRedoKeystroke(keydown({ key: "Z", shiftKey: true }))).toBe(
+                false,
             );
         });
 

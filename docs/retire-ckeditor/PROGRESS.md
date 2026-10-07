@@ -1247,3 +1247,22 @@ Later, not Stage 0:
 - Card BL-17003 (6.6 board, In Progress, John, subtask of BL-6681). Branch
   `BL-17003-undo-delete-canvas-element` from `BL-16900-undo-stack`; its PR targets that branch until
   #8387 merges, then master.
+- Built on the branch: `CanvasElementDeleteUndo.ts` (the entry: position, level, family, target;
+  plain data-bubble work so it is unit-tested without Comical, 15 tests), wired into
+  `CanvasElementManager.deleteCanvasElement` (split into the recorded delete, `removeCanvasElement`,
+  which redo reruns, and `finishRestoringCanvasElement`: rectangle and draggable tidy-up, refresh
+  without re-attaching CKEditor, source and hint bubbles, cover image). Ctrl+Shift+Z added to
+  `redoKeyBinding.ts`. comicaljs 0.4.2, with the lockfile edited by hand to keep master's
+  prettier-formatted layout (a plain `pnpm add` rewrites all 30k lines into pnpm's own format).
+- **Found by the new e2e spec:** after typing in a text box and deleting it, the Undo button went to
+  the reader tools' undo, which "undid" the typing in the detached box, so the delete could never
+  be undone. Two causes. (1) `readerToolsModel.canUndo` and `ckeditorCanUndo` would claim undo for
+  a box no longer on the page; both now refuse (the undo would change nothing visible anyway).
+  (2) Pre-existing, not fixed: in a fresh collection the reader tools' `currentMarkupType` is not
+  None with no reader tool open (`restoreState` takes it from the saved DRT state), so
+  `shouldHandleUndo` is true and the reader tools claim the Undo button for any box they saw
+  focused. Worth a card; with (1) it no longer blocks the delete undo, but it still means the Undo
+  button undoes typing through the reader tools rather than CKEditor in that state.
+- E2E: `undo-delete-canvas-element.spec.ts` (5 tests: restore with text and a working editor, two
+  adjacent deletes, Ctrl+Y and Ctrl+Shift+Z, a family head) passes locally, as do `undo-routing`
+  and `rotate-and-flip-images` (21) and the full vitest suite (1181).

@@ -643,6 +643,10 @@ export class ReaderToolsModel {
 
     public canUndo(): boolean {
         if (!this.activeElement) return false;
+        // The box we last saw focused may have been deleted since (with its canvas element, say).
+        // Undoing typing there would change nothing anyone can see, and would stop the Undo button
+        // reaching the undo of the deletion itself.
+        if (!this.activeElement.isConnected) return false;
         if (
             this.undoStack &&
             (this.undoStack.length > 1 ||
