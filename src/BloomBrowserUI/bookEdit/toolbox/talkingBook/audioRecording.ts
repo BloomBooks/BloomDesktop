@@ -3906,10 +3906,10 @@ export default class AudioRecording implements IAudioRecorder {
                         name != "sup" && // ckeditor superscript
                         name != "a" && // Allow users to manually insert hyperlinks 4.5, and support 4.6 hyperlinks
                         !$(child).hasClass("bloom-ui") && // don't process transient UI elements (e.g. the format button)
-                        // Don't process non-editable islands embedded in the text, such as an
-                        // inline image (bloom-inlineImage). They hold no recordable text, and
-                        // recursing into one ends at the img element, which would then be
-                        // treated as a leaf and have audio markup written into it.
+                        // Don't process contenteditable="false" elements inside the text, such
+                        // as an inline image (bloom-inlineImage). They hold no text to record,
+                        // and recursing into one reaches the img element, which this code would
+                        // then treat as a leaf and add audio markup to.
                         child.getAttribute("contenteditable") !== "false"
                     ) {
                         processedChild = true;

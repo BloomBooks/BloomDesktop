@@ -682,10 +682,10 @@ describe("audio recording tests", () => {
             );
         });
 
-        // An inline (Word-style) image is a contenteditable=false island inside the
-        // bloom-editable. It holds no recordable text, and recursing into it bottoms out at
-        // the img, which would then be treated as a leaf and get audio markup written into
-        // it. See inlineImages.ts.
+        // An inline (Word-style) image is a contenteditable=false div inside the
+        // bloom-editable. It holds no text to record, and recursing into it reaches the img,
+        // which would then be treated as a leaf and get audio markup added to it.
+        // See inlineImages.ts.
         it("skips a contenteditable=false island such as an inline image", () => {
             const islandHtml =
                 '<div class="bloom-inlineImage bloom-inlineImageRight" contenteditable="false"><img src="flower.jpg"></div>';
@@ -701,7 +701,7 @@ describe("audio recording tests", () => {
             // The paragraph got its sentence spans as usual...
             const spans = div.find("p span.audio-sentence");
             expect(spans.length).toBe(2);
-            // ...and the island came through untouched: no spans, no id, no audio class.
+            // ...and the image wrapper is unchanged, with no spans, no id and no audio class.
             const island = div.find(".bloom-inlineImage");
             expect(island.length).toBe(1);
             expect(island.find("span").length).toBe(0);

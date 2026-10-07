@@ -870,15 +870,16 @@ export default class BloomField {
     // inadvertently remove the embedded images. So we introduced the "bloom-preventRemoval" class, and this
     // tries to safeguard elements bearing that class.
     private static PreventRemovalOfSomeElements(field: HTMLElement) {
-        // The count is taken on each keydown and compared on the matching keyup, so what this
-        // guards is the keystroke itself. Do not take it once at setup: an inline image inserted
-        // later would be unprotected, and one the person deletes from its menu would leave the
-        // count short, so every later keystroke would fire a browser undo.
+        // We count the protected elements on each keydown and count them again on the matching
+        // keyup, so we only undo a removal that the keystroke itself caused. Do not count them
+        // just once at setup. If we did, an inline image inserted later would not be protected,
+        // and after the person deleted an image from its menu the count would stay too high, so
+        // every later keystroke would fire a browser undo.
         let countBeforeTheKeystroke = 0;
-        // Auto-repeat sends a run of keydowns before the single keyup that ends them, and only
-        // the first of the run sees the field before anything was deleted. So the count is read
-        // only on that first keydown; reading it on a repeat would let a held Delete remove an
-        // image for good.
+        // When a key is held down, the browser sends a run of keydowns and then one keyup at the
+        // end. Only the first keydown of the run happens before anything is deleted, so we read
+        // the count only on that one. If we read it on a repeat, holding Delete could remove an
+        // image and we would not put it back.
         let aKeyIsDown = false;
         const countPreventRemoval = () =>
             $(field).find(".bloom-preventRemoval").length;
@@ -888,8 +889,8 @@ export default class BloomField {
             countBeforeTheKeystroke = countPreventRemoval();
         });
         $(field).keyup((e) => {
-            // A keyup whose keydown went to another field (Tab into this one, for example)
-            // has no count of its own to compare against, so it only re-reads the count.
+            // If the keydown went to another field (for example, Tab pressed there moves the
+            // focus here), we have no count from before the keystroke, so we only re-read it.
             const keystrokeStartedHere = aKeyIsDown;
             aKeyIsDown = false;
             if (
@@ -901,10 +902,11 @@ export default class BloomField {
             }
             countBeforeTheKeystroke = countPreventRemoval();
         });
-        // A key held down while the focus leaves the field never delivers its keyup here, which
-        // would leave the flag set and the count stale. Losing the focus ends the run.
-        // (A native listener, not jQuery's focusout: jQuery 3 synthesizes focusin/focusout from
-        // focus/blur, which a dispatched focusout event does not go through.)
+        // If the focus leaves the field while a key is held down, the keyup goes somewhere else,
+        // so aKeyIsDown would stay true and the count would go out of date. So we clear
+        // aKeyIsDown when the field loses the focus.
+        // This uses addEventListener because jQuery 3 makes its focusout events out of
+        // focus/blur, and so it misses a focusout event that code dispatches directly.
         field.addEventListener("focusout", () => {
             aKeyIsDown = false;
         });

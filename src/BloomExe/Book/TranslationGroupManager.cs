@@ -893,11 +893,11 @@ namespace Bloom.Book
                         first.AppendChild(newline);
                         foreach (SafeXmlNode node in list[i].ChildNodes)
                         {
-                            // The duplicate normally holds a COPY of a picture the survivor
-                            // already has -- that is what duplicating a block produces -- and
-                            // appending it would leave the same picture in the block twice, which
-                            // the reader sees twice. Sameness is by id; a wrapper without one
-                            // cannot be matched to anything, so it is kept.
+                            // Duplicating a block copies its pictures, so the duplicate usually
+                            // holds a copy of a picture that the first block already has.
+                            // Appending that copy would put the same picture in the block twice,
+                            // and the reader would see it twice. We match pictures by their id.
+                            // A wrapper without an id cannot be matched, so we keep it.
                             if (IsInlineImageAlreadyPresent(first, node))
                                 continue;
                             first.AppendChild(node);
@@ -910,9 +910,9 @@ namespace Bloom.Book
 
         /// <summary>
         /// Whether this node is an inline (Word-style) image wrapper that the given editable
-        /// already holds a copy of. The per-language copies of one picture share a
+        /// already holds a copy of. The copies of one picture in the different languages share a
         /// data-bloom-inline-image-id (see inlineImages.ts), and so do the copies that
-        /// duplicating a block makes, which is what identifies the repeat.
+        /// duplicating a block makes, so a matching id means the editable already has it.
         /// </summary>
         private static bool IsInlineImageAlreadyPresent(SafeXmlNode editable, SafeXmlNode node)
         {
@@ -928,10 +928,10 @@ namespace Bloom.Book
         }
 
         /// <summary>
-        /// Whether this editable holds an inline (Word-style) image: a .bloom-inlineImage wrapper
-        /// (see inlineImages.ts). Such a block can be entirely without text -- a picture and the
-        /// empty paragraph that has to follow it -- so InnerText alone says it is empty, and
-        /// anything that discards an "empty" block would discard the picture with it.
+        /// Whether this editable holds a .bloom-inlineImage wrapper, the Word-style image described
+        /// in inlineImages.ts. Such a block may hold only a picture and the empty paragraph that
+        /// has to follow it, with no text at all. Judged by InnerText alone, it looks empty, and
+        /// code that discards empty blocks would discard the picture with it.
         /// </summary>
         private static bool HasInlineImage(SafeXmlNode div)
         {
