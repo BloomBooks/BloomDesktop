@@ -80,7 +80,7 @@ export interface IPageFrameExports {
 
     tableShouldHandleUndo(): boolean;
     tableCanUndo(): boolean;
-    tableUndo(): void;
+    tableUndo(): boolean;
 
     addRequestPageContentDelay(id: string): void;
     removeRequestPageContentDelay(id: string): void;
@@ -389,9 +389,10 @@ export function tableCanUndo(): boolean {
 
 // Undo the most recent bloom-table operation. Called cross-frame from
 // workspaceRoot.handleUndo(). undoLast() finds the relevant attached table on
-// its own, so the caller needn't hold a table reference.
-export function tableUndo(): void {
-    tableHistoryManager.undoLast();
+// its own, so the caller needn't hold a table reference. Answers whether it found something to
+// undo, like ckeditorUndo() and imageOperationUndo().
+export function tableUndo(): boolean {
+    return tableHistoryManager.undoLast();
 }
 
 for (let j = 0; j < styleSheets.length; j++) {

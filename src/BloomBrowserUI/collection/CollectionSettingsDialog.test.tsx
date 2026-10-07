@@ -42,7 +42,7 @@ const initialValues: ICollectionSettingsValues = {
         district: "",
     },
     advanced: { autoUpdate: true, collectionName: "Test Collection" },
-    experimental: { "team-collections": false },
+    experimental: { "team-collections": false, tables: false },
 };
 
 const settingsResponse: ICollectionSettingsResponse = {
@@ -58,6 +58,7 @@ const {
     mockCloseDialog,
     dialogState,
     teamCollectionFeature,
+    tableFeature,
 } = vi.hoisted(() => ({
     mockGet: vi.fn(),
     mockPostJson: vi.fn(),
@@ -67,13 +68,16 @@ const {
     // Whether Bloom has answered the subscription check yet, and whether the collection's tier
     // includes Team Collections.
     teamCollectionFeature: { loaded: true, enabled: true },
+    // The same, for Tables.
+    tableFeature: { loaded: true, enabled: true },
 }));
 
 vi.mock("../react_components/featureStatus", () => ({
-    useGetFeatureStatus: () =>
-        teamCollectionFeature.loaded
-            ? { enabled: teamCollectionFeature.enabled }
-            : undefined,
+    useGetFeatureStatus: (featureName: string | undefined) => {
+        const feature =
+            featureName === "Table" ? tableFeature : teamCollectionFeature;
+        return feature.loaded ? { enabled: feature.enabled } : undefined;
+    },
 }));
 
 vi.mock("../react_components/requiresSubscription", () => ({
@@ -275,6 +279,8 @@ describe("CollectionSettingsDialog", () => {
         dialogState.open = true;
         teamCollectionFeature.loaded = true;
         teamCollectionFeature.enabled = true;
+        tableFeature.loaded = true;
+        tableFeature.enabled = true;
         mockGet.mockReset();
         mockGet.mockImplementation(
             (_url: string, successCallback: (r: unknown) => void) => {
@@ -502,6 +508,16 @@ describe("CollectionSettingsDialog", () => {
             return checkbox;
         };
 
+        const tablesCheckbox = () => {
+            const checkbox = container.querySelector(
+                '[data-testid="configr-page"][data-page-key="experimental"] [data-path="experimental.tables"]',
+            ) as HTMLInputElement | null;
+            if (!checkbox) {
+                throw new Error("The Experimental page has no Tables checkbox");
+            }
+            return checkbox;
+        };
+
         const respondWith = (response: ICollectionSettingsResponse) => {
             mockGet.mockImplementation(
                 (_url: string, successCallback: (r: unknown) => void) => {
@@ -561,6 +577,35 @@ describe("CollectionSettingsDialog", () => {
             await renderDialog();
 
             expect(teamCollectionsCheckbox().disabled).toBe(false);
+        });
+
+        it("offers Tables, with its subscription badge, when the tier allows it", async () => {
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(false);
+            const badgeFeatures = Array.from(
+                container.querySelectorAll(
+                    '[data-page-key="experimental"] [data-testid="subscription-badge"]',
+                ),
+            ).map((badge) => badge.getAttribute("data-feature"));
+            expect(badgeFeatures).toContain("Table");
+        });
+
+        it("disables Tables when the tier does not include it", async () => {
+            tableFeature.enabled = false;
+
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(true);
+            expect(teamCollectionsCheckbox().disabled).toBe(false);
+        });
+
+        it("disables Tables until the subscription check has answered", async () => {
+            tableFeature.loaded = false;
+
+            await renderDialog();
+
+            expect(tablesCheckbox().disabled).toBe(true);
         });
     });
 });
