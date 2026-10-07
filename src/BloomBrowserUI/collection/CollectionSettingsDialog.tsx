@@ -31,6 +31,7 @@ import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
+import { useAdvancedPage } from "./settingsPages/AdvancedPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -58,6 +59,26 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
                 (current as Record<string, unknown> | null | undefined)?.[key],
             values,
         );
+}
+
+// The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
+// what we post, so every piece of text the user changed is trimmed here: a collection name typed
+// with a trailing space would otherwise count as a rename, and Windows will not make a folder whose
+// name ends in a space. Text the user did not touch goes back exactly as it was, so saving one
+// setting never alters another value that already has surrounding spaces.
+function withEditedTextTrimmed<T>(value: T, loadedValue: unknown): T {
+    if (typeof value === "string")
+        return (value === loadedValue ? value : value.trim()) as T;
+    if (value === null || typeof value !== "object") return value;
+    // A branch that did not exist when the dialog opened (a third language just added) has nothing
+    // to compare with, so all its text counts as edited.
+    const loaded = (loadedValue ?? {}) as Record<string, unknown>;
+    return Object.fromEntries(
+        Object.entries(value).map(([key, child]) => [
+            key,
+            withEditedTextTrimmed(child, loaded[key]),
+        ]),
+    ) as T;
 }
 
 /**
@@ -136,7 +157,6 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         "Bloom Library",
         "CollectionSettingsDialog.BloomLibraryPage",
     );
-    const advancedLabel = useL10n("Advanced", "Common.Advanced");
     const restartMessage = useL10n(
         "Bloom will close and re-open this project with the new settings.",
         "CollectionSettingsDialog.RestartMessage",
@@ -151,8 +171,8 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         { pageKey: "subscription", label: subscriptionLabel },
         { pageKey: "teamCollection", label: teamCollectionLabel },
         { pageKey: "bloomLibrary", label: bloomLibraryLabel },
-        { pageKey: "advanced", label: advancedLabel },
     ];
+    const advancedPage = useAdvancedPage({ settings: loadedSettings });
     const experimentalPage = useExperimentalPage({
         dialogOpen: propsForBloomDialog.open,
         settings: loadedSettings,
@@ -171,7 +191,10 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
             loadedSettings.restartPaths.some(
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
-                    valueAtPath(values, path),
+                    valueAtPath(
+                        withEditedTextTrimmed(values, loadedSettings.values),
+                        path,
+                    ),
             )
         );
     }
@@ -184,11 +207,13 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // Always post, even if nothing changed: saving the same values again is harmless, and it
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
+        // OK is enabled only once the values have loaded.
+        const values = latestValuesRef.current!;
         postJson(
             "collection/settings",
             {
-                values: latestValuesRef.current,
-                restartRequired: restartNeededFor(latestValuesRef.current),
+                values: withEditedTextTrimmed(values, loadedSettings!.values),
+                restartRequired: restartNeededFor(values),
             },
             () => {
                 // C# performs the restart itself if one is needed.
@@ -268,6 +293,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                                 </ConfigrGroup>
                             </ConfigrPage>
                         ))}
+                        {advancedPage}
                         {experimentalPage}
                     </ConfigrPane>
                 )}

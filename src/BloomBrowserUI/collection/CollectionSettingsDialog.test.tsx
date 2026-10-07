@@ -196,6 +196,30 @@ vi.mock("@sillsdev/config-r", () => ({
                     })
                 }
             />
+            <button
+                data-testid="pad-country"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        frontBackMatter: {
+                            ...props.initialValues.frontBackMatter,
+                            country: "  Kenya ",
+                        },
+                    })
+                }
+            />
+            <button
+                data-testid="pad-collection-name"
+                onClick={() =>
+                    props.onChange({
+                        ...props.initialValues,
+                        advanced: {
+                            ...props.initialValues.advanced,
+                            collectionName: ` ${props.initialValues.advanced.collectionName}  `,
+                        },
+                    })
+                }
+            />
             {props.children}
         </div>
     ),
@@ -228,6 +252,25 @@ vi.mock("@sillsdev/config-r", () => ({
             data-path={props.path}
             disabled={props.disabled}
         />
+    ),
+    ConfigrInput: (props: {
+        path: string;
+        disabled?: boolean;
+        description?: string;
+    }) => (
+        <div>
+            <input
+                type="text"
+                data-testid="configr-input"
+                data-path={props.path}
+                disabled={props.disabled}
+            />
+            {props.description && (
+                <div data-testid="configr-input-description">
+                    {props.description}
+                </div>
+            )}
+        </div>
     ),
 }));
 
@@ -268,6 +311,14 @@ describe("CollectionSettingsDialog", () => {
     const okButtonLabel = () =>
         (container.querySelector('[data-testid="dialog-ok"]') as HTMLElement)
             .textContent;
+
+    const respondWith = (response: ICollectionSettingsResponse) => {
+        mockGet.mockImplementation(
+            (_url: string, successCallback: (r: unknown) => void) => {
+                successCallback({ data: response });
+            },
+        );
+    };
 
     beforeEach(() => {
         container = document.createElement("div");
@@ -489,6 +540,156 @@ describe("CollectionSettingsDialog", () => {
         expect(okButtonLabel()).toBe("Restart");
     });
 
+    it("ignores spaces around the collection name, both for Restart and in what it saves", async () => {
+        respondWith({
+            ...settingsResponse,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        click("pad-collection-name");
+        await flushDeferredChange();
+        // A name that differs only by spaces is no rename, so OK stays OK.
+        expect(okButtonLabel()).toBe("OK");
+        click("dialog-ok");
+
+        expect(mockPostJson).toHaveBeenCalledTimes(1);
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: initialValues,
+            restartRequired: false,
+        });
+    });
+
+    it("trims any text the user edited, on any page, when it saves", async () => {
+        expect(initialValues.frontBackMatter.country).toBe("");
+        await renderDialog();
+
+        click("pad-country");
+        await flushDeferredChange();
+        click("dialog-ok");
+
+        expect(mockPostJson.mock.calls[0][1].values).toEqual({
+            ...initialValues,
+            frontBackMatter: {
+                ...initialValues.frontBackMatter,
+                country: "Kenya",
+            },
+        });
+    });
+
+    it("does not rename a collection whose name already has a leading space when it saves", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+        expect(okButtonLabel()).toBe("OK");
+
+        click("dialog-ok");
+
+        // The name goes back exactly as it was, so C# sees no rename.
+        expect(mockPostJson.mock.calls[0][1]).toEqual({
+            values: spacedValues,
+            restartRequired: false,
+        });
+    });
+
+    it("lets the user remove a leading space the collection name already has", async () => {
+        const spacedValues: ICollectionSettingsValues = {
+            ...initialValues,
+            advanced: {
+                ...initialValues.advanced,
+                collectionName: " Spaced Books",
+            },
+        };
+        respondWith({
+            ...settingsResponse,
+            values: spacedValues,
+            restartPaths: [
+                ...settingsResponse.restartPaths,
+                "advanced.collectionName",
+            ],
+        });
+        await renderDialog();
+
+        // Any edit of the name; the posted name is then trimmed.
+        click("pad-collection-name");
+        await flushDeferredChange();
+        expect(okButtonLabel()).toBe("Restart");
+        click("dialog-ok");
+
+        expect(
+            mockPostJson.mock.calls[0][1].values.advanced.collectionName,
+        ).toBe("Spaced Books");
+        expect(mockPostJson.mock.calls[0][1].restartRequired).toBe(true);
+    });
+
+    describe("Advanced page", () => {
+        const advancedPageElement = (selector: string) =>
+            container.querySelector(
+                `[data-testid="configr-page"][data-page-key="advanced"] ${selector}`,
+            ) as HTMLInputElement | null;
+
+        const collectionNameBox = () => {
+            const box = advancedPageElement(
+                '[data-path="advanced.collectionName"]',
+            );
+            if (!box) {
+                throw new Error("The Advanced page has no Collection Name box");
+            }
+            return box;
+        };
+
+        it("offers automatic updating", async () => {
+            await renderDialog();
+
+            expect(
+                advancedPageElement('[data-path="advanced.autoUpdate"]'),
+            ).not.toBeNull();
+        });
+
+        it("lets the user rename a collection that is not a Team Collection", async () => {
+            expect(settingsResponse.isTeamCollection).toBe(false);
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(false);
+            expect(
+                advancedPageElement(
+                    '[data-testid="configr-input-description"]',
+                ),
+            ).toBeNull();
+        });
+
+        it("will not let a Team Collection be renamed, and says why", async () => {
+            respondWith({ ...settingsResponse, isTeamCollection: true });
+
+            await renderDialog();
+
+            expect(collectionNameBox().disabled).toBe(true);
+            expect(
+                advancedPageElement('[data-testid="configr-input-description"]')
+                    ?.textContent,
+            ).toBe(
+                "The collection name cannot be changed because this is a Team Collection. Contact the Bloom team for more information.",
+            );
+        });
+    });
+
     describe("Experimental page", () => {
         const teamCollectionsCheckbox = () => {
             const checkbox = container.querySelector(
@@ -500,14 +701,6 @@ describe("CollectionSettingsDialog", () => {
                 );
             }
             return checkbox;
-        };
-
-        const respondWith = (response: ICollectionSettingsResponse) => {
-            mockGet.mockImplementation(
-                (_url: string, successCallback: (r: unknown) => void) => {
-                    successCallback({ data: response });
-                },
-            );
         };
 
         it("offers Team Collections, with its subscription badge, when the tier allows it", async () => {

@@ -168,6 +168,23 @@ export async function getFeatureStatus(
     );
 }
 
+/**
+ * What is on disk at a collection folder: its name and the settings files (.bloomCollection) in
+ * it, or undefined when there is no such folder. A rename should leave one settings file, named
+ * after the folder.
+ */
+export function describeCollectionFolder(
+    collectionDir: string,
+): { name: string; settingsFiles: string[] } | undefined {
+    if (!fs.existsSync(collectionDir)) return undefined;
+    return {
+        name: Path.basename(collectionDir),
+        settingsFiles: fs
+            .readdirSync(collectionDir)
+            .filter((file) => file.endsWith(".bloomCollection")),
+    };
+}
+
 /** The new (React) Collection Settings dialog, by the title it shows. */
 function collectionSettingsDialog(page: Page): Locator {
     // Not getByRole's name option: the dialog's aria-labelledby="title" does not give it the
@@ -259,6 +276,79 @@ export async function setCollectionSettingsCheckbox(
     await expect(checkbox).toBeChecked({ checked });
 }
 
+/** The text box of the setting with this label on the showing page of the dialog. */
+function collectionSettingsTextBox(page: Page, label: string): Locator {
+    // Config-R names the box after the setting's path, not its label; the label is a heading
+    // in the same row.
+    return collectionSettingsDialog(page)
+        .locator("li")
+        .filter({ has: page.locator("h4").getByText(label, { exact: true }) })
+        .locator('input[type="text"]');
+}
+
+/** What a text setting in the Collection Settings dialog shows. */
+export interface ICollectionSettingsTextState {
+    value: string;
+    /** False when the user cannot change it, e.g. the name of a Team Collection. */
+    enabled: boolean;
+}
+
+/**
+ * Read the text setting with this label, e.g. "Collection Name", on the page of the Collection
+ * Settings dialog that is showing.
+ */
+export async function getCollectionSettingsText(
+    page: Page,
+    label: string,
+): Promise<ICollectionSettingsTextState> {
+    const box = collectionSettingsTextBox(page, label);
+    await expect(
+        box,
+        `the showing Collection Settings page has no text box labelled "${label}"`,
+    ).toHaveCount(1);
+    return {
+        value: await box.inputValue(),
+        enabled: await box.isEnabled(),
+    };
+}
+
+/**
+ * Replace what the text setting with this label says, as a person does by typing over it, and
+ * return once the box shows the new text. Nothing is saved until OK.
+ */
+export async function setCollectionSettingsText(
+    page: Page,
+    label: string,
+    text: string,
+): Promise<void> {
+    const box = collectionSettingsTextBox(page, label);
+    await box.fill(text);
+    await expect(box).toHaveValue(text);
+}
+
+/**
+ * Click OK when it says "OK" (so no restart is coming): Bloom saves the settings and the dialog
+ * closes. Returns once it has closed. For a change that needs a restart, use
+ * restartFromCollectionSettings.
+ */
+export async function saveCollectionSettings(page: Page): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    const ok = dialog.getByRole("button", { name: /^OK$/i });
+    await expect(
+        ok,
+        "the dialog has no OK button (it says Restart if a change needs one)",
+    ).toBeEnabled();
+    await realClick(ok);
+    await expect(dialog, "the dialog did not close after OK").toBeHidden();
+}
+
+/** Click Cancel: the dialog closes and nothing is saved. Returns once it has closed. */
+export async function cancelCollectionSettings(page: Page): Promise<void> {
+    const dialog = collectionSettingsDialog(page);
+    await realClick(dialog.getByRole("button", { name: /^Cancel$/i }));
+    await expect(dialog, "the dialog did not close after Cancel").toBeHidden();
+}
+
 /**
  * The label on the dialog's OK button: "OK", or "Restart" when a change the user has made needs
  * Bloom to reopen the collection.
@@ -278,9 +368,14 @@ export async function getCollectionSettingsOkLabel(
  * Click OK when it says "Restart": Bloom saves the settings and reopens the whole collection,
  * which destroys the shell page. Waits out the reopen, re-finds the shell page (bloomApp.page from
  * here on) and returns it once the collection is ready again.
+ *
+ * When the change was a new collection name, pass the folder name Bloom will give the collection
+ * as `renamedTo`: Bloom renames the folder by starting a new copy of itself on it, and this then
+ * follows that copy (bloomApp.collectionDir becomes the renamed folder).
  */
 export async function restartFromCollectionSettings(
     bloomApp: IBloomApp,
+    renamedTo?: string,
 ): Promise<Page> {
     const page = bloomApp.page;
     const restart = collectionSettingsDialog(page).getByRole("button", {
@@ -301,7 +396,11 @@ export async function restartFromCollectionSettings(
         if (!/closed/i.test(String(error))) throw error;
     });
     await pageClosed;
-    const newPage = await bloomApp.reattachToShell();
+    const newPage = renamedTo
+        ? await bloomApp.followRelaunch(
+              Path.join(Path.dirname(bloomApp.collectionDir), renamedTo),
+          )
+        : await bloomApp.reattachToShell();
     await waitForCollectionReady(newPage);
     return newPage;
 }
