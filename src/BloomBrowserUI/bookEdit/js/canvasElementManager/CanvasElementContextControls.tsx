@@ -45,30 +45,31 @@ import {
 // operations.
 
 /**
- * What a caller must supply to put this bar on something that is not a canvas element. An
- * inline image -- a picture inside a text block -- passes this, so that a picture offers the
- * same toolbar wherever the user meets one (see inlineImageInteractions.ts).
+ * What a caller supplies to show this bar on something that is not a canvas element. An
+ * inline image (a picture inside a text block) passes this, so that the user gets the same
+ * toolbar for a picture whether it is in a text block or on the canvas (see
+ * inlineImageInteractions.ts).
  */
 export interface IControlsForNonCanvasObject {
-    // Which controls the bar and the menu offer, in place of the canvas element registry's
-    // entry for the element's type.
+    // Which controls the bar and the menu offer. The bar uses this instead of looking up the
+    // element's type in canvasElementControlRegistry.
     configuration: ICanvasElementControlConfiguration;
-    // The menu behind the "..." button, already built.
+    // The items for the menu that the "..." button opens, ready to render.
     menuItems: IMenuItemWithSubmenu[];
-    // Merged over the context the registry commands run in. This is where an object says
-    // how to delete itself (IControlContext.deleteThisObject).
+    // These fields are merged over the IControlContext that the registry commands receive.
+    // An object uses this to say how to delete itself (IControlContext.deleteThisObject).
     contextAdditions: Partial<IControlContext>;
-    // Run after a toolbar command's action, for the buttons this component builds itself. A
-    // control that supplies its own toolbar.render owns its interactions and does not go
-    // through here -- nothing in the inline-image toolbar does, but a control added there
-    // later would need to call this itself. An inline image uses it to stamp what the command
-    // did onto the copies in the other languages.
+    // Called after the action of a toolbar button that this component builds itself. A control
+    // that supplies its own toolbar.render handles its own clicks, so this is not called for
+    // it. No control in the inline-image toolbar does that today; one that is added later
+    // must call this itself. An inline image uses this callback to copy the change the
+    // command made onto the same picture in the other languages' text.
     afterToolbarCommand?: () => void;
 }
 
 export const CanvasElementContextControls: React.FunctionComponent<{
     canvasElement: HTMLElement;
-    // Left out for a canvas element, which is what this bar was written for.
+    // A canvas element leaves this out.
     controlsForNonCanvasObject?: IControlsForNonCanvasObject;
     // These props support reusing the context controls menu for a right-click on the canvas element.
     // The first two make the open state of the menu a controlled property. Basically the
