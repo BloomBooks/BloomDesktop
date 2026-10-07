@@ -26,7 +26,7 @@
             // Page numbers need to adjust for full-bleed if they're showing.
             // This assumes that page numbers are at the bottom of the page,
             // which they normally are in our layouts and themes.  (BL-13685)
-            --pageNumber-bottom: calc(var(--pageNumber-bottom) + @bleed);
+            --pageNumber-full-bleed-bottom-adjustment: @bleed;
         }
     }
 }
