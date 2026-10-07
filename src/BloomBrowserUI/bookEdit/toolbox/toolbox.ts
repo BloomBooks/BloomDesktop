@@ -556,9 +556,12 @@ function showOrHideTool(
 }
 
 export function restoreToolboxSettings() {
+    // Snapshot BEFORE the request goes out, not in its callback: the user can open the
+    // toolbox or pick a tool while it is in flight, and a snapshot taken on arrival would
+    // already contain their choice and so look unchanged, letting the restore overwrite it.
+    const stateWhenFetched = captureToolboxStateForRestore();
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
-        const stateWhenFetched = captureToolboxStateForRestore();
         const pageFrame = getPageIFrame();
         const contentWin = pageFrame.contentWindow;
         if (contentWin && contentWin.document.readyState === "loading") {
@@ -577,6 +580,8 @@ export function restoreToolboxSettings() {
 }
 
 export function applyToolboxStateToUpdatedPage() {
+    // Snapshot before the request, for the reason given in restoreToolboxSettings().
+    const stateWhenFetched = captureToolboxStateForRestore();
     get("toolbox/settings", (result) => {
         savedSettings = result.data;
         // savedSettings["current"] is always set to the last active tool for the book,
@@ -599,7 +604,7 @@ export function applyToolboxStateToUpdatedPage() {
         ) {
             restoreToolboxSettingsWhenPageReady(
                 savedSettings,
-                captureToolboxStateForRestore(),
+                stateWhenFetched,
             );
             return;
         }
