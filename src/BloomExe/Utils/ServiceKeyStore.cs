@@ -334,7 +334,7 @@ namespace Bloom.Utils
 
             /// <summary>See <see cref="StoreFile.Extra"/>.</summary>
             [JsonExtensionData]
-            public IDictionary<string, JToken> Extra;
+            public IDictionary<string, JToken> Extra { get; set; }
         }
 
         /// <summary>The whole file.</summary>
@@ -354,7 +354,7 @@ namespace Bloom.Utils
             /// gone with nothing to say why.
             /// </summary>
             [JsonExtensionData]
-            public IDictionary<string, JToken> Extra;
+            public IDictionary<string, JToken> Extra { get; set; }
         }
 
         /// <summary>

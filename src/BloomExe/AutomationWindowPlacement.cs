@@ -27,8 +27,9 @@ namespace Bloom
     /// Second, a Bloom the developer starts with no --automation flag at all is untouched, however
     /// the variable is set.
     ///
-    /// Nothing here changes whether an automation window takes the keyboard focus. It never does,
-    /// wherever it is (see Shell.ShowWithoutActivation and Shell.ReallyComeToFront).
+    /// Nothing here changes whether a window takes the keyboard focus: that is --dont-disturb's
+    /// business, not this variable's (see Program.StartupDontDisturb). So a CI run can put its
+    /// windows off every monitor and still activate them the ordinary way.
     ///
     /// The variable is read on each call rather than cached. It costs nothing worth saving, and
     /// nothing in Bloom writes it: the run's parent, normally the Playwright fixture, sets it
