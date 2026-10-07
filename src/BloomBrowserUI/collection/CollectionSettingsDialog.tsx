@@ -65,18 +65,21 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
 // what we post, so every piece of text the user changed is trimmed here: a collection name typed
 // with a trailing space would otherwise count as a rename, and Windows will not make a folder whose
 // name ends in a space. Text the user did not touch goes back exactly as it was, so saving one
-// setting never alters another value that already has surrounding spaces.
-function withEditedTextTrimmed<T>(value: T, loadedValue: unknown): T {
+// setting never alters another value that already has surrounding spaces, nor one the user could
+// not edit at all (a disabled field, such as a Team Collection's name). `valueWhenOpened` is the
+// matching value as it was when the dialog opened.
+function withEditedTextTrimmed<T>(value: T, valueWhenOpened: unknown): T {
     if (typeof value === "string")
-        return (value === loadedValue ? value : value.trim()) as T;
+        return (value === valueWhenOpened ? value : value.trim()) as T;
     if (value === null || typeof value !== "object") return value;
-    // A branch that did not exist when the dialog opened (a third language just added) has nothing
-    // to compare with, so all its text counts as edited.
-    const loaded = (loadedValue ?? {}) as Record<string, unknown>;
+    // The value is an object: a group of named values (one page's, or one language's), each of
+    // which is processed the same way. A branch that did not exist when the dialog opened (a
+    // third language just added) has nothing to compare with, so all its text counts as edited.
+    const whenOpened = (valueWhenOpened ?? {}) as Record<string, unknown>;
     return Object.fromEntries(
         Object.entries(value).map(([key, child]) => [
             key,
-            withEditedTextTrimmed(child, loaded[key]),
+            withEditedTextTrimmed(child, whenOpened[key]),
         ]),
     ) as T;
 }
@@ -182,23 +185,26 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
     const notAllowedMessage = loadedSettings?.notAllowedMessage;
 
     // C# decides which paths need a restart (they come with the GET reply), so that rule lives in
-    // one place; every path ends at a plain value, so !== is enough.
-    function restartNeededFor(values: ICollectionSettingsValues | undefined) {
+    // one place; every path ends at a plain value, so !== is enough. Give it the values exactly as
+    // they will be saved (see withEditedTextTrimmed), so it judges what C# will receive.
+    function restartNeededFor(
+        valuesToSave: ICollectionSettingsValues | undefined,
+    ) {
         return (
             loadedSettings !== undefined &&
             !notAllowedMessage &&
-            values !== undefined &&
+            valuesToSave !== undefined &&
             loadedSettings.restartPaths.some(
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
-                    valueAtPath(
-                        withEditedTextTrimmed(values, loadedSettings.values),
-                        path,
-                    ),
+                    valueAtPath(valuesToSave, path),
             )
         );
     }
-    const needsRestart = restartNeededFor(currentValues);
+    const needsRestart = restartNeededFor(
+        currentValues &&
+            withEditedTextTrimmed(currentValues, loadedSettings!.values),
+    );
 
     function saveAndCloseDialog() {
         // Block the button while the save is in flight, so a second click cannot save (and
@@ -208,12 +214,15 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         // keeps OK to a single path. The ref, not the deferred state, has the newest values, so
         // the restart flag is worked out from it too.
         // OK is enabled only once the values have loaded.
-        const values = latestValuesRef.current!;
+        const valuesToSave = withEditedTextTrimmed(
+            latestValuesRef.current!,
+            loadedSettings!.values,
+        );
         postJson(
             "collection/settings",
             {
-                values: withEditedTextTrimmed(values, loadedSettings!.values),
-                restartRequired: restartNeededFor(values),
+                values: valuesToSave,
+                restartRequired: restartNeededFor(valuesToSave),
             },
             () => {
                 // C# performs the restart itself if one is needed.
