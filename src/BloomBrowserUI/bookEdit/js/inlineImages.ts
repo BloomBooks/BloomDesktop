@@ -722,10 +722,10 @@ export function inlineImageCanUndo(): boolean {
     // is newer than it. If we undid the snapshot first, the picture would go back to how it was
     // before their edit, out of the order things happened in. That is the one mistake these
     // separate undo stacks can make (see the comment on the if/else chain in
-    // workspaceRoot.handleUndo). This applies even when a picture is selected: selecting one
-    // leaves the caret in the text, so the person can still type, and right-clicking the text
-    // gets into that state without their meaning to, because the menu leaves the picture
-    // selected.
+    // workspaceRoot.handleUndo). This applies even when a picture is selected, because selecting
+    // one, by clicking or right-clicking it, leaves the caret in the text, so the person can
+    // still type. (Right-clicking the text deselects any picture; see
+    // getInlineImageMenuItemsForClick.)
     if (hasEditedSinceInlineImageSnapshot(top)) return false;
     const activeWrapper = getActiveInlineImage();
     if (activeWrapper) {
