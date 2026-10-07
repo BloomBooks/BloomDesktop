@@ -1077,9 +1077,12 @@ Active, tested (52 tests) and live-verified. What remains:
 
 ### Stage 2 — after the Stage 1 PR
 
-- **2b (undo delete canvas element)**: record neighbours rather than an index, restore the comic
-  family's bubble data, and check before undoing (PLAN.md Stage 2b, §4.1). Also add Ctrl+Shift+Z to
-  `redoKeyBinding.ts` (§4.14 item 23).
+- **2b (undo delete canvas element)**: card **BL-17003**, branch `BL-17003-undo-delete-canvas-element`,
+  built on `BL-16900-undo-stack` until #8387 merges. Re-insert the same element between its old
+  neighbours, rejoin its comic family by reversing `deleteBubbleFromFamily`, leave ordering rules to
+  the existing tidy-up, refuse only when the canvas is gone (PLAN.md Stage 2b). Also add
+  Ctrl+Shift+Z to `redoKeyBinding.ts` (§4.14 item 23), and move to comicaljs 0.4.2 (the stale
+  bubble observer fix, comical-js PR #121).
 - ~~2a (undo delete page)~~: dropped 2026-10-06 (PLAN.md §10 decision 7).
 - Rename our planned `PageSnapshot` entry kind before Stage 3 (BL-13502 owns that name).
 
@@ -1230,3 +1233,17 @@ Later, not Stage 0:
   every same-page reload traced in C# and what surviving one would take.
 - Discussed and recorded in PLAN Stage 2b: the canvas-element undo records its neighbours, not an
   index, so an intervening (unrecorded) create does no harm.
+
+### 2026-10-07 — Stage 2 starts: BL-17003; the canvas-element undo design revised
+
+- John's questions on the draft (two adjacent deletes undone in turn; game ordering rules after an
+  intervening change; saving the family's bubble data widens what must be unchanged) led to a
+  rewrite of PLAN.md Stage 2b. The entry re-inserts the *same* element object, so a chain of undos
+  finds the neighbours earlier undos put back; it goes below its old upper neighbour, else above
+  its old lower one, else on top, with a level given from where it lands; it rejoins its family by
+  reversing `deleteBubbleFromFamily` on the family as it now is, not by restoring saved data; the
+  existing tidy-up (`adjustCanvasElementOrdering`, `reorderRectangleCanvasElement`) enforces game and
+  rectangle ordering; and it refuses only when its canvas is gone.
+- Card BL-17003 (6.6 board, In Progress, John, subtask of BL-6681). Branch
+  `BL-17003-undo-delete-canvas-element` from `BL-16900-undo-stack`; its PR targets that branch until
+  #8387 merges, then master.
