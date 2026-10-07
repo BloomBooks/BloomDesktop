@@ -888,8 +888,14 @@ export default class BloomField {
             countBeforeTheKeystroke = countPreventRemoval();
         });
         $(field).keyup((e) => {
+            // A keyup whose keydown went to another field (Tab into this one, for example)
+            // has no count of its own to compare against, so it only re-reads the count.
+            const keystrokeStartedHere = aKeyIsDown;
             aKeyIsDown = false;
-            if (countPreventRemoval() < countBeforeTheKeystroke) {
+            if (
+                keystrokeStartedHere &&
+                countPreventRemoval() < countBeforeTheKeystroke
+            ) {
                 document.execCommand("undo");
                 e.preventDefault();
             }

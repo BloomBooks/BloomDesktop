@@ -403,6 +403,31 @@ describe("BloomField", () => {
             expect(execCommand).not.toHaveBeenCalled();
         });
 
+        // Tab from another field delivers its keydown there and only its keyup here. That
+        // keyup did not delete anything, even if the picture went (from its menu) since the
+        // last keystroke in this field.
+        it("does not undo on a keyup whose keydown went to another field", () => {
+            const editable = document.getElementById("simple")!;
+            editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
+            WireUp();
+            const execCommand = vi.fn();
+            (document as any).execCommand = execCommand;
+            // A keystroke in this field records the count with the picture in it.
+            editable.dispatchEvent(
+                new KeyboardEvent("keydown", { bubbles: true }),
+            );
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true }),
+            );
+            // The menu's Delete, then the keyup of a Tab pressed in another field.
+            editable.querySelector(".bloom-inlineImage")!.remove();
+            editable.dispatchEvent(
+                new KeyboardEvent("keyup", { bubbles: true, key: "Tab" }),
+            );
+
+            expect(execCommand).not.toHaveBeenCalled();
+        });
+
         // An image inserted after page setup is protected too, so ctrl+a DEL cannot take it out
         // with nothing to put it back.
         it("protects an inline image inserted after the field was wired up", () => {
