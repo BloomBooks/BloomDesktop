@@ -31,7 +31,10 @@ import {
     ICollectionSettingsResponse,
     ICollectionSettingsValues,
 } from "./collectionSettingsTypes";
-import { useAdvancedPage } from "./settingsPages/AdvancedPage";
+import {
+    advancedValuesToSave,
+    useAdvancedPage,
+} from "./settingsPages/AdvancedPage";
 import { useExperimentalPage } from "./settingsPages/ExperimentalPage";
 
 // Temporary content for every page. Each of the seven tab cards replaces its page's group with
@@ -59,28 +62,6 @@ function valueAtPath(values: ICollectionSettingsValues, path: string): unknown {
                 (current as Record<string, unknown> | null | undefined)?.[key],
             values,
         );
-}
-
-// The values as they should be saved. Config-R does not trim what is typed, and C# saves exactly
-// what we post, so a name typed with a trailing space would otherwise count as a rename (and
-// Windows will not make a folder whose name ends in a space). Only an edited name is trimmed: an
-// untouched one goes back exactly as it was, so a collection whose folder name already starts with
-// a space is not renamed by saving some other setting, yet a user can still delete that space.
-function valuesToSave(
-    values: ICollectionSettingsValues,
-    loadedValues: ICollectionSettingsValues,
-): ICollectionSettingsValues {
-    const name = values.advanced.collectionName;
-    return {
-        ...values,
-        advanced: {
-            ...values.advanced,
-            collectionName:
-                name === loadedValues.advanced.collectionName
-                    ? name
-                    : name.trim(),
-        },
-    };
 }
 
 /**
@@ -194,7 +175,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
                 (path) =>
                     valueAtPath(loadedSettings.values, path) !==
                     valueAtPath(
-                        valuesToSave(values, loadedSettings.values),
+                        advancedValuesToSave(values, loadedSettings.values),
                         path,
                     ),
             )
@@ -214,7 +195,7 @@ export const CollectionSettingsDialog: React.FunctionComponent = () => {
         postJson(
             "collection/settings",
             {
-                values: valuesToSave(values, loadedSettings!.values),
+                values: advancedValuesToSave(values, loadedSettings!.values),
                 restartRequired: restartNeededFor(values),
             },
             () => {
