@@ -29,8 +29,10 @@ import { expect, test } from "../fixtures/bloomTest";
 import {
     addPage,
     getContentPages,
+    getPages,
     goToPage,
     makeBookFromTemplate,
+    reloadPageBeingEdited,
     type IBookPage,
 } from "../helpers/bookMaking";
 import { waitForBookWithPageCount } from "../helpers/bookHtml";
@@ -412,6 +414,43 @@ test.describe("a table on a canvas page", () => {
         );
     });
 
+    // A dragged boundary gives the left column a width in pixels while the right one still fills
+    // what is left, so the table's width is no longer the sum of fixed columns. The canvas element
+    // keeps its own width in the saved page, and the table should still fill it when the page is
+    // loaded again.
+    test("keeps its width when the page is left and come back to, after a column was resized [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
+        const before = await measureTable(page);
+
+        await step("Leave the page and come back to it", async () => {
+            const cover = (await getPages(page)).find((p) => !p.isContentPage)!;
+            await goToPage(page, cover.id);
+            await goToPage(page, canvasPage.id);
+            await waitForTableAttached(page);
+        });
+
+        await step("Check the table is the size it was", async () => {
+            const after = await measureTable(page);
+            expect(
+                after.shape.columnWidths,
+                "The table should have kept the column widths it had before the page was left.",
+            ).toEqual(before.shape.columnWidths);
+            expect(
+                Math.abs(after.rect.width - before.rect.width),
+                `The table was ${Math.round(before.rect.width)}px wide before the page was ` +
+                    `left and is ${Math.round(after.rect.width)}px wide after coming back.`,
+            ).toBeLessThanOrEqual(2);
+            expect(
+                Math.abs(after.rect.height - before.rect.height),
+                `The table was ${Math.round(before.rect.height)}px tall before the page was ` +
+                    `left and is ${Math.round(after.rect.height)}px tall after coming back.`,
+            ).toBeLessThanOrEqual(2);
+            await expectCellsTile(page);
+        });
+    });
+
     test("turns a text cell into a picture cell and takes a picture [Test Case ID 826]", async ({
         page,
         step,
@@ -503,6 +542,47 @@ test.describe("a table on a canvas page", () => {
                 ).toBe("Pear");
             },
         );
+    });
+
+    // Everything a table's size depends on is saved (the canvas element's own width and height, the
+    // column widths), so a rebuilt page should show the table as wide as it was. Selecting a canvas
+    // element fits it to the proportions of a picture it holds (adjustContainerAspectRatio in
+    // CanvasElementManager.ts), and a table must be exempt: its picture is in a cell, not the
+    // element's own. So the table is selected after the rebuild, which is when that would happen.
+    test("keeps its width when the page is rebuilt with a picture in a cell [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
+        const before = await measureTable(page);
+        expect(
+            before.cells.find((c) => c.row === 1 && c.column === 1)
+                ?.contentType,
+            "Sanity check: the test before this one should have left a picture in a cell.",
+        ).toBe("image");
+
+        await step("Rebuild the page, then select the table", async () => {
+            await reloadPageBeingEdited(page);
+            await waitForTableAttached(page);
+            await clickCell(page, 0, 0);
+        });
+
+        await step("Check the table is the size it was", async () => {
+            const after = await measureTable(page);
+            expect(
+                Math.abs(after.rect.width - before.rect.width),
+                `The table was ${Math.round(before.rect.width)}px wide before the page was ` +
+                    `rebuilt and is ${Math.round(after.rect.width)}px wide after it was selected.`,
+            ).toBeLessThanOrEqual(2);
+            expect(
+                Math.abs(after.rect.height - before.rect.height),
+                `The table was ${Math.round(before.rect.height)}px tall before the page was ` +
+                    `rebuilt and is ${Math.round(after.rect.height)}px tall after it was selected.`,
+            ).toBeLessThanOrEqual(2);
+            expect(
+                after.shape.columnWidths,
+                "Rebuilding the page should have kept the table's column widths.",
+            ).toEqual(before.shape.columnWidths);
+        });
     });
 
     test("duplicates the whole table as one canvas element [Test Case ID 826]", async ({

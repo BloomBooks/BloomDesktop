@@ -81,6 +81,24 @@ export function bookHtmlPath(bookFolder: string): string {
 }
 
 /**
+ * The editing-only markup the table library and Bloom put on a table while it is being edited.
+ * None of it should survive a save.
+ */
+export const kTableEditingMarkupSelectors = [
+    "[data-table-attached]",
+    ".cell--selected",
+    ".table--selected",
+    ".bloom-current-table",
+    ".bloom-pointer-near",
+    "[data-table-overlay]",
+    ".bloom-sel-overlay",
+    "[data-btable-anchor-name]",
+    "[data-ui-active-row-index]",
+    ".bloom-pulse-fill",
+    ".bloom-pulse-border",
+];
+
+/**
  * Read the book at `bookFolder` and describe its numbered (non-front/back-matter) pages, in
  * order. `page` is used only as a DOM parser.
  */
@@ -89,26 +107,15 @@ export async function readBook(
     bookFolder: string,
 ): Promise<IBookContents> {
     const html = fs.readFileSync(bookHtmlPath(bookFolder), "utf8");
-    return page.evaluate((source) => {
+    const args = {
+        source: html,
+        artifactSelectors: kTableEditingMarkupSelectors,
+    };
+    return page.evaluate(({ source, artifactSelectors }) => {
         const document = new DOMParser().parseFromString(source, "text/html");
         const styleElement = document.querySelector(
             'style[title="userModifiedStyles"]',
         );
-        // The editing-only markup the table library and Bloom put on a table while it is being
-        // edited. None of it should survive a save.
-        const artifactSelectors = [
-            "[data-table-attached]",
-            ".cell--selected",
-            ".table--selected",
-            ".bloom-current-table",
-            ".bloom-pointer-near",
-            "[data-table-overlay]",
-            ".bloom-sel-overlay",
-            "[data-btable-anchor-name]",
-            "[data-ui-active-row-index]",
-            ".bloom-pulse-fill",
-            ".bloom-pulse-border",
-        ];
         const describeTables = (pageDiv: Element) =>
             [...pageDiv.querySelectorAll(".bloom-table")].map((tableDiv) => {
                 // The table's OWN cells: a nested table's cells belong to that table, and are
@@ -208,7 +215,7 @@ export async function readBook(
             pages,
             userModifiedStyles: styleElement?.textContent ?? "",
         };
-    }, html);
+    }, args);
 }
 
 /**
