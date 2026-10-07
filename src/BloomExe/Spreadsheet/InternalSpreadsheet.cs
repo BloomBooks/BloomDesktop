@@ -41,9 +41,8 @@ namespace Bloom.Spreadsheet
         public const string AttributeColumnLabel = "[attribute]";
 
         // A hidden column holding a JSON object with whatever non-textual state a row's
-        // object needs to be reconstructed on import. Currently used by [inline image]
-        // rows; the plan is for future canvas-element rows to share it. Its presence
-        // anywhere in a spreadsheet marks that spreadsheet as the authority on the
+        // object needs to be reconstructed on import. Only [inline image] rows use it. Its
+        // presence anywhere in a spreadsheet marks that spreadsheet as the authority on the
         // objects whose rows use it.
         public const string DetailsColumnLabel = "[details]";
         public const string DetailsColumnFriendlyName = "Details";

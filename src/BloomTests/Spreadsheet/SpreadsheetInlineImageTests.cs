@@ -23,9 +23,9 @@ namespace BloomTests.Spreadsheet
     /// spreadsheet export → import round trip. Export gives each inline image its own
     /// [inline image] row right after its group's row: the file in the normal [image source]
     /// column, and the geometry (location, displacement, width) as JSON in the hidden
-    /// [details] column, which future canvas-element rows are meant to share. The aspect
-    /// ratio is not in the JSON: the importer measures the image file itself. Import
-    /// reconstructs the wrappers from those parameters — whether importing over the same
+    /// [details] column. The aspect ratio is not in the JSON: the importer measures the
+    /// image file itself. Import reconstructs the wrappers from those parameters, whether
+    /// importing over the same
     /// book or into a book that has no inline images at all. A spreadsheet without the
     /// [details] column (from an older Bloom) falls back to preserving whatever the target
     /// book already has.
@@ -688,8 +688,8 @@ namespace BloomTests.Spreadsheet
             // not obvious from the code: a cell holds MarkedUpText -- paragraphs, and bold,
             // italic and underline runs (see SpreadsheetIO) -- so writing the file drops any
             // other element and reading it cannot bring one back. Markup in a cell therefore
-            // cannot move a picture to another book, and an import from a file was never at risk
-            // of writing old wrappers into an editable either.
+            // cannot move a picture to another book, and an import from a file cannot write old
+            // wrappers into an editable either.
             var sheet = ExportBook(MakeBookWithPictureInImageDescription());
             var row = sheet.ContentRows.First(r =>
                 r.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel
@@ -808,10 +808,10 @@ namespace BloomTests.Spreadsheet
         {
             // Removing a block's [inline image] rows is how a person deletes its pictures
             // through the spreadsheet. The language editables are rewritten from their cells,
-            // so their copies go with the text; the lang="z" prototype is not, and its copy
-            // used to stay -- invisible, so nothing showed the picture was still there, until
-            // a language was added to the collection and inherited it (TranslationGroupManager
-            // clones the prototype).
+            // so their copies go with the text; the lang="z" prototype is not, so its copy has
+            // to be removed explicitly. Left there, it would be invisible until a language was
+            // added to the collection and inherited it (TranslationGroupManager clones the
+            // prototype).
             //
             // The sheet here still carries the second group's picture, so it has a [details]
             // column and IS the authority on inline images; it just says the first group has

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1879,8 +1879,8 @@ namespace Bloom.Spreadsheet
             // bloom-keepFirstInField tells BloomField to put the field's required empty <p>
             // AFTER the pictures, which is what a floating dock wants. A bottom-docked picture
             // sits at the end of the block, so the <p> belongs before it, and the class has to
-            // stay off -- setInlineImageDock (inlineImages.ts) removes it for the same reason.
-            // With it on, importing a bottom picture added a blank line under the text.
+            // stay off, or the picture gets a blank line above it. setInlineImageDock
+            // (inlineImages.ts) removes it for the same reason.
             var keepFirst = location == "bottom" ? "" : " bloom-keepFirstInField";
             wrapper.SetAttribute(
                 "class",
@@ -2022,13 +2022,6 @@ namespace Bloom.Spreadsheet
         }
 
         /// <summary>
-        /// Puts clones of the given inline-image wrappers back into an editable whose content
-        /// the import has just replaced. Floating-dock wrappers go at the top of the editable
-        /// in their original order; bottom-docked ones go at the end -- the two slots the
-        /// edit-time code maintains. Does nothing if the new content already contains inline
-        /// images (a cell that carried its own markup must not be second-guessed).
-        /// </summary>
-        /// <summary>
         /// Takes every inline image wrapper out of this editable, leaving its text alone.
         /// </summary>
         private static void RemoveInlineImages(SafeXmlElement editable)
@@ -2042,6 +2035,13 @@ namespace Bloom.Spreadsheet
                 editable.RemoveChild(wrapper);
         }
 
+        /// <summary>
+        /// Puts clones of the given inline-image wrappers back into an editable whose content
+        /// the import has just replaced. Floating-dock wrappers go at the top of the editable
+        /// in their original order; bottom-docked ones go at the end: the two slots the
+        /// edit-time code maintains. Does nothing if the new content already contains inline
+        /// images (a cell that carried its own markup must not be second-guessed).
+        /// </summary>
         private static void StampInlineImages(SafeXmlElement editable, SafeXmlElement[] wrappers)
         {
             if (wrappers.Length == 0)
@@ -2242,16 +2242,15 @@ namespace Bloom.Spreadsheet
             // spreadsheet without the column (e.g. made by an older Bloom) can't tell us
             // anything about inline images, so then we preserve whatever the target group
             // already has, snapshotted before we overwrite any editable.
-            // CONSTRAINT: [details] is written today only by the inline-image export, which is
-            // what makes its presence a safe signal. Whatever else starts writing that column
-            // (canvas elements are the plan) must bring its own signal for this test, or a sheet
-            // carrying only canvas-element details would be read as saying "this group has no
-            // inline images" and would clear the pictures the group has.
+            // CONSTRAINT: [details] is written only by the inline-image export, which is what
+            // makes its presence a safe signal. Anything else that starts writing that column
+            // must bring its own signal for this test, or a sheet carrying only its details
+            // would be read as saying "this group has no inline images" and would clear the
+            // pictures the group has.
             // The rows have to be able to reach us as well. An image description is exported
             // as a cell on its image's row, not as a group row, so no [inline image] rows can
-            // follow it and this caller passes null -- which is "nothing can be said about
-            // this group's pictures", not "it has none". Treating it as the latter cleared the
-            // pictures such a group had.
+            // follow it and this caller passes null. That means "nothing can be said about
+            // this group's pictures", not "it has none", so the group keeps the pictures it has.
             SafeXmlElement[] inlineImageWrappers;
             var sheetKnowsAboutInlineImages =
                 inlineImageRows != null

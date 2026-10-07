@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -403,29 +403,17 @@ namespace Bloom.Spreadsheet
         ///
         /// A cell could not carry it anyway: a cell holds MarkedUpText (paragraphs, and bold,
         /// italic and underline runs), so WriteToFile drops any other element and ReadFromFile
-        /// cannot bring it back -- which is why the rows are the only carrier, and why an
-        /// import from a file was never at risk of writing these wrappers back. What this
-        /// prevents is a consumer that reads the sheet without going through a file (the
-        /// importer's own tests do) writing the cell back verbatim, since StampInlineImages
-        /// will not stamp over pictures that are already there.
+        /// cannot bring it back. Taking the wrappers out here matters to a consumer that reads
+        /// the sheet without going through a file (the importer's own tests do): writing such a
+        /// cell back verbatim would bring its wrappers along, and StampInlineImages will not
+        /// stamp over pictures that are already there.
         /// </summary>
         private static string GetEditableXmlWithoutInlineImages(SafeXmlElement editable)
         {
-            if (
-                !editable
-                    .ChildNodes.OfType<SafeXmlElement>()
-                    .Any(e => (" " + e.GetAttribute("class") + " ").Contains(" bloom-inlineImage "))
-            )
+            if (!GetInlineImageWrappers(editable).Any())
                 return editable.InnerXml;
             var clone = (SafeXmlElement)editable.CloneNode(true);
-            foreach (
-                var wrapper in clone
-                    .ChildNodes.OfType<SafeXmlElement>()
-                    .Where(e =>
-                        (" " + e.GetAttribute("class") + " ").Contains(" bloom-inlineImage ")
-                    )
-                    .ToArray()
-            )
+            foreach (var wrapper in GetInlineImageWrappers(clone))
                 clone.RemoveChild(wrapper);
             return clone.InnerXml;
         }
@@ -893,8 +881,8 @@ namespace Bloom.Spreadsheet
         /// language's text, so each inline image gets its own [inline image] row, immediately
         /// after the group's row, in stacking order: the image file in the normal
         /// [image source] column (copied to the spreadsheet's images folder, thumbnail and
-        /// all, like any other image) and the geometry needed to reconstruct the wrapper —
-        /// location, displacement, width — as JSON in the hidden [details] column.
+        /// all, like any other image) and the geometry needed to reconstruct the wrapper
+        /// (location, displacement, width) as JSON in the hidden [details] column.
         /// </summary>
         private void ExportInlineImageRows(
             SafeXmlElement translationGroup,
@@ -908,14 +896,7 @@ namespace Bloom.Spreadsheet
             var wrappers = translationGroup
                 .SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
                 .Cast<SafeXmlElement>()
-                .Select(editable =>
-                    editable
-                        .ChildNodes.OfType<SafeXmlElement>()
-                        .Where(e =>
-                            (" " + e.GetAttribute("class") + " ").Contains(" bloom-inlineImage ")
-                        )
-                        .ToArray()
-                )
+                .Select(GetInlineImageWrappers)
                 .FirstOrDefault(w => w.Length > 0);
             if (wrappers == null)
                 return;
@@ -965,11 +946,10 @@ namespace Bloom.Spreadsheet
         /// Reads the geometry off an inline-image wrapper and renders it as the JSON the
         /// [details] cell holds, e.g.
         /// {"kind":"inline-image","location":"right","offset":"24px","width":"40%"}.
-        /// The kind comes first so the blob identifies itself even apart from its row;
-        /// other kinds (canvas elements) will share this column.
+        /// The kind comes first so the JSON identifies itself even apart from its row.
         /// The offset comes with the block size it was measured against ("offsetBasedOn", from
         /// data-inline-image-offset-basedon), because the offset is an absolute distance and the
-        /// destination block is very often a different size -- a different page size, a different
+        /// destination block is very often a different size: a different page size, a different
         /// layout, another book. Without it adjustInlineImageOffsetsIfBlockSizeChanged
         /// (inlineImageInteractions.ts) has nothing to re-measure from and leaves the old
         /// displacement in place, which pushes the text after the picture off the end of the
@@ -1026,6 +1006,18 @@ namespace Bloom.Spreadsheet
             if (classes.Contains(" bloom-opaque "))
                 return "opaque";
             return null;
+        }
+
+        /// <summary>
+        /// The inline-image wrappers (.bloom-inlineImage) that are direct children of this
+        /// editable, in document order.
+        /// </summary>
+        private static SafeXmlElement[] GetInlineImageWrappers(SafeXmlElement editable)
+        {
+            return editable
+                .ChildNodes.OfType<SafeXmlElement>()
+                .Where(e => (" " + e.GetAttribute("class") + " ").Contains(" bloom-inlineImage "))
+                .ToArray();
         }
 
         /// <summary>
