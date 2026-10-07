@@ -151,10 +151,11 @@ export function handleUndo(): void {
     // boxes will operate on a single undo stack unlike mutiple textboxes.
     // Because they are independent, and operational only the the proper context, it doesn't really
     // matter in which order we check for undo operations.
-    // Inline (Word-style) images are a third such independent stack: their operations change
-    // the DOM programmatically in every language's editable at once, which neither ckeditor
-    // nor the image-operation layer can reverse. Like the image check, it only says yes when
-    // an inline image is the active thing, so the order among these three doesn't matter.
+    // Inline (Word-style) images have a third separate undo stack. Their operations change
+    // every language's editable at once from code, and neither ckeditor nor the image
+    // operation undo can reverse that. inlineImageCanUndo only returns true when the user is
+    // working in the block its last snapshot belongs to and has not typed there since, so
+    // checking it first does not take an undo away from the other two.
     if (contentWindow && contentWindow.inlineImageCanUndo()) {
         contentWindow.inlineImageUndo();
     } else if (contentWindow && contentWindow.imageOperationCanUndo()) {

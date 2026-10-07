@@ -1,14 +1,15 @@
 // Builds a page holding one inline image inside one bloom-editable, styled by the REAL
 // src/content/bookLayout/inlineImages.less (compiled here, not copied), and measures
-// where the text actually ended up on each line. Everything the tests assert about wrap
-// geometry comes out of a browser laying that CSS out, so the tests fail if the CSS
-// stops meaning what it says.
+// where the text ended up on each line. Every number the tests check about wrapping
+// comes from a browser laying out that CSS, so if a change to the CSS moves the text,
+// the tests fail.
 
 import { Page } from "playwright/test";
 import * as fs from "node:fs";
-// "node:path", not "path": a bare specifier resolves to the path@0.12.7 package that is in
-// node_modules as somebody's dependency, and that package calls util.isString, which Node
-// removed. The whole suite then fails to load with "util.isString is not a function".
+// Import "node:path" and not plain "path". Plain "path" resolves to the path@0.12.7
+// package that some other dependency puts in node_modules, and that package calls
+// util.isString, which Node removed. The whole suite then fails to load with
+// "util.isString is not a function".
 import * as path from "node:path";
 import less from "less";
 
@@ -17,9 +18,9 @@ const lessPath = path.join(
     "../../../../content/bookLayout/inlineImages.less",
 );
 
-// A 1x1 fully transparent PNG. The picture's own pixels never matter here: the wrapper
-// sizes the img from --inline-image-width and --inline-image-aspect-ratio, and the
-// contour under test is a polygon, not the image's alpha.
+// A 1x1 fully transparent PNG. The picture's own pixels do not matter here, because the
+// wrapper sizes the img from --inline-image-width and --inline-image-aspect-ratio, and
+// the contours under test are polygons that do not depend on the image's alpha.
 const TRANSPARENT_PNG =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 

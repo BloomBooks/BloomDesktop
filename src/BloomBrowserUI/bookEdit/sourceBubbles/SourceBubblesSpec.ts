@@ -196,11 +196,12 @@ describe("SourceBubbles", () => {
         ]);
     });
 
-    // Inline (Word-style) images live inside each bloom-editable, so they are inside the
-    // clone that becomes the source bubble too. They must not show up there: a source bubble
-    // is for reading another language's text, and the picture is the same in every language
-    // anyway. Nothing in this file removes them on purpose: the hasNoText pass drops the
-    // text-less wrapper div, taking the img with it. This test makes sure that keeps happening.
+    // Inline (Word-style) images live inside each bloom-editable, so they are also inside the
+    // copy that becomes the source bubble. They must not show up in the bubble, which is for
+    // reading another language's text, and the picture is the same in every language anyway.
+    // No code removes them on purpose. MakeSourceTextDivForGroup removes every div for which
+    // hasNoText is true, and the wrapper div has no text, so it goes and takes the img with it.
+    // This test makes sure that keeps happening.
     it("MakeSourceTextDivForGroup drops inline images from the bubble", () => {
         const inlineImage =
             "<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval' contenteditable='false'><img src='flower.jpg'/></div>";
@@ -214,7 +215,7 @@ describe("SourceBubbles", () => {
             ].join("\n"),
         );
         $("body").append(testHtml);
-        // Sanity check: the images really are in the group we are about to clone.
+        // Sanity check: the images are in the group we are about to copy.
         expect($("#testTarget img").length).toBe(3);
 
         const result = BloomSourceBubbles.MakeSourceTextDivForGroup(

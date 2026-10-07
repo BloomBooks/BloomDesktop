@@ -719,18 +719,18 @@ namespace BloomTests.Publish
         [Test]
         public void RemoveUnwantedLanguageData_KeepsAnInlineImageThatOnlyExcludedLanguagesHold()
         {
-            // An inline (Word-style) image lives once per editable in the translation group,
-            // including the hidden lang="z" prototype (see inlineImages.ts,
+            // Each editable in the translation group holds its own copy of an inline (Word-style)
+            // image, including the hidden lang="z" prototype (see inlineImages.ts,
             // syncInlineImagesFromEditable). Publishing one language deletes every other language's
-            // editable, and the image file itself is kept only while something in the DOM still
-            // refers to it -- CleanupUnusedImageFiles keeps what
-            // BookStorage.GetImagePathsRelativeToBook finds, which is ".//img", the wrapper's img
-            // included. So if every div holding a copy were removed, the file would be deleted from
-            // the published book and the remaining language would show a broken picture.
+            // editable, and the image file is kept only while something in the DOM still refers
+            // to it. CleanupUnusedImageFiles keeps what BookStorage.GetImagePathsRelativeToBook
+            // finds, which is ".//img", and that includes the wrapper's img. So if every div holding
+            // a copy were removed, the file would be deleted from the published book and the
+            // remaining language would show a broken picture.
             //
-            // What saves it is that "z" is in contentLanguages here, so the prototype's copy stays
-            // and keeps the reference alive. That is load-bearing and easy to break by tightening
-            // this method, which is why it is pinned here.
+            // The file survives because RemoveUnwantedLanguageData adds "z" to contentLanguages, so
+            // the prototype's copy stays and still refers to the file. A change to that method that
+            // stops keeping "z" would break this, which is why this test checks it.
             var html = """
                 <!DOCTYPE html>
                 <html>

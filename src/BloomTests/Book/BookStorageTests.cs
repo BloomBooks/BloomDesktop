@@ -2228,10 +2228,10 @@ These are similar but already have game-theme classes
         }
 
         /// <summary>
-        /// The inline image wrapper deliberately uses its own class (bloom-inlineImage) rather than
-        /// bloom-imageContainer, so that the level-7 bloom-canvas migration passes it by. This locks
-        /// that in: a real bloom-imageContainer on the same page IS renamed (proving the migration
-        /// ran), while the wrapper and its img come through untouched.
+        /// The inline image wrapper has its own class, bloom-inlineImage, so that the level-7
+        /// migration that renames bloom-imageContainer to bloom-canvas leaves it alone. This test
+        /// checks that a bloom-imageContainer on the same page is renamed, which shows the
+        /// migration ran, and that the wrapper and its img are unchanged.
         /// </summary>
         [Test]
         public void MigrateToLevel7BloomCanvas_LeavesInlineImageAlone()
@@ -2274,7 +2274,7 @@ These are similar but already have game-theme classes
 
             //Verification
             Assert.That(storage.Dom.GetMetaValue("maintenanceLevel", "0"), Is.EqualTo("7"));
-            // The migration really did run: the genuine image container is now a bloom-canvas.
+            // The migration ran, so the bloom-imageContainer is now a bloom-canvas.
             var migrated = storage.Dom.SelectSingleNode("//*[@id='shouldBeRenamed']");
             Assert.That(migrated.GetAttribute("class"), Does.Contain("bloom-canvas"));
             Assert.That(migrated.GetAttribute("class"), Does.Not.Contain("bloom-imageContainer"));

@@ -1689,9 +1689,10 @@ namespace BloomTests.Book
                 );
         }
 
-        // A block whose only content is an inline (Word-style) image has no text in it, so
-        // judging "empty" by InnerText alone would delete the picture along with the div. The
-        // person who put the picture there and typed nothing beside it would find it gone.
+        // A block whose only content is an inline (Word-style) image has no text in it, so if
+        // FixDuplicateLanguageDivs judged it empty by InnerText alone, it would delete the
+        // picture along with the div. A person who put a picture there and typed nothing beside
+        // it would find the picture gone.
         [Test]
         public void FixDuplicateLanguageDivs_KeepsADivWhoseOnlyContentIsAnInlineImage()
         {
@@ -1705,8 +1706,8 @@ namespace BloomTests.Book
                 """;
             var dom = SafeXmlDocument.Create();
             dom.LoadXml(contents);
-            // Sanity check: the div with the picture really does have no text of its own, which
-            // is what made it look empty.
+            // Sanity check: the div with the picture has no text of its own, so by InnerText it
+            // looks empty.
             var withThePicture = (SafeXmlElement)
                 dom.SafeSelectNodes("//div[@data-languagetipcontent='First']")[0];
             Assert.That(withThePicture.InnerText.Trim(), Is.Empty);
@@ -1731,9 +1732,9 @@ namespace BloomTests.Book
                 );
         }
 
-        // Duplicating a block gives both copies the same picture, and neither is empty, so the
-        // merge branch runs. The merge must not append the second block's copy of the picture,
-        // or the reader would see it twice.
+        // Duplicating a block gives both copies the same picture. Neither block is empty, so
+        // FixDuplicateLanguageDivs merges the second into the first. It must not append the
+        // second block's copy of the picture, or the reader would see the picture twice.
         [Test]
         public void FixDuplicateLanguageDivs_MergeDoesNotRepeatTheSameInlineImage()
         {
@@ -1772,7 +1773,7 @@ namespace BloomTests.Book
                     "//div[contains(@class,'bloom-editable') and @lang='xyz']//img[@src='bird.png']",
                     1
                 );
-            // Both blocks' text is still kept: it is only the repeated picture that is dropped.
+            // The text of both blocks is kept. Only the second copy of the picture is dropped.
             var merged = dom.SafeSelectNodes("//div[@lang='xyz']")[0].InnerText;
             Assert.That(merged, Does.Contain("First Xyz text"));
             Assert.That(merged, Does.Contain("Second Xyz text"));
@@ -2430,10 +2431,11 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// An inline image (the Word-style image wrapper that lives INSIDE a bloom-editable) must
-        /// survive the creation of a new language block: the whole wrapper, its classes, its
-        /// contenteditable='false', its inline style (dock offset/width/aspect-ratio) and its img
-        /// are part of the "structure" that gets cloned, while the prototype's text is stripped.
+        /// An inline image is a Word-style image wrapper that lives inside a bloom-editable. When
+        /// Bloom makes a new language block by copying an existing one, the copy keeps the whole
+        /// wrapper: its classes, its contenteditable='false', its style attribute (the offset,
+        /// width and aspect-ratio variables) and its img. Only the text of the block it was
+        /// copied from is removed.
         /// </summary>
         [Test]
         public void PrepareElementsInPageOrDocument_PrototypeEditableHasInlineImage_WrapperClonedIntact()
@@ -2497,7 +2499,7 @@ namespace BloomTests.Book
             Assert.That(frWrapperStyle, Does.Contain("--inline-image-width: 40%"));
             Assert.That(frWrapperStyle, Does.Contain("--inline-image-aspect-ratio: 800 / 600"));
 
-            // The wrapper is still the first child of the new editable (bloom-keepFirstInField's slot).
+            // The wrapper is still the first child of the new editable, as bloom-keepFirstInField requires.
             var frEditable = dom.SelectSingleNode("//div[@lang='fr']");
             var firstChildElement =
                 frEditable.ChildNodes.FirstOrDefault(x => x is SafeXmlElement) as SafeXmlElement;
@@ -2516,7 +2518,7 @@ namespace BloomTests.Book
             Assert.That(frImg.GetAttribute("data-copyright"), Is.EqualTo("Copyright Me"));
             Assert.That(frImg.GetAttribute("data-license"), Is.EqualTo("cc-by"));
 
-            // ...but the prototype's text did not.
+            // ...but the text of the block it was copied from did not.
             AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']//p");
             Assert.That(frEditable.InnerText.Trim(), Is.Empty);
 
@@ -2536,10 +2538,10 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// PrepareElementsOnPageOneLanguage deletes language-less DIRECT children of a
-        /// translationGroup. An inline image wrapper has no lang, but it is nested inside a
-        /// bloom-editable rather than being a direct child of the group, so it must survive.
-        /// This checks both directions: the wrapper stays, a stray language-less direct child goes.
+        /// PrepareElementsOnPageOneLanguage deletes the direct children of a translationGroup that
+        /// have no lang. An inline image wrapper has no lang either, but it is inside a
+        /// bloom-editable, so it is not a direct child of the group and must be kept. This test
+        /// checks that the wrapper stays and that a stray direct child with no lang is deleted.
         /// </summary>
         [Test]
         public void PrepareElementsInPageOrDocument_LangLessDivsRemoved_InlineImageWrapperSurvives()
@@ -2574,30 +2576,31 @@ namespace BloomTests.Book
                 bookData
             );
 
-            // The stray language-less direct child of the group is gone...
+            // The stray direct child of the group with no lang is gone...
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[contains(@class,'strayDiv')]");
-            // ...while every editable (en plus the three new ones) still has its wrapper, complete
-            // with the img and the contenteditable='false' that makes it a non-editable island.
+            // ...while every editable (en plus the three new ones) still has its wrapper, with its
+            // img and the contenteditable='false' that keeps the person from typing inside it.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
                     "//div[contains(@class,'bloom-editable')]/div[contains(@class,'bloom-inlineImage') and @contenteditable='false']/img[@src='flower.jpg']",
                     4
                 );
-            // The wrapper must NOT have been given a lang by the "editables without a lang" sweep;
-            // that sweep only matches contenteditable='true' or bloom-editable.
+            // PrepareElementsOnPageOneLanguage also gives a lang to editables that lack one. It
+            // must not give one to the wrapper, and it doesn't, because it only looks at elements
+            // that have contenteditable='true' or the bloom-editable class.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[contains(@class,'bloom-inlineImage') and @lang]");
         }
 
         /// <summary>
-        /// UpdateContentLanguageClasses walks every div under a translationGroup, not just the
-        /// editables, so it sees the inline image wrapper too. It must not turn the wrapper into
-        /// something that looks like a visible language block: no bloom-visibility-code-on, no
-        /// bloom-contentN, and its own classes intact.
+        /// UpdateContentLanguageClasses goes through every div under a translationGroup, including
+        /// the inline image wrapper inside an editable. It must not make the wrapper look like a
+        /// visible language block. The wrapper must end up with no bloom-visibility-code-on and no
+        /// bloom-contentN class, and keep its own classes.
         /// </summary>
         [Test]
         public void UpdateContentLanguageClasses_InlineImageWrapper_GetsNoVisibilityOrContentClasses()
@@ -2623,10 +2626,10 @@ namespace BloomTests.Book
             var dom = new HtmlDom(contents);
             var bookData = new BookData(dom, _collectionSettings, null);
 
-            // Sanity check: the only pre-existing generated class is the stale
-            // bloom-visibility-code-on we planted on the French wrapper, which proves below that
-            // the sweep really does reach inside the editables (and strips such classes off the
-            // wrapper, so the wrapper must never depend on one).
+            // Sanity check: the only generated class at the start is the out-of-date
+            // bloom-visibility-code-on we put on the French wrapper. When it is gone at the end,
+            // that shows UpdateContentLanguageClasses reaches inside the editables and removes
+            // such classes from the wrapper, so the wrapper must never depend on one.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -2703,11 +2706,12 @@ namespace BloomTests.Book
         }
 
         /// <summary>
-        /// Multiple inline images per translation group are matched up across the sibling language
-        /// editables by data-bloom-inline-image-id, so cloning a prototype editable to make a new
-        /// language block must carry that attribute through unchanged on every wrapper, and must
-        /// keep the wrappers in the same order (the ids are the only thing tying a wrapper to its
-        /// counterparts, and the order is what the reader sees).
+        /// When a translation group has several inline images, the copies of each one in the
+        /// different language editables are matched by data-bloom-inline-image-id. So when Bloom
+        /// copies an editable to make a new language block, every wrapper must keep that attribute
+        /// unchanged, and the wrappers must stay in the same order. The id is the only thing that
+        /// links a wrapper to its copies in the other languages, and the order is what the reader
+        /// sees.
         /// </summary>
         [Test]
         public void PrepareElementsInPageOrDocument_EditableHasTwoInlineImages_IdsAndOrderPreservedInClones()
@@ -2758,7 +2762,7 @@ namespace BloomTests.Book
                 );
             }
 
-            // Nothing renamed or de-duplicated the shared id values: each appears once per language.
+            // No code changed the shared ids or removed a repeat of one. Each appears once per language.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
@@ -2772,7 +2776,7 @@ namespace BloomTests.Book
                     4
                 );
 
-            // Each clone kept the rest of its wrapper too, matched to the right id.
+            // Each copied wrapper also kept the rest of its attributes and its img, with the right id.
             var frFirst = dom.SelectSingleNode(
                 "//div[@lang='fr']/div[@data-bloom-inline-image-id='abc123']"
             );
@@ -2793,15 +2797,15 @@ namespace BloomTests.Book
                 Is.EqualTo("tree.jpg")
             );
 
-            // The prototype's text still did not come along.
+            // The text of the block it was copied from still did not come along.
             AssertThatXmlIn.Dom(dom.RawDom).HasNoMatchForXpath("//div[@lang='fr']//p");
             Assert.That(dom.SelectSingleNode("//div[@lang='fr']").InnerText.Trim(), Is.Empty);
         }
 
         /// <summary>
-        /// The pass that deletes language-less direct children of a translation group must leave
-        /// multiple nested inline image wrappers alone, ids and all, and must not stamp a lang onto
-        /// them.
+        /// When PrepareElementsOnPageOneLanguage deletes the direct children of a translation group
+        /// that have no lang, it must leave several inline image wrappers inside an editable
+        /// unchanged, including their ids, and must not give them a lang.
         /// </summary>
         [Test]
         public void PrepareElementsInPageOrDocument_LangLessDivsRemoved_MultipleInlineImageIdsSurvive()
@@ -2838,12 +2842,12 @@ namespace BloomTests.Book
                 bookData
             );
 
-            // The stray language-less direct child of the group is gone...
+            // The stray direct child of the group with no lang is gone...
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[contains(@class,'strayDiv')]");
-            // ...but the nested wrappers are not: 2 per language block, 8 in all, each still
-            // carrying its id, its contenteditable='false' and its img.
+            // ...but the wrappers inside the editables are still there, 2 per language block and 8
+            // in all, each with its id, its contenteditable='false' and its img.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath("//div[@data-bloom-inline-image-id]", 8);
@@ -2859,18 +2863,19 @@ namespace BloomTests.Book
                     "//div[contains(@class,'bloom-editable')]/div[@data-bloom-inline-image-id='def456' and @contenteditable='false']/img[@src='tree.jpg']",
                     4
                 );
-            // The "editables without a lang" sweep must not have given the wrappers a lang; if it
-            // had, they would start collecting bloom-content* classes from UpdateContentLanguageClasses.
+            // The code that gives a lang to editables lacking one must not have given the wrappers a
+            // lang. If it had, UpdateContentLanguageClasses would start adding bloom-content* classes
+            // to them.
             AssertThatXmlIn
                 .Dom(dom.RawDom)
                 .HasNoMatchForXpath("//div[@data-bloom-inline-image-id and @lang]");
         }
 
         /// <summary>
-        /// UpdateContentLanguageClasses walks every div under a translation group, so it sees the
-        /// inline image wrappers. With several wrappers per editable and the same id repeated across
-        /// sibling language editables, it must leave every data-bloom-inline-image-id exactly as it
-        /// found it, and add no visibility/content classes to the wrappers.
+        /// UpdateContentLanguageClasses goes through every div under a translation group, so it
+        /// reaches the inline image wrappers. When each editable has several wrappers and the same
+        /// ids appear in each language's editable, it must leave every data-bloom-inline-image-id as
+        /// it found it and add no visibility or content classes to the wrappers.
         /// </summary>
         [Test]
         public void UpdateContentLanguageClasses_MultipleInlineImages_IdsUntouchedAcrossSiblings()
@@ -2904,8 +2909,8 @@ namespace BloomTests.Book
             var dom = new HtmlDom(contents);
             var bookData = new BookData(dom, _collectionSettings, null);
 
-            // Sanity check: the two sibling editables already share both id values, which is the
-            // whole point of the scheme, and nothing has a generated visibility class yet.
+            // Sanity check: the two language editables already share both ids, as the copies of
+            // each picture are meant to, and nothing has a generated visibility class yet.
             Assert.That(
                 GetInlineImageIdsInOrder(dom, "xyz"),
                 Is.EqualTo(new[] { "abc123", "def456" })

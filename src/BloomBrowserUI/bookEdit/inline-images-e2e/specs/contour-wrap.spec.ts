@@ -1,11 +1,11 @@
-// What inlineImages.less promises about wrap geometry, checked by laying it out.
+// These tests lay out inlineImages.less in a browser and check where the text wraps.
 //
-// The rectangle tests describe how inline images wrap today. The contour tests describe
-// the four things contour wrap (text following the image's transparent silhouette)
-// depends on; contour wrap is not built yet, so they drive the CSS by setting
-// --inline-image-contour by hand, which is exactly what the future code will do. They
-// exist because each of those four was measured in a browser after the plan had assumed
-// something else about it, and an assumption that expensive should not be re-derived.
+// The rectangle test describes how inline images wrap today. The contour tests check the
+// four facts that wrapping text along the image's transparent silhouette depends on.
+// That feature is not built yet, so the tests set --inline-image-contour by hand, which
+// is what the future code will do. Each of the four facts turned out different in the
+// browser from what we had first assumed, and these tests keep anyone from having to
+// work them out again.
 
 import { test, expect } from "playwright/test";
 import {
@@ -67,8 +67,8 @@ test.describe("inline image wrap geometry", () => {
         });
         const lines = await measureLines(page);
 
-        // Sanity: without a contour this same block indents every one of these lines to
-        // 176 (previous test), so a staircase here cannot be the rectangle in disguise.
+        // Without a contour, this same block indents every one of these lines to 176 (see
+        // the previous test), so a staircase here shows the contour is in effect.
         expect(leftEdgesAt(lines, [0, 20, 40])).toEqual([0, 0, 0]);
         expect(
             leftEdgesAt(lines, [60, 80, 100, 120, 140, 160, 180, 200]),
@@ -96,8 +96,8 @@ test.describe("inline image wrap geometry", () => {
         expect(leftEdgesAt(lines, [60])).toEqual([40]);
     });
 
-    // The reason the contour is a polygon in percentages rather than a picture of the
-    // silhouette: one value has to stay correct at every rendered size.
+    // The contour is a polygon in percentages, and not a picture of the silhouette, so
+    // that one value stays correct at every size the picture is drawn at.
     test("contour scales with the picture", async ({ page }) => {
         await loadInlineImagePage(page, {
             dock: "Left",
@@ -114,10 +114,10 @@ test.describe("inline image wrap geometry", () => {
         expect(leftEdgesAt(lines, [140])).toEqual([0]);
     });
 
-    // A shape replaces the margin box for wrapping purposes, so the side margin alone
-    // stops holding the text off; but the shape, once expanded by shape-margin, is
-    // clipped back to the margin box, so shape-margin alone has nothing to expand into.
-    // Hence the gap is stated as both, from one variable.
+    // Once there is a shape, text wraps around the shape and ignores the margin box, so
+    // the side margin alone no longer keeps the text away. But the shape, after
+    // shape-margin enlarges it, is clipped back to the margin box, so shape-margin alone
+    // has no room to grow into. So the CSS sets the gap as both, from one variable.
     test("contour gap: shape-margin holds text off, out to the same edge as a rectangle", async ({
         page,
     }) => {
@@ -163,9 +163,9 @@ test.describe("inline image wrap geometry", () => {
         expectRightEdgeNear(180, 400 - 160);
     });
 
-    // The middle dock's wrapper is a full-width band, so percentages of it would not
-    // land on the picture inside it. The CSS therefore does not read the contour there,
-    // and setting one must not turn the band into something text can flow beside.
+    // A middle-docked wrapper spans the full width, so percentages of it would not line
+    // up with the picture inside it. The CSS therefore ignores the contour there, and
+    // setting one must not let text flow beside the wrapper.
     test("the middle band ignores a contour", async ({ page }) => {
         await loadInlineImagePage(page, {
             dock: "Middle",
@@ -177,7 +177,7 @@ test.describe("inline image wrap geometry", () => {
 
         // No line is ever indented...
         expect(lines.every((l) => l.left === 0)).toBe(true);
-        // ...and none is inside the band: text goes above it and resumes below it.
+        // ...and no line is beside the image. Text goes above it and resumes below it.
         const insideBand = lines.filter((l) => l.top > OFFSET && l.top < 220);
         expect(insideBand).toEqual([]);
     });

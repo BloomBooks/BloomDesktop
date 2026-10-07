@@ -40,14 +40,14 @@ import {
     syncInlineImagesFromEditable,
 } from "./inlineImages";
 
-// Each group is built inside its own .bloom-page with a fresh data-page-id, both because
-// that is how it looks in Bloom and because the undo layer keys its "did the page change?"
-// check on that id, so a new one per test gives each test a clean undo stack.
+// Each group is built inside its own .bloom-page with a new data-page-id. That is how it looks
+// in Bloom, and the inline image undo code clears its stack when that id changes, so a new id
+// per test gives each test an empty undo stack.
 let pageCounter = 0;
 
-// Builds a translation group, one editable per entry. `id` names it and puts it on the page
-// beside any group already there, which is what a test about two blocks of one page needs;
-// without it the page is rebuilt with this as its only group.
+// Builds a translation group with one editable per entry. Passing `id` gives the group that id
+// and adds it to the page beside any group already there, for tests that need two blocks on
+// one page. Without `id`, the page is rebuilt with this as its only group.
 function makeTranslationGroup(
     editables: { lang: string; classes?: string; content?: string }[],
     id?: string,
@@ -74,12 +74,13 @@ function makeTranslationGroup(
     return root.querySelector("#" + (id ?? "group")) as HTMLElement;
 }
 
-// Stands in for the page's CKEditor: whether it holds text editing it could undo, and `index`,
-// CKEditor's own name for where it stands in its stack of snapshots (one per edit, going down
-// as edits are undone). `snapshots` and `limit` are how the real thing says its stack is full,
-// which is when the position stops counting up. The real thing is a global the page's CKEditor
-// puts up; absent, as in these tests unless a test says otherwise, it reads as "nothing to
-// undo".
+// A fake of the page's CKEditor undo manager. `undoable` says whether it holds text editing it
+// could undo, and `index` is CKEditor's own name for its position in its stack of snapshots,
+// which goes up by one per edit and down as edits are undone. The real manager shows that its
+// stack is full by having as many `snapshots` as its `limit`, and from then on the position
+// stops going up. The real one is reached through the page's global CKEDITOR object. When
+// that global is missing, as it is in these tests unless a test sets it, the code under test
+// treats it as having nothing to undo.
 const fakeCkeditorUndoManager = {
     undoable: () => fakeCkeditorUndoManager.state,
     index: undefined as number | undefined,
@@ -98,8 +99,9 @@ function setCkeditorUndoable(
         delete global.CKEDITOR;
         return;
     }
-    // One manager per editable, kept across calls, because that is what the real thing does and
-    // what makes two of its positions comparable.
+    // Keep the same manager object across calls. The real one belongs to an editable and
+    // stays the same, and the code under test only compares two positions when they come from
+    // the same manager.
     fakeCkeditorUndoManager.state = undoable;
     fakeCkeditorUndoManager.index = index;
     fakeCkeditorUndoManager.snapshots = new Array(
@@ -110,12 +112,12 @@ function setCkeditorUndoable(
     };
 }
 
-// The undo layer only fires when an inline image is the active thing, which in the real
-// editor is the interaction layer's selected class.
+// inlineImageCanUndo normally needs an active inline image, which in the real editor means
+// one with kInlineImageSelectedClass.
 const select = (wrapper: HTMLElement) =>
     wrapper.classList.add(kInlineImageSelectedClass);
 
-// Stands in for the user's caret sitting in a block's text.
+// Puts the caret in a block's text, as if the user had clicked there.
 function putCaretIn(editable: HTMLElement): void {
     const selection = document.getSelection()!;
     selection.removeAllRanges();
@@ -131,7 +133,7 @@ const editableFor = (group: HTMLElement, lang: string) =>
 describe("inlineImages", () => {
     beforeEach(() => {
         cleanTestRoot();
-        // A caret left in a removed element would leak into the next test's undo gate.
+        // A caret left in a removed element would affect inlineImageCanUndo in the next test.
         document.getSelection()?.removeAllRanges();
     });
     afterAll(removeTestRoot);
@@ -171,7 +173,8 @@ describe("inlineImages", () => {
                 expect(wrapper!.querySelector("img")!.getAttribute("src")).toBe(
                     "placeHolder.png",
                 );
-                // The wrapper goes first so text wraps around it; BloomField keeps the <p> after it.
+                // The wrapper goes first so the text wraps around it; BloomField keeps the <p>
+                // after it.
                 expect(editableFor(group, lang).firstElementChild).toBe(
                     wrapper,
                 );
@@ -193,8 +196,8 @@ describe("inlineImages", () => {
         });
 
         // A heading is a block too (BloomField's kBlockElementSelector), so a box holding one
-        // already has somewhere to type and must not collect an empty paragraph under it --
-        // that would show as a blank line, and persist once the page is saved.
+        // already has somewhere to type and must not get an empty paragraph under it. That
+        // paragraph would show as a blank line, and stay there once the page is saved.
         it("does not add a paragraph to an editable that holds only a heading", () => {
             const group = makeTranslationGroup([
                 {
@@ -228,11 +231,11 @@ describe("inlineImages", () => {
             const source = editableFor(group, "en");
             const sibling = editableFor(group, "fr");
             insertInlineImage(group);
-            // Make the canonical copy different from the others.
+            // Make the source copy different from the others.
             const wrapper = getInlineImageInEditable(source)!;
             wrapper.style.setProperty("--inline-image-width", "25%");
             wrapper.style.setProperty("--inline-image-offset", "120px");
-            // Sanity check: the sibling has not got that yet.
+            // Sanity check: the other copy does not have that yet.
             expect(
                 getInlineImageInEditable(sibling)!.style.getPropertyValue(
                     "--inline-image-width",
@@ -251,9 +254,9 @@ describe("inlineImages", () => {
         });
 
         // Hand-edited markup, or a paste from another program, can hold a wrapper with no
-        // data-bloom-inline-image-id. Everything here pairs copies up by that id, so without
-        // one the sibling's copy could not be recognized and a second was appended beside it
-        // -- once per language per page setup, for as long as the book was open.
+        // data-bloom-inline-image-id. Sync pairs copies up by that id, so without one the
+        // other editable's copy can't be recognized, and another copy would be added beside
+        // it in each language every time the page was set up, for as long as the book was open.
         it("does not multiply a wrapper that arrived without an id", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -265,7 +268,7 @@ describe("inlineImages", () => {
             getInlineImages(group).forEach((wrapper) =>
                 wrapper.removeAttribute("data-bloom-inline-image-id"),
             );
-            // Sanity check: one each, and no identity to pair them by.
+            // Sanity check: one each, and no id to pair them by.
             expect(getInlineImagesInEditable(source).length).toBe(1);
             expect(getInlineImagesInEditable(sibling).length).toBe(1);
             expect(
@@ -278,8 +281,7 @@ describe("inlineImages", () => {
 
             expect(getInlineImagesInEditable(source).length).toBe(1);
             expect(getInlineImagesInEditable(sibling).length).toBe(1);
-            // ...and it has been given an identity, shared by both copies, so the next
-            // operation can pair them.
+            // Both copies now have the same id, so the next operation can pair them.
             const id = getInlineImageId(getInlineImageInEditable(source)!);
             expect(id).toBeTruthy();
             expect(getInlineImageId(getInlineImageInEditable(sibling)!)).toBe(
@@ -311,7 +313,7 @@ describe("inlineImages", () => {
             insertInlineImage(group);
             const sibling = editableFor(group, "fr");
             getInlineImageInEditable(sibling)!.remove();
-            // Sanity check: it really is gone.
+            // Sanity check: it is gone.
             expect(getInlineImageInEditable(sibling)).toBeNull();
 
             syncInlineImagesFromEditable(editableFor(group, "en"));
@@ -333,7 +335,7 @@ describe("inlineImages", () => {
                 getInlineImageInEditable(source)!,
                 kInlineImageBottomClass,
             );
-            // Sanity check: the dock change moved the canonical copy to the end.
+            // Sanity check: the dock change moved the source copy to the end.
             expect(source.lastElementChild).toBe(
                 getInlineImageInEditable(source),
             );
@@ -343,7 +345,7 @@ describe("inlineImages", () => {
             const sibling = editableFor(group, "fr");
             const stamped = getInlineImageInEditable(sibling)!;
             expect(sibling.lastElementChild).toBe(stamped);
-            // A bottom-docked wrapper must not claim to keep first in field, or BloomField
+            // A bottom-docked wrapper must not have bloom-keepFirstInField, or BloomField
             // would put the field's required <p> after it.
             expect(stamped.classList.contains(kKeepFirstInFieldClass)).toBe(
                 false,
@@ -364,7 +366,7 @@ describe("inlineImages", () => {
                 kInlineImageBottomClass,
             );
             syncInlineImagesFromEditable(source);
-            // Sanity check: the sibling's copy is at the end before we dock it elsewhere.
+            // Sanity check: the other copy is at the end before we dock it elsewhere.
             expect(sibling.lastElementChild).toBe(
                 getInlineImageInEditable(sibling),
             );
@@ -393,7 +395,7 @@ describe("inlineImages", () => {
                 "beforeend",
                 '<div class="bloom-ui" id="inlineImageButtons">buttons</div>',
             );
-            // A change-image round trip leaves a temporary id on the img.
+            // Changing the image leaves a temporary id on the img.
             wrapper.querySelector("img")!.setAttribute("id", "tempImageId");
 
             syncInlineImagesFromEditable(source);
@@ -404,7 +406,7 @@ describe("inlineImages", () => {
                 false,
             );
             expect(stamped.querySelector("[id]")).toBeNull();
-            // ...and the original keeps its UI; syncing is not a cleanup pass on the source.
+            // The source keeps its bloom-ui element; sync does not clean up the source.
             expect(wrapper.querySelector(".bloom-ui")).not.toBeNull();
         });
 
@@ -416,7 +418,7 @@ describe("inlineImages", () => {
             insertInlineImage(group);
             const before = group.innerHTML;
 
-            // The 'fr' copy exists, so use an editable we deliberately emptied instead.
+            // The 'fr' editable has a copy, so remove it first to get an editable with none.
             const other = editableFor(group, "fr");
             getInlineImageInEditable(other)!.remove();
             const afterRemoval = group.innerHTML;
@@ -497,8 +499,8 @@ describe("inlineImages", () => {
         });
 
         // Turning language 1 off on the page leaves its editable in the DOM with a copy
-        // nobody can see. Preferring that copy stamped it over the language the person was
-        // actually working in.
+        // nobody can see. If normalize chose that copy, it would copy it over the language the
+        // person was working in.
         it("prefers a visible language over a hidden bloom-content1", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -512,7 +514,7 @@ describe("inlineImages", () => {
             getInlineImageInEditable(
                 editableFor(group, "fr"),
             )!.style.setProperty("--inline-image-width", "15%");
-            // Sanity check: the two copies really do disagree before we normalize.
+            // Sanity check: the two copies differ before we normalize.
             expect(
                 getInlineImageInEditable(
                     editableFor(group, "en"),
@@ -553,7 +555,7 @@ describe("inlineImages", () => {
 
             expect(getInlineImages(group).length).toBe(0);
             expect(getInlineImage(group)).toBeNull();
-            // The text survives.
+            // The text is still there.
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
@@ -587,16 +589,16 @@ describe("inlineImages", () => {
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
             insertInlineImage(group);
-            // Passing the translation group used to mean "remove them all"; with several
-            // images per block that could only guess, so it must fail loudly instead.
+            // Given the translation group, removeInlineImage could only guess which of several
+            // images to remove, so it must throw.
             expect(() => removeInlineImage(group)).toThrow();
             expect(getInlineImages(group).length).toBe(1);
         });
     });
 
-    // A text block may hold any number of inline images (requirement from live testing,
-    // 2026-08-05). Copies are matched across languages by kInlineImageIdAttr, and the order
-    // within a cluster is the images' order.
+    // A text block may hold any number of inline images. Copies are paired across languages
+    // by kInlineImageIdAttr, and the DOM order of the images before the text (or after it) is
+    // the order of the images.
     describe("several images in one block", () => {
         it("gives each image its own identity, in every language, in insertion order", () => {
             const group = makeTranslationGroup([
@@ -689,7 +691,7 @@ describe("inlineImages", () => {
                 )!;
                 expect(children.indexOf(floatingCopy)).toBe(0);
                 expect(children.indexOf(bottomCopy)).toBe(children.length - 1);
-                // The text is still between them, and unharmed.
+                // The text is still between them, unchanged.
                 expect(editable.querySelectorAll("p").length).toBeGreaterThan(
                     0,
                 );
@@ -773,7 +775,7 @@ describe("inlineImages", () => {
             ]);
             const wrapper = insertInlineImage(group);
             const img = wrapper.querySelector("img")!;
-            // A stale ratio from the old picture must not survive the change.
+            // The old picture's ratio must be removed when the picture changes.
             wrapper.style.setProperty("--inline-image-aspect-ratio", "3 / 2");
             let wrapperFromEvent: unknown;
             document.addEventListener(kInlineImageChangedEvent, (e) => {
@@ -804,27 +806,27 @@ describe("inlineImages", () => {
             ]);
 
             select(insertInlineImage(group));
-            // Sanity check: the insert really happened and is undoable.
+            // Sanity check: the insert happened and can be undone.
             expect(getInlineImages(group).length).toBe(3);
             expect(inlineImageCanUndo()).toBe(true);
 
             expect(inlineImageUndo()).toBe(true);
 
             expect(getInlineImages(group).length).toBe(0);
-            // The text is untouched by the round trip.
+            // Inserting and undoing leaves the text unchanged.
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
-        // Deleting the image leaves nothing to select, so this is the one case where the gate
-        // falls back to "is the caret still in that block". Without it, deleting an inline
-        // image could never be undone at all.
+        // Deleting the image leaves nothing selected, so inlineImageCanUndo instead checks
+        // whether the caret is still in that block. Without that, deleting an inline image
+        // could never be undone.
         it("undoes a remove, restoring the image to every editable", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
                 { lang: "fr", content: "<p>b</p>" },
             ]);
             removeInlineImage(insertInlineImage(group));
-            // Sanity check: they really are gone, and nothing is selected.
+            // Sanity check: they are gone, and nothing is selected.
             expect(getInlineImages(group).length).toBe(0);
             putCaretIn(editableFor(group, "en"));
 
@@ -838,10 +840,10 @@ describe("inlineImages", () => {
             expect(editableFor(group, "fr").textContent).toBe("b");
         });
 
-        // The other half of that fallback. Once the person has typed in the block, their typing
-        // is the most recent thing they did, so ctrl+z belongs to ckeditor: going first here
-        // would bring the picture back BEFORE the typing, which is not the order anything
-        // happened in. These two stacks cannot be merged, so this is how they are ordered.
+        // Once the person has typed in the block, their typing is the most recent thing they
+        // did, so ctrl+z should go to ckeditor. If inlineImageCanUndo said yes, the picture would
+        // come back BEFORE the typing was undone, out of the order things happened in. The two
+        // undo stacks are separate, so this check is what keeps them in order.
         it("declines the removed-image case once the user has typed in that block", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -849,7 +851,7 @@ describe("inlineImages", () => {
             removeInlineImage(insertInlineImage(group));
             const editable = editableFor(group, "en");
             putCaretIn(editable);
-            // Sanity check: with nothing typed since, this is the case that says yes.
+            // Sanity check: with nothing typed since, inlineImageCanUndo says yes.
             expect(inlineImageCanUndo()).toBe(true);
 
             editable.querySelector("p")!.textContent = "a and some more words";
@@ -857,10 +859,9 @@ describe("inlineImages", () => {
             expect(inlineImageCanUndo()).toBe(false);
         });
 
-        // Same order-of-operations question as the test above, but the edit leaves the text
-        // alone: bolding a word changes only the markup. CKEditor has an undo point for it,
-        // so ctrl+z belongs to CKEditor, and going first here would bring the picture back
-        // while the bolding stood.
+        // Like the test above, but this edit leaves the text the same, because bolding a word
+        // changes only the markup. CKEditor has an undo point for it, so ctrl+z should go to
+        // CKEditor; otherwise the picture would come back while the bolding stayed.
         it("declines the removed-image case once the user has changed formatting", () => {
             const group = makeTranslationGroup([
                 {
@@ -872,29 +873,29 @@ describe("inlineImages", () => {
             removeInlineImage(insertInlineImage(group));
             const editable = editableFor(group, "en");
             putCaretIn(editable);
-            // Sanity check: with nothing changed since, this is the case that says yes.
+            // Sanity check: with nothing changed since, inlineImageCanUndo says yes.
             expect(inlineImageCanUndo()).toBe(true);
 
             const paragraph = editable.querySelector("p")!;
             paragraph.innerHTML = "<strong>some</strong> words";
-            // Sanity check: the text really is unchanged, so only the markup can tell.
+            // Sanity check: the text is unchanged, so only the markup shows the edit.
             expect(paragraph.textContent).toBe("some words");
 
             expect(inlineImageCanUndo()).toBe(false);
         });
 
-        // Selecting a picture does not stop the person typing: the caret stays in the block, and
-        // the picture keeps its handles. So the selected picture must not win ctrl+z forever --
-        // once they have typed, their typing is the most recent thing they did. Right-clicking
-        // the text is the way to get into this state without meaning to, since the menu selects
-        // nothing and leaves the picture as it was.
+        // Selecting a picture does not stop the person typing, because the caret stays in the
+        // block and the picture keeps its handles. So once they have typed, their typing is the
+        // most recent thing they did, and ctrl+z must go to it even though the picture is still
+        // selected. Right-clicking the text gets into this state without the person meaning
+        // to, because the menu leaves the picture selected.
         it("declines with a picture still selected once the person has typed in the block", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
             select(insertInlineImage(group));
             const editable = editableFor(group, "en");
-            // Sanity check: with nothing typed since, the selected picture is what ctrl+z is for.
+            // Sanity check: with nothing typed since, ctrl+z goes to the selected picture.
             expect(inlineImageCanUndo()).toBe(true);
 
             editable.querySelector("p")!.textContent = "a and some more words";
@@ -902,10 +903,10 @@ describe("inlineImages", () => {
             expect(inlineImageCanUndo()).toBe(false);
         });
 
-        // The content comparison cannot see an edit that undid itself -- typing a word and
-        // deleting it again leaves the markup identical -- but CKEditor has two undo points for
-        // it, and they are newer than ours. So the editing itself is reported, and that is what
-        // hands ctrl+z over.
+        // Comparing the content can't see an edit that left it unchanged, such as typing a word
+        // and deleting it again, but CKEditor has two undo points for that edit, and they are
+        // newer than our snapshot. So the page reports the editing with
+        // noteInlineImageBlockWasEdited, and that is what sends ctrl+z to CKEditor.
         it("declines after an edit that left the content exactly as it was", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -914,8 +915,8 @@ describe("inlineImages", () => {
             const editable = editableFor(group, "en");
             expect(inlineImageCanUndo()).toBe(true);
 
-            // What the page reports for any typing in the block, however it ends up, and
-            // CKEditor holding the undo points for it.
+            // The page reports any typing in the block, whatever the result, and CKEditor
+            // holds the undo points for it.
             noteInlineImageBlockWasEdited(editable);
             setCkeditorUndoable(true);
 
@@ -923,10 +924,10 @@ describe("inlineImages", () => {
             setCkeditorUndoable(undefined);
         });
 
-        // The report of an edit must not be a one-way latch. Once the person has undone their
-        // text editing, CKEditor has nothing left and the picture operation from before it is
-        // the next thing back -- so it has to be reachable again, or ctrl+z simply stops
-        // working and the insert can never be taken back.
+        // Reporting an edit must not block the picture undo for good. Once the person has undone
+        // their text editing, CKEditor has nothing left, and the picture operation from before
+        // it is the next thing to undo. If inlineImageCanUndo still said no, ctrl+z would stop
+        // working and the insert could never be undone.
         it("comes back once the text edits have been undone", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -934,7 +935,7 @@ describe("inlineImages", () => {
             select(insertInlineImage(group));
             noteInlineImageBlockWasEdited(editableFor(group, "en"));
             setCkeditorUndoable(true);
-            // Sanity check: their editing goes first while CKEditor still holds it.
+            // Sanity check: their editing is undone first while CKEditor still holds it.
             expect(inlineImageCanUndo()).toBe(false);
 
             setCkeditorUndoable(false);
@@ -943,41 +944,41 @@ describe("inlineImages", () => {
             setCkeditorUndoable(undefined);
         });
 
-        // "Is there anything to undo" is not the same question as "is any of it newer than
-        // this snapshot". With text editing on BOTH sides of the picture operation, undoing the
-        // newer half leaves CKEditor still holding the older half -- and answering the first
-        // question there made every ctrl+z go to CKEditor, so it undid text from before the
-        // picture operation while the picture change stood.
+        // Whether CKEditor has anything to undo is a different question from whether any of it
+        // is newer than this snapshot. When the person typed both before and after the picture
+        // operation, undoing the newer typing leaves CKEditor still holding the older typing.
+        // Asking only whether CKEditor has anything would send every ctrl+z to CKEditor, which
+        // would undo text from before the picture operation while the picture change stayed.
         it("comes back with older typing still behind it", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
             const editable = editableFor(group, "en");
-            // Typing first, so CKEditor holds one snapshot when ours is taken.
+            // Type first, so CKEditor holds one snapshot when ours is taken.
             noteInlineImageBlockWasEdited(editable);
             setCkeditorUndoable(true, 0);
 
             select(insertInlineImage(group));
 
-            // Then typing that leaves the content exactly as it was, which only the report can
-            // see, and which CKEditor takes a snapshot of.
+            // Then type something that leaves the content exactly as it was. Only the report
+            // shows it, and CKEditor takes a snapshot of it.
             noteInlineImageBlockWasEdited(editable);
             setCkeditorUndoable(true, 1);
-            // Sanity check: their newer typing goes first.
+            // Sanity check: their newer typing is undone first.
             expect(inlineImageCanUndo()).toBe(false);
 
-            // Ctrl+Z takes that typing back; the older typing is still there to take back.
+            // Ctrl+Z undoes that typing; the older typing is still there to undo.
             setCkeditorUndoable(true, 0);
 
             expect(inlineImageCanUndo()).toBe(true);
             setCkeditorUndoable(undefined);
         });
 
-        // CKEditor's stack has a limit (20 snapshots), and once it is full its position stops
-        // counting up: save() drops the oldest snapshot before pushing the newest, so the
-        // newest is at the same position as before. Reading the position alone therefore said
-        // "nothing typed since" for typing in a long block, and ctrl+z took the picture back
-        // before it.
+        // CKEditor keeps at most 20 snapshots, and once it has that many its position stops
+        // going up, because save() drops the oldest snapshot before pushing the newest, so the
+        // newest is at the same position as before. Looking only at the position would say
+        // nothing was typed since, for typing in a long block, and ctrl+z would undo the
+        // picture before the typing.
         it("defers to typing after the snapshot once CKEditor's history is full", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -988,27 +989,28 @@ describe("inlineImages", () => {
             setCkeditorUndoable(true, 19, true);
 
             select(insertInlineImage(group));
-            // Sanity check: with nothing typed since, the picture operation is what ctrl+z is for.
+            // Sanity check: with nothing typed since, ctrl+z goes to the picture operation.
             expect(inlineImageCanUndo()).toBe(true);
 
-            // Then typing that leaves the content exactly as it was, which only the report can
-            // see. CKEditor saves it, and the saving leaves its position where it was.
+            // Then type something that leaves the content exactly as it was, which only the
+            // report shows. CKEditor saves it, and its position stays where it was.
             noteInlineImageBlockWasEdited(editable);
             setCkeditorUndoable(true, 19, true);
 
             expect(inlineImageCanUndo()).toBe(false);
 
-            // And once that typing is undone, the position drops below ours and the picture
-            // operation is reachable again.
+            // Once that typing is undone, the position drops below ours and ctrl+z goes to the
+            // picture operation again.
             setCkeditorUndoable(true, 18, true);
             expect(inlineImageCanUndo()).toBe(true);
             setCkeditorUndoable(undefined);
         });
 
-        // The report names a block, and the undo point for that block need not be the top of
-        // the stack: a picture operation in another block can be sitting on top of it. Marking
-        // only the top left the older one looking untouched, so undoing the newer one exposed
-        // a picture from before an edit the person has made since.
+        // The report is about one block, and the undo point for that block may not be at the
+        // top of the stack, because a picture operation in another block can be on top of it.
+        // If only the top were marked, the older one would look as if nothing had been typed
+        // since, and after the newer one was undone, ctrl+z would bring back a picture from
+        // before an edit the person has made since.
         it("marks the block's own undo point, not just the top of the stack", () => {
             const first = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -1026,7 +1028,7 @@ describe("inlineImages", () => {
             select(insertInlineImage(first));
             const secondWrapper = insertInlineImage(second);
             // An edit in the FIRST block, reported while the second block's operation is on
-            // top. It leaves the content as it was, so only the report can know about it.
+            // top. It leaves the content as it was, so only the report shows it.
             noteInlineImageBlockWasEdited(editableFor(first, "en"));
             setCkeditorUndoable(true);
 
@@ -1040,10 +1042,10 @@ describe("inlineImages", () => {
             setCkeditorUndoable(undefined);
         });
 
-        // SetupElements runs on a PIECE of the page whenever a canvas element is added (and
-        // for the image description tool), and setupInlineImages goes with it. Clearing the
-        // whole stack there took away the undo for a picture move the user had just made in a
-        // block that setup never touched.
+        // SetupElements runs on PART of the page whenever a canvas element is added (and for
+        // the image description tool), and it calls setupInlineImages. Clearing the whole stack
+        // there would take away the undo for a picture move the user had just made, in a block
+        // that setup never touched.
         it("survives a setup of another part of the page", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -1056,8 +1058,8 @@ describe("inlineImages", () => {
             // Sanity check: there is something to undo before the setup.
             expect(inlineImageCanUndo()).toBe(true);
 
-            // Something elsewhere on the page gets set up. It holds no inline images, which is
-            // the case that matters: the picture's own group is untouched.
+            // Set up something elsewhere on the page. It holds no inline images, so the
+            // picture's own group is not touched, which is the case under test.
             const elsewhere = document.createElement("div");
             group.closest(".bloom-page")!.appendChild(elsewhere);
             setupInlineImages(elsewhere);
@@ -1071,8 +1073,8 @@ describe("inlineImages", () => {
             ).toBe("40%");
         });
 
-        // The other side of it: a page frame rebuilt under us leaves every recorded element
-        // detached, and restoring into those would put the picture nowhere the user can see.
+        // When the page frame is rebuilt, every recorded element is detached, and restoring
+        // into those would put the picture somewhere the user can't see.
         it("drops an undo point whose group has left the document", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
@@ -1081,7 +1083,7 @@ describe("inlineImages", () => {
             recordInlineImageUndoPoint(group);
             wrapper.style.setProperty("--inline-image-width", "80%");
             select(wrapper);
-            // Sanity check: recorded, and reachable.
+            // Sanity check: recorded, and inlineImageCanUndo says yes.
             expect(inlineImageCanUndo()).toBe(true);
 
             const page = group.closest(".bloom-page") as HTMLElement;
@@ -1105,7 +1107,7 @@ describe("inlineImages", () => {
             wrapper.style.setProperty("--inline-image-width", "80%");
             setInlineImageDock(wrapper, kInlineImageBottomClass);
             syncInlineImagesFromEditable(source);
-            // Sanity check: the change landed in the sibling too.
+            // Sanity check: the change reached the other editable too.
             expect(sibling.lastElementChild).toBe(
                 getInlineImageInEditable(sibling),
             );
@@ -1129,7 +1131,7 @@ describe("inlineImages", () => {
                 expect(
                     restored.classList.contains(kInlineImageBottomClass),
                 ).toBe(false);
-                // Back in the first slot, with the text after it.
+                // It is the first child again, with the text after it.
                 expect(editable.firstElementChild).toBe(restored);
             });
         });
@@ -1158,13 +1160,13 @@ describe("inlineImages", () => {
                     "--inline-image-width",
                 ),
             ).toBe("60%");
-            // The restored wrapper is a new element, but it inherits the selection...
+            // The restored wrapper is a new element, but it is still selected,
             expect(
                 getInlineImageInEditable(source)!.classList.contains(
                     kInlineImageSelectedClass,
                 ),
             ).toBe(true);
-            // ...so the next undo is still routed to us.
+            // so the next undo still comes to the inline image undo stack.
             expect(inlineImageCanUndo()).toBe(true);
             expect(inlineImageUndo()).toBe(true);
             expect(
@@ -1181,8 +1183,8 @@ describe("inlineImages", () => {
             select(insertInlineImage(group));
             let eventsSeen = 0;
             let groupFromEvent: EventTarget | null = null;
-            // Listening at the document proves it bubbles, which is what lets the interaction
-            // layer use one listener for the whole page.
+            // Listening on the document shows that the event bubbles, which lets the code that
+            // handles clicks and drags on inline images use one listener for the whole page.
             document.addEventListener(kInlineImagesRestoredEvent, (e) => {
                 eventsSeen++;
                 groupFromEvent = e.target;
@@ -1194,31 +1196,31 @@ describe("inlineImages", () => {
             expect(groupFromEvent).toBe(group);
         });
 
-        // Undo replaces the wrappers, so the copy that was selected is gone -- and when the
-        // operation it took back was the insert that created that picture, there is no copy of
-        // it left to hand the selection to. Requiring a selected picture made the second ctrl+z
-        // in a row fall through to text undo.
+        // Undo replaces the wrappers, so the copy that was selected is gone, and when the
+        // operation it undid was the insert that created that picture, there is no copy of it
+        // left to select. If inlineImageCanUndo required a selected picture, the second ctrl+z
+        // in a row would go to text undo instead.
         it("allows a second undo after the first one left nothing selected", () => {
             const group = makeTranslationGroup([
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
             const first = insertInlineImage(group);
-            // An earlier operation on the first picture: this is what the second ctrl+z has to
-            // reach. It is deliberately never selected -- the user moves on to the new picture.
+            // An earlier operation on the first picture, which the second ctrl+z has to undo.
+            // The first picture is never selected, because the user moves on to the new one.
             prepareInlineImageUndo(group);
             first.style.setProperty(kInlineImageWidthVar, "80%");
             commitPendingInlineImageUndo(group);
             select(insertInlineImage(group));
-            // Sanity check: two pictures, and the newer insert is what undo takes back first.
+            // Sanity check: two pictures, and undo will undo the newer insert first.
             expect(getInlineImages(group).length).toBe(2);
 
             expect(inlineImageUndo()).toBe(true);
             expect(getInlineImages(group).length).toBe(1);
-            // Nothing is selected now: the picture that was is the one undo took away.
+            // Nothing is selected now, because undo removed the picture that was selected.
             expect(
                 group.querySelector("." + kInlineImageSelectedClass),
             ).toBeNull();
-            // The caret is where selecting a picture leaves it: in the block's text.
+            // Selecting a picture leaves the caret in the block's text, so put it there.
             putCaretIn(editableFor(group, "en"));
 
             expect(inlineImageCanUndo()).toBe(true);
@@ -1236,7 +1238,7 @@ describe("inlineImages", () => {
             ]);
             const wrapper = insertInlineImage(group);
             select(wrapper);
-            // Sanity check: the only reason it would say yes is the recorded insert.
+            // Sanity check: it says yes, and the recorded insert is the only reason it could.
             expect(inlineImageCanUndo()).toBe(true);
 
             clearInlineImageUndoState();
@@ -1251,8 +1253,8 @@ describe("inlineImages", () => {
             ]);
             insertInlineImage(group);
 
-            // Recorded, but nothing selected: undo must fall through to ckeditor rather than
-            // shadowing whatever the user did most recently.
+            // The insert is recorded, but nothing is selected, so undo must go on to ckeditor
+            // and undo whatever the user did most recently.
             expect(inlineImageCanUndo()).toBe(false);
         });
 
@@ -1291,10 +1293,9 @@ describe("inlineImages", () => {
             commitPendingInlineImageUndo(group);
             expect(inlineImageCanUndo()).toBe(false);
 
-            // Something has to actually change between prepare and commit: on this two-phase
-            // path the change has already landed by the time we commit, so a snapshot that
-            // still describes the group means the operation ended where it began, and that is
-            // deliberately not recorded.
+            // Something has to change between prepare and commit. With prepare and commit, the
+            // change has already happened when we commit, so a snapshot that still matches the
+            // group means the operation ended where it began, and that is not recorded.
             prepareInlineImageUndo(group);
             image.style.setProperty(kInlineImageWidthVar, "55%");
             commitPendingInlineImageUndo(group);
@@ -1308,10 +1309,10 @@ describe("inlineImages", () => {
             select(insertInlineImage(group));
             clearInlineImageUndoState();
 
-            // What a drag reverted by the fit-or-revert rule leaves behind: the gesture ran, so
-            // it prepared and committed, but the picture is back where it started. An undo point
-            // there would do nothing visible, and would make the NEXT undo take back a change
-            // the person had stopped thinking about.
+            // This is what a drag leaves when the move did not fit and the picture was put back.
+            // The drag prepared and committed, but the picture is back where it started. An undo
+            // point here would do nothing visible, and the undo after it would take back a
+            // change the person had stopped thinking about.
             prepareInlineImageUndo(group);
             commitPendingInlineImageUndo(group);
 
@@ -1323,7 +1324,7 @@ describe("inlineImages", () => {
                 { lang: "en", classes: "bloom-content1", content: "<p>a</p>" },
             ]);
             select(insertInlineImage(group));
-            // Sanity check: recorded and reachable on this page.
+            // Sanity check: recorded, and inlineImageCanUndo says yes on this page.
             expect(inlineImageCanUndo()).toBe(true);
 
             group
@@ -1342,7 +1343,8 @@ describe("inlineImages", () => {
             const ordinaryImg = document.createElement("img");
             group.closest(".bloom-page")!.appendChild(ordinaryImg);
 
-            // This is what tells bloomEditing's changeImage which undo layer owns the change.
+            // The return value tells bloomEditing's changeImage whether this file or
+            // ImageUndoManager handles undo for the change.
             expect(prepareInlineImageUndoForImageChange(inlineImg)).toBe(true);
             expect(prepareInlineImageUndoForImageChange(ordinaryImg)).toBe(
                 false,
