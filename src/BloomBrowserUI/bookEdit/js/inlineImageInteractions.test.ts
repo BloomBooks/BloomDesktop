@@ -736,7 +736,7 @@ describe("inlineImageInteractions", () => {
     });
 
     describe("buildInlineImageMenuItems", () => {
-        it("offers only Add Image where there is no image", () => {
+        it("offers only Insert Image where there is no image", () => {
             const group = makeSimpleGroup();
             const items = buildInlineImageMenuItems(
                 getInlineImageActionTarget(
@@ -744,7 +744,7 @@ describe("inlineImageInteractions", () => {
                 ),
             );
             expect(items.map((i) => i.l10nId)).toEqual([
-                "EditTab.InlineImage.AddImage",
+                "EditTab.InlineImage.InsertImage",
             ]);
         });
 

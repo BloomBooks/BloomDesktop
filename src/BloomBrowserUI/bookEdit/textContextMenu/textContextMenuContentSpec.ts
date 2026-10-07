@@ -53,13 +53,13 @@ describe("getTextContextMenuContent", () => {
     beforeEach(setupPage);
     afterEach(() => (document.body.innerHTML = ""));
 
-    it("offers the paragraph command and Add Image for a plain paragraph", () => {
+    it("offers the paragraph command and Insert Image for a plain paragraph", () => {
         const content = getTextContextMenuContent(element("first"));
 
         expect(content, "expected the menu to open").toBeTruthy();
         // The paragraph is what "No Indent" needs; without it that command is not offered.
         expect(content!.paragraph).toBe(element("first"));
-        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.InsertImage"]);
     });
 
     it("finds the enclosing paragraph when the click is on something inside it", () => {
@@ -67,7 +67,7 @@ describe("getTextContextMenuContent", () => {
         expect(content!.paragraph).toBe(element("first"));
     });
 
-    it("offers the paragraph command and Add Image once the text box has an image", () => {
+    it("offers the paragraph command and Insert Image once the text box has an image", () => {
         insertInlineImage(element("plainGroup"));
 
         const content = getTextContextMenuContent(element("first"));
@@ -76,7 +76,7 @@ describe("getTextContextMenuContent", () => {
         expect(content!.paragraph).toBe(element("first"));
         // ...and since there is no limit on inline images per text box, adding another is
         // still offered; the commands for an existing image belong to a click on that image.
-        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.InsertImage"]);
     });
 
     it("offers the image's own commands for a click on the image", () => {
@@ -136,7 +136,7 @@ describe("getTextContextMenuContent", () => {
         expect(getTextContextMenuContent(element("notText"))).toBeUndefined();
     });
 
-    it("offers Add Image in the empty space of a text box, where there is no paragraph", () => {
+    it("offers Insert Image in the empty space of a text box, where there is no paragraph", () => {
         // Adding an image is a command on the whole text box, not on a paragraph, so it is
         // offered anywhere in the box -- including the space below the last line, which is
         // often most of a box. This is the one place the menu now opens where the
@@ -146,17 +146,17 @@ describe("getTextContextMenuContent", () => {
         expect(content, "expected the menu to open").toBeTruthy();
         // Nothing for "No Indent" to act on, so it is not offered.
         expect(content!.paragraph).toBeUndefined();
-        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.InsertImage"]);
     });
 
-    it("offers Add Image in the empty space of a text box that already has an image", () => {
+    it("offers Insert Image in the empty space of a text box that already has an image", () => {
         insertInlineImage(element("plainGroup"));
         // There is no limit on inline images per box, so there is still something to add;
         // an existing image's own commands are reached by clicking that image.
         const content = getTextContextMenuContent(element("ordinaryText"));
         expect(content, "expected the menu to open").toBeTruthy();
         expect(content!.paragraph).toBeUndefined();
-        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.InsertImage"]);
     });
 
     it("offers nothing for a non-element target", () => {
@@ -164,12 +164,12 @@ describe("getTextContextMenuContent", () => {
         expect(getTextContextMenuContent(document)).toBeUndefined();
     });
 
-    it("offers Add Image in a hidden language's block too", () => {
+    it("offers Insert Image in a hidden language's block too", () => {
         // Every language's editable carries its own copy of the image, so the command belongs
         // on any of the text box's blocks, not only the visible one.
         const content = getTextContextMenuContent(element("frenchFirst"));
         expect(content!.paragraph).toBe(element("frenchFirst"));
-        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.AddImage"]);
+        expect(l10nIdsOf(content)).toEqual(["EditTab.InlineImage.InsertImage"]);
     });
 
     it("leaves the image unselected when it offers nothing", () => {
