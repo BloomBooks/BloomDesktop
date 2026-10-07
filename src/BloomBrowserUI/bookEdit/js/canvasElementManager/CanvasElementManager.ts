@@ -3005,17 +3005,13 @@ export class CanvasElementManager {
         this.adjustCanvasElementOrdering();
         // It is the same element that was deleted, so its editables still have their focus
         // handlers and their CKEditor instances; attaching again would make CKEditor throw.
+        // This also rebuilds the source and hint bubbles the delete destroyed: SetupElements
+        // prepares them for every translation group in the canvas.
         this.refreshCanvasElementEditing(
             bloomCanvas,
             new Bubble(canvasElement),
             false,
             true,
-        );
-        // The delete destroyed its source and hint bubbles.
-        Array.from(
-            canvasElement.getElementsByClassName("bloom-translationGroup"),
-        ).forEach((group) =>
-            this.addSourceAndHintBubbles(group as HTMLElement),
         );
         const page = bloomCanvas.closest(".bloom-page") as HTMLElement | null;
         if (page) {

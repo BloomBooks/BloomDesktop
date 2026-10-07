@@ -207,15 +207,17 @@ function insertAtOldPlace(
  * family keeps sharing one level.
  */
 function makeRoomForLevelAt(element: HTMLElement): number {
-    const siblings = canvasElementsIn(element.parentElement as HTMLElement);
+    const siblings = elementsWithBubbleData(
+        element.parentElement as HTMLElement,
+    );
     const below = siblings[siblings.indexOf(element) - 1];
-    const level = below ? readBubbleSpec(below).level! + 1 : 1;
+    const level = below ? levelOf(below) + 1 : 1;
     siblings
         .filter((other) => other !== element)
         .forEach((other) => {
             const spec = readBubbleSpec(other);
-            if (spec.level! >= level) {
-                spec.level = spec.level! + 1;
+            if (levelOf(other) >= level) {
+                spec.level = levelOf(other) + 1;
                 writeBubbleSpec(other, spec);
             }
         });
@@ -247,9 +249,10 @@ function findPlaceInFamily(
 /**
  * The inverse of Comical.deleteBubbleFromFamily, applied to the family as it is now: every member
  * from `place.order` on moves up one, and the element takes that order at the family's level. When
- * it becomes the head again, it takes the current head's spec (which holds the family-wide
- * settings, as they are now) with its own tails, and the member it displaces gets its own tails
- * back.
+ * it becomes the head again, it takes the current head's whole spec: the family-wide settings and
+ * the head's tails, which deleteBubbleFromFamily moved there and which are effectively the family's
+ * tail, as they are now (someone may have edited them since). The member it displaces gets back the
+ * tails it had of its own before the delete.
  */
 function rejoinFamily(
     element: HTMLElement,
@@ -265,7 +268,7 @@ function rejoinFamily(
     );
     let restoredSpec: BubbleSpec = { ...spec, level: place.level };
     if (place.order === 1 && currentHead) {
-        restoredSpec = { ...readBubbleSpec(currentHead), tails: spec.tails };
+        restoredSpec = readBubbleSpec(currentHead);
     }
     restoredSpec.order = place.order;
 
@@ -295,9 +298,25 @@ function canvasElementsIn(canvas: HTMLElement): HTMLElement[] {
     ) as HTMLElement[];
 }
 
+/**
+ * The canvas elements on `canvas` that have bubble data. Bloom gives every canvas element some as
+ * the page loads (migrateOldCanvasElements), except ones in a hidden language block; Comical
+ * ignores those for levels and families, and so do we.
+ */
+function elementsWithBubbleData(canvas: HTMLElement): HTMLElement[] {
+    return canvasElementsIn(canvas).filter((element) =>
+        element.hasAttribute("data-bubble"),
+    );
+}
+
+/** An element's bubble level, treating a missing one as 0 as Comical does. */
+function levelOf(element: HTMLElement): number {
+    return readBubbleSpec(element).level ?? 0;
+}
+
 /** The members of the comic family at `level` on `canvas`, in family order. */
 function familyMembers(canvas: HTMLElement, level: number): HTMLElement[] {
-    return canvasElementsIn(canvas)
+    return elementsWithBubbleData(canvas)
         .filter((member) => {
             const spec = readBubbleSpec(member);
             return spec.level === level && !!spec.order;

@@ -267,6 +267,17 @@ describe("undoing a canvas element deletion: comic families", () => {
         expect(readSpec(el("last")).order).toBe(3);
     });
 
+    test("the head takes the family's tail as it is now, keeping an edit made since", () => {
+        setUpFamily();
+        deleteElement("head");
+        writeSpec(el("mid"), { ...readSpec(el("mid")), tails: [{ tipX: 99 }] });
+
+        undo();
+
+        expect(readSpec(el("head")).tails).toEqual([{ tipX: 99 }]);
+        expect(readSpec(el("mid")).tails).toEqual([{ tipX: 20 }]);
+    });
+
     test("the head takes the family-wide settings as they are now", () => {
         setUpFamily();
         deleteElement("head");
@@ -324,6 +335,22 @@ describe("undoing a canvas element deletion: comic families", () => {
 });
 
 describe("undoing a canvas element deletion: the rest", () => {
+    test("ignores a canvas element that has no bubble data", () => {
+        setUpCanvas([
+            ["c", { level: 1 }],
+            ["a", { level: 2 }],
+            ["d", { level: 3 }],
+        ]);
+        el("d").removeAttribute("data-bubble");
+        deleteElement("a");
+
+        undo();
+
+        expect(stackingOrder()).toEqual(["c", "a", "d"]);
+        expect(readSpec(el("a")).level).toBe(2);
+        expect(el("d").hasAttribute("data-bubble")).toBe(false);
+    });
+
     test("puts back a draggable's target", () => {
         setUpCanvas([["drag", { level: 1 }]]);
         el("drag").setAttribute("data-draggable-id", "d1");

@@ -1149,8 +1149,9 @@ of everything else is unchanged and families keep sharing a level.
   or more moves up one. This is exactly the inverse of `deleteBubbleFromFamily`, and it touches
   only the fields that call touched.
 - If it was the head and the member that took over is still the head, the restored bubble becomes
-  head again: it takes the current head's spec (the family-wide fields as they are now) with its
-  own tails, and the demoted member gets back its own tails and `order` 2; the others move up one.
+  head again: it takes the current head's whole spec, including its tails, which the delete moved
+  there and which are in effect the family's tail, so an edit made since is kept; the demoted
+  member gets back its own tails and `order` 2; the others move up one.
 - If no member of its family is left, it comes back as a bubble on its own, `order` cleared.
 
 **Game ordering rules are not the undo's business.** After re-inserting, run the same tidy-up that
