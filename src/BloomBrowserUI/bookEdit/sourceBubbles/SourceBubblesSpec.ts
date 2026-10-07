@@ -199,9 +199,8 @@ describe("SourceBubbles", () => {
     // Inline (Word-style) images live inside each bloom-editable, so they are inside the
     // clone that becomes the source bubble too. They must not show up there: a source bubble
     // is for reading another language's text, and the picture is the same in every language
-    // anyway. Nothing in this file does that on purpose -- the existing hasNoText pass drops
-    // the text-less wrapper div, taking the img with it -- so this test pins that down,
-    // because the whole v1 design leans on it. See INLINE-IMAGES-PLAN.md.
+    // anyway. Nothing in this file removes them on purpose: the hasNoText pass drops the
+    // text-less wrapper div, taking the img with it. This test makes sure that keeps happening.
     it("MakeSourceTextDivForGroup drops inline images from the bubble", () => {
         const inlineImage =
             "<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval' contenteditable='false'><img src='flower.jpg'/></div>";

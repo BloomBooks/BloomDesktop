@@ -1,8 +1,8 @@
 // Inline (Word-style) images: an image that lives *inside* a bloom-editable, docked left,
 // right, as a full-width band, or at the bottom, with the text of that editable wrapping
-// around it. See INLINE-IMAGES-PLAN.md for the design and its rationale; the layout rules
-// are in content/bookLayout/inlineImages.less and the edit-time affordances in
-// bookEdit/css/editMode.less.
+// around it. The design and its rationale are below; the layout rules are in
+// content/bookLayout/inlineImages.less and the edit-time affordances in
+// bookEdit/css/inlineImageEditing.less.
 //
 // Two facts shape everything in this file:
 //

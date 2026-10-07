@@ -1690,8 +1690,8 @@ namespace BloomTests.Book
         }
 
         // A block whose only content is an inline (Word-style) image has no text in it, so
-        // judging "empty" by InnerText alone deleted the picture along with the div. The person
-        // who put the picture there and typed nothing beside it would find it simply gone.
+        // judging "empty" by InnerText alone would delete the picture along with the div. The
+        // person who put the picture there and typed nothing beside it would find it gone.
         [Test]
         public void FixDuplicateLanguageDivs_KeepsADivWhoseOnlyContentIsAnInlineImage()
         {
@@ -1732,8 +1732,8 @@ namespace BloomTests.Book
         }
 
         // Duplicating a block gives both copies the same picture, and neither is empty, so the
-        // merge branch runs. Appending the second block's children wholesale put a second copy of
-        // the one picture into the survivor, and the reader saw it twice.
+        // merge branch runs. The merge must not append the second block's copy of the picture,
+        // or the reader would see it twice.
         [Test]
         public void FixDuplicateLanguageDivs_MergeDoesNotRepeatTheSameInlineImage()
         {
@@ -2443,7 +2443,7 @@ namespace BloomTests.Book
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
-								 contenteditable='false' style='--inline-image-offset: 120px; width: 40%; aspect-ratio: 800 / 600;'>
+								 contenteditable='false' style='--inline-image-width: 40%; --inline-image-offset: 120px; --inline-image-aspect-ratio: 800 / 600'>
 								<img src='flower.jpg' data-copyright='Copyright Me' data-license='cc-by'></img>
 							</div>
 							<p>Do not copy me.</p>
@@ -2494,8 +2494,8 @@ namespace BloomTests.Book
             Assert.That(frWrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
             var frWrapperStyle = frWrapper.GetAttribute("style");
             Assert.That(frWrapperStyle, Does.Contain("--inline-image-offset: 120px"));
-            Assert.That(frWrapperStyle, Does.Contain("width: 40%"));
-            Assert.That(frWrapperStyle, Does.Contain("aspect-ratio: 800 / 600"));
+            Assert.That(frWrapperStyle, Does.Contain("--inline-image-width: 40%"));
+            Assert.That(frWrapperStyle, Does.Contain("--inline-image-aspect-ratio: 800 / 600"));
 
             // The wrapper is still the first child of the new editable (bloom-keepFirstInField's slot).
             var frEditable = dom.SelectSingleNode("//div[@lang='fr']");
@@ -2548,7 +2548,7 @@ namespace BloomTests.Book
                 @"<html><body><div class='bloom-page'>
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
-							<div class='bloom-inlineImage bloom-inlineImageRight' contenteditable='false' style='width: 40%;'>
+							<div class='bloom-inlineImage bloom-inlineImageRight' contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 						</div>
@@ -2607,14 +2607,14 @@ namespace BloomTests.Book
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='xyz' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
-								 contenteditable='false' style='width: 40%;'>
+								 contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 							<p>Some vernacular text.</p>
 						</div>
 						<div class='bloom-editable normal-style' lang='fr' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval bloom-visibility-code-on'
-								 contenteditable='false' style='width: 40%;'>
+								 contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 						</div>
@@ -2681,7 +2681,10 @@ namespace BloomTests.Book
                 Assert.That(classes, Does.Contain("bloom-keepFirstInField"));
                 Assert.That(classes, Does.Contain("bloom-preventRemoval"));
                 Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
-                Assert.That(wrapper.GetAttribute("style"), Does.Contain("width: 40%"));
+                Assert.That(
+                    wrapper.GetAttribute("style"),
+                    Does.Contain("--inline-image-width: 40%")
+                );
             }
         }
 
@@ -2714,7 +2717,7 @@ namespace BloomTests.Book
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
-								 data-bloom-inline-image-id='abc123' contenteditable='false' style='width: 40%;'>
+								 data-bloom-inline-image-id='abc123' contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 							<p>Do not copy me.</p>
@@ -2774,7 +2777,7 @@ namespace BloomTests.Book
                 "//div[@lang='fr']/div[@data-bloom-inline-image-id='abc123']"
             );
             Assert.That(frFirst.GetAttribute("class"), Does.Contain("bloom-inlineImageRight"));
-            Assert.That(frFirst.GetAttribute("style"), Does.Contain("width: 40%"));
+            Assert.That(frFirst.GetAttribute("style"), Does.Contain("--inline-image-width: 40%"));
             Assert.That(frFirst.GetAttribute("contenteditable"), Is.EqualTo("false"));
             Assert.That(
                 frFirst.SelectSingleNode("img").GetAttribute("src"),
@@ -2808,7 +2811,7 @@ namespace BloomTests.Book
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
-								 contenteditable='false' style='width: 40%;'>
+								 contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 							<div class='bloom-inlineImage bloom-inlineImageBottom' data-bloom-inline-image-id='def456'
@@ -2877,7 +2880,7 @@ namespace BloomTests.Book
 					<div class='bloom-translationGroup normal-style'>
 						<div class='bloom-editable normal-style' lang='xyz' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
-								 contenteditable='false' style='width: 40%;'>
+								 contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 							<p>Some vernacular text.</p>
@@ -2888,7 +2891,7 @@ namespace BloomTests.Book
 						</div>
 						<div class='bloom-editable normal-style' lang='fr' contenteditable='true'>
 							<div class='bloom-inlineImage bloom-inlineImageRight' data-bloom-inline-image-id='abc123'
-								 contenteditable='false' style='width: 40%;'>
+								 contenteditable='false' style='--inline-image-width: 40%'>
 								<img src='flower.jpg'></img>
 							</div>
 							<div class='bloom-inlineImage bloom-inlineImageLeft' data-bloom-inline-image-id='def456'

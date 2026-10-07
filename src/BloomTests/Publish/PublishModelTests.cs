@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
 using Bloom.Publish;
@@ -739,11 +739,11 @@ namespace BloomTests.Publish
                 		<div class='marginBox'>
                 			<div class='bloom-translationGroup' data-default-languages='auto'>
                 				<div class='bloom-editable normal-style bloom-content1' contenteditable='true' lang='tl'>
-                					<div class='bloom-inlineImage bloom-inlineImage-left bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
+                					<div class='bloom-inlineImage bloom-inlineImageLeft bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
                 					<p>Ako si Robin</p>
                 				</div>
                 				<div class='bloom-editable normal-style' contenteditable='true' lang='z'>
-                					<div class='bloom-inlineImage bloom-inlineImage-left bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
+                					<div class='bloom-inlineImage bloom-inlineImageLeft bloom-preventRemoval' contenteditable='false' data-bloom-inline-image-id='i1'><img src='bird.png'></img></div>
                 					<p></p>
                 				</div>
                 			</div>

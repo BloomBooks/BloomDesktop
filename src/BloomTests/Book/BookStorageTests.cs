@@ -2250,7 +2250,7 @@ These are similar but already have game-theme classes
 		<div class='bloom-translationGroup'>
 			<div class='bloom-editable normal-style' lang='en' contenteditable='true'>
 				<div class='bloom-inlineImage bloom-inlineImageRight bloom-keepFirstInField bloom-preventRemoval'
-					 id='inlineWrapper' contenteditable='false' style='--inline-image-offset: 120px; width: 40%;'>
+					 id='inlineWrapper' contenteditable='false' style='--inline-image-width: 40%; --inline-image-offset: 120px'>
 					<img src='flower.jpg' />
 				</div>
 				<p>Text that wraps around the image.</p>
@@ -2292,7 +2292,7 @@ These are similar but already have game-theme classes
                 "the migration must not turn the inline image wrapper into a bloom-canvas"
             );
             Assert.That(wrapper.GetAttribute("contenteditable"), Is.EqualTo("false"));
-            Assert.That(wrapper.GetAttribute("style"), Does.Contain("width: 40%"));
+            Assert.That(wrapper.GetAttribute("style"), Does.Contain("--inline-image-width: 40%"));
             AssertThatXmlIn
                 .Dom(storage.Dom.RawDom)
                 .HasSpecifiedNumberOfMatchesForXpath(
