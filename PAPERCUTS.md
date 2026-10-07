@@ -19,6 +19,11 @@ House rules:
 
 ---
 
+## 2026-10-07 — The pre-commit hook commits files that were left unstaged
+- **Cut:** Committing a merge with only the conflict files staged also committed four modified files that were never `git add`ed. The hook runs lint-staged with `--no-stash` and then a C# formatter; which step added them is not yet known. Nothing in the output says the commit grew.
+- **Idea:** Find the step and make it re-stage only the paths that were staged when the hook started, or document that a partial commit must be checked with `git show --stat HEAD` afterwards.
+- **Context:** BL-16818-tables, merging master; caught before pushing and the merge commit was rebuilt.
+
 ## 2026-09-30 — `winformsUia.ps1 close` can pick a disabled window in a stack of dialogs
 - **Cut:** With about 40 "Bloom had a problem" dialogs stacked, `close -Window ReactDialog` reported "closed" for the first match, which was disabled (`enabled=False`) and ignored the close. Two-dialog stacks made later both came up enabled, so this was not reproduced.
 - **Idea:** When several windows match, have `close` prefer the enabled one, and report failure when the window is still there afterwards.

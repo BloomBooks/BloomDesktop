@@ -1,7 +1,7 @@
 // Making and editing a table on a canvas page: the path a person takes the first time, from
 // dragging the Table icon out of the Canvas tool to seeing the finished table in a BloomPUB
-// preview. Automates the test case "Tables: create and edit a table on a canvas page"
-// (Its Test Case ID in the test inventory is to be assigned later.)
+// preview. Tests tagged [Test Case ID 826] automate Notion test case 826, "Tables on a
+// canvas page and in Change Layout"; the BloomPUB preview tests have no card yet.
 //
 // This is the file to read first when tables break. It covers only the steps that have to work for
 // the feature to be usable at all; the content types, the layout paths and the contention between a
@@ -106,9 +106,8 @@ const IMAGE_FILE = Path.resolve(
 let canvasPage: IBookPage;
 let bookFolder: string;
 
-// Test Case ID to be assigned later.
 test.describe("a table on a canvas page", () => {
-    test("appears when the Table icon is dragged onto the canvas", async ({
+    test("appears when the Table icon is dragged onto the canvas [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -197,7 +196,7 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    test("takes typing in a cell, with the format gear inside the cell", async ({
+    test("takes typing in a cell, with the format gear inside the cell [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -219,7 +218,10 @@ test.describe("a table on a canvas page", () => {
     // The table's "+" button for a new row sits just under its bottom edge, in the same band as
     // the table pill. Bloom's canvas element toolbar starts below that whole band, so a press
     // aimed at the "+" reaches the "+" rather than the toolbar's Delete button.
-    test("gains a row from the bottom + button", async ({ page, step }) => {
+    test("gains a row from the bottom + button [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
         await step(
             "Press the + button under the table's bottom edge",
             async () => {
@@ -247,7 +249,7 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    test("gains a column from the right + button, and a row and back from the row menu", async ({
+    test("gains a column from the right + button, and a row and back from the row menu [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -311,7 +313,7 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    test("undoes a row addition", async ({ page, step }) => {
+    test("undoes a row addition [Test Case ID 826]", async ({ page, step }) => {
         await step("Add a row from the row menu", async () => {
             await clickCell(page, 0, 0);
             await openTableMenu(page, "row", 1);
@@ -334,7 +336,7 @@ test.describe("a table on a canvas page", () => {
         });
     });
 
-    test("resizes a column when its boundary is dragged", async ({
+    test("resizes a column when its boundary is dragged [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -410,7 +412,7 @@ test.describe("a table on a canvas page", () => {
         );
     });
 
-    test("turns a text cell into a picture cell and takes a picture", async ({
+    test("turns a text cell into a picture cell and takes a picture [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -503,7 +505,7 @@ test.describe("a table on a canvas page", () => {
         );
     });
 
-    test("duplicates the whole table as one canvas element", async ({
+    test("duplicates the whole table as one canvas element [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -573,7 +575,9 @@ test.describe("a table on a canvas page", () => {
     // clones the table's markup, and until the clone cleanup dropped it, the copy carried the
     // data-table-attached="1" Bloom writes on a table it has wired up, so attachSingleTable in
     // tableEditing.ts skipped it and none of its commands reached the table library.
-    test("the duplicated table takes commands of its own", async ({ page }) => {
+    test("the duplicated table takes commands of its own [Test Case ID 826]", async ({
+        page,
+    }) => {
         await clickCell(page, 0, 0, 1);
         await openTableMenu(page, "row", 1, 1);
         await clickTableMenuCommand(page, "Add Row Below");
@@ -599,7 +603,7 @@ test.describe("a table on a canvas page", () => {
             .toEqual({ original: 2, copy: 2 });
     });
 
-    test("saves both tables to the book, with no editing markup", async ({
+    test("saves both tables to the book, with no editing markup [Test Case ID 826]", async ({
         page,
         step,
     }) => {

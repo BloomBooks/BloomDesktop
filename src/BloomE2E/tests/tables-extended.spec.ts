@@ -126,9 +126,10 @@ let sectionPage: IBookPage;
 let canvasPage: IBookPage;
 let bookFolder: string;
 
-// Test Case ID to be assigned later.
+// Tests tagged [Test Case ID 826] automate Notion test case 826, "Tables on a canvas page
+// and in Change Layout"; the others have no card yet.
 test.describe("more ways to use a table", () => {
-    test("makes a table out of a page section, through Change Layout", async ({
+    test("makes a table out of a page section, through Change Layout [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -176,7 +177,7 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    test("keeps the table when its section is split in two", async ({
+    test("keeps the table when its section is split in two [Test Case ID 826]", async ({
         page,
         step,
     }) => {
@@ -223,7 +224,10 @@ test.describe("more ways to use a table", () => {
         await expectCellsTile(page);
     });
 
-    test("adds a table to a canvas page", async ({ page, step }) => {
+    test("adds a table to a canvas page [Test Case ID 826]", async ({
+        page,
+        step,
+    }) => {
         await step("Add a Canvas page", async () => {
             const before = (await getContentPages(page)).map((p) => p.id);
             await addPage(page, "Canvas");
@@ -245,7 +249,7 @@ test.describe("more ways to use a table", () => {
         });
     });
 
-    test("marks text that does not fit a cell, without growing the table", async ({
+    test("marks text that does not fit a cell, without growing the table [Test Case ID 826]", async ({
         page,
         step,
     }) => {
