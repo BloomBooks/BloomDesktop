@@ -1,5 +1,5 @@
 // Inline (Word-style) images: a picture inside a text block, with the text of the block wrapping
-// around it. The feature is described in INLINE-IMAGES-PLAN.md.
+// around it. The feature is described in bookEdit/js/inlineImages.ts.
 //
 // WHAT THIS FILE COVERS, AND WHY IT IS THE E2E PART. The logic of the feature -- which dock a
 // position means, how an offset is clamped, what a sync stamps onto the other languages -- is

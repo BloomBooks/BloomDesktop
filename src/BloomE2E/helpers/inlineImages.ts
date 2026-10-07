@@ -1,5 +1,5 @@
 // Inline (Word-style) images: a picture that lives inside a text block so that the text of the
-// block wraps around it. See INLINE-IMAGES-PLAN.md, and bookEdit/js/inlineImages.ts for the
+// block wraps around it. bookEdit/js/inlineImages.ts describes the design and the
 // edit-time code these helpers drive.
 //
 // The feature has no dialog. Everything a person does to an inline image they do with the mouse,

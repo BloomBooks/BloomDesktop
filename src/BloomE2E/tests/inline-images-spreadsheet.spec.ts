@@ -1,5 +1,5 @@
 // An inline (Word-style) image has to survive a spreadsheet round trip. The feature is described
-// in INLINE-IMAGES-PLAN.md.
+// in bookEdit/js/inlineImages.ts.
 //
 // WHY THIS IS WORTH AN E2E TEST. A spreadsheet holds one row per text block. An image inside a
 // text block is the one thing a round trip could silently drop, because there is no column for it:

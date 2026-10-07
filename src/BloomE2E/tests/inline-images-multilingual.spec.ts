@@ -1,5 +1,5 @@
 // Inline (Word-style) images in a book with more than one language. The feature is described in
-// INLINE-IMAGES-PLAN.md; inline-images.spec.ts covers one language.
+// bookEdit/js/inlineImages.ts; inline-images.spec.ts covers one language.
 //
 // WHAT THIS FILE COVERS, AND WHY IT IS THE E2E PART. An inline image is not one element. A float
 // only wraps the text of the block it sits in, so the picture has to live inside each
