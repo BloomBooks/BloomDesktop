@@ -1533,6 +1533,10 @@ async function pageFrameOffset(page: Page): Promise<{ x: number; y: number }> {
 
 async function requireBox(locator: Locator, what: string): Promise<IRect> {
     await locator.waitFor({ state: "visible", timeout: kTableWaitMs });
+    // Every box measured here is about to be pressed or hovered. In a window shorter than the
+    // page (the nightly runner's, or a zoomed view), it can be below what is showing, where the
+    // mouse lands on nothing. A person would scroll to it first.
+    await locator.scrollIntoViewIfNeeded({ timeout: kTableWaitMs });
     const box = await locator.boundingBox({ timeout: kTableWaitMs });
     if (!box)
         throw new Error(

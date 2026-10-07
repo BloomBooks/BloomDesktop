@@ -37,6 +37,7 @@ import {
     dragPaletteItemOntoCanvas,
     getCanvasElementCount,
     getCanvasElementToolbarRect,
+    getCanvasRect,
     openCanvasTool,
 } from "../helpers/canvasElements";
 import { selectBook } from "../helpers/collection";
@@ -473,7 +474,15 @@ test.describe("more ways to use a table", () => {
         page,
         step,
     }) => {
-        const before = await measureTable(page);
+        // Where the table sits on its canvas, rather than on the screen: in a window shorter than
+        // the page, typing in a cell low on the page scrolls it into view, which moves the table
+        // on the screen without moving it on the page.
+        const tableOnCanvas = async () => {
+            const table = (await measureTable(page)).rect;
+            const canvas = await getCanvasRect(page);
+            return { ...table, x: table.x - canvas.x, y: table.y - canvas.y };
+        };
+        const before = await tableOnCanvas();
 
         await step("Type more into a cell than it can hold", async () => {
             // Key by key, because Bloom marks a box as overflowing from a keyup or a paste
@@ -489,10 +498,9 @@ test.describe("more ways to use a table", () => {
                     await getCellOverflowMarks(page, 0, 1),
                     "Text too big for its cell should be marked as overflowing.",
                 ).not.toEqual([]);
-                const after = await measureTable(page);
                 expectSameRect(
-                    after.rect,
-                    before.rect,
+                    await tableOnCanvas(),
+                    before,
                     "the table after too much text was typed in a cell",
                 );
             },

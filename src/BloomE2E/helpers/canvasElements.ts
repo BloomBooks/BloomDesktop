@@ -863,6 +863,9 @@ export async function dragCanvasElementCorner(
         `#canvas-element-control-frame .bloom-ui-canvas-element-resize-handle-${corner}`,
     );
     await handle.waitFor({ state: "visible", timeout: 30000 });
+    // In a window shorter than the page, a handle low on the page can be below what is showing,
+    // where a press lands on nothing. A person would scroll to it first.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
     const before = await getActiveCanvasElementRect(page);
     const box = await requireBox(handle, `the ${corner} resize handle`);
     const x = box.x + box.width / 2;
@@ -915,6 +918,8 @@ export async function dragCanvasElementSide(
         `#canvas-element-control-frame .bloom-ui-canvas-element-side-handle-${side}`,
     );
     await handle.waitFor({ state: "visible", timeout: 30000 });
+    // As in dragCanvasElementCorner: scroll a handle that is below what is showing into view.
+    await handle.scrollIntoViewIfNeeded({ timeout: 30000 });
     const before = await getActiveCanvasElementRect(page);
     const box = await requireBox(handle, `the ${side} side handle`);
     const x = box.x + box.width / 2;
