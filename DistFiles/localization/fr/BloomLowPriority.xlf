@@ -17,9 +17,9 @@
         <target xml:lang="fr" state="final">Le fichier image {0} est corrompu et doit être remplacé. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
-      <trans-unit id="ErrorReport.Details">
+      <trans-unit id="ErrorReport.Details" approved="yes">
         <source xml:lang="en">Details</source>
-        <target xml:lang="fr" state="needs-translation">Details</target>
+        <target xml:lang="fr" state="final">Détails</target>
         <note>ID: ErrorReport.Details</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" approved="yes">
