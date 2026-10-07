@@ -95,7 +95,7 @@ export const kInlineImageHandleClass = "bloom-ui-inlineImage-handle";
 // drag or resize, to stop the gesture from also sweeping out a text selection.
 export const kInlineImageDraggingClass = "bloom-inlineImage-dragging";
 
-// Compass directions, matching the per-corner CSS in editMode.less.
+// Compass directions, matching the per-corner CSS in inlineImageEditing.less.
 const kInlineImageHandleCorners = ["nw", "ne", "sw", "se"] as const;
 export type InlineImageHandleCorner =
     (typeof kInlineImageHandleCorners)[number];
