@@ -314,11 +314,9 @@ describe("BloomField", () => {
             expect(execCommand).toHaveBeenCalledWith("undo");
         });
 
-        // What made this a test: the count used to be taken once, at page setup, so a picture
-        // the person deleted from its own menu left it short for good and every keystroke they
-        // typed afterwards fired a browser undo -- taking back their typing, character by
-        // character. Comparing across the keystroke instead means a deletion nothing typed is
-        // simply the new state of the box.
+        // A picture deleted from its own menu is a deliberate change, not keystroke damage. If
+        // the guard kept counting it, every keystroke after it would fire a browser undo and
+        // take back the person's typing, character by character.
         it("does not undo the typing that follows a deliberate deletion of the image", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -343,9 +341,8 @@ describe("BloomField", () => {
         });
 
         // Holding Delete rather than pressing it: the browser's auto-repeat sends a run of
-        // keydowns and one keyup at the end. Re-reading the count on every keydown meant the
-        // repeat that followed the deletion recorded the ALREADY-LOWER count, so the keyup had
-        // nothing to compare against and the picture stayed deleted.
+        // keydowns and one keyup at the end. The repeats come after the deletion, so the guard
+        // must compare against the count from the first keydown of the run.
         it("protects the image when delete is held down rather than pressed", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -376,8 +373,8 @@ describe("BloomField", () => {
         });
 
         // The flag that makes the above work has to be cleared when the field loses the focus,
-        // or a key held down as the focus moves away would leave it set and the count stale --
-        // and a stale count is what made every keystroke fire a browser undo.
+        // or a key held down as the focus moves away would leave it set and the count stale,
+        // and a stale count makes every keystroke fire a browser undo.
         it("recovers if the focus leaves while a key is held down", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = inlineImageHtml + "<p>Some text</p>";
@@ -406,8 +403,8 @@ describe("BloomField", () => {
             expect(execCommand).not.toHaveBeenCalled();
         });
 
-        // The other half: an image inserted after page setup was never counted, so ctrl+a DEL
-        // could take it out with nothing to put it back.
+        // An image inserted after page setup is protected too, so ctrl+a DEL cannot take it out
+        // with nothing to put it back.
         it("protects an inline image inserted after the field was wired up", () => {
             const editable = document.getElementById("simple")!;
             editable.innerHTML = "<p>Some text</p>";
