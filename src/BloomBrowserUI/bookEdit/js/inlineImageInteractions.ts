@@ -28,7 +28,7 @@
 // handlers for one event on the same elements would fight, and that menu stops propagation
 // once it decides to act.
 import * as React from "react";
-import { default as AddImageIcon } from "@mui/icons-material/AddPhotoAlternateOutlined";
+import { default as InsertImageIcon } from "@mui/icons-material/AddPhotoAlternateOutlined";
 import { default as DeleteIcon } from "@mui/icons-material/DeleteOutline";
 import { getFeatureStatusAsync } from "../../react_components/featureStatus";
 import OverflowChecker from "../OverflowChecker/OverflowChecker";
@@ -651,7 +651,7 @@ const inlineImageControlConfiguration: ICanvasElementControlConfiguration = {
         becomeBackground: "exclude",
         imageFieldType: "exclude",
         // Duplicating means duplicating a canvas element, which this is not. Adding a second
-        // picture to the block is Add Image on the text's own menu.
+        // picture to the block is Insert Image on the text's own menu.
         duplicate: "exclude",
         // Rotate and flip act on the canvas element manager's active element, and an inline
         // image is not one. (Reset Image acts there too, but it is enabled only for a cropped,
@@ -673,7 +673,7 @@ export type CloseMenuFunction = (launchingDialog?: boolean) => void;
  * The commands to offer for what the user right-clicked, in the shape TextContextMenu
  * renders. For an existing image this is the standard image menu (see
  * inlineImageControlConfiguration above) plus Delete; for an eligible text block it is
- * Add Image. closeMenu is how the commands dismiss the menu they are chosen from; it
+ * Insert Image. closeMenu is how the commands dismiss the menu they are chosen from; it
  * defaults to a no-op for tests that only inspect the items.
  */
 export function buildInlineImageMenuItems(
@@ -683,9 +683,9 @@ export function buildInlineImageMenuItems(
     if (target.kind === "add") {
         return [
             {
-                l10nId: "EditTab.InlineImage.AddImage",
-                english: "Add Image",
-                icon: React.createElement(AddImageIcon, null),
+                l10nId: "EditTab.InlineImage.InsertImage",
+                english: "Insert Image",
+                icon: React.createElement(InsertImageIcon, null),
                 onClick: () => {
                     closeMenu();
                     addInlineImage(target.translationGroup);
@@ -852,7 +852,7 @@ const kMovingClass = "moving";
 /**
  * Puts the toolbar under this picture, or moves it there when it is already up. Called
  * whenever an inline image becomes the selected object, which is the moment the user
- * expects the buttons: right after Add Image, and on a click on the picture.
+ * expects the buttons: right after Insert Image, and on a click on the picture.
  */
 export function showInlineImageContextControls(wrapper: HTMLElement): void {
     const doc = wrapper.ownerDocument;

@@ -605,7 +605,7 @@ namespace BloomTests.Spreadsheet
 
         // A book with a picture inside an image description, alongside a text block that has
         // one too (so the sheet gets its [details] column and IS the authority on inline
-        // images). Bloom no longer offers Add Image inside an image description, so this is a
+        // images). Bloom no longer offers Insert Image inside an image description, so this is a
         // book made before that or edited by hand -- and either way the picture is the
         // person's and must not be thrown away by an import.
         private static string MakeBookWithPictureInImageDescription()
