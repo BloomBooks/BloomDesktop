@@ -7,6 +7,7 @@
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
 @import "../../placeHolderImages.less";
+@import "inlineImageEditing.less";
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
@@ -1796,7 +1797,11 @@ canvas.moving {
     }
 }
 
-#canvas-element-context-controls {
+// The bar under a selected canvas element, and the same bar under a selected inline image
+// (a picture inside a text block). Both hold the same React component, so they need the
+// same box; each has its own id because each is put up and taken down by its own code.
+#canvas-element-context-controls,
+#inline-image-context-controls {
     position: absolute;
     transform-origin: top left;
     &.moving {
