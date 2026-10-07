@@ -33,7 +33,7 @@ The front-end uses pnpm 11.5.2. Never ever use npm or yarn.
 - Fail Fast. Don't write code that silently works around failed dependencies. If a dependency is missing we should fail. Javascript itself will fail if we try to use a missing dependency, and that's fine. E.g. if you expect a foo to be defined, don't write "if(foo){}". Just use foo and if it's null, fine, we'll get an error, which is good.
 - Try to make it so that test failures indicate what went wrong. For example, `fail("An error occurred in setup; we should not have gotten here")` would be better than `expect(false).toBeTruthy();` and `expect(foo).toBe(3);` would be better than `expect(foo === 3).toBe(true);`.
 - Add sanity checks to guard against falsely passing tests. For example, when unit testing a method, sanity check that the test data values are as expected before you call the method, and then after you call the method you can verify that those values have changed as expected.
-- **Never accept a known-flaky test.** A test that sometimes fails is reporting a real race, in Bloom or in the test: find out which and fix the cause. Any way of working around the flakiness instead (retries, re-running until it passes, a longer timeout, a fixed delay, looser assertions, skipping the test, a test hook added to Bloom) needs the developer's permission first.
+- **Never accept a flaky test.** A test that fails without a code change to explain it is flaky from its first failure; it is reporting a real race, in Bloom or in the test: find out which and fix the cause. Waiting to see whether it fails again is accepting it. Any way of working around the flakiness instead (retries, re-running until it passes, waiting to see if it recurs, a longer timeout, a fixed delay, looser assertions, skipping the test, a test hook added to Bloom) needs the developer's permission first.
 - **Nightly CI failures:** `docs/nightly-failures/README.md` records what is already known about each one. To look at recent nightlies, follow `.claude/skills/nightly-triage/SKILL.md`, which keeps that doc up to date.
 
 ## Don't assume the machine is running in English
@@ -56,6 +56,19 @@ see `src/BloomTests/AGENTS.md`.
   `pnpm build` yourself**; to confirm the production bundle compiles use `build/agent-vite.sh`.
   Details, including what to do if the vitest suite seems to hang, are in
   `src/BloomBrowserUI/AGENTS.md`.
+
+# Preflight checks
+
+Checks the `preflight` skill runs on this repo, in addition to its own.
+
+- **E2E specs at the nightly's window size.**
+  - **Applies when** the diff against the base adds or changes any `src/BloomE2E/tests/*.spec.ts`.
+  - **Run** each of those spec files once, headless, at the nightly CI runner's window size:
+    `BLOOM_E2E_VIEWPORT=nightly BLOOM_AUTOMATION_MONITOR=headless pnpm exec playwright test <spec files>`
+    from `src/BloomE2E`. The run needs a current build (see "Testing a front-end change" in
+    `src/BloomE2E/README.md`).
+  - **Passes when** every test in those files passes. A failure here that does not show at your
+    own window size is still a failure: the nightly will hit it.
 
 # Terminal
 The vscode terminal often loses the first character sent from copilot agents. So if you send "cd" it might just say "bash: d: command not found". Try prefixing commands with a space.
