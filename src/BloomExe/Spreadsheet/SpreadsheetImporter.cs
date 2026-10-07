@@ -1807,7 +1807,7 @@ namespace Bloom.Spreadsheet
                             case "kind":
                                 if (property.Value.ToString() != "inline-image")
                                     Warn(
-                                        $"Row {CurrentRowIndexForMessages} is an {InternalSpreadsheet.InlineImageRowLabel} row, but its {InternalSpreadsheet.DetailsColumnLabel} cell says its kind is \"{property.Value}\"."
+                                        $"Row {InlineImageRowNumber(row)} is an {InternalSpreadsheet.InlineImageRowLabel} row, but its {InternalSpreadsheet.DetailsColumnLabel} cell says its kind is \"{property.Value}\"."
                                     );
                                 break;
                             case "location":
@@ -1827,7 +1827,7 @@ namespace Bloom.Spreadsheet
                                 break;
                             default:
                                 Warn(
-                                    $"Bloom did not understand \"{property.Name}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                                    $"Bloom did not understand \"{property.Name}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
                                 );
                                 break;
                         }
@@ -1836,7 +1836,7 @@ namespace Bloom.Spreadsheet
                 catch (Newtonsoft.Json.JsonReaderException)
                 {
                     Warn(
-                        $"Bloom could not read the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages} (\"{details}\"); the image will get a default position and size."
+                        $"Bloom could not read the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)} (\"{details}\"); the image will get a default position and size."
                     );
                 }
             }
@@ -1848,7 +1848,7 @@ namespace Bloom.Spreadsheet
             )
             {
                 Warn(
-                    $"Bloom did not understand the location \"{location}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                    $"Bloom did not understand the location \"{location}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
                 );
                 location = "right";
             }
@@ -1860,16 +1860,23 @@ namespace Bloom.Spreadsheet
             if (!IsInlineImageLength(width))
             {
                 Warn(
-                    $"Bloom did not understand the width \"{width}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                    $"Bloom did not understand the width \"{width}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
                 );
                 width = "40%";
             }
             if (offset != null && !IsInlineImageLength(offset))
             {
                 Warn(
-                    $"Bloom did not understand the offset \"{offset}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                    $"Bloom did not understand the offset \"{offset}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
                 );
                 offset = null;
+            }
+            if (offsetBasedOn != null && !IsInlineImageBlockSize(offsetBasedOn))
+            {
+                Warn(
+                    $"Bloom did not understand the offsetBasedOn \"{offsetBasedOn}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
+                );
+                offsetBasedOn = null;
             }
 
             var wrapper = (SafeXmlElement)_destinationDom.RawDom.CreateElement("div");
@@ -1919,7 +1926,7 @@ namespace Bloom.Spreadsheet
                 img.SetAttribute("class", "bloom-opaque");
             else if (transparency != null)
                 Warn(
-                    $"Bloom did not understand the transparency \"{transparency}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {CurrentRowIndexForMessages}."
+                    $"Bloom did not understand the transparency \"{transparency}\" in the {InternalSpreadsheet.DetailsColumnLabel} cell of row {InlineImageRowNumber(row)}."
                 );
             // Bloom mirrors the image file's copyright, creator and license onto the img so the
             // rest of the program does not have to open the file; the ordinary [image] import
@@ -1945,6 +1952,26 @@ namespace Bloom.Spreadsheet
         private static bool IsInlineImageLength(string value)
         {
             return value != null && Regex.IsMatch(value, @"^\d+(\.\d+)?(%|px|em|rem)$");
+        }
+
+        /// <summary>
+        /// Whether this is the "width,height" (in pixels) that data-inline-image-offset-basedon
+        /// holds: the size of the block the offset was measured in. The editor rescales the
+        /// offset by comparing it with the block's current size, so it has to parse.
+        /// </summary>
+        private static bool IsInlineImageBlockSize(string value)
+        {
+            return value != null && Regex.IsMatch(value, @"^\d+(\.\d+)?,\d+(\.\d+)?$");
+        }
+
+        /// <summary>
+        /// The number a person sees for this [inline image] row in the spreadsheet. The import
+        /// handles these rows while it is still on their group's row, so
+        /// CurrentRowIndexForMessages would name that row instead.
+        /// </summary>
+        private int InlineImageRowNumber(ContentRow row)
+        {
+            return _sheet.GetIndexOfRow(row) + 1;
         }
 
         /// <summary>
@@ -1974,7 +2001,7 @@ namespace Bloom.Spreadsheet
                 if (!RobustFile.Exists(sourcePath))
                 {
                     Warn(
-                        $"Image \"{sourcePath}\" for an inline image on row {CurrentRowIndexForMessages} was not found."
+                        $"Image \"{sourcePath}\" for an inline image on row {InlineImageRowNumber(row)} was not found."
                     );
                 }
                 else
@@ -2314,20 +2341,21 @@ namespace Bloom.Spreadsheet
                 }
             }
 
-            // The lang="z" prototype editable also carries a copy of each inline image, so
-            // that a language added later inherits it (see insertInlineImage); keep it in step.
-            var prototype = HtmlDom.GetEditableChildInLang(group, "z");
-            if (prototype != null)
+            // Every editable holds a copy of each inline image, matched across editables by id.
+            // The loop above rewrote only the languages the sheet has columns for. The others
+            // still hold what they held before the import: the lang="z" prototype, which a
+            // language added later inherits its copies from (see insertInlineImage), and any
+            // language the sheet does not have. When the spreadsheet is the authority, their
+            // copies have to be replaced by the sheet's, or a picture deleted in the sheet
+            // stays there and comes back, and pictures with old ids sit beside ones with new ids.
+            var otherEditables = SafeSelectNodesByClassName(group, "./div", "bloom-editable")
+                .Where(e => !sheetLanguages.Contains(e.GetAttribute("lang")))
+                .ToArray();
+            foreach (var other in otherEditables)
             {
-                // Unlike the language editables, the prototype is not rewritten from a cell, so
-                // whatever it holds is what it held before the import. When the spreadsheet is
-                // the authority and says this block has no pictures, the prototype's copies have
-                // to go as well: otherwise a picture the user deleted from the spreadsheet is
-                // still there, invisibly, and comes back the next time a language is added to
-                // the collection.
                 if (sheetKnowsAboutInlineImages)
-                    RemoveInlineImages(prototype);
-                StampInlineImages(prototype, inlineImageWrappers);
+                    RemoveInlineImages(other);
+                StampInlineImages(other, inlineImageWrappers);
             }
 
             if (RemoveOtherLanguages)

@@ -855,5 +855,102 @@ namespace BloomTests.Spreadsheet
                 Is.EqualTo(1)
             );
         }
+
+        [Test]
+        public async Task ALanguageTheSheetLacksFollowsTheSheetsPictures()
+        {
+            // The target book has a French block the sheet has no column for, so the import
+            // does not rewrite it. Its copy of the picture still has to follow the sheet, which
+            // here says the block has no pictures: a copy left in French would come back into
+            // view whenever French is shown, and its id would match nothing else in the block.
+            var frenchEditable =
+                "<div class=\"bloom-editable normal-style\" id=\"groupWithTextAndImages-fr\" lang=\"fr\" contenteditable=\"true\">"
+                + floatWrapper
+                + "<p>Un chien très courageux.</p></div>";
+            var englishEditableStart =
+                "<div class=\"bloom-editable normal-style bloom-contentNational1\" id=\"groupWithTextAndImages-en\"";
+            var bookHtml = MakeBook(floatWrapper, bottomWrapper);
+            Assert.That(bookHtml, Does.Contain(englishEditableStart), "sanity: insertion point");
+            var targetDom = new HtmlDom(
+                bookHtml.Replace(englishEditableStart, frenchEditable + englishEditableStart),
+                true
+            );
+            var sheet = ExportBook(MakeBook("", "", floatWrapper));
+            Assert.That(
+                sheet.Languages,
+                Does.Not.Contain("fr"),
+                "sanity: the sheet has no French column"
+            );
+            Assert.That(
+                GetWrappers(GetEditable(targetDom, "groupWithTextAndImages-fr")).Count,
+                Is.EqualTo(1),
+                "sanity: French starts with a picture"
+            );
+
+            await RoundTripThroughFileAndImportAsync(sheet, targetDom);
+
+            var french = GetEditable(targetDom, "groupWithTextAndImages-fr");
+            Assert.That(french.InnerText, Does.Contain("Un chien très courageux."));
+            Assert.That(GetWrappers(french).Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public async Task WarningsNameTheInlineImageRowTheyAreAbout()
+        {
+            // An [inline image] row is handled while the import is still on its group's row, and
+            // a group can have several. The warning has to name the picture's own row, or the
+            // person cannot tell which one to fix.
+            var sheet = ExportBook(MakeBook(floatWrapper, bottomWrapper));
+            var rows = sheet.ContentRows.ToList();
+            var imageRows = rows.Where(r =>
+                    r.MetadataKey == InternalSpreadsheet.InlineImageRowLabel
+                )
+                .ToList();
+            var groupRow = rows[rows.IndexOf(imageRows[0]) - 1];
+            Assert.That(
+                groupRow.MetadataKey,
+                Is.EqualTo(InternalSpreadsheet.PageContentRowLabel),
+                "sanity: the picture rows follow their group's row"
+            );
+            // The block's second picture, so it is not the row right after the group's row.
+            var badRow = imageRows[1];
+            badRow.SetCell(
+                InternalSpreadsheet.DetailsColumnLabel,
+                "{\"kind\":\"inline-image\",\"location\":\"bottom\",\"width\":\"wide\"}"
+            );
+            var targetDom = new HtmlDom(MakeBook("", ""), true);
+
+            var warnings = await new TestSpreadsheetImporter(null, targetDom).ImportAsync(sheet);
+
+            var badRowNumber = sheet.GetIndexOfRow(badRow) + 1;
+            var groupRowNumber = sheet.GetIndexOfRow(groupRow) + 1;
+            Assert.That(badRowNumber, Is.Not.EqualTo(groupRowNumber), "sanity");
+            var widthWarning = warnings.Single(w => w.Contains("\"wide\""));
+            Assert.That(widthWarning, Does.Contain($"row {badRowNumber}."));
+        }
+
+        [Test]
+        public async Task ImportDropsABlockSizeItCannotRead()
+        {
+            // The editor rescales the offset by comparing offsetBasedOn with the block's size, so
+            // a hand-edited value it cannot parse is dropped, with a warning. The offset itself
+            // is still usable and stays.
+            var sheet = ExportBook(MakeBook(floatWrapper, bottomWrapper));
+            var row = sheet.ContentRows.First(r =>
+                r.MetadataKey == InternalSpreadsheet.InlineImageRowLabel
+            );
+            row.SetCell(
+                InternalSpreadsheet.DetailsColumnLabel,
+                "{\"kind\":\"inline-image\",\"location\":\"right\",\"offset\":\"24px\",\"offsetBasedOn\":\"about A5\",\"width\":\"40%\"}"
+            );
+            var targetDom = new HtmlDom(MakeBook("", ""), true);
+
+            var warnings = await new TestSpreadsheetImporter(null, targetDom).ImportAsync(sheet);
+
+            var wrapper = GetFloatWrapper(GetEditable(targetDom, "groupWithTextAndImages-es"));
+            Assert.That(wrapper.GetAttribute("style"), Does.Contain("--inline-image-offset: 24px"));
+            Assert.That(wrapper.GetAttribute("data-inline-image-offset-basedon"), Is.Null.Or.Empty);
+            Assert.That(warnings.Count(w => w.Contains("\"about A5\"")), Is.EqualTo(1));
+        }
     }
 }
